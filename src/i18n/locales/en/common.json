@@ -221,7 +221,7 @@
     "strength": {
       "kicker": "Strength",
       "title": "Five-lift strength (DOTS-based)",
-      "body": "Bench press, squat, deadlift, lat pulldown, and overhead press — each lift has its own Calculate button and score; use the combined section to preview the radar axis (mean of all completed rows) before saving. Grip strength is a separate assessment. Raw inputs stay on device.",
+      "body": "Bench press, squat, deadlift, lat pulldown, and standing barbell shoulder press — each lift has its own Calculate button and score; use the combined section to preview the radar axis (mean of all completed rows) before saving. Grip strength is a separate assessment. Raw inputs stay on device.",
       "cta": "Open strength assessment"
     }
   },
@@ -271,7 +271,7 @@
       "squat": "Squat",
       "deadlift": "Deadlift",
       "latPulldown": "Lat pulldown",
-      "shoulderPress": "Overhead press"
+      "shoulderPress": "Standing barbell shoulder press"
     },
     "errors": {
       "missing-profile": "Add a complete physical profile on Home before calculating strength.",
