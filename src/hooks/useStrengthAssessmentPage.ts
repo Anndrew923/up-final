@@ -20,7 +20,14 @@ import type { PhysicalProfile } from '../types/userProfile';
 import type { StrengthLiftKey } from '../types/strengthInputs';
 import { useScoreStore } from '../stores/scoreStore';
 
-export type PerLiftScore = { oneRepMax: number; finalScore: number };
+export type PerLiftScore = {
+  oneRepMax: number;
+  finalScore: number;
+  weightCapped: boolean;
+  weightInputKg: number;
+  weightUsedKg: number;
+  modelMaxKg: number;
+};
 
 export interface UseStrengthAssessmentPageResult {
   profile: PhysicalProfile | null;
@@ -154,7 +161,14 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
       }
       setPerLiftResult((r) => ({
         ...r,
-        [lift]: { oneRepMax: res.oneRepMax, finalScore: res.finalScore },
+        [lift]: {
+          oneRepMax: res.oneRepMax,
+          finalScore: res.finalScore,
+          weightCapped: res.weightCapped,
+          weightInputKg: res.weightInputKg,
+          weightUsedKg: res.weightUsedKg,
+          modelMaxKg: res.modelMaxKg,
+        },
       }));
     },
     [form, profile, profileReady, clearCombined]

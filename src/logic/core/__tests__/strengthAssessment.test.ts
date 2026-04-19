@@ -4,10 +4,12 @@ import {
   mergeScoreMapWithResolvedStrength,
   persistedFromStrengthForm,
   resolveStrengthScoreFromInputs,
+  shouldShowStrengthRepsAccuracyNudge,
   strengthFormFromPersisted,
   tryComputeSingleLiftStrength,
   tryComputeStrengthAssessmentScore,
 } from '../strengthAssessment';
+import { STRENGTH_WEIGHT_LIMIT_KG } from '../strengthWeightLimits';
 
 const baseProfile: PhysicalProfile = {
   gender: 'male',
@@ -21,7 +23,40 @@ function emptyForm() {
   return strengthFormFromPersisted(null);
 }
 
+describe('shouldShowStrengthRepsAccuracyNudge', () => {
+  it('is false without positive weight', () => {
+    expect(shouldShowStrengthRepsAccuracyNudge('', '8')).toBe(false);
+    expect(shouldShowStrengthRepsAccuracyNudge('0', '8')).toBe(false);
+  });
+
+  it('is false for reps below threshold', () => {
+    expect(shouldShowStrengthRepsAccuracyNudge('100', '6')).toBe(false);
+  });
+
+  it('is true for integer reps 7–10 with valid weight', () => {
+    expect(shouldShowStrengthRepsAccuracyNudge('100', '7')).toBe(true);
+    expect(shouldShowStrengthRepsAccuracyNudge('100', '10')).toBe(true);
+  });
+
+  it('is false for non-integer reps', () => {
+    expect(shouldShowStrengthRepsAccuracyNudge('100', '7.5')).toBe(false);
+  });
+});
+
 describe('tryComputeSingleLiftStrength', () => {
+  it('rejects non-integer reps', () => {
+    const form = emptyForm();
+    form.benchPress = { weight: '100', reps: '7.5' };
+    const r = tryComputeSingleLiftStrength({
+      lift: 'benchPress',
+      form,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error).toBe('invalid-reps');
+  });
+
   it('returns empty-row when both fields blank', () => {
     const form = emptyForm();
     const r = tryComputeSingleLiftStrength({
@@ -47,6 +82,33 @@ describe('tryComputeSingleLiftStrength', () => {
     if (r.ok) {
       expect(r.oneRepMax).toBeGreaterThan(0);
       expect(r.finalScore).toBeGreaterThan(0);
+    }
+  });
+
+  it('caps weight above model ceiling and matches uncapped ceiling score', () => {
+    const formOver = emptyForm();
+    formOver.benchPress = { weight: '400', reps: '5' };
+    const formAtCap = emptyForm();
+    formAtCap.benchPress = { weight: String(STRENGTH_WEIGHT_LIMIT_KG.benchPress), reps: '5' };
+    const over = tryComputeSingleLiftStrength({
+      lift: 'benchPress',
+      form: formOver,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    const atCap = tryComputeSingleLiftStrength({
+      lift: 'benchPress',
+      form: formAtCap,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(over.ok && atCap.ok).toBe(true);
+    if (over.ok && atCap.ok) {
+      expect(over.weightCapped).toBe(true);
+      expect(over.weightInputKg).toBe(400);
+      expect(over.weightUsedKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+      expect(over.modelMaxKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+      expect(over.finalScore).toBeCloseTo(atCap.finalScore, 5);
     }
   });
 
@@ -144,6 +206,25 @@ describe('tryComputeStrengthAssessmentScore', () => {
       expect(r.breakdown.averageRaw).toBeCloseTo(expectedMean, 5);
     }
   });
+
+  it('marks branch capped and persists clamped weight when over ceiling', () => {
+    const form = emptyForm();
+    form.benchPress = { weight: '400', reps: '5' };
+    const r = tryComputeStrengthAssessmentScore({
+      form,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      const b = r.breakdown.branches[0];
+      expect(b.weightCapped).toBe(true);
+      expect(b.inputWeightKg).toBe(400);
+      expect(b.modelMaxKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+      expect(b.weightKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+      expect(r.persisted.lifts?.benchPress?.weightKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+    }
+  });
 });
 
 describe('resolveStrengthScoreFromInputs', () => {
@@ -163,6 +244,19 @@ describe('resolveStrengthScoreFromInputs', () => {
       lifts: { benchPress: { weightKg: 100, reps: 5 } },
     });
     expect(score).toBe(benchOnly);
+  });
+
+  it('forgiving mode skips non-integer persisted reps', () => {
+    const withFloat = resolveStrengthScoreFromInputs(baseProfile, {
+      lifts: {
+        benchPress: { weightKg: 100, reps: 5 },
+        squat: { weightKg: 120, reps: 5.5 },
+      },
+    });
+    const benchOnly = resolveStrengthScoreFromInputs(baseProfile, {
+      lifts: { benchPress: { weightKg: 100, reps: 5 } },
+    });
+    expect(withFloat).toBe(benchOnly);
   });
 });
 
@@ -189,6 +283,25 @@ describe('mergeScoreMapWithResolvedStrength', () => {
     expect(direct).not.toBeNull();
     expect(merged.strength).toBe(direct);
     expect(merged.strength).not.toBe(12);
+  });
+});
+
+describe('persistedFromStrengthForm', () => {
+  it('persists capped kg when input exceeds model ceiling', () => {
+    const form = emptyForm();
+    form.benchPress = { weight: '400', reps: '5' };
+    const p = persistedFromStrengthForm(form, 80);
+    expect(p.lifts?.benchPress?.weightKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.benchPress);
+    expect(p.lifts?.benchPress?.reps).toBe(5);
+  });
+
+  it('omits lifts with non-integer reps', () => {
+    const form = emptyForm();
+    form.benchPress = { weight: '100', reps: '7.5' };
+    form.squat = { weight: '120', reps: '5' };
+    const p = persistedFromStrengthForm(form, 80);
+    expect(p.lifts?.benchPress).toBeUndefined();
+    expect(p.lifts?.squat).toEqual({ weightKg: 120, reps: 5 });
   });
 });
 

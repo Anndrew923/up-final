@@ -235,7 +235,8 @@
     "repsLabel": "Reps completed",
     "repsPlaceholder": "1–10",
     "repsAria": "{{lift}} — repetitions",
-    "fieldsHint": "Uses gender, age, and body weight from your Home physical profile. Leave both fields empty for a lift you are skipping. Reps above 10 are not accepted (submaximal estimate quality).",
+    "repsAccuracyNudge": "Fewer reps usually make the estimated 1RM more reliable. If you have a heavier, lower-rep set taken near failure, prefer entering that weight and rep count.",
+    "fieldsHint": "Uses gender, age, and body weight from your Home physical profile. Leave both fields empty for a lift you are skipping. Reps above 10 are not accepted (submaximal estimate quality). Each lift also has a model weight ceiling — values above it are clamped for scoring and storage, with an on-screen notice.",
     "calculateThisLift": "Calculate this lift",
     "singleOneRmLabel": "Est. 1RM",
     "singleOneRmValue": "{{value}} kg",
@@ -243,6 +244,7 @@
     "combinedSectionTitle": "All completed lifts (radar axis)",
     "combinedHint": "Averages every row that has both weight and reps. Rows with one field empty are ignored here (but must not be “half filled” — clear both or fill both).",
     "calculateCombined": "Calculate combined score",
+    "capWeightNotice": "{{lift}}: you entered {{input}} kg, which exceeds this movement’s model ceiling ({{max}} kg). Scoring and saved weight use {{max}} kg — aligned with elite / all-time raw or strongman reference context for this lift (not a meet certification).",
     "branchScoresHeading": "Per-lift results",
     "branchLine": "{{weight}} kg × {{reps}} reps · est. 1RM {{oneRm}} kg · lift score {{score}}",
     "averageRawLabel": "Mean of completed lifts",
@@ -261,6 +263,7 @@
       "title": "Scoring notes",
       "intro": "Each completed lift is converted to an estimated 1RM (Brzycki), then to a DOTS-style score adjusted for age (McCulloch) and normalized against built-in anchor totals for that lift — matching the reference fitness stack.",
       "reps": "Use 1–10 reps so the 1RM estimate stays in a reliable range; enter the weight you actually lifted for that set.",
+      "repsAccuracy": "Within that range, lower rep counts are generally more trustworthy for Brzycki extrapolation; very high-rep sets can yield a more optimistic estimated 1RM, which may not match a “heavier is always stronger” gut check.",
       "tip": "Warm up and use consistent depth / range of motion when comparing over time. This screen is not a competition verification tool."
     },
     "lifts": {

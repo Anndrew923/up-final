@@ -6,6 +6,8 @@
  *   must stay bitwise-identical on valid data; divergent loops were technical debt.
  * - `forgiving` mode skips corrupt persisted cells (merge must not brick the radar); `strict` surfaces the first formula failure for interactive UX.
  * - `tryScoreLiftNumbers` is the only call site wrapping `calculateStrengthScore` for per-lift math (single-row UI + batch merge).
+ * - Per-lift barbell/stack weights clamp to `strengthWeightLimits` before scoring; persisted lifts store the clamped kg.
+ * - Reps must be whole numbers in 1..`STRENGTH_ASSESSMENT_MAX_REPS` (matches numeric inputs); fractional values are rejected to stay aligned with Brzycki / UX nudges.
  */
 import type { PhysicalProfile } from '../../types/userProfile';
 import type { ScoreMap } from '../../types/scoring';
@@ -17,8 +19,12 @@ import type {
 import { STRENGTH_LIFT_KEYS } from '../../types/strengthInputs';
 import { isPhysicalProfileComplete } from './physicalProfile';
 import { calculateStrengthScore, clampScoreMapValue, type ExerciseType } from './scoring';
+import { clampStrengthWeightKg } from './strengthWeightLimits';
 
-const MAX_REPS = 10;
+export const STRENGTH_ASSESSMENT_MAX_REPS = 10;
+
+/** Reps at or above this (within max) show a UI nudge: fewer reps → typically more reliable Brzycki 1RM. */
+export const STRENGTH_REPS_ACCURACY_NUDGE_FROM_REP = 7;
 
 const LIFT_TO_EXERCISE: Record<StrengthLiftKey, ExerciseType> = {
   benchPress: 'Bench Press',
@@ -30,23 +36,43 @@ const LIFT_TO_EXERCISE: Record<StrengthLiftKey, ExerciseType> = {
 
 type StrengthNumericLifts = Partial<Record<StrengthLiftKey, { weightKg: number; reps: number }>>;
 
-/** Single choke point for `calculateStrengthScore` (single-lift + batch merge). */
+/** Single choke point for `calculateStrengthScore` (single-lift + batch merge). Applies per-lift weight ceiling. */
 function tryScoreLiftNumbers(
   profile: PhysicalProfile,
   lift: StrengthLiftKey,
-  weightKg: number,
+  weightKgInput: number,
   reps: number
-): { ok: true; oneRepMax: number; finalScore: number } | { ok: false } {
+):
+  | {
+      ok: true;
+      oneRepMax: number;
+      finalScore: number;
+      weightUsedKg: number;
+      weightInputKg: number;
+      weightCapped: boolean;
+      /** Model ceiling (kg) for this lift — surfaced to UI without importing limit tables in components. */
+      modelMaxKg: number;
+    }
+  | { ok: false } {
+  const { usedKg, capped, maxKg } = clampStrengthWeightKg(lift, weightKgInput);
   try {
     const breakdown = calculateStrengthScore({
       exerciseType: LIFT_TO_EXERCISE[lift],
-      weight: weightKg,
+      weight: usedKg,
       reps,
       bodyWeight: profile.weightKg,
       gender: profile.gender,
       age: profile.age,
     });
-    return { ok: true, oneRepMax: breakdown.oneRepMax, finalScore: breakdown.finalScore };
+    return {
+      ok: true,
+      oneRepMax: breakdown.oneRepMax,
+      finalScore: breakdown.finalScore,
+      weightUsedKg: usedKg,
+      weightInputKg: weightKgInput,
+      weightCapped: capped,
+      modelMaxKg: maxKg,
+    };
   } catch {
     return { ok: false };
   }
@@ -62,10 +88,17 @@ export type StrengthAssessmentComputeError =
 
 export interface StrengthLiftBranch {
   lift: StrengthLiftKey;
+  /** Weight (kg) used in the formula after model ceiling. */
   weightKg: number;
   reps: number;
   oneRepMax: number;
   finalScore: number;
+  /** True when `weightKg` was clamped from a higher parsed input. */
+  weightCapped?: boolean;
+  /** Parsed user weight before cap (present when `weightCapped`). */
+  inputWeightKg?: number;
+  /** Same movement model ceiling passed to i18n for cap notices (present when `weightCapped`). */
+  modelMaxKg?: number;
 }
 
 export interface StrengthAssessmentBreakdown {
@@ -88,6 +121,19 @@ function parseReps(raw: string): number | null {
   const n = Number(t);
   if (!Number.isFinite(n)) return null;
   return n;
+}
+
+function isValidStrengthRepsForScoring(r: number): boolean {
+  return Number.isInteger(r) && r >= 1 && r <= STRENGTH_ASSESSMENT_MAX_REPS;
+}
+
+/** When weight is a valid positive kg and reps are an integer in [nudgeFrom, max], suggest using a lower-rep set if available. */
+export function shouldShowStrengthRepsAccuracyNudge(weightStr: string, repsStr: string): boolean {
+  const w = parsePositiveKg(weightStr);
+  if (w === null) return false;
+  const r = parseReps(repsStr);
+  if (r === null || !isValidStrengthRepsForScoring(r)) return false;
+  return r >= STRENGTH_REPS_ACCURACY_NUDGE_FROM_REP;
 }
 
 function isRowEmpty(weightStr: string, repsStr: string): boolean {
@@ -125,8 +171,9 @@ export function persistedFromStrengthForm(
   for (const key of STRENGTH_LIFT_KEYS) {
     const w = parsePositiveKg(form[key].weight);
     const r = parseReps(form[key].reps);
-    if (w !== null && r !== null) {
-      lifts[key] = { weightKg: w, reps: r };
+    if (w !== null && r !== null && isValidStrengthRepsForScoring(r)) {
+      const { usedKg } = clampStrengthWeightKg(key, w);
+      lifts[key] = { weightKg: usedKg, reps: r };
     }
   }
   const out: StrengthInputsPersisted = { bodyWeightKgSnapshot };
@@ -151,7 +198,15 @@ export function tryComputeSingleLiftStrength(args: {
   profile: PhysicalProfile | null;
   profileReady: boolean;
 }):
-  | { ok: true; oneRepMax: number; finalScore: number }
+  | {
+      ok: true;
+      oneRepMax: number;
+      finalScore: number;
+      weightUsedKg: number;
+      weightInputKg: number;
+      weightCapped: boolean;
+      modelMaxKg: number;
+    }
   | { ok: false; error: StrengthSingleLiftError } {
   const { lift, form, profile, profileReady } = args;
   if (!profileReady || !profile || !isPhysicalProfileComplete(profile)) {
@@ -174,7 +229,10 @@ export function tryComputeSingleLiftStrength(args: {
   if (r === null) {
     return { ok: false, error: 'invalid-reps' };
   }
-  if (r < 1 || r > MAX_REPS) {
+  if (!Number.isInteger(r)) {
+    return { ok: false, error: 'invalid-reps' };
+  }
+  if (!isValidStrengthRepsForScoring(r)) {
     return { ok: false, error: 'reps-out-of-range' };
   }
 
@@ -182,7 +240,15 @@ export function tryComputeSingleLiftStrength(args: {
   if (!scored.ok) {
     return { ok: false, error: 'invalid-weight' };
   }
-  return { ok: true, oneRepMax: scored.oneRepMax, finalScore: scored.finalScore };
+  return {
+    ok: true,
+    oneRepMax: scored.oneRepMax,
+    finalScore: scored.finalScore,
+    weightUsedKg: scored.weightUsedKg,
+    weightInputKg: scored.weightInputKg,
+    weightCapped: scored.weightCapped,
+    modelMaxKg: scored.modelMaxKg,
+  };
 }
 
 type ComputeStrengthMode = 'strict' | 'forgiving';
@@ -205,7 +271,7 @@ function computeStrengthResultFromNumericLifts(
     const r = cell.reps;
     if (w === undefined || r === undefined) continue;
     if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(r) || r <= 0) continue;
-    if (r > MAX_REPS || r < 1) continue;
+    if (!isValidStrengthRepsForScoring(r)) continue;
     const scored = tryScoreLiftNumbers(profile, key, w, r);
     if (!scored.ok) {
       if (mode === 'strict') {
@@ -215,10 +281,17 @@ function computeStrengthResultFromNumericLifts(
     }
     branches.push({
       lift: key,
-      weightKg: w,
+      weightKg: scored.weightUsedKg,
       reps: r,
       oneRepMax: scored.oneRepMax,
       finalScore: scored.finalScore,
+      ...(scored.weightCapped
+        ? {
+            weightCapped: true,
+            inputWeightKg: scored.weightInputKg,
+            modelMaxKg: scored.modelMaxKg,
+          }
+        : {}),
     });
   }
   if (branches.length === 0) {
@@ -276,6 +349,7 @@ export function tryComputeStrengthAssessmentScore(args: {
     }
   }
 
+  /** Parsed kg before clamp — `tryScoreLiftNumbers` applies ceilings so branches can show cap notices. */
   const numericLifts: StrengthNumericLifts = {};
   for (const key of STRENGTH_LIFT_KEYS) {
     const { weight, reps } = form[key];
@@ -289,7 +363,10 @@ export function tryComputeStrengthAssessmentScore(args: {
     if (r === null) {
       return { ok: false, error: 'invalid-reps' };
     }
-    if (r < 1 || r > MAX_REPS) {
+    if (!Number.isInteger(r)) {
+      return { ok: false, error: 'invalid-reps' };
+    }
+    if (!isValidStrengthRepsForScoring(r)) {
       return { ok: false, error: 'reps-out-of-range' };
     }
     numericLifts[key] = { weightKg: w, reps: r };

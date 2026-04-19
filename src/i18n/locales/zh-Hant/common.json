@@ -146,7 +146,8 @@
     "repsLabel": "完成次數",
     "repsPlaceholder": "1–10",
     "repsAria": "{{lift}} — 次數",
-    "fieldsHint": "性別、年齡、體重取自首頁身體資料。若要跳過某一項，請將該項重量與次數皆留空。次數大於 10 不予接受（次最大估計品質）。",
+    "repsAccuracyNudge": "次數愈少，估計 1RM 通常愈準。若你有更低次數、接近力竭的組數，建議改填該組重量與次數。",
+    "fieldsHint": "性別、年齡、體重取自首頁身體資料。若要跳過某一項，請將該項重量與次數皆留空。次數大於 10 不予接受（次最大估計品質）。各動作另有重量模型上限，超過時計分與儲存會封頂並顯示提示。",
     "calculateThisLift": "計算此項",
     "singleOneRmLabel": "估計 1RM",
     "singleOneRmValue": "{{value}} 公斤",
@@ -154,6 +155,7 @@
     "combinedSectionTitle": "全部完成列（雷達力量軸）",
     "combinedHint": "只平均「重量與次數皆已填」的列；未填的列不納入。不得只填一欄 — 請兩欄都填或都留空。",
     "calculateCombined": "合併計算（雷達預覽）",
+    "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（對標菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
     "branchScoresHeading": "各項結果",
     "branchLine": "{{weight}} kg × {{reps}} 次 · 估計 1RM {{oneRm}} kg · 單項分 {{score}}",
     "averageRawLabel": "已完成項目之平均",
@@ -172,6 +174,7 @@
       "title": "計分說明",
       "intro": "每個完成的項目會先以 Brzycki 估計 1RM，再換算為 DOTS 系分數，並以年齡係數（McCulloch）修正，最後對照該動作內建錨點總量正規化 — 與參考體能專案一致。",
       "reps": "請輸入 1–10 次，以維持次最大估計之穩定度；重量請填該組實際完成重量。",
+      "repsAccuracy": "在合法範圍內，次數愈低，Brzycki 外插通常愈可信；高次數組的估計 1RM 可能較樂觀，與主觀「更重才算更強」的直覺偶有不一致。",
       "tip": "建議充分熱身，並固定動作幅度與深度以便長期對照。本畫面不提供競賽認證用途。"
     },
     "lifts": {

@@ -5,7 +5,11 @@ import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { ROUTES } from '../config/routes';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
-import type { StrengthSingleLiftError } from '../logic/core/strengthAssessment';
+import {
+  shouldShowStrengthRepsAccuracyNudge,
+  STRENGTH_ASSESSMENT_MAX_REPS,
+  type StrengthSingleLiftError,
+} from '../logic/core/strengthAssessment';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
 export interface StrengthAssessmentPageProps {
@@ -104,6 +108,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
           >
             <p>{t('strength.howToInfo.intro')}</p>
             <p>{t('strength.howToInfo.reps')}</p>
+            <p>{t('strength.howToInfo.repsAccuracy')}</p>
             <p className="text-zinc-500">{t('strength.howToInfo.tip')}</p>
           </DisclosurePanel>
 
@@ -113,6 +118,11 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
             {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
               const rowResult = perLiftResult[lift];
               const rowErr = perLiftError[lift];
+              const showRepsAccuracyNudge = shouldShowStrengthRepsAccuracyNudge(
+                form[lift].weight,
+                form[lift].reps
+              );
+              const repsAccuracyNudgeId = `strength-reps-accuracy-${lift}`;
               return (
                 <fieldset
                   key={lift}
@@ -144,16 +154,26 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         type="number"
                         inputMode="numeric"
                         min={1}
-                        max={10}
+                        max={STRENGTH_ASSESSMENT_MAX_REPS}
                         step={1}
                         className="ui-input w-full"
                         placeholder={t('strength.repsPlaceholder')}
                         value={form[lift].reps}
                         onChange={(e) => setReps(lift, e.target.value)}
                         aria-label={t('strength.repsAria', { lift: t(`strength.lifts.${lift}`) })}
+                        aria-describedby={showRepsAccuracyNudge ? repsAccuracyNudgeId : undefined}
                       />
                     </label>
                   </div>
+
+                  {showRepsAccuracyNudge ? (
+                    <p
+                      id={repsAccuracyNudgeId}
+                      className="text-xs leading-relaxed text-zinc-500"
+                    >
+                      {t('strength.repsAccuracyNudge')}
+                    </p>
+                  ) : null}
 
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -177,6 +197,18 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                       className="space-y-1 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2.5 text-sm"
                       role="status"
                     >
+                      {rowResult.weightCapped ? (
+                        <p
+                          className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
+                          role="status"
+                        >
+                          {t('strength.capWeightNotice', {
+                            lift: t(`strength.lifts.${lift}`),
+                            input: rowResult.weightInputKg,
+                            max: rowResult.modelMaxKg,
+                          })}
+                        </p>
+                      ) : null}
                       <p className="font-mono text-xs tabular-nums text-zinc-300">
                         <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
                         <span className="text-zinc-100">
@@ -215,10 +247,21 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   {combinedBreakdown.branches.map((b) => (
                     <li
                       key={b.lift}
-                      className="flex flex-col gap-0.5 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
+                      className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
                     >
-                      <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
-                      <span className="font-mono text-xs tabular-nums text-zinc-200">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
+                        {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
+                          <p className="text-[11px] leading-relaxed text-amber-100/90">
+                            {t('strength.capWeightNotice', {
+                              lift: t(`strength.lifts.${b.lift}`),
+                              input: b.inputWeightKg,
+                              max: b.modelMaxKg,
+                            })}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
                         {fmtBranchLine(t, b)}
                       </span>
                     </li>
