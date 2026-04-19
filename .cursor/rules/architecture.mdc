@@ -1,0 +1,30 @@
+---
+description: Global architecture guardrails and workspace boundaries
+globs: **/*
+alwaysApply: true
+---
+
+# Up Final Architecture Rule
+
+## Mission
+- Build and ship only in `up-final`.
+- Keep `reference-app` and `reference-app-fitness` strictly read-only.
+- Prioritize maintainability, testability, and migration safety over quick patches.
+
+## Workspace Boundary (Hard)
+- **Primary Workspace**: All implementation must happen in `up-final`.
+- **Reference Only**: You may read from `@reference-app` and `@reference-app-fitness`.
+- **No Modification**: Never create, edit, move, or delete files in reference folders.
+
+## Layering Contract
+- `src/logic/core/`: Pure domain logic only (framework-agnostic, deterministic).
+- `src/services/`: External integrations (Firebase/Auth/API/storage).
+- `src/stores/`: Global state orchestration.
+- `src/hooks/`: UI-facing adapters that connect store/service/logic.
+- `src/components/`: Presentational and composable UI units.
+
+## Non-Negotiables
+- No business logic inside UI components.
+- No direct external SDK calls from components (go through service layer).
+- Prefer refactor over patch when structure blocks scalability.
+- If a file becomes too large/complex, split by responsibility before adding more features.

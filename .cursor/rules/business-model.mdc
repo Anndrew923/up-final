@@ -1,0 +1,42 @@
+---
+description: Core/Pro monetization, entitlement, and leaderboard access policy
+globs: src/logic/core/**/*,src/services/**/*,src/stores/**/*,src/hooks/**/*,src/components/**/*,src/pages/**/*
+alwaysApply: true
+---
+
+# Up Final Business Model Rule
+
+## Product Tiers (Fixed)
+- **Core App (one-time purchase)** unlocks all local features:
+  - Assessment calculation
+  - Six-axis radar display
+  - Personal history records
+  - Widgets
+- **Pro Service (monthly subscription)** unlocks:
+  - Global leaderboard access (view + upload)
+  - Cloud sync capabilities
+
+## Access Control
+- Entitlement logic must be centralized in `src/logic/core` (single source of truth).
+- Leaderboard entry and upload must require valid Pro status.
+- Core local data must remain available without Pro.
+
+## Schema Requirements
+- User profile must reserve subscription fields such as:
+  - `purchase_status`
+  - `subscription_status`
+  - `is_pro`
+  - `pro_expires_at`
+  - `plan_id`
+
+## Firebase Cost Guardrails
+- Non-Pro users must not trigger Firestore leaderboard read/write traffic.
+- Leaderboard documents should store summary-only fields (best score + minimal profile).
+- Add leaderboard caching to avoid repeated reads.
+- Add write throttling (for example, hourly upload cap per user).
+- Only update leaderboard when new score exceeds previous best.
+
+## UX Requirements
+- Entering leaderboard must run subscription checks first.
+- If not eligible, show a value-driven upgrade flow ("join arena") instead of a generic lock screen.
+- Pro badge should be visible in leaderboard-related UI with a premium but restrained style.

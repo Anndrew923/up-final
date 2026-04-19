@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Local env (never commit secrets)
+.env
+.env.*.local
+
+# Logs & debug
+npm-debug.log*
+*.log
+
+# Editor
+.DS_Store

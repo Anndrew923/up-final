@@ -1,0 +1,21 @@
+---
+description: Core logic purity, determinism, and testability standards
+globs: src/logic/core/**/*.ts
+alwaysApply: true
+---
+
+# Up Final Logic Rule
+
+## Core Purity
+- Keep `src/logic/core/` free of UI/framework/external SDK dependencies.
+- Use deterministic functions with explicit input/output.
+- Avoid hidden state and implicit globals.
+
+## Design Quality
+- Favor small, composable pure functions.
+- Preserve domain meaning while simplifying structure.
+- Optimize for readability first, then performance where needed.
+
+## Comment Standard
+- Comments should explain **why** and **impact**, not restate code.
+- Mark assumptions and edge-case rationale clearly.

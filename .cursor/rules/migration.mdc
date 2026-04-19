@@ -1,0 +1,41 @@
+---
+description: Migration workflow and scope control for up-final
+globs: **/*
+alwaysApply: true
+---
+
+# Up Final Migration Workflow Rule
+
+## Migration Strategy
+- Migrate in phases: `P0 -> P1 -> P2`.
+- Every task must be tagged as one of:
+  - `reuse` (along with existing implementation)
+  - `refactor` (restructure while preserving intent)
+  - `defer` (schedule for later)
+
+## Priority Definition
+- **P0 (Must work first)**:
+  - Entitlement foundation (`purchase_status`, `subscription_status`, `is_pro`)
+  - Core local-first data path (assessment/history/radar/widgets)
+  - Leaderboard access gating (Pro check before entry/upload)
+  - Firebase hot-path optimization (cache + throttling + summary-only writes)
+- **P1 (Stabilize + clarity)**:
+  - Subscription flow integration and restore handling
+  - Cloud sync stabilization for eligible Pro users
+  - Six-dimension scoring alignment (including arm size and grip strength)
+- **P2 (Polish)**:
+  - Visual refinement
+  - Animation/micro-interactions
+  - Non-critical UI enhancements
+
+## Scope Guard
+- Do not mix large visual redesign with critical data-flow refactor in one task.
+- Ship incremental, testable slices.
+- If requirements are unclear, default to preserving existing behavior.
+- Remove honor-certification logic and ad-related logic as independent scoped changes.
+
+## Definition of Done (Per Task)
+- Core flow still works end-to-end.
+- No new hardcoded text if i18n path exists.
+- No direct coupling introduced between UI and external service SDK.
+- Non-Pro users generate zero leaderboard Firestore traffic.

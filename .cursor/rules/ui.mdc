@@ -1,0 +1,27 @@
+---
+description: UI system, i18n discipline, and Tailwind-only implementation
+globs: src/components/**/*.tsx,src/pages/**/*.tsx,tailwind.config.ts
+alwaysApply: true
+---
+
+# Up Final UI Rule
+
+## Visual Direction
+- Maintain ultra-minimal dark foundation and high-contrast readability.
+- Keep visual language consistent across cards, charts, and data surfaces.
+- Prefer token-driven consistency over one-off styling.
+
+## Component Discipline
+- Components stay presentational and composable.
+- Move domain logic and side effects to hooks/stores/services.
+- Avoid monolithic components; split by responsibility.
+
+## Styling Constraints
+- Tailwind CSS is the only styling system for components.
+- No inline styles unless there is a strict runtime requirement.
+- Keep tokens and utility patterns aligned with `tailwind.config.ts`.
+
+## i18n Hard Rule
+- Do not hardcode user-facing copy in components.
+- Route all UI copy through i18n key lookup.
+- New features must define and use translation keys from day one.

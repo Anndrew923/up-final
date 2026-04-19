@@ -1,0 +1,23 @@
+# Up Final Blueprint (Global Constitution)
+
+1. Primary workspace is `up-final`; `reference-app`, `reference-app-fitness`, and `lbj-goat-meter` are read-only references.
+2. Business model is fixed:
+   - Core App: one-time purchase unlocks all local features (assessment, 6-axis radar, personal history, widgets).
+   - Pro Service: monthly subscription unlocks leaderboard participation and cloud sync.
+3. Local-first is mandatory:
+   - Arm size and grip strength data must remain fully usable without subscription.
+   - Personal detailed history must not be blocked behind Pro.
+4. Access control is mandatory in `src/logic/core`:
+   - Centralize entitlement checks for core access and Pro access.
+   - Leaderboard actions require valid Pro status.
+5. Firebase cost guardrails are mandatory:
+   - Non-Pro users must not generate Firestore leaderboard read/write traffic.
+   - Leaderboard stores summary data only (best score + minimal profile fields).
+   - Enforce leaderboard caching and write throttling.
+6. Architecture discipline:
+   - Keep separation across `logic` / `services` / `stores` / `hooks` / `components`.
+   - UI stays presentational; business logic and SDK calls stay out of components.
+7. Scoring roadmap:
+   - Preserve existing arm-size scoring.
+   - Add grip-strength scoring.
+   - Radar chart must support six dimensions.

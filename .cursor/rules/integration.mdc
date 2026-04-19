@@ -1,0 +1,35 @@
+---
+description: Firebase and Google integration reuse policy
+globs: src/services/**/*,src/hooks/**/*,src/stores/**/*
+alwaysApply: true
+---
+
+# Up Final Integration Rule (Firebase / Google)
+
+## Reuse-First Policy
+- Prefer reusing proven integration logic from reference projects when compatible.
+- Reuse existing auth/data contract where it reduces risk and effort.
+- Preserve behavior first; optimize structure second.
+- Keep local-first data flows as default for core features.
+
+## Required Refactor Boundaries
+- Move integration code into `src/services/`.
+- Components must not call Firebase/Auth SDK directly.
+- Wrap side effects in service methods with explicit input/output contracts.
+- Entitlement checks must be evaluated before leaderboard service calls.
+
+## Environment and Secrets
+- No hardcoded keys or project config in source files.
+- Use `.env` + `import.meta.env` for runtime configuration.
+- Keep environment names consistent and documented.
+
+## Data Safety
+- Validate write payloads before persistence.
+- Handle empty/null/error states explicitly in service responses.
+- Do not silently swallow integration errors.
+
+## Leaderboard Cost Controls
+- Non-Pro users must not trigger Firestore leaderboard read/write calls.
+- Leaderboard writes must be summary-only and best-score-only updates.
+- Enforce upload throttling per user (for example, max 3 uploads/hour).
+- Enforce leaderboard caching (TTL + background refresh) to reduce repeated reads.
