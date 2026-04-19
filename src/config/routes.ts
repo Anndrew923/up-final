@@ -14,6 +14,7 @@ export const ROUTES = {
   joinArena: '/join-arena' as const,
   leaderboardDebug: '/debug/leaderboard' as const,
   ffmi: '/ffmi' as const,
+  cardio: '/cardio' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

@@ -1,4 +1,5 @@
 import type { ScoreMap } from '../types/scoring';
+import type { CardioInputsPersisted } from '../types/cardioInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
@@ -8,6 +9,7 @@ const STORAGE_KEYS = {
   history: 'up.history',
   physicalProfile: 'up.physicalProfile',
   ffmiDraft: 'up.ffmiDraft',
+  cardioInputs: 'up.cardioInputs',
 } as const;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
@@ -17,6 +19,9 @@ export const LOCAL_PROFILE_CHANGED_EVENT = 'up-final-local-profile-changed';
 export const PHYSICAL_PROFILE_STORAGE_KEY = STORAGE_KEYS.physicalProfile;
 export const LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT = 'up-final-physical-profile-changed';
 
+export const CARDIO_INPUTS_STORAGE_KEY = STORAGE_KEYS.cardioInputs;
+export const LOCAL_CARDIO_INPUTS_CHANGED_EVENT = 'up-final-cardio-inputs-changed';
+
 function notifyProfileObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_PROFILE_CHANGED_EVENT));
@@ -25,6 +30,11 @@ function notifyProfileObservers(): void {
 function notifyPhysicalProfileObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT));
+}
+
+function notifyCardioInputsObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_CARDIO_INPUTS_CHANGED_EVENT));
 }
 
 export interface LocalProfile {
@@ -87,6 +97,22 @@ export function loadFfmiDraft(): FfmiDraft | null {
   return safeParse<FfmiDraft | null>(safeGetItem(STORAGE_KEYS.ffmiDraft), null);
 }
 
+export function saveCardioInputs(inputs: CardioInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.cardioInputs, JSON.stringify(inputs));
+  notifyCardioInputsObservers();
+}
+
+export function loadCardioInputs(): CardioInputsPersisted | null {
+  return safeParse<CardioInputsPersisted | null>(safeGetItem(STORAGE_KEYS.cardioInputs), null);
+}
+
+/** Subscribe for `useSyncExternalStore` / hooks after `saveCardioInputs`. */
+export function subscribeCardioInputs(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_CARDIO_INPUTS_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_CARDIO_INPUTS_CHANGED_EVENT, onChange);
+}
+
 export function saveScores(scores: ScoreMap): void {
   safeSetItem(STORAGE_KEYS.scores, JSON.stringify(scores));
 }
@@ -114,4 +140,5 @@ export function clearLocalData(): void {
   Object.values(STORAGE_KEYS).forEach((key) => safeRemoveItem(key));
   notifyProfileObservers();
   notifyPhysicalProfileObservers();
+  notifyCardioInputsObservers();
 }

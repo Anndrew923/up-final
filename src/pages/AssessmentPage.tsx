@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
-import { clampSixAxisRawInput, SCORE_AXIS_MAX } from '../logic/core/scoring';
+import { calculateSixAxisOverall, clampSixAxisRawInput, SCORE_AXIS_MAX } from '../logic/core/scoring';
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
@@ -18,7 +19,8 @@ export default function AssessmentPage() {
   const { t } = useTranslation();
   const [justSaved, setJustSaved] = useState(false);
   const scores = useScoreStore((s) => s.scores);
-  const overallScore = useScoreStore((s) => s.overallScore);
+  const mergedScores = useMergedScoresFromLocalStores();
+  const displayOverall = useMemo(() => calculateSixAxisOverall(mergedScores), [mergedScores]);
   const setScore = useScoreStore((s) => s.setScore);
   const resetScores = useScoreStore((s) => s.resetScores);
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
@@ -32,8 +34,8 @@ export default function AssessmentPage() {
     addHistoryRecord({
       id: generateLocalId(),
       createdAt: new Date().toISOString(),
-      scores: { ...scores },
-      overallScore,
+      scores: { ...mergedScores },
+      overallScore: displayOverall,
     });
     setJustSaved(true);
   };
@@ -46,6 +48,24 @@ export default function AssessmentPage() {
         </h1>
         <p className="text-sm text-zinc-400">{t('assessment.subtitle', { ns: 'common' })}</p>
         <p className="text-xs text-zinc-500">{t('assessment.localFirstNote', { ns: 'common' })}</p>
+      </section>
+
+      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
+          {t('assessment.cardio.kicker', { ns: 'common' })}
+        </p>
+        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
+          {t('assessment.cardio.title', { ns: 'common' })}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          {t('assessment.cardio.body', { ns: 'common' })}
+        </p>
+        <Link
+          to={ROUTES.cardio}
+          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
+        >
+          {t('assessment.cardio.cta', { ns: 'common' })}
+        </Link>
       </section>
 
       <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
