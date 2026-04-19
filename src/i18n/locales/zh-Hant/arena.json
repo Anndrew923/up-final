@@ -1,0 +1,21 @@
+{
+  "proBadge": "PRO",
+  "activeProBadge": "戰場頻道已連線",
+  "magitekKicker": "魔導上行 · 戰場分部",
+  "joinTitle": "加入戰場",
+  "joinDescription": "訂閱 Pro，解鎖全球天梯、雲端備份與排行榜遙測 — 為像機械般訓練的駕駛員打造。",
+  "proFeatureLeaderboard": "即時全球天梯 — 依維度分片，讀榜含快取以降低 Firestore 成本。",
+  "proFeatureCloudSync": "在你的 Firebase 專案中保留分數與歷史的備份槽（JSON）。",
+  "proFeatureArena": "最佳分數上傳策略與每小時上傳上限，維持成本可控。",
+  "subscribeNow": "啟用 Pro 連結",
+  "restorePurchases": "恢復購買",
+  "restoreSuccess": "已從此裝置還原訂閱狀態。",
+  "restoreEmpty": "找不到已儲存的訂閱快照。",
+  "subscribeSuccess": "Pro 頻道開啟 — 前往天梯。",
+  "coreRequired": "連結戰場前須先擁有 Core 買斷授權。",
+  "featuresTitle": "戰場套件",
+  "disclaimer": "正式環境請接真實商店與後端驗證；此 Web 殼層在擁有 Core 後模擬授權流程。",
+  "coreGateBody": "須先解鎖 Core — 評測、雷達與歷史維持本機優先，無需戰場月費。",
+  "coreGateCta": "回到主控台",
+  "subscribeBlocked": "已連結"
+}

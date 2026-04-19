@@ -13,6 +13,7 @@ export const ROUTES = {
   root: '/' as const,
   joinArena: '/join-arena' as const,
   leaderboardDebug: '/debug/leaderboard' as const,
+  ffmi: '/ffmi' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

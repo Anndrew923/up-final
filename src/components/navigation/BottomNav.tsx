@@ -4,14 +4,17 @@ import { NAV_ITEMS } from '../../config/nav.config';
 import { NavGlyph } from './NavIcons';
 
 /**
- * Bottom tab bar — paths and order from `NAV_ITEMS` (fitness-style icons + blur bar).
+ * Bottom tab bar — paths from `NAV_ITEMS`.
+ * Mirrors reference-app-fitness `BottomNavBar.jsx`: `position: fixed; bottom: 0`,
+ * `height: calc(64px + env(safe-area-inset-bottom))`, `padding-bottom: env(safe-area-inset-bottom)`.
+ * Requires `viewport-fit=cover` in `index.html` so insets apply on Android / iOS WebView.
  */
 export default function BottomNav() {
   const { t } = useTranslation();
 
   return (
     <nav
-      className="flex w-full min-h-[calc(64px+env(safe-area-inset-bottom,0px))] items-stretch justify-around border-t border-accent-info/40 bg-bg-base/85 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-2px_8px_theme(colors.accent.info_/_0.2)] backdrop-blur-md backdrop-saturate-[180%]"
+      className="fixed bottom-0 left-0 right-0 z-50 flex w-screen max-w-[100vw] box-border h-[calc(64px+env(safe-area-inset-bottom,0px))] items-stretch justify-around border-t border-accent-info/40 bg-bg-base/85 pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] shadow-[0_-2px_8px_theme(colors.accent.info_/_0.2)] backdrop-blur-md backdrop-saturate-[180%]"
       aria-label={t('bottomNavAria', { ns: 'common' })}
     >
       {NAV_ITEMS.map((item) => (

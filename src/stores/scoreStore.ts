@@ -9,7 +9,8 @@ function persistWidgetSnapshot(scores: ScoreMap, overallScore: number): void {
 }
 
 /**
- * Persists raw 0–100 per `ScoreMetric`. Six-axis overall ignores `armSize` (see `calculateSixAxisOverall`).
+ * Persists per-axis scores clamped to 0–SCORE_AXIS_MAX (see `logic/core/scoring.ts`; body-fat may exceed 100).
+ * Six-axis overall ignores `armSize` (see `calculateSixAxisOverall`).
  */
 export interface ScoreStore {
   scores: ScoreMap;

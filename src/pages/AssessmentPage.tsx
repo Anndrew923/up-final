@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '../config/routes';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
-import { clampSixAxisRawInput } from '../logic/core/scoring';
+import { clampSixAxisRawInput, SCORE_AXIS_MAX } from '../logic/core/scoring';
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
@@ -46,6 +48,24 @@ export default function AssessmentPage() {
         <p className="text-xs text-zinc-500">{t('assessment.localFirstNote', { ns: 'common' })}</p>
       </section>
 
+      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
+          {t('assessment.ffmi.kicker', { ns: 'common' })}
+        </p>
+        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
+          {t('assessment.ffmi.title', { ns: 'common' })}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          {t('assessment.ffmi.body', { ns: 'common' })}
+        </p>
+        <Link
+          to={ROUTES.ffmi}
+          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
+        >
+          {t('assessment.ffmi.cta', { ns: 'common' })}
+        </Link>
+      </section>
+
       <section className="ui-card space-y-4">
         <h2 className="text-sm font-medium text-zinc-300">
           {t('assessment.rawInputsHeading', { ns: 'common' })}
@@ -60,7 +80,7 @@ export default function AssessmentPage() {
               <input
                 type="number"
                 min={0}
-                max={100}
+                max={SCORE_AXIS_MAX}
                 step={0.5}
                 value={scores[metric] ?? 0}
                 onChange={(e) => onAxisChange(metric, e.target.value)}

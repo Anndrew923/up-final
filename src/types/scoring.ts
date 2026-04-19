@@ -1,6 +1,7 @@
 /**
  * Score storage uses partial maps; **armSize** is optional storage only.
  * **Core six radar + overall** use `SIX_AXIS_METRICS` + linear `calculateSixAxisOverall` (see `logic/core/scoring.ts`).
+ * Per-axis values are clamped to `SCORE_AXIS_MAX` when persisted (body-fat may exceed 100 after FFMI).
  */
 export type ScoreMetric =
   | 'strength'

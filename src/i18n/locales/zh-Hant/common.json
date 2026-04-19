@@ -1,0 +1,207 @@
+{
+  "back": "返回",
+  "cancel": "關閉",
+  "home": {
+    "profile": {
+      "kicker": "身體基準",
+      "title": "身體資料",
+      "subtitle": "作為體重加權、年齡相關計分的參考。僅存於本裝置（Core，不需帳號）。",
+      "completeBadge": "基準已齊 — 後續可接需要身高、體重、年齡、性別的評測換算。",
+      "incompleteHint": "請補齊身體資料，之後評測才能從實測值換算分數。",
+      "gender": "性別",
+      "age": "年齡（歲）",
+      "height": "身高",
+      "heightUnit": "cm",
+      "weight": "體重",
+      "weightUnit": "kg",
+      "selectGender": "請選擇",
+      "genderSheetTitle": "選擇性別",
+      "male": "男",
+      "female": "女",
+      "save": "儲存資料",
+      "saving": "儲存中…",
+      "saved": "已儲存。",
+      "errors": {
+        "required-gender": "請選擇性別。",
+        "required-age": "請填寫年齡。",
+        "required-height": "請填寫身高（cm）。",
+        "required-weight": "請填寫體重（kg）。",
+        "invalid-gender": "性別需為男或女。",
+        "invalid-age": "年齡需介於 13 與 90 歲。",
+        "invalid-height": "身高需介於 120 與 230 cm。",
+        "invalid-weight": "體重需介於 35 與 250 kg。"
+      }
+    }
+  },
+  "ladder": {
+    "redirecting": "正在導向加入戰場…",
+    "kicker": "全球天梯",
+    "title": "即時天梯",
+    "bodyRemote": "已連線至 Firestore — 僅摘要欄位，並搭配快取與最佳分上傳策略。",
+    "bodyLocalMock": "尚未設定 Firebase — 開發環境使用記憶體模擬資料。",
+    "cacheHit": "命中本機工作階段快取（套用 TTL）。",
+    "cacheMiss": "重新抓取（或模擬）— 已更新快取。",
+    "loadError": "無法載入榜單。請檢查規則與索引。",
+    "empty": "此維度尚無資料 — 成為首位上傳者。",
+    "updatedLabel": "更新於",
+    "metrics": {
+      "strength": "力量",
+      "explosivePower": "爆發",
+      "cardio": "心肺",
+      "muscleMass": "肌肉量",
+      "bodyFat": "體脂",
+      "gripStrength": "握力",
+      "armSize": "臂圍"
+    }
+  },
+  "community": {
+    "kicker": "通訊頻道",
+    "title": "社群中繼",
+    "subtitle": "小隊、挑戰與共享任務將由此对接 — 路由已就緒，功能模組下一階段上架。",
+    "card1Title": "訊號格點",
+    "card1Body": "未來：在不上傳本機訓練數據的前提下，提供隊伍頻道、歡呼與精選跑位。",
+    "card2Title": "戰場情資",
+    "card2Body": "與天梯連動仍受 Pro 閘門保護 — 社群本身預設不會在背景自動打遠端。",
+    "ctaHome": "回到主控台",
+    "ctaArena": "開啟天梯"
+  },
+  "tools": {
+    "kicker": "工具甲板",
+    "title": "工具與雲端同步",
+    "subtitle": "備份、語系與未來計算器的輕量甲板 — 精簡、快速、無雜訊。",
+    "moduleConsole": "診斷",
+    "consoleBody": "HUD 校準、延遲探測與開發面板將固定於此槽位；本機優先原則不變。",
+    "moduleLanguage": "語系切換",
+    "languageHint": "在英文與繁體中文之間切換，便於現地測試。",
+    "languageToggle": "切換 EN / 繁中",
+    "syncTitle": "雲端同步",
+    "syncBody": "Pro 可將分數與本機歷史快照至 Firestore（單一文件 JSON 承載）。",
+    "syncProOnly": "雲端同步需要 Pro — 請前往加入戰場取得授權。",
+    "syncBackup": "立即備份至雲端",
+    "syncRestore": "從雲端還原",
+    "syncUpgrade": "解鎖 Pro",
+    "sync": {
+      "backupOk": "已寫入你的 Pro 雲端槽位。",
+      "backupFail": "備份不可用（請確認 Pro、Firebase 與匿名登入）。",
+      "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
+      "restoreEmpty": "尚無雲端快照。",
+      "restoreFail": "還原失敗 — 請確認 Pro、Firebase 設定與網路。"
+    }
+  },
+  "assessment": {
+    "title": "評測",
+    "subtitle": "每軸可輸入 0–200 的原始分（多數手動填寫仍建議 0–100；體脂軸在 FFMI 寫入後可超過 100）。首頁以六軸平均顯示總分。",
+    "localFirstNote": "僅本機：此畫面不連 Firebase。",
+    "rawInputsHeading": "六軸原始輸入",
+    "homeRadarHint": "雷達與總分在首頁。",
+    "saveToHistory": "儲存快照到紀錄",
+    "saveToHistoryDone": "已寫入本機紀錄。",
+    "resetScores": "重設六軸分數",
+    "axis": {
+      "strength": "力量",
+      "explosivePower": "爆發力",
+      "cardio": "心肺",
+      "muscleMass": "肌肉量",
+      "bodyFat": "體脂",
+      "gripStrength": "握力"
+    },
+    "ffmi": {
+      "kicker": "換算",
+      "title": "FFMI（體脂軸）",
+      "body": "依首頁身體資料與體脂％計算；僅當調整後 FFMI 未超過你性別的紀錄級錨點時，才可寫入體脂雷達軸。",
+      "cta": "開啟 FFMI 頁"
+    }
+  },
+  "ffmi": {
+    "kicker": "身體組成",
+    "title": "FFMI 評測",
+    "subtitle": "依首頁已存身體資料（性別、身高、體重）加上體脂％計算。若調整後 FFMI 超過紀錄級錨點，暫不允許寫入雷達，請先修正體脂或資料；未來另規劃雷達「超頻」顯示。",
+    "bodyFatLabel": "體脂率",
+    "bodyFatPlaceholder": "例如 15",
+    "bodyFatUnit": "%",
+    "bodyFatHint": "建議輸入約 3–60%；性別與身高體重取自首頁身體資料。",
+    "calculate": "計算",
+    "resultFfmi": "調整後 FFMI（顯示）",
+    "resultRadarScore": "雷達用分",
+    "radarScoreLockedLabel": "已鎖定",
+    "resultScoreUncapped": "公式原始分（封頂前）",
+    "resultFfmiCapped": "用於給分之 FFMI",
+    "categoryLabel": "區間",
+    "worldRecordLockTitle": "紀錄級 FFMI 上限",
+    "worldRecordLockIntro": "目前調整後 FFMI 超過文獻級／紀錄級錨點，為避免雷達尺度失真，暫無法寫入；請調整體脂率或身體資料至上限內。未來將另提供雷達「超頻」視覺化。",
+    "anchorMale": "男性紀錄級錨點（FFMI {{value}}）。",
+    "anchorFemale": "女性紀錄級錨點（FFMI {{value}}）。",
+    "submitRadar": "寫入雷達（體脂軸）",
+    "submitDone": "已寫入本機 — 首頁雷達將更新。",
+    "viewHomeRadar": "前往首頁雷達",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "errors": {
+      "missing-profile": "身體資料未齊 — 請先在首頁填寫性別、年齡、身高、體重。",
+      "missing-body-fat": "請填寫體脂率。",
+      "invalid-body-fat": "體脂率需介於 3 與 60%。",
+      "need-calculate": "請先按「計算」再儲存。",
+      "world-record-lock": "調整後 FFMI 超過紀錄級錨點 — 請先調整體脂或身體資料後再寫入雷達。"
+    },
+    "info": {
+      "whatIsTitle": "FFMI 是什麼？",
+      "whatIsIntro": "FFMI（無脂肪質量指數）在同身高下結合體脂，評估肌肉量表現，通常比單看 BMI 更有訓練參考意義；數值越高多半代表去脂體重相對較高。下列情境容易造成結果失真：",
+      "caveats": {
+        "tall": "身高顯著高於平均（例如 ≥190 cm）；本頁公式對身高超過 1.8 m 另有調整項。",
+        "highFat": "體脂率顯著高於一般填報區間時，對脂肪與淨重的拆解較敏感。",
+        "heavy": "相對於身高，體重偏高時，對估算脂肪以外的質量影響較大。"
+      }
+    },
+    "table": {
+      "sectionTitle": "FFMI 對照區間",
+      "sectionHint": "區間為衛教／對照用途，不作醫療診斷或藥物判讀。",
+      "genderMale": "男性",
+      "genderFemale": "女性",
+      "columns": {
+        "range": "FFMI 範圍",
+        "evaluation": "區間說明"
+      },
+      "rangeMale": {
+        "r16_17": "16 – 17",
+        "r18_19": "18 – 19",
+        "r20_21": "20 – 21",
+        "r22": "22",
+        "r23_25": "23 – 25",
+        "r26_27": "26 – 27",
+        "r28_30": "28 – 30"
+      },
+      "rangeFemale": {
+        "r13_14": "13 – 14",
+        "r15_16": "15 – 16",
+        "r17_18": "17 – 18",
+        "r19_21": "19 – 21",
+        "r22plus": "> 22"
+      }
+    },
+    "category": {
+      "male": {
+        "r16_17": "肌肉量偏低",
+        "r18_19": "運動員入門",
+        "r20_21": "訓練者區間",
+        "r22": "強健業餘高段",
+        "r23_25": "進階自然天花板帶",
+        "r26_27": "極高表現",
+        "r28_30": "極端離群區間"
+      },
+      "female": {
+        "r13_14": "肌肉量偏低",
+        "r15_16": "運動員入門",
+        "r17_18": "訓練者區間",
+        "r19_21": "強健業餘高段",
+        "r22plus": "極高表現"
+      }
+    }
+  },
+  "navbar": {
+    "community": "社群",
+    "home": "首頁",
+    "assessment": "評測",
+    "ladder": "天梯",
+    "history": "紀錄",
+    "tools": "工具"
+  }
+}

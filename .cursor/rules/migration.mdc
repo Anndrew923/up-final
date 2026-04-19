@@ -8,6 +8,9 @@ alwaysApply: true
 
 ## Migration Strategy
 - Migrate in phases: `P0 -> P1 -> P2`.
+
+### Named feature phases (do not confuse with P0/P1/P2 tiers)
+- **Phase 1 — Physical baseline (Home)** is **documented only** in `docs/PHASE1_PHYSICAL_BASELINE.md`: body fields on Home, local persistence, i18n for that surface. It is **not** the same as migration tier **P1** below (subscription/cloud/scoring alignment).
 - Every task must be tagged as one of:
   - `reuse` (along with existing implementation)
   - `refactor` (restructure while preserving intent)

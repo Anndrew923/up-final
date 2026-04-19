@@ -79,7 +79,8 @@ describe('core six dimensions (linear)', () => {
   });
 
   it('clampScoreMapValue bounds input', () => {
-    expect(clampScoreMapValue(150)).toBe(100);
+    expect(clampScoreMapValue(150)).toBe(150);
+    expect(clampScoreMapValue(250)).toBe(200);
     expect(clampScoreMapValue(-5)).toBe(0);
   });
 });

@@ -1,8 +1,21 @@
 {
   "proBadge": "PRO",
-  "joinTitle": "Join Arena",
-  "joinDescription": "Unlock leaderboard and cloud sync with Pro service.",
-  "proFeatureLeaderboard": "Global leaderboard access",
-  "proFeatureCloudSync": "Cloud backup and restore",
-  "subscribeNow": "Subscribe now"
+  "activeProBadge": "Arena access active",
+  "magitekKicker": "Magitek uplink · Arena division",
+  "joinTitle": "Join the Arena",
+  "joinDescription": "Subscribe to Pro for global ladders, cloud backup, and ranked telemetry — built for pilots who train like machines.",
+  "proFeatureLeaderboard": "Live global ladders — shard by metric, cached reads for lower Firestore cost.",
+  "proFeatureCloudSync": "Encrypted-at-rest style backup slot for scores & history on your Firebase project.",
+  "proFeatureArena": "Rank telemetry with best-score-only uploads and hourly upload caps.",
+  "subscribeNow": "Activate Pro link",
+  "restorePurchases": "Restore purchases",
+  "restoreSuccess": "Subscription state restored from this device.",
+  "restoreEmpty": "No saved subscription snapshot found on device.",
+  "subscribeSuccess": "Pro channel opening — heading to ladder.",
+  "coreRequired": "Own the Core app unlock before Arena uplink can bind.",
+  "featuresTitle": "Arena uplink bundle",
+  "disclaimer": "Billing UI ties to your storefront in production builds; this web shell simulates entitlement after Core ownership.",
+  "coreGateBody": "Core unlock is required — assessment, radar, and history stay local-first without Arena fees.",
+  "coreGateCta": "Return to console",
+  "subscribeBlocked": "Already linked"
 }

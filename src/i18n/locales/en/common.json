@@ -1,5 +1,6 @@
 {
   "back": "Back",
+  "cancel": "Cancel",
   "shellTitle": "UP Final P0 Shell",
   "shellSubtitle": "Core access and leaderboard guard check",
   "setCoreOwned": "Set Core Owned",
@@ -55,6 +56,36 @@
   "placeholderPath": "Route: {{path}}",
   "placeholderBackHome": "Back to home",
   "home": {
+    "profile": {
+      "kicker": "Body baseline",
+      "title": "Physical profile",
+      "subtitle": "Used as the reference for body-weight and age-based scoring. Stored on this device (Core, no account required).",
+      "completeBadge": "Baseline complete — ready for assessment inputs that use height, weight, age, and gender.",
+      "incompleteHint": "Add your body data so later assessments can convert real metrics to scores.",
+      "gender": "Gender",
+      "age": "Age (years)",
+      "height": "Height",
+      "heightUnit": "cm",
+      "weight": "Weight",
+      "weightUnit": "kg",
+      "selectGender": "Select",
+      "genderSheetTitle": "Choose gender",
+      "male": "Male",
+      "female": "Female",
+      "save": "Save profile",
+      "saving": "Saving…",
+      "saved": "Profile saved.",
+      "errors": {
+        "required-gender": "Please select a gender.",
+        "required-age": "Please enter your age.",
+        "required-height": "Please enter your height (cm).",
+        "required-weight": "Please enter your weight (kg).",
+        "invalid-gender": "Gender must be male or female.",
+        "invalid-age": "Age must be between 13 and 90.",
+        "invalid-height": "Height must be between 120 and 230 cm.",
+        "invalid-weight": "Weight must be between 35 and 250 kg."
+      }
+    },
     "consoleKicker": "Main console",
     "radarOverview": "Ability radar",
     "radarCompletion": "Progress: {{count}} / {{total}} axes",
@@ -75,9 +106,59 @@
   "ladder": {
     "redirecting": "Redirecting to Join Arena…",
     "kicker": "Global arena",
-    "title": "Leaderboard access",
-    "body": "You have Core + Pro access. Full live rankings and sync continue in Phase 1 — this screen confirms your gate only.",
-    "noNetworkNote": "This page does not load leaderboard data or call Firebase. Zero remote traffic."
+    "title": "Live ladder",
+    "body": "You have Core + Pro access. Rankings load through the leaderboard service.",
+    "bodyRemote": "Connected to Firestore — summary rows only, with client cache + best-score writes.",
+    "bodyLocalMock": "Firebase env not set — showing in-memory mock data for development.",
+    "noNetworkNote": "Non-Pro accounts never hit Firestore from this route.",
+    "cacheHit": "Serving from local session cache (TTL applies).",
+    "cacheMiss": "Fresh fetch (or mock) — cache updated.",
+    "loadError": "Could not load rankings. Check Firebase rules and indexes.",
+    "empty": "No pilots on this shard yet — be the first upload.",
+    "updatedLabel": "Updated",
+    "metrics": {
+      "strength": "Strength",
+      "explosivePower": "Explosive",
+      "cardio": "Cardio",
+      "muscleMass": "Muscle",
+      "bodyFat": "Body fat",
+      "gripStrength": "Grip",
+      "armSize": "Arm size"
+    }
+  },
+  "community": {
+    "kicker": "Recon channel",
+    "title": "Community uplink",
+    "subtitle": "Squads, challenges, and shared missions will dock here — the route is live, feature modules ship next.",
+    "card1Title": "Signal lattice",
+    "card1Body": "Future: crew channels, shoutouts, and spotlight runs without touching your local training data.",
+    "card2Title": "Arena intel",
+    "card2Body": "Tie-ins to ladders stay Pro-gated — Community itself never phones home until you explicitly share.",
+    "ctaHome": "Back to console",
+    "ctaArena": "Open ladder"
+  },
+  "tools": {
+    "kicker": "Utility deck",
+    "title": "Tools & cloud sync",
+    "subtitle": "Assist systems for backup, locale, and future calculators — minimal, fast, no noise.",
+    "moduleConsole": "Diagnostics",
+    "consoleBody": "HUD calibration, latency probes, and dev panels will anchor in this slot. Local-first stays default.",
+    "moduleLanguage": "Language lattice",
+    "languageHint": "Flip between English and Traditional Chinese for field tests.",
+    "languageToggle": "Switch EN / 繁中",
+    "syncTitle": "Cloud sync",
+    "syncBody": "Pro subscribers can snapshot scores + local history to Firestore (single document, JSON payload).",
+    "syncProOnly": "Cloud sync requires Pro — open Join Arena if you need the uplink.",
+    "syncBackup": "Backup to cloud now",
+    "syncRestore": "Restore from cloud",
+    "syncUpgrade": "Unlock Pro",
+    "sync": {
+      "backupOk": "Backup written to your Pro cloud slot.",
+      "backupFail": "Backup unavailable (check Pro + Firebase + anonymous auth).",
+      "restoreOk": "Local scores and history replaced from cloud snapshot.",
+      "restoreEmpty": "No cloud snapshot found yet.",
+      "restoreFail": "Restore failed — verify Pro, Firebase config, and network."
+    }
   },
   "history": {
     "kicker": "Local archive",
@@ -98,7 +179,7 @@
   },
   "assessment": {
     "title": "Assessment",
-    "subtitle": "Enter raw scores 0–100 for each core dimension. Totals update on Home (linear average ÷ 6).",
+    "subtitle": "Enter raw scores per axis (0–200; typical manual entry stays 0–100; body-fat may exceed 100 after FFMI). Totals update on Home (linear average ÷ 6).",
     "localFirstNote": "Core-only: scores stay on device — no Firebase on this screen.",
     "rawInputsHeading": "Core six inputs",
     "homeRadarHint": "Radar and overall average are shown on Home.",
@@ -112,6 +193,96 @@
       "muscleMass": "Muscle mass",
       "bodyFat": "Body fat",
       "gripStrength": "Grip strength"
+    },
+    "ffmi": {
+      "kicker": "Calculated",
+      "title": "FFMI (body-fat axis)",
+      "body": "Compute FFMI from Home profile + body fat %. Radar accepts the score only while adjusted FFMI is at or below the world-record anchor for your sex.",
+      "cta": "Open FFMI page"
+    }
+  },
+  "ffmi": {
+    "kicker": "Body composition",
+    "title": "FFMI assessment",
+    "subtitle": "Fat-free mass index from your saved physical profile plus body-fat %. If adjusted FFMI exceeds the documented world-record anchor for your sex, saving to the radar is blocked until you adjust inputs — future versions may add an overclock visualization.",
+    "bodyFatLabel": "Body fat percentage",
+    "bodyFatPlaceholder": "e.g. 15",
+    "bodyFatUnit": "%",
+    "bodyFatHint": "Reasonable inputs are about 3–60%. Uses height, weight, and gender from Home.",
+    "calculate": "Calculate",
+    "resultFfmi": "Adjusted FFMI (display)",
+    "resultRadarScore": "Radar score",
+    "radarScoreLockedLabel": "Locked",
+    "resultScoreUncapped": "Formula score before cap",
+    "resultFfmiCapped": "FFMI used for radar score",
+    "categoryLabel": "Band",
+    "worldRecordLockTitle": "World-record FFMI ceiling",
+    "worldRecordLockIntro": "Your adjusted FFMI is above the documented elite-record anchor for your sex. The radar cannot plot this run yet — change body fat or profile data until you are at or below the limit. A dedicated overclock mode for the chart is planned.",
+    "anchorMale": "Male world-record anchor (FFMI {{value}}).",
+    "anchorFemale": "Female world-record anchor (FFMI {{value}}).",
+    "submitRadar": "Write score to radar (body fat axis)",
+    "submitDone": "Stored locally — radar on Home updates.",
+    "viewHomeRadar": "Open Home radar",
+    "ctaProfile": "Fill physical profile on Home",
+    "errors": {
+      "missing-profile": "Physical profile incomplete — add gender, age, height, and weight on Home first.",
+      "missing-body-fat": "Enter body fat percentage.",
+      "invalid-body-fat": "Body fat must be between 3 and 60%.",
+      "need-calculate": "Calculate once before saving.",
+      "world-record-lock": "Adjusted FFMI is above the world-record anchor — adjust body fat or profile before writing to the radar."
+    },
+    "info": {
+      "whatIsTitle": "What is FFMI?",
+      "whatIsIntro": "FFMI (Fat-Free Mass Index) reflects lean mass versus height and body fat — often more informative than BMI alone for training context. Higher values generally mean more fat-free mass among people with similar height. Results can skew when:",
+      "caveats": {
+        "tall": "Height is far above average (around ≥190 cm). This app applies a tall correction above 1.8 m.",
+        "highFat": "Body fat percentage is unusually high relative to typical reporting ranges.",
+        "heavy": "Body weight is unusually high for height, which affects estimated fat-free mass."
+      }
+    },
+    "table": {
+      "sectionTitle": "FFMI reference bands",
+      "sectionHint": "Bands are educational labels only — not a medical or PED diagnosis.",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "columns": {
+        "range": "FFMI range",
+        "evaluation": "Band"
+      },
+      "rangeMale": {
+        "r16_17": "16 – 17",
+        "r18_19": "18 – 19",
+        "r20_21": "20 – 21",
+        "r22": "22",
+        "r23_25": "23 – 25",
+        "r26_27": "26 – 27",
+        "r28_30": "28 – 30"
+      },
+      "rangeFemale": {
+        "r13_14": "13 – 14",
+        "r15_16": "15 – 16",
+        "r17_18": "17 – 18",
+        "r19_21": "19 – 21",
+        "r22plus": "> 22"
+      }
+    },
+    "category": {
+      "male": {
+        "r16_17": "Below average muscle expression",
+        "r18_19": "Athletic baseline",
+        "r20_21": "Trained lifter range",
+        "r22": "Strong recreational upper range",
+        "r23_25": "Advanced natural ceiling band",
+        "r26_27": "Very high expression",
+        "r28_30": "Extreme outlier band"
+      },
+      "female": {
+        "r13_14": "Below average muscle expression",
+        "r15_16": "Athletic baseline",
+        "r17_18": "Trained lifter range",
+        "r19_21": "Strong recreational upper range",
+        "r22plus": "Very high expression"
+      }
     }
   },
   "navbar": {

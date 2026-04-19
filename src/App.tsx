@@ -5,39 +5,39 @@ import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
 import AssessmentPage from './pages/AssessmentPage';
+import CommunityPage from './pages/CommunityPage';
 import HistoryPage from './pages/HistoryPage';
 import HomePage from './pages/HomePage';
 import LadderPage from './pages/LadderPage';
 import JoinArenaPage from './pages/JoinArenaPage';
 import LeaderboardDebugPage from './pages/LeaderboardDebugPage';
 import PlaceholderPage from './pages/PlaceholderPage';
-import { useEntitlementStore } from './stores/entitlementStore';
+import ToolsPage from './pages/ToolsPage';
+import FfmiPage from './pages/FfmiPage';
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
+  community: CommunityPage,
   home: HomePage,
   assessment: AssessmentPage,
   ladder: LadderPage,
   history: HistoryPage,
+  tools: ToolsPage,
 };
 
 function JoinArenaRoute() {
   const navigate = useNavigate();
-  const setSubscriptionStatus = useEntitlementStore((state) => state.setSubscriptionStatus);
 
-  return (
-    <JoinArenaPage
-      onSubscribe={() => {
-        setSubscriptionStatus('pro');
-        navigate(ROUTES.home);
-      }}
-      onBack={() => navigate(-1)}
-    />
-  );
+  return <JoinArenaPage onBack={() => navigate(-1)} />;
 }
 
 function LeaderboardDebugRoute() {
   const navigate = useNavigate();
   return <LeaderboardDebugPage onBack={() => navigate(-1)} />;
+}
+
+function FfmiRoute() {
+  const navigate = useNavigate();
+  return <FfmiPage onBack={() => navigate(-1)} />;
 }
 
 export default function App() {
@@ -60,6 +60,7 @@ export default function App() {
           path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
           element={<LeaderboardDebugRoute />}
         />
+        <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

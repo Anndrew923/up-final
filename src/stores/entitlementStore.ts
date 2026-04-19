@@ -1,5 +1,9 @@
 import { create } from 'zustand';
 import { hasProAccess } from '../logic/core/entitlement';
+import {
+  loadPersistedEntitlement,
+  savePersistedEntitlement,
+} from '../services/entitlementPersistenceService';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
 export interface EntitlementStore extends EntitlementState {
@@ -11,7 +15,7 @@ export interface EntitlementStore extends EntitlementState {
   resetEntitlement(): void;
 }
 
-const initialState: EntitlementState = {
+const defaultState: EntitlementState = {
   purchaseStatus: 'none',
   subscriptionStatus: 'free',
   isPro: false,
@@ -19,6 +23,15 @@ const initialState: EntitlementState = {
   planId: null,
   lastCheckedAt: null,
 };
+
+function buildInitialEntitlement(): EntitlementState {
+  const persisted = loadPersistedEntitlement();
+  const merged: EntitlementState = {
+    ...defaultState,
+    ...(persisted ?? {}),
+  };
+  return syncProFlag(normalizeGraceExpiry(merged));
+}
 
 /** Align `isPro` with core `hasProAccess` (grace requires valid `proExpiresAt`). */
 function syncProFlag(state: EntitlementState): EntitlementState {
@@ -34,7 +47,7 @@ function normalizeGraceExpiry(state: EntitlementState): EntitlementState {
 }
 
 export const useEntitlementStore = create<EntitlementStore>((set) => ({
-  ...initialState,
+  ...buildInitialEntitlement(),
   hydrateEntitlement(payload) {
     set((state) => {
       const merged: EntitlementState = {
@@ -89,6 +102,10 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     );
   },
   resetEntitlement() {
-    set(initialState);
+    set(syncProFlag(normalizeGraceExpiry({ ...defaultState })));
   },
 }));
+
+useEntitlementStore.subscribe((state) => {
+  savePersistedEntitlement(state);
+});

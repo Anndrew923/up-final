@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { submitLeaderboardScore } from '../leaderboardService';
+import { listLeaderboard, submitLeaderboardScore } from '../leaderboardService';
 import type { EntitlementState } from '../../types/entitlement';
 
 function ownedFreeEntitlement(): EntitlementState {
@@ -25,6 +25,16 @@ function ownedProEntitlement(): EntitlementState {
 }
 
 describe('leaderboard service guards', () => {
+  it('blocks list leaderboard for non-pro before cache or remote', async () => {
+    const result = await listLeaderboard({
+      entitlement: ownedFreeEntitlement(),
+      metric: 'armSize',
+      page: 1,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('pro-required');
+  });
+
   it('returns pro-required without firestore calls for non-pro', async () => {
     const result = await submitLeaderboardScore({
       entitlement: ownedFreeEntitlement(),

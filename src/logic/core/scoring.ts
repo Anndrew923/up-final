@@ -345,9 +345,15 @@ export function normalizeScore(value: number, min = 0, max = 100): number {
   return round2(clamped);
 }
 
-/** Every `ScoreMap` entry is stored as raw 0–100 (including `armSize`). */
+/**
+ * Per-axis stored ceiling — allows limit-break FFMI scores (e.g. ~165 at male cap 38)
+ * without forcing the radar clamp to flatten at 100.
+ */
+export const SCORE_AXIS_MAX = 200;
+
+/** Every `ScoreMap` entry is clamped to 0–`SCORE_AXIS_MAX` (including `armSize`). */
 export function clampScoreMapValue(value: number): number {
-  return normalizeScore(value, 0, 100);
+  return normalizeScore(value, 0, SCORE_AXIS_MAX);
 }
 
 /** Raw input clamp for forms (same as persisted map values). */

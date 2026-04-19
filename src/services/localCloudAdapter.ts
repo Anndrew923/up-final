@@ -1,5 +1,14 @@
-import type { LocalHistoryRecord } from './localStorageService';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { hasProAccess } from '../logic/core/entitlement';
+import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
+import { ensureFirebaseAuthReady, getFirestoreDb } from './firebaseClient';
+import {
+  USER_ARTIFACTS_COLLECTION,
+  USER_CLOUD_COLLECTION,
+  USER_CLOUD_DOC_ID,
+} from './firestorePaths';
+import type { LocalHistoryRecord } from './localStorageService';
 
 export interface CloudBackupPayload {
   scores: ScoreMap;
@@ -24,3 +33,54 @@ export const noopLocalCloudAdapter: LocalCloudAdapter = {
     return null;
   },
 };
+
+/**
+ * Pro + configured Firebase → Firestore document `users/{uid}/artifacts/up_cloud_sync_v1`.
+ */
+export function getCloudAdapterForEntitlement(ent: EntitlementState): LocalCloudAdapter {
+  const db = getFirestoreDb();
+
+  if (!db || !hasProAccess(ent)) {
+    return noopLocalCloudAdapter;
+  }
+
+  return {
+    async isAvailable() {
+      return Boolean(getFirestoreDb()) && hasProAccess(ent);
+    },
+    async backup(payload: CloudBackupPayload) {
+      const dbx = getFirestoreDb();
+      if (!dbx || !hasProAccess(ent)) return;
+      const uid = await ensureFirebaseAuthReady();
+      if (!uid) {
+        throw new Error('cloud-auth-missing');
+      }
+      await setDoc(
+        doc(dbx, USER_CLOUD_COLLECTION, uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID),
+        {
+          json: JSON.stringify(payload),
+          updatedAt: payload.updatedAt,
+        },
+        { merge: true }
+      );
+    },
+    async restore() {
+      const dbx = getFirestoreDb();
+      if (!dbx || !hasProAccess(ent)) return null;
+      const uid = await ensureFirebaseAuthReady();
+      if (!uid) return null;
+      const snap = await getDoc(
+        doc(dbx, USER_CLOUD_COLLECTION, uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID)
+      );
+      if (!snap.exists()) return null;
+      const data = snap.data() as { json?: unknown };
+      const raw = data.json;
+      if (typeof raw !== 'string') return null;
+      try {
+        return JSON.parse(raw) as CloudBackupPayload;
+      } catch {
+        return null;
+      }
+    },
+  };
+}

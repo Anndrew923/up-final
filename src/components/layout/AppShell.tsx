@@ -10,7 +10,8 @@ export interface AppShellProps {
 
 /**
  * Phase 1 shell — three-layer layout contract (see `docs/PHASE0_SHELL_SPEC.md`).
- * HUD + Dock: avatar + bottom nav from `NAV_ITEMS`.
+ * HUD in `layer-shell-frame`; bottom nav is a **sibling** `fixed bottom-0` bar (aligned with
+ * reference-app-fitness `BottomNavBar.jsx` APK behavior — avoids WebView clipping / inset bugs).
  */
 export const AppShell: FC<AppShellProps> = ({ children }) => {
   return (
@@ -30,15 +31,14 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       <div
         id="layer-shell-frame"
-        className="pointer-events-none fixed inset-0 z-[2] flex flex-col justify-between"
+        className="pointer-events-none fixed inset-0 z-[40] flex flex-col justify-start"
       >
         <div className="shell-hud-slot pointer-events-auto flex min-h-14 shrink-0 items-center px-4 pt-[env(safe-area-inset-top,0px)]">
           <HudAvatar />
         </div>
-        <div className="shell-dock-slot pointer-events-auto mt-auto w-full shrink-0">
-          <BottomNav />
-        </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 };
