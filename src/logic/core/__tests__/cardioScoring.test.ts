@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { CardioInputsPersisted } from '../../../types/cardioInputs';
 import type { PhysicalProfile } from '../../../types/userProfile';
 import {
+  COOPER_MAX_DISTANCE_FEMALE_METERS,
+  COOPER_MAX_DISTANCE_MALE_METERS,
   calculate5KmScore,
   calculateCooperScore,
   mergeScoreMapWithResolvedCardio,
@@ -34,6 +36,34 @@ describe('calculateCooperScore', () => {
       calculateCooperScore({ distanceMeters: 0, age: 25, gender: 'male' })
     ).toBe(0);
   });
+
+  it(`caps male distance at ${COOPER_MAX_DISTANCE_MALE_METERS} m`, () => {
+    const atCap = calculateCooperScore({
+      distanceMeters: COOPER_MAX_DISTANCE_MALE_METERS,
+      age: 25,
+      gender: 'male',
+    });
+    const beyond = calculateCooperScore({
+      distanceMeters: COOPER_MAX_DISTANCE_MALE_METERS + 800,
+      age: 25,
+      gender: 'male',
+    });
+    expect(beyond).toBe(atCap);
+  });
+
+  it(`caps female distance at ${COOPER_MAX_DISTANCE_FEMALE_METERS} m`, () => {
+    const atCap = calculateCooperScore({
+      distanceMeters: COOPER_MAX_DISTANCE_FEMALE_METERS,
+      age: 25,
+      gender: 'female',
+    });
+    const beyond = calculateCooperScore({
+      distanceMeters: COOPER_MAX_DISTANCE_FEMALE_METERS + 500,
+      age: 25,
+      gender: 'female',
+    });
+    expect(beyond).toBe(atCap);
+  });
 });
 
 describe('calculate5KmScore', () => {
@@ -52,6 +82,19 @@ describe('calculate5KmScore', () => {
 });
 
 describe('resolveCardioScoreForDisplay', () => {
+  it('applies Cooper distance cap when resolving from stored inputs', () => {
+    const inputs: CardioInputsPersisted = {
+      cardio: { distance: COOPER_MAX_DISTANCE_MALE_METERS + 1000 },
+    };
+    const capped = resolveCardioScoreForDisplay(maleProfile, inputs);
+    const expected = calculateCooperScore({
+      distanceMeters: COOPER_MAX_DISTANCE_MALE_METERS,
+      age: maleProfile.age,
+      gender: maleProfile.gender,
+    });
+    expect(capped).toBe(expected);
+  });
+
   it('prefers Cooper when distance and profile are valid', () => {
     const inputs: CardioInputsPersisted = {
       cardio: { distance: 2600 },

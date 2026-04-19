@@ -205,6 +205,12 @@
       "title": "Cardio (Cooper / 5 km)",
       "body": "12-minute Cooper test with age- and sex-based standards, or 5 km time (20 min → 100+; 45 min → 0). Raw inputs are stored locally; the radar prefers Cooper when a valid distance is saved.",
       "cta": "Open cardio assessment"
+    },
+    "muscle": {
+      "kicker": "Body composition",
+      "title": "Muscle mass (SMM)",
+      "body": "Skeletal muscle mass (kg) versus your saved weight, age, and sex — same norm tables as the reference app; final score is the simple average of the SMM and SM% branch scores. Saved SMM updates the muscle radar axis locally.",
+      "cta": "Open muscle assessment"
     }
   },
   "cardio": {
@@ -216,7 +222,8 @@
     "tabsAria": "Cardio test type",
     "cooperDistanceLabel": "12-minute run distance (meters)",
     "cooperPlaceholder": "e.g. 2600",
-    "cooperHint": "Run on a track or measure with GPS. Scoring uses the same age/sex tables as the reference app.",
+    "cooperHint": "Run on a track or measure with GPS. Model ceiling aligned with elite 5,000 m standards: {{maleCap}} m (male), {{femaleCap}} m (female); scores cap above that.",
+    "cooperWorldRecordCapHint": "That distance exceeds our model ceiling for elite 5,000 m–class performance ({{capMeters}} m for your profile). Scoring uses the capped distance.",
     "cooperInfo": {
       "toggleExpand": "Show details",
       "toggleCollapse": "Hide details",
@@ -242,6 +249,32 @@
       "invalid-cooper-distance": "Enter a positive distance in meters.",
       "cooper-no-standard": "No Cooper table for this age range — check the age on your profile (13+).",
       "invalid-5km-time": "Enter a valid 5 km time (minutes and/or seconds)."
+    }
+  },
+  "muscle": {
+    "kicker": "Body composition",
+    "title": "Muscle mass assessment",
+    "subtitle": "Enter skeletal muscle mass (SMM, kg) from a scale or scan. Scoring uses the same age- and sex-based norm tables as the reference implementation.",
+    "smmLabel": "Skeletal muscle mass (SMM, kg)",
+    "smmPlaceholder": "e.g. 32.5",
+    "smmHint": "Uses weight, age, and sex from your Home physical profile. Norm tables support ages roughly 10–80; this app’s profile starts at 13, and ages above 80 are out of table range.",
+    "metaWeight": "Weight: {{value}} kg",
+    "metaAge": "Age: {{value}}",
+    "metaGender": "Sex: {{value}}",
+    "smmCeilingLine": "Accepted SMM for scoring: up to {{max}} kg for your sex (male cap ~ Ronnie Coleman–class public numbers; female cap ~ top-tier pro stage).",
+    "previewLabel": "Preview score",
+    "breakdownLine": "SMM score: {{smmScore}} · SM%: {{smPct}} · SM% score: {{smPctScore}}",
+    "calculate": "Calculate",
+    "submitRadar": "Save to radar (muscle axis)",
+    "submitDone": "Saved — Home radar and merged scores use this muscle axis.",
+    "profileIncompleteHint": "Muscle scoring needs a complete Home profile (sex, age, height, weight).",
+    "ctaProfile": "Open Home profile",
+    "errors": {
+      "missing-profile": "Add a complete physical profile on Home first.",
+      "invalid-smm": "Enter a positive SMM in kilograms.",
+      "age-out-of-range": "No muscle norm table for this age (supported through 80). Check the age on your profile.",
+      "smm-exceeds-ceiling": "SMM is above the model ceiling ({{max}} kg). We cap male inputs around Ronnie Coleman–class public composition levels and female inputs around elite pro stage ranges. Enter {{max}} kg or lower to calculate and save — double-check your device reading if this looks wrong.",
+      "standards-not-found": "Could not resolve norm rows — verify age and sex on Home."
     }
   },
   "ffmi": {

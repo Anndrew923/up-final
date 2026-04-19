@@ -15,6 +15,7 @@ export const ROUTES = {
   leaderboardDebug: '/debug/leaderboard' as const,
   ffmi: '/ffmi' as const,
   cardio: '/cardio' as const,
+  muscle: '/muscle' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

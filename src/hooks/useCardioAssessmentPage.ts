@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  COOPER_MAX_DISTANCE_FEMALE_METERS,
+  COOPER_MAX_DISTANCE_MALE_METERS,
+  getCooperMaxDistanceMetersForGender,
   parse5KmFieldSplit,
   parseCooperDistanceMeters,
   tryComputeCardioAssessmentScore,
@@ -22,6 +25,10 @@ export type CardioPageErrorKey = CardioAssessmentComputeError | null;
 
 export interface UseCardioAssessmentPageResult {
   profileReady: boolean;
+  /** Cooper tab only: parsed distance exceeds world-record-aligned model ceiling. */
+  cooperDistanceOverCap: boolean;
+  cooperCapMeters: number | null;
+  cooperHintCaps: { maleCap: number; femaleCap: number };
   activeTab: CardioTab;
   setActiveTab: (t: CardioTab) => void;
   distanceInput: string;
@@ -78,6 +85,15 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
   const [errorKey, setErrorKey] = useState<CardioPageErrorKey>(null);
 
   const profileReady = isPhysicalProfileComplete(profile);
+
+  const cooperCapMeters =
+    profileReady && profile ? getCooperMaxDistanceMetersForGender(profile.gender) : null;
+  const cooperParsed = parseCooperDistanceMeters(distanceInput);
+  const cooperDistanceOverCap =
+    activeTab === 'cooper' &&
+    cooperCapMeters !== null &&
+    cooperParsed !== null &&
+    cooperParsed > cooperCapMeters;
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -148,9 +164,11 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
         setErrorKey('invalid-cooper-distance');
         return;
       }
+      const maxM = getCooperMaxDistanceMetersForGender(profile!.gender);
+      const savedDistance = Math.min(d, maxM);
       saveCardioInputs({
         ...prev,
-        cardio: { distance: d },
+        cardio: { distance: savedDistance },
       });
       setStoreScore('cardio', scoreToSave);
       setSubmitDone(true);
@@ -186,6 +204,12 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
 
   return {
     profileReady,
+    cooperDistanceOverCap,
+    cooperCapMeters,
+    cooperHintCaps: {
+      maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
+      femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
+    },
     activeTab,
     setActiveTab,
     distanceInput,

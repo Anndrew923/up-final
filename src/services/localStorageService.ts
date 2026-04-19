@@ -1,5 +1,6 @@
 import type { ScoreMap } from '../types/scoring';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
+import type { MuscleInputsPersisted } from '../types/muscleInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
@@ -10,6 +11,7 @@ const STORAGE_KEYS = {
   physicalProfile: 'up.physicalProfile',
   ffmiDraft: 'up.ffmiDraft',
   cardioInputs: 'up.cardioInputs',
+  muscleInputs: 'up.muscleInputs',
 } as const;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
@@ -21,6 +23,9 @@ export const LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT = 'up-final-physical-profile-c
 
 export const CARDIO_INPUTS_STORAGE_KEY = STORAGE_KEYS.cardioInputs;
 export const LOCAL_CARDIO_INPUTS_CHANGED_EVENT = 'up-final-cardio-inputs-changed';
+
+export const MUSCLE_INPUTS_STORAGE_KEY = STORAGE_KEYS.muscleInputs;
+export const LOCAL_MUSCLE_INPUTS_CHANGED_EVENT = 'up-final-muscle-inputs-changed';
 
 function notifyProfileObservers(): void {
   if (typeof window === 'undefined') return;
@@ -35,6 +40,11 @@ function notifyPhysicalProfileObservers(): void {
 function notifyCardioInputsObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_CARDIO_INPUTS_CHANGED_EVENT));
+}
+
+function notifyMuscleInputsObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_MUSCLE_INPUTS_CHANGED_EVENT));
 }
 
 export interface LocalProfile {
@@ -113,6 +123,21 @@ export function subscribeCardioInputs(onChange: () => void): () => void {
   return () => window.removeEventListener(LOCAL_CARDIO_INPUTS_CHANGED_EVENT, onChange);
 }
 
+export function saveMuscleInputs(inputs: MuscleInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.muscleInputs, JSON.stringify(inputs));
+  notifyMuscleInputsObservers();
+}
+
+export function loadMuscleInputs(): MuscleInputsPersisted | null {
+  return safeParse<MuscleInputsPersisted | null>(safeGetItem(STORAGE_KEYS.muscleInputs), null);
+}
+
+export function subscribeMuscleInputs(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_MUSCLE_INPUTS_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_MUSCLE_INPUTS_CHANGED_EVENT, onChange);
+}
+
 export function saveScores(scores: ScoreMap): void {
   safeSetItem(STORAGE_KEYS.scores, JSON.stringify(scores));
 }
@@ -141,4 +166,5 @@ export function clearLocalData(): void {
   notifyProfileObservers();
   notifyPhysicalProfileObservers();
   notifyCardioInputsObservers();
+  notifyMuscleInputsObservers();
 }

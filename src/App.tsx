@@ -15,6 +15,7 @@ import PlaceholderPage from './pages/PlaceholderPage';
 import ToolsPage from './pages/ToolsPage';
 import FfmiPage from './pages/FfmiPage';
 import CardioAssessmentPage from './pages/CardioAssessmentPage';
+import MuscleAssessmentPage from './pages/MuscleAssessmentPage';
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   community: CommunityPage,
@@ -46,6 +47,11 @@ function CardioRoute() {
   return <CardioAssessmentPage onBack={() => navigate(-1)} />;
 }
 
+function MuscleRoute() {
+  const navigate = useNavigate();
+  return <MuscleAssessmentPage onBack={() => navigate(-1)} />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -68,6 +74,7 @@ export default function App() {
         />
         <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

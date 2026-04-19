@@ -1,6 +1,7 @@
 /**
  * Cardio assessment scoring — Cooper 12-minute run + 5 km time trial.
- * Formulas and Cooper tables align with reference-app `assessmentScoring.js` / `assessmentStandards.js`.
+ * Cooper norms and formulas match reference-app-fitness `standards.js` / `useCardioLogic.js`
+ * (same anchors as reference-app `assessmentStandards.js` / `assessmentScoring.js`).
  */
 import type { CardioInputsPersisted } from '../../types/cardioInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -8,6 +9,20 @@ import type { ScoreMap } from '../../types/scoring';
 import { clampScoreMapValue } from './scoring';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/**
+ * Cooper 12-minute distance ceiling for scoring (meters), aligned with elite 5,000 m track context.
+ * Inputs above this are clamped so radar scores stay within a plausible field-test band.
+ */
+export const COOPER_MAX_DISTANCE_MALE_METERS = 4800;
+export const COOPER_MAX_DISTANCE_FEMALE_METERS = 4300;
+
+/** Upper distance bound used when converting Cooper meters → score (matches clamp in calculateCooperScore). */
+export function getCooperMaxDistanceMetersForGender(gender: string | null | undefined): number {
+  return normalizeGenderForCardio(gender) === 'female'
+    ? COOPER_MAX_DISTANCE_FEMALE_METERS
+    : COOPER_MAX_DISTANCE_MALE_METERS;
+}
 
 /** Cooper distance standards (meters) — male. Keys are score anchors 60/70/…/100. */
 export const COOPER_STANDARDS_MALE: Readonly<
@@ -63,8 +78,11 @@ export function calculateCooperScore(input: {
   age: number | string | null | undefined;
   gender: string | null | undefined;
 }): number {
-  const dist = parseFloat(String(input.distanceMeters));
-  if (!dist || dist <= 0) return 0;
+  const distRaw = parseFloat(String(input.distanceMeters));
+  if (!distRaw || distRaw <= 0) return 0;
+
+  const maxM = getCooperMaxDistanceMetersForGender(input.gender);
+  const dist = Math.min(distRaw, maxM);
 
   const ageRange = getCardioAgeRange(input.age);
   const g = normalizeGenderForCardio(input.gender) ?? 'male';

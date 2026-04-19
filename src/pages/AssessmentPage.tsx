@@ -70,6 +70,24 @@ export default function AssessmentPage() {
 
       <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
         <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
+          {t('assessment.muscle.kicker', { ns: 'common' })}
+        </p>
+        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
+          {t('assessment.muscle.title', { ns: 'common' })}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          {t('assessment.muscle.body', { ns: 'common' })}
+        </p>
+        <Link
+          to={ROUTES.muscle}
+          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
+        >
+          {t('assessment.muscle.cta', { ns: 'common' })}
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
           {t('assessment.ffmi.kicker', { ns: 'common' })}
         </p>
         <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">

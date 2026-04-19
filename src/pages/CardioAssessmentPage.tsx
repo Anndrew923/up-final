@@ -14,6 +14,9 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
   const [cooperInfoOpen, setCooperInfoOpen] = useState(false);
   const {
     profileReady,
+    cooperDistanceOverCap,
+    cooperCapMeters,
+    cooperHintCaps,
     activeTab,
     setActiveTab,
     distanceInput,
@@ -72,8 +75,10 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           >
             <button
               type="button"
+              id="cardio-tab-cooper"
               role="tab"
               aria-selected={activeTab === 'cooper'}
+              aria-controls="cardio-panel-cooper"
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'cooper'
                   ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
@@ -85,21 +90,31 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             </button>
             <button
               type="button"
+              id="cardio-tab-5km"
               role="tab"
               aria-selected={activeTab === '5km'}
+              aria-controls="cardio-panel-5km"
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === '5km'
                   ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
                   : 'text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-200'
               }`}
-              onClick={() => setActiveTab('5km')}
+              onClick={() => {
+                setCooperInfoOpen(false);
+                setActiveTab('5km');
+              }}
             >
               {t('cardio.tab5km')}
             </button>
           </div>
 
-          {activeTab === 'cooper' ? (
-            <div className="space-y-5">
+          <div
+            id="cardio-panel-cooper"
+            role="tabpanel"
+            aria-labelledby="cardio-tab-cooper"
+            hidden={activeTab !== 'cooper'}
+            className="space-y-5"
+          >
               <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
                 <button
                   type="button"
@@ -121,21 +136,12 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   hidden={!cooperInfoOpen}
                   className="border-t border-zinc-700/60"
                 >
-                  <section
-                    className="space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400"
-                    aria-labelledby="cooper-info-heading"
-                  >
-                    <h2
-                      id="cooper-info-heading"
-                      className="sr-only"
-                    >
-                      {t('cardio.cooperInfo.title')}
-                    </h2>
+                  <div className="space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400">
                     <p>{t('cardio.cooperInfo.p1')}</p>
                     <p>{t('cardio.cooperInfo.p2')}</p>
                     <p>{t('cardio.cooperInfo.p3')}</p>
                     <p>{t('cardio.cooperInfo.p4')}</p>
-                  </section>
+                  </div>
                 </div>
               </div>
 
@@ -156,11 +162,26 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   placeholder={t('cardio.cooperPlaceholder')}
                   aria-label={t('cardio.cooperDistanceLabel')}
                 />
-                <p className="text-xs leading-relaxed text-zinc-500">{t('cardio.cooperHint')}</p>
+                <p className="text-xs leading-relaxed text-zinc-500">
+                  {t('cardio.cooperHint', cooperHintCaps)}
+                </p>
+                {cooperDistanceOverCap && cooperCapMeters !== null ? (
+                  <p
+                    className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
+                    role="status"
+                  >
+                    {t('cardio.cooperWorldRecordCapHint', { capMeters: cooperCapMeters })}
+                  </p>
+                ) : null}
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
+          </div>
+          <div
+            id="cardio-panel-5km"
+            role="tabpanel"
+            aria-labelledby="cardio-tab-5km"
+            hidden={activeTab !== '5km'}
+            className="space-y-3"
+          >
               <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
                 {t('cardio.run5kmHeading')}
               </p>
@@ -186,7 +207,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                     type="number"
                     inputMode="numeric"
                     min={0}
-                    max={59}
                     className="ui-input w-28"
                     value={runSecondsInput}
                     onChange={(e) => {
@@ -198,8 +218,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 </label>
               </div>
               <p className="text-xs leading-relaxed text-zinc-500">{t('cardio.run5kmHint')}</p>
-            </div>
-          )}
+          </div>
 
           {errorKey ? (
             <p className="text-sm text-red-400" role="alert">

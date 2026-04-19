@@ -116,6 +116,12 @@
       "title": "心肺（Cooper / 5 公里）",
       "body": "12 分鐘 Cooper 跑依年齡、性別對照；5 公里以完成時間計分（20 分內可超過 100 分；45 分或更慢為 0）。原始輸入僅存本機；有有效 Cooper 距離時雷達優先採用。",
       "cta": "開啟心肺評測"
+    },
+    "muscle": {
+      "kicker": "身體組成",
+      "title": "肌肉量（骨骼肌 SMM）",
+      "body": "輸入體脂計／InBody 等來源的骨骼肌重量（kg），對照首頁已存的體重、年齡、性別；常模表與參考專案一致，最終分數為 SMM 分數與 SM% 分數之算術平均。寫入後本機雷達肌肉軸會更新。",
+      "cta": "開啟肌肉量評測"
     }
   },
   "cardio": {
@@ -127,7 +133,8 @@
     "tabsAria": "心肺測驗方式",
     "cooperDistanceLabel": "12 分鐘跑距離（公尺）",
     "cooperPlaceholder": "例如 2600",
-    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。",
+    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。對標田徑長距離世界級表現之上限：男性 {{maleCap}} m、女性 {{femaleCap}} m；超過時分數將鎖在此上限。",
+    "cooperWorldRecordCapHint": "輸入距離超過對標 5000 m 級世界紀錄情境之模型上限（{{capMeters}} m）。已改以該距離計分並鎖定最高分。",
     "cooperInfo": {
       "toggleExpand": "展開說明",
       "toggleCollapse": "收合說明",
@@ -153,6 +160,32 @@
       "invalid-cooper-distance": "請輸入大於 0 的距離（公尺）。",
       "cooper-no-standard": "此年齡區間無對照表 — 請確認首頁年齡為 13 歲以上。",
       "invalid-5km-time": "請輸入有效的 5 公里時間（分／秒）。"
+    }
+  },
+  "muscle": {
+    "kicker": "身體組成",
+    "title": "肌肉量評測",
+    "subtitle": "輸入骨骼肌量（SMM，kg）。依首頁年齡、性別對照 SMM 與骨骼肌率（SM%）標準表，兩支分數算術平均為最終肌肉量分。",
+    "smmLabel": "骨骼肌量（SMM，kg）",
+    "smmPlaceholder": "例如 32.5",
+    "smmHint": "數值取自首頁身體資料的體重、年齡、性別。常模表涵蓋約 10–80 歲；本 App 身體資料年齡下限為 13，超過 80 歲則無對照組。",
+    "metaWeight": "體重：{{value}} kg",
+    "metaAge": "年齡：{{value}} 歲",
+    "metaGender": "性別：{{value}}",
+    "smmCeilingLine": "本評測可計分之骨骼肌量上限：{{max}} kg（男性對標 Ronnie Coleman 量級之公開量級；女性對標頂級女子職業選手表現帶）。",
+    "previewLabel": "預覽分數",
+    "breakdownLine": "SMM 分數：{{smmScore}} · 骨骼肌率：{{smPct}}% · SM% 分數：{{smPctScore}}",
+    "calculate": "計算",
+    "submitRadar": "寫入雷達（肌肉量軸）",
+    "submitDone": "已儲存 — 首頁雷達與合併分數將使用此肌肉量軸。",
+    "profileIncompleteHint": "肌肉量換算需要首頁身體資料齊全（性別、年齡、身高、體重）。",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "errors": {
+      "missing-profile": "請先在首頁填寫完整身體資料。",
+      "invalid-smm": "請輸入大於 0 的骨骼肌量（kg）。",
+      "age-out-of-range": "此年齡無肌肉常模表（表定至 80 歲）。請確認首頁年齡。",
+      "smm-exceeds-ceiling": "骨骼肌量超過本評測上限（{{max}} kg）。男性以上限對標 Ronnie Coleman 量級之公開量級；女性對標頂級女子職業選手表現帶。請調整至 {{max}} kg 或以下以解鎖計分與儲存；若數值異常，建議重複確認量測來源。",
+      "standards-not-found": "無法對照常模列 — 請確認首頁年齡與性別。"
     }
   },
   "ffmi": {
