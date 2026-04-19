@@ -52,6 +52,42 @@ export default function AssessmentPage() {
 
       <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
         <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
+          {t('assessment.strength.kicker', { ns: 'common' })}
+        </p>
+        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
+          {t('assessment.strength.title', { ns: 'common' })}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          {t('assessment.strength.body', { ns: 'common' })}
+        </p>
+        <Link
+          to={ROUTES.strength}
+          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
+        >
+          {t('assessment.strength.cta', { ns: 'common' })}
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
+          {t('assessment.explosive.kicker', { ns: 'common' })}
+        </p>
+        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
+          {t('assessment.explosive.title', { ns: 'common' })}
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          {t('assessment.explosive.body', { ns: 'common' })}
+        </p>
+        <Link
+          to={ROUTES.explosive}
+          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
+        >
+          {t('assessment.explosive.cta', { ns: 'common' })}
+        </Link>
+      </section>
+
+      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
           {t('assessment.cardio.kicker', { ns: 'common' })}
         </p>
         <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">

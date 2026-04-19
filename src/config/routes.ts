@@ -16,6 +16,8 @@ export const ROUTES = {
   ffmi: '/ffmi' as const,
   cardio: '/cardio' as const,
   muscle: '/muscle' as const,
+  explosive: '/explosive' as const,
+  strength: '/strength' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 
 export interface CardioAssessmentPageProps {
@@ -115,35 +116,19 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             hidden={activeTab !== 'cooper'}
             className="space-y-5"
           >
-              <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm text-zinc-300 transition-colors hover:bg-zinc-800/50"
-                  aria-expanded={cooperInfoOpen}
-                  aria-controls="cooper-info-panel"
-                  id="cooper-info-toggle"
-                  onClick={() => setCooperInfoOpen((v) => !v)}
-                >
-                  <span className="font-medium text-zinc-200">{t('cardio.cooperInfo.title')}</span>
-                  <span className="shrink-0 text-xs font-medium text-accent-primary/90">
-                    {cooperInfoOpen ? t('cardio.cooperInfo.toggleCollapse') : t('cardio.cooperInfo.toggleExpand')}
-                  </span>
-                </button>
-                <div
-                  id="cooper-info-panel"
-                  role="region"
-                  aria-labelledby="cooper-info-toggle"
-                  hidden={!cooperInfoOpen}
-                  className="border-t border-zinc-700/60"
-                >
-                  <div className="space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400">
-                    <p>{t('cardio.cooperInfo.p1')}</p>
-                    <p>{t('cardio.cooperInfo.p2')}</p>
-                    <p>{t('cardio.cooperInfo.p3')}</p>
-                    <p>{t('cardio.cooperInfo.p4')}</p>
-                  </div>
-                </div>
-              </div>
+              <DisclosurePanel
+                instanceId="cooper-info"
+                expanded={cooperInfoOpen}
+                onToggle={() => setCooperInfoOpen((v) => !v)}
+                title={t('cardio.cooperInfo.title')}
+                toggleExpandLabel={t('cardio.cooperInfo.toggleExpand')}
+                toggleCollapseLabel={t('cardio.cooperInfo.toggleCollapse')}
+              >
+                <p>{t('cardio.cooperInfo.p1')}</p>
+                <p>{t('cardio.cooperInfo.p2')}</p>
+                <p>{t('cardio.cooperInfo.p3')}</p>
+                <p>{t('cardio.cooperInfo.p4')}</p>
+              </DisclosurePanel>
 
               <div className="space-y-3">
                 <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">

@@ -13,6 +13,7 @@ import {
   muscleStandardsMaleSMM,
   muscleStandardsMaleSMPercent,
 } from './muscleStandards';
+import { normalizeGenderForNormTables } from './genderNormalize';
 import { isPhysicalProfileComplete } from './physicalProfile';
 import { clampScoreMapValue } from './scoring';
 
@@ -34,21 +35,12 @@ export function getMuscleAgeRange(age: number | string | null | undefined): Musc
   return null;
 }
 
-function normalizeGender(gender: string | null | undefined): 'male' | 'female' | null {
-  if (!gender) return null;
-  const g = `${gender}`.toLowerCase();
-  if (g === 'male' || gender === '男性') return 'male';
-  if (g === 'female' || gender === '女性') return 'female';
-  if (g.includes('m')) return 'male';
-  return 'female';
-}
-
 /** SMM (kg) ceiling — above this we do not score or merge (fantasy-proofing). */
 export const SMM_KG_CEILING_MALE = 75;
 export const SMM_KG_CEILING_FEMALE = 48;
 
 export function getSmmKgCeilingForGender(gender: string | null | undefined): number {
-  return normalizeGender(gender) === 'female' ? SMM_KG_CEILING_FEMALE : SMM_KG_CEILING_MALE;
+  return normalizeGenderForNormTables(gender) === 'female' ? SMM_KG_CEILING_FEMALE : SMM_KG_CEILING_MALE;
 }
 
 export function isSmmKgAboveCeiling(smmKg: number, gender: string | null | undefined): boolean {
@@ -136,7 +128,7 @@ export function calculateMuscleScores(input: {
   }
 
   const ageRange = getMuscleAgeRange(input.age);
-  const g = normalizeGender(input.gender) ?? 'male';
+  const g = normalizeGenderForNormTables(input.gender) ?? 'male';
   if (!ageRange) {
     return emptyMuscleScores();
   }

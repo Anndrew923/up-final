@@ -16,6 +16,8 @@ import ToolsPage from './pages/ToolsPage';
 import FfmiPage from './pages/FfmiPage';
 import CardioAssessmentPage from './pages/CardioAssessmentPage';
 import MuscleAssessmentPage from './pages/MuscleAssessmentPage';
+import ExplosiveAssessmentPage from './pages/ExplosiveAssessmentPage';
+import StrengthAssessmentPage from './pages/StrengthAssessmentPage';
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   community: CommunityPage,
@@ -52,6 +54,16 @@ function MuscleRoute() {
   return <MuscleAssessmentPage onBack={() => navigate(-1)} />;
 }
 
+function ExplosiveRoute() {
+  const navigate = useNavigate();
+  return <ExplosiveAssessmentPage onBack={() => navigate(-1)} />;
+}
+
+function StrengthRoute() {
+  const navigate = useNavigate();
+  return <StrengthAssessmentPage onBack={() => navigate(-1)} />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -75,6 +87,8 @@ export default function App() {
         <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

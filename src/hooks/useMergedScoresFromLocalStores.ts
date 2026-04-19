@@ -1,23 +1,31 @@
 import { useEffect, useMemo, useState } from 'react';
 import { mergeScoreMapWithResolvedCardio } from '../logic/core/cardioScoring';
 import { mergeScoreMapWithResolvedMuscle } from '../logic/core/muscleScoring';
+import { mergeScoreMapWithResolvedExplosivePower } from '../logic/core/powerScoring';
+import { mergeScoreMapWithResolvedStrength } from '../logic/core/strengthAssessment';
 import {
   CARDIO_INPUTS_STORAGE_KEY,
   MUSCLE_INPUTS_STORAGE_KEY,
+  POWER_INPUTS_STORAGE_KEY,
   PHYSICAL_PROFILE_STORAGE_KEY,
+  STRENGTH_INPUTS_STORAGE_KEY,
   loadCardioInputs,
   loadMuscleInputs,
   loadPhysicalProfile,
+  loadPowerInputs,
+  loadStrengthInputs,
   subscribeCardioInputs,
   subscribeMuscleInputs,
   subscribePhysicalProfile,
+  subscribePowerInputs,
+  subscribeStrengthInputs,
 } from '../services/localStorageService';
 import type { ScoreMap } from '../types/scoring';
 import { useScoreStore } from '../stores/scoreStore';
 
 /**
- * Zustand scores + local Cooper/5 km + SMM inputs + physical profile → same merged map as Home radar.
- * Subscribes to profile/cardio/muscle saves and cross-tab `storage` for those keys.
+ * Zustand scores + local Cooper/5 km + SMM + explosive raw inputs + physical profile → same merged map as Home radar.
+ * Subscribes to profile/cardio/muscle/power saves and cross-tab `storage` for those keys.
  */
 export function useMergedScoresFromLocalStores(): ScoreMap {
   const scores = useScoreStore((s) => s.scores);
@@ -28,6 +36,8 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
     const unsubP = subscribePhysicalProfile(bump);
     const unsubC = subscribeCardioInputs(bump);
     const unsubM = subscribeMuscleInputs(bump);
+    const unsubPw = subscribePowerInputs(bump);
+    const unsubSt = subscribeStrengthInputs(bump);
 
     const onStorage = (e: StorageEvent) => {
       const k = e.key;
@@ -35,6 +45,8 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
         k !== null &&
         k !== CARDIO_INPUTS_STORAGE_KEY &&
         k !== MUSCLE_INPUTS_STORAGE_KEY &&
+        k !== POWER_INPUTS_STORAGE_KEY &&
+        k !== STRENGTH_INPUTS_STORAGE_KEY &&
         k !== PHYSICAL_PROFILE_STORAGE_KEY
       ) {
         return;
@@ -46,6 +58,8 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
       unsubP();
       unsubC();
       unsubM();
+      unsubPw();
+      unsubSt();
       window.removeEventListener('storage', onStorage);
     };
   }, []);
@@ -54,6 +68,8 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
     void localEpoch;
     const profile = loadPhysicalProfile();
     const withCardio = mergeScoreMapWithResolvedCardio(scores, profile, loadCardioInputs());
-    return mergeScoreMapWithResolvedMuscle(withCardio, profile, loadMuscleInputs());
+    const withMuscle = mergeScoreMapWithResolvedMuscle(withCardio, profile, loadMuscleInputs());
+    const withExplosive = mergeScoreMapWithResolvedExplosivePower(withMuscle, profile, loadPowerInputs());
+    return mergeScoreMapWithResolvedStrength(withExplosive, profile, loadStrengthInputs());
   }, [scores, localEpoch]);
 }

@@ -1,6 +1,8 @@
 import type { ScoreMap } from '../types/scoring';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
 import type { MuscleInputsPersisted } from '../types/muscleInputs';
+import type { PowerInputsPersisted } from '../types/powerInputs';
+import type { StrengthInputsPersisted } from '../types/strengthInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
@@ -12,6 +14,8 @@ const STORAGE_KEYS = {
   ffmiDraft: 'up.ffmiDraft',
   cardioInputs: 'up.cardioInputs',
   muscleInputs: 'up.muscleInputs',
+  powerInputs: 'up.powerInputs',
+  strengthInputs: 'up.strengthInputs',
 } as const;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
@@ -26,6 +30,12 @@ export const LOCAL_CARDIO_INPUTS_CHANGED_EVENT = 'up-final-cardio-inputs-changed
 
 export const MUSCLE_INPUTS_STORAGE_KEY = STORAGE_KEYS.muscleInputs;
 export const LOCAL_MUSCLE_INPUTS_CHANGED_EVENT = 'up-final-muscle-inputs-changed';
+
+export const POWER_INPUTS_STORAGE_KEY = STORAGE_KEYS.powerInputs;
+export const LOCAL_POWER_INPUTS_CHANGED_EVENT = 'up-final-power-inputs-changed';
+
+export const STRENGTH_INPUTS_STORAGE_KEY = STORAGE_KEYS.strengthInputs;
+export const LOCAL_STRENGTH_INPUTS_CHANGED_EVENT = 'up-final-strength-inputs-changed';
 
 function notifyProfileObservers(): void {
   if (typeof window === 'undefined') return;
@@ -45,6 +55,16 @@ function notifyCardioInputsObservers(): void {
 function notifyMuscleInputsObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_MUSCLE_INPUTS_CHANGED_EVENT));
+}
+
+function notifyPowerInputsObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_POWER_INPUTS_CHANGED_EVENT));
+}
+
+function notifyStrengthInputsObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_STRENGTH_INPUTS_CHANGED_EVENT));
 }
 
 export interface LocalProfile {
@@ -138,6 +158,36 @@ export function subscribeMuscleInputs(onChange: () => void): () => void {
   return () => window.removeEventListener(LOCAL_MUSCLE_INPUTS_CHANGED_EVENT, onChange);
 }
 
+export function savePowerInputs(inputs: PowerInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.powerInputs, JSON.stringify(inputs));
+  notifyPowerInputsObservers();
+}
+
+export function loadPowerInputs(): PowerInputsPersisted | null {
+  return safeParse<PowerInputsPersisted | null>(safeGetItem(STORAGE_KEYS.powerInputs), null);
+}
+
+export function subscribePowerInputs(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_POWER_INPUTS_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_POWER_INPUTS_CHANGED_EVENT, onChange);
+}
+
+export function saveStrengthInputs(inputs: StrengthInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.strengthInputs, JSON.stringify(inputs));
+  notifyStrengthInputsObservers();
+}
+
+export function loadStrengthInputs(): StrengthInputsPersisted | null {
+  return safeParse<StrengthInputsPersisted | null>(safeGetItem(STORAGE_KEYS.strengthInputs), null);
+}
+
+export function subscribeStrengthInputs(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_STRENGTH_INPUTS_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_STRENGTH_INPUTS_CHANGED_EVENT, onChange);
+}
+
 export function saveScores(scores: ScoreMap): void {
   safeSetItem(STORAGE_KEYS.scores, JSON.stringify(scores));
 }
@@ -167,4 +217,6 @@ export function clearLocalData(): void {
   notifyPhysicalProfileObservers();
   notifyCardioInputsObservers();
   notifyMuscleInputsObservers();
+  notifyPowerInputsObservers();
+  notifyStrengthInputsObservers();
 }

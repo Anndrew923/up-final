@@ -6,6 +6,7 @@
 import type { CardioInputsPersisted } from '../../types/cardioInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
 import type { ScoreMap } from '../../types/scoring';
+import { normalizeGenderForNormTables } from './genderNormalize';
 import { clampScoreMapValue } from './scoring';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -49,16 +50,8 @@ export const COOPER_STANDARDS_FEMALE: Readonly<
   '50+': { 100: 2200, 90: 1700, 80: 1400, 70: 1100, 60: 1100 },
 };
 
-export function normalizeGenderForCardio(
-  gender: string | null | undefined
-): 'male' | 'female' | null {
-  if (!gender) return null;
-  const g = `${gender}`.toLowerCase();
-  if (g === 'male' || gender === '男性') return 'male';
-  if (g === 'female' || gender === '女性') return 'female';
-  if (g.includes('m')) return 'male';
-  return 'female';
-}
+/** Alias for shared norm-table gender parsing (Cooper / muscle / explosive use the same rules). */
+export const normalizeGenderForCardio = normalizeGenderForNormTables;
 
 export function getCardioAgeRange(age: number | string | null | undefined): string | null {
   const ageNum = parseInt(String(age), 10);

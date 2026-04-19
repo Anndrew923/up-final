@@ -1,7 +1,9 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 
 export interface MuscleAssessmentPageProps {
@@ -10,6 +12,7 @@ export interface MuscleAssessmentPageProps {
 
 const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const [standardsInfoOpen, setStandardsInfoOpen] = useState(false);
   const {
     profileReady,
     profile,
@@ -80,6 +83,21 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <DisclosurePanel
+            instanceId="muscle-standards-info"
+            expanded={standardsInfoOpen}
+            onToggle={() => setStandardsInfoOpen((v) => !v)}
+            title={t('muscle.standardsInfo.title')}
+            toggleExpandLabel={t('muscle.standardsInfo.toggleExpand')}
+            toggleCollapseLabel={t('muscle.standardsInfo.toggleCollapse')}
+          >
+            <p>{t('muscle.standardsInfo.p1')}</p>
+            <p>{t('muscle.standardsInfo.p2')}</p>
+            <p>{t('muscle.standardsInfo.p3')}</p>
+            <p>{t('muscle.standardsInfo.p4')}</p>
+            <p>{t('muscle.standardsInfo.p5')}</p>
+          </DisclosurePanel>
+
           <div className="space-y-3">
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="muscle-smm">
               <span className="font-medium text-zinc-200">{t('muscle.smmLabel')}</span>
