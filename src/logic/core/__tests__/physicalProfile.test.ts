@@ -54,6 +54,59 @@ describe('validatePhysicalProfile', () => {
     });
     expect(r.ok).toBe(true);
   });
+
+  it('normalizes optional ladder segmentation fields', () => {
+    const r = validatePhysicalProfile({
+      ...valid,
+      jobCategory: 'engineering',
+      weeklyTrainingHours: '6.5',
+      trainingYears: '3',
+      countryCode: 'tw',
+      city: '台北市',
+      district: '信義區',
+      isAnonymousInLadder: true,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.profile.jobCategory).toBe('engineering');
+    expect(r.profile.weeklyTrainingHours).toBe(6.5);
+    expect(r.profile.trainingYears).toBe(3);
+    expect(r.profile.countryCode).toBe('TW');
+    expect(r.profile.isAnonymousInLadder).toBe(true);
+  });
+
+  it('rejects invalid TW city', () => {
+    const r = validatePhysicalProfile({
+      ...valid,
+      countryCode: 'TW',
+      city: 'NotACity',
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.code).toBe('invalid-city');
+  });
+
+  it('rejects district without city', () => {
+    const r = validatePhysicalProfile({
+      ...valid,
+      district: '信義區',
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.code).toBe('invalid-district');
+  });
+
+  it('rejects district that does not belong to TW city', () => {
+    const r = validatePhysicalProfile({
+      ...valid,
+      countryCode: 'TW',
+      city: '台北市',
+      district: '板橋區',
+    });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.code).toBe('invalid-district');
+  });
 });
 
 describe('isPhysicalProfileComplete', () => {

@@ -1,6 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { EntitlementState } from '../types/entitlement';
+import type {
+  LadderAgeBucket,
+  LadderGender,
+  LadderHeightBucket,
+  LadderJobCategory,
+  LadderRegionScope,
+  LadderWeightBucket,
+} from '../types/ladderProfile';
 import type { SubmitLeaderboardInput } from '../services/leaderboardService';
 import { listLeaderboard } from '../services/leaderboardService';
 import type { LeaderboardEntry } from '../services/leaderboardCacheService';
@@ -13,8 +21,20 @@ export interface LadderLeaderboardState {
   fromCache: boolean;
 }
 
+export interface LadderLeaderboardFilters {
+  gender: LadderGender | 'all';
+  ageBucket: LadderAgeBucket | 'all';
+  heightBucket: LadderHeightBucket | 'all';
+  weightBucket: LadderWeightBucket | 'all';
+  jobCategory: LadderJobCategory | 'all';
+  regionScope: LadderRegionScope | 'all';
+  city: string | 'all';
+  district: string | 'all';
+}
+
 export function useLadderLeaderboard(
-  metric: SubmitLeaderboardInput['metric']
+  metric: SubmitLeaderboardInput['metric'],
+  filters: LadderLeaderboardFilters
 ): LadderLeaderboardState {
   const entitlement = useEntitlementStore(
     useShallow(
@@ -33,6 +53,22 @@ export function useLadderLeaderboard(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [fromCache, setFromCache] = useState(false);
+
+  const applyFilters = useCallback(
+    (rows: LeaderboardEntry[]): LeaderboardEntry[] =>
+      rows.filter((row) => {
+        if (filters.gender !== 'all' && row.gender !== filters.gender) return false;
+        if (filters.ageBucket !== 'all' && row.ageBucket !== filters.ageBucket) return false;
+        if (filters.heightBucket !== 'all' && row.heightBucket !== filters.heightBucket) return false;
+        if (filters.weightBucket !== 'all' && row.weightBucket !== filters.weightBucket) return false;
+        if (filters.jobCategory !== 'all' && row.jobCategory !== filters.jobCategory) return false;
+        if (filters.regionScope !== 'all' && row.regionScope !== filters.regionScope) return false;
+        if (filters.city !== 'all' && row.city !== filters.city) return false;
+        if (filters.district !== 'all' && row.district !== filters.district) return false;
+        return true;
+      }),
+    [filters]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +96,7 @@ export function useLadderLeaderboard(
         return;
       }
 
-      setItems(result.items ?? []);
+      setItems(applyFilters(result.items ?? []));
       setFromCache(result.fromCache === true);
       setLoading(false);
     })();
@@ -68,7 +104,7 @@ export function useLadderLeaderboard(
     return () => {
       cancelled = true;
     };
-  }, [metric, entitlement]);
+  }, [metric, entitlement, filters, applyFilters]);
 
   return { items, loading, error, fromCache };
 }

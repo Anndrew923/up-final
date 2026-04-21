@@ -336,6 +336,7 @@ export function getLevelFromScore(score: number): LevelBand {
 
 /** Default chart radius scale — extends automatically if any axis > 100 (limit-break style). */
 export const RADAR_DISPLAY_MIN = 100;
+export const RADAR_OVERFLOW_MAX_EXTRA_RADIUS = 24;
 
 export function normalizeScore(value: number, min = 0, max = 100): number {
   const numeric = Number(value);
@@ -384,14 +385,41 @@ export function countCoreSixFilled(scores: ScoreMap): number {
   return SIX_AXIS_METRICS.filter((m) => clampScoreMapValue(scores[m] ?? 0) > 0).length;
 }
 
-/** Upper bound for radar spoke scaling: at least 100, expands if any axis exceeds 100. */
+/** Upper bound for radar spoke scaling: fixed at 100 for fair axis comparison. */
 export function radarDisplayScaleMax(points: ReadonlyArray<{ value: number }>): number {
-  let max = RADAR_DISPLAY_MIN;
-  for (const p of points) {
-    const v = Number(p.value) || 0;
-    if (v > max) max = v;
+  void points;
+  return Math.max(RADAR_DISPLAY_MIN, 1e-6);
+}
+
+/**
+ * Overclock mapping for radar "burst" visuals.
+ * Keeps 0-100 base polygon stable and maps overflow into a bounded outward radius.
+ */
+export function radarOverflowExtraRadius(
+  value: number,
+  options?: { baseCap?: number; overflowCap?: number; maxExtraRadius?: number }
+): number {
+  const baseCap = options?.baseCap ?? RADAR_DISPLAY_MIN;
+  const overflowCap = Math.max(1, options?.overflowCap ?? 100);
+  const maxExtraRadius = Math.max(0, options?.maxExtraRadius ?? RADAR_OVERFLOW_MAX_EXTRA_RADIUS);
+  const numeric = Math.max(0, Number(value) || 0);
+  const overflow = Math.max(0, numeric - baseCap);
+  const cappedOverflow = Math.min(overflow, overflowCap);
+  const ratio = cappedOverflow / overflowCap;
+  return round2(maxExtraRadius * Math.sqrt(ratio));
+}
+
+export function getWeakestRadarAxis<T extends { key: string; value: number }>(
+  points: ReadonlyArray<T>
+): T | null {
+  if (points.length === 0) return null;
+  let weakest = points[0];
+  for (const point of points.slice(1)) {
+    if ((Number(point.value) || 0) < (Number(weakest.value) || 0)) {
+      weakest = point;
+    }
   }
-  return Math.max(max, 1e-6);
+  return weakest;
 }
 
 export function calculateOverallScore(scores: ScoreMap): number {

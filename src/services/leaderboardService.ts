@@ -12,8 +12,18 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { shouldBlockFirebase } from '../logic/core/entitlement';
+import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import type { EntitlementState } from '../types/entitlement';
+import {
+  LADDER_AGE_BUCKETS,
+  LADDER_COUNTRY_CODES,
+  LADDER_HEIGHT_BUCKETS,
+  LADDER_JOB_CATEGORIES,
+  LADDER_WEIGHT_BUCKETS,
+  type LadderProfileProjection,
+} from '../types/ladderProfile';
 import { ensureFirebaseAuthReady, getFirestoreDb } from './firebaseClient';
+import { loadPhysicalProfile } from './localStorageService';
 import { ENTRIES_SUBCOLLECTION, LEADERBOARDS_COLLECTION } from './firestorePaths';
 import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
 import {
@@ -36,6 +46,7 @@ export interface SubmitLeaderboardInput {
   score: number;
   displayName: string;
   avatarUrl?: string;
+  profile?: Partial<LadderProfileProjection>;
 }
 
 export interface SubmitLeaderboardResult {
@@ -87,6 +98,47 @@ function mapFirestoreDoc(d: QueryDocumentSnapshot): LeaderboardEntry {
     scoreBest: Number(data.scoreBest ?? 0),
     updatedAt,
     isPro: data.isPro === true,
+    gender: data.gender === 'male' || data.gender === 'female' ? data.gender : undefined,
+    age: typeof data.age === 'number' ? data.age : undefined,
+    heightCm: typeof data.heightCm === 'number' ? data.heightCm : undefined,
+    weightKg: typeof data.weightKg === 'number' ? data.weightKg : undefined,
+    jobCategory:
+      typeof data.jobCategory === 'string' &&
+      LADDER_JOB_CATEGORIES.includes(data.jobCategory as (typeof LADDER_JOB_CATEGORIES)[number])
+        ? (data.jobCategory as LadderProfileProjection['jobCategory'])
+        : undefined,
+    weeklyTrainingHours:
+      typeof data.weeklyTrainingHours === 'number' ? data.weeklyTrainingHours : undefined,
+    trainingYears: typeof data.trainingYears === 'number' ? data.trainingYears : undefined,
+    countryCode:
+      typeof data.countryCode === 'string' &&
+      LADDER_COUNTRY_CODES.includes(data.countryCode as (typeof LADDER_COUNTRY_CODES)[number])
+        ? (data.countryCode as LadderProfileProjection['countryCode'])
+        : undefined,
+    region: typeof data.region === 'string' ? data.region : undefined,
+    city: typeof data.city === 'string' ? data.city : undefined,
+    district: typeof data.district === 'string' ? data.district : undefined,
+    isAnonymousInLadder:
+      typeof data.isAnonymousInLadder === 'boolean' ? data.isAnonymousInLadder : undefined,
+    ageBucket:
+      typeof data.ageBucket === 'string' &&
+      LADDER_AGE_BUCKETS.includes(data.ageBucket as (typeof LADDER_AGE_BUCKETS)[number])
+        ? (data.ageBucket as LadderProfileProjection['ageBucket'])
+        : undefined,
+    heightBucket:
+      typeof data.heightBucket === 'string' &&
+      LADDER_HEIGHT_BUCKETS.includes(data.heightBucket as (typeof LADDER_HEIGHT_BUCKETS)[number])
+        ? (data.heightBucket as LadderProfileProjection['heightBucket'])
+        : undefined,
+    weightBucket:
+      typeof data.weightBucket === 'string' &&
+      LADDER_WEIGHT_BUCKETS.includes(data.weightBucket as (typeof LADDER_WEIGHT_BUCKETS)[number])
+        ? (data.weightBucket as LadderProfileProjection['weightBucket'])
+        : undefined,
+    regionScope:
+      data.regionScope === 'country' || data.regionScope === 'city' || data.regionScope === 'district'
+        ? data.regionScope
+        : undefined,
   };
 }
 
@@ -203,6 +255,7 @@ function commitMemoryLeaderboardBest(
     scoreBest: input.score,
     updatedAt: new Date().toISOString(),
     isPro: true,
+    ...input.profile,
   });
   clearLeaderboardCache(input.metric);
 
@@ -235,15 +288,21 @@ export async function submitLeaderboardScore(params: {
   input: SubmitLeaderboardInput;
 }): Promise<SubmitLeaderboardResult> {
   const { entitlement, input } = params;
+  const profileProjection =
+    input.profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
+  const normalizedInput: SubmitLeaderboardInput = {
+    ...input,
+    profile: profileProjection,
+  };
   if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
     return { ok: false, reason: 'pro-required', updated: false };
   }
 
-  if (!validateInput(input)) {
+  if (!validateInput(normalizedInput)) {
     return { ok: false, reason: 'invalid-input', updated: false };
   }
 
-  const resolved = await resolveLeaderboardUid(input.uid);
+  const resolved = await resolveLeaderboardUid(normalizedInput.uid);
   if (resolved.backend === 'error') {
     return { ok: false, reason: 'unknown', updated: false };
   }
@@ -254,19 +313,25 @@ export async function submitLeaderboardScore(params: {
 
   if (db && resolved.backend === 'firestore') {
     try {
-      const ref = doc(db, LEADERBOARDS_COLLECTION, input.metric, ENTRIES_SUBCOLLECTION, uid);
+      const ref = doc(
+        db,
+        LEADERBOARDS_COLLECTION,
+        normalizedInput.metric,
+        ENTRIES_SUBCOLLECTION,
+        uid
+      );
       const snap = await getDoc(ref);
       const existingBest = snap.exists()
         ? Number((snap.data() as { scoreBest?: number }).scoreBest ?? NaN)
         : NaN;
 
-      if (Number.isFinite(existingBest) && input.score <= existingBest) {
+      if (Number.isFinite(existingBest) && normalizedInput.score <= existingBest) {
         return { ok: true, reason: 'not-best-score', updated: false };
       }
 
       const rateLimitStatus = checkUploadRateLimit({
         uid,
-        key: `leaderboard:${input.metric}`,
+        key: `leaderboard:${normalizedInput.metric}`,
       });
       if (!rateLimitStatus.allowed) {
         return { ok: false, reason: 'rate-limited', updated: false };
@@ -275,16 +340,17 @@ export async function submitLeaderboardScore(params: {
       await setDoc(
         ref,
         {
-          displayName: input.displayName,
-          scoreBest: input.score,
+          displayName: normalizedInput.displayName,
+          scoreBest: normalizedInput.score,
           updatedAt: new Date().toISOString(),
           isPro: true,
+          ...normalizedInput.profile,
         },
         { merge: true }
       );
 
-      consumeUploadQuota({ uid, key: `leaderboard:${input.metric}` });
-      clearLeaderboardCache(input.metric);
+      consumeUploadQuota({ uid, key: `leaderboard:${normalizedInput.metric}` });
+      clearLeaderboardCache(normalizedInput.metric);
 
       return { ok: true, updated: true };
     } catch {
@@ -292,5 +358,5 @@ export async function submitLeaderboardScore(params: {
     }
   }
 
-  return commitMemoryLeaderboardBest(uid, input);
+  return commitMemoryLeaderboardBest(uid, normalizedInput);
 }

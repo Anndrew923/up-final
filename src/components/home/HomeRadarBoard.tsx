@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
+import { getWeakestRadarAxis } from '../../logic/core/scoring';
 
 /**
  * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
@@ -20,13 +21,43 @@ export const HomeRadarBoard: FC = () => {
     return m;
   }, [radarPoints]);
 
+  const localizedRadarPoints = useMemo(
+    () =>
+      radarPoints.map((point) => ({
+        ...point,
+        label: t(`home.radar.axis.${point.key}`, { ns: 'common' }),
+      })),
+    [radarPoints, t]
+  );
+
+  const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);
+  const highestOverflow = useMemo(
+    () =>
+      radarPoints.reduce((best, point) => {
+        const overflow = Math.max(0, (Number(point.value) || 0) - 100);
+        if (!best || overflow > best.overflow) {
+          return { key: point.key, overflow };
+        }
+        return best;
+      }, null as { key: ScoreMetric; overflow: number } | null),
+    [radarPoints]
+  );
+
   return (
-    <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel">
+    <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)] motion-safe:transition-[box-shadow,border-color] motion-safe:duration-[480ms]">
+      <div
+        className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.06)_0_1px,transparent_1px_20px),repeating-linear-gradient(90deg,rgba(255,255,255,0.06)_0_1px,transparent_1px_20px)] opacity-[0.08]"
+        aria-hidden
+      />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
-      <div className="pointer-events-none absolute left-3 top-3 h-8 w-8 rounded-tl-lg border-l border-t border-accent-primary/40" />
-      <div className="pointer-events-none absolute right-3 top-3 h-8 w-8 rounded-tr-lg border-r border-t border-accent-primary/40" />
-      <div className="pointer-events-none absolute bottom-3 left-3 h-8 w-8 rounded-bl-lg border-b border-l border-accent-primary/40" />
-      <div className="pointer-events-none absolute bottom-3 right-3 h-8 w-8 rounded-br-lg border-b border-r border-accent-primary/40" />
+      <div className="pointer-events-none absolute left-3 top-3 h-8 w-8 rounded-tl-lg border-l border-t border-accent-primary/45" />
+      <div className="pointer-events-none absolute right-3 top-3 h-8 w-8 rounded-tr-lg border-r border-t border-accent-primary/45" />
+      <div className="pointer-events-none absolute bottom-3 left-3 h-8 w-8 rounded-bl-lg border-b border-l border-accent-primary/45" />
+      <div className="pointer-events-none absolute bottom-3 right-3 h-8 w-8 rounded-br-lg border-b border-r border-accent-primary/45" />
+      <div className="pointer-events-none absolute left-4 top-4 h-5 w-5 rounded-tl-md border-l border-t border-accent-info/50" />
+      <div className="pointer-events-none absolute right-4 top-4 h-5 w-5 rounded-tr-md border-r border-t border-accent-info/50" />
+      <div className="pointer-events-none absolute bottom-4 left-4 h-5 w-5 rounded-bl-md border-b border-l border-accent-info/50" />
+      <div className="pointer-events-none absolute bottom-4 right-4 h-5 w-5 rounded-br-md border-b border-r border-accent-info/50" />
 
       <div className="relative px-4 pb-5 pt-7 md:px-6">
         <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
@@ -45,14 +76,15 @@ export const HomeRadarBoard: FC = () => {
 
         <div className="mt-6 flex flex-col items-center gap-6 md:flex-row md:items-start md:justify-between">
           <HexRadarChart
-            points={radarPoints}
+            points={localizedRadarPoints}
             scaleMax={scaleMax}
+            weakestKey={weakest?.key}
             className="mx-auto h-64 w-full max-w-[280px] shrink-0 md:mx-0"
             aria-label={t('home.radarAria', { ns: 'common' })}
           />
 
           <div className="flex w-full flex-1 flex-col gap-4 md:max-w-md">
-            <div className="rounded-lg border border-zinc-800 bg-bg-panel/90 px-4 py-3 text-center md:text-left">
+            <div className="rounded-lg border border-zinc-800 bg-bg-panel/90 px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(56,189,248,0.08),inset_0_0_20px_rgba(59,130,246,0.08)] md:text-left">
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('home.overallAverage', { ns: 'common' })}
               </p>
@@ -62,18 +94,44 @@ export const HomeRadarBoard: FC = () => {
               <p className="mt-2 text-[11px] leading-snug text-zinc-500">
                 {t('home.overallFormula', { ns: 'common' })}
               </p>
+              {weakest ? (
+                <p className="mt-2 text-[11px] leading-snug text-amber-300/90">
+                  {t('home.radarWeakestHint', {
+                    ns: 'common',
+                    axis: t(`home.radar.axis.${weakest.key}`, { ns: 'common' }),
+                    score: weakest.value,
+                  })}
+                </p>
+              ) : null}
+              {highestOverflow && highestOverflow.overflow > 0 ? (
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-accent-info">
+                  {t('home.radarOverclockHint', {
+                    ns: 'common',
+                    axis: t(`home.radar.axis.${highestOverflow.key}`, { ns: 'common' }),
+                    score: Math.round(highestOverflow.overflow),
+                  })}
+                </p>
+              ) : null}
             </div>
 
             <ul className="grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-3">
               {SIX_AXIS_METRICS.map((key) => (
                 <li
                   key={key}
-                  className="rounded-md border border-zinc-800/80 bg-bg-panel/60 px-2 py-1.5 text-zinc-400"
+                  className={`rounded-md border bg-bg-panel/60 px-2 py-1.5 text-zinc-400 ${
+                    weakest?.key === key
+                      ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
+                      : 'border-zinc-800/80'
+                  }`}
                 >
                   <span className="block truncate text-[10px] uppercase tracking-wide text-zinc-500">
                     {t(`home.radar.axis.${key}`, { ns: 'common' })}
                   </span>
-                  <span className="font-mono tabular-nums text-zinc-200">
+                  <span
+                    className={`font-mono tabular-nums ${
+                      (valueByKey[key] ?? 0) > 100 ? 'text-accent-info' : 'text-zinc-200'
+                    }`}
+                  >
                     {valueByKey[key] ?? 0}
                   </span>
                 </li>

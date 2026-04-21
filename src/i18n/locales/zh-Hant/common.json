@@ -14,10 +14,60 @@
       "heightUnit": "cm",
       "weight": "體重",
       "weightUnit": "kg",
+      "jobCategory": "職業分類",
+      "jobSheetTitle": "選擇職業分類",
+      "weeklyTrainingHours": "每週訓練時數",
+      "trainingYears": "訓練年資",
+      "countryCode": "國家",
+      "countrySheetTitle": "選擇國家",
+      "region": "州 / 地區",
+      "city": "城市",
+      "citySheetTitle": "選擇城市",
+      "selectCity": "請先選擇城市",
+      "district": "行政區",
+      "districtSheetTitle": "選擇行政區",
+      "selectDistrict": "請先選擇行政區",
+      "isAnonymousInLadder": "在天梯中隱藏身份（匿名）",
+      "selectOptional": "可選",
       "selectGender": "請選擇",
       "genderSheetTitle": "選擇性別",
       "male": "男",
       "female": "女",
+      "jobOptions": {
+        "engineering": "工程",
+        "medical": "醫療",
+        "coach": "教練",
+        "student": "學生",
+        "police_military": "警察 / 軍職",
+        "business": "商務",
+        "freelance": "自由業",
+        "service": "服務業",
+        "professional_athlete": "職業運動員",
+        "artist_performer": "藝文 / 表演",
+        "other": "其他"
+      },
+      "countryOptions": {
+        "TW": "台灣",
+        "CN": "中國",
+        "US": "美國",
+        "JP": "日本",
+        "KR": "韓國",
+        "SG": "新加坡",
+        "MY": "馬來西亞",
+        "HK": "香港",
+        "MO": "澳門",
+        "TH": "泰國",
+        "VN": "越南",
+        "PH": "菲律賓",
+        "ID": "印尼",
+        "AU": "澳洲",
+        "NZ": "紐西蘭",
+        "CA": "加拿大",
+        "GB": "英國",
+        "DE": "德國",
+        "FR": "法國",
+        "OTHER": "其他"
+      },
       "save": "儲存資料",
       "saving": "儲存中…",
       "saved": "已儲存。",
@@ -29,7 +79,27 @@
         "invalid-gender": "性別需為男或女。",
         "invalid-age": "年齡需介於 13 與 90 歲。",
         "invalid-height": "身高需介於 120 與 230 cm。",
-        "invalid-weight": "體重需介於 35 與 250 kg。"
+        "invalid-weight": "體重需介於 35 與 250 kg。",
+        "invalid-city": "台灣地區請選擇有效城市。",
+        "invalid-district": "行政區需對應已選擇的城市。"
+      }
+    },
+    "consoleKicker": "主控台",
+    "radarOverview": "能力雷達",
+    "radarCompletion": "進度：{{count}} / {{total}} 維",
+    "radarAria": "六維雷達圖",
+    "overallAverage": "整體平均",
+    "overallFormula": "六項核心分數總和 ÷ 6（不含臂圍）。",
+    "radarWeakestHint": "目前最弱：{{axis}}（{{score}}），建議優先補強。",
+    "radarOverclockHint": "超頻維度：{{axis}} +{{score}}",
+    "radar": {
+      "axis": {
+        "strength": "力量",
+        "explosivePower": "爆發",
+        "cardio": "心肺",
+        "muscleMass": "肌肉",
+        "bodyFat": "FFMI",
+        "gripStrength": "握力"
       }
     }
   },
@@ -52,6 +122,23 @@
       "bodyFat": "體脂",
       "gripStrength": "握力",
       "armSize": "臂圍"
+    },
+    "filters": {
+      "title": "細項篩選",
+      "gender": "性別",
+      "ageBucket": "年齡區間",
+      "heightBucket": "身高區間",
+      "weightBucket": "體重級距",
+      "jobCategory": "職業分類",
+      "regionScope": "地區層級",
+      "city": "城市",
+      "district": "行政區",
+      "all": "全部",
+      "regionScopeOptions": {
+        "country": "國家",
+        "city": "城市",
+        "district": "行政區"
+      }
     }
   },
   "tools": {

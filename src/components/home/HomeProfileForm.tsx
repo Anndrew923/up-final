@@ -1,14 +1,22 @@
 import { useTranslation } from 'react-i18next';
 import GenderSelectSheet from './GenderSelectSheet';
+import OptionSelectSheet from './OptionSelectSheet';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
+import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../../types/ladderProfile';
+import {
+  getAllTaiwanCities,
+  getDistrictsByCity,
+  getTaiwanCityLabel,
+  getTaiwanDistrictLabel,
+} from '../../utils/taiwanDistricts';
 
 function errorTranslationKey(code: PhysicalProfileValidationErrorCode): string {
   return `home.profile.errors.${code}`;
 }
 
 export default function HomeProfileForm() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     gender,
     setGender,
@@ -18,12 +26,45 @@ export default function HomeProfileForm() {
     setHeightCm,
     weightKg,
     setWeightKg,
+    jobCategory,
+    setJobCategory,
+    weeklyTrainingHours,
+    setWeeklyTrainingHours,
+    trainingYears,
+    setTrainingYears,
+    countryCode,
+    setCountryCode,
+    region,
+    setRegion,
+    city,
+    setCity,
+    district,
+    setDistrict,
+    isAnonymousInLadder,
+    setIsAnonymousInLadder,
     errorCode,
     loading,
     justSaved,
     baselineComplete,
     handleSubmit,
   } = usePhysicalProfileForm();
+  const jobOptions = LADDER_JOB_CATEGORIES.map((value) => ({
+    value,
+    label: t(`home.profile.jobOptions.${value}`, { ns: 'common' }),
+  }));
+  const countryOptions = LADDER_COUNTRY_CODES.map((value) => ({
+    value,
+    label: t(`home.profile.countryOptions.${value}`, { ns: 'common' }),
+  }));
+  const isTaiwan = countryCode === 'TW';
+  const taiwanCityOptions = getAllTaiwanCities().map((value) => ({
+    value,
+    label: getTaiwanCityLabel(value, i18n.language),
+  }));
+  const taiwanDistrictOptions = getDistrictsByCity(city).map((value) => ({
+    value,
+    label: getTaiwanDistrictLabel(value, i18n.language),
+  }));
 
   return (
     <section className="ui-card relative overflow-hidden border-accent-info/25 shadow-panel">
@@ -123,7 +164,117 @@ export default function HomeProfileForm() {
               )}
             />
           </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span className="font-medium text-zinc-300">
+              {t('home.profile.jobCategory', { ns: 'common' })}
+            </span>
+            <OptionSelectSheet
+              value={jobCategory}
+              onChange={setJobCategory}
+              placeholder={t('home.profile.selectOptional', { ns: 'common' })}
+              title={t('home.profile.jobSheetTitle', { ns: 'common' })}
+              options={jobOptions}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span className="font-medium text-zinc-300">
+              {t('home.profile.weeklyTrainingHours', { ns: 'common' })}
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={168}
+              step={0.5}
+              className="ui-input"
+              value={weeklyTrainingHours}
+              onChange={(e) => setWeeklyTrainingHours(e.target.value)}
+              aria-label={t('home.profile.weeklyTrainingHours', { ns: 'common' })}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span className="font-medium text-zinc-300">
+              {t('home.profile.trainingYears', { ns: 'common' })}
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={80}
+              step={0.5}
+              className="ui-input"
+              value={trainingYears}
+              onChange={(e) => setTrainingYears(e.target.value)}
+              aria-label={t('home.profile.trainingYears', { ns: 'common' })}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span className="font-medium text-zinc-300">
+              {t('home.profile.countryCode', { ns: 'common' })}
+            </span>
+            <OptionSelectSheet
+              value={countryCode}
+              onChange={setCountryCode}
+              placeholder={t('home.profile.selectOptional', { ns: 'common' })}
+              title={t('home.profile.countrySheetTitle', { ns: 'common' })}
+              options={countryOptions}
+            />
+          </label>
+
+          {isTaiwan ? (
+            <>
+              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                <span className="font-medium text-zinc-300">{t('home.profile.city', { ns: 'common' })}</span>
+                <OptionSelectSheet
+                  value={city}
+                  onChange={setCity}
+                  placeholder={t('home.profile.selectCity', { ns: 'common' })}
+                  title={t('home.profile.citySheetTitle', { ns: 'common' })}
+                  options={taiwanCityOptions}
+                />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                <span className="font-medium text-zinc-300">
+                  {t('home.profile.district', { ns: 'common' })}
+                </span>
+                <OptionSelectSheet
+                  value={district}
+                  onChange={setDistrict}
+                  placeholder={t('home.profile.selectDistrict', { ns: 'common' })}
+                  title={t('home.profile.districtSheetTitle', { ns: 'common' })}
+                  options={taiwanDistrictOptions}
+                />
+              </label>
+            </>
+          ) : (
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">
+                {t('home.profile.region', { ns: 'common' })}
+              </span>
+              <input
+                type="text"
+                className="ui-input"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                aria-label={t('home.profile.region', { ns: 'common' })}
+              />
+            </label>
+          )}
         </div>
+
+        <label className="flex items-center gap-2 text-xs text-zinc-300">
+          <input
+            type="checkbox"
+            checked={isAnonymousInLadder}
+            onChange={(e) => setIsAnonymousInLadder(e.target.checked)}
+          />
+          <span>{t('home.profile.isAnonymousInLadder', { ns: 'common' })}</span>
+        </label>
 
         {errorCode ? (
           <p

@@ -10,22 +10,61 @@ import {
   loadPhysicalProfile,
   savePhysicalProfile,
 } from '../services/localStorageService';
+import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../types/ladderProfile';
 
 function readFormFieldsFromStorage(): {
   gender: string;
   age: string;
   heightCm: string;
   weightKg: string;
+  jobCategory: string;
+  weeklyTrainingHours: string;
+  trainingYears: string;
+  countryCode: string;
+  region: string;
+  city: string;
+  district: string;
+  isAnonymousInLadder: boolean;
 } {
   const p = loadPhysicalProfile();
   if (!p) {
-    return { gender: '', age: '', heightCm: '', weightKg: '' };
+    return {
+      gender: '',
+      age: '',
+      heightCm: '',
+      weightKg: '',
+      jobCategory: '',
+      weeklyTrainingHours: '',
+      trainingYears: '',
+      countryCode: '',
+      region: '',
+      city: '',
+      district: '',
+      isAnonymousInLadder: false,
+    };
   }
   return {
     gender: p.gender,
     age: String(p.age),
     heightCm: String(p.heightCm),
     weightKg: String(p.weightKg),
+    jobCategory:
+      typeof p.jobCategory === 'string' &&
+      LADDER_JOB_CATEGORIES.includes(p.jobCategory as (typeof LADDER_JOB_CATEGORIES)[number])
+        ? p.jobCategory
+        : '',
+    weeklyTrainingHours:
+      typeof p.weeklyTrainingHours === 'number' ? String(p.weeklyTrainingHours) : '',
+    trainingYears: typeof p.trainingYears === 'number' ? String(p.trainingYears) : '',
+    countryCode:
+      typeof p.countryCode === 'string' &&
+      LADDER_COUNTRY_CODES.includes(p.countryCode as (typeof LADDER_COUNTRY_CODES)[number])
+        ? p.countryCode
+        : '',
+    region: typeof p.region === 'string' ? p.region : '',
+    city: typeof p.city === 'string' ? p.city : '',
+    district: typeof p.district === 'string' ? p.district : '',
+    isAnonymousInLadder: p.isAnonymousInLadder === true,
   };
 }
 
@@ -35,6 +74,14 @@ export function usePhysicalProfileForm() {
   const [age, setAge] = useState(initial.age);
   const [heightCm, setHeightCm] = useState(initial.heightCm);
   const [weightKg, setWeightKg] = useState(initial.weightKg);
+  const [jobCategory, setJobCategory] = useState(initial.jobCategory);
+  const [weeklyTrainingHours, setWeeklyTrainingHours] = useState(initial.weeklyTrainingHours);
+  const [trainingYears, setTrainingYears] = useState(initial.trainingYears);
+  const [countryCode, setCountryCodeState] = useState(initial.countryCode);
+  const [region, setRegion] = useState(initial.region);
+  const [city, setCityState] = useState(initial.city);
+  const [district, setDistrictState] = useState(initial.district);
+  const [isAnonymousInLadder, setIsAnonymousInLadder] = useState(initial.isAnonymousInLadder);
 
   const [errorCode, setErrorCode] = useState<PhysicalProfileValidationErrorCode | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,7 +99,40 @@ export function usePhysicalProfileForm() {
     setAge(next.age);
     setHeightCm(next.heightCm);
     setWeightKg(next.weightKg);
+    setJobCategory(next.jobCategory);
+    setWeeklyTrainingHours(next.weeklyTrainingHours);
+    setTrainingYears(next.trainingYears);
+    setCountryCodeState(next.countryCode);
+    setRegion(next.region);
+    setCityState(next.city);
+    setDistrictState(next.district);
+    setIsAnonymousInLadder(next.isAnonymousInLadder);
     setSyncGeneration((g) => g + 1); // refreshes baselineComplete when another tab/device writes storage
+  }, []);
+
+  const setCountryCode = useCallback((next: string) => {
+    setCountryCodeState(next);
+    if (next === 'TW') {
+      setRegion('');
+      return;
+    }
+    setCityState('');
+    setDistrictState('');
+  }, []);
+
+  const setCity = useCallback(
+    (next: string) => {
+      setCityState(next);
+      if (countryCode === 'TW') {
+        setRegion('');
+      }
+      setDistrictState('');
+    },
+    [countryCode]
+  );
+
+  const setDistrict = useCallback((next: string) => {
+    setDistrictState(next);
   }, []);
 
   /**
@@ -86,6 +166,14 @@ export function usePhysicalProfileForm() {
         age,
         heightCm,
         weightKg,
+        jobCategory,
+        weeklyTrainingHours,
+        trainingYears,
+        countryCode,
+        region,
+        city,
+        district,
+        isAnonymousInLadder,
       });
 
       if (!result.ok) {
@@ -107,7 +195,20 @@ export function usePhysicalProfileForm() {
       }, 2400);
       saveToastTimerRef.current = toastId;
     },
-    [gender, age, heightCm, weightKg]
+    [
+      gender,
+      age,
+      heightCm,
+      weightKg,
+      jobCategory,
+      weeklyTrainingHours,
+      trainingYears,
+      countryCode,
+      region,
+      city,
+      district,
+      isAnonymousInLadder,
+    ]
   );
 
   return {
@@ -119,6 +220,22 @@ export function usePhysicalProfileForm() {
     setHeightCm,
     weightKg,
     setWeightKg,
+    jobCategory,
+    setJobCategory,
+    weeklyTrainingHours,
+    setWeeklyTrainingHours,
+    trainingYears,
+    setTrainingYears,
+    countryCode,
+    setCountryCode,
+    region,
+    setRegion,
+    city,
+    setCity,
+    district,
+    setDistrict,
+    isAnonymousInLadder,
+    setIsAnonymousInLadder,
     errorCode,
     loading,
     justSaved,

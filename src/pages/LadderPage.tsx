@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '../config/routes';
@@ -6,6 +6,12 @@ import { useLadderLeaderboard } from '../hooks/useLadderLeaderboard';
 import { useLeaderboardAccess } from '../hooks/useLeaderboardAccess';
 import type { SubmitLeaderboardInput } from '../services/leaderboardService';
 import { isFirestoreConfigured } from '../services/firebaseClient';
+import {
+  LADDER_AGE_BUCKETS,
+  LADDER_HEIGHT_BUCKETS,
+  LADDER_JOB_CATEGORIES,
+  LADDER_WEIGHT_BUCKETS,
+} from '../types/ladderProfile';
 
 const METRICS: SubmitLeaderboardInput['metric'][] = [
   'strength',
@@ -26,7 +32,57 @@ export default function LadderPage() {
   const navigate = useNavigate();
   const { canEnter } = useLeaderboardAccess();
   const [metric, setMetric] = useState<SubmitLeaderboardInput['metric']>('strength');
-  const { items, loading, error, fromCache } = useLadderLeaderboard(metric);
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all');
+  const [ageBucketFilter, setAgeBucketFilter] = useState<(typeof LADDER_AGE_BUCKETS)[number] | 'all'>(
+    'all'
+  );
+  const [heightBucketFilter, setHeightBucketFilter] = useState<
+    (typeof LADDER_HEIGHT_BUCKETS)[number] | 'all'
+  >('all');
+  const [weightBucketFilter, setWeightBucketFilter] = useState<
+    (typeof LADDER_WEIGHT_BUCKETS)[number] | 'all'
+  >('all');
+  const [jobCategoryFilter, setJobCategoryFilter] = useState<
+    (typeof LADDER_JOB_CATEGORIES)[number] | 'all'
+  >('all');
+  const [regionScopeFilter, setRegionScopeFilter] = useState<'all' | 'country' | 'city' | 'district'>(
+    'all'
+  );
+  const [cityFilter, setCityFilter] = useState<string | 'all'>('all');
+  const [districtFilter, setDistrictFilter] = useState<string | 'all'>('all');
+  const initialFilters = useMemo(
+    () => ({
+      gender: genderFilter,
+      ageBucket: ageBucketFilter,
+      heightBucket: heightBucketFilter,
+      weightBucket: weightBucketFilter,
+      jobCategory: jobCategoryFilter,
+      regionScope: regionScopeFilter,
+      city: cityFilter,
+      district: districtFilter,
+    }),
+    [genderFilter, ageBucketFilter, heightBucketFilter, weightBucketFilter, jobCategoryFilter, regionScopeFilter, cityFilter, districtFilter]
+  );
+  const { items, loading, error, fromCache } = useLadderLeaderboard(metric, initialFilters);
+  const twItems = useMemo(() => items.filter((row) => row.countryCode === 'TW'), [items]);
+  const twCityOptions = useMemo(
+    () =>
+      Array.from(new Set(twItems.map((row) => row.city).filter((x): x is string => Boolean(x)))).sort(
+        (a, b) => a.localeCompare(b)
+      ),
+    [twItems]
+  );
+  const twDistrictOptions = useMemo(() => {
+    const base = cityFilter === 'all' ? twItems : twItems.filter((row) => row.city === cityFilter);
+    return Array.from(
+      new Set(base.map((row) => row.district).filter((x): x is string => Boolean(x)))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [twItems, cityFilter]);
+
+  const effectiveCityFilter =
+    cityFilter !== 'all' && !twCityOptions.includes(cityFilter) ? 'all' : cityFilter;
+  const effectiveDistrictFilter =
+    districtFilter !== 'all' && !twDistrictOptions.includes(districtFilter) ? 'all' : districtFilter;
 
   const usesRemote = isFirestoreConfigured();
 
@@ -84,6 +140,102 @@ export default function LadderPage() {
           </button>
         ))}
       </div>
+
+      <section className="ui-card space-y-3">
+        <h2 className="text-sm font-semibold text-zinc-100">{t('ladder.filters.title', { ns: 'common' })}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.gender', { ns: 'common' })}</span>
+            <select className="ui-input" value={genderFilter} onChange={(e) => setGenderFilter(e.target.value as 'all' | 'male' | 'female')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              <option value="male">{t('home.profile.male', { ns: 'common' })}</option>
+              <option value="female">{t('home.profile.female', { ns: 'common' })}</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.ageBucket', { ns: 'common' })}</span>
+            <select className="ui-input" value={ageBucketFilter} onChange={(e) => setAgeBucketFilter(e.target.value as (typeof LADDER_AGE_BUCKETS)[number] | 'all')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              {LADDER_AGE_BUCKETS.map((bucket) => (
+                <option key={bucket} value={bucket}>{bucket}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.heightBucket', { ns: 'common' })}</span>
+            <select className="ui-input" value={heightBucketFilter} onChange={(e) => setHeightBucketFilter(e.target.value as (typeof LADDER_HEIGHT_BUCKETS)[number] | 'all')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              {LADDER_HEIGHT_BUCKETS.map((bucket) => (
+                <option key={bucket} value={bucket}>{bucket}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.weightBucket', { ns: 'common' })}</span>
+            <select className="ui-input" value={weightBucketFilter} onChange={(e) => setWeightBucketFilter(e.target.value as (typeof LADDER_WEIGHT_BUCKETS)[number] | 'all')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              {LADDER_WEIGHT_BUCKETS.map((bucket) => (
+                <option key={bucket} value={bucket}>{bucket}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.jobCategory', { ns: 'common' })}</span>
+            <select className="ui-input" value={jobCategoryFilter} onChange={(e) => setJobCategoryFilter(e.target.value as (typeof LADDER_JOB_CATEGORIES)[number] | 'all')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              {LADDER_JOB_CATEGORIES.map((job) => (
+                <option key={job} value={job}>{t(`home.profile.jobOptions.${job}`, { ns: 'common' })}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <span>{t('ladder.filters.regionScope', { ns: 'common' })}</span>
+            <select className="ui-input" value={regionScopeFilter} onChange={(e) => setRegionScopeFilter(e.target.value as 'all' | 'country' | 'city' | 'district')}>
+              <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+              <option value="country">{t('ladder.filters.regionScopeOptions.country', { ns: 'common' })}</option>
+              <option value="city">{t('ladder.filters.regionScopeOptions.city', { ns: 'common' })}</option>
+              <option value="district">{t('ladder.filters.regionScopeOptions.district', { ns: 'common' })}</option>
+            </select>
+          </label>
+          {twCityOptions.length > 0 ? (
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span>{t('ladder.filters.city', { ns: 'common' })}</span>
+              <select
+                className="ui-input"
+                value={effectiveCityFilter}
+                onChange={(e) => {
+                  setCityFilter(e.target.value);
+                  setDistrictFilter('all');
+                }}
+              >
+                <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+                {twCityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {twDistrictOptions.length > 0 ? (
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span>{t('ladder.filters.district', { ns: 'common' })}</span>
+              <select
+                className="ui-input"
+                value={effectiveDistrictFilter}
+                onChange={(e) => setDistrictFilter(e.target.value)}
+              >
+                <option value="all">{t('ladder.filters.all', { ns: 'common' })}</option>
+                {twDistrictOptions.map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
+      </section>
 
       <section className="overflow-hidden rounded-xl border border-zinc-800 bg-bg-panel/90">
         {loading ? (

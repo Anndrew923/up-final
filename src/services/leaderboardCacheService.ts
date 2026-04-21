@@ -1,4 +1,6 @@
-export interface LeaderboardEntry {
+import type { LadderProfileProjection } from '../types/ladderProfile';
+
+export interface LeaderboardEntry extends Partial<LadderProfileProjection> {
   uid: string;
   displayName: string;
   scoreBest: number;

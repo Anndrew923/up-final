@@ -74,4 +74,41 @@ describe('leaderboard service guards', () => {
     expect(second.reason).toBe('not-best-score');
     expect(second.updated).toBe(false);
   });
+
+  it('persists optional ladder profile projection in memory backend', async () => {
+    const entitlement = ownedProEntitlement();
+    await submitLeaderboardScore({
+      entitlement,
+      input: {
+        uid: 'u4',
+        metric: 'strength',
+        score: 140,
+        displayName: 'D',
+        profile: {
+          gender: 'male',
+          age: 33,
+          heightCm: 175,
+          weightKg: 78,
+          ageBucket: '30-39',
+          heightBucket: '170-180',
+          weightBucket: '70-80kg',
+          regionScope: 'country',
+          countryCode: 'TW',
+        },
+      },
+    });
+
+    const listed = await listLeaderboard({
+      entitlement,
+      metric: 'strength',
+      page: 1,
+    });
+    expect(listed.ok).toBe(true);
+    expect(listed.items?.[0]).toMatchObject({
+      uid: 'u4',
+      ageBucket: '30-39',
+      countryCode: 'TW',
+    });
+  });
+
 });

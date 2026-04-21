@@ -10,6 +10,8 @@ import {
 import type { SubmitLeaderboardInput } from '../services/leaderboardService';
 import { listLeaderboard, submitLeaderboardScore } from '../services/leaderboardService';
 import { clearLeaderboardCache, getCachedLeaderboard } from '../services/leaderboardCacheService';
+import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
+import { loadPhysicalProfile } from '../services/localStorageService';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
 type DebugMetric = SubmitLeaderboardInput['metric'];
@@ -92,6 +94,7 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
   };
 
   const handleSubmitScore = async () => {
+    const profileProjection = buildLeaderboardProfileProjection(loadPhysicalProfile());
     const result = await submitLeaderboardScore({
       entitlement,
       input: {
@@ -99,6 +102,7 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
         metric,
         score,
         displayName,
+        profile: profileProjection ?? undefined,
       },
     });
     setLastSubmitResult(result);
@@ -106,6 +110,7 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
   };
 
   const handleSubmitLowerScore = async () => {
+    const profileProjection = buildLeaderboardProfileProjection(loadPhysicalProfile());
     const result = await submitLeaderboardScore({
       entitlement,
       input: {
@@ -113,6 +118,7 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
         metric,
         score: Math.max(0, score - 1),
         displayName,
+        profile: profileProjection ?? undefined,
       },
     });
     setLastSubmitResult(result);
