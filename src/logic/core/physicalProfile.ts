@@ -1,5 +1,10 @@
 import type { PhysicalProfile, PhysicalProfileGender } from '../../types/userProfile';
-import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../../types/ladderProfile';
+import {
+  LADDER_COUNTRY_CODES,
+  LADDER_JOB_CATEGORIES,
+  type LadderCountryCode,
+  type LadderJobCategory,
+} from '../../types/ladderProfile';
 import { isValidTaiwanCity, isValidTaiwanDistrict } from '../../utils/taiwanDistricts';
 
 export const PHYSICAL_LIMITS = {
@@ -48,6 +53,14 @@ function parseOptionalNumber(value: unknown): number | null {
 function parseOptionalString(value: unknown): string {
   if (typeof value !== 'string') return '';
   return value.trim();
+}
+
+function isLadderJobCategory(value: string): value is LadderJobCategory {
+  return LADDER_JOB_CATEGORIES.includes(value as LadderJobCategory);
+}
+
+function isLadderCountryCode(value: string): value is LadderCountryCode {
+  return LADDER_COUNTRY_CODES.includes(value as LadderCountryCode);
 }
 
 /**
@@ -100,17 +113,11 @@ export function validatePhysicalProfile(input: {
   }
 
   const jobCategoryRaw = parseOptionalString(input.jobCategory);
-  const jobCategory =
-    jobCategoryRaw !== '' &&
-    LADDER_JOB_CATEGORIES.includes(jobCategoryRaw as (typeof LADDER_JOB_CATEGORIES)[number])
-      ? jobCategoryRaw
-      : '';
+  const jobCategory: LadderJobCategory | '' =
+    jobCategoryRaw !== '' && isLadderJobCategory(jobCategoryRaw) ? jobCategoryRaw : '';
   const countryRaw = parseOptionalString(input.countryCode).toUpperCase();
-  const countryCode =
-    countryRaw !== '' &&
-    LADDER_COUNTRY_CODES.includes(countryRaw as (typeof LADDER_COUNTRY_CODES)[number])
-      ? countryRaw
-      : '';
+  const countryCode: LadderCountryCode | '' =
+    countryRaw !== '' && isLadderCountryCode(countryRaw) ? countryRaw : '';
   const weeklyTrainingHours = parseOptionalNumber(input.weeklyTrainingHours);
   const trainingYears = parseOptionalNumber(input.trainingYears);
   const region = parseOptionalString(input.region);

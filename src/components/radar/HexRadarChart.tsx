@@ -3,6 +3,7 @@ import { useId, useMemo } from 'react';
 import type { RadarPoint } from '../../types/scoring';
 import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
 import { RADAR_CARD_V2 } from './radarVisualTokens';
+import type { SVGProps } from 'react';
 
 export interface HexRadarChartProps {
   /** One vertex per core dimension; order matches caller (typically `SIX_AXIS_METRICS`). */
@@ -24,6 +25,9 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   className,
   'aria-label': ariaLabel,
 }) => {
+  type AxisLabelAnchor = NonNullable<SVGProps<SVGTextElement>['textAnchor']>;
+  type AxisLabelBaseline = NonNullable<SVGProps<SVGTextElement>['dominantBaseline']>;
+
   const glowFilterId = useId();
   const cx = 100;
   const cy = 100;
@@ -62,8 +66,8 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
           yOverflow,
           xLabel,
           yLabel,
-          textAnchor: ux > 0.35 ? 'start' : ux < -0.35 ? 'end' : 'middle',
-          dominantBaseline: uy > 0.45 ? 'hanging' : uy < -0.45 ? 'auto' : 'middle',
+          textAnchor: (ux > 0.35 ? 'start' : ux < -0.35 ? 'end' : 'middle') as AxisLabelAnchor,
+          dominantBaseline: (uy > 0.45 ? 'hanging' : uy < -0.45 ? 'auto' : 'middle') as AxisLabelBaseline,
         };
       }),
     [cx, cy, denom, labelR, maxR, n, points]
