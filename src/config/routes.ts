@@ -18,6 +18,7 @@ export const ROUTES = {
   muscle: '/muscle' as const,
   explosive: '/explosive' as const,
   strength: '/strength' as const,
+  grip: '/grip' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

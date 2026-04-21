@@ -54,17 +54,6 @@
       "armSize": "臂圍"
     }
   },
-  "community": {
-    "kicker": "通訊頻道",
-    "title": "社群中繼",
-    "subtitle": "小隊、挑戰與共享任務將由此对接 — 路由已就緒，功能模組下一階段上架。",
-    "card1Title": "訊號格點",
-    "card1Body": "未來：在不上傳本機訓練數據的前提下，提供隊伍頻道、歡呼與精選跑位。",
-    "card2Title": "戰場情資",
-    "card2Body": "與天梯連動仍受 Pro 閘門保護 — 社群本身預設不會在背景自動打遠端。",
-    "ctaHome": "回到主控台",
-    "ctaArena": "開啟天梯"
-  },
   "tools": {
     "kicker": "工具甲板",
     "title": "工具與雲端同步",
@@ -134,6 +123,12 @@
       "title": "五項力量（DOTS 錨點）",
       "body": "臥推、深蹲、硬舉、滑輪下拉、站姿槓鈴肩推 — 每項有獨立「計算」與單項分數；下方「合併計算」可預覽雷達力量軸（各完成列之平均）再儲存。握力為獨立評測。原始輸入僅存本機。",
       "cta": "開啟力量評測"
+    },
+    "grip": {
+      "kicker": "握力",
+      "title": "握力評測",
+      "body": "以握力計峰值（kg）套用線性係數：男性 1.4x；女性在此基礎上乘 1.6x 補償。可超過 100 分，保留神話級超頻空間。",
+      "cta": "開啟握力評測"
     }
   },
   "strength": {
@@ -199,6 +194,48 @@
       "invalid-weight": "此項重量須為大於 0 的數字（kg）。",
       "invalid-reps": "此項次數格式不正確。",
       "reps-out-of-range": "此項次數須介於 1 與 10。"
+    }
+  },
+  "grip": {
+    "kicker": "握力",
+    "title": "握力評測",
+    "subtitle": "輸入握力計峰值（kg）後即可換算握力軸分數。公式為男性 1.4x；女性在此基礎乘以 1.6x 補償。分數不以 100 封頂，支援神話級超頻。",
+    "peakLabel": "峰值握力（kg）",
+    "peakPlaceholder": "例如 65",
+    "formulaHint": "計算式：score = peakKg × 1.4（女性再乘 1.6）。模型上限 160 kg，超過時鎖定以 160 計分。分數保留 1 位小數。",
+    "capNoticeTitle": "輸入已超過模型上限",
+    "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
+    "capNoticeLegend": "上限對標人物：瑞典大力士 Magnus Samuelsson。",
+    "previewLabel": "預覽分數",
+    "rankLabel": "階級：{{label}}（Aura：{{aura}}）",
+    "ranks": {
+      "ironApprentice": "鋼鐵學徒",
+      "athleticElite": "運動精英",
+      "vanguard": "悍將",
+      "bossClass": "精英（Boss Class）",
+      "titan": "泰坦（Titan）",
+      "grandmaster": "宗師（Grandmaster）",
+      "godHand": "神選之手（God Hand）"
+    },
+    "auras": {
+      "none": "無",
+      "pulse": "脈衝",
+      "flow": "流光",
+      "shimmer": "微光",
+      "lightning": "雷電",
+      "void_flame": "虛空焰",
+      "divine_light": "神聖之光"
+    },
+    "calculate": "計算",
+    "submitRadar": "寫入雷達（握力軸）",
+    "submitDone": "已儲存 — 首頁雷達與合併分數將使用此握力軸。",
+    "profileIncompleteHint": "握力換算需要首頁身體資料齊全（至少性別、年齡、身高、體重）。",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "metaGender": "性別：{{value}}",
+    "metaWeight": "體重：{{value}} kg",
+    "errors": {
+      "missing-profile": "請先在首頁填寫完整身體資料。",
+      "invalid-peak": "請輸入大於 0 的握力峰值（kg）。"
     }
   },
   "explosive": {
@@ -439,7 +476,6 @@
     }
   },
   "navbar": {
-    "community": "社群",
     "home": "首頁",
     "assessment": "評測",
     "ladder": "天梯",

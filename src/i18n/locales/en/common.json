@@ -126,17 +126,6 @@
       "armSize": "Arm size"
     }
   },
-  "community": {
-    "kicker": "Recon channel",
-    "title": "Community uplink",
-    "subtitle": "Squads, challenges, and shared missions will dock here — the route is live, feature modules ship next.",
-    "card1Title": "Signal lattice",
-    "card1Body": "Future: crew channels, shoutouts, and spotlight runs without touching your local training data.",
-    "card2Title": "Arena intel",
-    "card2Body": "Tie-ins to ladders stay Pro-gated — Community itself never phones home until you explicitly share.",
-    "ctaHome": "Back to console",
-    "ctaArena": "Open ladder"
-  },
   "tools": {
     "kicker": "Utility deck",
     "title": "Tools & cloud sync",
@@ -223,6 +212,12 @@
       "title": "Five-lift strength (DOTS-based)",
       "body": "Bench press, squat, deadlift, lat pulldown, and standing barbell shoulder press — each lift has its own Calculate button and score; use the combined section to preview the radar axis (mean of all completed rows) before saving. Grip strength is a separate assessment. Raw inputs stay on device.",
       "cta": "Open strength assessment"
+    },
+    "grip": {
+      "kicker": "Grip",
+      "title": "Grip strength",
+      "body": "Enter peak dynamometer kg. Formula uses a linear 1.4x baseline for male scores and a 1.6x female compensation on top. Scores can exceed 100 for myth-tier progression.",
+      "cta": "Open grip assessment"
     }
   },
   "strength": {
@@ -288,6 +283,48 @@
       "invalid-weight": "Enter a positive weight (kg) for this lift.",
       "invalid-reps": "Enter a valid rep count for this lift.",
       "reps-out-of-range": "Reps must be between 1 and 10 for this lift."
+    }
+  },
+  "grip": {
+    "kicker": "Grip",
+    "title": "Grip strength assessment",
+    "subtitle": "Enter your peak dynamometer reading in kg. Formula uses 1.4x for males, then multiplies by 1.6 for females. The scale is intentionally uncapped at 100 to preserve myth-tier progression.",
+    "peakLabel": "Peak grip (kg)",
+    "peakPlaceholder": "e.g. 65",
+    "formulaHint": "Formula: score = peakKg × 1.4 (female adds ×1.6 compensation). Model cap is 160 kg; values above are locked to 160 for scoring. Returned with one decimal place.",
+    "capNoticeTitle": "Input exceeds model cap",
+    "capNoticeBody": "You entered {{input}} kg, above the grip model cap of {{max}} kg. Scoring and saved value are locked to {{max}} kg.",
+    "capNoticeLegend": "Cap benchmark: Swedish strongman Magnus Samuelsson.",
+    "previewLabel": "Preview score",
+    "rankLabel": "Rank: {{label}} (Aura: {{aura}})",
+    "ranks": {
+      "ironApprentice": "Iron Apprentice",
+      "athleticElite": "Athletic Elite",
+      "vanguard": "Vanguard",
+      "bossClass": "Boss Class",
+      "titan": "Titan",
+      "grandmaster": "Grandmaster",
+      "godHand": "God Hand"
+    },
+    "auras": {
+      "none": "None",
+      "pulse": "Pulse",
+      "flow": "Flow",
+      "shimmer": "Shimmer",
+      "lightning": "Lightning",
+      "void_flame": "Void Flame",
+      "divine_light": "Divine Light"
+    },
+    "calculate": "Calculate",
+    "submitRadar": "Save to radar (grip axis)",
+    "submitDone": "Saved — Home radar and merged scores now use this grip axis.",
+    "profileIncompleteHint": "Grip conversion needs a complete Home profile (sex, age, height, weight).",
+    "ctaProfile": "Open Home profile",
+    "metaGender": "Sex: {{value}}",
+    "metaWeight": "Weight: {{value}} kg",
+    "errors": {
+      "missing-profile": "Add a complete physical profile on Home first.",
+      "invalid-peak": "Enter a positive peak grip value in kg."
     }
   },
   "cardio": {
@@ -528,7 +565,6 @@
     }
   },
   "navbar": {
-    "community": "Community",
     "home": "Home",
     "assessment": "Assessment",
     "ladder": "Ladder",

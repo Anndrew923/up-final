@@ -1,26 +1,25 @@
-import type { ComponentType } from 'react';
+import { Suspense, lazy, type ComponentType, type ReactElement } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
-import AssessmentPage from './pages/AssessmentPage';
-import CommunityPage from './pages/CommunityPage';
-import HistoryPage from './pages/HistoryPage';
-import HomePage from './pages/HomePage';
-import LadderPage from './pages/LadderPage';
-import JoinArenaPage from './pages/JoinArenaPage';
-import LeaderboardDebugPage from './pages/LeaderboardDebugPage';
-import PlaceholderPage from './pages/PlaceholderPage';
-import ToolsPage from './pages/ToolsPage';
-import FfmiPage from './pages/FfmiPage';
-import CardioAssessmentPage from './pages/CardioAssessmentPage';
-import MuscleAssessmentPage from './pages/MuscleAssessmentPage';
-import ExplosiveAssessmentPage from './pages/ExplosiveAssessmentPage';
-import StrengthAssessmentPage from './pages/StrengthAssessmentPage';
+const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LadderPage = lazy(() => import('./pages/LadderPage'));
+const JoinArenaPage = lazy(() => import('./pages/JoinArenaPage'));
+const LeaderboardDebugPage = lazy(() => import('./pages/LeaderboardDebugPage'));
+const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
+const ToolsPage = lazy(() => import('./pages/ToolsPage'));
+const FfmiPage = lazy(() => import('./pages/FfmiPage'));
+const CardioAssessmentPage = lazy(() => import('./pages/CardioAssessmentPage'));
+const MuscleAssessmentPage = lazy(() => import('./pages/MuscleAssessmentPage'));
+const ExplosiveAssessmentPage = lazy(() => import('./pages/ExplosiveAssessmentPage'));
+const StrengthAssessmentPage = lazy(() => import('./pages/StrengthAssessmentPage'));
+const GripAssessmentPage = lazy(() => import('./pages/GripAssessmentPage'));
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
-  community: CommunityPage,
   home: HomePage,
   assessment: AssessmentPage,
   ladder: LadderPage,
@@ -28,40 +27,53 @@ const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   tools: ToolsPage,
 };
 
+function RouteFallback() {
+  return <main className="ui-shell min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />;
+}
+
+function withRouteSuspense(element: ReactElement): ReactElement {
+  return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
+}
+
 function JoinArenaRoute() {
   const navigate = useNavigate();
 
-  return <JoinArenaPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<JoinArenaPage onBack={() => navigate(-1)} />);
 }
 
 function LeaderboardDebugRoute() {
   const navigate = useNavigate();
-  return <LeaderboardDebugPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<LeaderboardDebugPage onBack={() => navigate(-1)} />);
 }
 
 function FfmiRoute() {
   const navigate = useNavigate();
-  return <FfmiPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<FfmiPage onBack={() => navigate(-1)} />);
 }
 
 function CardioRoute() {
   const navigate = useNavigate();
-  return <CardioAssessmentPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<CardioAssessmentPage onBack={() => navigate(-1)} />);
 }
 
 function MuscleRoute() {
   const navigate = useNavigate();
-  return <MuscleAssessmentPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<MuscleAssessmentPage onBack={() => navigate(-1)} />);
 }
 
 function ExplosiveRoute() {
   const navigate = useNavigate();
-  return <ExplosiveAssessmentPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<ExplosiveAssessmentPage onBack={() => navigate(-1)} />);
 }
 
 function StrengthRoute() {
   const navigate = useNavigate();
-  return <StrengthAssessmentPage onBack={() => navigate(-1)} />;
+  return withRouteSuspense(<StrengthAssessmentPage onBack={() => navigate(-1)} />);
+}
+
+function GripRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<GripAssessmentPage onBack={() => navigate(-1)} />);
 }
 
 export default function App() {
@@ -75,7 +87,7 @@ export default function App() {
             <Route
               key={item.key}
               path={toRelativeRoutePath(item.path)}
-              element={Tab ? <Tab /> : <PlaceholderPage />}
+              element={withRouteSuspense(Tab ? <Tab /> : <PlaceholderPage />)}
             />
           );
         })}
@@ -89,6 +101,7 @@ export default function App() {
         <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

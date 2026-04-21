@@ -3,13 +3,16 @@ import { mergeScoreMapWithResolvedCardio } from '../logic/core/cardioScoring';
 import { mergeScoreMapWithResolvedMuscle } from '../logic/core/muscleScoring';
 import { mergeScoreMapWithResolvedExplosivePower } from '../logic/core/powerScoring';
 import { mergeScoreMapWithResolvedStrength } from '../logic/core/strengthAssessment';
+import { mergeScoreMapWithResolvedGripStrength } from '../logic/core/gripStrength';
 import {
   CARDIO_INPUTS_STORAGE_KEY,
+  GRIP_INPUTS_STORAGE_KEY,
   MUSCLE_INPUTS_STORAGE_KEY,
   POWER_INPUTS_STORAGE_KEY,
   PHYSICAL_PROFILE_STORAGE_KEY,
   STRENGTH_INPUTS_STORAGE_KEY,
   loadCardioInputs,
+  loadGripInputs,
   loadMuscleInputs,
   loadPhysicalProfile,
   loadPowerInputs,
@@ -18,6 +21,7 @@ import {
   subscribeMuscleInputs,
   subscribePhysicalProfile,
   subscribePowerInputs,
+  subscribeGripInputs,
   subscribeStrengthInputs,
 } from '../services/localStorageService';
 import type { ScoreMap } from '../types/scoring';
@@ -38,6 +42,7 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
     const unsubM = subscribeMuscleInputs(bump);
     const unsubPw = subscribePowerInputs(bump);
     const unsubSt = subscribeStrengthInputs(bump);
+    const unsubGrip = subscribeGripInputs(bump);
 
     const onStorage = (e: StorageEvent) => {
       const k = e.key;
@@ -47,6 +52,7 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
         k !== MUSCLE_INPUTS_STORAGE_KEY &&
         k !== POWER_INPUTS_STORAGE_KEY &&
         k !== STRENGTH_INPUTS_STORAGE_KEY &&
+        k !== GRIP_INPUTS_STORAGE_KEY &&
         k !== PHYSICAL_PROFILE_STORAGE_KEY
       ) {
         return;
@@ -60,6 +66,7 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
       unsubM();
       unsubPw();
       unsubSt();
+      unsubGrip();
       window.removeEventListener('storage', onStorage);
     };
   }, []);
@@ -70,6 +77,7 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
     const withCardio = mergeScoreMapWithResolvedCardio(scores, profile, loadCardioInputs());
     const withMuscle = mergeScoreMapWithResolvedMuscle(withCardio, profile, loadMuscleInputs());
     const withExplosive = mergeScoreMapWithResolvedExplosivePower(withMuscle, profile, loadPowerInputs());
-    return mergeScoreMapWithResolvedStrength(withExplosive, profile, loadStrengthInputs());
+    const withStrength = mergeScoreMapWithResolvedStrength(withExplosive, profile, loadStrengthInputs());
+    return mergeScoreMapWithResolvedGripStrength(withStrength, profile, loadGripInputs());
   }, [scores, localEpoch]);
 }

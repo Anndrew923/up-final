@@ -5,7 +5,7 @@
  * `guestRestricted` reserves fitness-style gating for tabs that should prompt guests (behavior TBD).
  */
 
-export type NavItemKey = 'community' | 'home' | 'assessment' | 'ladder' | 'history' | 'tools';
+export type NavItemKey = 'home' | 'assessment' | 'ladder' | 'history' | 'tools';
 
 /**
  * Icon identifiers for Phase 1 mapping (reuse fitness SVG shapes as React components).
@@ -24,7 +24,6 @@ export interface NavItemConfig {
   guestRestricted: boolean;
   /** i18n lookup: `t(labelKey, { ns: 'common' })` */
   labelKey:
-    | 'navbar.community'
     | 'navbar.home'
     | 'navbar.assessment'
     | 'navbar.ladder'
@@ -37,14 +36,6 @@ export interface NavItemConfig {
 
 export const NAV_ITEMS: readonly NavItemConfig[] = [
   {
-    key: 'community',
-    path: '/community',
-    guestRestricted: true,
-    labelKey: 'navbar.community',
-    iconId: 'people',
-    specNotes: 'Pro/community surface — entitlement TBD vs fitness guest modal',
-  },
-  {
     key: 'home',
     path: '/user-info',
     guestRestricted: false,
@@ -52,6 +43,14 @@ export const NAV_ITEMS: readonly NavItemConfig[] = [
     iconId: 'home',
     specNotes:
       'Fitness smart home: logged-in or guest → /user-info; else /landing — Phase 1 router',
+  },
+  {
+    key: 'tools',
+    path: '/training-tools',
+    guestRestricted: false,
+    labelKey: 'navbar.tools',
+    iconId: 'wrench-box',
+    specNotes: 'Utility deck and Pro cloud sync entry',
   },
   {
     key: 'assessment',
@@ -76,13 +75,6 @@ export const NAV_ITEMS: readonly NavItemConfig[] = [
     labelKey: 'navbar.history',
     iconId: 'clock',
     specNotes: 'Local-first history stays Core — no guest modal for browsing own records.',
-  },
-  {
-    key: 'tools',
-    path: '/training-tools',
-    guestRestricted: false,
-    labelKey: 'navbar.tools',
-    iconId: 'wrench-box',
   },
 ] as const;
 
