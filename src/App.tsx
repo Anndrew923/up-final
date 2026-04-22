@@ -18,6 +18,7 @@ const MuscleAssessmentPage = lazy(() => import('./pages/MuscleAssessmentPage'));
 const ExplosiveAssessmentPage = lazy(() => import('./pages/ExplosiveAssessmentPage'));
 const StrengthAssessmentPage = lazy(() => import('./pages/StrengthAssessmentPage'));
 const GripAssessmentPage = lazy(() => import('./pages/GripAssessmentPage'));
+const ArmSizeAssessmentPage = lazy(() => import('./pages/ArmSizeAssessmentPage'));
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   home: HomePage,
@@ -76,6 +77,11 @@ function GripRoute() {
   return withRouteSuspense(<GripAssessmentPage onBack={() => navigate(-1)} />);
 }
 
+function ArmSizeRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<ArmSizeAssessmentPage onBack={() => navigate(-1)} />);
+}
+
 export default function App() {
   return (
     <Routes>
@@ -102,6 +108,7 @@ export default function App() {
         <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

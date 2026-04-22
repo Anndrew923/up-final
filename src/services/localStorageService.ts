@@ -4,6 +4,7 @@ import type { MuscleInputsPersisted } from '../types/muscleInputs';
 import type { PowerInputsPersisted } from '../types/powerInputs';
 import type { StrengthInputsPersisted } from '../types/strengthInputs';
 import type { GripInputsPersisted } from '../types/gripInputs';
+import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
@@ -18,6 +19,7 @@ const STORAGE_KEYS = {
   powerInputs: 'up.powerInputs',
   strengthInputs: 'up.strengthInputs',
   gripInputs: 'up.gripInputs',
+  armSizeInputs: 'up.armSizeInputs',
 } as const;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
@@ -41,6 +43,9 @@ export const LOCAL_STRENGTH_INPUTS_CHANGED_EVENT = 'up-final-strength-inputs-cha
 
 export const GRIP_INPUTS_STORAGE_KEY = STORAGE_KEYS.gripInputs;
 export const LOCAL_GRIP_INPUTS_CHANGED_EVENT = 'up-final-grip-inputs-changed';
+
+export const ARM_SIZE_INPUTS_STORAGE_KEY = STORAGE_KEYS.armSizeInputs;
+export const LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT = 'up-final-arm-size-inputs-changed';
 
 function notifyProfileObservers(): void {
   if (typeof window === 'undefined') return;
@@ -75,6 +80,11 @@ function notifyStrengthInputsObservers(): void {
 function notifyGripInputsObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_GRIP_INPUTS_CHANGED_EVENT));
+}
+
+function notifyArmSizeInputsObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT));
 }
 
 export interface LocalProfile {
@@ -213,6 +223,21 @@ export function subscribeGripInputs(onChange: () => void): () => void {
   return () => window.removeEventListener(LOCAL_GRIP_INPUTS_CHANGED_EVENT, onChange);
 }
 
+export function saveArmSizeInputs(inputs: ArmSizeInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.armSizeInputs, JSON.stringify(inputs));
+  notifyArmSizeInputsObservers();
+}
+
+export function loadArmSizeInputs(): ArmSizeInputsPersisted | null {
+  return safeParse<ArmSizeInputsPersisted | null>(safeGetItem(STORAGE_KEYS.armSizeInputs), null);
+}
+
+export function subscribeArmSizeInputs(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT, onChange);
+}
+
 export function saveScores(scores: ScoreMap): void {
   safeSetItem(STORAGE_KEYS.scores, JSON.stringify(scores));
 }
@@ -245,4 +270,5 @@ export function clearLocalData(): void {
   notifyPowerInputsObservers();
   notifyStrengthInputsObservers();
   notifyGripInputsObservers();
+  notifyArmSizeInputsObservers();
 }

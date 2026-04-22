@@ -289,6 +289,12 @@
       "title": "Grip strength",
       "body": "Enter peak dynamometer kg. Formula uses a linear 1.4x baseline for male scores and a 1.6x female compensation on top. Scores can exceed 100 for myth-tier progression.",
       "cta": "Open grip assessment"
+    },
+    "armSize": {
+      "kicker": "Circumference",
+      "title": "Arm size assessment",
+      "body": "Enter upper-arm circumference (1–70 cm) and body fat (3–50%) to compute score. This score is for arm-size leaderboard only, and does not enter the six-axis radar or Home overall.",
+      "cta": "Open arm-size assessment"
     }
   },
   "strength": {
@@ -396,6 +402,29 @@
     "errors": {
       "missing-profile": "Add a complete physical profile on Home first.",
       "invalid-peak": "Enter a positive peak grip value in kg."
+    }
+  },
+  "armSize": {
+    "kicker": "Circumference",
+    "title": "Arm size assessment",
+    "subtitle": "Enter upper-arm circumference (1–70 cm) and body fat (3–50%) to compute your arm-size score. This score is stored for arm-size leaderboard use only and does not affect the six-axis radar or Home overall.",
+    "armLabel": "Upper-arm circumference (cm)",
+    "armPlaceholder": "e.g. 42",
+    "bodyFatLabel": "Body-fat percentage (%)",
+    "bodyFatPlaceholder": "e.g. 18",
+    "formulaHint": "Accepted inputs: upper-arm 1–70 cm, body fat 3–50%. Formula: score = (arm / 50) × (1 + (20 - body-fat) / 100) × 100. Result is rounded to 2 decimals.",
+    "capNoticeTitle": "Leaderboard value capped by axis ceiling",
+    "capNoticeBody": "When raw score exceeds the per-axis ceiling (200), leaderboard submission is stored as 200.",
+    "previewLabel": "Preview score",
+    "submittedScoreLabel": "Leaderboard submission value: {{score}}",
+    "calculate": "Calculate",
+    "saveLeaderboard": "Save leaderboard score (arm size)",
+    "submitDone": "Saved. Switch leaderboard metric to Arm size to view ranking.",
+    "errors": {
+      "invalid-arm-cm": "Enter a positive upper-arm circumference in cm.",
+      "arm-exceeds-max": "Upper-arm circumference cannot exceed 70 cm.",
+      "invalid-body-fat": "Enter a valid body-fat percentage number.",
+      "body-fat-out-of-range": "Body fat must be between 3% and 50%."
     }
   },
   "cardio": {
