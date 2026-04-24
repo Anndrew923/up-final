@@ -31,11 +31,15 @@ export default function ToolsPage() {
   const handleBackup = async () => {
     setSyncMsg(null);
     const r = await backupLocalToCloud();
-    setSyncMsg(
-      r.ok
-        ? t('tools.sync.backupOk', { ns: 'common' })
-        : t('tools.sync.backupFail', { ns: 'common' })
-    );
+    if (r.ok) {
+      setSyncMsg(t('tools.sync.backupOk', { ns: 'common' }));
+      return;
+    }
+    if (r.reason === 'auth-failed') {
+      setSyncMsg(t('tools.sync.authFail', { ns: 'common' }));
+      return;
+    }
+    setSyncMsg(t('tools.sync.backupFail', { ns: 'common' }));
   };
 
   const handleRestore = async () => {
@@ -47,6 +51,10 @@ export default function ToolsPage() {
     }
     if (r.reason === 'empty-restore') {
       setSyncMsg(t('tools.sync.restoreEmpty', { ns: 'common' }));
+      return;
+    }
+    if (r.reason === 'auth-failed') {
+      setSyncMsg(t('tools.sync.authFail', { ns: 'common' }));
       return;
     }
     setSyncMsg(t('tools.sync.restoreFail', { ns: 'common' }));

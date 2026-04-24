@@ -5,7 +5,20 @@ import {
   type FirebaseApp,
   type FirebaseOptions,
 } from 'firebase/app';
-import { getAuth, signInAnonymously, type Auth } from 'firebase/auth';
+import {
+  getAuth,
+  getRedirectResult,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInAnonymously,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  type Auth,
+  type UserCredential,
+  type User,
+  type Unsubscribe,
+} from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
 export interface FirebaseConfig {
@@ -22,6 +35,8 @@ function trimEnv(value: string | undefined): string {
 let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
+const GOOGLE_REDIRECT_PENDING_KEY = 'up.auth.googleRedirectPending';
+const GOOGLE_REDIRECT_RETRY_KEY = 'up.auth.googleRedirectRetry';
 
 /**
  * Reads `VITE_FIREBASE_*` from `import.meta.env`.
@@ -77,6 +92,158 @@ export function isFirestoreConfigured(): boolean {
 
 export function getFirebaseAuth(): Auth | null {
   return firebaseAuth;
+}
+
+export function getCurrentFirebaseUser(): User | null {
+  return firebaseAuth?.currentUser ?? null;
+}
+
+export function onFirebaseAuthStateChanged(listener: (user: User | null) => void): Unsubscribe {
+  if (!firebaseAuth) {
+    listener(null);
+    return () => {};
+  }
+  return onAuthStateChanged(firebaseAuth, listener);
+}
+
+function readSessionFlag(key: string): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.sessionStorage.getItem(key) === '1';
+}
+
+function writeSessionFlag(key: string, value: boolean): void {
+  if (typeof window === 'undefined') return;
+  if (value) {
+    window.sessionStorage.setItem(key, '1');
+    return;
+  }
+  window.sessionStorage.removeItem(key);
+}
+
+function markGoogleRedirectPending(): void {
+  writeSessionFlag(GOOGLE_REDIRECT_PENDING_KEY, true);
+}
+
+function clearGoogleRedirectPending(): void {
+  writeSessionFlag(GOOGLE_REDIRECT_PENDING_KEY, false);
+  writeSessionFlag(GOOGLE_REDIRECT_RETRY_KEY, false);
+}
+
+export function isGoogleRedirectPending(): boolean {
+  return readSessionFlag(GOOGLE_REDIRECT_PENDING_KEY);
+}
+
+async function startGoogleRedirect(auth: Auth, provider: GoogleAuthProvider): Promise<null> {
+  markGoogleRedirectPending();
+  await signInWithRedirect(auth, provider);
+  return null;
+}
+
+/**
+ * Consume Firebase redirect result early after app bootstrap.
+ * This prevents transient redirect errors from surfacing as noisy unhandled flashes.
+ */
+export async function consumeFirebaseRedirectResult(): Promise<UserCredential | null> {
+  if (!firebaseAuth) return null;
+  try {
+    const result = await getRedirectResult(firebaseAuth);
+    if (result?.user) {
+      clearGoogleRedirectPending();
+    } else if (isGoogleRedirectPending()) {
+      // No result after returning from redirect means flow has ended; clear stale pending flag.
+      clearGoogleRedirectPending();
+    }
+    if (import.meta.env.DEV && result?.user) {
+      console.warn('[auth] redirect result consumed', {
+        uid: result.user.uid,
+        isAnonymous: result.user.isAnonymous,
+        providerId: result.providerId,
+      });
+    }
+    return result;
+  } catch (error) {
+    const code = getFirebaseAuthErrorCode(error);
+    if (
+      (code === 'auth/credential-already-in-use' ||
+        code === 'auth/account-exists-with-different-credential') &&
+      !readSessionFlag(GOOGLE_REDIRECT_RETRY_KEY)
+    ) {
+      writeSessionFlag(GOOGLE_REDIRECT_RETRY_KEY, true);
+      if (import.meta.env.DEV) {
+        console.warn('[auth] redirect result conflict, retrying once with signed-out state', { code });
+      }
+      await signOut(firebaseAuth);
+      const provider = new GoogleAuthProvider();
+      await startGoogleRedirect(firebaseAuth, provider);
+      return null;
+    }
+    if (import.meta.env.DEV) {
+      console.warn('[auth] consume redirect result failed', { code, error });
+    }
+    clearGoogleRedirectPending();
+    return null;
+  }
+}
+
+function getFirebaseAuthErrorCode(error: unknown): string {
+  return typeof error === 'object' && error && 'code' in error
+    ? String((error as { code?: unknown }).code)
+    : '';
+}
+
+/**
+ * Starts Google redirect sign-in for all web cases.
+ * Returns null because redirect flow completes after page reload.
+ */
+export async function signInWithGoogleWeb(): Promise<User | null> {
+  if (!firebaseAuth) {
+    throw new Error('firebase-auth-not-configured');
+  }
+  const provider = new GoogleAuthProvider();
+
+  const currentUser = firebaseAuth.currentUser;
+  const wasAnonymous = Boolean(currentUser?.isAnonymous);
+  if (wasAnonymous) {
+    // Keep this in the same user gesture path, then open exactly one popup sign-in.
+    await signOut(firebaseAuth);
+  }
+
+  try {
+    if (import.meta.env.DEV) {
+      console.warn('[auth] starting google popup sign-in', { wasAnonymous });
+    }
+    const credential = await signInWithPopup(firebaseAuth, provider);
+    clearGoogleRedirectPending();
+    return credential.user;
+  } catch (error) {
+    const code = getFirebaseAuthErrorCode(error);
+    if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
+      if (import.meta.env.DEV) {
+        console.warn('[auth] popup unavailable, switching to redirect sign-in', { code, wasAnonymous });
+      }
+      return startGoogleRedirect(firebaseAuth, provider);
+    }
+    if (import.meta.env.DEV) {
+      console.warn('[auth] google popup sign-in failed', { code, error, wasAnonymous });
+    }
+    throw error;
+  }
+}
+
+export async function signInAnonymouslyWeb(): Promise<User> {
+  if (!firebaseAuth) {
+    throw new Error('firebase-auth-not-configured');
+  }
+  if (firebaseAuth.currentUser) {
+    return firebaseAuth.currentUser;
+  }
+  const credential = await signInAnonymously(firebaseAuth);
+  return credential.user;
+}
+
+export async function signOutFirebase(): Promise<void> {
+  if (!firebaseAuth) return;
+  await signOut(firebaseAuth);
 }
 
 /**

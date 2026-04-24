@@ -22,7 +22,7 @@ import {
   LADDER_WEIGHT_BUCKETS,
   type LadderProfileProjection,
 } from '../types/ladderProfile';
-import { ensureFirebaseAuthReady, getFirestoreDb } from './firebaseClient';
+import { getCurrentFirebaseUser, getFirestoreDb } from './firebaseClient';
 import { loadPhysicalProfile } from './localStorageService';
 import { ENTRIES_SUBCOLLECTION, LEADERBOARDS_COLLECTION } from './firestorePaths';
 import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
@@ -272,15 +272,11 @@ async function resolveLeaderboardUid(
     return { uid: requestedUid, backend: 'memory' };
   }
 
-  try {
-    const uid = await ensureFirebaseAuthReady();
-    if (!uid) {
-      return { backend: 'error', reason: 'unknown' };
-    }
-    return { uid, backend: 'firestore' };
-  } catch {
+  const currentUser = getCurrentFirebaseUser();
+  if (!currentUser || currentUser.isAnonymous) {
     return { backend: 'error', reason: 'unknown' };
   }
+  return { uid: currentUser.uid, backend: 'firestore' };
 }
 
 export async function submitLeaderboardScore(params: {

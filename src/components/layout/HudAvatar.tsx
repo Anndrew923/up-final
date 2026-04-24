@@ -1,10 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { useLocalProfileBrief } from '../../hooks/useLocalProfileBrief';
+import { useAuthStore } from '../../stores/authStore';
 
 /** Commander avatar slot — initials from local profile (`localStorage`). */
 export default function HudAvatar() {
   const { t } = useTranslation();
-  const { initial, displayName } = useLocalProfileBrief();
+  const { initial: localInitial, displayName: localDisplayName } = useLocalProfileBrief();
+  const authStatus = useAuthStore((s) => s.status);
+  const authDisplayName = useAuthStore((s) => s.displayName);
+  const displayName = authStatus === 'signed-in' ? authDisplayName : localDisplayName;
+  const initial = (displayName?.charAt(0) || localInitial || 'U').toUpperCase();
 
   return (
     <div

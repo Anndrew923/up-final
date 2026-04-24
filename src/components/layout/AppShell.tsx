@@ -1,7 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import BottomNav from '../navigation/BottomNav';
-import HudAvatar from './HudAvatar';
+import HudProfileControls from './HudProfileControls';
 
 export interface AppShellProps {
   /** Optional: render routes via parent `<Outlet />` when used as route element (default). */
@@ -34,7 +34,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         className="pointer-events-none fixed inset-0 z-[40] flex flex-col justify-start"
       >
         <div className="shell-hud-slot pointer-events-auto flex min-h-14 shrink-0 items-center px-4 pt-[env(safe-area-inset-top,0px)]">
-          <HudAvatar />
+          <HudProfileControls />
         </div>
       </div>
 

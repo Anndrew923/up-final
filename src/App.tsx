@@ -4,11 +4,17 @@ import AppShell from './components/layout/AppShell';
 import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
+import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
+import { isFirestoreConfigured } from './services/firebaseClient';
+import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
+import { useAuthStore } from './stores/authStore';
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
+const AuthChoicePage = lazy(() => import('./pages/AuthChoicePage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LadderPage = lazy(() => import('./pages/LadderPage'));
 const JoinArenaPage = lazy(() => import('./pages/JoinArenaPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const LeaderboardDebugPage = lazy(() => import('./pages/LeaderboardDebugPage'));
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
@@ -32,6 +38,14 @@ function RouteFallback() {
   return <main className="ui-shell min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />;
 }
 
+function AuthBootstrapFallback() {
+  return (
+    <main className="ui-shell min-h-[40vh]">
+      <div className="min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />
+    </main>
+  );
+}
+
 function withRouteSuspense(element: ReactElement): ReactElement {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 }
@@ -40,6 +54,11 @@ function JoinArenaRoute() {
   const navigate = useNavigate();
 
   return withRouteSuspense(<JoinArenaPage onBack={() => navigate(-1)} />);
+}
+
+function SettingsRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<SettingsPage onBack={() => navigate(-1)} />);
 }
 
 function LeaderboardDebugRoute() {
@@ -83,9 +102,38 @@ function ArmSizeRoute() {
 }
 
 export default function App() {
+  useAuthSessionBootstrap();
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const hasOnboarding = hasCompletedAuthOnboarding();
+  const isFirebaseReady = isFirestoreConfigured();
+  const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
+  const shouldForceAuthChoice =
+    isFirebaseReady &&
+    authStatus !== 'loading' &&
+    !isGoogleSignedIn &&
+    !hasOnboarding;
+  const shouldShowAuthBootstrapFallback =
+    isFirebaseReady && authStatus === 'loading' && !isGoogleSignedIn && !hasOnboarding;
+
+  if (shouldShowAuthBootstrapFallback) {
+    return <AuthBootstrapFallback />;
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<AppShell />}>
+      <Route
+        path={toRelativeRoutePath(ROUTES.authChoice)}
+        element={
+          shouldForceAuthChoice
+            ? withRouteSuspense(<AuthChoicePage />)
+            : <Navigate to={ROUTES.home} replace />
+        }
+      />
+      <Route
+        path="/"
+        element={shouldForceAuthChoice ? <Navigate to={ROUTES.authChoice} replace /> : <AppShell />}
+      >
         <Route index element={<Navigate to={ROUTES.home} replace />} />
         {NAV_ITEMS.map((item) => {
           const Tab = NAV_TAB_PAGE[item.key];
@@ -97,6 +145,7 @@ export default function App() {
             />
           );
         })}
+        <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
         <Route
           path={toRelativeRoutePath(ROUTES.leaderboardDebug)}

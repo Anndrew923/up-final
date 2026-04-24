@@ -9,6 +9,8 @@ import {
   purchaseProSubscription,
   restorePurchasesFromDevice,
 } from '../services/subscriptionService';
+import { signInWithGoogleWeb } from '../services/firebaseClient';
+import { useAuthStore } from '../stores/authStore';
 import type { EntitlementState } from '../types/entitlement';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
@@ -19,10 +21,16 @@ export interface JoinArenaPageProps {
 const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
-  const [banner, setBanner] = useState<'idle' | 'restore-ok' | 'restore-empty' | 'core'>('idle');
+  const [banner, setBanner] = useState<
+    'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail'
+  >('idle');
+  const [authBusy, setAuthBusy] = useState(false);
 
   const isPro = useEntitlementStore((s) => s.isPro);
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const signedInDisplayName = useAuthStore((s) => s.displayName);
 
   const entitlement = useEntitlementStore(
     useShallow(
@@ -38,9 +46,29 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   );
 
   const coreOwned = hasCoreAccess(entitlement);
+  const isGoogleLinked = authStatus === 'signed-in' && !isAnonymous;
+
+  const handleGoogleSignIn = async () => {
+    setBanner('idle');
+    setAuthBusy(true);
+    try {
+      const user = await signInWithGoogleWeb();
+      if (user) {
+        setBanner('auth-ok');
+      }
+    } catch {
+      setBanner('auth-fail');
+    } finally {
+      setAuthBusy(false);
+    }
+  };
 
   const handleSubscribe = () => {
     setBanner('idle');
+    if (!isGoogleLinked) {
+      setBanner('auth-fail');
+      return;
+    }
     if (!coreOwned) {
       setBanner('core');
       return;
@@ -109,6 +137,16 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('restoreEmpty')}
           </p>
         ) : null}
+        {banner === 'auth-ok' ? (
+          <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            {t('googleLoginSuccess', { name: signedInDisplayName })}
+          </p>
+        ) : null}
+        {banner === 'auth-fail' ? (
+          <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {t('googleLoginFail')}
+          </p>
+        ) : null}
 
         <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-bg-card/80 shadow-panel backdrop-blur-md">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/60 to-transparent" />
@@ -134,6 +172,29 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
               {t('disclaimer')}
             </p>
           </div>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            {t('identityTitle')}
+          </p>
+          <p className="mt-2 text-sm text-zinc-300">
+            {isGoogleLinked
+              ? t('signedInAs', { name: signedInDisplayName })
+              : t('identityRequired')}
+          </p>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={authBusy || isGoogleLinked}
+            className="mt-4 rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {authBusy
+              ? t('googleLoginLoading')
+              : isGoogleLinked
+                ? t('googleLoginDone')
+                : t('googleLogin')}
+          </button>
         </section>
 
         {!coreOwned ? (
@@ -168,7 +229,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           <button
             type="button"
             onClick={handleSubscribe}
-            disabled={!coreOwned || (subscriptionStatus === 'pro' && isPro)}
+            disabled={!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)}
             className="rounded-xl border border-accent-primary bg-accent-primary px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(255,140,0,0.35)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
           >
             {t('subscribeNow')}

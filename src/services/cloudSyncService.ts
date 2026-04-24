@@ -6,6 +6,15 @@ export type CloudSyncOutcome =
   | { ok: true }
   | { ok: false; reason: 'unavailable' | 'empty-restore' | 'auth-failed' | 'unknown' };
 
+type CloudSyncErrorReason = Extract<CloudSyncOutcome, { ok: false }>['reason'];
+
+function mapCloudSyncError(error: unknown): CloudSyncErrorReason {
+  if (error instanceof Error && error.message === 'cloud-auth-required') {
+    return 'auth-failed';
+  }
+  return 'unknown';
+}
+
 /**
  * Pushes local scores + history to Firestore (Pro + Firebase only).
  */
@@ -22,8 +31,8 @@ export async function backupLocalToCloud(): Promise<CloudSyncOutcome> {
       updatedAt: new Date().toISOString(),
     });
     return { ok: true };
-  } catch {
-    return { ok: false, reason: 'unknown' };
+  } catch (error) {
+    return { ok: false, reason: mapCloudSyncError(error) };
   }
 }
 
@@ -44,7 +53,7 @@ export async function restoreCloudToLocal(): Promise<CloudSyncOutcome> {
     saveScores(payload.scores);
     saveHistory(payload.history);
     return { ok: true };
-  } catch {
-    return { ok: false, reason: 'unknown' };
+  } catch (error) {
+    return { ok: false, reason: mapCloudSyncError(error) };
   }
 }

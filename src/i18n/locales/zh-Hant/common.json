@@ -159,6 +159,7 @@
     "sync": {
       "backupOk": "已寫入你的 Pro 雲端槽位。",
       "backupFail": "備份不可用（請確認 Pro、Firebase 與匿名登入）。",
+      "authFail": "雲端同步需要已登入的 Google 帳號（不可為匿名）。",
       "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
       "restoreEmpty": "尚無雲端快照。",
       "restoreFail": "還原失敗 — 請確認 Pro、Firebase 設定與網路。"
@@ -597,5 +598,37 @@
     "ladder": "天梯",
     "history": "紀錄",
     "tools": "工具"
+  },
+  "shellAvatarFallback": "訪客",
+  "shellAvatarAria": "使用者頭像，縮寫 {{initial}}",
+  "shellSettingsAria": "開啟設定",
+  "settings": {
+    "kicker": "控制中心",
+    "title": "設定",
+    "subtitle": "集中管理帳號身分與戰場權限。",
+    "accountSection": "帳號",
+    "loadingAuth": "正在確認登入狀態...",
+    "signedOut": "尚未登入",
+    "signedInAs": "目前登入：{{name}}",
+    "signInGoogle": "使用 Google 登入",
+    "signInBusy": "登入中...",
+    "signInFail": "這次登入沒有完成，請再試一次。若沒有跳出登入視窗，請允許瀏覽器彈出視窗並確認網路連線。",
+    "signOut": "登出",
+    "signOutBusy": "登出中...",
+    "signOutOk": "已成功登出。",
+    "signOutFail": "登出失敗，請稍後再試。",
+    "manageArena": "管理戰場訂閱"
+  },
+  "authChoice": {
+    "kicker": "身份選擇",
+    "title": "歡迎使用",
+    "subtitle": "先選擇登入方式，就能開始評測與記錄。",
+    "google": "使用 Google 登入",
+    "googleBusy": "登入中...",
+    "guest": "先匿名使用",
+    "guestBusy": "準備中...",
+    "fail": "這次沒有成功進入，請再試一次。若沒有跳出視窗，請允許瀏覽器彈出視窗並確認網路連線。",
+    "note": "你可以先匿名體驗，之後再登入 Google 綁定同一帳號。",
+    "continue": "繼續"
   }
 }

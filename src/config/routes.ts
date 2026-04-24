@@ -11,6 +11,8 @@ const NAV_ROUTE_MAP = Object.fromEntries(NAV_ITEMS.map((item) => [item.key, item
 
 export const ROUTES = {
   root: '/' as const,
+  authChoice: '/auth-choice' as const,
+  settings: '/settings' as const,
   joinArena: '/join-arena' as const,
   leaderboardDebug: '/debug/leaderboard' as const,
   ffmi: '/ffmi' as const,
