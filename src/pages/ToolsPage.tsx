@@ -81,6 +81,39 @@ export default function ToolsPage() {
         <section className="grid gap-6">
           <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-400">
+              {t('tools.calculators.title', { ns: 'common' })}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+              {t('tools.calculators.subtitle', { ns: 'common' })}
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Link
+                to={ROUTES.oneRmCalculator}
+                className="group rounded-xl border border-accent-primary/25 bg-black/25 p-4 transition hover:border-accent-primary/45 hover:bg-black/40"
+              >
+                <p className="text-sm font-semibold text-zinc-100">
+                  {t('tools.calculators.oneRm.title', { ns: 'common' })}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                  {t('tools.calculators.oneRm.cardBody', { ns: 'common' })}
+                </p>
+              </Link>
+              <Link
+                to={ROUTES.plateCalculator}
+                className="group rounded-xl border border-accent-primary/25 bg-black/25 p-4 transition hover:border-accent-primary/45 hover:bg-black/40"
+              >
+                <p className="text-sm font-semibold text-zinc-100">
+                  {t('tools.calculators.plates.title', { ns: 'common' })}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                  {t('tools.calculators.plates.cardBody', { ns: 'common' })}
+                </p>
+              </Link>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-400">
               {t('tools.moduleConsole', { ns: 'common' })}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-300">

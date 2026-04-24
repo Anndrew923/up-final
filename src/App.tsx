@@ -28,6 +28,8 @@ const ExplosiveAssessmentPage = lazy(() => import('./pages/ExplosiveAssessmentPa
 const StrengthAssessmentPage = lazy(() => import('./pages/StrengthAssessmentPage'));
 const GripAssessmentPage = lazy(() => import('./pages/GripAssessmentPage'));
 const ArmSizeAssessmentPage = lazy(() => import('./pages/ArmSizeAssessmentPage'));
+const OneRmCalculatorPage = lazy(() => import('./pages/OneRmCalculatorPage'));
+const PlateCalculatorPage = lazy(() => import('./pages/PlateCalculatorPage'));
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   home: HomePage,
@@ -119,6 +121,16 @@ function ArmSizeRoute() {
   return withRouteSuspense(<ArmSizeAssessmentPage onBack={() => navigate(-1)} />);
 }
 
+function OneRmCalculatorRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<OneRmCalculatorPage onBack={() => navigate(-1)} />);
+}
+
+function PlateCalculatorRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<PlateCalculatorPage onBack={() => navigate(-1)} />);
+}
+
 export default function App() {
   useAuthSessionBootstrap();
   const authStatus = useAuthStore((s) => s.status);
@@ -179,6 +191,8 @@ export default function App() {
         <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.oneRmCalculator)} element={<OneRmCalculatorRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.plateCalculator)} element={<PlateCalculatorRoute />} />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

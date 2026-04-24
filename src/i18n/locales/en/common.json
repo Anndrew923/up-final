@@ -292,6 +292,72 @@
     "syncBackup": "Backup to cloud now",
     "syncRestore": "Restore from cloud",
     "syncUpgrade": "Unlock Pro",
+    "calculators": {
+      "title": "Training calculators",
+      "subtitle": "Quick tools for 1RM estimation and plate loading before your sets.",
+      "oneRm": {
+        "kicker": "Strength tool",
+        "title": "1RM calculator",
+        "subtitle": "Enter weight and reps to estimate your one-rep max.",
+        "cardBody": "Estimate 1RM with Epley, Brzycki, Lombardi, or averaged method.",
+        "weightLabel": "Weight (kg)",
+        "weightPlaceholder": "e.g. 100",
+        "repsLabel": "Repetitions (reps)",
+        "repsPlaceholder": "e.g. 5",
+        "methodLabel": "Formula",
+        "methodSheetTitle": "Choose 1RM formula",
+        "methods": {
+          "average": "Average (recommended)",
+          "epley": "Epley",
+          "brzycki": "Brzycki",
+          "lombardi": "Lombardi"
+        },
+        "resultLabel": "Estimated 1RM",
+        "resultValue": "{{value}} kg",
+        "resultEmpty": "—",
+        "hint": "Note: higher-rep sets usually have larger estimation error; prefer lower-rep near-failure sets when available."
+      },
+      "plates": {
+        "kicker": "Strength tool",
+        "title": "Plate calculator",
+        "subtitle": "Enter total target and barbell weight to get per-side plate suggestions.",
+        "cardBody": "Auto-split each side with common plate denominations.",
+        "unitLabel": "Unit",
+        "unitSheetTitle": "Choose unit",
+        "unitOptions": {
+          "kg": "Kilograms (kg)",
+          "lb": "Pounds (lb)"
+        },
+        "plateSetLabel": "Plate set",
+        "plateSetSheetTitle": "Choose plate set",
+        "plateSetOptions": {
+          "commercial": "Commercial gym",
+          "competition": "Competition set",
+          "homeBasic": "Home basic"
+        },
+        "barbellTypeLabel": "Barbell type",
+        "barbellSheetTitle": "Choose barbell type",
+        "barbellOptions": {
+          "olympic": "Standard barbell",
+          "women": "Women's barbell",
+          "technique": "Technique bar",
+          "custom": "Custom bar weight"
+        },
+        "targetLabel": "Target total weight ({{unit}})",
+        "targetPlaceholder": "e.g. 140",
+        "barLabel": "Barbell weight ({{unit}})",
+        "barPlaceholder": "e.g. 20",
+        "barResolvedLabel": "Applied barbell weight",
+        "barResolvedValue": "{{value}} {{unit}}",
+        "perSideLabel": "Per-side target",
+        "perSideValue": "{{value}} {{unit}} / side",
+        "plateRow": "{{value}} {{unit}}",
+        "resultEmpty": "—",
+        "inputHint": "Enter a valid target (total weight must be greater than barbell weight).",
+        "leftoverWarning": "Current plate set cannot match target exactly; {{value}} {{unit}} remains per side.",
+        "activePlateSet": "Active plate set: {{values}} ({{unit}})."
+      }
+    },
     "sync": {
       "backupOk": "Backup written to your Pro cloud slot.",
       "backupFail": "Backup unavailable (check Pro + Firebase + anonymous auth).",

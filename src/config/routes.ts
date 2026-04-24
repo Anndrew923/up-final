@@ -25,6 +25,8 @@ export const ROUTES = {
   strength: '/strength' as const,
   grip: '/grip' as const,
   armSize: '/arm-size' as const,
+  oneRmCalculator: '/tools/one-rm' as const,
+  plateCalculator: '/tools/plates' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

@@ -13,6 +13,7 @@ export interface OptionSelectSheetProps<T extends string> {
   placeholder: string;
   title: string;
   options: readonly OptionSelectItem<T>[];
+  allowEmpty?: boolean;
   'aria-invalid'?: boolean;
 }
 
@@ -22,6 +23,7 @@ export default function OptionSelectSheet<T extends string>({
   placeholder,
   title,
   options,
+  allowEmpty = true,
   'aria-invalid': ariaInvalid,
 }: OptionSelectSheetProps<T>) {
   const { t } = useTranslation('common');
@@ -79,13 +81,15 @@ export default function OptionSelectSheet<T extends string>({
 
           <div className="mt-5 max-h-[56vh] overflow-y-auto pr-1">
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                className="min-h-14 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-left text-base font-medium text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800"
-                onClick={() => pick('')}
-              >
-                {placeholder}
-              </button>
+              {allowEmpty ? (
+                <button
+                  type="button"
+                  className="min-h-14 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 text-left text-base font-medium text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800"
+                  onClick={() => pick('')}
+                >
+                  {placeholder}
+                </button>
+              ) : null}
               {options.map((option) => (
                 <button
                   key={option.value}
