@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import i18n, { toSupportedLng } from '../i18n';
 import { ROUTES } from '../config/routes';
 import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
@@ -60,12 +59,6 @@ export default function ToolsPage() {
     setSyncMsg(t('tools.sync.restoreFail', { ns: 'common' }));
   };
 
-  const toggleLocale = () => {
-    const current = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
-    const next: 'en' | 'zh-Hant' = current === 'zh-Hant' ? 'en' : 'zh-Hant';
-    void i18n.changeLanguage(next);
-  };
-
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
@@ -85,7 +78,7 @@ export default function ToolsPage() {
           </p>
         </header>
 
-        <section className="grid gap-6 md:grid-cols-2">
+        <section className="grid gap-6">
           <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-400">
               {t('tools.moduleConsole', { ns: 'common' })}
@@ -93,21 +86,6 @@ export default function ToolsPage() {
             <p className="mt-3 text-sm leading-relaxed text-zinc-300">
               {t('tools.consoleBody', { ns: 'common' })}
             </p>
-          </article>
-          <article className="rounded-2xl border border-accent-info/25 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-accent-info">
-              {t('tools.moduleLanguage', { ns: 'common' })}
-            </h2>
-            <p className="mt-3 text-sm text-zinc-400">
-              {t('tools.languageHint', { ns: 'common' })}
-            </p>
-            <button
-              type="button"
-              className="ui-btn mt-4 border-accent-info/40 text-accent-info hover:bg-accent-info/10"
-              onClick={toggleLocale}
-            >
-              {t('tools.languageToggle', { ns: 'common' })}
-            </button>
           </article>
         </section>
 

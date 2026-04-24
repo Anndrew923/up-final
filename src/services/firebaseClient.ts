@@ -10,6 +10,7 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithPopup,
   signInAnonymously,
   signInWithPopup,
   signInWithRedirect,
@@ -244,6 +245,21 @@ export async function signInAnonymouslyWeb(): Promise<User> {
 export async function signOutFirebase(): Promise<void> {
   if (!firebaseAuth) return;
   await signOut(firebaseAuth);
+}
+
+/**
+ * Re-authenticate current signed-in Google user for sensitive actions (e.g. delete account).
+ */
+export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
+  if (!firebaseAuth) {
+    throw new Error('firebase-auth-not-configured');
+  }
+  const user = firebaseAuth.currentUser;
+  if (!user || user.isAnonymous) {
+    throw new Error('auth-not-ready');
+  }
+  const provider = new GoogleAuthProvider();
+  await reauthenticateWithPopup(user, provider);
 }
 
 /**

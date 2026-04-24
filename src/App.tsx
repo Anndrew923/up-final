@@ -15,6 +15,9 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const LadderPage = lazy(() => import('./pages/LadderPage'));
 const JoinArenaPage = lazy(() => import('./pages/JoinArenaPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const LeaderboardDebugPage = lazy(() => import('./pages/LeaderboardDebugPage'));
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
@@ -59,6 +62,21 @@ function JoinArenaRoute() {
 function SettingsRoute() {
   const navigate = useNavigate();
   return withRouteSuspense(<SettingsPage onBack={() => navigate(-1)} />);
+}
+
+function AboutRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<AboutPage onBack={() => navigate(-1)} />);
+}
+
+function ContactRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<ContactPage onBack={() => navigate(-1)} />);
+}
+
+function PrivacyPolicyRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<PrivacyPolicyPage onBack={() => navigate(-1)} />);
 }
 
 function LeaderboardDebugRoute() {
@@ -146,6 +164,9 @@ export default function App() {
           );
         })}
         <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.privacyPolicy)} element={<PrivacyPolicyRoute />} />
         <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
         <Route
           path={toRelativeRoutePath(ROUTES.leaderboardDebug)}

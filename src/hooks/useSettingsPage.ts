@@ -1,37 +1,62 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
+import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
 
-export type SettingsBanner = 'idle' | 'sign-in-fail' | 'sign-out-ok' | 'sign-out-fail';
+export type SettingsBanner =
+  | 'idle'
+  | 'sign-in-fail'
+  | 'sign-out-ok'
+  | 'sign-out-fail'
+  | 'delete-success'
+  | 'delete-requires-recent-login'
+  | 'delete-reauth-fail'
+  | 'delete-cloud-partial'
+  | 'delete-auth-fail'
+  | 'delete-not-allowed';
 
 export interface SettingsPageState {
   authStatus: 'loading' | 'signed-out' | 'signed-in';
   displayName: string;
   email: string | null;
   isAnonymous: boolean;
-  busyAction: 'none' | 'sign-in' | 'sign-out';
+  locale: SupportedLng;
+  busyAction: 'none' | 'sign-in' | 'sign-out' | 'delete-account';
   banner: SettingsBanner;
   canSignIn: boolean;
   canSignOut: boolean;
+  canDeleteAccount: boolean;
+  goToAbout(): void;
+  goToContact(): void;
+  goToPrivacyPolicy(): void;
   goToJoinArena(): void;
+  toggleLocale(): void;
   signInGoogle(): Promise<void>;
   signOut(): Promise<void>;
+  deleteAccount(): Promise<void>;
 }
 
 export function useSettingsPage(): SettingsPageState {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const authStatus = useAuthStore((s) => s.status);
   const displayName = useAuthStore((s) => s.displayName);
   const email = useAuthStore((s) => s.email);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const [busyAction, setBusyAction] = useState<'none' | 'sign-in' | 'sign-out'>('none');
+  const [busyAction, setBusyAction] = useState<'none' | 'sign-in' | 'sign-out' | 'delete-account'>(
+    'none'
+  );
   const [banner, setBanner] = useState<SettingsBanner>('idle');
+  const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
 
   const canSignIn = authStatus !== 'loading' && !isGoogleSignedIn && busyAction === 'none';
   const canSignOut = isGoogleSignedIn && busyAction === 'none';
+  const canDeleteAccount = isGoogleSignedIn && busyAction === 'none';
 
   const state = useMemo<SettingsPageState>(
     () => ({
@@ -39,12 +64,27 @@ export function useSettingsPage(): SettingsPageState {
       displayName,
       email,
       isAnonymous,
+      locale,
       busyAction,
       banner,
       canSignIn,
       canSignOut,
+      canDeleteAccount,
+      goToAbout() {
+        navigate(ROUTES.about);
+      },
+      goToContact() {
+        navigate(ROUTES.contact);
+      },
+      goToPrivacyPolicy() {
+        navigate(ROUTES.privacyPolicy);
+      },
       goToJoinArena() {
         navigate(ROUTES.joinArena);
+      },
+      toggleLocale() {
+        const next: SupportedLng = locale === 'zh-Hant' ? 'en' : 'zh-Hant';
+        void i18n.changeLanguage(next);
       },
       async signInGoogle() {
         if (!canSignIn) return;
@@ -78,8 +118,57 @@ export function useSettingsPage(): SettingsPageState {
           setBusyAction('none');
         }
       },
+      async deleteAccount() {
+        if (!canDeleteAccount) {
+          setBanner('delete-not-allowed');
+          return;
+        }
+        const accepted = window.confirm(t('settings.deleteConfirm', { ns: 'common' }));
+        if (!accepted) return;
+
+        setBanner('idle');
+        setBusyAction('delete-account');
+        const result = await deleteSignedInAccount();
+        if (result.ok) {
+          setBanner('delete-success');
+          navigate(ROUTES.authChoice, { replace: true });
+          setBusyAction('none');
+          return;
+        }
+
+        if (result.code === 'auth/requires-recent-login') {
+          setBanner('delete-requires-recent-login');
+        } else if (result.code === 'reauth-fail') {
+          setBanner('delete-reauth-fail');
+        } else if (result.code === 'cloud-delete-partial') {
+          setBanner('delete-cloud-partial');
+          navigate(ROUTES.authChoice, { replace: true });
+        } else if (
+          result.code === 'auth-delete-fail' ||
+          result.code === 'auth-not-ready' ||
+          result.code === 'local-cleanup-fail'
+        ) {
+          setBanner('delete-auth-fail');
+        } else {
+          setBanner('delete-not-allowed');
+        }
+        setBusyAction('none');
+      },
     }),
-    [authStatus, displayName, email, isAnonymous, busyAction, banner, canSignIn, canSignOut, navigate]
+    [
+      authStatus,
+      displayName,
+      email,
+      isAnonymous,
+      locale,
+      busyAction,
+      banner,
+      canSignIn,
+      canSignOut,
+      canDeleteAccount,
+      t,
+      navigate,
+    ]
   );
 
   return state;
