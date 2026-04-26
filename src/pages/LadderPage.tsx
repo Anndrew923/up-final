@@ -592,12 +592,12 @@ export default function LadderPage() {
                     : 'bg-zinc-900/40 border-l-2 border-l-zinc-700 border-y border-r border-zinc-800/80 hover:bg-zinc-800/60';
               const meHighlightClass = isMe ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10' : '';
               const rankClass = isRank1
-                ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-sm sm:text-base'
+                ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-xs sm:text-sm'
                 : isRank2
-                  ? 'text-slate-300 font-bold text-sm sm:text-base'
+                  ? 'text-slate-300 font-bold text-xs sm:text-sm'
                   : isRank3
-                    ? 'text-orange-400 font-bold text-sm sm:text-base'
-                    : 'text-zinc-500 font-medium text-xs sm:text-sm';
+                    ? 'text-orange-400 font-bold text-xs sm:text-sm'
+                    : 'text-zinc-500 font-medium text-[11px] sm:text-xs';
               const scoreClass = isRank1
                 ? 'text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]'
                 : 'text-accent-primary group-hover:text-cyan-300';
@@ -612,10 +612,10 @@ export default function LadderPage() {
                     }
                     rowRefs.current.set(row.uid, el);
                   }}
-                  className={`group relative flex items-center justify-between gap-4 overflow-hidden rounded-md px-4 py-3 text-sm transition-all duration-200 ${rowTierClass} ${meHighlightClass}`}
+                  className={`group relative flex items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
                 >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className={`shrink-0 w-10 text-center font-mono sm:w-auto sm:text-left ${rankClass}`}>
+                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <span className={`shrink-0 w-7 text-center font-mono sm:w-10 sm:text-left ${rankClass}`}>
                       {isRank1 ? `✦ #${rank}` : `#${rank}`}
                     </span>
                     {!isAnonymousRow && row.avatarUrl ? (
@@ -623,7 +623,7 @@ export default function LadderPage() {
                         src={row.avatarUrl}
                         alt=""
                         aria-hidden
-                        className="h-10 w-10 shrink-0 rounded-full border border-zinc-700 object-cover"
+                        className="h-8 w-8 shrink-0 rounded-full border border-zinc-700 object-cover sm:h-10 sm:w-10"
                       />
                     ) : null}
                     <div className="min-w-0">
@@ -631,7 +631,7 @@ export default function LadderPage() {
                         {displayName}
                       </p>
                       <p
-                        className={`truncate text-[10px] uppercase ${
+                        className={`hidden truncate text-[10px] uppercase sm:block ${
                           isAnonymousRow ? 'font-mono tracking-widest text-zinc-600' : 'tracking-widest text-zinc-500'
                         }`}
                       >
@@ -639,8 +639,8 @@ export default function LadderPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="shrink-0 min-w-[72px] text-right sm:min-w-[96px]">
-                    <p className={`font-mono text-base font-semibold tabular-nums transition-colors duration-200 sm:text-lg ${scoreClass}`}>
+                  <div className="shrink-0 min-w-[56px] text-right sm:min-w-[84px]">
+                    <p className={`font-mono text-xs font-semibold tabular-nums transition-colors duration-200 sm:text-base ${scoreClass}`}>
                       {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
                     </p>
                     <p className="hidden text-[10px] text-zinc-500 sm:block" title={new Date(row.updatedAt).toLocaleString()}>
