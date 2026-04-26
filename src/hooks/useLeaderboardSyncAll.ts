@@ -79,20 +79,20 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   }, [targets]);
 
   const [busy, setBusy] = useState(false);
-  const [summary, setSummary] = useState<LeaderboardSyncRunSummary | null>(null);
+  const [summaryState, setSummaryState] = useState<{
+    signature: string;
+    summary: LeaderboardSyncRunSummary;
+  } | null>(null);
 
-  const clearFeedback = useCallback(() => setSummary(null), []);
-
-  useEffect(() => {
-    clearFeedback();
-  }, [targetsSignature, clearFeedback]);
+  const clearFeedback = useCallback(() => setSummaryState(null), []);
+  const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
 
   const goJoinArena = useCallback(() => {
     navigate(ROUTES.joinArena);
   }, [navigate]);
 
   const syncAll = useCallback(async () => {
-    setSummary(null);
+    setSummaryState(null);
     if (targets.length === 0 || gate !== 'ok') return;
 
     const user = getCurrentFirebaseUser();
@@ -109,12 +109,12 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
         displayName,
         entitlement: snap,
       });
-      setSummary(tally);
+      setSummaryState({ signature: targetsSignature, summary: tally });
       onFinishedRef.current?.();
     } finally {
       setBusy(false);
     }
-  }, [targets, gate]);
+  }, [targets, gate, targetsSignature]);
 
   return {
     syncAll,

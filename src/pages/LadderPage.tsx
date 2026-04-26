@@ -39,6 +39,23 @@ function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: numbe
   return String(scoreBest);
 }
 
+function formatCompactUpdatedAt(updatedAt: number): string {
+  const now = Date.now();
+  const diffMs = Math.max(0, now - updatedAt);
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m`;
+  const hour = Math.floor(min / 60);
+  if (hour < 24) return `${hour}h`;
+  const day = Math.floor(hour / 24);
+  if (day < 7) return `${day}d`;
+  const date = new Date(updatedAt);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const dayOfMonth = String(date.getDate()).padStart(2, '0');
+  return `${month}/${dayOfMonth}`;
+}
+
 /**
  * Leaderboard arena — loads rankings via `leaderboardService` (Firestore when configured).
  * Non-eligible users redirect before any leaderboard I/O.
@@ -64,6 +81,7 @@ export default function LadderPage() {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [ladderRefreshNonce, setLadderRefreshNonce] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isNearTop, setIsNearTop] = useState(true);
   const pageSize = 25;
   const previousRankRef = useRef<number | null>(null);
   const pendingScrollUidRef = useRef<string | null>(null);
@@ -257,6 +275,15 @@ export default function LadderPage() {
     return () => window.clearTimeout(timer);
   }, [promotionBanner, triggerRankUpCombo, clearPromotion]);
 
+  useEffect(() => {
+    const updateNearTop = () => {
+      setIsNearTop(window.scrollY <= 24);
+    };
+    updateNearTop();
+    window.addEventListener('scroll', updateNearTop, { passive: true });
+    return () => window.removeEventListener('scroll', updateNearTop);
+  }, []);
+
   const formatFloatingScore = useCallback(
     (metric: LeaderboardShardId, scoreBest: number) => formatLeaderboardRowScore(metric, scoreBest, t),
     [t]
@@ -296,24 +323,30 @@ export default function LadderPage() {
   return (
     <main className="ui-shell flex max-w-3xl flex-col gap-3 pb-28">
       <div className="sticky top-0 z-20 -mx-1 sm:-mx-0">
-        <div className="ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/95 shadow-panel backdrop-blur-md">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/40 to-transparent" />
-          <div className="flex flex-wrap items-end justify-between gap-x-2 gap-y-1">
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
-                {t('ladder.kicker', { ns: 'common' })}
-              </p>
-              <h1 className="text-lg font-semibold tracking-tight text-zinc-100 md:text-xl">
-                {t('ladder.title', { ns: 'common' })}
-              </h1>
-            </div>
-            <p className="max-w-[min(100%,20rem)] text-right text-[10px] leading-snug text-zinc-500">{statusLine}</p>
-          </div>
-
-          <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} className="mt-4" />
+        <div
+          className={`ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/90 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-900/20 via-bg-card/95 to-bg-card/100 py-3 backdrop-blur-md transition-all duration-300 ${
+            isNearTop
+              ? 'shadow-[0_18px_45px_-30px_rgba(239,68,68,0.75)]'
+              : 'shadow-[0_10px_28px_-24px_rgba(239,68,68,0.35)]'
+          }`}
+        >
+          <div
+            className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent transition-all duration-300 ${
+              isNearTop ? 'via-red-500/70' : 'via-red-500/35'
+            }`}
+          />
+          <div
+            className={`pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-red-500/12 to-transparent transition-opacity duration-300 ${
+              isNearTop ? 'opacity-100' : 'opacity-40'
+            }`}
+          />
+          <h1 className="text-base font-semibold tracking-tight text-zinc-100 md:text-lg">
+            {t('ladder.title', { ns: 'common' })}
+          </h1>
+          <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} className="mt-1" />
 
           <nav
-            className="mt-4 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label={t('ladder.divisionPickerTitle', { ns: 'common' })}
           >
             {LADDER_DIVISION_IDS.map((d) => (
@@ -323,10 +356,10 @@ export default function LadderPage() {
                 title={t(`ladder.divisions.${d}.desc`, { ns: 'common' })}
                 aria-current={division === d ? 'true' : undefined}
                 onClick={() => selectDivision(d)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                className={`shrink-0 px-3 py-2 text-xs font-semibold uppercase tracking-widest transition-all ${
                   division === d
-                    ? 'border-accent-primary bg-accent-primary/15 text-accent-primary'
-                    : 'border-zinc-700 bg-bg-panel/70 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
+                    ? 'border-b-2 border-red-500 bg-gradient-to-t from-red-500/15 to-transparent text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]'
+                    : 'border-b-2 border-zinc-800 bg-transparent text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
                 }`}
               >
                 {t(`ladder.divisions.${d}.label`, { ns: 'common' })}
@@ -335,8 +368,7 @@ export default function LadderPage() {
           </nav>
 
         {projectSheetOptions.length > 1 ? (
-          <label className="mt-4 flex flex-col gap-1 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">{t('ladder.projectFilterLabel', { ns: 'common' })}</span>
+          <label className="mt-2 flex flex-col gap-1 text-xs text-zinc-400">
             <OptionSelectSheet
               value={projectControlValue}
               onChange={(next) => {
@@ -351,13 +383,7 @@ export default function LadderPage() {
           </label>
         ) : null}
 
-        {shardId === 'strength' ? (
-          <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
-            {t('ladder.strengthKgShardHint', { ns: 'common' })}
-          </p>
-        ) : null}
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <button
             type="button"
             className="ui-btn py-1.5 text-xs"
@@ -372,9 +398,6 @@ export default function LadderPage() {
               </span>
             ) : null}
           </button>
-          {import.meta.env.DEV ? (
-            <span className="font-mono text-[9px] text-zinc-600">{t('ladder.shardLabel', { ns: 'common', shardId })}</span>
-          ) : null}
         </div>
 
         {filtersExpanded ? (
@@ -533,7 +556,7 @@ export default function LadderPage() {
       ) : null}
 
       <section className="ui-card relative min-h-[50vh] flex-1 overflow-hidden border-accent-info/25 shadow-panel">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/40 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
         <header className="space-y-1 pb-4">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
             {t('ladder.rankings.kicker', { ns: 'common' })}
@@ -561,46 +584,77 @@ export default function LadderPage() {
         ) : (
           <ul className="space-y-2 pt-1">
             {items.map((row, index) => {
+              const rank = row.rank ?? index + 1;
+              const isRank1 = rank === 1;
+              const isRank2 = rank === 2;
+              const isRank3 = rank === 3;
+              const isMe = row.uid === authUid;
               const isAnonymousRow = row.isAnonymousInLadder === true;
               const displayName = isAnonymousRow ? t('ladder.anonymousName', { ns: 'common' }) : row.displayName || row.uid;
               const secondaryLine = isAnonymousRow ? t('ladder.anonymousIdLabel', { ns: 'common' }) : row.uid;
+              const rowTierClass = isRank1
+                ? 'bg-gradient-to-r from-amber-500/10 to-bg-panel/40 border-l-4 border-l-amber-500 border-y border-r border-y-amber-500/20 border-r-amber-500/20'
+                : isRank2
+                  ? 'bg-gradient-to-r from-slate-300/10 to-bg-panel/40 border-l-4 border-l-slate-300 border-y border-r border-y-slate-300/20 border-r-slate-300/20'
+                  : isRank3
+                    ? 'bg-gradient-to-r from-orange-500/10 to-bg-panel/40 border-l-4 border-l-orange-500 border-y border-r border-y-orange-500/20 border-r-orange-500/20'
+                    : 'bg-zinc-900/40 border-l-2 border-l-zinc-700 border-y border-r border-zinc-800/80 hover:bg-zinc-800/60';
+              const meHighlightClass = isMe ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10' : '';
+              const rankClass = isRank1
+                ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-base'
+                : isRank2
+                  ? 'text-slate-300 font-bold text-base'
+                  : isRank3
+                    ? 'text-orange-400 font-bold text-base'
+                    : 'text-zinc-500 font-medium';
+              const scoreClass = isRank1
+                ? 'text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]'
+                : 'text-accent-primary group-hover:text-cyan-300';
+              const compactUpdatedAt = formatCompactUpdatedAt(row.updatedAt);
               return (
                 <li
-                key={row.uid}
-                ref={(el) => {
-                  if (!el) {
-                    rowRefs.current.delete(row.uid);
-                    return;
-                  }
-                  rowRefs.current.set(row.uid, el);
-                }}
-                className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800/90 bg-zinc-900/35 px-4 py-3 text-sm text-zinc-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.05)]"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="shrink-0 font-mono text-xs text-accent-info">#{row.rank ?? index + 1}</span>
-                  {!isAnonymousRow && row.avatarUrl ? (
-                    <img
-                      src={row.avatarUrl}
-                      alt=""
-                      aria-hidden
-                      className="h-10 w-10 shrink-0 rounded-full border border-zinc-700 object-cover"
-                    />
-                  ) : null}
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-zinc-100">{displayName}</p>
-                    <p className="truncate text-[10px] uppercase tracking-widest text-zinc-500">{secondaryLine}</p>
+                  key={row.uid}
+                  ref={(el) => {
+                    if (!el) {
+                      rowRefs.current.delete(row.uid);
+                      return;
+                    }
+                    rowRefs.current.set(row.uid, el);
+                  }}
+                  className={`group relative flex items-center justify-between gap-4 overflow-hidden rounded-md px-4 py-3 text-sm transition-all duration-200 ${rowTierClass} ${meHighlightClass}`}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className={`shrink-0 font-mono ${rankClass}`}>{isRank1 ? `✦ #${rank}` : `#${rank}`}</span>
+                    {!isAnonymousRow && row.avatarUrl ? (
+                      <img
+                        src={row.avatarUrl}
+                        alt=""
+                        aria-hidden
+                        className="h-10 w-10 shrink-0 rounded-full border border-zinc-700 object-cover"
+                      />
+                    ) : null}
+                    <div className="min-w-0">
+                      <p className={`truncate font-medium text-zinc-100 ${isAnonymousRow ? 'italic opacity-70' : ''}`}>
+                        {displayName}
+                      </p>
+                      <p
+                        className={`truncate text-[10px] uppercase ${
+                          isAnonymousRow ? 'font-mono tracking-widest text-zinc-600' : 'tracking-widest text-zinc-500'
+                        }`}
+                      >
+                        {secondaryLine}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-mono text-lg font-semibold tabular-nums text-accent-primary">
-                    {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
-                  </p>
-                  <p className="text-[10px] text-zinc-500">
-                    {t('ladder.updatedLabel', { ns: 'common' })}{' '}
-                    {new Date(row.updatedAt).toLocaleString()}
-                  </p>
-                </div>
-              </li>
+                  <div className="shrink-0 min-w-[88px] text-right sm:min-w-[96px]">
+                    <p className={`font-mono text-lg font-semibold tabular-nums transition-colors duration-200 ${scoreClass}`}>
+                      {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
+                    </p>
+                    <p className="hidden text-[10px] text-zinc-500 sm:block" title={new Date(row.updatedAt).toLocaleString()}>
+                      {compactUpdatedAt}
+                    </p>
+                  </div>
+                </li>
               );
             })}
           </ul>

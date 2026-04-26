@@ -154,7 +154,7 @@ export function buildLeaderboardSyncTargets(args: {
   powerInputs?: PowerInputsPersisted | null | undefined;
   muscleInputs?: MuscleInputsPersisted | null | undefined;
 }): LeaderboardSyncTarget[] {
-  const { mergedScores, overallScore, profile, cardioInputs, strengthInputs, powerInputs, muscleInputs } = args;
+  const { mergedScores, overallScore, profile, cardioInputs, strengthInputs, muscleInputs } = args;
   const raw: LeaderboardSyncTarget[] = [];
 
   pushIfPositive(raw, LEADERBOARD_SHARD_OVERALL, overallScore);

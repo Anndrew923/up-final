@@ -57,12 +57,6 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   const merged = useMergedScoresFromLocalStores();
   const overallScore = useMemo(() => calculateSixAxisOverall(merged), [merged]);
 
-  const supplementalKey = useMemo(() => {
-    const s = options.supplementalTargets;
-    if (!s?.length) return '';
-    return s.map((t) => `${t.metric}:${t.score}`).join('|');
-  }, [options.supplementalTargets]);
-
   const targets = useMemo(() => {
     const profile = loadPhysicalProfile();
     const cardioInputs = loadCardioInputs();
@@ -77,7 +71,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     });
     const picked = pickLeaderboardSyncTargetsForAssessmentScope(all, options.scope);
     return mergeLeaderboardSyncTargetsWithSupplemental(picked, options.supplementalTargets);
-  }, [merged, overallScore, options.scope, supplementalKey]);
+  }, [merged, overallScore, options.scope, options.supplementalTargets]);
 
   const targetsSignature = useMemo(
     () => targets.map((t) => `${t.metric}:${t.score}`).join('|'),
@@ -91,20 +85,20 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   }, [targets]);
 
   const [busy, setBusy] = useState(false);
-  const [summary, setSummary] = useState<LeaderboardSyncRunSummary | null>(null);
+  const [summaryState, setSummaryState] = useState<{
+    signature: string;
+    summary: LeaderboardSyncRunSummary;
+  } | null>(null);
 
-  const clearFeedback = useCallback(() => setSummary(null), []);
-
-  useEffect(() => {
-    clearFeedback();
-  }, [targetsSignature, clearFeedback]);
+  const clearFeedback = useCallback(() => setSummaryState(null), []);
+  const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
 
   const goJoinArena = useCallback(() => {
     navigate(ROUTES.joinArena);
   }, [navigate]);
 
   const syncPage = useCallback(async () => {
-    setSummary(null);
+    setSummaryState(null);
     if (targets.length === 0 || gate !== 'ok') return;
 
     const user = getCurrentFirebaseUser();
@@ -121,12 +115,12 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         displayName,
         entitlement: snap,
       });
-      setSummary(tally);
+      setSummaryState({ signature: targetsSignature, summary: tally });
       onFinishedRef.current?.();
     } finally {
       setBusy(false);
     }
-  }, [targets, gate]);
+  }, [targets, gate, targetsSignature]);
 
   return {
     syncPage,

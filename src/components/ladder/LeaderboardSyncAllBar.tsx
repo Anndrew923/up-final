@@ -13,25 +13,14 @@ export interface LeaderboardSyncAllBarProps {
  */
 const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, className }) => {
   const { t } = useTranslation('common');
-  const { syncAll, busy, summary, gate, targetCount, goJoinArena, clearFeedback } = useLeaderboardSyncAll({
+  const { syncAll, busy, gate, targetCount, goJoinArena, clearFeedback } = useLeaderboardSyncAll({
     onFinished,
   });
 
   const disabled = gate !== 'ok' || busy || targetCount === 0;
 
   return (
-    <div className={`space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
-      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-        {t('ladder.syncAll.sectionTitle')}
-      </p>
-      <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.hint')}</p>
-
-      {targetCount === 0 ? (
-        <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.noTargets')}</p>
-      ) : gate !== 'ok' ? (
-        <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
-      ) : null}
-
+    <div className={`border-t border-zinc-800/80 pt-2 ${className ?? ''}`}>
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -50,18 +39,6 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
           </button>
         ) : null}
       </div>
-
-      {summary && summary.attempted > 0 ? (
-        <p className="text-sm text-zinc-400" role="status">
-          {t('ladder.syncAll.summary', {
-            attempted: summary.attempted,
-            updated: summary.updated,
-            errors: summary.errors,
-            rateLimited: summary.rateLimited,
-            proRequired: summary.proRequired,
-          })}
-        </p>
-      ) : null}
     </div>
   );
 };
