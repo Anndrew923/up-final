@@ -592,12 +592,12 @@ export default function LadderPage() {
                     : 'bg-zinc-900/40 border-l-2 border-l-zinc-700 border-y border-r border-zinc-800/80 hover:bg-zinc-800/60';
               const meHighlightClass = isMe ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10' : '';
               const rankClass = isRank1
-                ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-base'
+                ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-sm sm:text-base'
                 : isRank2
-                  ? 'text-slate-300 font-bold text-base'
+                  ? 'text-slate-300 font-bold text-sm sm:text-base'
                   : isRank3
-                    ? 'text-orange-400 font-bold text-base'
-                    : 'text-zinc-500 font-medium';
+                    ? 'text-orange-400 font-bold text-sm sm:text-base'
+                    : 'text-zinc-500 font-medium text-xs sm:text-sm';
               const scoreClass = isRank1
                 ? 'text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]'
                 : 'text-accent-primary group-hover:text-cyan-300';
@@ -615,7 +615,9 @@ export default function LadderPage() {
                   className={`group relative flex items-center justify-between gap-4 overflow-hidden rounded-md px-4 py-3 text-sm transition-all duration-200 ${rowTierClass} ${meHighlightClass}`}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className={`shrink-0 font-mono ${rankClass}`}>{isRank1 ? `✦ #${rank}` : `#${rank}`}</span>
+                    <span className={`shrink-0 w-10 text-center font-mono sm:w-auto sm:text-left ${rankClass}`}>
+                      {isRank1 ? `✦ #${rank}` : `#${rank}`}
+                    </span>
                     {!isAnonymousRow && row.avatarUrl ? (
                       <img
                         src={row.avatarUrl}
