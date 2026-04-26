@@ -23,7 +23,6 @@ import {
   type LeaderboardShardId,
 } from '../logic/core/ladderShards';
 import { detectPromotion } from '../logic/core/leaderboardProgress';
-import { isFirestoreConfigured } from '../services/firebaseClient';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
 import type { LadderAgeBucket, LadderHeightBucket, LadderJobCategory, LadderWeightBucket } from '../types/ladderProfile';
@@ -39,9 +38,11 @@ function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: numbe
   return String(scoreBest);
 }
 
-function formatCompactUpdatedAt(updatedAt: number): string {
+function formatCompactUpdatedAt(updatedAt: string): string {
+  const ts = new Date(updatedAt).getTime();
+  if (!Number.isFinite(ts)) return '--';
   const now = Date.now();
-  const diffMs = Math.max(0, now - updatedAt);
+  const diffMs = Math.max(0, now - ts);
   const sec = Math.floor(diffMs / 1000);
   if (sec < 60) return `${sec}s`;
   const min = Math.floor(sec / 60);
@@ -50,7 +51,7 @@ function formatCompactUpdatedAt(updatedAt: number): string {
   if (hour < 24) return `${hour}h`;
   const day = Math.floor(hour / 24);
   if (day < 7) return `${day}d`;
-  const date = new Date(updatedAt);
+  const date = new Date(ts);
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const dayOfMonth = String(date.getDate()).padStart(2, '0');
   return `${month}/${dayOfMonth}`;
@@ -168,7 +169,7 @@ export default function LadderPage() {
     ]
   );
 
-  const { items, datasetItems, loading, error, fromCache, myEntry, myRank } = useLadderLeaderboard(shardId, initialFilters, {
+  const { items, datasetItems, loading, error, myEntry, myRank } = useLadderLeaderboard(shardId, initialFilters, {
     refreshNonce: ladderRefreshNonce,
     page: currentPage,
     pageSize,
@@ -242,16 +243,6 @@ export default function LadderPage() {
     countryCodes: countryCodesInDataset,
     locationLabelsTw: countryCodeFilter === 'TW',
   });
-
-  const usesRemote = isFirestoreConfigured();
-
-  const statusLine = useMemo(
-    () =>
-      `${usesRemote ? t('ladder.bodyRemote', { ns: 'common' }) : t('ladder.bodyLocalMock', { ns: 'common' })} · ${
-        fromCache ? t('ladder.cacheHit', { ns: 'common' }) : t('ladder.cacheMiss', { ns: 'common' })
-      }`,
-    [t, usesRemote, fromCache]
-  );
 
   useEffect(() => {
     if (!canEnter) {
