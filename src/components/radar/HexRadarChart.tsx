@@ -1,11 +1,12 @@
 import type { FC } from 'react';
 import { useId, useMemo } from 'react';
 import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
-import { RADAR_CARD_V2 } from './radarVisualTokens';
+import type { SixAxisMetric } from '../../types/scoring';
+import { RADAR_CARD_V2, RADAR_LASER_ALERT_PROFILE } from './radarVisualTokens';
 import type { SVGProps } from 'react';
 
 export interface HexRadarPoint {
-  key: string;
+  key: SixAxisMetric;
   label: string;
   value: number;
 }
@@ -33,13 +34,16 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   type AxisLabelAnchor = NonNullable<SVGProps<SVGTextElement>['textAnchor']>;
   type AxisLabelBaseline = NonNullable<SVGProps<SVGTextElement>['dominantBaseline']>;
 
-  const glowFilterId = useId();
+  const auraGradientId = useId();
+  const animationId = useId().replace(/:/g, '_');
   const cx = 100;
   const cy = 100;
   const maxR = RADAR_CARD_V2.geometry.outerRadius;
   const labelR = RADAR_CARD_V2.geometry.labelRadius;
   const n = Math.max(points.length, 1);
   const denom = Math.max(Math.min(scaleMax, RADAR_DISPLAY_MIN), 1e-6);
+  const overclockThreshold = 100;
+  const polygonDashLength = 520;
 
   const axisNodes = useMemo(
     () =>
@@ -127,21 +131,48 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <filter id={glowFilterId} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="1.6" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+        <radialGradient id={auraGradientId} cx="50%" cy="50%" r="62%">
+          <stop offset="0%" stopColor="rgba(56,189,248,0.1)" />
+          <stop offset="70%" stopColor="rgba(56,189,248,0.22)" />
+          <stop offset="100%" stopColor={RADAR_LASER_ALERT_PROFILE.polygon.edgeStop} />
+        </radialGradient>
       </defs>
+      <style>
+        {`
+          @media (prefers-reduced-motion: no-preference) {
+            .radar-draw-${animationId} {
+              stroke-dasharray: ${polygonDashLength};
+              stroke-dashoffset: ${polygonDashLength};
+              animation: radar-draw-${animationId} ${RADAR_CARD_V2.animation.radarDrawMs}ms ease-out forwards;
+              will-change: stroke-dashoffset;
+            }
+            .radar-breathe-${animationId} {
+              animation: radar-breathe-${animationId} ${RADAR_CARD_V2.animation.radarBreathMs}ms ease-in-out infinite;
+              will-change: fill-opacity;
+            }
+            @keyframes radar-draw-${animationId} {
+              to {
+                stroke-dashoffset: 0;
+              }
+            }
+            @keyframes radar-breathe-${animationId} {
+              0%, 100% {
+                fill-opacity: ${RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax};
+              }
+              50% {
+                fill-opacity: ${RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMin};
+              }
+            }
+          }
+        `}
+      </style>
       <rect width="200" height="200" className="fill-transparent" />
       <circle cx={cx} cy={cy} r={RADAR_CARD_V2.geometry.centerAuraRadius} className="fill-accent-info" fillOpacity={RADAR_CARD_V2.opacity.centerAura} />
-      {rings.map((ring) => (
+      {rings.map((ring, index) => (
         <polygon
           key={ring.key}
-          className="fill-none stroke-zinc-500"
-          strokeOpacity={RADAR_CARD_V2.opacity.ringStroke}
+          className={index === 0 ? 'fill-none stroke-zinc-700' : 'fill-none stroke-zinc-800'}
+          strokeOpacity={index === 0 ? RADAR_CARD_V2.opacity.ringOuterStroke : RADAR_CARD_V2.opacity.ringStroke}
           strokeWidth={0.5}
           points={ring.points}
         />
@@ -153,7 +184,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
           y1={ln.y1}
           x2={ln.x2}
           y2={ln.y2}
-          className="stroke-zinc-500"
+          className="stroke-zinc-800"
           strokeOpacity={RADAR_CARD_V2.opacity.spokeStroke}
           strokeWidth={0.5}
         />
@@ -166,59 +197,98 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
           strokeOpacity={RADAR_CARD_V2.opacity.overflowStroke}
           strokeWidth={1}
           strokeLinejoin="round"
-          filter={`url(#${glowFilterId})`}
+          style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.5))' }}
         />
       ) : null}
       <polygon
         points={dataPolygon}
-        className="fill-accent-info stroke-accent-primary"
-        fillOpacity={RADAR_CARD_V2.opacity.baseFill}
-        strokeWidth={1.25}
+        fill={`url(#${auraGradientId})`}
+        stroke={RADAR_LASER_ALERT_PROFILE.polygon.stroke}
+        className={`radar-draw-${animationId} radar-breathe-${animationId}`}
+        strokeWidth={RADAR_LASER_ALERT_PROFILE.polygon.strokeWidth}
         strokeLinejoin="round"
+        fillOpacity={RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax}
+        style={{ filter: `drop-shadow(0 0 8px ${RADAR_LASER_ALERT_PROFILE.polygon.glow})` }}
       />
-      {axisNodes.map((node) => (
-        <g key={`axis-${node.key}`}>
-          {node.overflowExtra > 0 ? (
-            <line
-              x1={node.xOuter}
-              y1={node.yOuter}
-              x2={node.xOverflow}
-              y2={node.yOverflow}
-              className="stroke-accent-info/80"
-              strokeWidth={node.overflowExtra === maxOverflow ? 1.8 : 1.2}
-              strokeLinecap="round"
-            />
-          ) : null}
-          <circle
-            cx={node.xBase}
-            cy={node.yBase}
-            r={weakestKey === node.key ? 2.4 : 1.6}
-            className={weakestKey === node.key ? 'fill-amber-300' : 'fill-accent-info/85'}
-          />
-          {weakestKey === node.key ? (
-            <circle cx={node.xBase} cy={node.yBase} r={4.2} className="fill-none stroke-amber-300/70" strokeWidth={0.8} />
-          ) : null}
-          {node.overflowExtra > 0 ? (
+      {axisNodes.map((node) => {
+        const isOverclock = node.raw > overclockThreshold;
+        const isWeakest = weakestKey === node.key;
+        const reactor = isWeakest
+          ? {
+              core: RADAR_LASER_ALERT_PROFILE.node.alertCore,
+              ring: RADAR_LASER_ALERT_PROFILE.node.alertRing,
+              glow: RADAR_LASER_ALERT_PROFILE.node.alertGlow,
+            }
+          : isOverclock
+            ? {
+                core: RADAR_LASER_ALERT_PROFILE.node.overclockCore,
+                ring: RADAR_LASER_ALERT_PROFILE.node.overclockRing,
+                glow: RADAR_LASER_ALERT_PROFILE.node.overclockGlow,
+              }
+            : {
+                core: RADAR_LASER_ALERT_PROFILE.node.defaultCore,
+                ring: RADAR_LASER_ALERT_PROFILE.node.defaultRing,
+                glow: RADAR_LASER_ALERT_PROFILE.node.defaultGlow,
+              };
+        return (
+          <g key={`axis-${node.key}`}>
             <circle
-              cx={node.xOverflow}
-              cy={node.yOverflow}
-              r={node.overflowExtra === maxOverflow ? 3 : 2.2}
-              className={node.overflowExtra === maxOverflow ? 'fill-accent-info' : 'fill-accent-primary'}
-              filter={`url(#${glowFilterId})`}
+              cx={node.xBase}
+              cy={node.yBase}
+              r={4.2}
+              fill="none"
+              stroke={reactor.ring}
+              strokeWidth={1.2}
             />
-          ) : null}
-          <text
-            x={node.xLabel}
-            y={node.yLabel}
-            textAnchor={node.textAnchor}
-            dominantBaseline={node.dominantBaseline}
-            className="fill-zinc-400 text-[7px] tracking-[0.18em] uppercase"
-            fillOpacity={RADAR_CARD_V2.opacity.label}
-          >
-            {node.label}
-          </text>
-        </g>
-      ))}
+            <circle
+              cx={node.xBase}
+              cy={node.yBase}
+              r={2.1}
+              fill={reactor.core}
+              style={reactor.glow ? { filter: `drop-shadow(0 0 6px ${reactor.glow})` } : undefined}
+            />
+            {node.overflowExtra > 0 ? (
+              <line
+                x1={node.xOuter}
+                y1={node.yOuter}
+                x2={node.xOverflow}
+                y2={node.yOverflow}
+                className="stroke-accent-info/80"
+                strokeWidth={node.overflowExtra === maxOverflow ? 1.8 : 1.2}
+                strokeLinecap="round"
+              />
+            ) : null}
+            {weakestKey === node.key ? (
+              <circle
+                cx={node.xBase}
+                cy={node.yBase}
+                r={4.8}
+                className="fill-none stroke-zinc-900/65"
+                strokeWidth={0.8}
+              />
+            ) : null}
+            {node.overflowExtra > 0 ? (
+              <circle
+                cx={node.xOverflow}
+                cy={node.yOverflow}
+                r={node.overflowExtra === maxOverflow ? 3 : 2.2}
+                className={node.overflowExtra === maxOverflow ? 'fill-accent-info' : 'fill-accent-primary'}
+                style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.62))' }}
+              />
+            ) : null}
+            <text
+              x={node.xLabel}
+              y={node.yLabel}
+              textAnchor={node.textAnchor}
+              dominantBaseline={node.dominantBaseline}
+              className="fill-zinc-400 text-[7px] tracking-[0.18em] uppercase"
+              fillOpacity={RADAR_CARD_V2.opacity.label}
+            >
+              {node.label}
+            </text>
+          </g>
+        );
+      })}
       <circle cx={cx} cy={cy} r={2} className="fill-accent-info" />
     </svg>
   );
