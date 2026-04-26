@@ -7,24 +7,16 @@ import {
   hasCoreAccess,
   shouldBlockFirebase,
 } from '../logic/core/entitlement';
-import type { SubmitLeaderboardInput } from '../services/leaderboardService';
+import { KNOWN_LEADERBOARD_SHARD_IDS, type LeaderboardShardId } from '../logic/core/ladderShards';
 import { listLeaderboard, submitLeaderboardScore } from '../services/leaderboardService';
 import { clearLeaderboardCache, getCachedLeaderboard } from '../services/leaderboardCacheService';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { loadPhysicalProfile } from '../services/localStorageService';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
-type DebugMetric = SubmitLeaderboardInput['metric'];
+type DebugMetric = LeaderboardShardId;
 
-const METRICS: DebugMetric[] = [
-  'strength',
-  'explosivePower',
-  'cardio',
-  'muscleMass',
-  'bodyFat',
-  'armSize',
-  'gripStrength',
-];
+const METRICS: DebugMetric[] = [...KNOWN_LEADERBOARD_SHARD_IDS];
 
 interface LeaderboardDebugPageProps {
   onBack: () => void;

@@ -12,6 +12,7 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { shouldBlockFirebase } from '../logic/core/entitlement';
+import { isValidLeaderboardShardId, type LeaderboardShardId } from '../logic/core/ladderShards';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import type { EntitlementState } from '../types/entitlement';
 import {
@@ -33,16 +34,13 @@ import {
   type LeaderboardEntry,
 } from './leaderboardCacheService';
 
+/** Re-export for callers that only import from `leaderboardService`. */
+export type { LeaderboardShardId };
+
 export interface SubmitLeaderboardInput {
   uid: string;
-  metric:
-    | 'strength'
-    | 'explosivePower'
-    | 'cardio'
-    | 'muscleMass'
-    | 'bodyFat'
-    | 'armSize'
-    | 'gripStrength';
+  /** Firestore segment `leaderboards/{metric}/entries` — see `logic/core/ladderShards.ts`. */
+  metric: LeaderboardShardId;
   score: number;
   displayName: string;
   avatarUrl?: string;
@@ -53,6 +51,9 @@ export interface SubmitLeaderboardResult {
   ok: boolean;
   reason?: 'pro-required' | 'rate-limited' | 'not-best-score' | 'invalid-input' | 'unknown';
   updated?: boolean;
+  previousBest?: number | null;
+  newBest?: number | null;
+  improved?: boolean;
 }
 
 export interface ListLeaderboardResult {
@@ -64,7 +65,7 @@ export interface ListLeaderboardResult {
 
 const memoryDb = new Map<string, Map<string, LeaderboardEntry>>();
 
-function getMetricStore(metric: SubmitLeaderboardInput['metric']): Map<string, LeaderboardEntry> {
+function getMetricStore(metric: LeaderboardShardId): Map<string, LeaderboardEntry> {
   const existing = memoryDb.get(metric);
   if (existing) return existing;
   const created = new Map<string, LeaderboardEntry>();
@@ -74,7 +75,10 @@ function getMetricStore(metric: SubmitLeaderboardInput['metric']): Map<string, L
 
 function validateInput(input: SubmitLeaderboardInput): boolean {
   return (
-    Boolean(input.uid && input.displayName) && Number.isFinite(input.score) && input.score >= 0
+    Boolean(input.uid && input.displayName) &&
+    Number.isFinite(input.score) &&
+    input.score >= 0 &&
+    isValidLeaderboardShardId(input.metric)
   );
 }
 
@@ -142,6 +146,10 @@ function mapFirestoreDoc(d: QueryDocumentSnapshot): LeaderboardEntry {
   };
 }
 
+function withRank(entries: LeaderboardEntry[], offset = 0): LeaderboardEntry[] {
+  return entries.map((item, index) => ({ ...item, rank: offset + index + 1 }));
+}
+
 async function fetchFirestoreLeaderboardPage(
   db: Firestore,
   metric: string,
@@ -163,7 +171,8 @@ async function fetchFirestoreLeaderboardPage(
     const docs = snap.docs;
     cursor = docs[docs.length - 1];
     if (p === page) {
-      return docs.map((x) => mapFirestoreDoc(x));
+      const offset = (page - 1) * pageSize;
+      return withRank(docs.map((x) => mapFirestoreDoc(x)), offset);
     }
     if (!cursor) return [];
   }
@@ -171,7 +180,7 @@ async function fetchFirestoreLeaderboardPage(
 }
 
 async function listLeaderboardMemory(params: {
-  metric: SubmitLeaderboardInput['metric'];
+  metric: LeaderboardShardId;
   page: number;
   pageSize: number;
 }): Promise<ListLeaderboardResult> {
@@ -179,7 +188,7 @@ async function listLeaderboardMemory(params: {
   const store = getMetricStore(params.metric);
   const sorted = Array.from(store.values()).sort((a, b) => b.scoreBest - a.scoreBest);
   const start = Math.max(0, params.page - 1) * pageSize;
-  const items = sorted.slice(start, start + pageSize);
+  const items = withRank(sorted.slice(start, start + pageSize), start);
   setCachedLeaderboard({
     metric: params.metric,
     page: params.page,
@@ -191,7 +200,7 @@ async function listLeaderboardMemory(params: {
 
 export async function listLeaderboard(params: {
   entitlement: EntitlementState;
-  metric: SubmitLeaderboardInput['metric'];
+  metric: LeaderboardShardId;
   page: number;
   pageSize?: number;
 }): Promise<ListLeaderboardResult> {
@@ -217,7 +226,10 @@ export async function listLeaderboard(params: {
         cachedAt: new Date().toISOString(),
       });
       return { ok: true, items, fromCache: false };
-    } catch {
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] listLeaderboard Firestore error', err);
+      }
       return { ok: false, reason: 'unknown' };
     }
   }
@@ -237,7 +249,14 @@ function commitMemoryLeaderboardBest(
   const existing = metricStore.get(uid);
 
   if (existing && input.score <= existing.scoreBest) {
-    return { ok: true, reason: 'not-best-score', updated: false };
+    return {
+      ok: true,
+      reason: 'not-best-score',
+      updated: false,
+      previousBest: existing.scoreBest,
+      newBest: existing.scoreBest,
+      improved: false,
+    };
   }
 
   const rateLimitStatus = checkUploadRateLimit({
@@ -245,7 +264,14 @@ function commitMemoryLeaderboardBest(
     key: `leaderboard:${input.metric}`,
   });
   if (!rateLimitStatus.allowed) {
-    return { ok: false, reason: 'rate-limited', updated: false };
+    return {
+      ok: false,
+      reason: 'rate-limited',
+      updated: false,
+      previousBest: existing?.scoreBest ?? null,
+      newBest: existing?.scoreBest ?? null,
+      improved: false,
+    };
   }
 
   consumeUploadQuota({ uid, key: `leaderboard:${input.metric}` });
@@ -259,7 +285,13 @@ function commitMemoryLeaderboardBest(
   });
   clearLeaderboardCache(input.metric);
 
-  return { ok: true, updated: true };
+  return {
+    ok: true,
+    updated: true,
+    previousBest: existing?.scoreBest ?? null,
+    newBest: input.score,
+    improved: existing ? input.score > existing.scoreBest : true,
+  };
 }
 
 async function resolveLeaderboardUid(
@@ -291,16 +323,16 @@ export async function submitLeaderboardScore(params: {
     profile: profileProjection,
   };
   if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
-    return { ok: false, reason: 'pro-required', updated: false };
+    return { ok: false, reason: 'pro-required', updated: false, previousBest: null, newBest: null };
   }
 
   if (!validateInput(normalizedInput)) {
-    return { ok: false, reason: 'invalid-input', updated: false };
+    return { ok: false, reason: 'invalid-input', updated: false, previousBest: null, newBest: null };
   }
 
   const resolved = await resolveLeaderboardUid(normalizedInput.uid);
   if (resolved.backend === 'error') {
-    return { ok: false, reason: 'unknown', updated: false };
+    return { ok: false, reason: 'unknown', updated: false, previousBest: null, newBest: null };
   }
 
   const uid = resolved.uid;
@@ -322,7 +354,14 @@ export async function submitLeaderboardScore(params: {
         : NaN;
 
       if (Number.isFinite(existingBest) && normalizedInput.score <= existingBest) {
-        return { ok: true, reason: 'not-best-score', updated: false };
+        return {
+          ok: true,
+          reason: 'not-best-score',
+          updated: false,
+          previousBest: existingBest,
+          newBest: existingBest,
+          improved: false,
+        };
       }
 
       const rateLimitStatus = checkUploadRateLimit({
@@ -330,7 +369,14 @@ export async function submitLeaderboardScore(params: {
         key: `leaderboard:${normalizedInput.metric}`,
       });
       if (!rateLimitStatus.allowed) {
-        return { ok: false, reason: 'rate-limited', updated: false };
+        return {
+          ok: false,
+          reason: 'rate-limited',
+          updated: false,
+          previousBest: Number.isFinite(existingBest) ? existingBest : null,
+          newBest: Number.isFinite(existingBest) ? existingBest : null,
+          improved: false,
+        };
       }
 
       await setDoc(
@@ -348,9 +394,18 @@ export async function submitLeaderboardScore(params: {
       consumeUploadQuota({ uid, key: `leaderboard:${normalizedInput.metric}` });
       clearLeaderboardCache(normalizedInput.metric);
 
-      return { ok: true, updated: true };
-    } catch {
-      return { ok: false, reason: 'unknown', updated: false };
+      return {
+        ok: true,
+        updated: true,
+        previousBest: Number.isFinite(existingBest) ? existingBest : null,
+        newBest: normalizedInput.score,
+        improved: Number.isFinite(existingBest) ? normalizedInput.score > existingBest : true,
+      };
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] submitLeaderboardScore Firestore error', err);
+      }
+      return { ok: false, reason: 'unknown', updated: false, previousBest: null, newBest: null };
     }
   }
 

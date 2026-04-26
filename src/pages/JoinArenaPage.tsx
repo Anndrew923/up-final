@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
+import { MONETIZATION_CONFIG } from '../config/monetization';
 import { ROUTES } from '../config/routes';
 import { hasCoreAccess } from '../logic/core/entitlement';
 import {
@@ -22,9 +23,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
   const [banner, setBanner] = useState<
-    'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail'
+    'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
   >('idle');
   const [authBusy, setAuthBusy] = useState(false);
+  const [billingBusy, setBillingBusy] = useState(false);
 
   const isPro = useEntitlementStore((s) => s.isPro);
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
@@ -47,6 +49,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
 
   const coreOwned = hasCoreAccess(entitlement);
   const isGoogleLinked = authStatus === 'signed-in' && !isAnonymous;
+  const paywallEnabled = MONETIZATION_CONFIG.leaderboardPaywallEnabled;
 
   const handleGoogleSignIn = async () => {
     setBanner('idle');
@@ -63,8 +66,14 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     }
   };
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     setBanner('idle');
+    setBillingBusy(true);
+    try {
+    if (!paywallEnabled) {
+      navigate(ROUTES.ladder);
+      return;
+    }
     if (!isGoogleLinked) {
       setBanner('auth-fail');
       return;
@@ -73,19 +82,32 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
       setBanner('core');
       return;
     }
-    const result = purchaseProSubscription();
+    const result = await purchaseProSubscription();
     if (!result.ok) {
       if (result.reason === 'core-required') {
         setBanner('core');
+      } else if (result.reason === 'auth-required') {
+        setBanner('auth-fail');
+      } else {
+        setBanner('billing-fail');
       }
       return;
     }
     navigate(ROUTES.ladder);
+    } finally {
+      setBillingBusy(false);
+    }
   };
 
-  const handleRestore = () => {
+  const handleRestore = async () => {
     setBanner('idle');
-    const result = restorePurchasesFromDevice();
+    setBillingBusy(true);
+    try {
+    if (!paywallEnabled) {
+      navigate(ROUTES.ladder);
+      return;
+    }
+    const result = await restorePurchasesFromDevice();
     if (!result.hadSnapshot) {
       setBanner('restore-empty');
       return;
@@ -93,6 +115,9 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBanner(result.proActive ? 'restore-ok' : 'restore-empty');
     if (result.proActive) {
       navigate(ROUTES.ladder);
+    }
+    } finally {
+      setBillingBusy(false);
     }
   };
 
@@ -147,6 +172,16 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('googleLoginFail')}
           </p>
         ) : null}
+        {banner === 'billing-fail' ? (
+          <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {t('billingUnavailable')}
+          </p>
+        ) : null}
+        {!paywallEnabled ? (
+          <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            {t('betaOpenAccess')}
+          </p>
+        ) : null}
 
         <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-bg-card/80 shadow-panel backdrop-blur-md">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/60 to-transparent" />
@@ -179,17 +214,21 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('identityTitle')}
           </p>
           <p className="mt-2 text-sm text-zinc-300">
-            {isGoogleLinked
+            {!paywallEnabled
+              ? t('identityOptionalBeta')
+              : isGoogleLinked
               ? t('signedInAs', { name: signedInDisplayName })
               : t('identityRequired')}
           </p>
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={authBusy || isGoogleLinked}
+            disabled={!paywallEnabled || authBusy || isGoogleLinked}
             className="mt-4 rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {authBusy
+            {!paywallEnabled
+              ? t('betaNoLoginNeeded')
+              : authBusy
               ? t('googleLoginLoading')
               : isGoogleLinked
                 ? t('googleLoginDone')
@@ -197,7 +236,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           </button>
         </section>
 
-        {!coreOwned ? (
+        {paywallEnabled && !coreOwned ? (
           <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
             <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
             <Link
@@ -221,18 +260,31 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           ) : null}
           <button
             type="button"
-            onClick={handleRestore}
+            onClick={() => {
+              void handleRestore();
+            }}
+            disabled={!paywallEnabled || billingBusy}
             className="rounded-xl border border-accent-info/50 bg-accent-info/10 px-5 py-3 text-sm font-semibold text-accent-info transition hover:bg-accent-info/20"
           >
-            {t('restorePurchases')}
+            {paywallEnabled ? t('restorePurchases') : t('betaRestoreDisabled')}
           </button>
           <button
             type="button"
-            onClick={handleSubscribe}
-            disabled={!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)}
+            onClick={() => {
+              void handleSubscribe();
+            }}
+            disabled={
+              billingBusy ||
+              paywallEnabled &&
+              (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro))
+            }
             className="rounded-xl border border-accent-primary bg-accent-primary px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(255,140,0,0.35)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
           >
-            {t('subscribeNow')}
+            {billingBusy
+              ? t('billingLoading')
+              : paywallEnabled
+                ? t('subscribeNow')
+                : t('betaEnterLeaderboard')}
           </button>
         </div>
       </div>

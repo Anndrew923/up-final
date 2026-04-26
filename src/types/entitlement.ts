@@ -6,6 +6,6 @@ export interface EntitlementState {
   subscriptionStatus: SubscriptionStatus;
   isPro: boolean;
   proExpiresAt: string | null;
-  planId: 'core_lifetime_099' | 'pro_monthly_099' | null;
+  planId: string | null;
   lastCheckedAt: string | null;
 }

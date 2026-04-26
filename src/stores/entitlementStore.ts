@@ -1,9 +1,15 @@
 import { create } from 'zustand';
 import { hasProAccess } from '../logic/core/entitlement';
+import { useAuthStore } from './authStore';
 import {
   loadPersistedEntitlement,
   savePersistedEntitlement,
 } from '../services/entitlementPersistenceService';
+import {
+  fetchRevenueCatEntitlement,
+  isRevenueCatConfiguredFromEnv,
+  logInRevenueCatUser,
+} from '../services/revenueCatService';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
 export interface EntitlementStore extends EntitlementState {
@@ -92,6 +98,28 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     );
   },
   async refreshEntitlement() {
+    const userId = useAuthStore.getState().uid;
+    if (userId && isRevenueCatConfiguredFromEnv()) {
+      try {
+        await logInRevenueCatUser(userId);
+        const snapshot = await fetchRevenueCatEntitlement(userId);
+        if (snapshot) {
+          set((state) =>
+            syncProFlag(
+              normalizeGraceExpiry({
+                ...state,
+                subscriptionStatus: snapshot.active ? 'pro' : 'free',
+                planId: snapshot.active ? 'pro_monthly_099' : null,
+                proExpiresAt: snapshot.active ? snapshot.expiresDate : null,
+              })
+            )
+          );
+          return;
+        }
+      } catch {
+        // Keep local state as fallback if provider sync fails.
+      }
+    }
     set((state) =>
       syncProFlag(
         normalizeGraceExpiry({

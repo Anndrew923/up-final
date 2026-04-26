@@ -1,15 +1,11 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
 import { SIX_AXIS_METRICS } from '../types/scoring';
 import { useHistoryStore } from '../stores/historyStore';
 
-function formatSavedAt(iso: string): string {
-  const d = new Date(iso);
-  return Number.isFinite(d.getTime()) ? d.toLocaleString() : iso;
-}
-
 export default function HistoryPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const records = useHistoryStore((s) => s.records);
   const loadLocalHistory = useHistoryStore((s) => s.loadLocalHistory);
 
@@ -57,7 +53,7 @@ export default function HistoryPage() {
                 {records.map((row) => (
                   <tr key={row.id} className="border-b border-zinc-800/80 hover:bg-bg-panel/40">
                     <td className="max-w-[10rem] truncate px-2 py-2 font-mono text-[11px] text-zinc-400">
-                      {formatSavedAt(row.createdAt)}
+                      {formatHistorySavedAt(row.createdAt, i18n.language)}
                     </td>
                     <td className="px-2 py-2 font-mono tabular-nums text-accent-info">
                       {row.overallScore}

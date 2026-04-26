@@ -253,6 +253,80 @@
     "loadError": "Could not load rankings. Check Firebase rules and indexes.",
     "empty": "No pilots on this shard yet — be the first upload.",
     "updatedLabel": "Updated",
+    "promotion": {
+      "title": "Rank up +{{delta}}",
+      "current": "Current rank: #{{rank}}",
+      "milestone": "Milestone reached: Top {{milestone}}"
+    },
+    "divisionPickerTitle": "Arena zone",
+    "projectFilterLabel": "Sub-ranking",
+    "shardLabel": "Shard: {{shardId}}",
+    "moreFilters": "More filters",
+    "hideFilters": "Hide filters",
+    "activeFilterCount": "{{count}} active",
+    "rankings": {
+      "kicker": "Live rankings",
+      "title": "Leaderboard",
+      "subtitle": "Rows for the current arena zone and sub-ranking filter."
+    },
+    "divisions": {
+      "ladderScore": {
+        "label": "All zones",
+        "desc": "Composite ladder score"
+      },
+      "stats_totalLoginDays": {
+        "label": "Login days",
+        "desc": "Cumulative check-ins"
+      },
+      "stats_sbdTotal": {
+        "label": "Strength",
+        "desc": "SBD + accessories — pick a sub-ranking"
+      },
+      "stats_bodyFat": {
+        "label": "Body fat",
+        "desc": "Body-fat score vs FFMI"
+      },
+      "stats_cooper": {
+        "label": "Cardio",
+        "desc": "Cooper vs 5 km score"
+      },
+      "stats_vertical": {
+        "label": "Explosive power",
+        "desc": "Vertical, broad jump, sprint"
+      },
+      "stats_ffmi": {
+        "label": "Muscle mass",
+        "desc": "SMM score, kg, or ratio"
+      },
+      "armSize": {
+        "label": "Arm size",
+        "desc": "PAS arm circumference"
+      },
+      "stats_grip": {
+        "label": "Grip",
+        "desc": "Grip strength (UP extension)"
+      }
+    },
+    "project": {
+      "totalFive": "Five-lift total",
+      "sbdTotal": "Three-lift (SBD) total",
+      "squat": "Squat",
+      "benchPress": "Bench press",
+      "deadlift": "Deadlift",
+      "shoulderPress": "Overhead press",
+      "latPulldown": "Lat pulldown",
+      "cooper": "Cooper 12 min",
+      "run5km": "5 km run",
+      "verticalJump": "Vertical jump",
+      "standingLongJump": "Standing long jump",
+      "sprint": "Sprint",
+      "bodyFatScore": "Body-fat score",
+      "ffmi": "FFMI",
+      "smmScore": "SMM score",
+      "smmKg": "Skeletal muscle (kg)",
+      "smmRatio": "SMM % of body weight",
+      "grip": "Grip strength"
+    },
     "metrics": {
       "strength": "Strength",
       "explosivePower": "Explosive",
@@ -277,6 +351,42 @@
         "country": "Country",
         "city": "City",
         "district": "District"
+      },
+      "filterSheetTitles": {
+        "gender": "Gender filter",
+        "ageBucket": "Age band",
+        "heightBucket": "Height band",
+        "weightBucket": "Weight class",
+        "jobCategory": "Job category",
+        "regionScope": "Region level",
+        "city": "City",
+        "district": "District"
+      },
+      "ageBucketOptions": {
+        "under-20": "Under 20",
+        "20-29": "20–29",
+        "30-39": "30–39",
+        "40-49": "40–49",
+        "50-59": "50–59",
+        "60-69": "60–69",
+        "70+": "70+"
+      },
+      "heightBucketOptions": {
+        "<160": "Under 160 cm",
+        "160-170": "160–170 cm",
+        "170-180": "170–180 cm",
+        "180-190": "180–190 cm",
+        ">190": "Over 190 cm"
+      },
+      "weightBucketOptions": {
+        "under-50kg": "Under 50 kg",
+        "50-60kg": "50–60 kg",
+        "60-70kg": "60–70 kg",
+        "70-80kg": "70–80 kg",
+        "80-90kg": "80–90 kg",
+        "90-100kg": "90–100 kg",
+        "100-110kg": "100–110 kg",
+        "110kg+": "110 kg+"
       }
     }
   },

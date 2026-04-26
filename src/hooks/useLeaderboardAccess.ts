@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { MONETIZATION_CONFIG } from '../config/monetization';
 import { getEntitlementReasonCode } from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -8,7 +9,7 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 export interface LeaderboardAccessResult {
   canEnter: boolean;
   shouldShowJoinArena: boolean;
-  reason: 'ok' | 'auth-required' | 'core-not-owned' | 'pro-required' | 'pro-expired';
+  reason: 'ok' | 'open-access' | 'auth-required' | 'core-not-owned' | 'pro-required' | 'pro-expired';
   goToLeaderboard(): void;
   goToJoinArena(): void;
 }
@@ -25,7 +26,10 @@ export function useLeaderboardAccess(): LeaderboardAccessResult {
   const lastCheckedAt = useEntitlementStore((state) => state.lastCheckedAt);
 
   const reason = useMemo(() => {
-    if (authStatus !== 'signed-in' || isAnonymous) {
+    if (
+      MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn &&
+      (authStatus !== 'signed-in' || isAnonymous)
+    ) {
       return 'auth-required';
     }
     return getEntitlementReasonCode(
@@ -50,8 +54,10 @@ export function useLeaderboardAccess(): LeaderboardAccessResult {
   }, [navigate]);
 
   return {
-    canEnter: reason === 'ok',
-    shouldShowJoinArena: reason === 'pro-required' || reason === 'pro-expired',
+    canEnter: reason === 'ok' || reason === 'open-access',
+    shouldShowJoinArena:
+      MONETIZATION_CONFIG.leaderboardPaywallEnabled &&
+      (reason === 'pro-required' || reason === 'pro-expired'),
     reason,
     goToLeaderboard,
     goToJoinArena,

@@ -5,6 +5,7 @@ import {
   onFirebaseAuthStateChanged,
 } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
+import { useEntitlementStore } from '../stores/entitlementStore';
 
 /**
  * Initializes Firebase auth observer and mirrors state into auth store.
@@ -13,6 +14,7 @@ export function useAuthSessionBootstrap(): void {
   const setLoading = useAuthStore((s) => s.setLoading);
   const setSignedOut = useAuthStore((s) => s.setSignedOut);
   const setFromUser = useAuthStore((s) => s.setFromUser);
+  const refreshEntitlement = useEntitlementStore((s) => s.refreshEntitlement);
 
   useEffect(() => {
     setLoading();
@@ -30,9 +32,11 @@ export function useAuthSessionBootstrap(): void {
             return;
           }
           setSignedOut();
+          void refreshEntitlement();
           return;
         }
         setFromUser(user);
+        void refreshEntitlement();
       });
     })();
 
@@ -40,5 +44,5 @@ export function useAuthSessionBootstrap(): void {
       isDisposed = true;
       unsubscribe?.();
     };
-  }, [setFromUser, setLoading, setSignedOut]);
+  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement]);
 }

@@ -66,6 +66,9 @@ export type LadderWeightBucket =
 
 export type LadderRegionScope = 'country' | 'city' | 'district';
 
+/** Stable order for ladder region-segmentation filters (UI + queries). */
+export const LADDER_REGION_SCOPES = ['country', 'city', 'district'] as const satisfies readonly LadderRegionScope[];
+
 export interface LadderProfileRaw {
   gender: LadderGender;
   age: number;

@@ -25,24 +25,24 @@ function ownedProEntitlement(): EntitlementState {
 }
 
 describe('leaderboard service guards', () => {
-  it('blocks list leaderboard for non-pro before cache or remote', async () => {
+  it('allows list leaderboard for non-pro when paywall is disabled', async () => {
     const result = await listLeaderboard({
       entitlement: ownedFreeEntitlement(),
       metric: 'armSize',
       page: 1,
     });
-    expect(result.ok).toBe(false);
-    expect(result.reason).toBe('pro-required');
+    expect(result.ok).toBe(true);
+    expect(result.items).toBeDefined();
   });
 
-  it('returns pro-required without firestore calls for non-pro', async () => {
+  it('accepts non-pro submit when paywall is disabled', async () => {
     const result = await submitLeaderboardScore({
       entitlement: ownedFreeEntitlement(),
       input: { uid: 'u1', metric: 'armSize', score: 88, displayName: 'A' },
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.reason).toBe('pro-required');
+    expect(result.ok).toBe(true);
+    expect(result.updated).toBe(true);
   });
 
   it('blocks when over hourly upload limit', async () => {
@@ -73,6 +73,9 @@ describe('leaderboard service guards', () => {
     expect(second.ok).toBe(true);
     expect(second.reason).toBe('not-best-score');
     expect(second.updated).toBe(false);
+    expect(second.previousBest).toBe(120);
+    expect(second.newBest).toBe(120);
+    expect(second.improved).toBe(false);
   });
 
   it('persists optional ladder profile projection in memory backend', async () => {
@@ -108,6 +111,7 @@ describe('leaderboard service guards', () => {
       uid: 'u4',
       ageBucket: '30-39',
       countryCode: 'TW',
+      rank: 1,
     });
   });
 

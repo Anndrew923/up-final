@@ -114,6 +114,80 @@
     "loadError": "無法載入榜單。請檢查規則與索引。",
     "empty": "此維度尚無資料 — 成為首位上傳者。",
     "updatedLabel": "更新於",
+    "promotion": {
+      "title": "名次晉升 +{{delta}}",
+      "current": "目前名次：#{{rank}}",
+      "milestone": "達成里程碑：Top {{milestone}}"
+    },
+    "divisionPickerTitle": "戰場分區",
+    "projectFilterLabel": "細項榜單",
+    "shardLabel": "分片：{{shardId}}",
+    "moreFilters": "更多篩選",
+    "hideFilters": "收合篩選",
+    "activeFilterCount": "已選 {{count}} 項",
+    "rankings": {
+      "kicker": "即時榜單",
+      "title": "排名",
+      "subtitle": "依目前戰場分區與細項篩選顯示。"
+    },
+    "divisions": {
+      "ladderScore": {
+        "label": "總戰力",
+        "desc": "綜合天梯分"
+      },
+      "stats_totalLoginDays": {
+        "label": "累積登入",
+        "desc": "登入天數榜"
+      },
+      "stats_sbdTotal": {
+        "label": "力量",
+        "desc": "三項／五項／單項 — 選細項"
+      },
+      "stats_bodyFat": {
+        "label": "體脂",
+        "desc": "體脂分 vs FFMI"
+      },
+      "stats_cooper": {
+        "label": "心肺",
+        "desc": "Cooper／5 公里"
+      },
+      "stats_vertical": {
+        "label": "爆發力",
+        "desc": "垂直跳／立跳／衝刺"
+      },
+      "stats_ffmi": {
+        "label": "肌肉量",
+        "desc": "SMM 分數／kg／占比"
+      },
+      "armSize": {
+        "label": "臂圍",
+        "desc": "PAS 臂圍榜"
+      },
+      "stats_grip": {
+        "label": "握力",
+        "desc": "握力榜（本 App 擴充）"
+      }
+    },
+    "project": {
+      "totalFive": "五項總和",
+      "sbdTotal": "三項總和（蹲／臥／硬）",
+      "squat": "深蹲",
+      "benchPress": "臥推",
+      "deadlift": "硬舉",
+      "shoulderPress": "肩推",
+      "latPulldown": "滑輪下拉",
+      "cooper": "Cooper 12 分鐘",
+      "run5km": "5 公里",
+      "verticalJump": "垂直跳",
+      "standingLongJump": "立定跳遠",
+      "sprint": "短跑",
+      "bodyFatScore": "體脂分數",
+      "ffmi": "FFMI",
+      "smmScore": "骨骼肌分數",
+      "smmKg": "骨骼肌重量（kg）",
+      "smmRatio": "骨骼肌率（體重占比）",
+      "grip": "握力"
+    },
     "metrics": {
       "strength": "力量",
       "explosivePower": "爆發",
@@ -138,6 +212,42 @@
         "country": "國家",
         "city": "城市",
         "district": "行政區"
+      },
+      "filterSheetTitles": {
+        "gender": "選擇性別",
+        "ageBucket": "選擇年齡區間",
+        "heightBucket": "選擇身高區間",
+        "weightBucket": "選擇體重級距",
+        "jobCategory": "選擇職業分類",
+        "regionScope": "選擇地區層級",
+        "city": "選擇城市",
+        "district": "選擇行政區"
+      },
+      "ageBucketOptions": {
+        "under-20": "未滿 20 歲",
+        "20-29": "20～29 歲",
+        "30-39": "30～39 歲",
+        "40-49": "40～49 歲",
+        "50-59": "50～59 歲",
+        "60-69": "60～69 歲",
+        "70+": "70 歲以上"
+      },
+      "heightBucketOptions": {
+        "<160": "160 cm 以下",
+        "160-170": "160～170 cm",
+        "170-180": "170～180 cm",
+        "180-190": "180～190 cm",
+        ">190": "190 cm 以上"
+      },
+      "weightBucketOptions": {
+        "under-50kg": "50 kg 以下",
+        "50-60kg": "50～60 kg",
+        "60-70kg": "60～70 kg",
+        "70-80kg": "70～80 kg",
+        "80-90kg": "80～90 kg",
+        "90-100kg": "90～100 kg",
+        "100-110kg": "100～110 kg",
+        "110kg+": "110 kg 以上"
       }
     }
   },
@@ -653,6 +763,23 @@
         "r19_21": "強健業餘高段",
         "r22plus": "極高表現"
       }
+    }
+  },
+  "history": {
+    "kicker": "本機紀錄庫",
+    "title": "評測紀錄",
+    "subtitle": "從「評測」分頁儲存的快照（僅存於本裝置，核心功能無需訂閱）。",
+    "empty": "尚無快照。請到「評測」分頁儲存一筆。",
+    "colDate": "儲存時間",
+    "colOverall": "總分",
+    "valueEmpty": "—",
+    "shortAxis": {
+      "strength": "力量",
+      "explosivePower": "爆發",
+      "cardio": "心肺",
+      "muscleMass": "肌肉",
+      "bodyFat": "體脂",
+      "gripStrength": "握力"
     }
   },
   "navbar": {

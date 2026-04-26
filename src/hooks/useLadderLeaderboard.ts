@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { normalizeTwCityDistrictForLadderDataset } from '../logic/core/ladderFilters';
+import type { LeaderboardShardId } from '../logic/core/ladderShards';
+import type { LeaderboardEntry } from '../services/leaderboardCacheService';
+import { listLeaderboard } from '../services/leaderboardService';
 import type { EntitlementState } from '../types/entitlement';
 import type {
   LadderAgeBucket,
@@ -9,9 +13,7 @@ import type {
   LadderRegionScope,
   LadderWeightBucket,
 } from '../types/ladderProfile';
-import type { SubmitLeaderboardInput } from '../services/leaderboardService';
-import { listLeaderboard } from '../services/leaderboardService';
-import type { LeaderboardEntry } from '../services/leaderboardCacheService';
+import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
 export interface LadderLeaderboardState {
@@ -19,6 +21,7 @@ export interface LadderLeaderboardState {
   loading: boolean;
   error: boolean;
   fromCache: boolean;
+  myRank: number | null;
 }
 
 export interface LadderLeaderboardFilters {
@@ -33,7 +36,7 @@ export interface LadderLeaderboardFilters {
 }
 
 export function useLadderLeaderboard(
-  metric: SubmitLeaderboardInput['metric'],
+  shardId: LeaderboardShardId,
   filters: LadderLeaderboardFilters
 ): LadderLeaderboardState {
   const entitlement = useEntitlementStore(
@@ -53,20 +56,27 @@ export function useLadderLeaderboard(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [fromCache, setFromCache] = useState(false);
+  const authUid = useAuthStore((state) => state.uid);
 
   const applyFilters = useCallback(
-    (rows: LeaderboardEntry[]): LeaderboardEntry[] =>
-      rows.filter((row) => {
+    (rows: LeaderboardEntry[]): LeaderboardEntry[] => {
+      const { city: normCity, district: normDistrict } = normalizeTwCityDistrictForLadderDataset(
+        rows,
+        filters.city,
+        filters.district
+      );
+      return rows.filter((row) => {
         if (filters.gender !== 'all' && row.gender !== filters.gender) return false;
         if (filters.ageBucket !== 'all' && row.ageBucket !== filters.ageBucket) return false;
         if (filters.heightBucket !== 'all' && row.heightBucket !== filters.heightBucket) return false;
         if (filters.weightBucket !== 'all' && row.weightBucket !== filters.weightBucket) return false;
         if (filters.jobCategory !== 'all' && row.jobCategory !== filters.jobCategory) return false;
         if (filters.regionScope !== 'all' && row.regionScope !== filters.regionScope) return false;
-        if (filters.city !== 'all' && row.city !== filters.city) return false;
-        if (filters.district !== 'all' && row.district !== filters.district) return false;
+        if (normCity !== 'all' && row.city !== normCity) return false;
+        if (normDistrict !== 'all' && row.district !== normDistrict) return false;
         return true;
-      }),
+      });
+    },
     [filters]
   );
 
@@ -81,7 +91,7 @@ export function useLadderLeaderboard(
 
       const result = await listLeaderboard({
         entitlement,
-        metric,
+        metric: shardId,
         page: 1,
         pageSize: 25,
       });
@@ -104,7 +114,11 @@ export function useLadderLeaderboard(
     return () => {
       cancelled = true;
     };
-  }, [metric, entitlement, filters, applyFilters]);
+  }, [shardId, entitlement, filters, applyFilters]);
 
-  return { items, loading, error, fromCache };
+  const myRank = authUid
+    ? items.find((row) => row.uid === authUid)?.rank ?? null
+    : null;
+
+  return { items, loading, error, fromCache, myRank };
 }

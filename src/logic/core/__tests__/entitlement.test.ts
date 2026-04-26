@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessLeaderboard, hasCoreAccess, hasProAccess } from '../entitlement';
+import {
+  canAccessLeaderboard,
+  getEntitlementReasonCode,
+  hasCoreAccess,
+  hasProAccess,
+} from '../entitlement';
 import type { EntitlementState } from '../../../types/entitlement';
 
 function buildEntitlement(overrides: Partial<EntitlementState> = {}): EntitlementState {
@@ -23,8 +28,9 @@ describe('entitlement core guards', () => {
     const free = buildEntitlement({ subscriptionStatus: 'free' });
     const expired = buildEntitlement({ subscriptionStatus: 'expired' });
 
-    expect(canAccessLeaderboard(free)).toBe(false);
-    expect(canAccessLeaderboard(expired)).toBe(false);
+    expect(canAccessLeaderboard(free)).toBe(true);
+    expect(canAccessLeaderboard(expired)).toBe(true);
+    expect(getEntitlementReasonCode(free, 'leaderboard-read')).toBe('open-access');
   });
 
   it('allows leaderboard when subscription is pro/grace', () => {

@@ -5,6 +5,7 @@ export interface LeaderboardEntry extends Partial<LadderProfileProjection> {
   displayName: string;
   scoreBest: number;
   updatedAt: string;
+  rank?: number;
   isPro?: boolean;
 }
 
