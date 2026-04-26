@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
 import { useFfmiPage } from '../hooks/useFfmiPage';
@@ -169,6 +170,8 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                 {submitDone ? (
                   <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
                 ) : null}
+
+                <LeaderboardAssessmentSyncBar scope="bodyFat_ffmi" />
               </div>
             ) : null}
           </section>

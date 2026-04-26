@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 
 export interface MuscleAssessmentPageProps {
@@ -13,6 +14,7 @@ export interface MuscleAssessmentPageProps {
 const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const [standardsInfoOpen, setStandardsInfoOpen] = useState(false);
+
   const {
     profileReady,
     profile,
@@ -177,6 +179,8 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
               {t('muscle.submitDone')}
             </p>
           ) : null}
+
+          <LeaderboardAssessmentSyncBar scope="muscleMass" />
         </section>
       </div>
     </main>

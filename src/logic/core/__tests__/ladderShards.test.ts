@@ -26,13 +26,14 @@ describe('ladderShards', () => {
     expect(getLeaderboardShardId('stats_cooper', 'typo')).toBe('cardio');
   });
 
-  it('maps explosive vertical vs broad vs sprint', () => {
-    expect(getLeaderboardShardId('stats_vertical', 'vertical')).toBe('explosivePower');
+  it('maps explosive composite vs vertical vs broad vs sprint', () => {
+    expect(getLeaderboardShardId('stats_vertical', 'composite')).toBe('explosive_composite');
+    expect(getLeaderboardShardId('stats_vertical', 'vertical')).toBe('explosive_vertical');
     expect(getLeaderboardShardId('stats_vertical', 'broad')).toBe('explosive_broad');
     expect(getLeaderboardShardId('stats_vertical', 'sprint')).toBe('explosive_sprint');
   });
 
-  it('maps body fat vs ffmi and muscle smm modes', () => {
+  it('maps body-fat zone (FFMI shard) and muscle smm modes', () => {
     expect(getLeaderboardShardId('stats_bodyFat', 'bodyFat')).toBe('bodyFat');
     expect(getLeaderboardShardId('stats_bodyFat', 'ffmi')).toBe('bodyFat_ffmi');
     expect(getLeaderboardShardId('stats_ffmi', 'score')).toBe('muscleMass');
@@ -55,8 +56,8 @@ describe('ladderShards', () => {
   it('defaults projects per division', () => {
     expect(getDefaultProjectForDivision('stats_sbdTotal')).toBe('total');
     expect(getDefaultProjectForDivision('stats_cooper')).toBe('cooper');
-    expect(getDefaultProjectForDivision('stats_vertical')).toBe('vertical');
-    expect(getDefaultProjectForDivision('stats_bodyFat')).toBe('bodyFat');
+    expect(getDefaultProjectForDivision('stats_vertical')).toBe('composite');
+    expect(getDefaultProjectForDivision('stats_bodyFat')).toBe('ffmi');
     expect(getDefaultProjectForDivision('stats_ffmi')).toBe('score');
     expect(getDefaultProjectForDivision('stats_grip')).toBe('grip');
     expect(getDefaultProjectForDivision('ladderScore')).toBe('__none__');
@@ -73,6 +74,13 @@ describe('ladderShards', () => {
       'latPull',
     ]);
     expect(getProjectOptionsForDivision('stats_cooper').map((o) => o.value)).toEqual(['cooper', '5km']);
+    expect(getProjectOptionsForDivision('stats_bodyFat').map((o) => o.value)).toEqual(['ffmi']);
+    expect(getProjectOptionsForDivision('stats_vertical').map((o) => o.value)).toEqual([
+      'composite',
+      'vertical',
+      'broad',
+      'sprint',
+    ]);
     expect(getProjectOptionsForDivision('ladderScore')).toEqual([]);
   });
 });

@@ -18,9 +18,16 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 const LEADERBOARD_METRICS = [
   'strength',
   'explosivePower',
+  'explosive_composite',
+  'explosive_vertical',
+  'explosive_broad',
+  'explosive_sprint',
   'cardio',
   'muscleMass',
+  'muscleMass_weightKg',
+  'muscleMass_ratio',
   'bodyFat',
+  'bodyFat_ffmi',
   'armSize',
   'gripStrength',
 ] as const;

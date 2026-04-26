@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { TFunction } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
+import LadderFloatingRankBar from '../components/ladder/LadderFloatingRankBar';
+import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import { ROUTES } from '../config/routes';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
+import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
 import { useLadderLeaderboard } from '../hooks/useLadderLeaderboard';
 import { useLeaderboardAccess } from '../hooks/useLeaderboardAccess';
 import { resolveEffectiveLadderCityFilter, resolveEffectiveLadderDistrictFilter } from '../logic/core/ladderFilters';
@@ -16,17 +20,24 @@ import {
   LADDER_DIVISION_IDS,
   LADDER_PROJECT_NONE,
   type LadderDivisionId,
+  type LeaderboardShardId,
 } from '../logic/core/ladderShards';
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { isFirestoreConfigured } from '../services/firebaseClient';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
-import type {
-  LadderAgeBucket,
-  LadderHeightBucket,
-  LadderJobCategory,
-  LadderRegionScope,
-  LadderWeightBucket,
-} from '../types/ladderProfile';
+import { useAuthStore } from '../stores/authStore';
+import type { LadderAgeBucket, LadderHeightBucket, LadderJobCategory, LadderWeightBucket } from '../types/ladderProfile';
+
+function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: number, t: TFunction): string {
+  if (!Number.isFinite(scoreBest)) return '—';
+  if (shardId === 'strength') {
+    return t('ladder.rowScoreStrengthKg', { ns: 'common', kg: scoreBest.toFixed(1) });
+  }
+  if (shardId === 'strength_totalFive') {
+    return scoreBest.toFixed(2);
+  }
+  return String(scoreBest);
+}
 
 /**
  * Leaderboard arena — loads rankings via `leaderboardService` (Firestore when configured).
@@ -47,16 +58,27 @@ export default function LadderPage() {
   const [heightBucketFilter, setHeightBucketFilter] = useState<LadderHeightBucket | 'all'>('all');
   const [weightBucketFilter, setWeightBucketFilter] = useState<LadderWeightBucket | 'all'>('all');
   const [jobCategoryFilter, setJobCategoryFilter] = useState<LadderJobCategory | 'all'>('all');
-  const [regionScopeFilter, setRegionScopeFilter] = useState<'all' | LadderRegionScope>('all');
+  const [countryCodeFilter, setCountryCodeFilter] = useState<'all' | LadderCountryCode>('all');
   const [cityFilter, setCityFilter] = useState<string | 'all'>('all');
   const [districtFilter, setDistrictFilter] = useState<string | 'all'>('all');
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [ladderRefreshNonce, setLadderRefreshNonce] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25;
   const previousRankRef = useRef<number | null>(null);
+  const pendingScrollUidRef = useRef<string | null>(null);
+  const rowRefs = useRef(new Map<string, HTMLLIElement>());
   const expandedFiltersPanelId = useId();
+  const authUid = useAuthStore((state) => state.uid);
+
+  const bumpLadderRefresh = useCallback(() => {
+    setLadderRefreshNonce((n) => n + 1);
+  }, []);
 
   const selectDivision = useCallback((next: LadderDivisionId) => {
     setDivision(next);
     setFilterProject(getDefaultProjectForDivision(next));
+    setCurrentPage(1);
   }, []);
 
   const projectSheetOptions = useMemo(() => {
@@ -89,7 +111,7 @@ export default function LadderPage() {
     if (heightBucketFilter !== 'all') n++;
     if (weightBucketFilter !== 'all') n++;
     if (jobCategoryFilter !== 'all') n++;
-    if (regionScopeFilter !== 'all') n++;
+    if (countryCodeFilter !== 'all') n++;
     if (cityFilter !== 'all') n++;
     if (districtFilter !== 'all') n++;
     return n;
@@ -99,7 +121,7 @@ export default function LadderPage() {
     heightBucketFilter,
     weightBucketFilter,
     jobCategoryFilter,
-    regionScopeFilter,
+    countryCodeFilter,
     cityFilter,
     districtFilter,
   ]);
@@ -112,7 +134,7 @@ export default function LadderPage() {
       heightBucket: heightBucketFilter,
       weightBucket: weightBucketFilter,
       jobCategory: jobCategoryFilter,
-      regionScope: regionScopeFilter,
+      countryCode: countryCodeFilter,
       city: cityFilter,
       district: districtFilter,
     }),
@@ -122,40 +144,71 @@ export default function LadderPage() {
       heightBucketFilter,
       weightBucketFilter,
       jobCategoryFilter,
-      regionScopeFilter,
+      countryCodeFilter,
       cityFilter,
       districtFilter,
     ]
   );
-  const { items, loading, error, fromCache, myRank } = useLadderLeaderboard(shardId, initialFilters);
+
+  const { items, datasetItems, loading, error, fromCache, myEntry, myRank } = useLadderLeaderboard(shardId, initialFilters, {
+    refreshNonce: ladderRefreshNonce,
+    page: currentPage,
+    pageSize,
+  });
 
   useEffect(() => {
     previousRankRef.current = null;
   }, [shardId]);
-  const twItems = useMemo(() => items.filter((row) => row.countryCode === 'TW'), [items]);
-  const twCityOptions = useMemo(
-    () =>
-      Array.from(new Set(twItems.map((row) => row.city).filter((x): x is string => Boolean(x)))).sort(
-        (a, b) => a.localeCompare(b)
-      ),
-    [twItems]
-  );
+
+  useEffect(() => {
+    if (!pendingScrollUidRef.current || loading) return;
+    const target = rowRefs.current.get(pendingScrollUidRef.current);
+    if (!target) {
+      pendingScrollUidRef.current = null;
+      return;
+    }
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    pendingScrollUidRef.current = null;
+  }, [items, loading]);
+  const countryCodesInDataset = useMemo(() => {
+    const next = new Set<LadderCountryCode>();
+    for (const row of datasetItems) {
+      if (isLadderCountryCode(row.countryCode)) next.add(row.countryCode);
+    }
+    return [...next].sort((a, b) => a.localeCompare(b));
+  }, [datasetItems]);
+
+  const locationRows = useMemo(() => {
+    if (countryCodeFilter === 'all') return [];
+    return datasetItems.filter((row) => row.countryCode === countryCodeFilter);
+  }, [datasetItems, countryCodeFilter]);
+
+  const cityOptions = useMemo(() => {
+    if (countryCodeFilter === 'all') return [];
+    return Array.from(
+      new Set(locationRows.map((row) => row.city).filter((x): x is string => Boolean(x)))
+    ).sort((a, b) => a.localeCompare(b));
+  }, [locationRows, countryCodeFilter]);
+
   const effectiveCityFilter = useMemo(
-    () => resolveEffectiveLadderCityFilter(cityFilter, twCityOptions),
-    [cityFilter, twCityOptions]
+    () => resolveEffectiveLadderCityFilter(cityFilter, cityOptions),
+    [cityFilter, cityOptions]
   );
-  const twDistrictOptions = useMemo(() => {
+
+  const districtOptions = useMemo(() => {
+    if (countryCodeFilter === 'all') return [];
     const base =
       effectiveCityFilter === 'all'
-        ? twItems
-        : twItems.filter((row) => row.city === effectiveCityFilter);
+        ? locationRows
+        : locationRows.filter((row) => row.city === effectiveCityFilter);
     return Array.from(
       new Set(base.map((row) => row.district).filter((x): x is string => Boolean(x)))
     ).sort((a, b) => a.localeCompare(b));
-  }, [twItems, effectiveCityFilter]);
+  }, [locationRows, effectiveCityFilter, countryCodeFilter]);
+
   const effectiveDistrictFilter = useMemo(
-    () => resolveEffectiveLadderDistrictFilter(districtFilter, twDistrictOptions),
-    [districtFilter, twDistrictOptions]
+    () => resolveEffectiveLadderDistrictFilter(districtFilter, districtOptions),
+    [districtFilter, districtOptions]
   );
 
   const {
@@ -164,10 +217,13 @@ export default function LadderPage() {
     heightBucketOptions,
     weightBucketOptions,
     jobCategoryOptions,
-    regionScopeOptions,
+    countrySelectOptions,
     twCitySelectOptions,
     twDistrictSelectOptions,
-  } = useLadderFilterSheetOptions(twCityOptions, twDistrictOptions);
+  } = useLadderFilterSheetOptions(cityOptions, districtOptions, {
+    countryCodes: countryCodesInDataset,
+    locationLabelsTw: countryCodeFilter === 'TW',
+  });
 
   const usesRemote = isFirestoreConfigured();
 
@@ -201,6 +257,34 @@ export default function LadderPage() {
     return () => window.clearTimeout(timer);
   }, [promotionBanner, triggerRankUpCombo, clearPromotion]);
 
+  const formatFloatingScore = useCallback(
+    (metric: LeaderboardShardId, scoreBest: number) => formatLeaderboardRowScore(metric, scoreBest, t),
+    [t]
+  );
+
+  const jumpToMyRow = useCallback(() => {
+    if (!authUid || myRank === null || myRank <= 0) return;
+    const targetPage = Math.max(1, Math.ceil(myRank / pageSize));
+    pendingScrollUidRef.current = authUid;
+    setCurrentPage(targetPage);
+  }, [authUid, myRank, pageSize]);
+
+  const userInVisibleItems = useMemo(() => {
+    if (!authUid) return false;
+    return items.some((row) => row.uid === authUid);
+  }, [authUid, items]);
+
+  const showFloatingRankBar =
+    myRank !== null &&
+    myRank > 0 &&
+    myEntry !== null &&
+    Number.isFinite(myEntry.scoreBest) &&
+    myEntry.scoreBest > 0 &&
+    !userInVisibleItems;
+
+  const canPrevPage = currentPage > 1;
+  const canNextPage = datasetItems.length === pageSize;
+
   if (!canEnter) {
     return (
       <main className="ui-shell max-w-xl">
@@ -210,7 +294,7 @@ export default function LadderPage() {
   }
 
   return (
-    <main className="ui-shell flex max-w-3xl flex-col gap-3 pb-12">
+    <main className="ui-shell flex max-w-3xl flex-col gap-3 pb-28">
       <div className="sticky top-0 z-20 -mx-1 sm:-mx-0">
         <div className="ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/95 shadow-panel backdrop-blur-md">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/40 to-transparent" />
@@ -226,40 +310,51 @@ export default function LadderPage() {
             <p className="max-w-[min(100%,20rem)] text-right text-[10px] leading-snug text-zinc-500">{statusLine}</p>
           </div>
 
-        <nav
-          className="mt-4 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          aria-label={t('ladder.divisionPickerTitle', { ns: 'common' })}
-        >
-          {LADDER_DIVISION_IDS.map((d) => (
-            <button
-              key={d}
-              type="button"
-              title={t(`ladder.divisions.${d}.desc`, { ns: 'common' })}
-              aria-current={division === d ? 'true' : undefined}
-              onClick={() => selectDivision(d)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                division === d
-                  ? 'border-accent-primary bg-accent-primary/15 text-accent-primary'
-                  : 'border-zinc-700 bg-bg-panel/70 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              {t(`ladder.divisions.${d}.label`, { ns: 'common' })}
-            </button>
-          ))}
-        </nav>
+          <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} className="mt-4" />
 
-        {projectSheetOptions.length > 0 ? (
+          <nav
+            className="mt-4 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            aria-label={t('ladder.divisionPickerTitle', { ns: 'common' })}
+          >
+            {LADDER_DIVISION_IDS.map((d) => (
+              <button
+                key={d}
+                type="button"
+                title={t(`ladder.divisions.${d}.desc`, { ns: 'common' })}
+                aria-current={division === d ? 'true' : undefined}
+                onClick={() => selectDivision(d)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                  division === d
+                    ? 'border-accent-primary bg-accent-primary/15 text-accent-primary'
+                    : 'border-zinc-700 bg-bg-panel/70 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                {t(`ladder.divisions.${d}.label`, { ns: 'common' })}
+              </button>
+            ))}
+          </nav>
+
+        {projectSheetOptions.length > 1 ? (
           <label className="mt-4 flex flex-col gap-1 text-xs text-zinc-400">
             <span className="font-medium text-zinc-300">{t('ladder.projectFilterLabel', { ns: 'common' })}</span>
             <OptionSelectSheet
               value={projectControlValue}
-              onChange={(next) => setFilterProject(next === '' ? getDefaultProjectForDivision(division) : next)}
+              onChange={(next) => {
+                setFilterProject(next === '' ? getDefaultProjectForDivision(division) : next);
+                setCurrentPage(1);
+              }}
               placeholder={t('ladder.filters.all', { ns: 'common' })}
               title={t('ladder.projectFilterLabel', { ns: 'common' })}
               options={projectSheetOptions}
               allowEmpty={false}
             />
           </label>
+        ) : null}
+
+        {shardId === 'strength' ? (
+          <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
+            {t('ladder.strengthKgShardHint', { ns: 'common' })}
+          </p>
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -296,7 +391,10 @@ export default function LadderPage() {
                 <span className="font-medium text-zinc-300">{t('ladder.filters.gender', { ns: 'common' })}</span>
                 <OptionSelectSheet
                   value={genderFilter === 'all' ? '' : genderFilter}
-                  onChange={(next) => setGenderFilter(next === '' ? 'all' : next)}
+                  onChange={(next) => {
+                    setGenderFilter(next === '' ? 'all' : next);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t('ladder.filters.all', { ns: 'common' })}
                   title={t('ladder.filters.filterSheetTitles.gender', { ns: 'common' })}
                   options={genderOptions}
@@ -306,7 +404,10 @@ export default function LadderPage() {
                 <span className="font-medium text-zinc-300">{t('ladder.filters.ageBucket', { ns: 'common' })}</span>
                 <OptionSelectSheet
                   value={ageBucketFilter === 'all' ? '' : ageBucketFilter}
-                  onChange={(next) => setAgeBucketFilter(next === '' ? 'all' : next)}
+                  onChange={(next) => {
+                    setAgeBucketFilter(next === '' ? 'all' : next);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t('ladder.filters.all', { ns: 'common' })}
                   title={t('ladder.filters.filterSheetTitles.ageBucket', { ns: 'common' })}
                   options={ageBucketOptions}
@@ -316,7 +417,10 @@ export default function LadderPage() {
                 <span className="font-medium text-zinc-300">{t('ladder.filters.heightBucket', { ns: 'common' })}</span>
                 <OptionSelectSheet
                   value={heightBucketFilter === 'all' ? '' : heightBucketFilter}
-                  onChange={(next) => setHeightBucketFilter(next === '' ? 'all' : next)}
+                  onChange={(next) => {
+                    setHeightBucketFilter(next === '' ? 'all' : next);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t('ladder.filters.all', { ns: 'common' })}
                   title={t('ladder.filters.filterSheetTitles.heightBucket', { ns: 'common' })}
                   options={heightBucketOptions}
@@ -326,7 +430,10 @@ export default function LadderPage() {
                 <span className="font-medium text-zinc-300">{t('ladder.filters.weightBucket', { ns: 'common' })}</span>
                 <OptionSelectSheet
                   value={weightBucketFilter === 'all' ? '' : weightBucketFilter}
-                  onChange={(next) => setWeightBucketFilter(next === '' ? 'all' : next)}
+                  onChange={(next) => {
+                    setWeightBucketFilter(next === '' ? 'all' : next);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t('ladder.filters.all', { ns: 'common' })}
                   title={t('ladder.filters.filterSheetTitles.weightBucket', { ns: 'common' })}
                   options={weightBucketOptions}
@@ -336,23 +443,37 @@ export default function LadderPage() {
                 <span className="font-medium text-zinc-300">{t('ladder.filters.jobCategory', { ns: 'common' })}</span>
                 <OptionSelectSheet
                   value={jobCategoryFilter === 'all' ? '' : jobCategoryFilter}
-                  onChange={(next) => setJobCategoryFilter(next === '' ? 'all' : next)}
+                  onChange={(next) => {
+                    setJobCategoryFilter(next === '' ? 'all' : next);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t('ladder.filters.all', { ns: 'common' })}
                   title={t('ladder.filters.filterSheetTitles.jobCategory', { ns: 'common' })}
                   options={jobCategoryOptions}
                 />
               </label>
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                <span className="font-medium text-zinc-300">{t('ladder.filters.regionScope', { ns: 'common' })}</span>
-                <OptionSelectSheet
-                  value={regionScopeFilter === 'all' ? '' : regionScopeFilter}
-                  onChange={(next) => setRegionScopeFilter(next === '' ? 'all' : next)}
-                  placeholder={t('ladder.filters.all', { ns: 'common' })}
-                  title={t('ladder.filters.filterSheetTitles.regionScope', { ns: 'common' })}
-                  options={regionScopeOptions}
-                />
-              </label>
-              {twCityOptions.length > 0 ? (
+              {countryCodesInDataset.length > 0 ? (
+                <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                  <span className="font-medium text-zinc-300">{t('ladder.filters.country', { ns: 'common' })}</span>
+                  <OptionSelectSheet
+                    value={countryCodeFilter === 'all' ? '' : countryCodeFilter}
+                    onChange={(next) => {
+                      if (next === '') {
+                        setCountryCodeFilter('all');
+                      } else {
+                        setCountryCodeFilter(isLadderCountryCode(next) ? next : 'all');
+                      }
+                      setCityFilter('all');
+                      setDistrictFilter('all');
+                      setCurrentPage(1);
+                    }}
+                    placeholder={t('ladder.filters.all', { ns: 'common' })}
+                    title={t('ladder.filters.filterSheetTitles.country', { ns: 'common' })}
+                    options={countrySelectOptions}
+                  />
+                </label>
+              ) : null}
+              {countryCodeFilter !== 'all' && cityOptions.length > 0 ? (
                 <label className="flex flex-col gap-1 text-xs text-zinc-400">
                   <span className="font-medium text-zinc-300">{t('ladder.filters.city', { ns: 'common' })}</span>
                   <OptionSelectSheet
@@ -360,6 +481,7 @@ export default function LadderPage() {
                     onChange={(next) => {
                       setCityFilter(next === '' ? 'all' : next);
                       setDistrictFilter('all');
+                      setCurrentPage(1);
                     }}
                     placeholder={t('ladder.filters.all', { ns: 'common' })}
                     title={t('ladder.filters.filterSheetTitles.city', { ns: 'common' })}
@@ -367,12 +489,15 @@ export default function LadderPage() {
                   />
                 </label>
               ) : null}
-              {twDistrictOptions.length > 0 ? (
+              {countryCodeFilter !== 'all' && districtOptions.length > 0 ? (
                 <label className="flex flex-col gap-1 text-xs text-zinc-400">
                   <span className="font-medium text-zinc-300">{t('ladder.filters.district', { ns: 'common' })}</span>
                   <OptionSelectSheet
                     value={effectiveDistrictFilter === 'all' ? '' : effectiveDistrictFilter}
-                    onChange={(next) => setDistrictFilter(next === '' ? 'all' : next)}
+                    onChange={(next) => {
+                      setDistrictFilter(next === '' ? 'all' : next);
+                      setCurrentPage(1);
+                    }}
                     placeholder={t('ladder.filters.all', { ns: 'common' })}
                     title={t('ladder.filters.filterSheetTitles.district', { ns: 'common' })}
                     options={twDistrictSelectOptions}
@@ -435,30 +560,83 @@ export default function LadderPage() {
           </p>
         ) : (
           <ul className="space-y-2 pt-1">
-            {items.map((row, index) => (
-              <li
+            {items.map((row, index) => {
+              const isAnonymousRow = row.isAnonymousInLadder === true;
+              const displayName = isAnonymousRow ? t('ladder.anonymousName', { ns: 'common' }) : row.displayName || row.uid;
+              const secondaryLine = isAnonymousRow ? t('ladder.anonymousIdLabel', { ns: 'common' }) : row.uid;
+              return (
+                <li
                 key={row.uid}
+                ref={(el) => {
+                  if (!el) {
+                    rowRefs.current.delete(row.uid);
+                    return;
+                  }
+                  rowRefs.current.set(row.uid, el);
+                }}
                 className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800/90 bg-zinc-900/35 px-4 py-3 text-sm text-zinc-200 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.05)]"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="shrink-0 font-mono text-xs text-accent-info">#{row.rank ?? index + 1}</span>
+                  {!isAnonymousRow && row.avatarUrl ? (
+                    <img
+                      src={row.avatarUrl}
+                      alt=""
+                      aria-hidden
+                      className="h-10 w-10 shrink-0 rounded-full border border-zinc-700 object-cover"
+                    />
+                  ) : null}
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-zinc-100">{row.displayName || row.uid}</p>
-                    <p className="truncate text-[10px] uppercase tracking-widest text-zinc-500">{row.uid}</p>
+                    <p className="truncate font-medium text-zinc-100">{displayName}</p>
+                    <p className="truncate text-[10px] uppercase tracking-widest text-zinc-500">{secondaryLine}</p>
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className="font-mono text-lg font-semibold tabular-nums text-accent-primary">{row.scoreBest}</p>
+                  <p className="font-mono text-lg font-semibold tabular-nums text-accent-primary">
+                    {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
+                  </p>
                   <p className="text-[10px] text-zinc-500">
                     {t('ladder.updatedLabel', { ns: 'common' })}{' '}
                     {new Date(row.updatedAt).toLocaleString()}
                   </p>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
+
+        <footer className="mt-4 flex items-center justify-between gap-3 border-t border-zinc-800/80 pt-3">
+          <button
+            type="button"
+            className="ui-btn py-1.5 text-xs disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={!canPrevPage || loading}
+          >
+            {t('ladder.pagination.prev', { ns: 'common' })}
+          </button>
+          <p className="font-mono text-[11px] text-zinc-500">
+            {t('ladder.pagination.page', { ns: 'common', page: currentPage })}
+          </p>
+          <button
+            type="button"
+            className="ui-btn py-1.5 text-xs disabled:opacity-50"
+            onClick={() => setCurrentPage((p) => p + 1)}
+            disabled={!canNextPage || loading}
+          >
+            {t('ladder.pagination.next', { ns: 'common' })}
+          </button>
+        </footer>
       </section>
+      {showFloatingRankBar ? (
+        <LadderFloatingRankBar
+          shardId={shardId}
+          myRank={myRank}
+          myScore={myEntry.scoreBest}
+          onJumpToMyRow={jumpToMyRow}
+          formatScore={formatFloatingScore}
+        />
+      ) : null}
     </main>
   );
 }

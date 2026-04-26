@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 
@@ -22,6 +23,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
   const { t } = useTranslation('common');
   const [howToOpen, setHowToOpen] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
+
   const {
     profile,
     profileReady,
@@ -317,6 +319,8 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
               {t('explosive.submitDone')}
             </p>
           ) : null}
+
+          <LeaderboardAssessmentSyncBar scope="explosivePower" />
         </section>
       </div>
     </main>

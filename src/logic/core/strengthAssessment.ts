@@ -21,6 +21,9 @@ import { isPhysicalProfileComplete } from './physicalProfile';
 import { calculateStrengthScore, clampScoreMapValue, type ExerciseType } from './scoring';
 import { clampStrengthWeightKg } from './strengthWeightLimits';
 
+/** Fixed denominator for strength composite / five-lift ladder (always divide by 5, missing lift = 0). */
+export const STRENGTH_COMPOSITE_FIXED_DENOMINATOR = 5 as const;
+
 export const STRENGTH_ASSESSMENT_MAX_REPS = 10;
 
 /** Reps at or above this (within max) show a UI nudge: fewer reps → typically more reliable Brzycki 1RM. */
@@ -103,7 +106,7 @@ export interface StrengthLiftBranch {
 
 export interface StrengthAssessmentBreakdown {
   branches: StrengthLiftBranch[];
-  /** Mean of per-lift `finalScore` for completed lifts only. */
+  /** Fixed-denominator composite: sum of per-lift `finalScore` (missing slot = 0) / 5, `round2`. */
   averageRaw: number;
 }
 
@@ -264,9 +267,12 @@ function computeStrengthResultFromNumericLifts(
   mode: ComputeStrengthMode
 ): ComputeStrengthNumericResult {
   const branches: StrengthLiftBranch[] = [];
+  let sumForComposite = 0;
   for (const key of STRENGTH_LIFT_KEYS) {
     const cell = lifts?.[key];
-    if (!cell) continue;
+    if (!cell) {
+      continue;
+    }
     const w = cell.weightKg;
     const r = cell.reps;
     if (w === undefined || r === undefined) continue;
@@ -279,6 +285,7 @@ function computeStrengthResultFromNumericLifts(
       }
       continue;
     }
+    sumForComposite += scored.finalScore;
     branches.push({
       lift: key,
       weightKg: scored.weightUsedKg,
@@ -297,8 +304,94 @@ function computeStrengthResultFromNumericLifts(
   if (branches.length === 0) {
     return { ok: false, reason: 'no-valid-lift' };
   }
-  const averageRaw = branches.reduce((acc, b) => acc + b.finalScore, 0) / branches.length;
+  const averageRaw = Math.round((sumForComposite / STRENGTH_COMPOSITE_FIXED_DENOMINATOR) * 100) / 100;
   return { ok: true, branches, averageRaw };
+}
+
+/**
+ * Forgiving parse of persisted strength cells — shared by radar merge, ladder raw, and total-five score.
+ */
+export function computeStrengthBranchesFromPersisted(
+  profile: PhysicalProfile | null | undefined,
+  inputs: StrengthInputsPersisted | null | undefined
+): StrengthLiftBranch[] | null {
+  if (!profile || !isPhysicalProfileComplete(profile)) return null;
+  const lifts = inputs?.lifts;
+  if (!lifts || Object.keys(lifts).length === 0) return null;
+  const computed = computeStrengthResultFromNumericLifts(profile, lifts, 'forgiving');
+  if (!computed.ok) return null;
+  return computed.branches;
+}
+
+/** Squat / bench / dead only — stable order for SBD totals. */
+const STRENGTH_SBD_LIFT_KEYS = ['squat', 'benchPress', 'deadlift'] as const satisfies readonly StrengthLiftKey[];
+
+/**
+ * Sum of estimated 1RM (kg) for squat + bench + deadlift only.
+ * WHY: `strength` Firestore shard ranks by raw total mass moved, not radar model average score.
+ * IMPACT: Returns null unless all three lifts resolve from persisted cells (same bar as a real SBD total).
+ */
+export function computeStrengthSbdOneRmSumKg(
+  profile: PhysicalProfile | null | undefined,
+  inputs: StrengthInputsPersisted | null | undefined
+): number | null {
+  const branches = computeStrengthBranchesFromPersisted(profile, inputs);
+  if (!branches?.length) return null;
+  let sum = 0;
+  for (const key of STRENGTH_SBD_LIFT_KEYS) {
+    const b = branches.find((x) => x.lift === key);
+    if (!b || !Number.isFinite(b.oneRepMax) || b.oneRepMax <= 0) return null;
+    sum += b.oneRepMax;
+  }
+  return Number.isFinite(sum) && sum > 0 ? Math.round(sum * 10) / 10 : null;
+}
+
+/**
+ * Five-lift ladder composite: identical to the strength radar axis from saved lifts.
+ * WHY: `strength_totalFive` shard must match {@link resolveStrengthScoreFromInputs} (sum / 5, then clamp).
+ */
+export function computeStrengthFiveLiftLadderMeanScore(
+  profile: PhysicalProfile | null | undefined,
+  inputs: StrengthInputsPersisted | null | undefined
+): number | null {
+  return resolveStrengthScoreFromInputs(profile, inputs);
+}
+
+
+/** kg label for strength diagnostics (mean 1RM vs five-lift 1RM sum); not written to leaderboard rows. */
+export interface StrengthLadderWeightKgSummary {
+  weightKg: number;
+  unit: 'kg';
+}
+
+/**
+ * `composite` = sum of 1RM per five lift slots (missing = 0) / 5; `fiveTotal` = sum of 1RM for filled lifts.
+ * NOTE: Firestore `strength` / `strength_totalFive` shards use {@link computeStrengthSbdOneRmSumKg} and
+ * {@link computeStrengthFiveLiftLadderMeanScore} respectively — this helper is diagnostics / UI copy only.
+ */
+export function resolveStrengthLadderWeightKgSummary(
+  profile: PhysicalProfile | null | undefined,
+  inputs: StrengthInputsPersisted | null | undefined,
+  variant: 'composite' | 'fiveTotal'
+): StrengthLadderWeightKgSummary | undefined {
+  const branches = computeStrengthBranchesFromPersisted(profile, inputs);
+  if (!branches?.length) return undefined;
+  const byLift = new Map(branches.map((b) => [b.lift, b] as const));
+  let sumSlots = 0;
+  for (const key of STRENGTH_LIFT_KEYS) {
+    const b = byLift.get(key);
+    if (b && Number.isFinite(b.oneRepMax) && b.oneRepMax > 0) {
+      sumSlots += b.oneRepMax;
+    }
+  }
+  if (!Number.isFinite(sumSlots) || sumSlots <= 0) return undefined;
+  const sumOneRm = branches.reduce((a, b) => a + b.oneRepMax, 0);
+  if (!Number.isFinite(sumOneRm) || sumOneRm <= 0) return undefined;
+  const weightKg =
+    variant === 'composite'
+      ? Math.round((sumSlots / STRENGTH_COMPOSITE_FIXED_DENOMINATOR) * 10) / 10
+      : Math.round(sumOneRm * 10) / 10;
+  return { weightKg, unit: 'kg' };
 }
 
 /** Recompute strength axis from saved lifts + profile; null if nothing valid to score. */
@@ -306,11 +399,8 @@ export function resolveStrengthScoreFromInputs(
   profile: PhysicalProfile | null | undefined,
   inputs: StrengthInputsPersisted | null | undefined
 ): number | null {
-  if (!isPhysicalProfileComplete(profile) || !profile) return null;
-  const lifts = inputs?.lifts;
-  if (!lifts || Object.keys(lifts).length === 0) return null;
-
-  const computed = computeStrengthResultFromNumericLifts(profile, lifts, 'forgiving');
+  if (!profile || !isPhysicalProfileComplete(profile)) return null;
+  const computed = computeStrengthResultFromNumericLifts(profile, inputs?.lifts, 'forgiving');
   if (!computed.ok) return null;
   return clampScoreMapValue(computed.averageRaw);
 }

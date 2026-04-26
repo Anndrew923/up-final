@@ -21,20 +21,20 @@ function deriveNameFromEmail(email: string | null | undefined): string {
 
 /**
  * Shared display-name strategy across auth, leaderboard and HUD:
- * 1) Firebase Google profile name
- * 2) Email local-part
- * 3) Local profile name
+ * 1) Local ladder / shell profile name (user-chosen arena identity)
+ * 2) Firebase Google profile name
+ * 3) Email local-part
  * 4) Default fallback
  */
 export function resolveDisplayName(input: ResolveDisplayNameInput): string {
+  const nameFromLocal = clampDisplayName(input.localDisplayName ?? '');
+  if (nameFromLocal) return nameFromLocal;
+
   const nameFromGoogle = clampDisplayName(input.firebaseDisplayName ?? '');
   if (nameFromGoogle) return nameFromGoogle;
 
   const nameFromEmail = clampDisplayName(deriveNameFromEmail(input.email));
   if (nameFromEmail) return nameFromEmail;
-
-  const nameFromLocal = clampDisplayName(input.localDisplayName ?? '');
-  if (nameFromLocal) return nameFromLocal;
 
   return DEFAULT_FALLBACK_NAME;
 }

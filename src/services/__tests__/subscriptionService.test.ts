@@ -11,6 +11,7 @@ describe('subscription service', () => {
       uid: 'tester',
       displayName: 'Tester',
       email: 'tester@example.com',
+      firebaseDisplayName: 'Tester',
       photoURL: null,
       isAnonymous: false,
     });
@@ -50,6 +51,7 @@ describe('subscription service', () => {
       uid: 'tester',
       displayName: 'Tester',
       email: 'tester@example.com',
+      firebaseDisplayName: 'Tester',
       photoURL: null,
       isAnonymous: false,
     });

@@ -20,7 +20,7 @@ import {
   type User,
   type Unsubscribe,
 } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -36,6 +36,28 @@ function trimEnv(value: string | undefined): string {
 let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
+
+/**
+ * When proxies / HTTP2 / extensions break the default WebChannel stream, Firestore Listen
+ * may return HTML 400 "Unknown SID". Long-polling auto-detect avoids that transport path.
+ */
+function initFirestoreForApp(app: FirebaseApp): Firestore {
+  try {
+    return initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+    });
+  } catch (e: unknown) {
+    const code =
+      typeof e === 'object' && e !== null && 'code' in e
+        ? String((e as { code?: unknown }).code)
+        : '';
+    if (code === 'failed-precondition') {
+      return getFirestore(app);
+    }
+    throw e;
+  }
+}
+
 const GOOGLE_REDIRECT_PENDING_KEY = 'up.auth.googleRedirectPending';
 const GOOGLE_REDIRECT_RETRY_KEY = 'up.auth.googleRedirectRetry';
 
@@ -74,7 +96,7 @@ export function initFirebase(config: FirebaseConfig): void {
   };
 
   firebaseApp = getApps().length ? getApp() : initializeApp(opts);
-  firestoreDb = getFirestore(firebaseApp);
+  firestoreDb = initFirestoreForApp(firebaseApp);
   firebaseAuth = getAuth(firebaseApp);
 }
 

@@ -221,6 +221,25 @@
         "invalid-district": "District must belong to the selected city."
       }
     },
+    "ladderIdentity": {
+      "kicker": "Arena identity",
+      "title": "Ladder name & avatar",
+      "subtitle": "Shown on the leaderboard when you upload scores. Stored on this device; avatar is compressed before save.",
+      "displayName": "Display name",
+      "displayNameHint": "Max {{max}} characters.",
+      "avatar": "Avatar",
+      "avatarAlt": "Arena avatar preview",
+      "avatarHint": "Square photo works best. JPEG/PNG, resized automatically.",
+      "pickAvatar": "Choose image",
+      "removeAvatar": "Remove image",
+      "save": "Save arena identity",
+      "saving": "Saving…",
+      "saved": "Arena identity saved.",
+      "errorEmptyName": "Enter a display name.",
+      "errorImage": "Could not process this image. Try another file or a smaller photo.",
+      "errorImageTooLarge": "Image is still too large after compression. Try a smaller original file.",
+      "errorSave": "Could not save. Please try again."
+    },
     "consoleKicker": "Main console",
     "radarOverview": "Ability radar",
     "radarCompletion": "Progress: {{count}} / {{total}} axes",
@@ -245,14 +264,18 @@
     "kicker": "Global arena",
     "title": "Live ladder",
     "body": "You have Core + Pro access. Rankings load through the leaderboard service.",
-    "bodyRemote": "Connected to Firestore — summary rows only, with client cache + best-score writes.",
+    "bodyRemote": "Connected to Firestore — summary rows only, with client cache + hourly per-shard upload limits.",
     "bodyLocalMock": "Firebase env not set — showing in-memory mock data for development.",
     "noNetworkNote": "Non-Pro accounts never hit Firestore from this route.",
     "cacheHit": "Serving from local session cache (TTL applies).",
     "cacheMiss": "Fresh fetch (or mock) — cache updated.",
     "loadError": "Could not load rankings. Check Firebase rules and indexes.",
     "empty": "No pilots on this shard yet — be the first upload.",
+    "anonymousName": "Anonymous User",
+    "anonymousIdLabel": "identity hidden",
     "updatedLabel": "Updated",
+    "rowScoreStrengthKg": "{{kg}} kg",
+    "strengthKgShardHint": "This ranking uses squat + bench + deadlift estimated 1RM (kg). Rows uploaded before this change may still show the old score scale—re-save all three lifts and sync to refresh.",
     "promotion": {
       "title": "Rank up +{{delta}}",
       "current": "Current rank: #{{rank}}",
@@ -269,6 +292,50 @@
       "title": "Leaderboard",
       "subtitle": "Rows for the current arena zone and sub-ranking filter."
     },
+    "floatingRank": {
+      "kicker": "My position",
+      "globalRank": "Global rank #{{rank}}",
+      "cta": "Tap to jump to my row"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{page}}"
+    },
+    "upload": {
+      "sectionTitle": "Arena upload",
+      "button": "Upload to ladder",
+      "uploading": "Uploading…",
+      "joinArena": "Join Arena (Pro)",
+      "gate": {
+        "no-score": "Save this score to the radar first (or finish the assessment), then upload here.",
+        "signed-out": "Sign in with Google to upload scores.",
+        "anonymous": "Use a linked Google account (not guest-only) to upload scores.",
+        "no-pro": "Pro subscription is required to upload to the live ladder.",
+        "invalid-score": "Score is not ready to upload yet."
+      },
+      "resultUpdated": "Uploaded — your ladder row now reflects the current radar score for this shard.",
+      "quotaHint": "Each ladder shard allows up to {{limit}} uploads per hour (rolling window; limits cloud cost).",
+      "quotaAfterSuccess": "{{remaining}} upload(s) left this hour ({{limit}} per shard per hour); the window refreshes at {{resetTime}}.",
+      "resultRateLimitedDetail": "This shard’s hourly cap ({{limit}}) is reached. Try again after {{resetTime}}.",
+      "resultProRequired": "Upload blocked — Pro required.",
+      "resultNoop": "No change applied.",
+      "resultError": "Upload failed. Check your connection or Firebase rules."
+    },
+    "syncAll": {
+      "sectionTitle": "Sync all ladders",
+      "hint": "Uploads every arena shard that has a positive score from your current radar (same data as each assessment page). Runs sequentially; each shard has an hourly upload cap.",
+      "noTargets": "No scores are ready to upload yet — complete assessments or save scores to the radar first.",
+      "button": "Sync all to ladder",
+      "busy": "Syncing…",
+      "summary": "Finished {{attempted}} uploads: {{updated}} written, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors."
+    },
+    "assessmentSync": {
+      "hint": "Uploads every ladder shard for this assessment in one go (same per-shard hourly limits as home sync-all). Saving to the radar updates all axes — run calculate or save to radar before uploading.",
+      "noTargets": "No scores on this page are ready to upload yet.",
+      "button": "Upload this page to ladder",
+      "busy": "Uploading…"
+    },
     "divisions": {
       "ladderScore": {
         "label": "All zones",
@@ -283,8 +350,8 @@
         "desc": "SBD + accessories — pick a sub-ranking"
       },
       "stats_bodyFat": {
-        "label": "Body fat",
-        "desc": "Body-fat score vs FFMI"
+        "label": "FFMI",
+        "desc": "FFMI ladder (ranked by ladder score)"
       },
       "stats_cooper": {
         "label": "Cardio",
@@ -292,7 +359,7 @@
       },
       "stats_vertical": {
         "label": "Explosive power",
-        "desc": "Vertical, broad jump, sprint"
+        "desc": "Composite plus vertical, standing long jump, and sprint sub-rankings (score-based)"
       },
       "stats_ffmi": {
         "label": "Muscle mass",
@@ -308,8 +375,8 @@
       }
     },
     "project": {
-      "totalFive": "Five-lift total",
-      "sbdTotal": "Three-lift (SBD) total",
+      "totalFive": "Five-lift average (score)",
+      "sbdTotal": "SBD 1RM total (kg)",
       "squat": "Squat",
       "benchPress": "Bench press",
       "deadlift": "Deadlift",
@@ -317,10 +384,10 @@
       "latPulldown": "Lat pulldown",
       "cooper": "Cooper 12 min",
       "run5km": "5 km run",
+      "explosiveComposite": "Explosive composite",
       "verticalJump": "Vertical jump",
       "standingLongJump": "Standing long jump",
       "sprint": "Sprint",
-      "bodyFatScore": "Body-fat score",
       "ffmi": "FFMI",
       "smmScore": "SMM score",
       "smmKg": "Skeletal muscle (kg)",
@@ -343,22 +410,17 @@
       "heightBucket": "Height band",
       "weightBucket": "Weight class",
       "jobCategory": "Job category",
-      "regionScope": "Region scope",
+      "country": "Country",
       "city": "City",
       "district": "District",
       "all": "All",
-      "regionScopeOptions": {
-        "country": "Country",
-        "city": "City",
-        "district": "District"
-      },
       "filterSheetTitles": {
         "gender": "Gender filter",
         "ageBucket": "Age band",
         "heightBucket": "Height band",
         "weightBucket": "Weight class",
         "jobCategory": "Job category",
-        "regionScope": "Region level",
+        "country": "Country",
         "city": "City",
         "district": "District"
       },

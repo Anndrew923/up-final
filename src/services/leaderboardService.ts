@@ -1,13 +1,16 @@
 import {
   collection,
-  doc,
+  getCountFromServer,
   getDoc,
+  deleteField,
+  doc,
   getDocs,
   limit,
   orderBy,
   query,
   setDoc,
   startAfter,
+  where,
   type Firestore,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
@@ -24,9 +27,14 @@ import {
   type LadderProfileProjection,
 } from '../types/ladderProfile';
 import { getCurrentFirebaseUser, getFirestoreDb } from './firebaseClient';
+import {
+  getLeaderboardIdentityPayload,
+  normalizeLadderDisplayName,
+  sanitizeAvatarUrlForLeaderboard,
+} from './ladderIdentityService';
 import { loadPhysicalProfile } from './localStorageService';
 import { ENTRIES_SUBCOLLECTION, LEADERBOARDS_COLLECTION } from './firestorePaths';
-import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
+import { checkUploadRateLimit, consumeUploadQuota, LEADERBOARD_UPLOADS_PER_HOUR } from './rateLimitService';
 import {
   clearLeaderboardCache,
   getCachedLeaderboard,
@@ -49,11 +57,20 @@ export interface SubmitLeaderboardInput {
 
 export interface SubmitLeaderboardResult {
   ok: boolean;
-  reason?: 'pro-required' | 'rate-limited' | 'not-best-score' | 'invalid-input' | 'unknown';
+  reason?: 'pro-required' | 'rate-limited' | 'invalid-input' | 'unknown';
   updated?: boolean;
-  previousBest?: number | null;
-  newBest?: number | null;
+  /**
+   * Prior `scoreBest` when known (in-memory mock / dev). Firestore path skips pre-read — always `null` on success.
+   */
+  previousScore?: number | null;
+  /** Score written to the ladder row (`scoreBest` field in Firestore). */
+  submittedScore?: number | null;
+  /** When `previousScore` is known: new value is strictly higher. */
   improved?: boolean;
+  /** After a successful write or a rate-limit denial — rolling hourly cap per shard. */
+  rateLimitRemaining?: number;
+  rateLimitResetAt?: string;
+  limitPerHour?: number;
 }
 
 export interface ListLeaderboardResult {
@@ -63,7 +80,67 @@ export interface ListLeaderboardResult {
   fromCache?: boolean;
 }
 
+export interface GetMyLeaderboardEntryResult {
+  ok: boolean;
+  reason?: 'pro-required' | 'unknown';
+  item?: LeaderboardEntry | null;
+}
+
+export interface GetRankByScoreBestResult {
+  ok: boolean;
+  reason?: 'pro-required' | 'unknown';
+  rank?: number | null;
+  fromCache?: boolean;
+}
+
 const memoryDb = new Map<string, Map<string, LeaderboardEntry>>();
+const GLOBAL_RANK_CACHE_TTL_MS = 30_000;
+const globalRankCacheMemory = new Map<string, { rank: number; cachedAt: number }>();
+
+function buildGlobalRankCacheKey(uid: string, metric: LeaderboardShardId, scoreBest: number): string {
+  return `${uid}::${metric}::${scoreBest}`;
+}
+
+function readGlobalRankCache(key: string): number | null {
+  const now = Date.now();
+  const memoryCached = globalRankCacheMemory.get(key);
+  if (memoryCached && now - memoryCached.cachedAt < GLOBAL_RANK_CACHE_TTL_MS) {
+    return memoryCached.rank;
+  }
+  if (memoryCached) {
+    globalRankCacheMemory.delete(key);
+  }
+  if (typeof window === 'undefined' || !window.sessionStorage) return null;
+  try {
+    const raw = window.sessionStorage.getItem(`leaderboard:global-rank:${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { rank?: number; cachedAt?: number };
+    if (
+      typeof parsed.rank === 'number' &&
+      Number.isFinite(parsed.rank) &&
+      typeof parsed.cachedAt === 'number' &&
+      now - parsed.cachedAt < GLOBAL_RANK_CACHE_TTL_MS
+    ) {
+      globalRankCacheMemory.set(key, { rank: parsed.rank, cachedAt: parsed.cachedAt });
+      return parsed.rank;
+    }
+    window.sessionStorage.removeItem(`leaderboard:global-rank:${key}`);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeGlobalRankCache(key: string, rank: number): void {
+  const payload = { rank, cachedAt: Date.now() };
+  globalRankCacheMemory.set(key, payload);
+  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.setItem(`leaderboard:global-rank:${key}`, JSON.stringify(payload));
+  } catch {
+    // Ignore cache write failures.
+  }
+}
 
 function getMetricStore(metric: LeaderboardShardId): Map<string, LeaderboardEntry> {
   const existing = memoryDb.get(metric);
@@ -99,6 +176,13 @@ function mapFirestoreDoc(d: QueryDocumentSnapshot): LeaderboardEntry {
   return {
     uid: d.id,
     displayName: String(data.displayName ?? ''),
+    displayRaw:
+      typeof data.displayRaw === 'number' && Number.isFinite(data.displayRaw) ? data.displayRaw : undefined,
+    displayRawUnit:
+      typeof data.displayRawUnit === 'string' && data.displayRawUnit.trim().length > 0
+        ? data.displayRawUnit.trim()
+        : undefined,
+    avatarUrl: typeof data.avatarUrl === 'string' && data.avatarUrl.length > 0 ? data.avatarUrl : undefined,
     scoreBest: Number(data.scoreBest ?? 0),
     updatedAt,
     isPro: data.isPro === true,
@@ -241,56 +325,137 @@ export async function listLeaderboard(params: {
   });
 }
 
-function commitMemoryLeaderboardBest(
+export async function getMyLeaderboardEntry(params: {
+  entitlement: EntitlementState;
+  metric: LeaderboardShardId;
+  uid: string;
+}): Promise<GetMyLeaderboardEntryResult> {
+  if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) {
+    return { ok: false, reason: 'pro-required' };
+  }
+  if (!params.uid) {
+    return { ok: true, item: null };
+  }
+
+  const db = getFirestoreDb();
+  if (db) {
+    try {
+      const ref = doc(db, LEADERBOARDS_COLLECTION, params.metric, ENTRIES_SUBCOLLECTION, params.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        return { ok: true, item: null };
+      }
+      return { ok: true, item: mapFirestoreDoc(snap) };
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] getMyLeaderboardEntry Firestore error', err);
+      }
+      return { ok: false, reason: 'unknown' };
+    }
+  }
+
+  const store = getMetricStore(params.metric);
+  return { ok: true, item: store.get(params.uid) ?? null };
+}
+
+export async function getRankByScoreBest(params: {
+  entitlement: EntitlementState;
+  metric: LeaderboardShardId;
+  uid: string;
+  scoreBest: number;
+}): Promise<GetRankByScoreBestResult> {
+  if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) {
+    return { ok: false, reason: 'pro-required' };
+  }
+  if (!Number.isFinite(params.scoreBest) || params.scoreBest <= 0) {
+    return { ok: true, rank: null, fromCache: false };
+  }
+
+  const cacheKey = buildGlobalRankCacheKey(params.uid, params.metric, params.scoreBest);
+  const cachedRank = readGlobalRankCache(cacheKey);
+  if (cachedRank !== null) {
+    return { ok: true, rank: cachedRank, fromCache: true };
+  }
+
+  const db = getFirestoreDb();
+  if (db) {
+    try {
+      const base = entriesCollection(db, params.metric);
+      const countQuery = query(base, where('scoreBest', '>', params.scoreBest));
+      const snap = await getCountFromServer(countQuery);
+      const rank = snap.data().count + 1;
+      writeGlobalRankCache(cacheKey, rank);
+      return { ok: true, rank, fromCache: false };
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] getRankByScoreBest Firestore error', err);
+      }
+      return { ok: false, reason: 'unknown' };
+    }
+  }
+
+  const store = getMetricStore(params.metric);
+  const rank =
+    Array.from(store.values()).filter((row) => Number.isFinite(row.scoreBest) && row.scoreBest > params.scoreBest).length + 1;
+  writeGlobalRankCache(cacheKey, rank);
+  return { ok: true, rank, fromCache: false };
+}
+
+function applyMemoryLeaderboardSubmit(
   uid: string,
   input: SubmitLeaderboardInput
 ): SubmitLeaderboardResult {
   const metricStore = getMetricStore(input.metric);
   const existing = metricStore.get(uid);
-
-  if (existing && input.score <= existing.scoreBest) {
-    return {
-      ok: true,
-      reason: 'not-best-score',
-      updated: false,
-      previousBest: existing.scoreBest,
-      newBest: existing.scoreBest,
-      improved: false,
-    };
-  }
+  const rateKey = `leaderboard:${input.metric}`;
 
   const rateLimitStatus = checkUploadRateLimit({
     uid,
-    key: `leaderboard:${input.metric}`,
+    key: rateKey,
   });
   if (!rateLimitStatus.allowed) {
     return {
       ok: false,
       reason: 'rate-limited',
       updated: false,
-      previousBest: existing?.scoreBest ?? null,
-      newBest: existing?.scoreBest ?? null,
+      previousScore: existing?.scoreBest ?? null,
+      submittedScore: existing?.scoreBest ?? null,
       improved: false,
+      rateLimitRemaining: rateLimitStatus.remaining,
+      rateLimitResetAt: rateLimitStatus.resetAt,
+      limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
     };
   }
 
-  consumeUploadQuota({ uid, key: `leaderboard:${input.metric}` });
-  metricStore.set(uid, {
+  const afterConsume = consumeUploadQuota({ uid, key: rateKey });
+  const isAnonymousInLadder = input.profile?.isAnonymousInLadder === true;
+  const row: LeaderboardEntry = {
     uid,
-    displayName: input.displayName,
+    displayName: isAnonymousInLadder ? 'Anonymous' : input.displayName,
     scoreBest: input.score,
     updatedAt: new Date().toISOString(),
     isPro: true,
     ...input.profile,
-  });
+  };
+  if (!isAnonymousInLadder) {
+    const safeAvatar = sanitizeAvatarUrlForLeaderboard(input.avatarUrl);
+    if (safeAvatar) row.avatarUrl = safeAvatar;
+    else delete row.avatarUrl;
+  } else {
+    delete row.avatarUrl;
+  }
+  metricStore.set(uid, row);
   clearLeaderboardCache(input.metric);
 
   return {
     ok: true,
     updated: true,
-    previousBest: existing?.scoreBest ?? null,
-    newBest: input.score,
+    previousScore: existing?.scoreBest ?? null,
+    submittedScore: input.score,
     improved: existing ? input.score > existing.scoreBest : true,
+    rateLimitRemaining: afterConsume.remaining,
+    rateLimitResetAt: afterConsume.resetAt,
+    limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
   };
 }
 
@@ -323,16 +488,25 @@ export async function submitLeaderboardScore(params: {
     profile: profileProjection,
   };
   if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
-    return { ok: false, reason: 'pro-required', updated: false, previousBest: null, newBest: null };
+    return { ok: false, reason: 'pro-required', updated: false, previousScore: null, submittedScore: null };
   }
 
-  if (!validateInput(normalizedInput)) {
-    return { ok: false, reason: 'invalid-input', updated: false, previousBest: null, newBest: null };
+  const identity = getLeaderboardIdentityPayload();
+  const mergedForWrite: SubmitLeaderboardInput = {
+    ...normalizedInput,
+    displayName: normalizeLadderDisplayName(
+      (normalizedInput.displayName && normalizedInput.displayName.trim()) || identity.displayName || ''
+    ),
+    avatarUrl: sanitizeAvatarUrlForLeaderboard(normalizedInput.avatarUrl ?? identity.avatarUrl),
+  };
+
+  if (!validateInput(mergedForWrite)) {
+    return { ok: false, reason: 'invalid-input', updated: false, previousScore: null, submittedScore: null };
   }
 
-  const resolved = await resolveLeaderboardUid(normalizedInput.uid);
+  const resolved = await resolveLeaderboardUid(mergedForWrite.uid);
   if (resolved.backend === 'error') {
-    return { ok: false, reason: 'unknown', updated: false, previousBest: null, newBest: null };
+    return { ok: false, reason: 'unknown', updated: false, previousScore: null, submittedScore: null };
   }
 
   const uid = resolved.uid;
@@ -344,70 +518,66 @@ export async function submitLeaderboardScore(params: {
       const ref = doc(
         db,
         LEADERBOARDS_COLLECTION,
-        normalizedInput.metric,
+        mergedForWrite.metric,
         ENTRIES_SUBCOLLECTION,
         uid
       );
-      const snap = await getDoc(ref);
-      const existingBest = snap.exists()
-        ? Number((snap.data() as { scoreBest?: number }).scoreBest ?? NaN)
-        : NaN;
-
-      if (Number.isFinite(existingBest) && normalizedInput.score <= existingBest) {
-        return {
-          ok: true,
-          reason: 'not-best-score',
-          updated: false,
-          previousBest: existingBest,
-          newBest: existingBest,
-          improved: false,
-        };
-      }
+      const rateKey = `leaderboard:${mergedForWrite.metric}`;
 
       const rateLimitStatus = checkUploadRateLimit({
         uid,
-        key: `leaderboard:${normalizedInput.metric}`,
+        key: rateKey,
       });
       if (!rateLimitStatus.allowed) {
         return {
           ok: false,
           reason: 'rate-limited',
           updated: false,
-          previousBest: Number.isFinite(existingBest) ? existingBest : null,
-          newBest: Number.isFinite(existingBest) ? existingBest : null,
-          improved: false,
+          previousScore: null,
+          submittedScore: null,
+          rateLimitRemaining: rateLimitStatus.remaining,
+          rateLimitResetAt: rateLimitStatus.resetAt,
+          limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
         };
       }
 
-      await setDoc(
-        ref,
-        {
-          displayName: normalizedInput.displayName,
-          scoreBest: normalizedInput.score,
-          updatedAt: new Date().toISOString(),
-          isPro: true,
-          ...normalizedInput.profile,
-        },
-        { merge: true }
-      );
+      const payload: Record<string, unknown> = {
+        displayName: mergedForWrite.profile?.isAnonymousInLadder === true ? 'Anonymous' : mergedForWrite.displayName,
+        scoreBest: mergedForWrite.score,
+        updatedAt: new Date().toISOString(),
+        isPro: true,
+        ...mergedForWrite.profile,
+        avatarUrl:
+          mergedForWrite.profile?.isAnonymousInLadder === true
+            ? deleteField()
+            : mergedForWrite.avatarUrl
+              ? mergedForWrite.avatarUrl
+              : deleteField(),
+        displayRaw: deleteField(),
+        displayRawUnit: deleteField(),
+      };
 
-      consumeUploadQuota({ uid, key: `leaderboard:${normalizedInput.metric}` });
-      clearLeaderboardCache(normalizedInput.metric);
+      await setDoc(ref, payload, { merge: true });
+
+      const afterConsume = consumeUploadQuota({ uid, key: rateKey });
+      clearLeaderboardCache(mergedForWrite.metric);
 
       return {
         ok: true,
         updated: true,
-        previousBest: Number.isFinite(existingBest) ? existingBest : null,
-        newBest: normalizedInput.score,
-        improved: Number.isFinite(existingBest) ? normalizedInput.score > existingBest : true,
+        previousScore: null,
+        submittedScore: mergedForWrite.score,
+        rateLimitRemaining: afterConsume.remaining,
+        rateLimitResetAt: afterConsume.resetAt,
+        limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
       };
     } catch (err) {
       if (import.meta.env.DEV) {
         console.warn('[leaderboard] submitLeaderboardScore Firestore error', err);
       }
-      return { ok: false, reason: 'unknown', updated: false, previousBest: null, newBest: null };
+      return { ok: false, reason: 'unknown', updated: false, previousScore: null, submittedScore: null };
     }
   }
 
-  return commitMemoryLeaderboardBest(uid, normalizedInput);
+  return applyMemoryLeaderboardSubmit(uid, mergedForWrite);
 }

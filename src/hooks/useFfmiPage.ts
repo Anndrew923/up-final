@@ -4,8 +4,7 @@ import type { PhysicalProfile } from '../types/userProfile';
 import { ROUTES } from '../config/routes';
 import {
   evaluateFfmiScoring,
-  FFMI_BODY_FAT_INPUT_MAX_PCT,
-  FFMI_BODY_FAT_INPUT_MIN_PCT,
+  parseFfmiBodyFatPctInput,
   getFfmiFemaleCategorySuffix,
   getFfmiMaleCategorySuffix,
   type FfmiFemaleCategorySuffix,
@@ -43,12 +42,6 @@ export interface UseFfmiPageResult {
   submitToRadar: () => void;
   clearError: () => void;
   goHome: () => void;
-}
-
-function parseBodyFatPct(raw: string): number | null {
-  const n = parseFloat(raw.replace(',', '.'));
-  if (!Number.isFinite(n)) return null;
-  return n;
 }
 
 export function useFfmiPage(): UseFfmiPageResult {
@@ -111,17 +104,13 @@ export function useFfmiPage(): UseFfmiPageResult {
       setBreakdown(null);
       return;
     }
-    const pct = parseBodyFatPct(bodyFatInput.trim());
     if (bodyFatInput.trim() === '') {
       setErrorKey('missing-body-fat');
       setBreakdown(null);
       return;
     }
-    if (
-      pct === null ||
-      pct < FFMI_BODY_FAT_INPUT_MIN_PCT ||
-      pct > FFMI_BODY_FAT_INPUT_MAX_PCT
-    ) {
+    const pct = parseFfmiBodyFatPctInput(bodyFatInput.trim());
+    if (pct === null) {
       setErrorKey('invalid-body-fat');
       setBreakdown(null);
       return;

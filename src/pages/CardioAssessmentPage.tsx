@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 
 export interface CardioAssessmentPageProps {
@@ -236,6 +237,8 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
               {t('cardio.submitDone')}
             </p>
           ) : null}
+
+          <LeaderboardAssessmentSyncBar scope="cardio" />
         </section>
       </div>
     </main>

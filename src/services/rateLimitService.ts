@@ -1,3 +1,7 @@
+/**
+ * In-memory per-tab rolling window for upload cost control. Resets on full page reload; not a security boundary
+ * (a determined client can bypass) — for UX pacing and accidental spam only.
+ */
 export interface UploadRateLimitResult {
   allowed: boolean;
   remaining: number;
@@ -10,7 +14,8 @@ interface RateLimitBucket {
 }
 
 const DEFAULT_KEY = 'leaderboard';
-const DEFAULT_LIMIT_PER_HOUR = 3;
+/** Max successful ladder writes per `key` (per shard) per rolling hour — exported for UI copy. */
+export const LEADERBOARD_UPLOADS_PER_HOUR = 3;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 const buckets = new Map<string, RateLimitBucket>();
@@ -49,7 +54,7 @@ export function checkUploadRateLimit(params: {
   now?: Date;
 }): UploadRateLimitResult {
   const key = params.key ?? DEFAULT_KEY;
-  const limitPerHour = params.limitPerHour ?? DEFAULT_LIMIT_PER_HOUR;
+  const limitPerHour = params.limitPerHour ?? LEADERBOARD_UPLOADS_PER_HOUR;
   const nowMs = (params.now ?? new Date()).getTime();
   const bucket = getBucket(params.uid, key, nowMs);
   return toResult(bucket, limitPerHour);
@@ -62,7 +67,7 @@ export function consumeUploadQuota(params: {
   now?: Date;
 }): UploadRateLimitResult {
   const key = params.key ?? DEFAULT_KEY;
-  const limitPerHour = params.limitPerHour ?? DEFAULT_LIMIT_PER_HOUR;
+  const limitPerHour = params.limitPerHour ?? LEADERBOARD_UPLOADS_PER_HOUR;
   const nowMs = (params.now ?? new Date()).getTime();
   const bucket = getBucket(params.uid, key, nowMs);
 

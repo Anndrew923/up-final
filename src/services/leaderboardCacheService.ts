@@ -3,6 +3,11 @@ import type { LadderProfileProjection } from '../types/ladderProfile';
 export interface LeaderboardEntry extends Partial<LadderProfileProjection> {
   uid: string;
   displayName: string;
+  /** Legacy Firestore fields from older clients; ignored by ladder UI (rank uses `scoreBest` only). */
+  displayRaw?: number;
+  displayRawUnit?: string;
+  /** Public image URL or compressed data URL from ladder identity upload. */
+  avatarUrl?: string;
   scoreBest: number;
   updatedAt: string;
   rank?: number;

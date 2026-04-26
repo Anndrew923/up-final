@@ -4,10 +4,15 @@ import {
   LADDER_AGE_BUCKETS,
   LADDER_HEIGHT_BUCKETS,
   LADDER_JOB_CATEGORIES,
-  LADDER_REGION_SCOPES,
   LADDER_WEIGHT_BUCKETS,
 } from '../types/ladderProfile';
-import type { LadderAgeBucket, LadderHeightBucket, LadderJobCategory, LadderWeightBucket } from '../types/ladderProfile';
+import type {
+  LadderAgeBucket,
+  LadderCountryCode,
+  LadderHeightBucket,
+  LadderJobCategory,
+  LadderWeightBucket,
+} from '../types/ladderProfile';
 import { getTaiwanCityLabel, getTaiwanDistrictLabel } from '../utils/taiwanDistricts';
 
 export interface LadderFilterGenderOption {
@@ -21,9 +26,16 @@ export interface LadderFilterSheetOptions {
   heightBucketOptions: { value: LadderHeightBucket; label: string }[];
   weightBucketOptions: { value: LadderWeightBucket; label: string }[];
   jobCategoryOptions: { value: LadderJobCategory; label: string }[];
-  regionScopeOptions: { value: (typeof LADDER_REGION_SCOPES)[number]; label: string }[];
+  countrySelectOptions: { value: LadderCountryCode; label: string }[];
   twCitySelectOptions: { value: string; label: string }[];
   twDistrictSelectOptions: { value: string; label: string }[];
+}
+
+export interface LadderFilterSheetLocationContext {
+  /** Country codes present on the current shard dataset (deduped). */
+  countryCodes?: readonly LadderCountryCode[];
+  /** When true, city/district labels use Taiwan dictionary; otherwise raw stored strings. */
+  locationLabelsTw?: boolean;
 }
 
 /**
@@ -31,8 +43,9 @@ export interface LadderFilterSheetOptions {
  * and avoids rebuilding option rows on unrelated renders.
  */
 export function useLadderFilterSheetOptions(
-  twCityValues: readonly string[],
-  twDistrictValues: readonly string[]
+  cityValues: readonly string[],
+  districtValues: readonly string[],
+  locationContext?: LadderFilterSheetLocationContext
 ): LadderFilterSheetOptions {
   const { t, i18n } = useTranslation();
 
@@ -80,31 +93,33 @@ export function useLadderFilterSheetOptions(
     [t]
   );
 
-  const regionScopeOptions = useMemo(
+  const countrySelectOptions = useMemo(
     () =>
-      LADDER_REGION_SCOPES.map((value) => ({
+      (locationContext?.countryCodes ?? []).map((value) => ({
         value,
-        label: t(`ladder.filters.regionScopeOptions.${value}`),
+        label: t(`home.profile.countryOptions.${value}`, { ns: 'common' }),
       })),
-    [t]
+    [locationContext?.countryCodes, t]
   );
+
+  const useTwLocationLabels = locationContext?.locationLabelsTw === true;
 
   const twCitySelectOptions = useMemo(
     () =>
-      twCityValues.map((value) => ({
+      cityValues.map((value) => ({
         value,
-        label: getTaiwanCityLabel(value, i18n.language),
+        label: useTwLocationLabels ? getTaiwanCityLabel(value, i18n.language) : value,
       })),
-    [twCityValues, i18n.language]
+    [cityValues, i18n.language, useTwLocationLabels]
   );
 
   const twDistrictSelectOptions = useMemo(
     () =>
-      twDistrictValues.map((value) => ({
+      districtValues.map((value) => ({
         value,
-        label: getTaiwanDistrictLabel(value, i18n.language),
+        label: useTwLocationLabels ? getTaiwanDistrictLabel(value, i18n.language) : value,
       })),
-    [twDistrictValues, i18n.language]
+    [districtValues, i18n.language, useTwLocationLabels]
   );
 
   return {
@@ -113,7 +128,7 @@ export function useLadderFilterSheetOptions(
     heightBucketOptions,
     weightBucketOptions,
     jobCategoryOptions,
-    regionScopeOptions,
+    countrySelectOptions,
     twCitySelectOptions,
     twDistrictSelectOptions,
   };

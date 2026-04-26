@@ -1,6 +1,11 @@
 import type { FC } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
+import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
+import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
+import { useScoreStore } from '../stores/scoreStore';
 
 export interface ArmSizeAssessmentPageProps {
   onBack?: () => void;
@@ -8,6 +13,7 @@ export interface ArmSizeAssessmentPageProps {
 
 const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const persistedArmSizeScore = useScoreStore((s) => s.scores.armSize);
   const {
     armCircumferenceInput,
     setArmCircumferenceInput,
@@ -22,6 +28,12 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     calculate,
     saveForLeaderboard,
   } = useArmSizeAssessmentPage();
+
+  const armLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
+    const score = submittedScore ?? persistedArmSizeScore;
+    if (score == null || !Number.isFinite(score) || score <= 0) return undefined;
+    return [{ metric: leaderboardShardForArmSize(), score }];
+  }, [submittedScore, persistedArmSizeScore]);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -128,6 +140,8 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
               {t('armSize.submitDone')}
             </p>
           ) : null}
+
+          <LeaderboardAssessmentSyncBar scope="armSize" supplementalTargets={armLadderSupplemental} />
         </section>
       </div>
     </main>

@@ -45,6 +45,8 @@ export const KNOWN_LEADERBOARD_SHARD_IDS = [
   'cardio',
   'cardio_5km',
   'explosivePower',
+  'explosive_composite',
+  'explosive_vertical',
   'explosive_broad',
   'explosive_sprint',
   'bodyFat',
@@ -71,9 +73,9 @@ export function getDefaultProjectForDivision(division: LadderDivisionId): string
     case 'stats_cooper':
       return 'cooper';
     case 'stats_vertical':
-      return 'vertical';
+      return 'composite';
     case 'stats_bodyFat':
-      return 'bodyFat';
+      return 'ffmi';
     case 'stats_ffmi':
       return 'score';
     case 'stats_grip':
@@ -111,15 +113,13 @@ export function getProjectOptionsForDivision(division: LadderDivisionId): readon
       ] as const;
     case 'stats_vertical':
       return [
+        { value: 'composite', labelKey: 'ladder.project.explosiveComposite' },
         { value: 'vertical', labelKey: 'ladder.project.verticalJump' },
         { value: 'broad', labelKey: 'ladder.project.standingLongJump' },
         { value: 'sprint', labelKey: 'ladder.project.sprint' },
       ] as const;
     case 'stats_bodyFat':
-      return [
-        { value: 'bodyFat', labelKey: 'ladder.project.bodyFatScore' },
-        { value: 'ffmi', labelKey: 'ladder.project.ffmi' },
-      ] as const;
+      return [{ value: 'ffmi', labelKey: 'ladder.project.ffmi' }] as const;
     case 'stats_ffmi':
       return [
         { value: 'score', labelKey: 'ladder.project.smmScore' },
@@ -168,9 +168,11 @@ export function getLeaderboardShardId(division: LadderDivisionId, project: strin
     case 'stats_cooper':
       return p === '5km' ? 'cardio_5km' : 'cardio';
     case 'stats_vertical': {
+      if (p === 'composite') return 'explosive_composite';
       if (p === 'broad') return 'explosive_broad';
       if (p === 'sprint') return 'explosive_sprint';
-      return 'explosivePower';
+      if (p === 'vertical') return 'explosive_vertical';
+      return 'explosive_composite';
     }
     case 'stats_bodyFat':
       return p === 'ffmi' ? 'bodyFat_ffmi' : 'bodyFat';

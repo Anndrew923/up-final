@@ -5,6 +5,7 @@ import {
   FFMI_HUMAN_CAP_MALE,
   evaluateFfmiScoring,
   computeAdjustedFfmi,
+  parseFfmiBodyFatPctInput,
 } from '../ffmiScoring';
 
 describe('evaluateFfmiScoring', () => {
@@ -69,5 +70,19 @@ describe('computeAdjustedFfmi', () => {
     const unrounded = raw + 6 * (heightM - 1.8);
     const adjusted = computeAdjustedFfmi(heightM, weightKg, bodyFatPct);
     expect(adjusted).toBeCloseTo(Math.round(unrounded * 100) / 100, 5);
+  });
+});
+
+describe('parseFfmiBodyFatPctInput', () => {
+  it('returns null for empty or out-of-band values', () => {
+    expect(parseFfmiBodyFatPctInput('')).toBeNull();
+    expect(parseFfmiBodyFatPctInput('  ')).toBeNull();
+    expect(parseFfmiBodyFatPctInput('2')).toBeNull();
+    expect(parseFfmiBodyFatPctInput('61')).toBeNull();
+  });
+
+  it('accepts comma decimal and in-range percent', () => {
+    expect(parseFfmiBodyFatPctInput('15,5')).toBe(15.5);
+    expect(parseFfmiBodyFatPctInput('12')).toBe(12);
   });
 });

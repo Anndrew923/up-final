@@ -7,6 +7,7 @@ import {
   calculateScoreIncreasing,
   getPowerAgeRange,
   mergeScoreMapWithResolvedExplosivePower,
+  resolveExplosiveLadderScoreBundle,
   resolveExplosivePowerScoreForDisplay,
   tryComputeExplosiveAssessmentScore,
   VERTICAL_JUMP_STANDARDS_MALE,
@@ -48,7 +49,7 @@ describe('calculateExplosivePowerFinalRaw', () => {
     updatedAt: '',
   };
 
-  it('averages only provided metrics', () => {
+  it('uses fixed /3 composite (only vertical: raw / 3)', () => {
     const stdRow = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
     const vjOnly = calculateScoreIncreasing(50, stdRow);
     const r = calculateExplosivePowerFinalRaw({
@@ -57,7 +58,8 @@ describe('calculateExplosivePowerFinalRaw', () => {
       sprintSeconds: null,
       profile: male25,
     });
-    expect(r).toBe(vjOnly);
+    const expected = Math.round((vjOnly / 3) * 100) / 100;
+    expect(r).toBe(expected);
   });
 
   it('breakdown lists null for skipped branches', () => {
@@ -72,7 +74,11 @@ describe('calculateExplosivePowerFinalRaw', () => {
     expect(b.verticalJumpRaw).toBeGreaterThan(0);
     expect(b.standingLongJumpRaw).toBeNull();
     expect(b.sprintRaw).toBeNull();
-    expect(b.averageRaw).toBe(b.verticalJumpRaw);
+    expect(b.averageRaw).toBe(
+      b.verticalJumpRaw != null
+        ? Math.round((b.verticalJumpRaw / 3) * 100) / 100
+        : 0
+    );
   });
 
   it('returns null when no positive inputs', () => {
@@ -135,7 +141,9 @@ describe('tryComputeExplosiveAssessmentScore', () => {
       expect(r.breakdown.verticalJumpRaw).toBeGreaterThan(0);
       expect(r.breakdown.standingLongJumpRaw).toBeNull();
       expect(r.breakdown.sprintRaw).toBeNull();
-      expect(r.breakdown.averageRaw).toBe(r.breakdown.verticalJumpRaw);
+      expect(r.breakdown.averageRaw).toBe(
+        Math.round((r.breakdown.verticalJumpRaw! / 3) * 100) / 100
+      );
       expect(r.capApplied.verticalJump).toBe(false);
     }
   });
@@ -188,5 +196,28 @@ describe('resolveExplosivePowerScoreForDisplay', () => {
         explosivePower: { verticalJumpCm: 50 },
       })
     ).toBeNull();
+  });
+});
+
+describe('resolveExplosiveLadderScoreBundle', () => {
+  const profile: PhysicalProfile = {
+    gender: 'male',
+    age: 30,
+    heightCm: 175,
+    weightKg: 75,
+    updatedAt: '',
+  };
+
+  it('attributes standing-long-jump norm score to broad shard only, not vertical', () => {
+    const b = resolveExplosiveLadderScoreBundle(profile, {
+      explosivePower: { standingLongJumpCm: 220 },
+    });
+    expect(b.vertical).toBeNull();
+    expect(b.broad).not.toBeNull();
+    expect(b.broad).toBeGreaterThan(0);
+    expect(b.sprint).toBeNull();
+    const expectedComposite =
+      b.broad != null ? Math.round((b.broad / 3) * 100) / 100 : 0;
+    expect(b.composite).toBeCloseTo(expectedComposite, 5);
   });
 });

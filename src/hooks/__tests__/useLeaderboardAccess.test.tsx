@@ -31,6 +31,7 @@ function setSignedInAuthState(): void {
     uid: 'tester',
     displayName: 'Tester',
     email: 'tester@example.com',
+    firebaseDisplayName: 'Tester',
     photoURL: null,
     isAnonymous: false,
   });

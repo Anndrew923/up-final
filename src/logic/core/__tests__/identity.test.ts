@@ -2,22 +2,31 @@ import { describe, expect, it } from 'vitest';
 import { getDisplayNameMaxLength, resolveDisplayName } from '../identity';
 
 describe('resolveDisplayName', () => {
-  it('prefers firebase display name when available', () => {
+  it('prefers local ladder display name when set', () => {
     const result = resolveDisplayName({
       firebaseDisplayName: 'Google Pilot',
       email: 'pilot@example.com',
-      localDisplayName: 'Local Name',
+      localDisplayName: 'Arena Name',
     });
-    expect(result).toBe('Google Pilot');
+    expect(result).toBe('Arena Name');
   });
 
-  it('falls back to email local-part', () => {
+  it('falls back to firebase then email when local empty', () => {
     const result = resolveDisplayName({
       firebaseDisplayName: '   ',
       email: 'pilot@example.com',
-      localDisplayName: 'Local Name',
+      localDisplayName: '',
     });
     expect(result).toBe('pilot');
+  });
+
+  it('uses firebase when local is blank', () => {
+    const result = resolveDisplayName({
+      firebaseDisplayName: 'Google Pilot',
+      email: 'pilot@example.com',
+      localDisplayName: '   ',
+    });
+    expect(result).toBe('Google Pilot');
   });
 
   it('falls back to local display name when google/email unavailable', () => {

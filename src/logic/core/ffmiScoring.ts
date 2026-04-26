@@ -11,6 +11,15 @@ export const FFMI_HUMAN_CAP_FEMALE = 30;
 export const FFMI_BODY_FAT_INPUT_MIN_PCT = 3;
 export const FFMI_BODY_FAT_INPUT_MAX_PCT = 60;
 
+/** Parses draft body-fat % (empty → null; out of FFMI input band → null). */
+export function parseFfmiBodyFatPctInput(raw: string | null | undefined): number | null {
+  if (raw == null || String(raw).trim() === '') return null;
+  const n = parseFloat(String(raw).trim().replace(',', '.'));
+  if (!Number.isFinite(n)) return null;
+  if (n < FFMI_BODY_FAT_INPUT_MIN_PCT || n > FFMI_BODY_FAT_INPUT_MAX_PCT) return null;
+  return n;
+}
+
 /** Male curve: base 18.5 → 60 pts; linear to 25 → 100; beyond +5 pts per FFMI unit. */
 const MALE_BASE = 18.5;
 const MALE_MAX_NATURAL = 25;

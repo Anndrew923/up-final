@@ -144,6 +144,13 @@ export const LADDER_COUNTRY_CODES: readonly LadderCountryCode[] = [
   'OTHER',
 ] as const;
 
+const LADDER_COUNTRY_CODE_SET = new Set<string>(LADDER_COUNTRY_CODES);
+
+/** True when `value` is one of the canonical ladder country codes (for Firestore / filters). */
+export function isLadderCountryCode(value: string | undefined | null): value is LadderCountryCode {
+  return Boolean(value && LADDER_COUNTRY_CODE_SET.has(value));
+}
+
 export const LADDER_HEIGHT_BUCKETS: readonly LadderHeightBucket[] = [
   '<160',
   '160-170',

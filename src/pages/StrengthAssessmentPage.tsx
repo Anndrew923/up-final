@@ -1,15 +1,18 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
+import { LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE } from '../logic/core/assessmentLeaderboardShards';
 import {
   shouldShowStrengthRepsAccuracyNudge,
   STRENGTH_ASSESSMENT_MAX_REPS,
   type StrengthSingleLiftError,
 } from '../logic/core/strengthAssessment';
+import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
 export interface StrengthAssessmentPageProps {
@@ -54,6 +57,12 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       : t('home.profile.male');
 
   const singleErr = (code: StrengthSingleLiftError) => t(`strength.singleErrors.${code}`);
+  const strengthSupplementalTargets = useMemo<LeaderboardSyncTarget[] | undefined>(() => {
+    if (combinedScore == null || !Number.isFinite(combinedScore) || combinedScore <= 0) {
+      return undefined;
+    }
+    return [{ metric: LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE, score: combinedScore }];
+  }, [combinedScore]);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -193,32 +202,34 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   ) : null}
 
                   {rowResult ? (
-                    <div
-                      className="space-y-1 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2.5 text-sm"
-                      role="status"
-                    >
-                      {rowResult.weightCapped ? (
-                        <p
-                          className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
-                          role="status"
-                        >
-                          {t('strength.capWeightNotice', {
-                            lift: t(`strength.lifts.${lift}`),
-                            input: rowResult.weightInputKg,
-                            max: rowResult.modelMaxKg,
-                          })}
+                    <div className="space-y-3">
+                      <div
+                        className="space-y-1 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2.5 text-sm"
+                        role="status"
+                      >
+                        {rowResult.weightCapped ? (
+                          <p
+                            className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
+                            role="status"
+                          >
+                            {t('strength.capWeightNotice', {
+                              lift: t(`strength.lifts.${lift}`),
+                              input: rowResult.weightInputKg,
+                              max: rowResult.modelMaxKg,
+                            })}
+                          </p>
+                        ) : null}
+                        <p className="font-mono text-xs tabular-nums text-zinc-300">
+                          <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
+                          <span className="text-zinc-100">
+                            {t('strength.singleOneRmValue', { value: rowResult.oneRepMax.toFixed(2) })}
+                          </span>
                         </p>
-                      ) : null}
-                      <p className="font-mono text-xs tabular-nums text-zinc-300">
-                        <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
-                        <span className="text-zinc-100">
-                          {t('strength.singleOneRmValue', { value: rowResult.oneRepMax.toFixed(2) })}
-                        </span>
-                      </p>
-                      <p className="font-mono text-sm tabular-nums text-accent-info">
-                        <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
-                        <span className="font-semibold">{rowResult.finalScore.toFixed(2)}</span>
-                      </p>
+                        <p className="font-mono text-sm tabular-nums text-accent-info">
+                          <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
+                          <span className="font-semibold">{rowResult.finalScore.toFixed(2)}</span>
+                        </p>
+                      </div>
                     </div>
                   ) : null}
                 </fieldset>
@@ -307,6 +318,8 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                 {t('strength.submitDone')}
               </p>
             ) : null}
+
+            <LeaderboardAssessmentSyncBar scope="strength" supplementalTargets={strengthSupplementalTargets} />
           </div>
         </section>
       </div>

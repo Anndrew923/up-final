@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  normalizeLocationFiltersForLadderDataset,
   normalizeTwCityDistrictForLadderDataset,
   resolveEffectiveLadderCityFilter,
   resolveEffectiveLadderDistrictFilter,
@@ -50,6 +51,27 @@ describe('normalizeTwCityDistrictForLadderDataset', () => {
   it('keeps city and resolves district against that city subset', () => {
     expect(normalizeTwCityDistrictForLadderDataset(rows, '台北市', '幽靈區')).toEqual({
       city: '台北市',
+      district: 'all',
+    });
+  });
+});
+
+describe('normalizeLocationFiltersForLadderDataset', () => {
+  const rows = [
+    { countryCode: 'TW', city: '台北市', district: '大安區' },
+    { countryCode: 'US', city: 'Los Angeles', district: 'Downtown' },
+  ] as const;
+
+  it('ignores city/district when country filter is all', () => {
+    expect(normalizeLocationFiltersForLadderDataset(rows, 'all', '台北市', '大安區')).toEqual({
+      city: 'all',
+      district: 'all',
+    });
+  });
+
+  it('resolves city/district within selected country only', () => {
+    expect(normalizeLocationFiltersForLadderDataset(rows, 'US', 'Los Angeles', 'Nope')).toEqual({
+      city: 'Los Angeles',
       district: 'all',
     });
   });

@@ -90,6 +90,8 @@ function notifyArmSizeInputsObservers(): void {
 export interface LocalProfile {
   uid: string;
   displayName?: string;
+  /** Compressed image data URL or HTTPS URL — used for leaderboard `avatarUrl` when uploading. */
+  avatarUrl?: string;
   updatedAt: string;
 }
 

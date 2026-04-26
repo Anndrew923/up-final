@@ -132,13 +132,29 @@ service cloud.firestore {
       function leaderboardMetricIdOk(m) {
         return m is string && m.matches('^[a-zA-Z][a-zA-Z0-9_]{0,63}$');
       }
+      function leaderboardAvatarOk() {
+        return !request.resource.data.keys().hasAny(['avatarUrl'])
+          || (request.resource.data.avatarUrl is string
+            && request.resource.data.avatarUrl.size() <= 250000);
+      }
+      function leaderboardDisplayRawOk() {
+        return !request.resource.data.keys().hasAny(['displayRaw', 'displayRawUnit'])
+          || (request.resource.data.keys().hasAll(['displayRaw', 'displayRawUnit'])
+            && request.resource.data.displayRaw is number
+            && request.resource.data.displayRawUnit is string
+            && request.resource.data.displayRawUnit.size() > 0
+            && request.resource.data.displayRawUnit.size() <= 24);
+      }
       allow read: if signedIn();
       allow create, update: if signedIn()
         && request.auth.uid == uid
         && leaderboardMetricIdOk(metric)
-        && request.resource.keys().hasAll(['displayName', 'scoreBest', 'updatedAt'])
+        // 必須用 `request.resource.data`（Map）；`request.resource` 為 Resource，無 `.keys()`，會導致條件失敗而整筆拒絕。
+        && request.resource.data.keys().hasAll(['displayName', 'scoreBest', 'updatedAt'])
         && request.resource.data.scoreBest is number
-        && request.resource.data.displayName is string;
+        && request.resource.data.displayName is string
+        && leaderboardAvatarOk()
+        && leaderboardDisplayRawOk();
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 

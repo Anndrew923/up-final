@@ -2,9 +2,12 @@ import type { FC } from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
+import { LEADERBOARD_SHARD_OVERALL } from '../../logic/core/assessmentLeaderboardShards';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { getWeakestRadarAxis } from '../../logic/core/scoring';
+import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
+import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 
 /**
  * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
@@ -112,6 +115,8 @@ export const HomeRadarBoard: FC = () => {
                   })}
                 </p>
               ) : null}
+              <LeaderboardUploadBar metric={LEADERBOARD_SHARD_OVERALL} score={overallScore} />
+              <LeaderboardSyncAllBar className="mt-1" />
             </div>
 
             <ul className="grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-3">

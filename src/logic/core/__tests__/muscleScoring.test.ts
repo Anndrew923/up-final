@@ -6,6 +6,7 @@ import {
   getMuscleAgeRange,
   getSmmKgCeilingForGender,
   mergeScoreMapWithResolvedMuscle,
+  resolveMuscleLadderScoreBundle,
   tryComputeMuscleAssessmentScore,
 } from '../muscleScoring';
 import { muscleStandardsMaleSMM } from '../muscleStandards';
@@ -188,5 +189,23 @@ describe('mergeScoreMapWithResolvedMuscle', () => {
     const scores: ScoreMap = { muscleMass: 77 };
     const merged = mergeScoreMapWithResolvedMuscle(scores, null, null);
     expect(merged.muscleMass).toBe(77);
+  });
+});
+
+describe('resolveMuscleLadderScoreBundle', () => {
+  const profile: PhysicalProfile = {
+    gender: 'male',
+    age: 30,
+    heightCm: 175,
+    weightKg: 75,
+    updatedAt: '',
+  };
+
+  it('exposes distinct weight-branch vs ratio-branch ladder scores', () => {
+    const b = resolveMuscleLadderScoreBundle(profile, { muscle: { smmKg: 35 } });
+    expect(b.composite).not.toBeNull();
+    expect(b.weightBranchScore).not.toBeNull();
+    expect(b.ratioBranchScore).not.toBeNull();
+    expect(b.weightBranchScore).not.toBe(b.ratioBranchScore);
   });
 });

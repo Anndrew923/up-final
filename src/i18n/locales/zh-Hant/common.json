@@ -84,6 +84,25 @@
         "invalid-district": "行政區需對應已選擇的城市。"
       }
     },
+    "ladderIdentity": {
+      "kicker": "天梯身份",
+      "title": "暱稱與頭像",
+      "subtitle": "上傳分數至榜單時顯示。存於本機；頭像會自動壓縮後再儲存。",
+      "displayName": "顯示名稱",
+      "displayNameHint": "最多 {{max}} 字。",
+      "avatar": "頭像",
+      "avatarAlt": "天梯頭像預覽",
+      "avatarHint": "建議使用方形照片。支援 JPEG／PNG，會自動縮圖。",
+      "pickAvatar": "選擇圖片",
+      "removeAvatar": "移除圖片",
+      "save": "儲存天梯身份",
+      "saving": "儲存中…",
+      "saved": "已儲存天梯身份。",
+      "errorEmptyName": "請輸入顯示名稱。",
+      "errorImage": "無法處理此圖片。請換一張或改用較小的檔案。",
+      "errorImageTooLarge": "壓縮後仍過大，請改用較小的原始照片。",
+      "errorSave": "儲存失敗，請再試一次。"
+    },
     "consoleKicker": "主控台",
     "radarOverview": "能力雷達",
     "radarCompletion": "進度：{{count}} / {{total}} 維",
@@ -107,13 +126,17 @@
     "redirecting": "正在導向加入戰場…",
     "kicker": "全球天梯",
     "title": "即時天梯",
-    "bodyRemote": "已連線至 Firestore — 僅摘要欄位，並搭配快取與最佳分上傳策略。",
+    "bodyRemote": "已連線至 Firestore — 僅摘要欄位，並搭配快取與每小時上傳次數限制。",
     "bodyLocalMock": "尚未設定 Firebase — 開發環境使用記憶體模擬資料。",
     "cacheHit": "命中本機工作階段快取（套用 TTL）。",
     "cacheMiss": "重新抓取（或模擬）— 已更新快取。",
     "loadError": "無法載入榜單。請檢查規則與索引。",
     "empty": "此維度尚無資料 — 成為首位上傳者。",
+    "anonymousName": "匿名用戶",
+    "anonymousIdLabel": "身份已隱藏",
     "updatedLabel": "更新於",
+    "rowScoreStrengthKg": "{{kg}} 公斤",
+    "strengthKgShardHint": "此榜為蹲、臥、硬三項估計 1RM 的公斤加總。若曾於改版前上傳，數字可能仍是舊的「分數」；請在力量評測填齊三項後再同步天梯以更新。",
     "promotion": {
       "title": "名次晉升 +{{delta}}",
       "current": "目前名次：#{{rank}}",
@@ -130,6 +153,50 @@
       "title": "排名",
       "subtitle": "依目前戰場分區與細項篩選顯示。"
     },
+    "floatingRank": {
+      "kicker": "我的位置",
+      "globalRank": "全榜名次 #{{rank}}",
+      "cta": "點擊跳到我的那一列"
+    },
+    "pagination": {
+      "prev": "上一頁",
+      "next": "下一頁",
+      "page": "第 {{page}} 頁"
+    },
+    "upload": {
+      "sectionTitle": "天梯上傳",
+      "button": "上傳至天梯",
+      "uploading": "上傳中…",
+      "joinArena": "加入戰場（Pro）",
+      "gate": {
+        "no-score": "請先將分數寫入雷達（或完成評測），再由此上傳。",
+        "signed-out": "請先使用 Google 登入後再上傳分數。",
+        "anonymous": "請改以已連結的 Google 帳號登入（非僅訪客）後再上傳。",
+        "no-pro": "上傳至即時榜需訂閱 Pro。",
+        "invalid-score": "目前分數尚無法上傳。"
+      },
+      "resultUpdated": "已上傳 — 雲端榜單分數已更新為目前雷達分數。",
+      "quotaHint": "每個榜單分片每小時最多可上傳 {{limit}} 次（滾動一小時，控管雲端成本）。",
+      "quotaAfterSuccess": "本小時尚餘 {{remaining}} 次額度（每分片每小時 {{limit}} 次）；下次額度於 {{resetTime}} 重新起算。",
+      "resultRateLimitedDetail": "此分片本小時上傳次數已達 {{limit}} 次，請於 {{resetTime}} 之後再試。",
+      "resultProRequired": "無法上傳 — 需要 Pro。",
+      "resultNoop": "未套用變更。",
+      "resultError": "上傳失敗。請檢查網路或 Firebase 規則。"
+    },
+    "syncAll": {
+      "sectionTitle": "一鍵同步天梯",
+      "hint": "依目前首頁雷達合併後的分數，將各維度有分的榜單分片逐一上傳（與各評測頁邏輯一致）。採序列送出；各分片每小時上傳次數有限。",
+      "noTargets": "尚無可上傳的分數 — 請先完成評測或將分數寫入雷達。",
+      "button": "全部同步至天梯",
+      "busy": "同步中…",
+      "summary": "已完成 {{attempted}} 次上傳：成功寫入 {{updated}}、觸發限流 {{rateLimited}}、需 Pro 擋下 {{proRequired}}、錯誤 {{errors}}。"
+    },
+    "assessmentSync": {
+      "hint": "一次送出「本頁」所有榜單分片（與首頁一鍵同步相同：每分片每小時上傳次數限制）。寫入雷達為全軸資料，請仍先完成本頁計算或寫入雷達後再送出。",
+      "noTargets": "尚無可上傳的本頁分數。",
+      "button": "上傳本頁全部至天梯",
+      "busy": "上傳中…"
+    },
     "divisions": {
       "ladderScore": {
         "label": "總戰力",
@@ -144,8 +211,8 @@
         "desc": "三項／五項／單項 — 選細項"
       },
       "stats_bodyFat": {
-        "label": "體脂",
-        "desc": "體脂分 vs FFMI"
+        "label": "FFMI",
+        "desc": "FFMI 榜（依天梯分排序）"
       },
       "stats_cooper": {
         "label": "心肺",
@@ -153,7 +220,7 @@
       },
       "stats_vertical": {
         "label": "爆發力",
-        "desc": "垂直跳／立跳／衝刺"
+        "desc": "綜合榜與垂直跳、立定跳遠、短跑細項（皆依天梯分）"
       },
       "stats_ffmi": {
         "label": "肌肉量",
@@ -169,8 +236,8 @@
       }
     },
     "project": {
-      "totalFive": "五項總和",
-      "sbdTotal": "三項總和（蹲／臥／硬）",
+      "totalFive": "五項均分（分數）",
+      "sbdTotal": "三項 1RM 總和（公斤）",
       "squat": "深蹲",
       "benchPress": "臥推",
       "deadlift": "硬舉",
@@ -178,10 +245,10 @@
       "latPulldown": "滑輪下拉",
       "cooper": "Cooper 12 分鐘",
       "run5km": "5 公里",
+      "explosiveComposite": "爆發綜合",
       "verticalJump": "垂直跳",
       "standingLongJump": "立定跳遠",
       "sprint": "短跑",
-      "bodyFatScore": "體脂分數",
       "ffmi": "FFMI",
       "smmScore": "骨骼肌分數",
       "smmKg": "骨骼肌重量（kg）",
@@ -204,22 +271,17 @@
       "heightBucket": "身高區間",
       "weightBucket": "體重級距",
       "jobCategory": "職業分類",
-      "regionScope": "地區層級",
+      "country": "國家／地區",
       "city": "城市",
       "district": "行政區",
       "all": "全部",
-      "regionScopeOptions": {
-        "country": "國家",
-        "city": "城市",
-        "district": "行政區"
-      },
       "filterSheetTitles": {
         "gender": "選擇性別",
         "ageBucket": "選擇年齡區間",
         "heightBucket": "選擇身高區間",
         "weightBucket": "選擇體重級距",
         "jobCategory": "選擇職業分類",
-        "regionScope": "選擇地區層級",
+        "country": "選擇國家／地區",
         "city": "選擇城市",
         "district": "選擇行政區"
       },

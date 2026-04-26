@@ -192,6 +192,52 @@ export function mergeScoreMapWithResolvedMuscle(
   return { ...scores, muscleMass: resolved };
 }
 
+/** Norm-based branch scores for separate muscle ladder shards (same inputs as radar). */
+export interface MuscleLadderScoreBundle {
+  composite: number | null;
+  /** SMM (kg) branch norm score, clamped — maps to `muscleMass_weightKg` shard. */
+  weightBranchScore: number | null;
+  /** SM% branch norm score, clamped — maps to `muscleMass_ratio` shard. */
+  ratioBranchScore: number | null;
+}
+
+/**
+ * WHY: Radar `muscleMass` is the mean of two branches; weight/ratio sub-ladders must each use its own norm score,
+ * not the composite (otherwise kg-only signal would not rank on the weight shard).
+ */
+export function resolveMuscleLadderScoreBundle(
+  profile: PhysicalProfile | null | undefined,
+  inputs: MuscleInputsPersisted | null | undefined
+): MuscleLadderScoreBundle {
+  const empty: MuscleLadderScoreBundle = { composite: null, weightBranchScore: null, ratioBranchScore: null };
+  if (!inputs?.muscle?.smmKg) return empty;
+  const smmKg = Number(inputs.muscle.smmKg);
+  if (!Number.isFinite(smmKg) || smmKg <= 0) return empty;
+  if (!profile || !isPhysicalProfileComplete(profile)) return empty;
+  if (isSmmKgAboveCeiling(smmKg, profile.gender)) return empty;
+
+  const raw = calculateMuscleScores({
+    smmKg,
+    weightKg: profile.weightKg,
+    age: profile.age,
+    gender: profile.gender,
+  });
+  if (
+    raw.finalRawScore === null ||
+    raw.smmScoreRaw === null ||
+    raw.smPercentScoreRaw === null ||
+    !Number.isFinite(raw.finalRawScore)
+  ) {
+    return empty;
+  }
+
+  return {
+    composite: clampScoreMapValue(raw.finalRawScore),
+    weightBranchScore: clampScoreMapValue(raw.smmScoreRaw),
+    ratioBranchScore: clampScoreMapValue(raw.smPercentScoreRaw),
+  };
+}
+
 /** Parsed positive SMM (kg) or null. */
 export function parseSmmKg(raw: string): number | null {
   const n = parseFloat(raw.trim());

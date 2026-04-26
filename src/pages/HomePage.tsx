@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import HomeLadderIdentitySection from '../components/home/HomeLadderIdentitySection';
 import HomeProfileForm from '../components/home/HomeProfileForm';
 import HomeRadarBoard from '../components/home/HomeRadarBoard';
 import ProBadge from '../components/ProBadge';
@@ -19,6 +20,8 @@ export default function HomePage() {
       <HomeRadarBoard />
 
       <HomeProfileForm />
+
+      <HomeLadderIdentitySection />
 
       <section className="ui-card space-y-4">
         <div className="space-y-1">

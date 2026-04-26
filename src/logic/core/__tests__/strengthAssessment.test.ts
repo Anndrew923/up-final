@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { PhysicalProfile } from '../../../types/userProfile';
 import {
+  computeStrengthFiveLiftLadderMeanScore,
+  computeStrengthSbdOneRmSumKg,
   mergeScoreMapWithResolvedStrength,
   persistedFromStrengthForm,
+  resolveStrengthLadderWeightKgSummary,
   resolveStrengthScoreFromInputs,
   shouldShowStrengthRepsAccuracyNudge,
   strengthFormFromPersisted,
@@ -170,7 +173,7 @@ describe('tryComputeStrengthAssessmentScore', () => {
     if (!r.ok) expect(r.error).toBe('pair-incomplete');
   });
 
-  it('computes mean for a single lift', () => {
+  it('uses fixed /5 composite (single filled lift: total score / 5)', () => {
     const form = emptyForm();
     form.benchPress = { weight: '100', reps: '5' };
     const r = tryComputeStrengthAssessmentScore({
@@ -182,6 +185,9 @@ describe('tryComputeStrengthAssessmentScore', () => {
     if (r.ok) {
       expect(r.breakdown.branches).toHaveLength(1);
       expect(r.breakdown.branches[0].lift).toBe('benchPress');
+      const one = r.breakdown.branches[0].finalScore;
+      const expectedRaw = Math.round((one / 5) * 100) / 100;
+      expect(r.breakdown.averageRaw).toBeCloseTo(expectedRaw, 5);
       expect(r.score).toBeGreaterThan(0);
       expect(r.score).toBeLessThanOrEqual(200);
       expect(r.persisted.lifts?.benchPress).toEqual({ weightKg: 100, reps: 5 });
@@ -189,7 +195,7 @@ describe('tryComputeStrengthAssessmentScore', () => {
     }
   });
 
-  it('averages two lifts', () => {
+  it('uses fixed /5 composite for two lifts (sum of branch scores / 5)', () => {
     const form = emptyForm();
     form.benchPress = { weight: '100', reps: '5' };
     form.squat = { weight: '120', reps: '5' };
@@ -201,9 +207,10 @@ describe('tryComputeStrengthAssessmentScore', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.breakdown.branches).toHaveLength(2);
-      const expectedMean =
-        (r.breakdown.branches[0].finalScore + r.breakdown.branches[1].finalScore) / 2;
-      expect(r.breakdown.averageRaw).toBeCloseTo(expectedMean, 5);
+      const a = r.breakdown.branches.find((x) => x.lift === 'benchPress')!.finalScore;
+      const s = r.breakdown.branches.find((x) => x.lift === 'squat')!.finalScore;
+      const expectedRaw = Math.round(((a + s) / 5) * 100) / 100;
+      expect(r.breakdown.averageRaw).toBeCloseTo(expectedRaw, 5);
     }
   });
 
@@ -320,5 +327,47 @@ describe('strengthFormFromPersisted', () => {
     );
     const form = strengthFormFromPersisted(persisted);
     expect(form.deadlift).toEqual({ weight: '180', reps: '3' });
+  });
+});
+
+describe('strength ladder display helpers', () => {
+  const twoLiftInputs = {
+    lifts: {
+      benchPress: { weightKg: 100, reps: 5 },
+      squat: { weightKg: 120, reps: 5 },
+    },
+    bodyWeightKgSnapshot: 80,
+  } as const;
+
+  const sbdInputs = {
+    lifts: {
+      benchPress: { weightKg: 100, reps: 5 },
+      squat: { weightKg: 120, reps: 5 },
+      deadlift: { weightKg: 140, reps: 5 },
+    },
+    bodyWeightKgSnapshot: 80,
+  } as const;
+
+  it('computeStrengthFiveLiftLadderMeanScore matches /5 composite (ladder = radar)', () => {
+    const mean = computeStrengthFiveLiftLadderMeanScore(baseProfile, twoLiftInputs);
+    const radar = resolveStrengthScoreFromInputs(baseProfile, twoLiftInputs);
+    expect(mean).not.toBeNull();
+    expect(radar).not.toBeNull();
+    expect(mean).toBe(radar);
+  });
+
+  it('computeStrengthSbdOneRmSumKg is null unless squat, bench, and deadlift all score', () => {
+    expect(computeStrengthSbdOneRmSumKg(baseProfile, twoLiftInputs)).toBeNull();
+    const kg = computeStrengthSbdOneRmSumKg(baseProfile, sbdInputs);
+    expect(kg).not.toBeNull();
+    expect(kg!).toBeGreaterThan(0);
+  });
+
+  it('resolveStrengthLadderWeightKgSummary differs composite mean vs five-lift sum of 1RM', () => {
+    const composite = resolveStrengthLadderWeightKgSummary(baseProfile, twoLiftInputs, 'composite');
+    const fiveTotal = resolveStrengthLadderWeightKgSummary(baseProfile, twoLiftInputs, 'fiveTotal');
+    expect(composite?.unit).toBe('kg');
+    expect(fiveTotal?.unit).toBe('kg');
+    expect(composite?.weightKg).not.toBe(fiveTotal?.weightKg);
   });
 });

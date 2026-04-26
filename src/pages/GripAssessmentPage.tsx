@@ -1,7 +1,12 @@
 import type { FC } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
+import { leaderboardShardForSixAxisMetric } from '../logic/core/assessmentLeaderboardShards';
+import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
+import { clampScoreMapValue } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
 
 export interface GripAssessmentPageProps {
@@ -24,6 +29,16 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     calculate,
     submitToRadar,
   } = useGripAssessmentPage();
+
+  const gripLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
+    if (previewScore == null || !Number.isFinite(previewScore) || previewScore <= 0) return undefined;
+    return [
+      {
+        metric: leaderboardShardForSixAxisMetric('gripStrength'),
+        score: clampScoreMapValue(previewScore),
+      },
+    ];
+  }, [previewScore]);
 
   const genderLabel =
     !profile ? '' : profile.gender === 'female'
@@ -138,6 +153,8 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
               {t('grip.submitDone')}
             </p>
           ) : null}
+
+          <LeaderboardAssessmentSyncBar scope="gripStrength" supplementalTargets={gripLadderSupplemental} />
         </section>
       </div>
     </main>

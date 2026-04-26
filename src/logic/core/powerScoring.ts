@@ -17,6 +17,9 @@ export type { ExplosiveCapApplied } from './explosiveInputCaps';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Fixed denominator for explosive composite (vertical / broad jump / sprint; missing = 0). */
+export const EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR = 3 as const;
+
 export type PowerAgeBucket =
   | '12-15'
   | '16-20'
@@ -178,12 +181,12 @@ export function calculateScoreDecreasing(value: number, standard: PowerStandardR
   return round2(50 + ((standard[50] - v) / denomLow) * 50);
 }
 
-/** Per-metric raw scores (may exceed 100) plus the arithmetic mean of entered tests only. */
+/** Per-metric raw scores (may exceed 100) plus fixed-denominator composite (sum / 3, missing = 0). */
 export interface ExplosivePowerBreakdown {
   verticalJumpRaw: number | null;
   standingLongJumpRaw: number | null;
   sprintRaw: number | null;
-  /** Mean of non-null branch scores, `round2` — same value fed into radar clamp. */
+  /** `(vj + slj + sprint) / 3` with null branches as 0, `round2` — same value fed into radar clamp. */
   averageRaw: number;
 }
 
@@ -209,12 +212,16 @@ export function calculateExplosivePowerBreakdown(input: {
       ? calculateScoreDecreasing(input.sprintSeconds, std.sprint)
       : null;
 
-  const rawScores = [verticalJumpRaw, standingLongJumpRaw, sprintRaw].filter(
-    (x): x is number => x !== null && x !== undefined && Number.isFinite(x)
-  );
-  if (rawScores.length === 0) return null;
+  const hasAnyBranch =
+    verticalJumpRaw !== null ||
+    standingLongJumpRaw !== null ||
+    sprintRaw !== null;
+  if (!hasAnyBranch) return null;
 
-  const averageRaw = round2(rawScores.reduce((a, b) => a + b, 0) / rawScores.length);
+  const vj = verticalJumpRaw !== null && Number.isFinite(verticalJumpRaw) ? verticalJumpRaw : 0;
+  const slj = standingLongJumpRaw !== null && Number.isFinite(standingLongJumpRaw) ? standingLongJumpRaw : 0;
+  const sp = sprintRaw !== null && Number.isFinite(sprintRaw) ? sprintRaw : 0;
+  const averageRaw = round2((vj + slj + sp) / EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR);
   return { verticalJumpRaw, standingLongJumpRaw, sprintRaw, averageRaw };
 }
 
@@ -276,6 +283,63 @@ export function mergeScoreMapWithResolvedExplosivePower(
   const resolved = resolveExplosivePowerScoreForDisplay(profile, inputs);
   if (resolved === null) return { ...scores };
   return { ...scores, explosivePower: resolved };
+}
+
+/** Per-shard ladder scores derived from the same capped inputs as radar (branch = single-test norm score, clamped). */
+export interface ExplosiveLadderScoreBundle {
+  composite: number | null;
+  vertical: number | null;
+  broad: number | null;
+  sprint: number | null;
+}
+
+/**
+ * Maps persisted explosive inputs → composite (radar axis) + three branch scores for separate leaderboard shards.
+ * WHY: `explosive_composite` must stay the fixed-denominator radar composite; branch shards must not receive each other's points.
+ */
+export function resolveExplosiveLadderScoreBundle(
+  profile: PhysicalProfile | null | undefined,
+  inputs: PowerInputsPersisted | null | undefined
+): ExplosiveLadderScoreBundle {
+  const empty: ExplosiveLadderScoreBundle = { composite: null, vertical: null, broad: null, sprint: null };
+  if (!profile || !isPhysicalProfileComplete(profile)) return empty;
+  const block = inputs?.explosivePower;
+  if (!block) return empty;
+
+  const verticalJumpCm = persistedNumber(block.verticalJumpCm);
+  const standingLongJumpCm = persistedNumber(block.standingLongJumpCm);
+  const sprintSeconds = persistedNumber(block.sprintSeconds);
+  if (verticalJumpCm === null && standingLongJumpCm === null && sprintSeconds === null) return empty;
+
+  const capped = applyExplosiveInputCapsForProfile(profile, {
+    verticalJumpCm,
+    standingLongJumpCm,
+    sprintSeconds,
+  });
+
+  const breakdown = calculateExplosivePowerBreakdown({
+    verticalJumpCm: capped.verticalJumpCm,
+    standingLongJumpCm: capped.standingLongJumpCm,
+    sprintSeconds: capped.sprintSeconds,
+    profile,
+  });
+  if (breakdown === null || !Number.isFinite(breakdown.averageRaw)) return empty;
+
+  return {
+    composite: clampScoreMapValue(breakdown.averageRaw),
+    vertical:
+      breakdown.verticalJumpRaw != null && Number.isFinite(breakdown.verticalJumpRaw)
+        ? clampScoreMapValue(breakdown.verticalJumpRaw)
+        : null,
+    broad:
+      breakdown.standingLongJumpRaw != null && Number.isFinite(breakdown.standingLongJumpRaw)
+        ? clampScoreMapValue(breakdown.standingLongJumpRaw)
+        : null,
+    sprint:
+      breakdown.sprintRaw != null && Number.isFinite(breakdown.sprintRaw)
+        ? clampScoreMapValue(breakdown.sprintRaw)
+        : null,
+  };
 }
 
 export type ExplosiveAssessmentComputeError =

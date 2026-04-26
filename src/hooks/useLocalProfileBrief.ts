@@ -4,21 +4,28 @@ import {
   PROFILE_STORAGE_KEY,
   loadProfile,
 } from '../services/localStorageService';
+import { sanitizeAvatarUrlForLeaderboard } from '../services/ladderIdentityService';
 
 export type LocalProfileBrief = {
   initial: string;
   displayName?: string;
+  avatarUrl?: string;
 };
 
 function computeBrief(): LocalProfileBrief {
   const profile = loadProfile();
   const displayName = profile?.displayName?.trim();
   const initial = displayName && displayName.length > 0 ? displayName.charAt(0).toUpperCase() : 'U';
-  return { initial, displayName };
+  const avatarUrl = sanitizeAvatarUrlForLeaderboard(profile?.avatarUrl);
+  return {
+    initial,
+    displayName,
+    ...(avatarUrl ? { avatarUrl } : {}),
+  };
 }
 
 function briefEqual(a: LocalProfileBrief, b: LocalProfileBrief): boolean {
-  return a.initial === b.initial && a.displayName === b.displayName;
+  return a.initial === b.initial && a.displayName === b.displayName && a.avatarUrl === b.avatarUrl;
 }
 
 /** Initial / display label from persisted local profile (Core path); updates after save / clear / other tabs. */
