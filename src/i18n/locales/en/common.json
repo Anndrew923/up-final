@@ -256,6 +256,14 @@
         "muscleMass": "Muscle",
         "bodyFat": "FFMI",
         "gripStrength": "Grip"
+      },
+      "axisCard": {
+        "strength": "Hardened",
+        "explosivePower": "Impulse",
+        "cardio": "Endurance",
+        "muscleMass": "Forge",
+        "bodyFat": "Balance",
+        "gripStrength": "Pulse"
       }
     }
   },

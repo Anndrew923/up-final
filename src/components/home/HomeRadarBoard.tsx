@@ -34,17 +34,6 @@ export const HomeRadarBoard: FC = () => {
   );
 
   const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);
-  const highestOverflow = useMemo(
-    () =>
-      radarPoints.reduce((best, point) => {
-        const overflow = Math.max(0, (Number(point.value) || 0) - 100);
-        if (!best || overflow > best.overflow) {
-          return { key: point.key, overflow };
-        }
-        return best;
-      }, null as { key: ScoreMetric; overflow: number } | null),
-    [radarPoints]
-  );
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)] motion-safe:transition-[box-shadow,border-color] motion-safe:duration-[480ms]">
@@ -62,14 +51,14 @@ export const HomeRadarBoard: FC = () => {
       <div className="pointer-events-none absolute bottom-4 left-4 h-5 w-5 rounded-bl-md border-b border-l border-accent-info/50" />
       <div className="pointer-events-none absolute bottom-4 right-4 h-5 w-5 rounded-br-md border-b border-r border-accent-info/50" />
 
-      <div className="relative px-4 pb-5 pt-7 md:px-6">
-        <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
+      <div className="relative px-4 pb-6 pt-7 md:px-6">
+        <p className="mb-1 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
           {t('home.consoleKicker', { ns: 'common' })}
         </p>
-        <h2 className="font-semibold tracking-tight text-zinc-100">
+        <h2 className="text-center font-semibold tracking-tight text-zinc-100">
           {t('home.radarOverview', { ns: 'common' })}
         </h2>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-center text-xs text-zinc-500">
           {t('home.radarCompletion', {
             ns: 'common',
             count: completionCount,
@@ -77,63 +66,43 @@ export const HomeRadarBoard: FC = () => {
           })}
         </p>
 
-        <div className="mt-6 flex flex-col items-center gap-6 md:flex-row md:items-start md:justify-between">
+        <div className="mt-6 flex flex-col items-center gap-8">
           <HexRadarChart
             points={localizedRadarPoints}
             scaleMax={scaleMax}
             weakestKey={weakest?.key}
-            className="mx-auto h-64 w-full max-w-[280px] shrink-0 md:mx-0"
+            className="mx-auto h-64 w-full max-w-[280px] shrink-0"
             aria-label={t('home.radarAria', { ns: 'common' })}
           />
 
-          <div className="flex w-full flex-1 flex-col gap-4 md:max-w-md">
-            <div className="rounded-lg border border-zinc-800 bg-bg-panel/90 px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(56,189,248,0.08),inset_0_0_20px_rgba(59,130,246,0.08)] md:text-left">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+          <div className="w-full max-w-md space-y-4">
+            <div className="text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                 {t('home.overallAverage', { ns: 'common' })}
               </p>
-              <p className="mt-1 font-mono text-4xl font-semibold tabular-nums text-accent-info">
+              <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent-info sm:text-6xl">
                 {overallScore}
               </p>
-              <p className="mt-2 text-[11px] leading-snug text-zinc-500">
-                {t('home.overallFormula', { ns: 'common' })}
-              </p>
-              {weakest ? (
-                <p className="mt-2 text-[11px] leading-snug text-amber-300/90">
-                  {t('home.radarWeakestHint', {
-                    ns: 'common',
-                    axis: t(`home.radar.axis.${weakest.key}`, { ns: 'common' }),
-                    score: weakest.value,
-                  })}
-                </p>
-              ) : null}
-              {highestOverflow && highestOverflow.overflow > 0 ? (
-                <p className="mt-1 text-[10px] uppercase tracking-wide text-accent-info">
-                  {t('home.radarOverclockHint', {
-                    ns: 'common',
-                    axis: t(`home.radar.axis.${highestOverflow.key}`, { ns: 'common' }),
-                    score: Math.round(highestOverflow.overflow),
-                  })}
-                </p>
-              ) : null}
-              <LeaderboardUploadBar metric={LEADERBOARD_SHARD_OVERALL} score={overallScore} />
-              <LeaderboardSyncAllBar className="mt-1" />
             </div>
 
-            <ul className="grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-3">
+            <ul className="grid grid-cols-2 gap-1.5 text-[11px] sm:grid-cols-3">
               {SIX_AXIS_METRICS.map((key) => (
                 <li
                   key={key}
-                  className={`rounded-md border bg-bg-panel/60 px-2 py-1.5 text-zinc-400 ${
+                  className={`rounded-md border bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400 ${
                     weakest?.key === key
                       ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
-                      : 'border-zinc-800/80'
+                      : 'border-zinc-800/70'
                   }`}
                 >
-                  <span className="block truncate text-[10px] uppercase tracking-wide text-zinc-500">
-                    {t(`home.radar.axis.${key}`, { ns: 'common' })}
+                  <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                    {t(`home.radar.axisCard.${key}`, {
+                      ns: 'common',
+                      defaultValue: t(`home.radar.axis.${key}`, { ns: 'common' }),
+                    })}
                   </span>
                   <span
-                    className={`font-mono tabular-nums ${
+                    className={`mt-0.5 block font-mono tabular-nums ${
                       (valueByKey[key] ?? 0) > 100 ? 'text-accent-info' : 'text-zinc-200'
                     }`}
                   >
@@ -142,6 +111,15 @@ export const HomeRadarBoard: FC = () => {
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div className="w-full border-t border-zinc-800/80 pt-2">
+            <LeaderboardUploadBar
+              metric={LEADERBOARD_SHARD_OVERALL}
+              score={overallScore}
+              showSectionTitle={false}
+            />
+            <LeaderboardSyncAllBar className="mt-2" />
           </div>
         </div>
       </div>

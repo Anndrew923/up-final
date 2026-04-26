@@ -105,12 +105,12 @@
     },
     "consoleKicker": "主控台",
     "radarOverview": "能力雷達",
-    "radarCompletion": "進度：{{count}} / {{total}} 維",
+    "radarCompletion": "開發進度：{{count}} / {{total}}",
     "radarAria": "六維雷達圖",
-    "overallAverage": "整體平均",
-    "overallFormula": "六項核心分數總和 ÷ 6（不含臂圍）。",
-    "radarWeakestHint": "目前最弱：{{axis}}（{{score}}），建議優先補強。",
-    "radarOverclockHint": "超頻維度：{{axis}} +{{score}}",
+    "overallAverage": "共鳴出力",
+    "overallFormula": "",
+    "radarWeakestHint": "",
+    "radarOverclockHint": "",
     "radar": {
       "axis": {
         "strength": "力量",
@@ -119,6 +119,14 @@
         "muscleMass": "肌肉",
         "bodyFat": "FFMI",
         "gripStrength": "握力"
+      },
+      "axisCard": {
+        "strength": "Hardened",
+        "explosivePower": "Impulse",
+        "cardio": "Endurance",
+        "muscleMass": "Forge",
+        "bodyFat": "Balance",
+        "gripStrength": "Pulse"
       }
     }
   },

@@ -16,8 +16,10 @@ export default function HomePage() {
   const setSubscriptionStatus = useEntitlementStore((state) => state.setSubscriptionStatus);
 
   return (
-    <main className="ui-shell max-w-4xl space-y-8">
-      <HomeRadarBoard />
+    <main className="ui-shell max-w-4xl space-y-8 pb-6 md:space-y-10 md:pb-10">
+      <section className="py-2 md:py-4">
+        <HomeRadarBoard />
+      </section>
 
       <HomeProfileForm />
 
