@@ -14,6 +14,7 @@ import {
   saveGripInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
 import type { PhysicalProfile } from '../types/userProfile';
 
@@ -115,6 +116,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     setRankMetadata(getGripRankMetadata(score));
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [peakKgInput, profile, profileReady, setStoreScore]);
 
   return {

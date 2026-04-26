@@ -18,6 +18,7 @@ import {
   saveFfmiDraft,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type FfmiPageErrorKey =
@@ -138,6 +139,7 @@ export function useFfmiPage(): UseFfmiPageResult {
     }
     setScore('bodyFat', breakdown.submittedScore);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [breakdown, setScore]);
 
   const goHome = useCallback(() => {

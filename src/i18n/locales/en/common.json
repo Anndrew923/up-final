@@ -480,7 +480,7 @@
     "moduleConsole": "Diagnostics",
     "consoleBody": "HUD calibration, latency probes, and dev panels will anchor in this slot. Local-first stays default.",
     "syncTitle": "Cloud sync",
-    "syncBody": "Pro subscribers can snapshot scores + local history to Firestore (single document, JSON payload).",
+    "syncBody": "Pro subscribers sync profile + history to Firestore as structured documents (profile baseline + per-record history; legacy JSON blob migrates on first backup).",
     "syncProOnly": "Cloud sync requires Pro — open Join Arena if you need the uplink.",
     "syncBackup": "Backup to cloud now",
     "syncRestore": "Restore from cloud",
@@ -552,12 +552,14 @@
       }
     },
     "sync": {
-      "backupOk": "Backup written to your Pro cloud slot.",
-      "backupFail": "Backup unavailable (check Pro + Firebase + anonymous auth).",
+      "backupOk": "Structured backup completed (profile + history documents).",
+      "backupFail": "Backup failed — check network or try again.",
+      "unavailable": "Cloud sync is not ready: confirm all VITE_FIREBASE_* env vars, then sign in with Google (not anonymous only).",
+      "permissionDenied": "Firestore rejected the write (permission-denied). Deploy repo firestore.rules to this project or verify you are signed into the correct account.",
       "authFail": "Cloud sync requires signed-in Google account (non-anonymous).",
       "restoreOk": "Local scores and history replaced from cloud snapshot.",
       "restoreEmpty": "No cloud snapshot found yet.",
-      "restoreFail": "Restore failed — verify Pro, Firebase config, and network."
+      "restoreFail": "Restore failed — check network or try again."
     }
   },
   "history": {

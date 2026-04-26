@@ -24,7 +24,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       <div
         id="layer-shell-scroll"
-        className="relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-16"
+        className="relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-shell-top"
       >
         {children ?? <Outlet />}
       </div>

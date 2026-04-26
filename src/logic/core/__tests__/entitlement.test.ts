@@ -4,6 +4,7 @@ import {
   getEntitlementReasonCode,
   hasCoreAccess,
   hasProAccess,
+  shouldBlockStructuredUserSync,
 } from '../entitlement';
 import type { EntitlementState } from '../../../types/entitlement';
 
@@ -45,5 +46,10 @@ describe('entitlement core guards', () => {
     expect(canAccessLeaderboard(pro, now)).toBe(true);
     expect(hasProAccess(grace, now)).toBe(true);
     expect(canAccessLeaderboard(grace, now)).toBe(true);
+  });
+
+  it('structured user sync is Pro-only regardless of leaderboard paywall mode', () => {
+    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'free' }))).toBe(true);
+    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'pro' }))).toBe(false);
   });
 });

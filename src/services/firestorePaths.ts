@@ -13,6 +13,13 @@ export const USER_CLOUD_COLLECTION = 'users';
 export const USER_ARTIFACTS_COLLECTION = 'artifacts';
 export const USER_CLOUD_DOC_ID = 'up_cloud_sync_v1';
 
+/** Pro structured sync: `users/{uid}/profile/baseline` */
+export const USER_PROFILE_SUBCOLLECTION = 'profile';
+export const USER_PROFILE_BASELINE_DOC_ID = 'baseline';
+
+/** Pro structured sync: `users/{uid}/history/{recordId}` */
+export const USER_HISTORY_SUBCOLLECTION = 'history';
+
 export function leaderboardEntriesCollectionPath(metric: string): string {
   return `${LEADERBOARDS_COLLECTION}/${metric}/${ENTRIES_SUBCOLLECTION}`;
 }

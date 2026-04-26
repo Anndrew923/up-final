@@ -18,6 +18,7 @@ import {
   savePowerInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import type { PowerInputsPersisted } from '../types/powerInputs';
 import { useScoreStore } from '../stores/scoreStore';
@@ -197,6 +198,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     setStoreScore('explosivePower', result.score);
     applySuccessfulExplosivePreview(result);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [
     verticalJumpInput,
     standingLongJumpInput,

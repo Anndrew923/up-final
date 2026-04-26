@@ -42,6 +42,11 @@ export function shouldBlockFirebase(
   return !canUploadLeaderboard(ent);
 }
 
+/** Pro-only structured user-data sync (independent of leaderboard beta paywall). */
+export function shouldBlockStructuredUserSync(ent: EntitlementState, now: Date = new Date()): boolean {
+  return !hasProAccess(ent, now);
+}
+
 export function getEntitlementReasonCode(
   ent: EntitlementState,
   feature: Feature,

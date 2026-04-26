@@ -5,6 +5,8 @@ import {
   saveHistory,
   type LocalHistoryRecord,
 } from '../services/localStorageService';
+import { scheduleStructuredHistoryPushAfterLocalAppend } from '../services/structuredHistoryPushSchedule';
+import { useEntitlementStore } from './entitlementStore';
 
 export interface HistoryStore {
   records: LocalHistoryRecord[];
@@ -22,6 +24,8 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
   addHistoryRecord(record) {
     const updated = appendHistory(record);
     set({ records: updated });
+    const ent = useEntitlementStore.getState();
+    scheduleStructuredHistoryPushAfterLocalAppend(ent, record);
   },
   removeHistoryRecord(id) {
     const next = get().records.filter((record) => record.id !== id);

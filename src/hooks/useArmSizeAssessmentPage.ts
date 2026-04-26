@@ -6,6 +6,7 @@ import {
   evaluateArmSizeScore,
 } from '../logic/core/armSizeScoring';
 import { loadArmSizeInputs, saveArmSizeInputs } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type ArmSizeAssessmentError =
@@ -140,6 +141,7 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
     setSubmittedScore(result.submittedScore);
     setLimitedByAxisCap(result.limitedByAxisCap);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [armCircumferenceInput, bodyFatInput, setStoreScore]);
 
   return {

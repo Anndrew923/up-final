@@ -369,7 +369,8 @@ export default function LadderPage() {
 
   return (
     <main className="ui-shell flex max-w-3xl flex-col gap-3 pb-28">
-      <div className="sticky top-0 z-20 -mx-1 sm:-mx-0">
+      {/* `top-shell-top` must stay aligned with `AppShell` `#layer-shell-scroll` padding (`pt-shell-top`). */}
+      <div className="sticky top-shell-top z-20 -mx-1 sm:-mx-0">
         <div
           className={`ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/90 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-900/20 via-bg-card/95 to-bg-card/100 py-3 backdrop-blur-md transition-all duration-300 ${
             isNearTop
@@ -378,19 +379,21 @@ export default function LadderPage() {
           }`}
         >
           <div
-            className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent transition-all duration-300 ${
-              isNearTop ? 'via-red-500/70' : 'via-red-500/35'
+            className={`pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent to-transparent transition-all duration-300 ${
+              isNearTop ? 'via-red-500/50' : 'via-red-500/28'
             }`}
           />
           <div
-            className={`pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-red-500/12 to-transparent transition-opacity duration-300 ${
-              isNearTop ? 'opacity-100' : 'opacity-40'
+            className={`pointer-events-none absolute inset-x-0 top-0 z-0 h-8 bg-gradient-to-b from-red-500/6 to-transparent transition-opacity duration-300 ${
+              isNearTop ? 'opacity-100' : 'opacity-35'
             }`}
           />
-          <h1 className="text-base font-semibold tracking-tight text-zinc-100 md:text-lg">
-            {t('ladder.title', { ns: 'common' })}
-          </h1>
-          <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} className="mt-1" />
+          <div className="relative z-10 isolate">
+            <h1 className="text-base font-semibold tracking-tight text-zinc-50 drop-shadow-sm md:text-lg">
+              {t('ladder.title', { ns: 'common' })}
+            </h1>
+            <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} className="mt-1" />
+          </div>
 
           <nav
             className="mt-3 flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

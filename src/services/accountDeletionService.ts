@@ -1,5 +1,5 @@
 import { deleteUser } from 'firebase/auth';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { clearLocalData } from './localStorageService';
 import {
   ENTRIES_SUBCOLLECTION,
@@ -7,6 +7,9 @@ import {
   USER_ARTIFACTS_COLLECTION,
   USER_CLOUD_COLLECTION,
   USER_CLOUD_DOC_ID,
+  USER_HISTORY_SUBCOLLECTION,
+  USER_PROFILE_BASELINE_DOC_ID,
+  USER_PROFILE_SUBCOLLECTION,
 } from './firestorePaths';
 import {
   getCurrentFirebaseUser,
@@ -86,8 +89,13 @@ export async function deleteSignedInAccount(): Promise<DeleteAccountResult> {
   const db = getFirestoreDb();
   let cloudDeletePartial = false;
   if (db) {
+    const histSnap = await getDocs(
+      collection(db, USER_CLOUD_COLLECTION, user.uid, USER_HISTORY_SUBCOLLECTION)
+    );
     const deleteTasks: Promise<unknown>[] = [
       deleteDoc(doc(db, USER_CLOUD_COLLECTION, user.uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID)),
+      deleteDoc(doc(db, USER_CLOUD_COLLECTION, user.uid, USER_PROFILE_SUBCOLLECTION, USER_PROFILE_BASELINE_DOC_ID)),
+      ...histSnap.docs.map((d) => deleteDoc(d.ref)),
       ...LEADERBOARD_METRICS.map((metric) =>
         deleteDoc(doc(db, LEADERBOARDS_COLLECTION, metric, ENTRIES_SUBCOLLECTION, user.uid))
       ),

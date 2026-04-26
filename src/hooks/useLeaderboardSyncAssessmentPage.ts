@@ -14,6 +14,7 @@ import { ROUTES } from '../config/routes';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import {
   loadCardioInputs,
   loadMuscleInputs,
@@ -125,6 +126,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         },
       });
       setSummaryState({ signature: targetsSignature, summary: tally });
+      queueStructuredProfileAfterRadarSubmit();
       onFinishedRef.current?.();
     } finally {
       setBusy(false);

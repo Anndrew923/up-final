@@ -20,7 +20,13 @@ import {
   type User,
   type Unsubscribe,
 } from 'firebase/auth';
-import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -45,6 +51,7 @@ function initFirestoreForApp(app: FirebaseApp): Firestore {
   try {
     return initializeFirestore(app, {
       experimentalAutoDetectLongPolling: true,
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
     });
   } catch (e: unknown) {
     const code =

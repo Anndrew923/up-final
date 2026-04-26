@@ -4,6 +4,10 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      /** Scroll padding under fixed HUD — pair with `AppShell` `pt-shell-top` and page `sticky top-shell-top`. */
+      spacing: {
+        'shell-top': '4rem',
+      },
       colors: {
         bg: {
           base: '#050505',

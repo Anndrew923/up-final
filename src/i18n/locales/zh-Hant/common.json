@@ -341,7 +341,7 @@
     "moduleConsole": "診斷",
     "consoleBody": "HUD 校準、延遲探測與開發面板將固定於此槽位；本機優先原則不變。",
     "syncTitle": "雲端同步",
-    "syncBody": "Pro 可將分數與本機歷史快照至 Firestore（單一文件 JSON 承載）。",
+    "syncBody": "Pro 會將個人 profile 與歷史紀錄以結構化文件同步至 Firestore（profile 基線 + 每筆 history；舊版單一 JSON 會在首次備份時自動遷移）。",
     "syncProOnly": "雲端同步需要 Pro — 請前往加入戰場取得授權。",
     "syncBackup": "立即備份至雲端",
     "syncRestore": "從雲端還原",
@@ -413,12 +413,14 @@
       }
     },
     "sync": {
-      "backupOk": "已寫入你的 Pro 雲端槽位。",
-      "backupFail": "備份不可用（請確認 Pro、Firebase 與匿名登入）。",
+      "backupOk": "結構化備份已完成（profile + 歷史文件）。",
+      "backupFail": "備份失敗 — 請檢查網路或稍後再試。",
+      "unavailable": "雲端同步尚未就緒：請確認四個 VITE_FIREBASE_* 環境變數齊全，並以 Google 登入（不可僅匿名）。",
+      "permissionDenied": "Firestore 拒絕寫入（permission-denied）。請將本專案 firestore.rules 部署到同一個 Firebase 專案，或確認目前登入帳號正確。",
       "authFail": "雲端同步需要已登入的 Google 帳號（不可為匿名）。",
       "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
       "restoreEmpty": "尚無雲端快照。",
-      "restoreFail": "還原失敗 — 請確認 Pro、Firebase 設定與網路。"
+      "restoreFail": "還原失敗 — 請檢查網路或稍後再試。"
     }
   },
   "assessment": {

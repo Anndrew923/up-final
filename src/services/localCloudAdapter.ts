@@ -43,7 +43,8 @@ function requireCloudUserUid(): string {
 }
 
 /**
- * Pro + configured Firebase → Firestore document `users/{uid}/artifacts/up_cloud_sync_v1`.
+ * Pro + configured Firebase → legacy single-doc `users/{uid}/artifacts/up_cloud_sync_v1`.
+ * App sync uses `userStructuredSyncService` (`profile` / `history` subcollections); this adapter remains for unit tests and migration reads of the old blob.
  */
 export function getCloudAdapterForEntitlement(ent: EntitlementState): LocalCloudAdapter {
   const db = getFirestoreDb();

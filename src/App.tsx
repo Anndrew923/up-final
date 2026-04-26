@@ -5,6 +5,7 @@ import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
 import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
+import { useProStructuredUserSyncLifecycle } from './hooks/useProStructuredUserSyncLifecycle';
 import { isFirestoreConfigured } from './services/firebaseClient';
 import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
 import { useAuthStore } from './stores/authStore';
@@ -133,6 +134,7 @@ function PlateCalculatorRoute() {
 
 export default function App() {
   useAuthSessionBootstrap();
+  useProStructuredUserSyncLifecycle();
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const hasOnboarding = hasCompletedAuthOnboarding();

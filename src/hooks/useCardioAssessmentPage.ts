@@ -16,6 +16,7 @@ import {
   saveCardioInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
 import { useScoreStore } from '../stores/scoreStore';
 
@@ -172,6 +173,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       });
       setStoreScore('cardio', scoreToSave);
       setSubmitDone(true);
+      queueStructuredProfileAfterRadarSubmit();
       return;
     }
 
@@ -192,6 +194,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     });
     setStoreScore('cardio', scoreToSave);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [
     activeTab,
     distanceInput,

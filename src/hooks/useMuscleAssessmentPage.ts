@@ -13,6 +13,7 @@ import {
   saveMuscleInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import { useScoreStore } from '../stores/scoreStore';
 
@@ -124,6 +125,7 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
     });
     setStoreScore('muscleMass', result.score);
     setSubmitDone(true);
+    queueStructuredProfileAfterRadarSubmit();
   }, [profile, profileReady, setStoreScore, smmInput]);
 
   return {

@@ -38,6 +38,14 @@ export default function ToolsPage() {
       setSyncMsg(t('tools.sync.authFail', { ns: 'common' }));
       return;
     }
+    if (r.reason === 'unavailable') {
+      setSyncMsg(t('tools.sync.unavailable', { ns: 'common' }));
+      return;
+    }
+    if (r.reason === 'permission-denied') {
+      setSyncMsg(t('tools.sync.permissionDenied', { ns: 'common' }));
+      return;
+    }
     setSyncMsg(t('tools.sync.backupFail', { ns: 'common' }));
   };
 
@@ -54,6 +62,14 @@ export default function ToolsPage() {
     }
     if (r.reason === 'auth-failed') {
       setSyncMsg(t('tools.sync.authFail', { ns: 'common' }));
+      return;
+    }
+    if (r.reason === 'unavailable') {
+      setSyncMsg(t('tools.sync.unavailable', { ns: 'common' }));
+      return;
+    }
+    if (r.reason === 'permission-denied') {
+      setSyncMsg(t('tools.sync.permissionDenied', { ns: 'common' }));
       return;
     }
     setSyncMsg(t('tools.sync.restoreFail', { ns: 'common' }));

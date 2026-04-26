@@ -17,6 +17,7 @@ import {
   subscribePhysicalProfile,
   subscribeStrengthInputs,
 } from '../services/localStorageService';
+import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 import { useScoreStore } from '../stores/scoreStore';
@@ -264,6 +265,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     if (ok && result.ok) {
       setSubmitDone(true);
       setSubmitNotice({ kind: 'success', savedScore: result.score });
+      queueStructuredProfileAfterRadarSubmit();
     }
     if (!ok && !result.ok) {
       setSubmitNotice({ kind: 'error', error: result.error });
