@@ -1,12 +1,12 @@
 import type { FC } from 'react';
 import { useId, useMemo } from 'react';
 import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
-import type { SixAxisMetric } from '../../types/scoring';
-import { RADAR_CARD_V2, RADAR_LASER_ALERT_PROFILE } from './radarVisualTokens';
+import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
+import { getRadarPalette, RADAR_CARD_V2, RADAR_LASER_ALERT_PROFILE } from './radarVisualTokens';
 import type { SVGProps } from 'react';
 
 export interface HexRadarPoint {
-  key: SixAxisMetric;
+  key: string;
   label: string;
   value: number;
 }
@@ -44,6 +44,37 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   const denom = Math.max(Math.min(scaleMax, RADAR_DISPLAY_MIN), 1e-6);
   const overclockThreshold = 100;
   const polygonDashLength = 520;
+  const orbitRingRadius = maxR + 6;
+  const coreMetricSet = useMemo(() => new Set<string>(SIX_AXIS_METRICS), []);
+
+  const dominantKey = useMemo<SixAxisMetric | null>(() => {
+    let winner: { key: SixAxisMetric; value: number } | null = null;
+    for (const point of points) {
+      if (!coreMetricSet.has(point.key)) continue;
+      const value = Math.max(0, Number(point.value) || 0);
+      if (!winner || value > winner.value) {
+        winner = { key: point.key as SixAxisMetric, value };
+      }
+    }
+    return winner?.key ?? null;
+  }, [coreMetricSet, points]);
+
+  const dominantPalette = useMemo(() => getRadarPalette(dominantKey), [dominantKey]);
+
+  const scannerSweepPeak = useMemo(() => {
+    const rgb = dominantPalette.glow.match(/\d+(\.\d+)?/g)?.slice(0, 3).join(',') ?? '34,211,238';
+    return `rgba(${rgb},0.28)`;
+  }, [dominantPalette.glow]);
+
+  const auraPoolCore = useMemo(() => {
+    const rgb = dominantPalette.glow.match(/\d+(\.\d+)?/g)?.slice(0, 3).join(',') ?? '34,211,238';
+    return `rgba(${rgb},0.5)`;
+  }, [dominantPalette.glow]);
+
+  const calibrationRingStroke = useMemo(() => {
+    const rgb = dominantPalette.glow.match(/\d+(\.\d+)?/g)?.slice(0, 3).join(',') ?? '34,211,238';
+    return `rgba(${rgb},0.5)`;
+  }, [dominantPalette.glow]);
 
   const axisNodes = useMemo(
     () =>
@@ -123,18 +154,32 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   }, [cx, cy, maxR, n]);
 
   return (
-    <svg
-      viewBox="0 0 200 200"
-      className={`${className ?? ''} motion-safe:transition-all motion-safe:duration-[560ms]`}
-      role="img"
-      aria-label={ariaLabel}
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <div className={`${className ?? ''} relative aspect-square`}>
+      <div
+        className="pointer-events-none absolute inset-[7%] rounded-full"
+        aria-hidden
+        style={{
+          background: `conic-gradient(from 180deg at 50% 50%, rgba(24,24,27,1) 0%, ${scannerSweepPeak} 50%, rgba(24,24,27,1) 100%)`,
+          opacity: 0.88,
+        }}
+      />
+      <svg
+        viewBox="0 0 200 200"
+        className="relative z-10 h-full w-full motion-safe:transition-all motion-safe:duration-[560ms]"
+        role="img"
+        aria-label={ariaLabel}
+        xmlns="http://www.w3.org/2000/svg"
+      >
       <defs>
         <radialGradient id={auraGradientId} cx="50%" cy="50%" r="62%">
           <stop offset="0%" stopColor="rgba(56,189,248,0.1)" />
           <stop offset="70%" stopColor="rgba(56,189,248,0.22)" />
           <stop offset="100%" stopColor={RADAR_LASER_ALERT_PROFILE.polygon.edgeStop} />
+        </radialGradient>
+        <radialGradient id={`${auraGradientId}-pool`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={auraPoolCore} />
+          <stop offset="80%" stopColor="rgba(34,211,238,0)" />
+          <stop offset="100%" stopColor="rgba(34,211,238,0)" />
         </radialGradient>
       </defs>
       <style>
@@ -150,6 +195,12 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
               animation: radar-breathe-${animationId} ${RADAR_CARD_V2.animation.radarBreathMs}ms ease-in-out infinite;
               will-change: fill-opacity;
             }
+            .radar-orbit-${animationId} {
+              transform-box: fill-box;
+              transform-origin: center;
+              animation: radar-orbit-${animationId} 30s linear infinite;
+              will-change: transform;
+            }
             @keyframes radar-draw-${animationId} {
               to {
                 stroke-dashoffset: 0;
@@ -163,16 +214,31 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
                 fill-opacity: ${RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMin};
               }
             }
+            @keyframes radar-orbit-${animationId} {
+              to {
+                transform: rotate(360deg);
+              }
+            }
           }
         `}
       </style>
       <rect width="200" height="200" className="fill-transparent" />
-      <circle cx={cx} cy={cy} r={RADAR_CARD_V2.geometry.centerAuraRadius} className="fill-accent-info" fillOpacity={RADAR_CARD_V2.opacity.centerAura} />
+      <circle cx={cx} cy={cy} r={RADAR_CARD_V2.geometry.centerAuraRadius} fill={`url(#${auraGradientId}-pool)`} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={orbitRingRadius}
+        fill="none"
+        stroke={calibrationRingStroke}
+        strokeWidth={0.5}
+        strokeDasharray="4 8"
+        className={`radar-orbit-${animationId}`}
+      />
       {rings.map((ring, index) => (
         <polygon
           key={ring.key}
           className={index === 0 ? 'fill-none stroke-zinc-700' : 'fill-none stroke-zinc-800'}
-          strokeOpacity={index === 0 ? RADAR_CARD_V2.opacity.ringOuterStroke : RADAR_CARD_V2.opacity.ringStroke}
+          strokeOpacity={index === 0 ? RADAR_CARD_V2.opacity.ringOuterStroke : 0.2}
           strokeWidth={0.5}
           points={ring.points}
         />
@@ -185,7 +251,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
           x2={ln.x2}
           y2={ln.y2}
           className="stroke-zinc-800"
-          strokeOpacity={RADAR_CARD_V2.opacity.spokeStroke}
+          strokeOpacity={0.2}
           strokeWidth={0.5}
         />
       ))}
@@ -205,10 +271,21 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
         fill={`url(#${auraGradientId})`}
         stroke={RADAR_LASER_ALERT_PROFILE.polygon.stroke}
         className={`radar-draw-${animationId} radar-breathe-${animationId}`}
-        strokeWidth={RADAR_LASER_ALERT_PROFILE.polygon.strokeWidth}
+        strokeWidth={4}
+        strokeLinecap="round"
         strokeLinejoin="round"
         fillOpacity={RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax}
-        style={{ filter: `drop-shadow(0 0 8px ${RADAR_LASER_ALERT_PROFILE.polygon.glow})` }}
+        style={{ filter: 'drop-shadow(0 0 12px rgba(34,211,238,0.9)) drop-shadow(0 0 4px rgba(34,211,238,1))' }}
+      />
+      <polygon
+        points={dataPolygon}
+        fill="none"
+        stroke="#e0faff"
+        className={`radar-draw-${animationId}`}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.95}
       />
       {axisNodes.map((node) => {
         const isOverclock = node.raw > overclockThreshold;
@@ -290,7 +367,8 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
         );
       })}
       <circle cx={cx} cy={cy} r={2} className="fill-accent-info" />
-    </svg>
+      </svg>
+    </div>
   );
 };
 

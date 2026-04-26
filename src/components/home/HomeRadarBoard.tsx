@@ -71,7 +71,7 @@ export const HomeRadarBoard: FC = () => {
             points={localizedRadarPoints}
             scaleMax={scaleMax}
             weakestKey={weakest?.key}
-            className="mx-auto h-64 w-full max-w-[280px] shrink-0"
+            className="mx-auto w-full max-w-[280px] shrink-0"
             aria-label={t('home.radarAria', { ns: 'common' })}
           />
 

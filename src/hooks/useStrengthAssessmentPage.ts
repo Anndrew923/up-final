@@ -207,12 +207,20 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
       branchScoreByLift.set(branch.lift, branch.finalScore);
     }
 
+    const liveScoreByLift = new Map<StrengthLiftKey, number>();
+    for (const lift of STRENGTH_LIFT_KEYS) {
+      const live = tryComputeSingleLiftStrength({ lift, form, profile, profileReady });
+      if (live.ok) {
+        liveScoreByLift.set(lift, live.finalScore);
+      }
+    }
+
     return STRENGTH_LIFT_KEYS.map((lift) => ({
       key: lift,
       label: t(`strength.lifts.${lift}`),
-      value: branchScoreByLift.get(lift) ?? perLiftResult[lift]?.finalScore ?? 0,
+      value: branchScoreByLift.get(lift) ?? liveScoreByLift.get(lift) ?? perLiftResult[lift]?.finalScore ?? 0,
     }));
-  }, [combinedBreakdown?.branches, perLiftResult, t]);
+  }, [combinedBreakdown?.branches, form, perLiftResult, profile, profileReady, t]);
 
   const applyCombinedComputeResult = useCallback(
     (result: ReturnType<typeof tryComputeStrengthAssessmentScore>, options: { persist: boolean }) => {

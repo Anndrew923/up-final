@@ -647,6 +647,8 @@
     "branchScoresHeading": "Per-lift results",
     "branchLine": "{{weight}} kg × {{reps}} reps · est. 1RM {{oneRm}} kg · lift score {{score}}",
     "averageRawLabel": "Mean of completed lifts",
+    "spectrumKicker": "Hardened structure analysis",
+    "spectrumSub": "Detects five-axis strength spectrum balance.",
     "previewLabel": "Radar axis score",
     "radarClampNote": "If the mean exceeds the per-axis cap (0–200), the stored radar value is clamped.",
     "submitRadar": "Save to radar (strength axis)",

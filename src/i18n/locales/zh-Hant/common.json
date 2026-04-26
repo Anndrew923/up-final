@@ -493,6 +493,7 @@
     "averageRawLabel": "已完成項目之平均",
     "radarAria": "五項力量分佈雷達圖",
     "spectrumKicker": "剛體架構分析 (Hardened Structure Analysis)",
+    "spectrumSub": "偵測五軸力量頻譜平衡度。",
     "previewLabel": "雷達軸分數",
     "radarClampNote": "若平均超出單軸封頂（0–200），儲存至雷達時會套用封頂值。",
     "submitRadar": "寫入雷達（力量軸）",
