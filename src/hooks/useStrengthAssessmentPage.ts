@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
   strengthFormFromPersisted,
@@ -17,7 +18,7 @@ import {
   subscribeStrengthInputs,
 } from '../services/localStorageService';
 import type { PhysicalProfile } from '../types/userProfile';
-import type { StrengthLiftKey } from '../types/strengthInputs';
+import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type PerLiftScore = {
@@ -28,6 +29,18 @@ export type PerLiftScore = {
   weightUsedKg: number;
   modelMaxKg: number;
 };
+
+export interface StrengthRadarPoint {
+  key: StrengthLiftKey;
+  label: string;
+  value: number;
+}
+
+export interface StrengthSubmitNotice {
+  kind: 'success' | 'error';
+  savedScore?: number;
+  error?: StrengthAssessmentComputeError;
+}
 
 export interface UseStrengthAssessmentPageResult {
   profile: PhysicalProfile | null;
@@ -41,9 +54,12 @@ export interface UseStrengthAssessmentPageResult {
   combinedScore: number | null;
   combinedBreakdown: StrengthAssessmentBreakdown | null;
   combinedError: StrengthAssessmentComputeError | null;
+  strengthRadarPoints: StrengthRadarPoint[];
   calculateCombined: () => void;
+  submitBusy: boolean;
+  submitNotice: StrengthSubmitNotice | null;
   submitDone: boolean;
-  submitToRadar: () => void;
+  submitToRadar: () => Promise<void>;
 }
 
 function readInitialForm(): StrengthFormStrings {
@@ -51,6 +67,7 @@ function readInitialForm(): StrengthFormStrings {
 }
 
 export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
+  const { t } = useTranslation('common');
   const setStoreScore = useScoreStore((s) => s.setScore);
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm());
@@ -63,6 +80,8 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const [combinedScore, setCombinedScore] = useState<number | null>(null);
   const [combinedBreakdown, setCombinedBreakdown] = useState<StrengthAssessmentBreakdown | null>(null);
   const [combinedError, setCombinedError] = useState<StrengthAssessmentComputeError | null>(null);
+  const [submitBusy, setSubmitBusy] = useState(false);
+  const [submitNotice, setSubmitNotice] = useState<StrengthSubmitNotice | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
 
   const clearLiftComputed = useCallback((lift: StrengthLiftKey) => {
@@ -84,8 +103,16 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     setCombinedScore(null);
     setCombinedBreakdown(null);
     setCombinedError(null);
-    setSubmitDone(false);
   }, []);
+
+  useEffect(() => {
+    if (!submitNotice) return;
+    const timer = window.setTimeout(() => {
+      setSubmitNotice(null);
+      setSubmitDone(false);
+    }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [submitNotice]);
 
   const setWeight = useCallback(
     (lift: StrengthLiftKey, value: string) => {
@@ -174,6 +201,19 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     [form, profile, profileReady, clearCombined]
   );
 
+  const strengthRadarPoints = useMemo<StrengthRadarPoint[]>(() => {
+    const branchScoreByLift = new Map<StrengthLiftKey, number>();
+    for (const branch of combinedBreakdown?.branches ?? []) {
+      branchScoreByLift.set(branch.lift, branch.finalScore);
+    }
+
+    return STRENGTH_LIFT_KEYS.map((lift) => ({
+      key: lift,
+      label: t(`strength.lifts.${lift}`),
+      value: branchScoreByLift.get(lift) ?? perLiftResult[lift]?.finalScore ?? 0,
+    }));
+  }, [combinedBreakdown?.branches, perLiftResult, t]);
+
   const applyCombinedComputeResult = useCallback(
     (result: ReturnType<typeof tryComputeStrengthAssessmentScore>, options: { persist: boolean }) => {
       if (!result.ok) {
@@ -196,15 +236,32 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   );
 
   const calculateCombined = useCallback(() => {
+    setSubmitNotice(null);
     setSubmitDone(false);
     applyCombinedComputeResult(tryComputeStrengthAssessmentScore(computeArgs), { persist: false });
   }, [computeArgs, applyCombinedComputeResult]);
 
-  const submitToRadar = useCallback(() => {
+  const submitToRadar = useCallback(async () => {
+    if (submitBusy) return;
+    setSubmitBusy(true);
+    setSubmitNotice(null);
     setSubmitDone(false);
+
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 420);
+    });
+
     const result = tryComputeStrengthAssessmentScore(computeArgs);
-    applyCombinedComputeResult(result, { persist: true });
-  }, [computeArgs, applyCombinedComputeResult]);
+    const ok = applyCombinedComputeResult(result, { persist: true });
+    if (ok && result.ok) {
+      setSubmitDone(true);
+      setSubmitNotice({ kind: 'success', savedScore: result.score });
+    }
+    if (!ok && !result.ok) {
+      setSubmitNotice({ kind: 'error', error: result.error });
+    }
+    setSubmitBusy(false);
+  }, [computeArgs, applyCombinedComputeResult, submitBusy]);
 
   return {
     profile,
@@ -218,7 +275,10 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     combinedScore,
     combinedBreakdown,
     combinedError,
+    strengthRadarPoints,
     calculateCombined,
+    submitBusy,
+    submitNotice,
     submitDone,
     submitToRadar,
   };

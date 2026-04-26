@@ -8,12 +8,14 @@ export default function HudAvatar() {
   const { initial: localInitial, displayName: localDisplayName, avatarUrl: localAvatarUrl } = useLocalProfileBrief();
   const authStatus = useAuthStore((s) => s.status);
   const authDisplayName = useAuthStore((s) => s.displayName);
+  const authPhotoURL = useAuthStore((s) => s.photoURL);
   const displayName = authStatus === 'signed-in' ? authDisplayName : localDisplayName;
+  const avatarUrl = authStatus === 'signed-in' ? authPhotoURL || localAvatarUrl : undefined;
   const initial = (displayName?.charAt(0) || localInitial || 'U').toUpperCase();
   const label =
-    localAvatarUrl && displayName?.trim()
+    avatarUrl && displayName?.trim()
       ? displayName.trim()
-      : localAvatarUrl
+      : avatarUrl
         ? t('shellAvatarFallback', { ns: 'common' })
         : t('shellAvatarAria', { ns: 'common', initial });
 
@@ -23,8 +25,8 @@ export default function HudAvatar() {
       title={displayName ?? t('shellAvatarFallback', { ns: 'common' })}
       aria-label={label}
     >
-      {localAvatarUrl ? (
-        <img src={localAvatarUrl} alt="" aria-hidden className="h-full w-full object-cover" />
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="" aria-hidden className="h-full w-full object-cover" />
       ) : (
         initial
       )}

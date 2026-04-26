@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import HexRadarChart from '../components/radar/HexRadarChart';
 import { ROUTES } from '../config/routes';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE } from '../logic/core/assessmentLeaderboardShards';
@@ -46,7 +47,10 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     combinedScore,
     combinedBreakdown,
     combinedError,
+    strengthRadarPoints,
     calculateCombined,
+    submitBusy,
+    submitNotice,
     submitDone,
     submitToRadar,
   } = useStrengthAssessmentPage();
@@ -63,6 +67,22 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     }
     return [{ metric: LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE, score: combinedScore }];
   }, [combinedScore]);
+  const weakestStrengthAxisKey = useMemo(() => {
+    let weakest:
+      | {
+          key: string;
+          value: number;
+        }
+      | undefined;
+
+    for (const point of strengthRadarPoints) {
+      if (!Number.isFinite(point.value) || point.value <= 0) continue;
+      if (!weakest || point.value < weakest.value) {
+        weakest = { key: point.key, value: point.value };
+      }
+    }
+    return weakest?.key;
+  }, [strengthRadarPoints]);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -251,38 +271,17 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
 
             {combinedBreakdown ? (
               <div className="space-y-3 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                  {t('strength.branchScoresHeading')}
-                </p>
-                <ul className="space-y-2 text-sm text-zinc-300">
-                  {combinedBreakdown.branches.map((b) => (
-                    <li
-                      key={b.lift}
-                      className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
-                    >
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
-                        {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
-                          <p className="text-[11px] leading-relaxed text-amber-100/90">
-                            {t('strength.capWeightNotice', {
-                              lift: t(`strength.lifts.${b.lift}`),
-                              input: b.inputWeightKg,
-                              max: b.modelMaxKg,
-                            })}
-                          </p>
-                        ) : null}
-                      </div>
-                      <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
-                        {fmtBranchLine(t, b)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
                 <div className="border-t border-zinc-700/80 pt-3">
-                  <p className="text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
-                  <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
-                    {combinedBreakdown.averageRaw.toFixed(2)}
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                    {t('strength.spectrumKicker')}
                   </p>
+                  <HexRadarChart
+                    points={strengthRadarPoints}
+                    scaleMax={100}
+                    weakestKey={weakestStrengthAxisKey}
+                    className="mx-auto mt-2 h-auto w-full max-w-[240px] shrink-0"
+                    aria-label={t('strength.radarAria')}
+                  />
                 </div>
                 <div className="border-t border-zinc-700/80 pt-3">
                   <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
@@ -296,6 +295,39 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                     <p className="mt-1 text-xs text-zinc-500">{t('strength.radarClampNote')}</p>
                   ) : null}
                 </div>
+                <div className="border-t border-zinc-700/80 pt-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                    {t('strength.branchScoresHeading')}
+                  </p>
+                  <ul className="mt-2 space-y-2 text-sm text-zinc-300">
+                    {combinedBreakdown.branches.map((b) => (
+                      <li
+                        key={b.lift}
+                        className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
+                      >
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
+                          {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
+                            <p className="text-[11px] leading-relaxed text-amber-100/90">
+                              {t('strength.capWeightNotice', {
+                                lift: t(`strength.lifts.${b.lift}`),
+                                input: b.inputWeightKg,
+                                max: b.modelMaxKg,
+                              })}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
+                          {fmtBranchLine(t, b)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
+                  <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
+                    {combinedBreakdown.averageRaw.toFixed(2)}
+                  </p>
+                </div>
               </div>
             ) : null}
 
@@ -303,19 +335,38 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               <button
                 type="button"
                 className="ui-btn ui-btn-primary"
-                disabled={!profileReady}
+                disabled={!profileReady || submitBusy}
                 onClick={calculateCombined}
               >
                 {t('strength.calculateCombined')}
               </button>
-              <button type="button" className="ui-btn" disabled={!profileReady} onClick={submitToRadar}>
-                {t('strength.submitRadar')}
+              <button
+                type="button"
+                className="ui-btn"
+                disabled={!profileReady || submitBusy}
+                onClick={() => {
+                  void submitToRadar();
+                }}
+              >
+                {submitBusy ? t('strength.submitRadarBusy') : t('strength.submitRadar')}
               </button>
             </div>
 
-            {submitDone ? (
+            {submitNotice?.kind === 'success' && submitDone ? (
               <p className="text-sm text-accent-info" role="status">
-                {t('strength.submitDone')}
+                {t('strength.submitDoneWithScore', {
+                  score: (submitNotice.savedScore ?? combinedScore ?? 0).toFixed(2),
+                })}
+              </p>
+            ) : null}
+            {submitNotice?.kind === 'error' ? (
+              <p
+                className="text-sm text-amber-300 transition-opacity duration-300 ease-out"
+                role="status"
+              >
+                {t('strength.submitFailedWithReason', {
+                  reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`),
+                })}
               </p>
             ) : null}
 

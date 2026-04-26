@@ -1,19 +1,24 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import { signInAnonymouslyWeb, signInWithGoogleWeb } from '../services/firebaseClient';
 import { markAuthOnboardingCompleted } from '../services/authOnboardingService';
 
 const AuthChoicePage: FC = () => {
   const { t } = useTranslation('common');
+  const location = useLocation();
   const navigate = useNavigate();
   const [busy, setBusy] = useState<'none' | 'google' | 'guest'>('none');
   const [error, setError] = useState(false);
+  const returnTo = location.state && typeof location.state === 'object' && 'returnTo' in location.state
+    ? location.state.returnTo
+    : undefined;
+  const targetRoute = returnTo === ROUTES.ladder ? ROUTES.ladder : ROUTES.home;
 
   const completeFlow = () => {
     markAuthOnboardingCompleted();
-    navigate(ROUTES.home, { replace: true });
+    navigate(targetRoute, { replace: true });
   };
 
   const handleGoogle = async () => {

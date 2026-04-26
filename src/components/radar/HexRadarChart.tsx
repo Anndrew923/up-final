@@ -1,13 +1,18 @@
 import type { FC } from 'react';
 import { useId, useMemo } from 'react';
-import type { RadarPoint } from '../../types/scoring';
 import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
 import { RADAR_CARD_V2 } from './radarVisualTokens';
 import type { SVGProps } from 'react';
 
+export interface HexRadarPoint {
+  key: string;
+  label: string;
+  value: number;
+}
+
 export interface HexRadarChartProps {
   /** One vertex per core dimension; order matches caller (typically `SIX_AXIS_METRICS`). */
-  points: RadarPoint[];
+  points: HexRadarPoint[];
   /** Outer ring corresponds to this numeric max; radar card uses fixed 100. */
   scaleMax: number;
   weakestKey?: string;

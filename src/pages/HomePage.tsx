@@ -62,6 +62,10 @@ export default function HomePage() {
             type="button"
             className="ui-btn ui-btn-primary"
             onClick={() => {
+              if (access.reason === 'auth-required') {
+                navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.ladder } });
+                return;
+              }
               if (access.shouldShowJoinArena) {
                 navigate(ROUTES.joinArena);
                 return;

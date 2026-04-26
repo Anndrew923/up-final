@@ -71,6 +71,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBillingBusy(true);
     try {
     if (!paywallEnabled) {
+      if (MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn && !isGoogleLinked) {
+        navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.ladder } });
+        return;
+      }
       navigate(ROUTES.ladder);
       return;
     }

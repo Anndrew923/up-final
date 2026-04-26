@@ -155,7 +155,7 @@ export default function App() {
       <Route
         path={toRelativeRoutePath(ROUTES.authChoice)}
         element={
-          shouldForceAuthChoice
+          (shouldForceAuthChoice || !isGoogleSignedIn)
             ? withRouteSuspense(<AuthChoicePage />)
             : <Navigate to={ROUTES.home} replace />
         }
