@@ -92,6 +92,7 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
               placeholder={t('tools.calculators.oneRm.methods.average')}
               title={t('tools.calculators.oneRm.methodSheetTitle')}
               options={methodOptions}
+              allowEmpty={false}
             />
           </label>
 
