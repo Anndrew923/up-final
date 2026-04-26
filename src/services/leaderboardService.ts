@@ -14,10 +14,17 @@ import {
   type Firestore,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
+import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 import { shouldBlockFirebase } from '../logic/core/entitlement';
 import { isValidLeaderboardShardId, type LeaderboardShardId } from '../logic/core/ladderShards';
+import {
+  buildFullRadarScoresMapForFirestore,
+  LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+  resolvePreviewRadarMetric,
+} from '../logic/core/leaderboardPreviewContract';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import type { EntitlementState } from '../types/entitlement';
+import type { ScoreMap } from '../types/scoring';
 import {
   LADDER_AGE_BUCKETS,
   LADDER_COUNTRY_CODES,
@@ -32,8 +39,13 @@ import {
   normalizeLadderDisplayName,
   sanitizeAvatarUrlForLeaderboard,
 } from './ladderIdentityService';
+import { getMergedScoresSnapshotForRadar } from './mergedLocalScoresSnapshot';
 import { loadPhysicalProfile } from './localStorageService';
-import { ENTRIES_SUBCOLLECTION, LEADERBOARDS_COLLECTION } from './firestorePaths';
+import {
+  ENTRIES_SUBCOLLECTION,
+  LEADERBOARDS_COLLECTION,
+  LEADERBOARD_PREVIEWS_COLLECTION,
+} from './firestorePaths';
 import { checkUploadRateLimit, consumeUploadQuota, LEADERBOARD_UPLOADS_PER_HOUR } from './rateLimitService';
 import {
   clearLeaderboardCache,
@@ -94,6 +106,7 @@ export interface GetRankByScoreBestResult {
 }
 
 const memoryDb = new Map<string, Map<string, LeaderboardEntry>>();
+const memoryPreviewDb = new Map<string, Record<string, unknown>>();
 const GLOBAL_RANK_CACHE_TTL_MS = 30_000;
 const globalRankCacheMemory = new Map<string, { rank: number; cachedAt: number }>();
 
@@ -140,6 +153,21 @@ function writeGlobalRankCache(key: string, rank: number): void {
   } catch {
     // Ignore cache write failures.
   }
+}
+
+function ladderPreviewProfileFirestoreFields(
+  profile: Partial<LadderProfileProjection> | undefined
+): Record<string, unknown> {
+  return {
+    gender: profile?.gender ?? deleteField(),
+    ageBucket: profile?.ageBucket ?? deleteField(),
+    jobCategory: profile?.jobCategory ?? deleteField(),
+    countryCode: profile?.countryCode ?? deleteField(),
+    city: profile?.city ?? deleteField(),
+    district: profile?.district ?? deleteField(),
+    weeklyTrainingHours: profile?.weeklyTrainingHours ?? null,
+    trainingYears: profile?.trainingYears ?? null,
+  };
 }
 
 function getMetricStore(metric: LeaderboardShardId): Map<string, LeaderboardEntry> {
@@ -445,6 +473,49 @@ function applyMemoryLeaderboardSubmit(
     delete row.avatarUrl;
   }
   metricStore.set(uid, row);
+
+  const previousPreview = memoryPreviewDb.get(uid) ?? {};
+  const previewMetric = resolvePreviewRadarMetric(input.metric);
+  const updatedAt = new Date().toISOString();
+  const previewRow: Record<string, unknown> = {
+    ...previousPreview,
+    ...input.profile,
+    uid,
+    displayName: row.displayName,
+    avatarUrl: row.avatarUrl,
+    updatedAt,
+    isPro: true,
+    schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+  };
+  if (isAnonymousInLadder) {
+    previewRow.radarScores = {};
+    delete previewRow.radarUpdatedAt;
+  } else if (previewMetric) {
+    const currentRadar = (previousPreview.radarScores as Record<string, number> | undefined) ?? {};
+    previewRow.radarScores = {
+      ...currentRadar,
+      [previewMetric]: input.score,
+    };
+    previewRow.radarUpdatedAt = updatedAt;
+  }
+  memoryPreviewDb.set(uid, previewRow);
+
+  if (input.metric === LEADERBOARD_SHARD_OVERALL) {
+    try {
+      applyMemoryPreviewFullSixAxis({
+        uid,
+        displayName: input.displayName,
+        avatarUrl: input.avatarUrl,
+        profile: input.profile,
+        mergedScores: getMergedScoresSnapshotForRadar(),
+      });
+    } catch (e) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] ladderScore → memory preview full radar error', e);
+      }
+    }
+  }
+
   clearLeaderboardCache(input.metric);
 
   return {
@@ -457,6 +528,112 @@ function applyMemoryLeaderboardSubmit(
     rateLimitResetAt: afterConsume.resetAt,
     limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
   };
+}
+
+function applyMemoryPreviewFullSixAxis(options: {
+  uid: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  profile?: Partial<LadderProfileProjection>;
+  mergedScores: ScoreMap;
+}): void {
+  const { uid, displayName, avatarUrl, profile, mergedScores } = options;
+  const previousPreview = memoryPreviewDb.get(uid) ?? {};
+  const rowProfile = profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? {};
+  const isAnonymousInLadder = rowProfile.isAnonymousInLadder === true;
+  const safeAvatar = isAnonymousInLadder ? undefined : sanitizeAvatarUrlForLeaderboard(avatarUrl ?? undefined);
+  const now = new Date().toISOString();
+  const radarScores = isAnonymousInLadder ? {} : buildFullRadarScoresMapForFirestore(mergedScores);
+  memoryPreviewDb.set(uid, {
+    ...previousPreview,
+    ...rowProfile,
+    uid,
+    schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+    displayName: isAnonymousInLadder ? 'Anonymous' : normalizeLadderDisplayName(displayName.trim() || 'Pilot'),
+    avatarUrl: safeAvatar,
+    updatedAt: now,
+    radarUpdatedAt: isAnonymousInLadder ? undefined : now,
+    radarScores,
+    isPro: true,
+    isAnonymousInLadder,
+  });
+}
+
+/**
+ * After multi-shard ladder sync (or home overall upload), writes `leaderboard_previews/{uid}`
+ * with a nested **`radarScores` map** (all six axes, clamped) so ladder taps stay one-doc reads.
+ */
+export async function syncLeaderboardPreviewFullSixAxis(params: {
+  entitlement: EntitlementState;
+  uid: string;
+  displayName: string;
+  mergedScores: ScoreMap;
+  avatarUrl?: string | null;
+  profile?: Partial<LadderProfileProjection>;
+}): Promise<{ ok: boolean; reason?: 'pro-required' | 'invalid-input' | 'unknown' }> {
+  const { entitlement, uid, displayName, mergedScores, avatarUrl, profile } = params;
+  if (!uid.trim()) return { ok: false, reason: 'invalid-input' };
+  if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
+    return { ok: false, reason: 'pro-required' };
+  }
+
+  const resolved = await resolveLeaderboardUid(uid);
+  if (resolved.backend === 'error') {
+    return { ok: false, reason: 'unknown' };
+  }
+  if (resolved.uid !== uid.trim()) {
+    return { ok: false, reason: 'invalid-input' };
+  }
+
+  const profileProjection =
+    profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
+  const identity = getLeaderboardIdentityPayload();
+  const dn = normalizeLadderDisplayName((displayName && displayName.trim()) || identity.displayName || '');
+  const av = sanitizeAvatarUrlForLeaderboard(avatarUrl ?? identity.avatarUrl);
+
+  const db = getFirestoreDb();
+  if (!db || resolved.backend === 'memory') {
+    applyMemoryPreviewFullSixAxis({
+      uid: resolved.uid,
+      displayName: dn,
+      avatarUrl: av,
+      profile: profileProjection,
+      mergedScores,
+    });
+    return { ok: true };
+  }
+
+  try {
+    const isAnonymousInLadder = profileProjection?.isAnonymousInLadder === true;
+    const previewRef = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, resolved.uid);
+    const nowIso = new Date().toISOString();
+    const display = isAnonymousInLadder ? 'Anonymous' : dn;
+
+    const payload: Record<string, unknown> = {
+      uid: resolved.uid,
+      schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+      displayName: display,
+      updatedAt: nowIso,
+      radarUpdatedAt: isAnonymousInLadder ? deleteField() : nowIso,
+      ...ladderPreviewProfileFirestoreFields(profileProjection),
+      isAnonymousInLadder,
+      avatarUrl: isAnonymousInLadder ? deleteField() : av ? av : deleteField(),
+    };
+
+    if (isAnonymousInLadder) {
+      payload.radarScores = deleteField();
+    } else {
+      payload.radarScores = buildFullRadarScoresMapForFirestore(mergedScores);
+    }
+
+    await setDoc(previewRef, payload, { merge: true });
+    return { ok: true };
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      console.warn('[leaderboard] syncLeaderboardPreviewFullSixAxis error', err);
+    }
+    return { ok: false, reason: 'unknown' };
+  }
 }
 
 async function resolveLeaderboardUid(
@@ -558,6 +735,52 @@ export async function submitLeaderboardScore(params: {
       };
 
       await setDoc(ref, payload, { merge: true });
+
+      const previewRef = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
+      const previewMetric = resolvePreviewRadarMetric(mergedForWrite.metric);
+      const isAnonymousInLadder = mergedForWrite.profile?.isAnonymousInLadder === true;
+      const nowIso = String(payload.updatedAt);
+      const previewPayload: Record<string, unknown> = {
+        uid,
+        schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+        displayName: payload.displayName,
+        avatarUrl: payload.avatarUrl,
+        updatedAt: payload.updatedAt,
+        ...ladderPreviewProfileFirestoreFields(mergedForWrite.profile),
+        isAnonymousInLadder,
+      };
+      if (isAnonymousInLadder) {
+        previewPayload.radarScores = deleteField();
+        previewPayload.radarUpdatedAt = deleteField();
+      } else {
+        if (previewMetric) {
+          previewPayload.radarScores = {
+            [previewMetric]: mergedForWrite.score,
+          };
+          previewPayload.radarUpdatedAt = nowIso;
+        }
+      }
+      await setDoc(previewRef, previewPayload, { merge: true });
+
+      if (mergedForWrite.metric === LEADERBOARD_SHARD_OVERALL) {
+        try {
+          const snap = await syncLeaderboardPreviewFullSixAxis({
+            entitlement,
+            uid,
+            displayName: mergedForWrite.displayName,
+            mergedScores: getMergedScoresSnapshotForRadar(),
+            avatarUrl: mergedForWrite.avatarUrl,
+            profile: mergedForWrite.profile,
+          });
+          if (!snap.ok && import.meta.env.DEV) {
+            console.warn('[leaderboard] ladderScore → preview full radar skipped', snap.reason);
+          }
+        } catch (e) {
+          if (import.meta.env.DEV) {
+            console.warn('[leaderboard] ladderScore → preview full radar error', e);
+          }
+        }
+      }
 
       const afterConsume = consumeUploadQuota({ uid, key: rateKey });
       clearLeaderboardCache(mergedForWrite.metric);

@@ -305,6 +305,19 @@
       "globalRank": "Global rank #{{rank}}",
       "cta": "Tap to jump to my row"
     },
+    "userPreview": {
+      "kicker": "Pilot profile",
+      "title": "User details",
+      "close": "Close user details",
+      "loading": "Loading user preview…",
+      "error": "Unable to load this user right now. Please try again later.",
+      "updatedAt": "Updated: {{time}}",
+      "radarAria": "User six-axis radar chart",
+      "valueEmpty": "—",
+      "radarHiddenAnonymous": "This pilot hides ladder identity — radar scores are not shown.",
+      "radarCompletion": "Axes with data: {{count}} / {{total}}",
+      "overallAverage": "Six-axis average"
+    },
     "pagination": {
       "prev": "Previous",
       "next": "Next",

@@ -8,9 +8,11 @@ import {
   type LeaderboardSyncRunSummary,
   type LeaderboardSyncTarget,
 } from '../logic/core/leaderboardSyncTargets';
+import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { ROUTES } from '../config/routes';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
+import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
 import {
   loadCardioInputs,
@@ -109,18 +111,25 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
 
     setBusy(true);
     try {
+      const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
+      const identity = getLeaderboardIdentityPayload();
       const tally = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,
         displayName,
         entitlement: snap,
+        previewSnapshot: {
+          mergedScores: merged,
+          profile: ladderProfile,
+          avatarUrl: identity.avatarUrl,
+        },
       });
       setSummaryState({ signature: targetsSignature, summary: tally });
       onFinishedRef.current?.();
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature]);
+  }, [targets, gate, targetsSignature, merged]);
 
   return {
     syncPage,

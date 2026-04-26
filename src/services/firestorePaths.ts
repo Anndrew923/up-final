@@ -6,6 +6,7 @@
  */
 export const LEADERBOARDS_COLLECTION = 'leaderboards';
 export const ENTRIES_SUBCOLLECTION = 'entries';
+export const LEADERBOARD_PREVIEWS_COLLECTION = 'leaderboard_previews';
 
 /** Pro cloud backup: `users/{uid}/artifacts/up_cloud_sync_v1` */
 export const USER_CLOUD_COLLECTION = 'users';

@@ -158,6 +158,18 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // leaderboards preview cache: leaderboard_previews/{uid}
+    // 點擊排行榜用戶時只讀這份摘要（1 doc）以控制成本。
+    match /leaderboard_previews/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['displayName', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.updatedAt is string;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // history：僅本人可 CRUD
     match /history/{historyId} {
       allow read, update, delete: if signedIn() && resource.data.userId == request.auth.uid;

@@ -4,7 +4,9 @@ import type {
 } from '../logic/core/leaderboardSyncTargets';
 import { createEmptyLeaderboardSyncRunSummary } from '../logic/core/leaderboardSyncTargets';
 import type { EntitlementState } from '../types/entitlement';
-import { submitLeaderboardScore } from './leaderboardService';
+import type { ScoreMap } from '../types/scoring';
+import type { LadderProfileProjection } from '../types/ladderProfile';
+import { submitLeaderboardScore, syncLeaderboardPreviewFullSixAxis } from './leaderboardService';
 
 const DEFAULT_INTER_SHARD_DELAY_MS = 60;
 
@@ -18,8 +20,15 @@ export async function runLeaderboardBatchUpload(options: {
   displayName: string;
   entitlement: EntitlementState;
   delayMs?: number;
+  /** When at least one shard succeeds, refreshes `leaderboard_previews` from merged six-axis scores (one write). */
+  previewSnapshot?: {
+    mergedScores: ScoreMap;
+    profile?: Partial<LadderProfileProjection>;
+    avatarUrl?: string | null;
+  };
 }): Promise<LeaderboardSyncRunSummary> {
-  const { targets, uid, displayName, entitlement, delayMs = DEFAULT_INTER_SHARD_DELAY_MS } = options;
+  const { targets, uid, displayName, entitlement, delayMs = DEFAULT_INTER_SHARD_DELAY_MS, previewSnapshot } =
+    options;
   const tally = createEmptyLeaderboardSyncRunSummary();
 
   for (const { metric, score } of targets) {
@@ -41,6 +50,17 @@ export async function runLeaderboardBatchUpload(options: {
 
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, delayMs);
+    });
+  }
+
+  if (previewSnapshot && tally.updated > 0) {
+    await syncLeaderboardPreviewFullSixAxis({
+      entitlement,
+      uid,
+      displayName,
+      mergedScores: previewSnapshot.mergedScores,
+      profile: previewSnapshot.profile,
+      avatarUrl: previewSnapshot.avatarUrl,
     });
   }
 

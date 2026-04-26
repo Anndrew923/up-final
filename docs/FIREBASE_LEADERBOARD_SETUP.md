@@ -4,6 +4,22 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 路徑契約：`leaderboards/{metric}/entries/{uid}`（`metric` 如 `strength`、`gripStrength` 等）。
 
+### `leaderboard_previews/{uid}`（天梯列點擊預覽，單一文件）
+
+客戶端寫入時 **`radarScores` 必須是巢狀 map**（子鍵與程式內六軸一致：`strength`、`explosivePower`、`cardio`、`muscleMass`、`bodyFat`、`gripStrength`），值為數字（與首頁雷達相同 clamp，可為 `0`）。
+
+在 **Firebase Console → Firestore → `leaderboard_previews` → 點選一筆文件** 時，預期應類似：
+
+| 欄位 | 預期 |
+|------|------|
+| `displayName` | string（規則必填） |
+| `updatedAt` | string（規則必填） |
+| `radarScores` | **map**；展開後為上列六個子欄位（number） |
+| `schemaVersion` | number（選填，新客戶端為 `1`） |
+| `gender`、`ageBucket`、`jobCategory` 等 | 選填摘要欄位 |
+
+**請勿**在文件**根層級**出現「整段字當欄位名」的鍵（例如字面意義的 `radarScores.strength`）。`setDoc` + `merge` 若用扁平物件鍵名帶點號，Firestore 會當成根上的單一欄位，App 讀取 `data.radarScores` 會是空的，天梯預覽雷達會變成 **0/6**。若曾誤寫，可在 Console 手動刪除這類錯誤欄位後，再用新客戶端上傳一次即可。
+
 **`firestore.rules`（本 repo）**：已與既有 **fitness-app 風格**規則合併，並加上 UP Final 專用路徑 **`leaderboards/{metric}/entries/{uid}`**，以及在 **`users/{userId}`** 下巢狀的 **`artifacts/{artifactId}`**（對應 `users/{uid}/artifacts/up_cloud_sync_v1` 雲端備份）。部署前請在 Firebase Console 用「規則 playground」或 CLI 再驗一次，避免與你線上已手動改過的規則衝突。
 
 ---

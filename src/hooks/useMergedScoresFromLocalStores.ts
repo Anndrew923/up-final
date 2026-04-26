@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { mergeScoreMapWithResolvedCardio } from '../logic/core/cardioScoring';
-import { mergeScoreMapWithResolvedMuscle } from '../logic/core/muscleScoring';
-import { mergeScoreMapWithResolvedExplosivePower } from '../logic/core/powerScoring';
-import { mergeScoreMapWithResolvedStrength } from '../logic/core/strengthAssessment';
-import { mergeScoreMapWithResolvedGripStrength } from '../logic/core/gripStrength';
+import { mergeScoreMapForHomeRadar } from '../logic/core/radarMergedScores';
 import {
   CARDIO_INPUTS_STORAGE_KEY,
   GRIP_INPUTS_STORAGE_KEY,
@@ -73,11 +69,14 @@ export function useMergedScoresFromLocalStores(): ScoreMap {
 
   return useMemo(() => {
     void localEpoch;
-    const profile = loadPhysicalProfile();
-    const withCardio = mergeScoreMapWithResolvedCardio(scores, profile, loadCardioInputs());
-    const withMuscle = mergeScoreMapWithResolvedMuscle(withCardio, profile, loadMuscleInputs());
-    const withExplosive = mergeScoreMapWithResolvedExplosivePower(withMuscle, profile, loadPowerInputs());
-    const withStrength = mergeScoreMapWithResolvedStrength(withExplosive, profile, loadStrengthInputs());
-    return mergeScoreMapWithResolvedGripStrength(withStrength, profile, loadGripInputs());
+    return mergeScoreMapForHomeRadar({
+      scores,
+      profile: loadPhysicalProfile(),
+      cardioInputs: loadCardioInputs(),
+      muscleInputs: loadMuscleInputs(),
+      powerInputs: loadPowerInputs(),
+      strengthInputs: loadStrengthInputs(),
+      gripInputs: loadGripInputs(),
+    });
   }, [scores, localEpoch]);
 }

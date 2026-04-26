@@ -4,6 +4,7 @@ import {
   getRankByScoreBest,
   listLeaderboard,
   submitLeaderboardScore,
+  syncLeaderboardPreviewFullSixAxis,
 } from '../leaderboardService';
 import type { EntitlementState } from '../../types/entitlement';
 
@@ -234,5 +235,26 @@ describe('leaderboard service guards', () => {
     });
     expect(rank.ok).toBe(true);
     expect(rank.rank).toBeNull();
+  });
+
+  it('syncLeaderboardPreviewFullSixAxis succeeds in memory backend', async () => {
+    const r = await syncLeaderboardPreviewFullSixAxis({
+      entitlement: ownedProEntitlement(),
+      uid: 'u-prev-sync',
+      displayName: 'Pilot',
+      mergedScores: { strength: 55, cardio: 12, explosivePower: 20, muscleMass: 8, bodyFat: 15, gripStrength: 30 },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it('rejects empty uid for syncLeaderboardPreviewFullSixAxis', async () => {
+    const r = await syncLeaderboardPreviewFullSixAxis({
+      entitlement: ownedProEntitlement(),
+      uid: '   ',
+      displayName: 'X',
+      mergedScores: {},
+    });
+    expect(r.ok).toBe(false);
+    expect(r.reason).toBe('invalid-input');
   });
 });

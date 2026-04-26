@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
+import LadderUserPreviewModal from '../components/ladder/LadderUserPreviewModal';
 import LadderFloatingRankBar from '../components/ladder/LadderFloatingRankBar';
 import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import { ROUTES } from '../config/routes';
@@ -25,7 +26,11 @@ import {
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
+import { useEntitlementStore } from '../stores/entitlementStore';
 import type { LadderAgeBucket, LadderHeightBucket, LadderJobCategory, LadderWeightBucket } from '../types/ladderProfile';
+import { getLadderUserPreview, type LadderUserPreview } from '../services/leaderboardPreviewService';
+import { useShallow } from 'zustand/react/shallow';
+import type { EntitlementState } from '../types/entitlement';
 
 function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: number, t: TFunction): string {
   if (!Number.isFinite(scoreBest)) return '—';
@@ -89,6 +94,24 @@ export default function LadderPage() {
   const rowRefs = useRef(new Map<string, HTMLLIElement>());
   const expandedFiltersPanelId = useId();
   const authUid = useAuthStore((state) => state.uid);
+  const entitlement = useEntitlementStore(
+    useShallow(
+      (s): EntitlementState => ({
+        purchaseStatus: s.purchaseStatus,
+        subscriptionStatus: s.subscriptionStatus,
+        isPro: s.isPro,
+        proExpiresAt: s.proExpiresAt,
+        planId: s.planId,
+        lastCheckedAt: s.lastCheckedAt,
+      })
+    )
+  );
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  const [previewUser, setPreviewUser] = useState<LadderUserPreview | null>(null);
+  const previewRequestIdRef = useRef(0);
 
   const bumpLadderRefresh = useCallback(() => {
     setLadderRefreshNonce((n) => n + 1);
@@ -286,6 +309,39 @@ export default function LadderPage() {
     pendingScrollUidRef.current = authUid;
     setCurrentPage(targetPage);
   }, [authUid, myRank, pageSize]);
+
+  const closePreviewModal = useCallback(() => {
+    previewRequestIdRef.current += 1;
+    setPreviewOpen(false);
+    setSelectedUid(null);
+    setPreviewLoading(false);
+    setPreviewError(false);
+    setPreviewUser(null);
+  }, []);
+
+  const handleOpenUserPreview = useCallback(
+    async (uid: string, anonymous: boolean) => {
+      if (!uid || anonymous) return;
+      const requestId = previewRequestIdRef.current + 1;
+      previewRequestIdRef.current = requestId;
+      setSelectedUid(uid);
+      setPreviewOpen(true);
+      setPreviewLoading(true);
+      setPreviewError(false);
+      setPreviewUser(null);
+
+      const result = await getLadderUserPreview({ entitlement, uid });
+      if (previewRequestIdRef.current !== requestId) return;
+      if (!result.ok || !result.item) {
+        setPreviewLoading(false);
+        setPreviewError(true);
+        return;
+      }
+      setPreviewUser(result.item);
+      setPreviewLoading(false);
+    },
+    [entitlement]
+  );
 
   const userInVisibleItems = useMemo(() => {
     if (!authUid) return false;
@@ -612,8 +668,16 @@ export default function LadderPage() {
                     }
                     rowRefs.current.set(row.uid, el);
                   }}
-                  className={`group relative flex items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
+                  className="list-none"
                 >
+                  <button
+                    type="button"
+                    disabled={isAnonymousRow}
+                    onClick={() => {
+                      void handleOpenUserPreview(row.uid, isAnonymousRow);
+                    }}
+                    className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass} disabled:cursor-not-allowed disabled:opacity-90`}
+                  >
                   <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <span className={`shrink-0 w-7 text-center font-mono sm:w-10 sm:text-left ${rankClass}`}>
                       {isRank1 ? `✦ #${rank}` : `#${rank}`}
@@ -647,6 +711,7 @@ export default function LadderPage() {
                       {compactUpdatedAt}
                     </p>
                   </div>
+                  </button>
                 </li>
               );
             })}
@@ -684,6 +749,13 @@ export default function LadderPage() {
           formatScore={formatFloatingScore}
         />
       ) : null}
+      <LadderUserPreviewModal
+        open={previewOpen}
+        loading={previewLoading}
+        error={previewError || !selectedUid}
+        user={previewUser}
+        onClose={closePreviewModal}
+      />
     </main>
   );
 }

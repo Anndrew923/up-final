@@ -166,6 +166,19 @@
       "globalRank": "全榜名次 #{{rank}}",
       "cta": "點擊跳到我的那一列"
     },
+    "userPreview": {
+      "kicker": "用戶檔案",
+      "title": "用戶資訊",
+      "close": "關閉用戶資訊",
+      "loading": "載入用戶資料中…",
+      "error": "暫時無法載入此用戶資訊，請稍後再試。",
+      "updatedAt": "更新：{{time}}",
+      "radarAria": "用戶六軸雷達圖",
+      "valueEmpty": "—",
+      "radarHiddenAnonymous": "此用戶在天梯選擇隱藏身分，不顯示雷達分數。",
+      "radarCompletion": "有資料的軸：{{count}} / {{total}}",
+      "overallAverage": "六軸平均"
+    },
     "pagination": {
       "prev": "上一頁",
       "next": "下一頁",
