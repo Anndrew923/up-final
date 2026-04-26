@@ -637,8 +637,8 @@ export default function LadderPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="shrink-0 min-w-[88px] text-right sm:min-w-[96px]">
-                    <p className={`font-mono text-lg font-semibold tabular-nums transition-colors duration-200 ${scoreClass}`}>
+                  <div className="shrink-0 min-w-[72px] text-right sm:min-w-[96px]">
+                    <p className={`font-mono text-base font-semibold tabular-nums transition-colors duration-200 sm:text-lg ${scoreClass}`}>
                       {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
                     </p>
                     <p className="hidden text-[10px] text-zinc-500 sm:block" title={new Date(row.updatedAt).toLocaleString()}>
