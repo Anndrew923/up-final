@@ -298,7 +298,7 @@
     "rankings": {
       "kicker": "Live rankings",
       "title": "Leaderboard",
-      "subtitle": "Rows for the current arena zone and sub-ranking filter."
+      "subtitle": "Rows for the current zone and filters."
     },
     "floatingRank": {
       "kicker": "My position",
@@ -345,14 +345,20 @@
     },
     "syncAll": {
       "sectionTitle": "Sync all ladders",
-      "hint": "Uploads every arena shard that has a positive score from your current radar (same data as each assessment page). Runs sequentially; each shard has an hourly upload cap.",
+      "hint": "Uploads every eligible shard from your Home radar.",
+      "infoButtonAria": "View sync-all limits",
+      "advancedTitle": "Sync-all limits",
+      "advancedTip": "Uploads run in sequence. Each shard has an hourly upload cap. Shards are skipped or blocked if scores are missing, eligibility fails, or limits are reached.",
       "noTargets": "No scores are ready to upload yet — complete assessments or save scores to the radar first.",
       "button": "Sync all to ladder",
       "busy": "Syncing…",
       "summary": "Finished {{attempted}} uploads: {{updated}} written, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors."
     },
     "assessmentSync": {
-      "hint": "Uploads every ladder shard for this assessment in one go (same per-shard hourly limits as home sync-all). Saving to the radar updates all axes — run calculate or save to radar before uploading.",
+      "hint": "Uploads all eligible shards for this page in one run.",
+      "infoButtonAria": "View page sync limits",
+      "advancedTitle": "Page sync limits",
+      "advancedTip": "Only shards for this page are uploaded. Uploads are skipped or blocked when scores are missing, eligibility fails, or per-shard limits are reached.",
       "noTargets": "No scores on this page are ready to upload yet.",
       "button": "Upload this page to ladder",
       "busy": "Uploading…"
@@ -476,18 +482,14 @@
   "tools": {
     "kicker": "Utility deck",
     "title": "Tools & cloud sync",
-    "subtitle": "Assist systems for backup and future calculators — minimal, fast, no noise.",
-    "moduleConsole": "Diagnostics",
-    "consoleBody": "HUD calibration, latency probes, and dev panels will anchor in this slot. Local-first stays default.",
     "syncTitle": "Cloud sync",
-    "syncBody": "Pro subscribers sync profile + history to Firestore as structured documents (profile baseline + per-record history; legacy JSON blob migrates on first backup).",
+    "syncBody": "Pro lets you sync profile and history to the cloud.",
     "syncProOnly": "Cloud sync requires Pro — open Join Arena if you need the uplink.",
     "syncBackup": "Backup to cloud now",
     "syncRestore": "Restore from cloud",
     "syncUpgrade": "Unlock Pro",
     "calculators": {
       "title": "Training calculators",
-      "subtitle": "Quick tools for 1RM estimation and plate loading before your sets.",
       "oneRm": {
         "kicker": "Strength tool",
         "title": "1RM calculator",
@@ -581,8 +583,13 @@
   },
   "assessment": {
     "title": "Assessment",
-    "subtitle": "Enter raw scores per axis (0–200; typical manual entry stays 0–100; body-fat may exceed 100 after FFMI). Totals update on Home (linear average ÷ 6).",
+    "subtitle": "Choose an assessment to begin.",
     "localFirstNote": "Core-only: scores stay on device — no Firebase on this screen.",
+    "referenceInfo": {
+      "title": "Assessment references",
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references"
+    },
     "rawInputsHeading": "Core six inputs",
     "homeRadarHint": "Radar and overall average are shown on Home.",
     "saveToHistory": "Save snapshot to history",
@@ -599,50 +606,50 @@
     "ffmi": {
       "kicker": "Calculated",
       "title": "FFMI (body-fat axis)",
-      "body": "Compute FFMI from Home profile + body fat %. Radar accepts the score only while adjusted FFMI is at or below the world-record anchor for your sex.",
+      "body": "Use profile + body fat to calculate FFMI and update the body-fat axis.",
       "cta": "Open FFMI page"
     },
     "cardio": {
       "kicker": "Endurance",
       "title": "Cardio (Cooper / 5 km)",
-      "body": "12-minute Cooper test with age- and sex-based standards, or 5 km time (20 min → 100+; 45 min → 0). Raw inputs are stored locally; the radar prefers Cooper when a valid distance is saved.",
+      "body": "Use Cooper distance or 5 km time to calculate cardio score.",
       "cta": "Open cardio assessment"
     },
     "muscle": {
       "kicker": "Body composition",
       "title": "Muscle mass (SMM)",
-      "body": "Skeletal muscle mass (kg) versus your saved weight, age, and sex — same norm tables as the reference app; final score is the simple average of the SMM and SM% branch scores. Saved SMM updates the muscle radar axis locally.",
+      "body": "Enter skeletal muscle mass (SMM) to calculate your muscle-axis score.",
       "cta": "Open muscle assessment"
     },
     "explosive": {
       "kicker": "Power",
       "title": "Explosive power (jump / sprint)",
-      "body": "Vertical jump (cm), standing long jump (cm), and sprint time (seconds) with age- and sex-based tables from the reference app — enter at least one metric; the score is the mean of the branch raw scores (limit-break above 100 when norms allow). Raw inputs stay on device; Home radar prefers this axis when valid saves exist.",
+      "body": "Enter at least one metric: vertical jump, standing long jump, or sprint.",
       "cta": "Open explosive assessment"
     },
     "strength": {
       "kicker": "Strength",
       "title": "Five-lift strength (DOTS-based)",
-      "body": "Bench press, squat, deadlift, lat pulldown, and standing barbell shoulder press — each lift has its own Calculate button and score; use the combined section to preview the radar axis (mean of all completed rows) before saving. Grip strength is a separate assessment. Raw inputs stay on device.",
+      "body": "Enter weight and reps for the five lifts, then calculate and save to radar.",
       "cta": "Open strength assessment"
     },
     "grip": {
       "kicker": "Grip",
       "title": "Grip strength",
-      "body": "Enter peak dynamometer kg. Formula uses a linear 1.4x baseline for male scores and a 1.6x female compensation on top. Scores can exceed 100 for myth-tier progression.",
+      "body": "Enter peak grip (kg) to calculate grip-axis score.",
       "cta": "Open grip assessment"
     },
     "armSize": {
       "kicker": "Circumference",
       "title": "Arm size assessment",
-      "body": "Enter upper-arm circumference (1–70 cm) and body fat (3–50%) to compute score. This score is for arm-size leaderboard only, and does not enter the six-axis radar or Home overall.",
+      "body": "Enter arm circumference and body fat to calculate arm leaderboard score.",
       "cta": "Open arm-size assessment"
     }
   },
   "strength": {
     "kicker": "Strength",
     "title": "Strength assessment",
-    "subtitle": "Five lifts with age- and sex-adjusted scoring (DOTS-style anchors). Use Calculate on each row for that lift’s score; use Calculate combined for the radar-axis mean of every row that has weight and reps (1–10).",
+    "subtitle": "Five-lift assessment with per-lift scores and a combined radar-axis score.",
     "weightLabel": "Weight (kg)",
     "weightPlaceholder": "e.g. 100",
     "weightAria": "{{lift}} — weight in kg",
@@ -712,10 +719,17 @@
   "grip": {
     "kicker": "Grip",
     "title": "Grip strength assessment",
-    "subtitle": "Enter your peak dynamometer reading in kg. Formula uses 1.4x for males, then multiplies by 1.6 for females. The scale is intentionally uncapped at 100 to preserve myth-tier progression.",
+    "subtitle": "Enter peak grip (kg) to calculate grip-axis score.",
     "peakLabel": "Peak grip (kg)",
     "peakPlaceholder": "e.g. 65",
-    "formulaHint": "Formula: score = peakKg × 1.4 (female adds ×1.6 compensation). Model cap is 160 kg; values above are locked to 160 for scoring. Returned with one decimal place.",
+    "referenceInfo": {
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references",
+      "title": "Assessment references",
+      "p1": "Formula: score = peakKg × 1.4, then ×1.6 for female scoring. Score keeps one decimal and may exceed 100.",
+      "p2": "Model cap is 160 kg. Inputs above the cap are clamped for scoring and storage.",
+      "p3": "Cap benchmark: Magnus Samuelsson. This is a product guardrail, not a competition certification."
+    },
     "capNoticeTitle": "Input exceeds model cap",
     "capNoticeBody": "You entered {{input}} kg, above the grip model cap of {{max}} kg. Scoring and saved value are locked to {{max}} kg.",
     "capNoticeLegend": "Cap benchmark: Swedish strongman Magnus Samuelsson.",
@@ -754,12 +768,19 @@
   "armSize": {
     "kicker": "Circumference",
     "title": "Arm size assessment",
-    "subtitle": "Enter upper-arm circumference (1–70 cm) and body fat (3–50%) to compute your arm-size score. This score is stored for arm-size leaderboard use only and does not affect the six-axis radar or Home overall.",
+    "subtitle": "Enter upper-arm circumference and body fat to calculate arm-size score (leaderboard only).",
     "armLabel": "Upper-arm circumference (cm)",
     "armPlaceholder": "e.g. 42",
     "bodyFatLabel": "Body-fat percentage (%)",
     "bodyFatPlaceholder": "e.g. 18",
-    "formulaHint": "Accepted inputs: upper-arm 1–70 cm, body fat 3–50%. Formula: score = (arm / 50) × (1 + (20 - body-fat) / 100) × 100. Result is rounded to 2 decimals.",
+    "referenceInfo": {
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references",
+      "title": "Assessment references",
+      "p1": "Accepted ranges: upper-arm 1-70 cm and body fat 3-50%. Values outside range are blocked.",
+      "p2": "Formula: score = (arm / 50) × (1 + (20 - body-fat) / 100) × 100, rounded to 2 decimals.",
+      "p3": "This score is used for the arm-size leaderboard only, and is not part of the six-axis radar or Home overall."
+    },
     "capNoticeTitle": "Leaderboard value capped by axis ceiling",
     "capNoticeBody": "When raw score exceeds the per-axis ceiling (200), leaderboard submission is stored as 200.",
     "previewLabel": "Preview score",
@@ -777,7 +798,7 @@
   "cardio": {
     "kicker": "Endurance",
     "title": "Cardio assessment",
-    "subtitle": "Cooper 12-minute run (meters) or 5 km time. Cooper needs a complete Home profile; 5 km time only needs your finish time.",
+    "subtitle": "Use 12-minute Cooper distance or 5 km time to calculate cardio score.",
     "tabCooper": "Cooper (12 min)",
     "tab5km": "5 km",
     "tabsAria": "Cardio test type",
@@ -815,7 +836,7 @@
   "explosive": {
     "kicker": "Power",
     "title": "Explosive power assessment",
-    "subtitle": "Vertical jump, standing long jump, and sprint — same norm tables as the reference app. Enter at least one field; scoring averages the raw scores from each completed metric.",
+    "subtitle": "Enter one or more metrics—vertical jump, standing long jump, or sprint time—to calculate explosive-axis score.",
     "verticalJumpLabel": "Vertical jump (cm)",
     "verticalJumpPlaceholder": "e.g. 55",
     "standingLongJumpLabel": "Standing long jump (cm)",
@@ -894,7 +915,7 @@
   "muscle": {
     "kicker": "Body composition",
     "title": "Muscle mass assessment",
-    "subtitle": "Enter skeletal muscle mass (SMM, kg) from a scale or scan. Scoring uses the same age- and sex-based norm tables as the reference implementation.",
+    "subtitle": "Enter skeletal muscle mass (SMM) to calculate your muscle-axis score.",
     "smmLabel": "Skeletal muscle mass (SMM, kg)",
     "smmPlaceholder": "e.g. 32.5",
     "smmHint": "Uses weight, age, and sex from your Home physical profile. Norm tables support ages roughly 10–80; this app’s profile starts at 13, and ages above 80 are out of table range.",
@@ -930,7 +951,7 @@
   "ffmi": {
     "kicker": "Body composition",
     "title": "FFMI assessment",
-    "subtitle": "Fat-free mass index from your saved physical profile plus body-fat %. If adjusted FFMI exceeds the documented world-record anchor for your sex, saving to the radar is blocked until you adjust inputs — future versions may add an overclock visualization.",
+    "subtitle": "Calculate FFMI and body-fat radar-axis score from profile and body-fat input.",
     "bodyFatLabel": "Body fat percentage",
     "bodyFatPlaceholder": "e.g. 15",
     "bodyFatUnit": "%",

@@ -1,7 +1,8 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { leaderboardShardForSixAxisMetric } from '../logic/core/assessmentLeaderboardShards';
@@ -15,6 +16,7 @@ export interface GripAssessmentPageProps {
 
 const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const [referenceOpen, setReferenceOpen] = useState(false);
   const {
     profile,
     profileReady,
@@ -83,6 +85,19 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <DisclosurePanel
+            instanceId="grip-reference-info"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+            title={t('assessment.referenceInfo.title')}
+            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
+          >
+            <p>{t('grip.referenceInfo.p1')}</p>
+            <p>{t('grip.referenceInfo.p2')}</p>
+            <p className="text-zinc-500">{t('grip.referenceInfo.p3')}</p>
+          </DisclosurePanel>
+
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="grip-peak">
             <span className="font-medium text-zinc-200">{t('grip.peakLabel')}</span>
             <input
@@ -101,7 +116,6 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
               aria-label={t('grip.peakLabel')}
             />
           </label>
-          <p className="text-xs leading-relaxed text-zinc-500">{t('grip.formulaHint')}</p>
 
           {capNotice ? (
             <div

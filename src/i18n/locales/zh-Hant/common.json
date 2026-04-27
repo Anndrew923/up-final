@@ -159,7 +159,7 @@
     "rankings": {
       "kicker": "即時榜單",
       "title": "排名",
-      "subtitle": "依目前戰場分區與細項篩選顯示。"
+      "subtitle": "依目前分區與篩選顯示。"
     },
     "floatingRank": {
       "kicker": "我的位置",
@@ -206,14 +206,20 @@
     },
     "syncAll": {
       "sectionTitle": "一鍵同步天梯",
-      "hint": "依目前首頁雷達合併後的分數，將各維度有分的榜單分片逐一上傳（與各評測頁邏輯一致）。採序列送出；各分片每小時上傳次數有限。",
+      "hint": "依首頁雷達分數，逐一上傳可用分片。",
+      "infoButtonAria": "查看一鍵同步限制說明",
+      "advancedTitle": "一鍵同步限制說明",
+      "advancedTip": "同步採序列送出；每個分片都有每小時次數上限。若未完成評測、未寫入雷達或非 Pro，該分片會被略過或擋下。",
       "noTargets": "尚無可上傳的分數 — 請先完成評測或將分數寫入雷達。",
       "button": "全部同步至天梯",
       "busy": "同步中…",
       "summary": "已完成 {{attempted}} 次上傳：成功寫入 {{updated}}、觸發限流 {{rateLimited}}、需 Pro 擋下 {{proRequired}}、錯誤 {{errors}}。"
     },
     "assessmentSync": {
-      "hint": "一次送出「本頁」所有榜單分片（與首頁一鍵同步相同：每分片每小時上傳次數限制）。寫入雷達為全軸資料，請仍先完成本頁計算或寫入雷達後再送出。",
+      "hint": "一次上傳本頁可用分片。",
+      "infoButtonAria": "查看本頁同步限制說明",
+      "advancedTitle": "本頁同步限制說明",
+      "advancedTip": "僅上傳本頁可用分片。若沒有可用分數、未通過資格檢查或觸發分片限流，該次上傳會被略過或擋下。",
       "noTargets": "尚無可上傳的本頁分數。",
       "button": "上傳本頁全部至天梯",
       "busy": "上傳中…"
@@ -337,18 +343,14 @@
   "tools": {
     "kicker": "工具甲板",
     "title": "工具與雲端同步",
-    "subtitle": "備份與未來計算器的輕量甲板 — 精簡、快速、無雜訊。",
-    "moduleConsole": "診斷",
-    "consoleBody": "HUD 校準、延遲探測與開發面板將固定於此槽位；本機優先原則不變。",
     "syncTitle": "雲端同步",
-    "syncBody": "Pro 會將個人 profile 與歷史紀錄以結構化文件同步至 Firestore（profile 基線 + 每筆 history；舊版單一 JSON 會在首次備份時自動遷移）。",
+    "syncBody": "Pro 可將個人資料與歷史紀錄同步到雲端。",
     "syncProOnly": "雲端同步需要 Pro — 請前往加入戰場取得授權。",
     "syncBackup": "立即備份至雲端",
     "syncRestore": "從雲端還原",
     "syncUpgrade": "解鎖 Pro",
     "calculators": {
       "title": "訓練計算器",
-      "subtitle": "快速工具：估算 1RM 與槓片配重，訓練前可直接對照。",
       "oneRm": {
         "kicker": "力量工具",
         "title": "1RM 計算機",
@@ -425,8 +427,13 @@
   },
   "assessment": {
     "title": "評測",
-    "subtitle": "每軸可輸入 0–200 的原始分（多數手動填寫仍建議 0–100；體脂軸在 FFMI 寫入後可超過 100）。首頁以六軸平均顯示總分。",
+    "subtitle": "選一項開始評測。",
     "localFirstNote": "僅本機：此畫面不連 Firebase。",
+    "referenceInfo": {
+      "title": "評測參考資料",
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料"
+    },
     "rawInputsHeading": "六軸原始輸入",
     "homeRadarHint": "雷達與總分在首頁。",
     "saveToHistory": "儲存快照到紀錄",
@@ -443,50 +450,50 @@
     "ffmi": {
       "kicker": "換算",
       "title": "FFMI（體脂軸）",
-      "body": "依首頁身體資料與體脂％計算；僅當調整後 FFMI 未超過你性別的紀錄級錨點時，才可寫入體脂雷達軸。",
+      "body": "用身體資料與體脂率計算 FFMI，並可寫入體脂軸。",
       "cta": "開啟 FFMI 頁"
     },
     "cardio": {
       "kicker": "心肺",
       "title": "心肺（Cooper / 5 公里）",
-      "body": "12 分鐘 Cooper 跑依年齡、性別對照；5 公里以完成時間計分（20 分內可超過 100 分；45 分或更慢為 0）。原始輸入僅存本機；有有效 Cooper 距離時雷達優先採用。",
+      "body": "可用 Cooper 距離或 5 公里時間計算心肺分數。",
       "cta": "開啟心肺評測"
     },
     "muscle": {
       "kicker": "身體組成",
       "title": "肌肉量（骨骼肌 SMM）",
-      "body": "輸入體脂計／InBody 等來源的骨骼肌重量（kg），對照首頁已存的體重、年齡、性別；常模表與參考專案一致，最終分數為 SMM 分數與 SM% 分數之算術平均。寫入後本機雷達肌肉軸會更新。",
+      "body": "輸入骨骼肌量（SMM）即可計算肌肉量軸分數。",
       "cta": "開啟肌肉量評測"
     },
     "explosive": {
       "kicker": "爆發",
       "title": "爆發力（跳躍／衝刺）",
-      "body": "垂直跳（cm）、立定跳遠（cm）、短跑時間（秒）— 依年齡、性別對照與參考專案相同之常模表；至少填一項，分數為各支線原始分之算術平均（可超過 100）。原始輸入僅存本機；有有效儲存時首頁雷達優先採用此軸。",
+      "body": "垂直跳／立定跳遠／短跑至少填一項即可計分。",
       "cta": "開啟爆發力評測"
     },
     "strength": {
       "kicker": "力量",
       "title": "五項力量（DOTS 錨點）",
-      "body": "臥推、深蹲、硬舉、滑輪下拉、站姿槓鈴肩推 — 每項有獨立「計算」與單項分數；下方「合併計算」可預覽雷達力量軸（各完成列之平均）再儲存。握力為獨立評測。原始輸入僅存本機。",
+      "body": "五項力量輸入重量與次數，計算後可寫入雷達。",
       "cta": "開啟力量評測"
     },
     "grip": {
       "kicker": "握力",
       "title": "握力評測",
-      "body": "以握力計峰值（kg）套用線性係數：男性 1.4x；女性在此基礎上乘 1.6x 補償。可超過 100 分，保留神話級超頻空間。",
+      "body": "輸入握力峰值（kg）即可計算握力軸分數。",
       "cta": "開啟握力評測"
     },
     "armSize": {
       "kicker": "圍度",
       "title": "臂圍評測",
-      "body": "輸入上臂圍（1–70 cm）與體脂率（3–50%）換算分數。此分數只用於臂圍排行榜，不納入首頁六軸雷達與總分。",
+      "body": "輸入上臂圍與體脂率，僅用於臂圍排行榜。",
       "cta": "開啟臂圍評測"
     }
   },
   "strength": {
     "kicker": "力量",
     "title": "力量評測",
-    "subtitle": "五項主項，依年齡、性別與體重換算（DOTS 系錨點）。每列按「計算此項」看該動作分數；按「合併計算」預覽雷達力量軸（所有同時填妥重量與次數之列之平均，1–10 次）。",
+    "subtitle": "五項主項力量評測；填重量與次數即可計算，合併結果可寫入雷達力量軸。",
     "weightLabel": "重量（kg）",
     "weightPlaceholder": "例如 100",
     "weightAria": "{{lift}} — 重量（kg）",
@@ -557,10 +564,17 @@
   "grip": {
     "kicker": "握力",
     "title": "握力評測",
-    "subtitle": "輸入握力計峰值（kg）後即可換算握力軸分數。公式為男性 1.4x；女性在此基礎乘以 1.6x 補償。分數不以 100 封頂，支援神話級超頻。",
+    "subtitle": "輸入握力峰值（kg）後即可計算握力軸分數。",
     "peakLabel": "峰值握力（kg）",
     "peakPlaceholder": "例如 65",
-    "formulaHint": "計算式：score = peakKg × 1.4（女性再乘 1.6）。模型上限 160 kg，超過時鎖定以 160 計分。分數保留 1 位小數。",
+    "referenceInfo": {
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料",
+      "title": "評測參考資料",
+      "p1": "計算式：score = peakKg × 1.4（女性再乘 1.6）。分數保留 1 位小數，並保留超過 100 的上行空間。",
+      "p2": "模型上限為 160 kg；超過時會以 160 kg 進行計分與儲存，避免極端值破壞體驗尺度。",
+      "p3": "上限對標人物：Magnus Samuelsson。此設定為產品量測保護，非競賽認證。"
+    },
     "capNoticeTitle": "輸入已超過模型上限",
     "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
     "capNoticeLegend": "上限對標人物：瑞典大力士 Magnus Samuelsson。",
@@ -599,12 +613,19 @@
   "armSize": {
     "kicker": "圍度",
     "title": "臂圍評測",
-    "subtitle": "輸入上臂圍（1–70 cm）與體脂率（3–50%）計算臂圍分數。此分數僅寫入臂圍排行榜資料，不加入六軸雷達與首頁總分。",
+    "subtitle": "輸入上臂圍與體脂率即可計算臂圍分數（僅用於臂圍排行榜）。",
     "armLabel": "上臂圍（cm）",
     "armPlaceholder": "例如 42",
     "bodyFatLabel": "體脂率（%）",
     "bodyFatPlaceholder": "例如 18",
-    "formulaHint": "輸入範圍：上臂圍 1–70 cm、體脂率 3–50%。計算式：score = (臂圍 / 50) × (1 + (20 - 體脂率) / 100) × 100；結果保留兩位小數。",
+    "referenceInfo": {
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料",
+      "title": "評測參考資料",
+      "p1": "輸入範圍：上臂圍 1–70 cm、體脂率 3–50%。超出範圍會被擋下，確保計分可比較。",
+      "p2": "計算式：score = (臂圍 / 50) × (1 + (20 - 體脂率) / 100) × 100，結果保留兩位小數。",
+      "p3": "本分數只用於臂圍排行榜，不納入首頁六軸雷達與總分。"
+    },
     "capNoticeTitle": "排行榜分數已套用單軸上限",
     "capNoticeBody": "原始分數超過單軸封頂（200）時，排行榜提交值將以 200 儲存。",
     "previewLabel": "預覽分數",
@@ -622,7 +643,7 @@
   "explosive": {
     "kicker": "爆發",
     "title": "爆發力評測",
-    "subtitle": "垂直跳、立定跳遠、短跑 — 常模表與參考專案一致。至少填一項；分數為有填寫項目各自換算後之平均。",
+    "subtitle": "垂直跳、立定跳遠、短跑三項擇一或多項輸入，系統會輸出爆發力軸分數。",
     "verticalJumpLabel": "垂直跳（cm）",
     "verticalJumpPlaceholder": "例如 55",
     "standingLongJumpLabel": "立定跳遠（cm）",
@@ -701,7 +722,7 @@
   "cardio": {
     "kicker": "心肺耐力",
     "title": "心肺評測",
-    "subtitle": "Cooper 12 分鐘跑（公尺）或 5 公里成績。Cooper 需首頁身體資料齊全；5 公里僅需完成時間。",
+    "subtitle": "可用 Cooper 12 分鐘距離或 5 公里時間計算心肺分數。",
     "tabCooper": "Cooper（12 分）",
     "tab5km": "5 公里",
     "tabsAria": "心肺測驗方式",
@@ -739,7 +760,7 @@
   "muscle": {
     "kicker": "身體組成",
     "title": "肌肉量評測",
-    "subtitle": "輸入骨骼肌量（SMM，kg）。依首頁年齡、性別對照 SMM 與骨骼肌率（SM%）標準表，兩支分數算術平均為最終肌肉量分。",
+    "subtitle": "輸入骨骼肌量（SMM）即可計算肌肉量軸分數。",
     "smmLabel": "骨骼肌量（SMM，kg）",
     "smmPlaceholder": "例如 32.5",
     "smmHint": "數值取自首頁身體資料的體重、年齡、性別。常模表涵蓋約 10–80 歲；本 App 身體資料年齡下限為 13，超過 80 歲則無對照組。",
@@ -775,7 +796,7 @@
   "ffmi": {
     "kicker": "身體組成",
     "title": "FFMI 評測",
-    "subtitle": "依首頁已存身體資料（性別、身高、體重）加上體脂％計算。若調整後 FFMI 超過紀錄級錨點，暫不允許寫入雷達，請先修正體脂或資料；未來另規劃雷達「超頻」顯示。",
+    "subtitle": "以身體資料 + 體脂％計算 FFMI 與雷達體脂軸分數。",
     "bodyFatLabel": "體脂率",
     "bodyFatPlaceholder": "例如 15",
     "bodyFatUnit": "%",

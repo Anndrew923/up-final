@@ -131,17 +131,16 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
             instanceId="strength-howto"
             expanded={howToOpen}
             onToggle={() => setHowToOpen((v) => !v)}
-            title={t('strength.howToInfo.title')}
-            toggleExpandLabel={t('strength.howToInfo.toggleExpand')}
-            toggleCollapseLabel={t('strength.howToInfo.toggleCollapse')}
+            title={t('assessment.referenceInfo.title')}
+            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
           >
             <p>{t('strength.howToInfo.intro')}</p>
             <p>{t('strength.howToInfo.reps')}</p>
             <p>{t('strength.howToInfo.repsAccuracy')}</p>
+            <p>{t('strength.fieldsHint')}</p>
             <p className="text-zinc-500">{t('strength.howToInfo.tip')}</p>
           </DisclosurePanel>
-
-          <p className="text-xs leading-relaxed text-zinc-500">{t('strength.fieldsHint')}</p>
 
           <div className="grid gap-6">
             {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {

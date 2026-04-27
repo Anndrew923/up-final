@@ -1,10 +1,11 @@
-import { type FC } from 'react';
+import { type FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
   AssessmentLadderSyncScope,
   LeaderboardSyncTarget,
 } from '../../logic/core/leaderboardSyncTargets';
 import { useLeaderboardSyncAssessmentPage } from '../../hooks/useLeaderboardSyncAssessmentPage';
+import LadderInfoSheet from './LadderInfoSheet';
 
 export interface LeaderboardAssessmentSyncBarProps {
   scope: AssessmentLadderSyncScope;
@@ -23,6 +24,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   className,
 }) => {
   const { t } = useTranslation('common');
+  const [infoOpen, setInfoOpen] = useState(false);
   const { syncPage, busy, summary, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAssessmentPage({
       scope,
@@ -48,6 +50,14 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/60 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100"
+          aria-label={t('ladder.assessmentSync.infoButtonAria')}
+          onClick={() => setInfoOpen(true)}
+        >
+          ⓘ
+        </button>
+        <button
+          type="button"
           className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
           onClick={() => {
@@ -63,6 +73,12 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
           </button>
         ) : null}
       </div>
+      <LadderInfoSheet
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        title={t('ladder.assessmentSync.advancedTitle')}
+        body={t('ladder.assessmentSync.advancedTip')}
+      />
 
       {summary && summary.attempted > 0 ? (
         <p className="text-sm text-zinc-400" role="status">

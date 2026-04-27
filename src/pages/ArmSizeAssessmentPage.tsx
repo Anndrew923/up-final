@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
@@ -13,6 +14,7 @@ export interface ArmSizeAssessmentPageProps {
 
 const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const [referenceOpen, setReferenceOpen] = useState(false);
   const persistedArmSizeScore = useScoreStore((s) => s.scores.armSize);
   const {
     armCircumferenceInput,
@@ -54,6 +56,19 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         </header>
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <DisclosurePanel
+            instanceId="arm-size-reference-info"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+            title={t('assessment.referenceInfo.title')}
+            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
+          >
+            <p>{t('armSize.referenceInfo.p1')}</p>
+            <p>{t('armSize.referenceInfo.p2')}</p>
+            <p className="text-zinc-500">{t('armSize.referenceInfo.p3')}</p>
+          </DisclosurePanel>
+
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-cm">
             <span className="font-medium text-zinc-200">{t('armSize.armLabel')}</span>
             <input
@@ -93,8 +108,6 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
               aria-label={t('armSize.bodyFatLabel')}
             />
           </label>
-
-          <p className="text-xs leading-relaxed text-zinc-500">{t('armSize.formulaHint')}</p>
 
           {limitedByAxisCap ? (
             <div

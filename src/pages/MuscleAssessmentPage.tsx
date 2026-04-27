@@ -89,10 +89,11 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             instanceId="muscle-standards-info"
             expanded={standardsInfoOpen}
             onToggle={() => setStandardsInfoOpen((v) => !v)}
-            title={t('muscle.standardsInfo.title')}
-            toggleExpandLabel={t('muscle.standardsInfo.toggleExpand')}
-            toggleCollapseLabel={t('muscle.standardsInfo.toggleCollapse')}
+            title={t('assessment.referenceInfo.title')}
+            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
           >
+            <p>{t('muscle.smmHint')}</p>
             <p>{t('muscle.standardsInfo.p1')}</p>
             <p>{t('muscle.standardsInfo.p2')}</p>
             <p>{t('muscle.standardsInfo.p3')}</p>
@@ -121,7 +122,6 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
                 aria-invalid={scoreLocked}
               />
             </label>
-            <p className="text-xs leading-relaxed text-zinc-500">{t('muscle.smmHint')}</p>
           </div>
 
           {(scoreLocked || errorKey === 'smm-exceeds-ceiling') && smmCeilingKg != null ? (

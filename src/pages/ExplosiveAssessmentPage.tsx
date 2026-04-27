@@ -21,8 +21,7 @@ function formatExplosiveAnchorSprintS(n: number): string {
 
 const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
-  const [howToOpen, setHowToOpen] = useState(false);
-  const [standardsOpen, setStandardsOpen] = useState(false);
+  const [referenceOpen, setReferenceOpen] = useState(false);
 
   const {
     profile,
@@ -98,28 +97,19 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <DisclosurePanel
-            instanceId="explosive-howto"
-            expanded={howToOpen}
-            onToggle={() => setHowToOpen((v) => !v)}
-            title={t('explosive.howToInfo.title')}
-            toggleExpandLabel={t('explosive.howToInfo.toggleExpand')}
-            toggleCollapseLabel={t('explosive.howToInfo.toggleCollapse')}
-          >
-            <p>{t('explosive.howToInfo.verticalJump')}</p>
-            <p>{t('explosive.howToInfo.standingLongJump')}</p>
-            <p>{t('explosive.howToInfo.sprint')}</p>
-            <p className="text-zinc-500">{t('explosive.howToInfo.tip')}</p>
-          </DisclosurePanel>
-
-          <DisclosurePanel
-            instanceId="explosive-standards"
-            expanded={standardsOpen}
-            onToggle={() => setStandardsOpen((v) => !v)}
-            title={t('explosive.standardsInfo.title')}
-            toggleExpandLabel={t('explosive.standardsInfo.toggleExpand')}
-            toggleCollapseLabel={t('explosive.standardsInfo.toggleCollapse')}
+            instanceId="explosive-reference"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+            title={t('assessment.referenceInfo.title')}
+            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
             panelBodyClassName="space-y-3 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400"
           >
+            <p className="font-medium text-zinc-300">{t('explosive.howToInfo.verticalJump')}</p>
+            <p>{t('explosive.howToInfo.standingLongJump')}</p>
+            <p>{t('explosive.howToInfo.sprint')}</p>
+            <p>{t('explosive.fieldsHint')}</p>
+            <p className="text-zinc-500">{t('explosive.howToInfo.tip')}</p>
             <p>{t('explosive.standardsInfo.disclaimer')}</p>
             {powerNormAnchors ? (
               <>
@@ -227,8 +217,6 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
               />
             </label>
           </div>
-          <p className="text-xs leading-relaxed text-zinc-500">{t('explosive.fieldsHint')}</p>
-
           {showCapNoticeBlock ? (
             <div
               className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/95"

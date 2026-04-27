@@ -121,9 +121,9 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 instanceId="cooper-info"
                 expanded={cooperInfoOpen}
                 onToggle={() => setCooperInfoOpen((v) => !v)}
-                title={t('cardio.cooperInfo.title')}
-                toggleExpandLabel={t('cardio.cooperInfo.toggleExpand')}
-                toggleCollapseLabel={t('cardio.cooperInfo.toggleCollapse')}
+                title={t('assessment.referenceInfo.title')}
+                toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+                toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
               >
                 <p>{t('cardio.cooperInfo.p1')}</p>
                 <p>{t('cardio.cooperInfo.p2')}</p>

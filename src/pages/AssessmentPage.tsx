@@ -43,11 +43,10 @@ export default function AssessmentPage() {
   return (
     <main className="ui-shell max-w-4xl space-y-6">
       <section className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-100">
           {t('assessment.title', { ns: 'common' })}
         </h1>
         <p className="text-sm text-zinc-400">{t('assessment.subtitle', { ns: 'common' })}</p>
-        <p className="text-xs text-zinc-500">{t('assessment.localFirstNote', { ns: 'common' })}</p>
       </section>
 
       <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
