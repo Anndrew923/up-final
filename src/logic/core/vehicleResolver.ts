@@ -21,9 +21,9 @@ function standardDeviation(values: readonly number[]): number {
   return Math.sqrt(variance);
 }
 
-function getDominantAxis(radarData: readonly RadarPoint[]): RadarPoint['key'] {
+function getDominantAxis(radarData: readonly RadarPoint[]): (typeof SIX_AXIS_METRICS)[number] {
   const scoreByAxis = new Map(radarData.map((point) => [point.key, point.value] as const));
-  let dominant = SIX_AXIS_METRICS[0];
+  let dominant: (typeof SIX_AXIS_METRICS)[number] = SIX_AXIS_METRICS[0];
   let dominantScore = Number.NEGATIVE_INFINITY;
   for (const axis of SIX_AXIS_METRICS) {
     const score = scoreByAxis.get(axis) ?? 0;
