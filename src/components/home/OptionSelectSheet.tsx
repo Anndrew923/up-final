@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 
 export interface OptionSelectItem<T extends string> {
   value: T;
@@ -59,7 +60,7 @@ export default function OptionSelectSheet<T extends string>({
     typeof document !== 'undefined' &&
     createPortal(
       <div
-        className="fixed inset-0 z-[260] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
+        className={`fixed inset-0 ${Z_INDEX_CLASS.optionSelectSheet} flex flex-col justify-end overflow-y-auto overscroll-y-contain pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
         role="presentation"
       >
         <button
@@ -72,14 +73,14 @@ export default function OptionSelectSheet<T extends string>({
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="relative z-10 w-full max-w-md rounded-t-2xl border border-zinc-700 bg-bg-card px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-panel sm:rounded-2xl sm:pb-6"
+          className="relative z-10 flex w-full max-w-md max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col overflow-y-auto rounded-t-2xl border border-zinc-700 bg-bg-card px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-panel [-webkit-overflow-scrolling:touch] sm:max-h-[min(88dvh,42rem)] sm:rounded-2xl sm:pb-6"
           onClick={(e) => e.stopPropagation()}
         >
           <h2 id={titleId} className="text-lg font-semibold tracking-tight text-zinc-50">
             {title}
           </h2>
 
-          <div className="mt-5 max-h-[56vh] overflow-y-auto pr-1">
+          <div className="mt-5 flex-1 overflow-y-auto pr-1">
             <div className="flex flex-col gap-2">
               {allowEmpty ? (
                 <button

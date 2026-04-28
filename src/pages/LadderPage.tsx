@@ -1,50 +1,32 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { createPortal } from 'react-dom';
-import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import LadderUserPreviewModal from '../components/ladder/LadderUserPreviewModal';
 import LadderFloatingRankBar from '../components/ladder/LadderFloatingRankBar';
 import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
+import LadderFilterSheet from '../components/ladder/LadderFilterSheet';
 import { ROUTES } from '../config/routes';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
 import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
 import { useLadderLeaderboard } from '../hooks/useLadderLeaderboard';
 import { useLeaderboardAccess } from '../hooks/useLeaderboardAccess';
+import { useLadderFiltersDraft } from '../hooks/useLadderFiltersDraft';
 import { resolveEffectiveLadderCityFilter, resolveEffectiveLadderDistrictFilter } from '../logic/core/ladderFilters';
 import {
   divisionUsesProjectFilter,
-  getDefaultProjectForDivision,
   getLeaderboardShardId,
   getProjectOptionsForDivision,
-  LADDER_DIVISION_IDS,
-  LADDER_PROJECT_NONE,
-  type LadderDivisionId,
   type LeaderboardShardId,
 } from '../logic/core/ladderShards';
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
-import type { LadderAgeBucket, LadderHeightBucket, LadderJobCategory, LadderWeightBucket } from '../types/ladderProfile';
 import { getLadderUserPreview, type LadderUserPreview } from '../services/leaderboardPreviewService';
 import { useShallow } from 'zustand/react/shallow';
 import type { EntitlementState } from '../types/entitlement';
-
-interface LadderFilterDraft {
-  division: LadderDivisionId;
-  filterProject: string;
-  gender: 'all' | 'male' | 'female';
-  ageBucket: LadderAgeBucket | 'all';
-  heightBucket: LadderHeightBucket | 'all';
-  weightBucket: LadderWeightBucket | 'all';
-  jobCategory: LadderJobCategory | 'all';
-  countryCode: 'all' | LadderCountryCode;
-  city: string | 'all';
-  district: string | 'all';
-}
 
 function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: number, t: TFunction): string {
   if (!Number.isFinite(scoreBest)) return '—';
@@ -88,27 +70,12 @@ export default function LadderPage() {
   const queuePromotion = useLeaderboardCeremonyStore((state) => state.queuePromotion);
   const clearPromotion = useLeaderboardCeremonyStore((state) => state.clearPromotion);
   const promotionBanner = useLeaderboardCeremonyStore((state) => state.pendingPromotion);
-  const [appliedFilters, setAppliedFilters] = useState<LadderFilterDraft>({
-    division: 'ladderScore',
-    filterProject: getDefaultProjectForDivision('ladderScore'),
-    gender: 'all',
-    ageBucket: 'all',
-    heightBucket: 'all',
-    weightBucket: 'all',
-    jobCategory: 'all',
-    countryCode: 'all',
-    city: 'all',
-    district: 'all',
-  });
-  const [draftFilters, setDraftFilters] = useState<LadderFilterDraft>(appliedFilters);
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [ladderRefreshNonce, setLadderRefreshNonce] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 25;
   const previousRankRef = useRef<number | null>(null);
   const pendingScrollUidRef = useRef<string | null>(null);
   const rowRefs = useRef(new Map<string, HTMLLIElement>());
-  const filterSheetTitleId = useId();
   const authUid = useAuthStore((state) => state.uid);
   const entitlement = useEntitlementStore(
     useShallow(
@@ -133,72 +100,64 @@ export default function LadderPage() {
     setLadderRefreshNonce((n) => n + 1);
   }, []);
 
+  const {
+    applied,
+    draft,
+    sheetOpen,
+    openSheet,
+    closeSheet,
+    hasUnappliedChanges,
+    activeAppliedFilterCount,
+    draftProjectControlValue,
+    appliedProjectControlValue,
+    setDraftDivision,
+    setDraftProject,
+    setDraftGender,
+    setDraftAgeBucket,
+    setDraftHeightBucket,
+    setDraftWeightBucket,
+    setDraftJobCategory,
+    setDraftCountryCode,
+    setDraftCity,
+    setDraftDistrict,
+    clearDraftFilters,
+    applyDraft,
+  } = useLadderFiltersDraft({
+    onAppliedChange: () => {
+      setCurrentPage(1);
+    },
+  });
+
   const projectSheetOptions = useMemo(() => {
-    if (!divisionUsesProjectFilter(draftFilters.division)) return [];
-    return getProjectOptionsForDivision(draftFilters.division).map((o) => ({
+    if (!divisionUsesProjectFilter(draft.division)) return [];
+    return getProjectOptionsForDivision(draft.division).map((o) => ({
       value: o.value,
       label: t(o.labelKey, { ns: 'common' }),
     }));
-  }, [draftFilters.division, t]);
-
-  const projectControlValue = useMemo(() => {
-    if (!projectSheetOptions.length) return '';
-    const p =
-      draftFilters.filterProject && draftFilters.filterProject !== LADDER_PROJECT_NONE
-        ? draftFilters.filterProject
-        : getDefaultProjectForDivision(draftFilters.division);
-    if (projectSheetOptions.some((o) => o.value === p)) return p;
-    return projectSheetOptions[0]!.value;
-  }, [draftFilters.division, draftFilters.filterProject, projectSheetOptions]);
+  }, [draft.division, t]);
 
   /** Align Firestore shard with the sub-ranking `<select>` (resolved default when state is still `__none__`). */
-  const appliedProjectControlValue = useMemo(() => {
-    const options = divisionUsesProjectFilter(appliedFilters.division)
-      ? getProjectOptionsForDivision(appliedFilters.division).map((o) => o.value)
-      : [];
-    if (!options.length) return appliedFilters.filterProject;
-    const p =
-      appliedFilters.filterProject && appliedFilters.filterProject !== LADDER_PROJECT_NONE
-        ? appliedFilters.filterProject
-        : getDefaultProjectForDivision(appliedFilters.division);
-    if (options.includes(p)) return p;
-    return options[0]!;
-  }, [appliedFilters.division, appliedFilters.filterProject]);
-
   const shardProjectParam =
-    divisionUsesProjectFilter(appliedFilters.division) ? appliedProjectControlValue : appliedFilters.filterProject;
+    divisionUsesProjectFilter(applied.division) ? appliedProjectControlValue : applied.filterProject;
 
   const shardId = useMemo(
-    () => getLeaderboardShardId(appliedFilters.division, shardProjectParam),
-    [appliedFilters.division, shardProjectParam]
+    () => getLeaderboardShardId(applied.division, shardProjectParam),
+    [applied.division, shardProjectParam]
   );
-
-  const activeDetailedFilterCount = useMemo(() => {
-    let n = 0;
-    if (appliedFilters.gender !== 'all') n++;
-    if (appliedFilters.ageBucket !== 'all') n++;
-    if (appliedFilters.heightBucket !== 'all') n++;
-    if (appliedFilters.weightBucket !== 'all') n++;
-    if (appliedFilters.jobCategory !== 'all') n++;
-    if (appliedFilters.countryCode !== 'all') n++;
-    if (appliedFilters.city !== 'all') n++;
-    if (appliedFilters.district !== 'all') n++;
-    return n;
-  }, [appliedFilters]);
 
   /** Must be declared before `useLadderLeaderboard` — passing it earlier hits TDZ (`const` not initialized). */
   const initialFilters = useMemo(
     () => ({
-      gender: appliedFilters.gender,
-      ageBucket: appliedFilters.ageBucket,
-      heightBucket: appliedFilters.heightBucket,
-      weightBucket: appliedFilters.weightBucket,
-      jobCategory: appliedFilters.jobCategory,
-      countryCode: appliedFilters.countryCode,
-      city: appliedFilters.city,
-      district: appliedFilters.district,
+      gender: applied.gender,
+      ageBucket: applied.ageBucket,
+      heightBucket: applied.heightBucket,
+      weightBucket: applied.weightBucket,
+      jobCategory: applied.jobCategory,
+      countryCode: applied.countryCode,
+      city: applied.city,
+      district: applied.district,
     }),
-    [appliedFilters]
+    [applied]
   );
 
   const { items, datasetItems, loading, error, myEntry, myRank } = useLadderLeaderboard(shardId, initialFilters, {
@@ -222,23 +181,6 @@ export default function LadderPage() {
     pendingScrollUidRef.current = null;
   }, [items, loading]);
 
-  useEffect(() => {
-    if (!filterSheetOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [filterSheetOpen]);
-
-  useEffect(() => {
-    if (!filterSheetOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setFilterSheetOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [filterSheetOpen]);
   const countryCodesInDataset = useMemo(() => {
     const next = new Set<LadderCountryCode>();
     for (const row of datasetItems) {
@@ -248,24 +190,24 @@ export default function LadderPage() {
   }, [datasetItems]);
 
   const locationRows = useMemo(() => {
-    if (draftFilters.countryCode === 'all') return [];
-    return datasetItems.filter((row) => row.countryCode === draftFilters.countryCode);
-  }, [datasetItems, draftFilters.countryCode]);
+    if (draft.countryCode === 'all') return [];
+    return datasetItems.filter((row) => row.countryCode === draft.countryCode);
+  }, [datasetItems, draft.countryCode]);
 
   const cityOptions = useMemo(() => {
-    if (draftFilters.countryCode === 'all') return [];
+    if (draft.countryCode === 'all') return [];
     return Array.from(
       new Set(locationRows.map((row) => row.city).filter((x): x is string => Boolean(x)))
     ).sort((a, b) => a.localeCompare(b));
-  }, [locationRows, draftFilters.countryCode]);
+  }, [locationRows, draft.countryCode]);
 
   const effectiveCityFilter = useMemo(
-    () => resolveEffectiveLadderCityFilter(draftFilters.city, cityOptions),
-    [draftFilters.city, cityOptions]
+    () => resolveEffectiveLadderCityFilter(draft.city, cityOptions),
+    [draft.city, cityOptions]
   );
 
   const districtOptions = useMemo(() => {
-    if (draftFilters.countryCode === 'all') return [];
+    if (draft.countryCode === 'all') return [];
     const base =
       effectiveCityFilter === 'all'
         ? locationRows
@@ -273,11 +215,11 @@ export default function LadderPage() {
     return Array.from(
       new Set(base.map((row) => row.district).filter((x): x is string => Boolean(x)))
     ).sort((a, b) => a.localeCompare(b));
-  }, [locationRows, effectiveCityFilter, draftFilters.countryCode]);
+  }, [locationRows, effectiveCityFilter, draft.countryCode]);
 
   const effectiveDistrictFilter = useMemo(
-    () => resolveEffectiveLadderDistrictFilter(draftFilters.district, districtOptions),
-    [draftFilters.district, districtOptions]
+    () => resolveEffectiveLadderDistrictFilter(draft.district, districtOptions),
+    [draft.district, districtOptions]
   );
 
   const {
@@ -291,36 +233,8 @@ export default function LadderPage() {
     twDistrictSelectOptions,
   } = useLadderFilterSheetOptions(cityOptions, districtOptions, {
     countryCodes: countryCodesInDataset,
-    locationLabelsTw: draftFilters.countryCode === 'TW',
+    locationLabelsTw: draft.countryCode === 'TW',
   });
-
-  const openFilterSheet = useCallback(() => {
-    setDraftFilters(appliedFilters);
-    setFilterSheetOpen(true);
-  }, [appliedFilters]);
-
-  const applyFilterSheet = useCallback(() => {
-    setAppliedFilters({
-      ...draftFilters,
-      filterProject: projectSheetOptions.length > 0 ? projectControlValue : draftFilters.filterProject,
-    });
-    setCurrentPage(1);
-    setFilterSheetOpen(false);
-  }, [draftFilters, projectControlValue, projectSheetOptions.length]);
-
-  const clearDraftFilters = useCallback(() => {
-    setDraftFilters((prev) => ({
-      ...prev,
-      gender: 'all',
-      ageBucket: 'all',
-      heightBucket: 'all',
-      weightBucket: 'all',
-      jobCategory: 'all',
-      countryCode: 'all',
-      city: 'all',
-      district: 'all',
-    }));
-  }, []);
 
   useEffect(() => {
     if (!canEnter) {
@@ -428,228 +342,55 @@ export default function LadderPage() {
             <button
               type="button"
               className="inline-flex items-center rounded-full border border-accent-info/35 bg-zinc-950/70 px-3 py-1.5 text-xs font-semibold tracking-wide text-accent-info transition hover:border-accent-info/60 hover:text-cyan-300"
-              onClick={openFilterSheet}
+              onClick={openSheet}
             >
               {t('ladder.moreFilters', { ns: 'common' })}
-              {activeDetailedFilterCount > 0 ? (
+              {activeAppliedFilterCount > 0 ? (
                 <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">
-                  {activeDetailedFilterCount}
+                  {activeAppliedFilterCount}
                 </span>
               ) : null}
             </button>
           </div>
         </div>
       </div>
-
-      {filterSheetOpen && typeof document !== 'undefined'
-        ? createPortal(
-            <div
-              className="fixed inset-0 z-[230] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
-              role="presentation"
-            >
-              <button
-                type="button"
-                className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
-                aria-label={t('cancel', { ns: 'common' })}
-                onClick={() => setFilterSheetOpen(false)}
-              />
-              <section
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby={filterSheetTitleId}
-                className="relative z-10 w-full max-w-3xl rounded-t-2xl border border-zinc-700 bg-bg-card px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-panel sm:rounded-2xl sm:pb-6"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <h2 id={filterSheetTitleId} className="text-base font-semibold tracking-tight text-zinc-50">
-                      {t('ladder.filters.title', { ns: 'common' })}
-                    </h2>
-                    <button type="button" className="ui-btn py-1.5 text-xs" onClick={() => setFilterSheetOpen(false)}>
-                      {t('cancel', { ns: 'common' })}
-                    </button>
-                  </div>
-
-                  <LeaderboardSyncAllBar onFinished={bumpLadderRefresh} />
-
-                  <nav
-                    className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                    aria-label={t('ladder.divisionPickerTitle', { ns: 'common' })}
-                  >
-                    {LADDER_DIVISION_IDS.map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        title={t(`ladder.divisions.${d}.desc`, { ns: 'common' })}
-                        aria-current={draftFilters.division === d ? 'true' : undefined}
-                        onClick={() =>
-                          setDraftFilters((prev) => ({
-                            ...prev,
-                            division: d,
-                            filterProject: getDefaultProjectForDivision(d),
-                          }))
-                        }
-                        className={`shrink-0 px-3 py-2 text-xs font-semibold uppercase tracking-widest transition-all ${
-                          draftFilters.division === d
-                            ? 'border-b-2 border-red-500 bg-gradient-to-t from-red-500/15 to-transparent text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]'
-                            : 'border-b-2 border-zinc-800 bg-transparent text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
-                        }`}
-                      >
-                        {t(`ladder.divisions.${d}.label`, { ns: 'common' })}
-                      </button>
-                    ))}
-                  </nav>
-
-                  {projectSheetOptions.length > 1 ? (
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.projectFilterLabel', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={projectControlValue}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({
-                            ...prev,
-                            filterProject:
-                              next === '' ? getDefaultProjectForDivision(draftFilters.division) : next,
-                          }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.projectFilterLabel', { ns: 'common' })}
-                        options={projectSheetOptions}
-                        allowEmpty={false}
-                      />
-                    </label>
-                  ) : null}
-
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.filters.gender', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={draftFilters.gender === 'all' ? '' : draftFilters.gender}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({ ...prev, gender: next === '' ? 'all' : next }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.filters.filterSheetTitles.gender', { ns: 'common' })}
-                        options={genderOptions}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.filters.ageBucket', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={draftFilters.ageBucket === 'all' ? '' : draftFilters.ageBucket}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({ ...prev, ageBucket: next === '' ? 'all' : next }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.filters.filterSheetTitles.ageBucket', { ns: 'common' })}
-                        options={ageBucketOptions}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.filters.heightBucket', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={draftFilters.heightBucket === 'all' ? '' : draftFilters.heightBucket}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({ ...prev, heightBucket: next === '' ? 'all' : next }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.filters.filterSheetTitles.heightBucket', { ns: 'common' })}
-                        options={heightBucketOptions}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.filters.weightBucket', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={draftFilters.weightBucket === 'all' ? '' : draftFilters.weightBucket}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({ ...prev, weightBucket: next === '' ? 'all' : next }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.filters.filterSheetTitles.weightBucket', { ns: 'common' })}
-                        options={weightBucketOptions}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                      <span className="font-medium text-zinc-300">{t('ladder.filters.jobCategory', { ns: 'common' })}</span>
-                      <OptionSelectSheet
-                        value={draftFilters.jobCategory === 'all' ? '' : draftFilters.jobCategory}
-                        onChange={(next) => {
-                          setDraftFilters((prev) => ({ ...prev, jobCategory: next === '' ? 'all' : next }));
-                        }}
-                        placeholder={t('ladder.filters.all', { ns: 'common' })}
-                        title={t('ladder.filters.filterSheetTitles.jobCategory', { ns: 'common' })}
-                        options={jobCategoryOptions}
-                      />
-                    </label>
-                    {countryCodesInDataset.length > 0 ? (
-                      <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                        <span className="font-medium text-zinc-300">{t('ladder.filters.country', { ns: 'common' })}</span>
-                        <OptionSelectSheet
-                          value={draftFilters.countryCode === 'all' ? '' : draftFilters.countryCode}
-                          onChange={(next) => {
-                            setDraftFilters((prev) => ({
-                              ...prev,
-                              countryCode: next === '' ? 'all' : isLadderCountryCode(next) ? next : 'all',
-                              city: 'all',
-                              district: 'all',
-                            }));
-                          }}
-                          placeholder={t('ladder.filters.all', { ns: 'common' })}
-                          title={t('ladder.filters.filterSheetTitles.country', { ns: 'common' })}
-                          options={countrySelectOptions}
-                        />
-                      </label>
-                    ) : null}
-                    {draftFilters.countryCode !== 'all' && cityOptions.length > 0 ? (
-                      <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                        <span className="font-medium text-zinc-300">{t('ladder.filters.city', { ns: 'common' })}</span>
-                        <OptionSelectSheet
-                          value={effectiveCityFilter === 'all' ? '' : effectiveCityFilter}
-                          onChange={(next) => {
-                            setDraftFilters((prev) => ({
-                              ...prev,
-                              city: next === '' ? 'all' : next,
-                              district: 'all',
-                            }));
-                          }}
-                          placeholder={t('ladder.filters.all', { ns: 'common' })}
-                          title={t('ladder.filters.filterSheetTitles.city', { ns: 'common' })}
-                          options={twCitySelectOptions}
-                        />
-                      </label>
-                    ) : null}
-                    {draftFilters.countryCode !== 'all' && districtOptions.length > 0 ? (
-                      <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                        <span className="font-medium text-zinc-300">{t('ladder.filters.district', { ns: 'common' })}</span>
-                        <OptionSelectSheet
-                          value={effectiveDistrictFilter === 'all' ? '' : effectiveDistrictFilter}
-                          onChange={(next) => {
-                            setDraftFilters((prev) => ({ ...prev, district: next === '' ? 'all' : next }));
-                          }}
-                          placeholder={t('ladder.filters.all', { ns: 'common' })}
-                          title={t('ladder.filters.filterSheetTitles.district', { ns: 'common' })}
-                          options={twDistrictSelectOptions}
-                        />
-                      </label>
-                    ) : null}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 border-t border-zinc-800/80 pt-3">
-                    <button type="button" className="ui-btn py-2 text-xs" onClick={clearDraftFilters}>
-                      {t('ladder.filters.clear', { ns: 'common' })}
-                    </button>
-                    <button
-                      type="button"
-                      className="ui-btn border-accent-info/35 py-2 text-xs text-accent-info"
-                      onClick={applyFilterSheet}
-                    >
-                      {t('ladder.filters.apply', { ns: 'common' })}
-                    </button>
-                  </div>
-                </div>
-              </section>
-            </div>,
-            document.body
-          )
-        : null}
+      <LadderFilterSheet
+        open={sheetOpen}
+        values={{ ...draft, filterProject: draftProjectControlValue }}
+        activeFilterCount={activeAppliedFilterCount}
+        hasUnappliedChanges={hasUnappliedChanges}
+        projectOptions={projectSheetOptions}
+        genderOptions={genderOptions}
+        ageBucketOptions={ageBucketOptions}
+        heightBucketOptions={heightBucketOptions}
+        weightBucketOptions={weightBucketOptions}
+        jobCategoryOptions={jobCategoryOptions}
+        countrySelectOptions={countrySelectOptions}
+        citySelectOptions={twCitySelectOptions}
+        districtSelectOptions={twDistrictSelectOptions}
+        effectiveCityValue={effectiveCityFilter}
+        effectiveDistrictValue={effectiveDistrictFilter}
+        syncAllSlot={<LeaderboardSyncAllBar onFinished={bumpLadderRefresh} />}
+        onClose={closeSheet}
+        onApply={applyDraft}
+        onClear={clearDraftFilters}
+        onDivisionChange={setDraftDivision}
+        onProjectChange={setDraftProject}
+        onGenderChange={setDraftGender}
+        onAgeBucketChange={setDraftAgeBucket}
+        onHeightBucketChange={setDraftHeightBucket}
+        onWeightBucketChange={setDraftWeightBucket}
+        onJobCategoryChange={setDraftJobCategory}
+        onCountryCodeChange={(next) => {
+          if (next === 'all') {
+            setDraftCountryCode('all');
+            return;
+          }
+          setDraftCountryCode(isLadderCountryCode(next) ? next : 'all');
+        }}
+        onCityChange={setDraftCity}
+        onDistrictChange={setDraftDistrict}
+      />
 
       {promotionBanner ? (
         <section className="rounded-lg border border-amber-400/35 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
