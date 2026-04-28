@@ -65,7 +65,7 @@ describe('applyExplosiveInputCaps', () => {
       standingLongJumpCm: null,
       sprintSeconds: 8,
     });
-    expect(r.sprintSeconds).toBe(9.5);
+    expect(r.sprintSeconds).toBe(9.4);
     expect(r.capApplied.sprint).toBe(true);
   });
 
@@ -75,9 +75,9 @@ describe('applyExplosiveInputCaps', () => {
       standingLongJumpCm: 400,
       sprintSeconds: 9,
     });
-    expect(r.verticalJumpCm).toBe(100);
-    expect(r.standingLongJumpCm).toBe(320);
-    expect(r.sprintSeconds).toBe(10.4);
+    expect(r.verticalJumpCm).toBe(135);
+    expect(r.standingLongJumpCm).toBe(390);
+    expect(r.sprintSeconds).toBe(9.4);
     expect(r.capApplied).toEqual({ verticalJump: true, standingLongJump: true, sprint: true });
   });
 

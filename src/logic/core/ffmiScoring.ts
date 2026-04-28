@@ -4,8 +4,8 @@
  * the anchor, {@link FfmiScoringBreakdown.allowsRadarSubmit} is false — do not write to radar.
  */
 
-export const FFMI_HUMAN_CAP_MALE = 38;
-export const FFMI_HUMAN_CAP_FEMALE = 30;
+export const FFMI_HUMAN_CAP_MALE = 40;
+export const FFMI_HUMAN_CAP_FEMALE = 32;
 
 /** Aligned with FFMI page validation — single source for bounds checks. */
 export const FFMI_BODY_FAT_INPUT_MIN_PCT = 3;

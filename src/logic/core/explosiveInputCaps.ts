@@ -6,10 +6,10 @@
  */
 import type { PhysicalProfile } from '../../types/userProfile';
 
-export const EXPLOSIVE_VERTICAL_JUMP_MAX_CM = { male: 120, female: 100 } as const;
-export const EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM = { male: 380, female: 320 } as const;
+export const EXPLOSIVE_VERTICAL_JUMP_MAX_CM = { male: 135, female: 135 } as const;
+export const EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM = { male: 390, female: 390 } as const;
 /** 100 m — fastest time (s) the model accepts; faster inputs are floored here (lower s = better). */
-export const EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS = { male: 9.5, female: 10.4 } as const; // female: 10.40 s class
+export const EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS = { male: 9.4, female: 9.4 } as const;
 
 export type ExplosiveCapApplied = {
   verticalJump: boolean;

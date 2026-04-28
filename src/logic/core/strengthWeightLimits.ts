@@ -15,11 +15,11 @@
 import type { StrengthLiftKey } from '../../types/strengthInputs';
 
 export const STRENGTH_WEIGHT_LIMIT_KG = {
-  benchPress: 360,
-  squat: 500,
-  deadlift: 505,
-  shoulderPress: 230,
-  latPulldown: 200,
+  benchPress: 370,
+  squat: 510,
+  deadlift: 550,
+  shoulderPress: 245,
+  latPulldown: 225,
 } as const satisfies Record<StrengthLiftKey, number>;
 
 export function clampStrengthWeightKg(

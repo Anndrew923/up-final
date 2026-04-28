@@ -15,8 +15,8 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
  * Cooper 12-minute distance ceiling for scoring (meters), aligned with elite 5,000 m track context.
  * Inputs above this are clamped so radar scores stay within a plausible field-test band.
  */
-export const COOPER_MAX_DISTANCE_MALE_METERS = 4800;
-export const COOPER_MAX_DISTANCE_FEMALE_METERS = 4300;
+export const COOPER_MAX_DISTANCE_MALE_METERS = 4900;
+export const COOPER_MAX_DISTANCE_FEMALE_METERS = 4400;
 
 /** Upper distance bound used when converting Cooper meters → score (matches clamp in calculateCooperScore). */
 export function getCooperMaxDistanceMetersForGender(gender: string | null | undefined): number {
@@ -92,22 +92,34 @@ export function calculateCooperScore(input: {
   return round2(Math.max(0, calculatedScore));
 }
 
-/** 5 km score: ≤20 min → bonus above 100; ≥45 min → 0; linear between. */
-export function calculate5KmScore(input: { totalSeconds: number }): number {
+/**
+ * 5 km score: ≤20 min → bonus above 100; ≥45 min → 0; linear between.
+ *
+ * Inputs faster than current WR-aligned floors are floored to keep bonuses realistic while
+ * still ensuring top-tier performances receive >100 (never excluded / forced to 0).
+ */
+export function calculate5KmScore(input: {
+  totalSeconds: number;
+  gender?: string | null | undefined;
+}): number {
   const sec = parseInt(String(input.totalSeconds), 10);
   if (!sec || sec <= 0) return 0;
+
+  const isFemale = normalizeGenderForCardio(input.gender) === 'female';
+  const maxPerformanceFloorSeconds = isFemale ? 825 : 740;
+  const effectiveSeconds = Math.max(sec, maxPerformanceFloorSeconds);
 
   const benchmarkSeconds = 20 * 60;
   const baselineSeconds = 45 * 60;
 
-  if (sec <= benchmarkSeconds) {
-    const bonus = (benchmarkSeconds - sec) / 10;
+  if (effectiveSeconds <= benchmarkSeconds) {
+    const bonus = (benchmarkSeconds - effectiveSeconds) / 10;
     return round2(100 + bonus);
   }
-  if (sec >= baselineSeconds) return 0;
+  if (effectiveSeconds >= baselineSeconds) return 0;
 
   const range = baselineSeconds - benchmarkSeconds;
-  const diff = sec - benchmarkSeconds;
+  const diff = effectiveSeconds - benchmarkSeconds;
   const score = 100 - (diff / range) * 100;
   return round2(score);
 }
@@ -137,7 +149,7 @@ export function resolveCardioScoreForDisplay(
   const fiveKm = (() => {
     const totalSeconds = Number(inputs.run_5km?.totalSeconds);
     if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return null;
-    const computed = calculate5KmScore({ totalSeconds });
+    const computed = calculate5KmScore({ totalSeconds, gender: profile?.gender });
     return Number.isFinite(computed) ? computed : null;
   })();
 
@@ -213,5 +225,8 @@ export function tryComputeCardioAssessmentScore(args: {
 
   const split = parse5KmFieldSplit(args.runMinutesInput, args.runSecondsInput);
   if (!split) return { ok: false, error: 'invalid-5km-time' };
-  return { ok: true, score: calculate5KmScore({ totalSeconds: split.totalSeconds }) };
+  return {
+    ok: true,
+    score: calculate5KmScore({ totalSeconds: split.totalSeconds, gender: args.profile?.gender }),
+  };
 }

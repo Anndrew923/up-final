@@ -7,7 +7,7 @@ import { clampScoreMapValue } from './scoring';
 export const GRIP_MALE_MULTIPLIER = 1.4;
 export const GRIP_FEMALE_COMPENSATION = 1.6;
 /** Product model ceiling aligned with Magnus Samuelsson-level public records context. */
-export const GRIP_MAX_PEAK_KG = 160;
+export const GRIP_MAX_PEAK_KG = 175;
 
 export type GripRankMetadata = {
   rankKey:

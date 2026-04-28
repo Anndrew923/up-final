@@ -36,8 +36,8 @@ export function getMuscleAgeRange(age: number | string | null | undefined): Musc
 }
 
 /** SMM (kg) ceiling — above this we do not score or merge (fantasy-proofing). */
-export const SMM_KG_CEILING_MALE = 75;
-export const SMM_KG_CEILING_FEMALE = 48;
+export const SMM_KG_CEILING_MALE = 80;
+export const SMM_KG_CEILING_FEMALE = 52;
 
 export function getSmmKgCeilingForGender(gender: string | null | undefined): number {
   return normalizeGenderForNormTables(gender) === 'female' ? SMM_KG_CEILING_FEMALE : SMM_KG_CEILING_MALE;

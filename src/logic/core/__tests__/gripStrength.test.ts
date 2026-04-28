@@ -12,16 +12,16 @@ describe('calculateGripStrengthScore', () => {
     expect(calculateGripStrengthScore(45, 'male')).toBe(63);
     expect(calculateGripStrengthScore(65, 'male')).toBe(91);
     expect(calculateGripStrengthScore(72, 'male')).toBe(100.8);
-    expect(calculateGripStrengthScore(160, 'male')).toBe(224);
+    expect(calculateGripStrengthScore(175, 'male')).toBe(245);
   });
 
   it('matches female compensation sample', () => {
     expect(calculateGripStrengthScore(40, 'female')).toBe(89.6);
   });
 
-  it('locks scoring at 160kg model cap', () => {
-    expect(calculateGripStrengthScore(180, 'male')).toBe(calculateGripStrengthScore(160, 'male'));
-    expect(calculateGripStrengthScore(180, 'female')).toBe(calculateGripStrengthScore(160, 'female'));
+  it('locks scoring at 175kg model cap', () => {
+    expect(calculateGripStrengthScore(180, 'male')).toBe(calculateGripStrengthScore(175, 'male'));
+    expect(calculateGripStrengthScore(180, 'female')).toBe(calculateGripStrengthScore(175, 'female'));
   });
 });
 
@@ -35,9 +35,9 @@ describe('applyGripPeakCap', () => {
   });
 
   it('passes through values at or below cap', () => {
-    expect(applyGripPeakCap(160)).toEqual({
-      inputKg: 160,
-      usedKg: 160,
+    expect(applyGripPeakCap(175)).toEqual({
+      inputKg: 175,
+      usedKg: 175,
       capped: false,
     });
   });

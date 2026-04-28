@@ -1,6 +1,131 @@
 {
   "back": "Back",
   "cancel": "Cancel",
+  "scoreMeaning": {
+    "axis": {
+      "strength": {
+        "label": "Rigid Spectrum (Strength)",
+        "desc": "Measures neuromuscular recruitment efficiency relative to body weight (DOTS coefficient). Higher values indicate stronger absolute rigidity output per unit body mass."
+      },
+      "explosivePower": {
+        "label": "Burst Spectrum (Power)",
+        "desc": "Measures instantaneous kinetic discharge and power output. Higher values indicate greater explosive force and vertical work capacity in very short time windows."
+      },
+      "cardio": {
+        "label": "Rhythm Spectrum (Cardio)",
+        "desc": "Measures cardiovascular stability and aerobic ceiling. Higher values indicate stronger thermal management and endurance under sustained high-intensity operation."
+      },
+      "muscleMass": {
+        "label": "Build Spectrum (Muscle)",
+        "desc": "Measures skeletal-muscle density relative to height. Higher values indicate more mature physical structure and stronger baseline metabolic capacity."
+      },
+      "bodyFat": {
+        "label": "Refine Spectrum (FFMI/Fat)",
+        "desc": "Measures optimization between body-fat ratio and lean mass. Higher values indicate cleaner tissue composition and a stronger power-to-weight profile."
+      },
+      "gripStrength": {
+        "label": "Potential Spectrum (Grip)",
+        "desc": "Measures terminal neural response and grip output. Higher values indicate shorter neural transmission paths, higher precision, and stronger limit control."
+      }
+    },
+    "bands": {
+      "cardio": {
+        "BASE": {
+          "title": "Baseline Calibration",
+          "summary": "[ SYSTEM START ] Performance aligns with general population averages. You are currently in the foundational calibration phase. Building a consistent aerobic base is the primary objective."
+        },
+        "TIER_41": {
+          "title": "Kinetic Emergence",
+          "summary": "[ KINETIC EMERGENCE ] Thermal management is beginning to stabilize. Your system can now sustain basic power output as you build initial endurance tolerance."
+        },
+        "TIER_51": {
+          "title": "Optimization Launch",
+          "summary": "[ OPTIMIZATION LAUNCH ] Core efficiency is showing signs of stabilization. You are achieving better-than-average fuel economy with improved management of performance decay under load."
+        },
+        "TIER_61": {
+          "title": "Stable Cruise",
+          "summary": "[ STABLE CRUISE ] Entering the 'Regular Runner' sequence. Demonstrating solid cruising capability and consistent rhythm management over sustained distances."
+        },
+        "TIER_71": {
+          "title": "Advanced Thermal Spec",
+          "summary": "[ THERMAL PERFORMANCE ] Components reaching optimal operating temperature. Performance profile exceeds most club-level runners, showing the capacity to sustain high-intensity tactical efforts."
+        },
+        "TIER_81": {
+          "title": "Peak Performance",
+          "summary": "[ PERFORMANCE PEAK ] The pinnacle of amateur elite. You possess the output to dominate local run clubs. Overall efficiency is approaching competitive-grade thresholds."
+        },
+        "TIER_91": {
+          "title": "Competitive Awakening",
+          "summary": "[ COMPETITIVE AWAKENING ] Breaking the amateur ceiling. Your system is now accessing high-frequency potential usually reserved for professional domains."
+        },
+        "TIER_101": {
+          "title": "Endurance Stint",
+          "summary": "[ ENDURANCE STINT ] Podium potential at regional events. Your cardiopulmonary system exhibits Le Mans-grade resilience, capable of leading under prolonged high-pressure."
+        },
+        "TIER_111": {
+          "title": "Extreme Anti-Fade",
+          "summary": "[ EXTREME ANTI-FADE ] Entering the elite competitive sequence. Exceptional recovery post-sprint; your system remains optimized for immediate follow-up attacks."
+        },
+        "TIER_121": {
+          "title": "Sequence Dominance",
+          "summary": "[ SEQUENCE DOMINANCE ] Performance benchmarks align with National Elite levels. You possess true command over energy systems in high-attrition scenarios."
+        },
+        "TIER_131": {
+          "title": "Eternal Prototype",
+          "summary": "[ ETERNAL PROTOTYPE ] Approaching the absolute limits of human physiology. Thermal management is reaching master-class status; gravity and fatigue are no longer significant burdens."
+        },
+        "TIER_141": {
+          "title": "Phantom Sequence",
+          "summary": "[ PHANTOM SEQUENCE ] Entering International Master-level territory. You are defying standard physical norms through sheer metabolic efficiency."
+        },
+        "LEGEND": {
+          "title": "Absolute Domain",
+          "summary": "[ ABSOLUTE DOMAIN ] Data Overflow detected. This is the realm of legends. Your output transcends biological definitions—a masterclass in pure, sustained power."
+        }
+      }
+    },
+    "fallback": {
+      "title": "Calibration in progress",
+      "summary": "Band interpretation is still calibrating. Complete more assessments to unlock a fuller performance profile."
+    }
+  },
+  "identity": {
+    "vehicleSectionKicker": "Racing Spec Identity",
+    "genderGroup": {
+      "male": "Male Qualified Pilot",
+      "female": "Female Qualified Pilot"
+    },
+    "archetypes": {
+      "G_PLATFORM": {
+        "title": "Serial Code: Iron Chassis (G-Platform)",
+        "summary": "Chassis rigidity is exceptionally high. In the {{genderGroup}} sequence, your torque output falls into heavy-platform class; gravity loads read as light cruising resistance."
+      },
+      "HIGH_OUTPUT": {
+        "title": "Serial Code: High Output Afterburn (High-Output)",
+        "summary": "Throttle response is extremely sensitive. Neural recruitment behaves like launch-control ignition, pushing power to redline in minimal distance."
+      },
+      "ENDURANCE_PROTO": {
+        "title": "Serial Code: Endurance Prototype (Endurance-P)",
+        "summary": "Thermal management is outstanding. You demonstrate 24-hour Le Mans style stability, built to lead long-range endurance sectors."
+      },
+      "WIDE_BODY": {
+        "title": "Serial Code: Wide-Body Architecture (Wide-Body)",
+        "summary": "Structural load profile shows dominant downforce characteristics. High-density fibers provide a powerful foundation, making you a stable heavyweight target across all terrain."
+      },
+      "AERO_SPEC": {
+        "title": "Serial Code: Aero Optimization (Aero-Spec)",
+        "summary": "Power-to-weight has reached track-record class. With low drag and low fat ratio, every gram of mass is allocated for pure performance."
+      },
+      "MR_SPEC": {
+        "title": "Serial Code: Mid-Engine Balance (MR-Spec)",
+        "summary": "Steering feedback is surgically precise. Neural control resembles a mid-engine layout, enabling elegant corner entry and stable output through the apex."
+      },
+      "GT_CRUISER": {
+        "title": "Serial Code: Grand Tourer (Grand Tourer)",
+        "summary": "All-spectrum performance is fully unlocked. You carry flagship-grade elegance and aggression, with no power dead zones across sector or weather. You are the most complete fit in this sequence."
+      }
+    }
+  },
   "shellTitle": "UP Final P0 Shell",
   "shellSubtitle": "Core access and leaderboard guard check",
   "setCoreOwned": "Set Core Owned",
@@ -852,6 +977,8 @@
     "secondsLabel": "Seconds",
     "run5kmHint": "Faster than 20:00 scores above 100; 45:00 or slower is 0. Times are stored on device only.",
     "previewLabel": "Preview score",
+    "performanceSpecHeader": "PERFORMANCE SPEC / 性能規格",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "calculate": "Calculate",
     "submitRadar": "Save to radar (cardio axis)",
     "submitDone": "Saved — Home radar and history can use this score.",

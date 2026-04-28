@@ -84,7 +84,7 @@ export function appendCardioLeaderboardTargets(
 
     const totalSeconds = Number(inputs.run_5km?.totalSeconds);
     if (Number.isFinite(totalSeconds) && totalSeconds > 0) {
-      const s = calculate5KmScore({ totalSeconds });
+      const s = calculate5KmScore({ totalSeconds, gender: profile?.gender });
       const len = targets.length;
       pushIfPositive(targets, leaderboardShardForCardioTab('5km'), s);
       if (targets.length > len) addedFromStructured += 1;

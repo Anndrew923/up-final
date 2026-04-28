@@ -68,16 +68,30 @@ describe('calculateCooperScore', () => {
 
 describe('calculate5KmScore', () => {
   it('scores above 100 when faster than 20 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 19 * 60 })).toBeGreaterThan(100);
+    expect(calculate5KmScore({ totalSeconds: 19 * 60, gender: 'male' })).toBeGreaterThan(100);
   });
 
   it('scores 100 at exactly 20 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 20 * 60 })).toBe(100);
+    expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'male' })).toBe(100);
   });
 
   it('scores 0 at or beyond 45 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 45 * 60 })).toBe(0);
-    expect(calculate5KmScore({ totalSeconds: 50 * 60 })).toBe(0);
+    expect(calculate5KmScore({ totalSeconds: 45 * 60, gender: 'male' })).toBe(0);
+    expect(calculate5KmScore({ totalSeconds: 50 * 60, gender: 'male' })).toBe(0);
+  });
+
+  it('floors male world-record-faster inputs at 740s while keeping bonus scoring', () => {
+    const atFloor = calculate5KmScore({ totalSeconds: 740, gender: 'male' });
+    const fasterThanFloor = calculate5KmScore({ totalSeconds: 700, gender: 'male' });
+    expect(fasterThanFloor).toBe(atFloor);
+    expect(atFloor).toBeGreaterThan(100);
+  });
+
+  it('floors female world-record-faster inputs at 825s while keeping bonus scoring', () => {
+    const atFloor = calculate5KmScore({ totalSeconds: 825, gender: 'female' });
+    const fasterThanFloor = calculate5KmScore({ totalSeconds: 780, gender: 'female' });
+    expect(fasterThanFloor).toBe(atFloor);
+    expect(atFloor).toBeGreaterThan(100);
   });
 });
 
@@ -101,7 +115,7 @@ describe('resolveCardioScoreForDisplay', () => {
       run_5km: { totalSeconds: 25 * 60 },
     };
     const c = resolveCardioScoreForDisplay(maleProfile, inputs);
-    const only5k = calculate5KmScore({ totalSeconds: 25 * 60 });
+    const only5k = calculate5KmScore({ totalSeconds: 25 * 60, gender: maleProfile.gender });
     const onlyCooper = calculateCooperScore({
       distanceMeters: 2600,
       age: maleProfile.age,
@@ -117,7 +131,7 @@ describe('resolveCardioScoreForDisplay', () => {
       run_5km: { totalSeconds: 30 * 60 },
     };
     expect(resolveCardioScoreForDisplay(maleProfile, inputs)).toBe(
-      calculate5KmScore({ totalSeconds: 30 * 60 })
+      calculate5KmScore({ totalSeconds: 30 * 60, gender: maleProfile.gender })
     );
   });
 });
@@ -160,7 +174,7 @@ describe('tryComputeCardioAssessmentScore', () => {
       profileReady: false,
     });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.score).toBe(calculate5KmScore({ totalSeconds: 25 * 60 }));
+    if (r.ok) expect(r.score).toBe(calculate5KmScore({ totalSeconds: 25 * 60, gender: 'male' }));
   });
 });
 

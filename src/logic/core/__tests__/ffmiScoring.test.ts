@@ -12,13 +12,13 @@ describe('evaluateFfmiScoring', () => {
   it('blocks radar submit when male FFMI exceeds world-record anchor but keeps capped breakdown fields', () => {
     const r = evaluateFfmiScoring({
       gender: 'male',
-      heightCm: 160,
-      weightKg: 100,
+      heightCm: 155,
+      weightKg: 110,
       bodyFatPct: 1,
     });
     expect(r.rawAdjustedFfmi).toBeGreaterThan(FFMI_HUMAN_CAP_MALE);
     expect(r.cappedAdjustedFfmi).toBe(FFMI_HUMAN_CAP_MALE);
-    expect(r.submittedScore).toBe(165);
+    expect(r.submittedScore).toBe(175);
     expect(r.uncappedScore).toBeGreaterThan(165);
     expect(r.submittedScore).toBeLessThanOrEqual(SCORE_AXIS_MAX);
     expect(r.limitedByHumanCap).toBe(true);
@@ -28,13 +28,13 @@ describe('evaluateFfmiScoring', () => {
   it('blocks radar submit when female FFMI exceeds world-record anchor', () => {
     const r = evaluateFfmiScoring({
       gender: 'female',
-      heightCm: 150,
-      weightKg: 75,
-      bodyFatPct: 6,
+      heightCm: 145,
+      weightKg: 80,
+      bodyFatPct: 5,
     });
     expect(r.rawAdjustedFfmi).toBeGreaterThan(FFMI_HUMAN_CAP_FEMALE);
     expect(r.cappedAdjustedFfmi).toBe(FFMI_HUMAN_CAP_FEMALE);
-    expect(r.submittedScore).toBe(145);
+    expect(r.submittedScore).toBe(155);
     expect(r.uncappedScore).toBeGreaterThan(145);
     expect(r.submittedScore).toBeLessThanOrEqual(SCORE_AXIS_MAX);
     expect(r.limitedByHumanCap).toBe(true);

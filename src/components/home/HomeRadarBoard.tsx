@@ -1,13 +1,17 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import { LEADERBOARD_SHARD_OVERALL } from '../../logic/core/assessmentLeaderboardShards';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { getWeakestRadarAxis } from '../../logic/core/scoring';
+import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
+import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
+import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
+import type { PhysicalProfile } from '../../types/userProfile';
 
 /**
  * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
@@ -15,6 +19,12 @@ import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation();
   const { radarPoints, overallScore, scaleMax, completionCount } = useCoreSixRadar();
+  const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() => loadPhysicalProfile());
+
+  useEffect(() => {
+    const sync = () => setPhysicalProfile(loadPhysicalProfile());
+    return subscribePhysicalProfile(sync);
+  }, []);
 
   const valueByKey = useMemo(() => {
     const m: Partial<Record<ScoreMetric, number>> = {};
@@ -34,6 +44,13 @@ export const HomeRadarBoard: FC = () => {
   );
 
   const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);
+  const vehicleClassId = useMemo(() => resolveVehicleClass(radarPoints), [radarPoints]);
+  const genderGroup = useMemo(() => {
+    if (physicalProfile?.gender === 'female') {
+      return t('identity.genderGroup.female', { ns: 'common' });
+    }
+    return t('identity.genderGroup.male', { ns: 'common' });
+  }, [physicalProfile?.gender, t]);
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)] motion-safe:transition-[box-shadow,border-color] motion-safe:duration-[480ms]">
@@ -102,6 +119,7 @@ export const HomeRadarBoard: FC = () => {
                     })}
                   </span>
                   <span
+                    title={t(`${getAxisMeaningI18nPrefix(key)}.desc`, { ns: 'common' })}
                     className={`mt-0.5 block font-mono tabular-nums ${
                       (valueByKey[key] ?? 0) > 100 ? 'text-accent-info' : 'text-zinc-200'
                     }`}
@@ -111,6 +129,21 @@ export const HomeRadarBoard: FC = () => {
                 </li>
               ))}
             </ul>
+
+            <section className="rounded-md border border-zinc-800/80 bg-bg-panel/30 p-3">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+                {t('identity.vehicleSectionKicker', { ns: 'common' })}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-zinc-100">
+                {t(`identity.archetypes.${vehicleClassId}.title`, { ns: 'common' })}
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+                {t(`identity.archetypes.${vehicleClassId}.summary`, {
+                  ns: 'common',
+                  genderGroup,
+                })}
+              </p>
+            </section>
           </div>
 
           <div className="w-full border-t border-zinc-800/80 pt-2">

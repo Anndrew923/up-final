@@ -6,6 +6,7 @@ import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 
 export interface CardioAssessmentPageProps {
   onBack?: () => void;
@@ -34,6 +35,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     calculate,
     submitToRadar,
   } = useCardioAssessmentPage();
+  const scoreMeaning = useScoreMeaning('cardio', previewScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -221,6 +223,24 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 {previewScore.toFixed(2)}
               </p>
             </div>
+          ) : null}
+
+          {previewScore !== null && scoreMeaning ? (
+            <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/65 to-transparent" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
+                {t('cardio.performanceSpecHeader')}
+              </p>
+              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
+                {scoreMeaning.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
+              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-cyan-300">
+                  {t('cardio.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
+                </p>
+              ) : null}
+            </section>
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">

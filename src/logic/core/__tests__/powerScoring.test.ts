@@ -158,7 +158,7 @@ describe('tryComputeExplosiveAssessmentScore', () => {
     });
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.persisted.verticalJumpCm).toBe(120);
+      expect(r.persisted.verticalJumpCm).toBe(135);
       expect(r.capApplied.verticalJump).toBe(true);
     }
   });
