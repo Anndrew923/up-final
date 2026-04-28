@@ -445,6 +445,8 @@
     },
     "filters": {
       "title": "Detailed filters",
+      "apply": "Apply filters",
+      "clear": "Clear filters",
       "gender": "Gender",
       "ageBucket": "Age band",
       "heightBucket": "Height band",

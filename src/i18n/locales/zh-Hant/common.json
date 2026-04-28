@@ -306,6 +306,8 @@
     },
     "filters": {
       "title": "細項篩選",
+      "apply": "套用篩選",
+      "clear": "清除篩選",
       "gender": "性別",
       "ageBucket": "年齡區間",
       "heightBucket": "身高區間",

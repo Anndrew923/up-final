@@ -59,7 +59,7 @@ export default function OptionSelectSheet<T extends string>({
     typeof document !== 'undefined' &&
     createPortal(
       <div
-        className="fixed inset-0 z-[200] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
+        className="fixed inset-0 z-[260] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
         role="presentation"
       >
         <button
