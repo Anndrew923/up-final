@@ -204,6 +204,19 @@
       "resultNoop": "未套用變更。",
       "resultError": "上傳失敗。請檢查網路或 Firebase 規則。"
     },
+    "gateSheet": {
+      "secondary": "稍後再說",
+      "auth": {
+        "title": "需要先登入",
+        "body": "請先用 Google 登入，再進行上傳與同步。",
+        "primary": "使用 Google 登入"
+      },
+      "pro": {
+        "title": "需要 Pro 權限",
+        "body": "此功能僅限 Pro。升級後可上傳分數並參與即時天梯。",
+        "primary": "升級 Pro"
+      }
+    },
     "syncAll": {
       "sectionTitle": "一鍵同步天梯",
       "hint": "依首頁雷達分數，逐一上傳可用分片。",
@@ -349,6 +362,19 @@
     "syncBackup": "立即備份至雲端",
     "syncRestore": "從雲端還原",
     "syncUpgrade": "解鎖 Pro",
+    "syncGateSheet": {
+      "secondary": "稍後再說",
+      "auth": {
+        "title": "先登入才能雲端備份",
+        "body": "使用 Google 登入後，即可備份與還原資料。",
+        "primary": "使用 Google 登入"
+      },
+      "pro": {
+        "title": "雲端同步需要 Pro",
+        "body": "升級 Pro 後即可備份與還原你的雲端資料。",
+        "primary": "解鎖 Pro"
+      }
+    },
     "calculators": {
       "title": "訓練計算器",
       "oneRm": {
@@ -417,8 +443,8 @@
     "sync": {
       "backupOk": "結構化備份已完成（profile + 歷史文件）。",
       "backupFail": "備份失敗 — 請檢查網路或稍後再試。",
-      "unavailable": "雲端同步尚未就緒：請確認四個 VITE_FIREBASE_* 環境變數齊全，並以 Google 登入（不可僅匿名）。",
-      "permissionDenied": "Firestore 拒絕寫入（permission-denied）。請將本專案 firestore.rules 部署到同一個 Firebase 專案，或確認目前登入帳號正確。",
+      "unavailable": "目前無法使用雲端同步，請稍後再試。",
+      "permissionDenied": "目前無法完成同步，請稍後再試。",
       "authFail": "雲端同步需要已登入的 Google 帳號（不可為匿名）。",
       "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
       "restoreEmpty": "尚無雲端快照。",
@@ -436,6 +462,7 @@
     },
     "rawInputsHeading": "六軸原始輸入",
     "homeRadarHint": "雷達與總分在首頁。",
+    "viewHomeRadar": "前往首頁雷達",
     "saveToHistory": "儲存快照到紀錄",
     "saveToHistoryDone": "已寫入本機紀錄。",
     "resetScores": "重設六軸分數",
@@ -814,7 +841,6 @@
     "anchorFemale": "女性紀錄級錨點（FFMI {{value}}）。",
     "submitRadar": "寫入雷達（體脂軸）",
     "submitDone": "已寫入本機 — 首頁雷達將更新。",
-    "viewHomeRadar": "前往首頁雷達",
     "ctaProfile": "前往首頁填寫身體資料",
     "errors": {
       "missing-profile": "身體資料未齊 — 請先在首頁填寫性別、年齡、身高、體重。",
@@ -884,6 +910,9 @@
     "empty": "尚無快照。請到「評測」分頁儲存一筆。",
     "colDate": "儲存時間",
     "colOverall": "總分",
+    "colActions": "操作",
+    "delete": "刪除",
+    "deleteConfirm": "確定要刪除這筆紀錄嗎？此操作無法復原。",
     "valueEmpty": "—",
     "shortAxis": {
       "strength": "力量",

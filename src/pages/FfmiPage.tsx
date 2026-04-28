@@ -67,6 +67,8 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
           </section>
         ) : (
           <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+            <FfmiEducationPanels />
+
             <div className="space-y-2">
               <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
                 {t('ffmi.bodyFatLabel')}
@@ -164,7 +166,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                     {t('ffmi.submitRadar')}
                   </button>
                   <Link className="ui-btn inline-flex" to={ROUTES.home}>
-                    {t('ffmi.viewHomeRadar')}
+                    {t('assessment.viewHomeRadar')}
                   </Link>
                 </div>
                 {submitDone ? (
@@ -176,8 +178,6 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
             ) : null}
           </section>
         )}
-
-        <FfmiEducationPanels />
       </div>
     </main>
   );

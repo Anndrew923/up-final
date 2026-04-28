@@ -1,6 +1,9 @@
-import { type FC, useState } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../config/routes';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
+import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
 
 export interface LeaderboardSyncAllBarProps {
@@ -14,12 +17,33 @@ export interface LeaderboardSyncAllBarProps {
  */
 const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, className }) => {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
+  const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const { syncAll, busy, gate, targetCount, goJoinArena, clearFeedback } = useLeaderboardSyncAll({
     onFinished,
   });
 
-  const disabled = gate !== 'ok' || busy || targetCount === 0;
+  const disabled = busy || targetCount === 0;
+  const gateSheetCopy = useMemo(() => {
+    if (gate === 'signed-out' || gate === 'anonymous') {
+      return {
+        title: t('ladder.gateSheet.auth.title'),
+        body: t('ladder.gateSheet.auth.body'),
+        primary: t('ladder.gateSheet.auth.primary'),
+        nextRoute: ROUTES.authChoice,
+      };
+    }
+    if (gate === 'no-pro') {
+      return {
+        title: t('ladder.gateSheet.pro.title'),
+        body: t('ladder.gateSheet.pro.body'),
+        primary: t('ladder.gateSheet.pro.primary'),
+        nextRoute: ROUTES.joinArena,
+      };
+    }
+    return null;
+  }, [gate, t]);
 
   return (
     <div className={`space-y-2 border-t border-zinc-800/80 pt-2 ${className ?? ''}`}>
@@ -38,6 +62,10 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
           className="ui-btn border-accent-info/35 text-accent-info"
           disabled={disabled}
           onClick={() => {
+            if (gate !== 'ok') {
+              if (gateSheetCopy) setGateSheetOpen(true);
+              return;
+            }
             clearFeedback();
             void syncAll();
           }}
@@ -56,6 +84,24 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
         title={t('ladder.syncAll.advancedTitle')}
         body={t('ladder.syncAll.advancedTip')}
       />
+      {gateSheetCopy ? (
+        <LeaderboardGateSheet
+          open={gateSheetOpen}
+          title={gateSheetCopy.title}
+          description={gateSheetCopy.body}
+          primaryLabel={gateSheetCopy.primary}
+          secondaryLabel={t('ladder.gateSheet.secondary')}
+          onSecondary={() => setGateSheetOpen(false)}
+          onPrimary={() => {
+            setGateSheetOpen(false);
+            if (gateSheetCopy.nextRoute === ROUTES.joinArena) {
+              goJoinArena();
+              return;
+            }
+            navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
+          }}
+        />
+      ) : null}
     </div>
   );
 };

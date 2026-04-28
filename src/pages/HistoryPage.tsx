@@ -8,10 +8,16 @@ export default function HistoryPage() {
   const { t, i18n } = useTranslation();
   const records = useHistoryStore((s) => s.records);
   const loadLocalHistory = useHistoryStore((s) => s.loadLocalHistory);
+  const removeHistoryRecord = useHistoryStore((s) => s.removeHistoryRecord);
 
   useEffect(() => {
     loadLocalHistory();
   }, [loadLocalHistory]);
+
+  const handleRemoveRecord = (id: string) => {
+    if (!window.confirm(t('history.deleteConfirm', { ns: 'common' }))) return;
+    removeHistoryRecord(id);
+  };
 
   return (
     <main className="ui-shell max-w-4xl space-y-6">
@@ -33,7 +39,7 @@ export default function HistoryPage() {
               {t('history.empty', { ns: 'common' })}
             </p>
           ) : (
-            <table className="w-full min-w-[640px] border-collapse text-left text-xs text-zinc-300">
+            <table className="w-full min-w-[700px] border-collapse text-left text-xs text-zinc-300">
               <thead>
                 <tr className="border-b border-zinc-800 text-[10px] uppercase tracking-wide text-zinc-500">
                   <th className="whitespace-nowrap px-2 py-2">
@@ -47,6 +53,7 @@ export default function HistoryPage() {
                       {t(`history.shortAxis.${m}`, { ns: 'common' })}
                     </th>
                   ))}
+                  <th className="whitespace-nowrap px-2 py-2">{t('history.colActions', { ns: 'common' })}</th>
                 </tr>
               </thead>
               <tbody>
@@ -65,6 +72,15 @@ export default function HistoryPage() {
                           : t('history.valueEmpty', { ns: 'common' })}
                       </td>
                     ))}
+                    <td className="px-2 py-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecord(row.id)}
+                        className="rounded-md border border-zinc-700 px-2 py-1 text-[11px] font-medium text-zinc-300 transition hover:border-red-400/60 hover:text-red-300"
+                      >
+                        {t('history.delete', { ns: 'common' })}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

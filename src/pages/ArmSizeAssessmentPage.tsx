@@ -1,8 +1,10 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import { ROUTES } from '../config/routes';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
 import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
@@ -146,6 +148,9 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             <button type="button" className="ui-btn" onClick={saveForLeaderboard}>
               {t('armSize.saveLeaderboard')}
             </button>
+            <Link className="ui-btn inline-flex" to={ROUTES.home}>
+              {t('assessment.viewHomeRadar')}
+            </Link>
           </div>
 
           {submitDone ? (

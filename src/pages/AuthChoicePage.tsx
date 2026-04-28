@@ -14,7 +14,11 @@ const AuthChoicePage: FC = () => {
   const returnTo = location.state && typeof location.state === 'object' && 'returnTo' in location.state
     ? location.state.returnTo
     : undefined;
-  const targetRoute = returnTo === ROUTES.ladder ? ROUTES.ladder : ROUTES.home;
+  const targetRoute = (() => {
+    if (returnTo === ROUTES.ladder) return ROUTES.ladder;
+    if (returnTo === ROUTES.tools) return ROUTES.tools;
+    return ROUTES.home;
+  })();
 
   const completeFlow = () => {
     markAuthOnboardingCompleted();

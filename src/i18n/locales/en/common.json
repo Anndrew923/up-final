@@ -343,6 +343,19 @@
       "resultNoop": "No change applied.",
       "resultError": "Upload failed. Check your connection or Firebase rules."
     },
+    "gateSheet": {
+      "secondary": "Not now",
+      "auth": {
+        "title": "Sign in required",
+        "body": "Use Google sign-in first, then you can upload and sync to ladder.",
+        "primary": "Sign in with Google"
+      },
+      "pro": {
+        "title": "Pro required",
+        "body": "This feature is Pro-only. Upgrade to upload and join live ladder.",
+        "primary": "Upgrade to Pro"
+      }
+    },
     "syncAll": {
       "sectionTitle": "Sync all ladders",
       "hint": "Uploads every eligible shard from your Home radar.",
@@ -488,6 +501,19 @@
     "syncBackup": "Backup to cloud now",
     "syncRestore": "Restore from cloud",
     "syncUpgrade": "Unlock Pro",
+    "syncGateSheet": {
+      "secondary": "Not now",
+      "auth": {
+        "title": "Sign in to use cloud backup",
+        "body": "Sign in with Google to back up and restore your data.",
+        "primary": "Sign in with Google"
+      },
+      "pro": {
+        "title": "Cloud sync needs Pro",
+        "body": "Upgrade to Pro to back up and restore your records from cloud.",
+        "primary": "Unlock Pro"
+      }
+    },
     "calculators": {
       "title": "Training calculators",
       "oneRm": {
@@ -556,8 +582,8 @@
     "sync": {
       "backupOk": "Structured backup completed (profile + history documents).",
       "backupFail": "Backup failed — check network or try again.",
-      "unavailable": "Cloud sync is not ready: confirm all VITE_FIREBASE_* env vars, then sign in with Google (not anonymous only).",
-      "permissionDenied": "Firestore rejected the write (permission-denied). Deploy repo firestore.rules to this project or verify you are signed into the correct account.",
+      "unavailable": "Cloud sync is temporarily unavailable. Please try again later.",
+      "permissionDenied": "Could not complete cloud sync right now. Please try again later.",
       "authFail": "Cloud sync requires signed-in Google account (non-anonymous).",
       "restoreOk": "Local scores and history replaced from cloud snapshot.",
       "restoreEmpty": "No cloud snapshot found yet.",
@@ -571,6 +597,9 @@
     "empty": "No snapshots yet. Save one from the Assessment tab.",
     "colDate": "Saved at",
     "colOverall": "Overall",
+    "colActions": "Actions",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record? This action cannot be undone.",
     "valueEmpty": "—",
     "shortAxis": {
       "strength": "STR",
@@ -592,6 +621,7 @@
     },
     "rawInputsHeading": "Core six inputs",
     "homeRadarHint": "Radar and overall average are shown on Home.",
+    "viewHomeRadar": "Open Home radar",
     "saveToHistory": "Save snapshot to history",
     "saveToHistoryDone": "Saved to local history.",
     "resetScores": "Reset core scores",
@@ -969,7 +999,6 @@
     "anchorFemale": "Female world-record anchor (FFMI {{value}}).",
     "submitRadar": "Write score to radar (body fat axis)",
     "submitDone": "Stored locally — radar on Home updates.",
-    "viewHomeRadar": "Open Home radar",
     "ctaProfile": "Fill physical profile on Home",
     "errors": {
       "missing-profile": "Physical profile incomplete — add gender, age, height, and weight on Home first.",

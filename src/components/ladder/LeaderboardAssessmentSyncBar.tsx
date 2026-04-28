@@ -1,10 +1,13 @@
-import { type FC, useState } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../config/routes';
 import type {
   AssessmentLadderSyncScope,
   LeaderboardSyncTarget,
 } from '../../logic/core/leaderboardSyncTargets';
 import { useLeaderboardSyncAssessmentPage } from '../../hooks/useLeaderboardSyncAssessmentPage';
+import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
 
 export interface LeaderboardAssessmentSyncBarProps {
@@ -24,7 +27,9 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   className,
 }) => {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
+  const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const { syncPage, busy, summary, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAssessmentPage({
       scope,
@@ -32,7 +37,26 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       onFinished,
     });
 
-  const disabled = gate !== 'ok' || busy || targetCount === 0;
+  const disabled = busy || targetCount === 0;
+  const gateSheetCopy = useMemo(() => {
+    if (gate === 'signed-out' || gate === 'anonymous') {
+      return {
+        title: t('ladder.gateSheet.auth.title'),
+        body: t('ladder.gateSheet.auth.body'),
+        primary: t('ladder.gateSheet.auth.primary'),
+        nextRoute: ROUTES.authChoice,
+      };
+    }
+    if (gate === 'no-pro') {
+      return {
+        title: t('ladder.gateSheet.pro.title'),
+        body: t('ladder.gateSheet.pro.body'),
+        primary: t('ladder.gateSheet.pro.primary'),
+        nextRoute: ROUTES.joinArena,
+      };
+    }
+    return null;
+  }, [gate, t]);
 
   return (
     <div className={`space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
@@ -61,6 +85,10 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
           className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
           onClick={() => {
+            if (gate !== 'ok') {
+              if (gateSheetCopy) setGateSheetOpen(true);
+              return;
+            }
             clearFeedback();
             void syncPage();
           }}
@@ -79,6 +107,24 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         title={t('ladder.assessmentSync.advancedTitle')}
         body={t('ladder.assessmentSync.advancedTip')}
       />
+      {gateSheetCopy ? (
+        <LeaderboardGateSheet
+          open={gateSheetOpen}
+          title={gateSheetCopy.title}
+          description={gateSheetCopy.body}
+          primaryLabel={gateSheetCopy.primary}
+          secondaryLabel={t('ladder.gateSheet.secondary')}
+          onSecondary={() => setGateSheetOpen(false)}
+          onPrimary={() => {
+            setGateSheetOpen(false);
+            if (gateSheetCopy.nextRoute === ROUTES.joinArena) {
+              goJoinArena();
+              return;
+            }
+            navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
+          }}
+        />
+      ) : null}
 
       {summary && summary.attempted > 0 ? (
         <p className="text-sm text-zinc-400" role="status">

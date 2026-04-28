@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardGateSheet from '../components/ladder/LeaderboardGateSheet';
 import { ROUTES } from '../config/routes';
 import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
 import type { EntitlementState } from '../types/entitlement';
 import { useEntitlementStore } from '../stores/entitlementStore';
+import { useAuthStore } from '../stores/authStore';
 import { useShallow } from 'zustand/react/shallow';
 
 export default function ToolsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [syncGateType, setSyncGateType] = useState<'auth' | 'pro' | null>(null);
 
   const entitlement = useEntitlementStore(
     useShallow(
@@ -25,9 +29,23 @@ export default function ToolsPage() {
     )
   );
 
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const proReady = hasProAccess(entitlement);
+  const loginReady = authStatus === 'signed-in' && !isAnonymous;
+
+  const resolveSyncGate = (): 'auth' | 'pro' | null => {
+    if (!loginReady) return 'auth';
+    if (!proReady) return 'pro';
+    return null;
+  };
 
   const handleBackup = async () => {
+    const gate = resolveSyncGate();
+    if (gate) {
+      setSyncGateType(gate);
+      return;
+    }
     setSyncMsg(null);
     const r = await backupLocalToCloud();
     if (r.ok) {
@@ -50,6 +68,11 @@ export default function ToolsPage() {
   };
 
   const handleRestore = async () => {
+    const gate = resolveSyncGate();
+    if (gate) {
+      setSyncGateType(gate);
+      return;
+    }
     setSyncMsg(null);
     const r = await restoreCloudToLocal();
     if (r.ok) {
@@ -139,11 +162,10 @@ export default function ToolsPage() {
               type="button"
               className="ui-btn ui-btn-primary"
               onClick={handleBackup}
-              disabled={!proReady}
             >
               {t('tools.syncBackup', { ns: 'common' })}
             </button>
-            <button type="button" className="ui-btn" onClick={handleRestore} disabled={!proReady}>
+            <button type="button" className="ui-btn" onClick={handleRestore}>
               {t('tools.syncRestore', { ns: 'common' })}
             </button>
             <Link to={ROUTES.joinArena} className="ui-btn inline-flex border-zinc-600">
@@ -152,6 +174,38 @@ export default function ToolsPage() {
           </div>
           {syncMsg ? <p className="mt-4 text-sm text-zinc-300">{syncMsg}</p> : null}
         </section>
+        <LeaderboardGateSheet
+          open={syncGateType !== null}
+          title={t(
+            syncGateType === 'auth'
+              ? 'tools.syncGateSheet.auth.title'
+              : 'tools.syncGateSheet.pro.title',
+            { ns: 'common' }
+          )}
+          description={t(
+            syncGateType === 'auth'
+              ? 'tools.syncGateSheet.auth.body'
+              : 'tools.syncGateSheet.pro.body',
+            { ns: 'common' }
+          )}
+          primaryLabel={t(
+            syncGateType === 'auth'
+              ? 'tools.syncGateSheet.auth.primary'
+              : 'tools.syncGateSheet.pro.primary',
+            { ns: 'common' }
+          )}
+          secondaryLabel={t('tools.syncGateSheet.secondary', { ns: 'common' })}
+          onSecondary={() => setSyncGateType(null)}
+          onPrimary={() => {
+            const gate = syncGateType;
+            setSyncGateType(null);
+            if (gate === 'auth') {
+              navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.tools } });
+              return;
+            }
+            navigate(ROUTES.joinArena);
+          }}
+        />
       </div>
     </main>
   );
