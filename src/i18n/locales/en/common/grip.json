@@ -17,6 +17,8 @@
     "capNoticeBody": "You entered {{input}} kg, above the grip model cap of {{max}} kg. Scoring and saved value are locked to {{max}} kg.",
     "capNoticeLegend": "Cap benchmark: Swedish strongman Magnus Samuelsson.",
     "previewLabel": "Preview score",
+    "performanceSpecHeader": "PERFORMANCE SPEC / Potential Spec",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "rankLabel": "Rank: {{label}} (Aura: {{aura}})",
     "ranks": {
       "ironApprentice": "Iron Apprentice",

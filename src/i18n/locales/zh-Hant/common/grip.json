@@ -17,6 +17,8 @@
     "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
     "capNoticeLegend": "上限對標人物：瑞典大力士 Magnus Samuelsson。",
     "previewLabel": "預覽分數",
+    "performanceSpecHeader": "PERFORMANCE SPEC / 潛力規格",
+    "nextMilestoneHint": "Next Milestone：距離下一階升級尚需 {{points}} 分。",
     "rankLabel": "階級：{{label}}（Aura：{{aura}}）",
     "ranks": {
       "ironApprentice": "鋼鐵學徒",

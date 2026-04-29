@@ -47,13 +47,29 @@ export const STRENGTH_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
 ] as const;
 
+export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 40 },
+  { id: 'TIER_41', min: 41, max: 50 },
+  { id: 'TIER_51', min: 51, max: 60 },
+  { id: 'TIER_61', min: 61, max: 70 },
+  { id: 'TIER_71', min: 71, max: 80 },
+  { id: 'TIER_81', min: 81, max: 90 },
+  { id: 'TIER_91', min: 91, max: 100 },
+  { id: 'TIER_101', min: 101, max: 110 },
+  { id: 'TIER_111', min: 111, max: 120 },
+  { id: 'TIER_121', min: 121, max: 130 },
+  { id: 'TIER_141', min: 141, max: 160 },
+  { id: 'TIER_161', min: 161, max: 189 },
+  { id: 'PANTHEON', min: 190, max: Number.POSITIVE_INFINITY },
+] as const;
+
 export const SCORE_MEANING_CATALOG: AxisTitleMapping = {
   strength: STRENGTH_SCORE_BANDS,
   explosivePower: DEFAULT_SCORE_BANDS,
   cardio: CARDIO_SCORE_BANDS,
   muscleMass: DEFAULT_SCORE_BANDS,
   bodyFat: DEFAULT_SCORE_BANDS,
-  gripStrength: DEFAULT_SCORE_BANDS,
+  gripStrength: GRIP_SCORE_BANDS,
 };
 
 function normalizeScore(score: number): number {

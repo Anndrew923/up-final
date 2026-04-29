@@ -2,9 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   applyGripPeakCap,
   calculateGripStrengthScore,
-  getGripRankMetadata,
   GRIP_MAX_PEAK_KG,
-  type GripRankMetadata,
 } from '../logic/core/gripStrength';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import { clampScoreMapValue } from '../logic/core/scoring';
@@ -26,7 +24,6 @@ export interface UseGripAssessmentPageResult {
   peakKgInput: string;
   setPeakKgInput: (v: string) => void;
   previewScore: number | null;
-  rankMetadata: GripRankMetadata | null;
   capNotice: { inputKg: number; maxKg: number } | null;
   errorKey: GripAssessmentError | null;
   submitDone: boolean;
@@ -49,7 +46,6 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     return Number.isFinite(saved) && (saved ?? 0) > 0 ? String(saved) : '';
   });
   const [previewScore, setPreviewScore] = useState<number | null>(null);
-  const [rankMetadata, setRankMetadata] = useState<GripRankMetadata | null>(null);
   const [capNotice, setCapNotice] = useState<{ inputKg: number; maxKg: number } | null>(null);
   const [errorKey, setErrorKey] = useState<GripAssessmentError | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
@@ -64,7 +60,6 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
   useEffect(() => {
     queueMicrotask(() => {
       setPreviewScore(null);
-      setRankMetadata(null);
       setCapNotice(null);
       setSubmitDone(false);
     });
@@ -78,21 +73,18 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     if (!profileReady || !profile) {
       setErrorKey('missing-profile');
       setPreviewScore(null);
-      setRankMetadata(null);
       return;
     }
     const peakKg = parsePeakKg(peakKgInput);
     if (peakKg === null) {
       setErrorKey('invalid-peak');
       setPreviewScore(null);
-      setRankMetadata(null);
       setCapNotice(null);
       return;
     }
     const capped = applyGripPeakCap(peakKg);
     const score = calculateGripStrengthScore(peakKg, profile.gender);
     setPreviewScore(score);
-    setRankMetadata(getGripRankMetadata(score));
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
   }, [peakKgInput, profile, profileReady]);
 
@@ -113,7 +105,6 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     saveGripInputs({ peakKg: capped.usedKg, genderSnapshot: profile.gender });
     setStoreScore('gripStrength', clampScoreMapValue(score));
     setPreviewScore(score);
-    setRankMetadata(getGripRankMetadata(score));
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
@@ -125,7 +116,6 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     peakKgInput,
     setPeakKgInput,
     previewScore,
-    rankMetadata,
     capNotice,
     errorKey,
     submitDone,

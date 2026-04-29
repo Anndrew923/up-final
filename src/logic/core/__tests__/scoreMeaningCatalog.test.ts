@@ -87,3 +87,66 @@ describe('resolveScoreBand(strength)', () => {
     expect(resolveScoreBand('strength', 150.5).id).toBe('TIER_141');
   });
 });
+
+describe('resolveScoreBand(gripStrength)', () => {
+  it('keeps the updated 13-tier grip map', () => {
+    const ids = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
+    expect(ids).toEqual([
+      'BASE',
+      'TIER_41',
+      'TIER_51',
+      'TIER_61',
+      'TIER_71',
+      'TIER_81',
+      'TIER_91',
+      'TIER_101',
+      'TIER_111',
+      'TIER_121',
+      'TIER_141',
+      'TIER_161',
+      'PANTHEON',
+    ]);
+  });
+
+  it('maps requested boundaries including pantheon overflow', () => {
+    const checkpoints: Array<[number, string]> = [
+      [40, 'BASE'],
+      [41, 'TIER_41'],
+      [50, 'TIER_41'],
+      [51, 'TIER_51'],
+      [60, 'TIER_51'],
+      [61, 'TIER_61'],
+      [70, 'TIER_61'],
+      [71, 'TIER_71'],
+      [80, 'TIER_71'],
+      [81, 'TIER_81'],
+      [90, 'TIER_81'],
+      [91, 'TIER_91'],
+      [100, 'TIER_91'],
+      [101, 'TIER_101'],
+      [110, 'TIER_101'],
+      [111, 'TIER_111'],
+      [120, 'TIER_111'],
+      [121, 'TIER_121'],
+      [130, 'TIER_121'],
+      [140, 'TIER_121'],
+      [141, 'TIER_141'],
+      [160, 'TIER_141'],
+      [161, 'TIER_161'],
+      [189, 'TIER_161'],
+      [190, 'PANTHEON'],
+      [250, 'PANTHEON'],
+    ];
+
+    for (const [score, expectedBand] of checkpoints) {
+      expect(resolveScoreBand('gripStrength', score).id).toBe(expectedBand);
+    }
+  });
+
+  it('bridges decimal gaps correctly at upper thresholds', () => {
+    expect(resolveScoreBand('gripStrength', 160.9).id).toBe('TIER_141');
+    expect(resolveScoreBand('gripStrength', 161.0).id).toBe('TIER_161');
+    expect(resolveScoreBand('gripStrength', 189.9).id).toBe('TIER_161');
+    expect(resolveScoreBand('gripStrength', 190.0).id).toBe('PANTHEON');
+  });
+});

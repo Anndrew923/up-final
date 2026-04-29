@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { leaderboardShardForSixAxisMetric } from '../logic/core/assessmentLeaderboardShards';
 import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
 import { clampScoreMapValue } from '../logic/core/scoring';
@@ -23,7 +24,6 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     peakKgInput,
     setPeakKgInput,
     previewScore,
-    rankMetadata,
     capNotice,
     errorKey,
     submitDone,
@@ -46,6 +46,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     !profile ? '' : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
+  const scoreMeaning = useScoreMeaning('gripStrength', previewScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -142,15 +143,25 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
                 {t('grip.previewLabel')}
               </p>
               <p className="font-mono text-2xl tabular-nums text-accent-info">{previewScore.toFixed(1)}</p>
-              {rankMetadata ? (
-                <p className="text-sm text-zinc-300">
-                  {t('grip.rankLabel', {
-                    label: t(`grip.ranks.${rankMetadata.rankKey}`),
-                    aura: t(`grip.auras.${rankMetadata.aura}`),
-                  })}
+            </div>
+          ) : null}
+
+          {previewScore !== null && scoreMeaning ? (
+            <section className="relative overflow-hidden rounded-xl border border-blue-400/35 bg-zinc-950/85 p-4 shadow-[0_0_25px_rgba(59,130,246,0.15)]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/65 to-transparent" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-blue-300/90">
+                {t('grip.performanceSpecHeader')}
+              </p>
+              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
+                {scoreMeaning.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
+              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-blue-300">
+                  {t('grip.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
                 </p>
               ) : null}
-            </div>
+            </section>
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">

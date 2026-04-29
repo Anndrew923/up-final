@@ -36,19 +36,19 @@
         },
         "TIER_41": {
           "title": "Torque Emergence",
-          "summary": "[TORQUE EMERGENCE] Effective torque is now online. The system is building initial tolerance for external load while preserving structural stability."
+          "summary": "[TORQUE EMERGENCE] Initial entry into strength training. The system begins building load tolerance and structural stability."
         },
         "TIER_51": {
           "title": "Optimization Ignition",
-          "summary": "[CORE STABILIZED] Core rigidity is locking in. Torque Efficiency improves while chassis deformation stays controlled under stress."
+          "summary": "[CORE STABILIZED] Foundational movement patterns are now established. Torque Efficiency improves while chassis deformation is reduced."
         },
         "TIER_61": {
           "title": "Sustained Load Capacity",
-          "summary": "[STABLE LOAD] Entering the advanced sequence. Robust load-bearing and continuous power delivery under high-resistance conditions."
+          "summary": "[STABLE LOAD] Entering the regular lifter sequence. Sustained load-bearing and continuous torque delivery are now reliable."
         },
         "TIER_71": {
           "title": "Thermal Optimization",
-          "summary": "[THERMAL PEAK] Components operate in optimal thermal range, sustaining high-density load cycles with stable structural response."
+          "summary": "[THERMAL PEAK] High-tier performance within commercial gyms. Strong output and structural consistency hold under dense loading."
         },
         "TIER_81": {
           "title": "Performance Apex",
@@ -72,11 +72,11 @@
         },
         "TIER_131": {
           "title": "Perpetual Architecture",
-          "summary": "[PERPETUAL ARCHITECTURE] Approaching physical limits. Biological tissue and engineered rigidity now behave as one coherent system."
+          "summary": "[PERPETUAL ARCHITECTURE] A consistent international winner profile. Approaching physical limits as biological tissue and engineered rigidity converge."
         },
         "TIER_141": {
           "title": "Phantom Load",
-          "summary": "[PHANTOM LOAD] Transcendent torque detected. Operating near the Structural Limit of conventional material mechanics."
+          "summary": "[PHANTOM LOAD] Challenging the boundaries of material mechanics. Operating within international-master territory."
         },
         "LEGEND": {
           "title": "Absolute Rigid Body",
@@ -134,7 +134,7 @@
         },
         "LEGEND": {
           "title": "Absolute Domain",
-          "summary": "[ABSOLUTE DOMAIN] Data Overflow. This is the realm of legends; a crystalline form of pure power."
+          "summary": "[ABSOLUTE DOMAIN] Data overflow. This is the realm of legends, a crystalline form of pure power."
         }
       }
     },
