@@ -1,0 +1,68 @@
+{
+  "assessment": {
+    "title": "評測",
+    "subtitle": "選一項開始評測。",
+    "localFirstNote": "僅本機：此畫面不連 Firebase。",
+    "referenceInfo": {
+      "title": "評測參考資料",
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料"
+    },
+    "rawInputsHeading": "六軸原始輸入",
+    "homeRadarHint": "雷達與總分在首頁。",
+    "viewHomeRadar": "前往首頁雷達",
+    "saveToHistory": "儲存快照到紀錄",
+    "saveToHistoryDone": "已寫入本機紀錄。",
+    "resetScores": "重設六軸分數",
+    "axis": {
+      "strength": "力量",
+      "explosivePower": "爆發力",
+      "cardio": "心肺",
+      "muscleMass": "肌肉量",
+      "bodyFat": "體脂",
+      "gripStrength": "握力"
+    },
+    "ffmi": {
+      "kicker": "換算",
+      "title": "FFMI（體脂軸）",
+      "body": "用身體資料與體脂率計算 FFMI，並可寫入體脂軸。",
+      "cta": "開啟 FFMI 頁"
+    },
+    "cardio": {
+      "kicker": "心肺",
+      "title": "心肺（Cooper / 5 公里）",
+      "body": "可用 Cooper 距離或 5 公里時間計算心肺分數。",
+      "cta": "開啟心肺評測"
+    },
+    "muscle": {
+      "kicker": "身體組成",
+      "title": "肌肉量（骨骼肌 SMM）",
+      "body": "輸入骨骼肌量（SMM）即可計算肌肉量軸分數。",
+      "cta": "開啟肌肉量評測"
+    },
+    "explosive": {
+      "kicker": "爆發",
+      "title": "爆發力（跳躍／衝刺）",
+      "body": "垂直跳／立定跳遠／短跑至少填一項即可計分。",
+      "cta": "開啟爆發力評測"
+    },
+    "strength": {
+      "kicker": "力量",
+      "title": "五項力量（DOTS 錨點）",
+      "body": "五項力量輸入重量與次數，計算後可寫入雷達。",
+      "cta": "開啟力量評測"
+    },
+    "grip": {
+      "kicker": "握力",
+      "title": "握力評測",
+      "body": "輸入握力峰值（kg）即可計算握力軸分數。",
+      "cta": "開啟握力評測"
+    },
+    "armSize": {
+      "kicker": "圍度",
+      "title": "臂圍評測",
+      "body": "輸入上臂圍與體脂率，僅用於臂圍排行榜。",
+      "cta": "開啟臂圍評測"
+    }
+  }
+}

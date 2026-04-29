@@ -1,0 +1,14 @@
+{
+  "authChoice": {
+    "kicker": "Identity choice",
+    "title": "Welcome",
+    "subtitle": "Choose a sign-in method to start assessments and tracking.",
+    "google": "Sign in with Google",
+    "googleBusy": "Signing in...",
+    "guest": "Continue as guest",
+    "guestBusy": "Preparing...",
+    "fail": "We couldn't complete this step. Please try again. If no window appears, allow pop-ups and check your network connection.",
+    "note": "You can start as a guest and link your Google account later.",
+    "continue": "Continue"
+  }
+}

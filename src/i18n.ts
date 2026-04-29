@@ -1,10 +1,9 @@
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
-import enCommon from './i18n/locales/en/common.json';
 import enArena from './i18n/locales/en/arena.json';
-import zhCommon from './i18n/locales/zh-Hant/common.json';
 import zhArena from './i18n/locales/zh-Hant/arena.json';
+import { enCommon, zhHantCommon } from './i18n/locales/common';
 import {
   I18N_STORAGE_KEY,
   migrateLegacyI18nStorage,
@@ -29,7 +28,7 @@ const i18nPromise = i18n
         arena: enArena,
       },
       'zh-Hant': {
-        common: zhCommon,
+        common: zhHantCommon,
         arena: zhArena,
       },
     },

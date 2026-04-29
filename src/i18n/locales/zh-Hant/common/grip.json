@@ -1,0 +1,51 @@
+{
+  "grip": {
+    "kicker": "握力",
+    "title": "握力評測",
+    "subtitle": "輸入握力峰值（kg）後即可計算握力軸分數。",
+    "peakLabel": "峰值握力（kg）",
+    "peakPlaceholder": "例如 65",
+    "referenceInfo": {
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料",
+      "title": "評測參考資料",
+      "p1": "計算式：score = peakKg × 1.4（女性再乘 1.6）。分數保留 1 位小數，並保留超過 100 的上行空間。",
+      "p2": "模型上限為 160 kg；超過時會以 160 kg 進行計分與儲存，避免極端值破壞體驗尺度。",
+      "p3": "上限對標人物：Magnus Samuelsson。此設定為產品量測保護，非競賽認證。"
+    },
+    "capNoticeTitle": "輸入已超過模型上限",
+    "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
+    "capNoticeLegend": "上限對標人物：瑞典大力士 Magnus Samuelsson。",
+    "previewLabel": "預覽分數",
+    "rankLabel": "階級：{{label}}（Aura：{{aura}}）",
+    "ranks": {
+      "ironApprentice": "鋼鐵學徒",
+      "athleticElite": "運動精英",
+      "vanguard": "悍將",
+      "bossClass": "精英（Boss Class）",
+      "titan": "泰坦（Titan）",
+      "grandmaster": "宗師（Grandmaster）",
+      "godHand": "神選之手（God Hand）"
+    },
+    "auras": {
+      "none": "無",
+      "pulse": "脈衝",
+      "flow": "流光",
+      "shimmer": "微光",
+      "lightning": "雷電",
+      "void_flame": "虛空焰",
+      "divine_light": "神聖之光"
+    },
+    "calculate": "計算",
+    "submitRadar": "寫入雷達（握力軸）",
+    "submitDone": "已儲存 — 首頁雷達與合併分數將使用此握力軸。",
+    "profileIncompleteHint": "握力換算需要首頁身體資料齊全（至少性別、年齡、身高、體重）。",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "metaGender": "性別：{{value}}",
+    "metaWeight": "體重：{{value}} kg",
+    "errors": {
+      "missing-profile": "請先在首頁填寫完整身體資料。",
+      "invalid-peak": "請輸入大於 0 的握力峰值（kg）。"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "ffmi": {
+    "kicker": "身體組成",
+    "title": "FFMI 評測",
+    "subtitle": "以身體資料 + 體脂％計算 FFMI 與雷達體脂軸分數。",
+    "bodyFatLabel": "體脂率",
+    "bodyFatPlaceholder": "例如 15",
+    "bodyFatUnit": "%",
+    "bodyFatHint": "建議輸入約 3–60%；性別與身高體重取自首頁身體資料。",
+    "calculate": "計算",
+    "resultFfmi": "調整後 FFMI（顯示）",
+    "resultRadarScore": "雷達用分",
+    "radarScoreLockedLabel": "已鎖定",
+    "resultScoreUncapped": "公式原始分（封頂前）",
+    "resultFfmiCapped": "用於給分之 FFMI",
+    "categoryLabel": "區間",
+    "worldRecordLockTitle": "紀錄級 FFMI 上限",
+    "worldRecordLockIntro": "目前調整後 FFMI 超過文獻級／紀錄級錨點，為避免雷達尺度失真，暫無法寫入；請調整體脂率或身體資料至上限內。未來將另提供雷達「超頻」視覺化。",
+    "anchorMale": "男性紀錄級錨點（FFMI {{value}}）。",
+    "anchorFemale": "女性紀錄級錨點（FFMI {{value}}）。",
+    "submitRadar": "寫入雷達（體脂軸）",
+    "submitDone": "已寫入本機 — 首頁雷達將更新。",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "errors": {
+      "missing-profile": "身體資料未齊 — 請先在首頁填寫性別、年齡、身高、體重。",
+      "missing-body-fat": "請填寫體脂率。",
+      "invalid-body-fat": "體脂率需介於 3 與 60%。",
+      "need-calculate": "請先按「計算」再儲存。",
+      "world-record-lock": "調整後 FFMI 超過紀錄級錨點 — 請先調整體脂或身體資料後再寫入雷達。"
+    },
+    "info": {
+      "whatIsTitle": "FFMI 是什麼？",
+      "whatIsIntro": "FFMI（無脂肪質量指數）在同身高下結合體脂，評估肌肉量表現，通常比單看 BMI 更有訓練參考意義；數值越高多半代表去脂體重相對較高。下列情境容易造成結果失真：",
+      "caveats": {
+        "tall": "身高顯著高於平均（例如 ≥190 cm）；本頁公式對身高超過 1.8 m 另有調整項。",
+        "highFat": "體脂率顯著高於一般填報區間時，對脂肪與淨重的拆解較敏感。",
+        "heavy": "相對於身高，體重偏高時，對估算脂肪以外的質量影響較大。"
+      }
+    },
+    "table": {
+      "sectionTitle": "FFMI 對照區間",
+      "sectionHint": "區間為衛教／對照用途，不作醫療診斷或藥物判讀。",
+      "genderMale": "男性",
+      "genderFemale": "女性",
+      "columns": {
+        "range": "FFMI 範圍",
+        "evaluation": "區間說明"
+      },
+      "rangeMale": {
+        "r16_17": "16 – 17",
+        "r18_19": "18 – 19",
+        "r20_21": "20 – 21",
+        "r22": "22",
+        "r23_25": "23 – 25",
+        "r26_27": "26 – 27",
+        "r28_30": "28 – 30"
+      },
+      "rangeFemale": {
+        "r13_14": "13 – 14",
+        "r15_16": "15 – 16",
+        "r17_18": "17 – 18",
+        "r19_21": "19 – 21",
+        "r22plus": "> 22"
+      }
+    },
+    "category": {
+      "male": {
+        "r16_17": "肌肉量偏低",
+        "r18_19": "運動員入門",
+        "r20_21": "訓練者區間",
+        "r22": "強健業餘高段",
+        "r23_25": "進階自然天花板帶",
+        "r26_27": "極高表現",
+        "r28_30": "極端離群區間"
+      },
+      "female": {
+        "r13_14": "肌肉量偏低",
+        "r15_16": "運動員入門",
+        "r17_18": "訓練者區間",
+        "r19_21": "強健業餘高段",
+        "r22plus": "極高表現"
+      }
+    }
+  }
+}

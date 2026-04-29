@@ -1,0 +1,16 @@
+{
+  "about": {
+    "kicker": "產品資訊",
+    "title": "關於 UP Final",
+    "subtitle": "以本機優先為核心的體能評測 App，專注在清楚計分與長期進展追蹤。",
+    "versionTitle": "版本資訊",
+    "versionBody": "目前 App 版本：{{version}}",
+    "missionTitle": "我們的目標",
+    "missionBody": "我們打造實用、可解釋、可重現的體能計分工具，幫助你在日常訓練中做出更穩健的判斷。",
+    "disclaimerTitle": "非醫療聲明",
+    "disclaimerBody": "UP Final 為健身自我追蹤工具，不提供醫療診斷、治療建議或緊急醫療指示。",
+    "contactTitle": "聯絡方式",
+    "contactBody": "若你對產品或資料處理有疑問，請透過 App 內提供的官方支援管道聯繫我們。",
+    "openPrivacyPolicy": "開啟隱私權政策"
+  }
+}

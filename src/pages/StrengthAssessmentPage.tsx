@@ -6,6 +6,7 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import HexRadarChart from '../components/radar/HexRadarChart';
 import { ROUTES } from '../config/routes';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE } from '../logic/core/assessmentLeaderboardShards';
 import {
@@ -35,6 +36,7 @@ function fmtBranchLine(
 const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const [howToOpen, setHowToOpen] = useState(false);
+  const [combinedDetailsOpen, setCombinedDetailsOpen] = useState(false);
   const {
     profile,
     profileReady,
@@ -83,6 +85,8 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     }
     return weakest?.key;
   }, [strengthRadarPoints]);
+  const interpretationScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
+  const scoreMeaning = useScoreMeaning('strength', interpretationScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -296,39 +300,64 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   ) : null}
                 </div>
                 <div className="border-t border-zinc-700/80 pt-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                    {t('strength.branchScoresHeading')}
-                  </p>
-                  <ul className="mt-2 space-y-2 text-sm text-zinc-300">
-                    {combinedBreakdown.branches.map((b) => (
-                      <li
-                        key={b.lift}
-                        className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
-                      >
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
-                          {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
-                            <p className="text-[11px] leading-relaxed text-amber-100/90">
-                              {t('strength.capWeightNotice', {
-                                lift: t(`strength.lifts.${b.lift}`),
-                                input: b.inputWeightKg,
-                                max: b.modelMaxKg,
-                              })}
-                            </p>
-                          ) : null}
-                        </div>
-                        <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
-                          {fmtBranchLine(t, b)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-3 text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
-                  <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
-                    {combinedBreakdown.averageRaw.toFixed(2)}
-                  </p>
+                  <DisclosurePanel
+                    instanceId="strength-combined-details"
+                    expanded={combinedDetailsOpen}
+                    onToggle={() => setCombinedDetailsOpen((v) => !v)}
+                    title={t('strength.combinedDetailsTitle')}
+                    toggleExpandLabel={t('strength.combinedDetailsExpand')}
+                    toggleCollapseLabel={t('strength.combinedDetailsCollapse')}
+                    panelBodyClassName="space-y-3 px-4 pb-4 pt-3"
+                  >
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                      {combinedBreakdown.branches.map((b) => (
+                        <li
+                          key={b.lift}
+                          className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
+                        >
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
+                            {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
+                              <p className="text-[11px] leading-relaxed text-amber-100/90">
+                                {t('strength.capWeightNotice', {
+                                  lift: t(`strength.lifts.${b.lift}`),
+                                  input: b.inputWeightKg,
+                                  max: b.modelMaxKg,
+                                })}
+                              </p>
+                            ) : null}
+                          </div>
+                          <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
+                            {fmtBranchLine(t, b)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
+                    <p className="font-mono text-lg tabular-nums text-zinc-100">
+                      {combinedBreakdown.averageRaw.toFixed(2)}
+                    </p>
+                  </DisclosurePanel>
                 </div>
               </div>
+            ) : null}
+
+            {combinedBreakdown && scoreMeaning ? (
+              <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
+                <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
+                  {t('strength.performanceSpecHeader')}
+                </p>
+                <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
+                  {scoreMeaning.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
+                {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+                  <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-orange-300">
+                    {t('strength.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
+                  </p>
+                ) : null}
+              </section>
             ) : null}
 
             <div className="flex flex-wrap gap-2">

@@ -1,0 +1,32 @@
+{
+  "armSize": {
+    "kicker": "圍度",
+    "title": "臂圍評測",
+    "subtitle": "輸入上臂圍與體脂率即可計算臂圍分數（僅用於臂圍排行榜）。",
+    "armLabel": "上臂圍（cm）",
+    "armPlaceholder": "例如 42",
+    "bodyFatLabel": "體脂率（%）",
+    "bodyFatPlaceholder": "例如 18",
+    "referenceInfo": {
+      "toggleExpand": "展開評測參考資料",
+      "toggleCollapse": "收合評測參考資料",
+      "title": "評測參考資料",
+      "p1": "輸入範圍：上臂圍 1–70 cm、體脂率 3–50%。超出範圍會被擋下，確保計分可比較。",
+      "p2": "計算式：score = (臂圍 / 50) × (1 + (20 - 體脂率) / 100) × 100，結果保留兩位小數。",
+      "p3": "本分數只用於臂圍排行榜，不納入首頁六軸雷達與總分。"
+    },
+    "capNoticeTitle": "排行榜分數已套用單軸上限",
+    "capNoticeBody": "原始分數超過單軸封頂（200）時，排行榜提交值將以 200 儲存。",
+    "previewLabel": "預覽分數",
+    "submittedScoreLabel": "排行榜提交值：{{score}}",
+    "calculate": "計算",
+    "saveLeaderboard": "儲存排行榜分數（臂圍）",
+    "submitDone": "已儲存臂圍分數，可在排行榜切換到「臂圍」查看。",
+    "errors": {
+      "invalid-arm-cm": "請輸入大於 0 的上臂圍（cm）。",
+      "arm-exceeds-max": "上臂圍不可超過 70 cm。",
+      "invalid-body-fat": "請輸入有效的體脂率數字（%）。",
+      "body-fat-out-of-range": "體脂率須介於 3% 與 50% 之間。"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "cardio": {
+    "kicker": "Endurance",
+    "title": "Cardio assessment",
+    "subtitle": "Use 12-minute Cooper distance or 5 km time to calculate cardio score.",
+    "tabCooper": "Cooper (12 min)",
+    "tab5km": "5 km",
+    "tabsAria": "Cardio test type",
+    "cooperDistanceLabel": "12-minute run distance (meters)",
+    "cooperPlaceholder": "e.g. 2600",
+    "cooperHint": "Run on a track or measure with GPS. Model ceiling aligned with elite 5,000 m standards: {{maleCap}} m (male), {{femaleCap}} m (female); scores cap above that.",
+    "cooperWorldRecordCapHint": "That distance exceeds our model ceiling for elite 5,000 m–class performance ({{capMeters}} m for your profile). Scoring uses the capped distance.",
+    "cooperInfo": {
+      "toggleExpand": "Show details",
+      "toggleCollapse": "Hide details",
+      "title": "Cooper 12-minute run test",
+      "p1": "The 12-minute run field test is widely credited to Dr. Kenneth H. Cooper, former U.S. Air Force colonel, as a practical aerobic screening tool. Gold-standard VO₂ max is usually measured in a lab under maximal effort, which is hard to scale; the Cooper protocol uses maximal distance covered in 12 minutes as a field estimate of cardiorespiratory fitness / VO₂ max—and it has roots in military fitness screening. (Educational/fitness context only—not a medical diagnosis.)",
+      "p2": "How to perform: use a track or another safe, flat route; record total meters via lap counting or a sports watch / GPS; do a 10–15 minute dynamic warm-up beforehand to reduce injury risk.",
+      "p3": "Your app score maps sex and age to a norm distance table: 60-point and 100-point anchor distances differ by age band, so the same distance can yield very different scores. We linearly interpolate between the 60- and 100-point anchors and allow scores above 100 beyond the top anchor. This app provides a Cooper age band from 13+.",
+      "p4": "Norm distances follow the same lineage as commonly published Cooper test charts (including references to chart compendia such as the Cooper Test Chart) and secondary citations of chart work associated with Carl Magnus Swahn. Institutions may use slightly different bands; this app interpolates using the same anchor table as our fitness reference implementation.",
+      "p5": "Use a track or GPS-enabled route when possible. The scoring table stays aligned with the reference implementation. World-class long-distance model ceilings apply at 4900 m (male) and 4400 m (female); scores are capped above those limits."
+    },
+    "run5kmHeading": "5 km finish time",
+    "minutesLabel": "Minutes",
+    "secondsLabel": "Seconds",
+    "run5kmHint": "Faster than 20:00 scores above 100; 45:00 or slower is 0. Times are stored on device only.",
+    "previewLabel": "Preview score",
+    "performanceSpecHeader": "PERFORMANCE SPEC / 性能規格",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
+    "calculate": "Calculate",
+    "submitRadar": "Save to radar (cardio axis)",
+    "submitDone": "Saved — Home radar and history can use this score.",
+    "profileIncompleteHint": "Cooper needs age and sex from your Home profile. You can still use the 5 km tab with time only.",
+    "ctaProfile": "Open Home profile",
+    "errors": {
+      "missing-profile": "Add a complete physical profile on Home to use Cooper.",
+      "missing-profile-cooper": "Set age and sex on Home before running Cooper.",
+      "invalid-cooper-distance": "Enter a positive distance in meters.",
+      "cooper-no-standard": "No Cooper table for this age range — check the age on your profile (13+).",
+      "invalid-5km-time": "Enter a valid 5 km time (minutes and/or seconds)."
+    }
+  }
+}

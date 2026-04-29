@@ -1,0 +1,100 @@
+{
+  "tools": {
+    "kicker": "工具甲板",
+    "title": "工具與雲端同步",
+    "syncTitle": "雲端同步",
+    "syncBody": "Pro 可將個人資料與歷史紀錄同步到雲端。",
+    "syncProOnly": "雲端同步需要 Pro — 請前往加入戰場取得授權。",
+    "syncBackup": "立即備份至雲端",
+    "syncRestore": "從雲端還原",
+    "syncUpgrade": "解鎖 Pro",
+    "syncGateSheet": {
+      "secondary": "稍後再說",
+      "auth": {
+        "title": "先登入才能雲端備份",
+        "body": "使用 Google 登入後，即可備份與還原資料。",
+        "primary": "使用 Google 登入"
+      },
+      "pro": {
+        "title": "雲端同步需要 Pro",
+        "body": "升級 Pro 後即可備份與還原你的雲端資料。",
+        "primary": "解鎖 Pro"
+      }
+    },
+    "calculators": {
+      "title": "訓練計算器",
+      "oneRm": {
+        "kicker": "力量工具",
+        "title": "1RM 計算機",
+        "subtitle": "輸入重量與次數，估算單次最大重量（1RM）。",
+        "cardBody": "用 Epley / Brzycki / Lombardi 或平均法快速估算 1RM。",
+        "weightLabel": "重量（kg）",
+        "weightPlaceholder": "例如 100",
+        "repsLabel": "次數（reps）",
+        "repsPlaceholder": "例如 5",
+        "methodLabel": "公式",
+        "methodSheetTitle": "選擇 1RM 公式",
+        "methods": {
+          "average": "平均（推薦）",
+          "epley": "Epley",
+          "brzycki": "Brzycki",
+          "lombardi": "Lombardi"
+        },
+        "resultLabel": "估算 1RM",
+        "resultValue": "{{value}} kg",
+        "resultEmpty": "—",
+        "hint": "提示：次數越高通常誤差越大；若有低次數、接近力竭的組數，建議優先輸入該組。"
+      },
+      "plates": {
+        "kicker": "力量工具",
+        "title": "槓片計算器",
+        "subtitle": "輸入總重量與槓鈴重量，計算每邊建議槓片配置。",
+        "cardBody": "自動拆分每邊槓片，快速完成配重設定。",
+        "unitLabel": "單位制",
+        "unitSheetTitle": "選擇單位制",
+        "unitOptions": {
+          "kg": "公斤（kg）",
+          "lb": "磅（lb）"
+        },
+        "plateSetLabel": "槓片組",
+        "plateSetSheetTitle": "選擇槓片組",
+        "plateSetOptions": {
+          "commercial": "商用健身房",
+          "competition": "比賽規格",
+          "homeBasic": "居家基礎"
+        },
+        "barbellTypeLabel": "槓鈴規格",
+        "barbellSheetTitle": "選擇槓鈴規格",
+        "barbellOptions": {
+          "olympic": "標準槓鈴",
+          "women": "女性槓鈴",
+          "technique": "技術槓",
+          "custom": "自訂槓重"
+        },
+        "targetLabel": "目標總重量（{{unit}}）",
+        "targetPlaceholder": "例如 140",
+        "barLabel": "槓鈴重量（{{unit}}）",
+        "barPlaceholder": "例如 20",
+        "barResolvedLabel": "套用槓鈴重量",
+        "barResolvedValue": "{{value}} {{unit}}",
+        "perSideLabel": "每邊目標重量",
+        "perSideValue": "{{value}} {{unit}} / side",
+        "plateRow": "{{value}} {{unit}}",
+        "resultEmpty": "—",
+        "inputHint": "請輸入可行目標（總重量需大於槓鈴重量）。",
+        "leftoverWarning": "以目前槓片組合無法精準湊到目標，每邊尚差 {{value}} {{unit}}。",
+        "activePlateSet": "目前槓片組：{{values}}（{{unit}}）。"
+      }
+    },
+    "sync": {
+      "backupOk": "結構化備份已完成（profile + 歷史文件）。",
+      "backupFail": "備份失敗 — 請檢查網路或稍後再試。",
+      "unavailable": "目前無法使用雲端同步，請稍後再試。",
+      "permissionDenied": "目前無法完成同步，請稍後再試。",
+      "authFail": "雲端同步需要已登入的 Google 帳號（不可為匿名）。",
+      "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
+      "restoreEmpty": "尚無雲端快照。",
+      "restoreFail": "還原失敗 — 請檢查網路或稍後再試。"
+    }
+  }
+}

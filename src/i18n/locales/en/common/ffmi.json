@@ -1,0 +1,85 @@
+{
+  "ffmi": {
+    "kicker": "Body composition",
+    "title": "FFMI assessment",
+    "subtitle": "Calculate FFMI and body-fat radar-axis score from profile and body-fat input.",
+    "bodyFatLabel": "Body fat percentage",
+    "bodyFatPlaceholder": "e.g. 15",
+    "bodyFatUnit": "%",
+    "bodyFatHint": "Reasonable inputs are about 3–60%. Uses height, weight, and gender from Home.",
+    "calculate": "Calculate",
+    "resultFfmi": "Adjusted FFMI (display)",
+    "resultRadarScore": "Radar score",
+    "radarScoreLockedLabel": "Locked",
+    "resultScoreUncapped": "Formula score before cap",
+    "resultFfmiCapped": "FFMI used for radar score",
+    "categoryLabel": "Band",
+    "worldRecordLockTitle": "World-record FFMI ceiling",
+    "worldRecordLockIntro": "Your adjusted FFMI is above the documented elite-record anchor for your sex. The radar cannot plot this run yet — change body fat or profile data until you are at or below the limit. A dedicated overclock mode for the chart is planned.",
+    "anchorMale": "Male world-record anchor (FFMI {{value}}).",
+    "anchorFemale": "Female world-record anchor (FFMI {{value}}).",
+    "submitRadar": "Write score to radar (body fat axis)",
+    "submitDone": "Stored locally — radar on Home updates.",
+    "ctaProfile": "Fill physical profile on Home",
+    "errors": {
+      "missing-profile": "Physical profile incomplete — add gender, age, height, and weight on Home first.",
+      "missing-body-fat": "Enter body fat percentage.",
+      "invalid-body-fat": "Body fat must be between 3 and 60%.",
+      "need-calculate": "Calculate once before saving.",
+      "world-record-lock": "Adjusted FFMI is above the world-record anchor — adjust body fat or profile before writing to the radar."
+    },
+    "info": {
+      "whatIsTitle": "What is FFMI?",
+      "whatIsIntro": "FFMI (Fat-Free Mass Index) reflects lean mass versus height and body fat — often more informative than BMI alone for training context. Higher values generally mean more fat-free mass among people with similar height. Results can skew when:",
+      "caveats": {
+        "tall": "Height is far above average (around ≥190 cm). This app applies a tall correction above 1.8 m.",
+        "highFat": "Body fat percentage is unusually high relative to typical reporting ranges.",
+        "heavy": "Body weight is unusually high for height, which affects estimated fat-free mass."
+      }
+    },
+    "table": {
+      "sectionTitle": "FFMI reference bands",
+      "sectionHint": "Bands are educational labels only — not a medical or PED diagnosis.",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "columns": {
+        "range": "FFMI range",
+        "evaluation": "Band"
+      },
+      "rangeMale": {
+        "r16_17": "16 – 17",
+        "r18_19": "18 – 19",
+        "r20_21": "20 – 21",
+        "r22": "22",
+        "r23_25": "23 – 25",
+        "r26_27": "26 – 27",
+        "r28_30": "28 – 30"
+      },
+      "rangeFemale": {
+        "r13_14": "13 – 14",
+        "r15_16": "15 – 16",
+        "r17_18": "17 – 18",
+        "r19_21": "19 – 21",
+        "r22plus": "> 22"
+      }
+    },
+    "category": {
+      "male": {
+        "r16_17": "Below average muscle expression",
+        "r18_19": "Athletic baseline",
+        "r20_21": "Trained lifter range",
+        "r22": "Strong recreational upper range",
+        "r23_25": "Advanced natural ceiling band",
+        "r26_27": "Very high expression",
+        "r28_30": "Extreme outlier band"
+      },
+      "female": {
+        "r13_14": "Below average muscle expression",
+        "r15_16": "Athletic baseline",
+        "r17_18": "Trained lifter range",
+        "r19_21": "Strong recreational upper range",
+        "r22plus": "Very high expression"
+      }
+    }
+  }
+}

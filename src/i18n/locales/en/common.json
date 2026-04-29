@@ -29,58 +29,112 @@
       }
     },
     "bands": {
-      "cardio": {
+      "strength": {
         "BASE": {
           "title": "Baseline Calibration",
-          "summary": "[ SYSTEM START ] Performance aligns with general population averages. You are currently in the foundational calibration phase. Building a consistent aerobic base is the primary objective."
+          "summary": "[CHASSIS READY] Foundational phase. Establishing torque transmission paths and kinematic precision so Torque Output and Chassis Integrity can scale consistently."
         },
         "TIER_41": {
-          "title": "Kinetic Emergence",
-          "summary": "[ KINETIC EMERGENCE ] Thermal management is beginning to stabilize. Your system can now sustain basic power output as you build initial endurance tolerance."
+          "title": "Torque Emergence",
+          "summary": "[TORQUE EMERGENCE] Effective torque is now online. The system is building initial tolerance for external load while preserving structural stability."
         },
         "TIER_51": {
-          "title": "Optimization Launch",
-          "summary": "[ OPTIMIZATION LAUNCH ] Core efficiency is showing signs of stabilization. You are achieving better-than-average fuel economy with improved management of performance decay under load."
+          "title": "Optimization Ignition",
+          "summary": "[CORE STABILIZED] Core rigidity is locking in. Torque Efficiency improves while chassis deformation stays controlled under stress."
         },
         "TIER_61": {
-          "title": "Stable Cruise",
-          "summary": "[ STABLE CRUISE ] Entering the 'Regular Runner' sequence. Demonstrating solid cruising capability and consistent rhythm management over sustained distances."
+          "title": "Sustained Load Capacity",
+          "summary": "[STABLE LOAD] Entering the advanced sequence. Robust load-bearing and continuous power delivery under high-resistance conditions."
         },
         "TIER_71": {
-          "title": "Advanced Thermal Spec",
-          "summary": "[ THERMAL PERFORMANCE ] Components reaching optimal operating temperature. Performance profile exceeds most club-level runners, showing the capacity to sustain high-intensity tactical efforts."
+          "title": "Thermal Optimization",
+          "summary": "[THERMAL PEAK] Components operate in optimal thermal range, sustaining high-density load cycles with stable structural response."
         },
         "TIER_81": {
-          "title": "Peak Performance",
-          "summary": "[ PERFORMANCE PEAK ] The pinnacle of amateur elite. You possess the output to dominate local run clubs. Overall efficiency is approaching competitive-grade thresholds."
+          "title": "Performance Apex",
+          "summary": "[PERFORMANCE APEX] Top-tier local benchmark. Mechanical leverage and rigidity are approaching competitive thresholds."
         },
         "TIER_91": {
           "title": "Competitive Awakening",
-          "summary": "[ COMPETITIVE AWAKENING ] Breaking the amateur ceiling. Your system is now accessing high-frequency potential usually reserved for professional domains."
+          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. High-torque traits are now visible and aligning toward professional-grade output."
         },
         "TIER_101": {
-          "title": "Endurance Stint",
-          "summary": "[ ENDURANCE STINT ] Podium potential at regional events. Your cardiopulmonary system exhibits Le Mans-grade resilience, capable of leading under prolonged high-pressure."
+          "title": "High-Pressure Tolerance",
+          "summary": "[ARMORED RESILIENCE] Regional podium potential. Maintains low-loss transmission and stable output under extreme compression."
         },
         "TIER_111": {
-          "title": "Extreme Anti-Fade",
-          "summary": "[ EXTREME ANTI-FADE ] Entering the elite competitive sequence. Exceptional recovery post-sprint; your system remains optimized for immediate follow-up attacks."
+          "title": "Structural Rigidity",
+          "summary": "[STRUCTURAL RIGIDITY] Elite sequence confirmed. Chassis Rigidity and Torque Efficiency rise together with a deep reserve of raw force."
         },
         "TIER_121": {
           "title": "Sequence Dominance",
-          "summary": "[ SEQUENCE DOMINANCE ] Performance benchmarks align with National Elite levels. You possess true command over energy systems in high-attrition scenarios."
+          "summary": "[SEQUENCE DOMINANCE] National-elite territory. Absolute command over gravity and resistance in high-load attrition environments."
+        },
+        "TIER_131": {
+          "title": "Perpetual Architecture",
+          "summary": "[PERPETUAL ARCHITECTURE] Approaching physical limits. Biological tissue and engineered rigidity now behave as one coherent system."
+        },
+        "TIER_141": {
+          "title": "Phantom Load",
+          "summary": "[PHANTOM LOAD] Transcendent torque detected. Operating near the Structural Limit of conventional material mechanics."
+        },
+        "LEGEND": {
+          "title": "Absolute Rigid Body",
+          "summary": "[ABSOLUTE RIGID BODY] Data overflow. Beyond ordinary physiology; the legendary crystallization of pure structural will."
+        }
+      },
+      "cardio": {
+        "BASE": {
+          "title": "Baseline Calibration",
+          "summary": "[SYSTEM INITIALIZATION] Foundational phase. Focus on establishing a consistent aerobic baseline."
+        },
+        "TIER_41": {
+          "title": "Kinetic Thermal Spec",
+          "summary": "[THERMAL START] System beginning to develop managed tolerance for sustained output."
+        },
+        "TIER_51": {
+          "title": "Efficiency Launch",
+          "summary": "[EFFICIENCY OPTIMIZED] Core tuning stabilized. Improved management of performance decay under load."
+        },
+        "TIER_61": {
+          "title": "Stable Cruise",
+          "summary": "[STABLE CRUISE] Entering regular runner sequence. Demonstrating solid, sustained cruising capacity."
+        },
+        "TIER_71": {
+          "title": "Advanced Thermal Spec",
+          "summary": "[THERMAL PEAK] Components at optimal temperature. Capable of handling high-intensity tactical efforts."
+        },
+        "TIER_81": {
+          "title": "Performance Apex",
+          "summary": "[PERFORMANCE APEX] Peak amateur output. Dominating local club tiers; approaching competitive-grade thresholds."
+        },
+        "TIER_91": {
+          "title": "Competitive Awakening",
+          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. Accessing potential usually reserved for professional domains."
+        },
+        "TIER_101": {
+          "title": "Endurance Stint",
+          "summary": "[ENDURANCE STINT] Regional podium potential. Cardiopulmonary resilience capable of leading under prolonged pressure."
+        },
+        "TIER_111": {
+          "title": "Extreme Anti-Fade",
+          "summary": "[EXTREME ANTI-FADE] Elite sequence detected. Rapid thermal recovery; optimized for immediate follow-up attacks."
+        },
+        "TIER_121": {
+          "title": "Sequence Dominance",
+          "summary": "[SEQUENCE DOMINANCE] National elite benchmarks. Absolute command over energy systems in high-attrition scenarios."
         },
         "TIER_131": {
           "title": "Eternal Prototype",
-          "summary": "[ ETERNAL PROTOTYPE ] Approaching the absolute limits of human physiology. Thermal management is reaching master-class status; gravity and fatigue are no longer significant burdens."
+          "summary": "[ETERNAL PROTOTYPE] Approaching physical limits. Mastery-level efficiency where fatigue is no longer a factor."
         },
         "TIER_141": {
           "title": "Phantom Sequence",
-          "summary": "[ PHANTOM SEQUENCE ] Entering International Master-level territory. You are defying standard physical norms through sheer metabolic efficiency."
+          "summary": "[PHANTOM SEQUENCE] International master-level alerts. Defying standard physical norms through sheer metabolic power."
         },
         "LEGEND": {
           "title": "Absolute Domain",
-          "summary": "[ ABSOLUTE DOMAIN ] Data Overflow detected. This is the realm of legends. Your output transcends biological definitions—a masterclass in pure, sustained power."
+          "summary": "[ABSOLUTE DOMAIN] Data Overflow. This is the realm of legends; a crystalline form of pure power."
         }
       }
     },
@@ -828,6 +882,8 @@
     "averageRawLabel": "Mean of completed lifts",
     "spectrumKicker": "Hardened structure analysis",
     "spectrumSub": "Detects five-axis strength spectrum balance.",
+    "performanceSpecHeader": "PERFORMANCE SPEC / Heavy Load",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "previewLabel": "Radar axis score",
     "radarClampNote": "If the mean exceeds the per-axis cap (0–200), the stored radar value is clamped.",
     "submitRadar": "Save to radar (strength axis)",
@@ -970,7 +1026,8 @@
       "p1": "The 12-minute run field test is widely credited to Dr. Kenneth H. Cooper, former U.S. Air Force colonel, as a practical aerobic screening tool. Gold-standard VO₂ max is usually measured in a lab under maximal effort, which is hard to scale; the Cooper protocol uses maximal distance covered in 12 minutes as a field estimate of cardiorespiratory fitness / VO₂ max—and it has roots in military fitness screening. (Educational/fitness context only—not a medical diagnosis.)",
       "p2": "How to perform: use a track or another safe, flat route; record total meters via lap counting or a sports watch / GPS; do a 10–15 minute dynamic warm-up beforehand to reduce injury risk.",
       "p3": "Your app score maps sex and age to a norm distance table: 60-point and 100-point anchor distances differ by age band, so the same distance can yield very different scores. We linearly interpolate between the 60- and 100-point anchors and allow scores above 100 beyond the top anchor. This app provides a Cooper age band from 13+.",
-      "p4": "Norm distances follow the same lineage as commonly published Cooper test charts (including references to chart compendia such as the Cooper Test Chart) and secondary citations of chart work associated with Carl Magnus Swahn. Institutions may use slightly different bands; this app interpolates using the same anchor table as our fitness reference implementation."
+        "p4": "Norm distances follow the same lineage as commonly published Cooper test charts (including references to chart compendia such as the Cooper Test Chart) and secondary citations of chart work associated with Carl Magnus Swahn. Institutions may use slightly different bands; this app interpolates using the same anchor table as our fitness reference implementation.",
+        "p5": "To keep the model stable against extreme inputs, we apply world-class long-distance ceilings: 4900 m for male and 4400 m for female. Inputs above these caps are scored at the cap and locked to the same top result."
     },
     "run5kmHeading": "5 km finish time",
     "minutesLabel": "Minutes",

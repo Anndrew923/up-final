@@ -1,0 +1,68 @@
+{
+  "assessment": {
+    "title": "Assessment",
+    "subtitle": "Choose an assessment to begin.",
+    "localFirstNote": "Core-only: scores stay on device — no Firebase on this screen.",
+    "referenceInfo": {
+      "title": "Assessment references",
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references"
+    },
+    "rawInputsHeading": "Core six inputs",
+    "homeRadarHint": "Radar and overall average are shown on Home.",
+    "viewHomeRadar": "Open Home radar",
+    "saveToHistory": "Save snapshot to history",
+    "saveToHistoryDone": "Saved to local history.",
+    "resetScores": "Reset core scores",
+    "axis": {
+      "strength": "Strength",
+      "explosivePower": "Explosive power",
+      "cardio": "Cardio",
+      "muscleMass": "Muscle mass",
+      "bodyFat": "Body fat",
+      "gripStrength": "Grip strength"
+    },
+    "ffmi": {
+      "kicker": "Calculated",
+      "title": "FFMI (body-fat axis)",
+      "body": "Use profile + body fat to calculate FFMI and update the body-fat axis.",
+      "cta": "Open FFMI page"
+    },
+    "cardio": {
+      "kicker": "Endurance",
+      "title": "Cardio (Cooper / 5 km)",
+      "body": "Use Cooper distance or 5 km time to calculate cardio score.",
+      "cta": "Open cardio assessment"
+    },
+    "muscle": {
+      "kicker": "Body composition",
+      "title": "Muscle mass (SMM)",
+      "body": "Enter skeletal muscle mass (SMM) to calculate your muscle-axis score.",
+      "cta": "Open muscle assessment"
+    },
+    "explosive": {
+      "kicker": "Power",
+      "title": "Explosive power (jump / sprint)",
+      "body": "Enter at least one metric: vertical jump, standing long jump, or sprint.",
+      "cta": "Open explosive assessment"
+    },
+    "strength": {
+      "kicker": "Strength",
+      "title": "Five-lift strength (DOTS-based)",
+      "body": "Enter weight and reps for the five lifts, then calculate and save to radar.",
+      "cta": "Open strength assessment"
+    },
+    "grip": {
+      "kicker": "Grip",
+      "title": "Grip strength",
+      "body": "Enter peak grip (kg) to calculate grip-axis score.",
+      "cta": "Open grip assessment"
+    },
+    "armSize": {
+      "kicker": "Circumference",
+      "title": "Arm size assessment",
+      "body": "Enter arm circumference and body fat to calculate arm leaderboard score.",
+      "cta": "Open arm-size assessment"
+    }
+  }
+}

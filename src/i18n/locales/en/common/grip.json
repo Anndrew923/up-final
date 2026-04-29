@@ -1,0 +1,51 @@
+{
+  "grip": {
+    "kicker": "Grip",
+    "title": "Grip strength assessment",
+    "subtitle": "Enter peak grip (kg) to calculate grip-axis score.",
+    "peakLabel": "Peak grip (kg)",
+    "peakPlaceholder": "e.g. 65",
+    "referenceInfo": {
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references",
+      "title": "Assessment references",
+      "p1": "Formula: score = peakKg × 1.4, then ×1.6 for female scoring. Score keeps one decimal and may exceed 100.",
+      "p2": "Model cap is 160 kg. Inputs above the cap are clamped for scoring and storage.",
+      "p3": "Cap benchmark: Magnus Samuelsson. This is a product guardrail, not a competition certification."
+    },
+    "capNoticeTitle": "Input exceeds model cap",
+    "capNoticeBody": "You entered {{input}} kg, above the grip model cap of {{max}} kg. Scoring and saved value are locked to {{max}} kg.",
+    "capNoticeLegend": "Cap benchmark: Swedish strongman Magnus Samuelsson.",
+    "previewLabel": "Preview score",
+    "rankLabel": "Rank: {{label}} (Aura: {{aura}})",
+    "ranks": {
+      "ironApprentice": "Iron Apprentice",
+      "athleticElite": "Athletic Elite",
+      "vanguard": "Vanguard",
+      "bossClass": "Boss Class",
+      "titan": "Titan",
+      "grandmaster": "Grandmaster",
+      "godHand": "God Hand"
+    },
+    "auras": {
+      "none": "None",
+      "pulse": "Pulse",
+      "flow": "Flow",
+      "shimmer": "Shimmer",
+      "lightning": "Lightning",
+      "void_flame": "Void Flame",
+      "divine_light": "Divine Light"
+    },
+    "calculate": "Calculate",
+    "submitRadar": "Save to radar (grip axis)",
+    "submitDone": "Saved — Home radar and merged scores now use this grip axis.",
+    "profileIncompleteHint": "Grip conversion needs a complete Home profile (sex, age, height, weight).",
+    "ctaProfile": "Open Home profile",
+    "metaGender": "Sex: {{value}}",
+    "metaWeight": "Weight: {{value}} kg",
+    "errors": {
+      "missing-profile": "Add a complete physical profile on Home first.",
+      "invalid-peak": "Enter a positive peak grip value in kg."
+    }
+  }
+}

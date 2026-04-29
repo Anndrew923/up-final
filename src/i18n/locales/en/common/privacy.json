@@ -1,0 +1,10 @@
+{
+  "privacy": {
+    "kicker": "Legal",
+    "title": "Privacy policy",
+    "subtitle": "Read how UP Final handles profile, assessment, and cloud-sync related data.",
+    "openStandalone": "Open policy in a new tab",
+    "currentLanguage": "Current policy language: {{locale}}",
+    "openOtherLanguage": "Open {{locale}} version"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "armSize": {
+    "kicker": "Circumference",
+    "title": "Arm size assessment",
+    "subtitle": "Enter upper-arm circumference and body fat to calculate arm-size score (leaderboard only).",
+    "armLabel": "Upper-arm circumference (cm)",
+    "armPlaceholder": "e.g. 42",
+    "bodyFatLabel": "Body-fat percentage (%)",
+    "bodyFatPlaceholder": "e.g. 18",
+    "referenceInfo": {
+      "toggleExpand": "Show assessment references",
+      "toggleCollapse": "Hide assessment references",
+      "title": "Assessment references",
+      "p1": "Accepted ranges: upper-arm 1-70 cm and body fat 3-50%. Values outside range are blocked.",
+      "p2": "Formula: score = (arm / 50) × (1 + (20 - body-fat) / 100) × 100, rounded to 2 decimals.",
+      "p3": "This score is used for the arm-size leaderboard only, and is not part of the six-axis radar or Home overall."
+    },
+    "capNoticeTitle": "Leaderboard value capped by axis ceiling",
+    "capNoticeBody": "When raw score exceeds the per-axis ceiling (200), leaderboard submission is stored as 200.",
+    "previewLabel": "Preview score",
+    "submittedScoreLabel": "Leaderboard submission value: {{score}}",
+    "calculate": "Calculate",
+    "saveLeaderboard": "Save leaderboard score (arm size)",
+    "submitDone": "Saved. Switch leaderboard metric to Arm size to view ranking.",
+    "errors": {
+      "invalid-arm-cm": "Enter a positive upper-arm circumference in cm.",
+      "arm-exceeds-max": "Upper-arm circumference cannot exceed 70 cm.",
+      "invalid-body-fat": "Enter a valid body-fat percentage number.",
+      "body-fat-out-of-range": "Body fat must be between 3% and 50%."
+    }
+  }
+}

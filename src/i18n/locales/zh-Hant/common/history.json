@@ -1,0 +1,22 @@
+{
+  "history": {
+    "kicker": "本機紀錄庫",
+    "title": "評測紀錄",
+    "subtitle": "從「評測」分頁儲存的快照（僅存於本裝置，核心功能無需訂閱）。",
+    "empty": "尚無快照。請到「評測」分頁儲存一筆。",
+    "colDate": "儲存時間",
+    "colOverall": "總分",
+    "colActions": "操作",
+    "delete": "刪除",
+    "deleteConfirm": "確定要刪除這筆紀錄嗎？此操作無法復原。",
+    "valueEmpty": "—",
+    "shortAxis": {
+      "strength": "力量",
+      "explosivePower": "爆發",
+      "cardio": "心肺",
+      "muscleMass": "肌肉",
+      "bodyFat": "體脂",
+      "gripStrength": "握力"
+    }
+  }
+}

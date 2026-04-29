@@ -1,0 +1,22 @@
+{
+  "history": {
+    "kicker": "Local archive",
+    "title": "Assessment history",
+    "subtitle": "Snapshots saved from Assessment (device-only, Core — no subscription required).",
+    "empty": "No snapshots yet. Save one from the Assessment tab.",
+    "colDate": "Saved at",
+    "colOverall": "Overall",
+    "colActions": "Actions",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this record? This action cannot be undone.",
+    "valueEmpty": "—",
+    "shortAxis": {
+      "strength": "STR",
+      "explosivePower": "PWR",
+      "cardio": "CAR",
+      "muscleMass": "MUS",
+      "bodyFat": "BF",
+      "gripStrength": "GRP"
+    }
+  }
+}

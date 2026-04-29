@@ -1,0 +1,193 @@
+{
+  "back": "Back",
+  "cancel": "Cancel",
+  "scoreMeaning": {
+    "axis": {
+      "strength": {
+        "label": "Rigid Spectrum (Strength)",
+        "desc": "Measures neuromuscular recruitment efficiency relative to body weight (DOTS coefficient). Higher values indicate stronger absolute rigidity output per unit body mass."
+      },
+      "explosivePower": {
+        "label": "Burst Spectrum (Power)",
+        "desc": "Measures instantaneous kinetic discharge and power output. Higher values indicate greater explosive force and vertical work capacity in very short time windows."
+      },
+      "cardio": {
+        "label": "Rhythm Spectrum (Cardio)",
+        "desc": "Measures cardiovascular stability and aerobic ceiling. Higher values indicate stronger thermal management and endurance under sustained high-intensity operation."
+      },
+      "muscleMass": {
+        "label": "Build Spectrum (Muscle)",
+        "desc": "Measures skeletal-muscle density relative to height. Higher values indicate more mature physical structure and stronger baseline metabolic capacity."
+      },
+      "bodyFat": {
+        "label": "Refine Spectrum (FFMI/Fat)",
+        "desc": "Measures optimization between body-fat ratio and lean mass. Higher values indicate cleaner tissue composition and a stronger power-to-weight profile."
+      },
+      "gripStrength": {
+        "label": "Potential Spectrum (Grip)",
+        "desc": "Measures terminal neural response and grip output. Higher values indicate shorter neural transmission paths, higher precision, and stronger limit control."
+      }
+    },
+    "bands": {
+      "strength": {
+        "BASE": {
+          "title": "Baseline Calibration",
+          "summary": "[CHASSIS READY] Foundational phase. Establishing torque transmission paths and kinematic precision so Torque Output and Chassis Integrity can scale consistently."
+        },
+        "TIER_41": {
+          "title": "Torque Emergence",
+          "summary": "[TORQUE EMERGENCE] Effective torque is now online. The system is building initial tolerance for external load while preserving structural stability."
+        },
+        "TIER_51": {
+          "title": "Optimization Ignition",
+          "summary": "[CORE STABILIZED] Core rigidity is locking in. Torque Efficiency improves while chassis deformation stays controlled under stress."
+        },
+        "TIER_61": {
+          "title": "Sustained Load Capacity",
+          "summary": "[STABLE LOAD] Entering the advanced sequence. Robust load-bearing and continuous power delivery under high-resistance conditions."
+        },
+        "TIER_71": {
+          "title": "Thermal Optimization",
+          "summary": "[THERMAL PEAK] Components operate in optimal thermal range, sustaining high-density load cycles with stable structural response."
+        },
+        "TIER_81": {
+          "title": "Performance Apex",
+          "summary": "[PERFORMANCE APEX] Top-tier local benchmark. Mechanical leverage and rigidity are approaching competitive thresholds."
+        },
+        "TIER_91": {
+          "title": "Competitive Awakening",
+          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. High-torque traits are now visible and aligning toward professional-grade output."
+        },
+        "TIER_101": {
+          "title": "High-Pressure Tolerance",
+          "summary": "[ARMORED RESILIENCE] Regional podium potential. Maintains low-loss transmission and stable output under extreme compression."
+        },
+        "TIER_111": {
+          "title": "Structural Rigidity",
+          "summary": "[STRUCTURAL RIGIDITY] Elite sequence confirmed. Chassis Rigidity and Torque Efficiency rise together with a deep reserve of raw force."
+        },
+        "TIER_121": {
+          "title": "Sequence Dominance",
+          "summary": "[SEQUENCE DOMINANCE] National-elite territory. Absolute command over gravity and resistance in high-load attrition environments."
+        },
+        "TIER_131": {
+          "title": "Perpetual Architecture",
+          "summary": "[PERPETUAL ARCHITECTURE] Approaching physical limits. Biological tissue and engineered rigidity now behave as one coherent system."
+        },
+        "TIER_141": {
+          "title": "Phantom Load",
+          "summary": "[PHANTOM LOAD] Transcendent torque detected. Operating near the Structural Limit of conventional material mechanics."
+        },
+        "LEGEND": {
+          "title": "Absolute Rigid Body",
+          "summary": "[ABSOLUTE RIGID BODY] Data overflow. Beyond ordinary physiology; the legendary crystallization of pure structural will."
+        }
+      },
+      "cardio": {
+        "BASE": {
+          "title": "Baseline Calibration",
+          "summary": "[SYSTEM INITIALIZATION] Foundational phase. Focus on establishing a consistent aerobic baseline."
+        },
+        "TIER_41": {
+          "title": "Kinetic Thermal Spec",
+          "summary": "[THERMAL START] System beginning to develop managed tolerance for sustained output."
+        },
+        "TIER_51": {
+          "title": "Efficiency Launch",
+          "summary": "[EFFICIENCY OPTIMIZED] Core tuning stabilized. Improved management of performance decay under load."
+        },
+        "TIER_61": {
+          "title": "Stable Cruise",
+          "summary": "[STABLE CRUISE] Entering regular runner sequence. Demonstrating solid, sustained cruising capacity."
+        },
+        "TIER_71": {
+          "title": "Advanced Thermal Spec",
+          "summary": "[THERMAL PEAK] Components at optimal temperature. Capable of handling high-intensity tactical efforts."
+        },
+        "TIER_81": {
+          "title": "Performance Apex",
+          "summary": "[PERFORMANCE APEX] Peak amateur output. Dominating local club tiers; approaching competitive-grade thresholds."
+        },
+        "TIER_91": {
+          "title": "Competitive Awakening",
+          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. Accessing potential usually reserved for professional domains."
+        },
+        "TIER_101": {
+          "title": "Endurance Stint",
+          "summary": "[ENDURANCE STINT] Regional podium potential. Cardiopulmonary resilience capable of leading under prolonged pressure."
+        },
+        "TIER_111": {
+          "title": "Extreme Anti-Fade",
+          "summary": "[EXTREME ANTI-FADE] Elite sequence detected. Rapid thermal recovery; optimized for immediate follow-up attacks."
+        },
+        "TIER_121": {
+          "title": "Sequence Dominance",
+          "summary": "[SEQUENCE DOMINANCE] National elite benchmarks. Absolute command over energy systems in high-attrition scenarios."
+        },
+        "TIER_131": {
+          "title": "Eternal Prototype",
+          "summary": "[ETERNAL PROTOTYPE] Approaching physical limits. Mastery-level efficiency where fatigue is no longer a factor."
+        },
+        "TIER_141": {
+          "title": "Phantom Sequence",
+          "summary": "[PHANTOM SEQUENCE] International master-level alerts. Defying standard physical norms through sheer metabolic power."
+        },
+        "LEGEND": {
+          "title": "Absolute Domain",
+          "summary": "[ABSOLUTE DOMAIN] Data Overflow. This is the realm of legends; a crystalline form of pure power."
+        }
+      }
+    },
+    "fallback": {
+      "title": "Calibration in progress",
+      "summary": "Band interpretation is still calibrating. Complete more assessments to unlock a fuller performance profile."
+    }
+  },
+  "identity": {
+    "vehicleSectionKicker": "Racing Spec Identity",
+    "genderGroup": {
+      "male": "Male Qualified Pilot",
+      "female": "Female Qualified Pilot"
+    },
+    "archetypes": {
+      "G_PLATFORM": {
+        "title": "Serial Code: Iron Chassis (G-Platform)",
+        "summary": "Chassis rigidity is exceptionally high. In the {{genderGroup}} sequence, your torque output falls into heavy-platform class; gravity loads read as light cruising resistance."
+      },
+      "HIGH_OUTPUT": {
+        "title": "Serial Code: High Output Afterburn (High-Output)",
+        "summary": "Throttle response is extremely sensitive. Neural recruitment behaves like launch-control ignition, pushing power to redline in minimal distance."
+      },
+      "ENDURANCE_PROTO": {
+        "title": "Serial Code: Endurance Prototype (Endurance-P)",
+        "summary": "Thermal management is outstanding. You demonstrate 24-hour Le Mans style stability, built to lead long-range endurance sectors."
+      },
+      "WIDE_BODY": {
+        "title": "Serial Code: Wide-Body Architecture (Wide-Body)",
+        "summary": "Structural load profile shows dominant downforce characteristics. High-density fibers provide a powerful foundation, making you a stable heavyweight target across all terrain."
+      },
+      "AERO_SPEC": {
+        "title": "Serial Code: Aero Optimization (Aero-Spec)",
+        "summary": "Power-to-weight has reached track-record class. With low drag and low fat ratio, every gram of mass is allocated for pure performance."
+      },
+      "MR_SPEC": {
+        "title": "Serial Code: Mid-Engine Balance (MR-Spec)",
+        "summary": "Steering feedback is surgically precise. Neural control resembles a mid-engine layout, enabling elegant corner entry and stable output through the apex."
+      },
+      "GT_CRUISER": {
+        "title": "Serial Code: Grand Tourer (Grand Tourer)",
+        "summary": "All-spectrum performance is fully unlocked. You carry flagship-grade elegance and aggression, with no power dead zones across sector or weather. You are the most complete fit in this sequence."
+      }
+    }
+  },
+  "navbar": {
+    "home": "Home",
+    "assessment": "Assessment",
+    "ladder": "Ladder",
+    "history": "History",
+    "tools": "Tools"
+  },
+  "shellAvatarFallback": "Guest",
+  "shellAvatarAria": "User avatar, initial {{initial}}",
+  "shellSettingsAria": "Open settings"
+}

@@ -19,7 +19,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
-    cooperHintCaps,
     activeTab,
     setActiveTab,
     distanceInput,
@@ -131,6 +130,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 <p>{t('cardio.cooperInfo.p2')}</p>
                 <p>{t('cardio.cooperInfo.p3')}</p>
                 <p>{t('cardio.cooperInfo.p4')}</p>
+                <p>{t('cardio.cooperInfo.p5')}</p>
               </DisclosurePanel>
 
               <div className="space-y-3">
@@ -150,9 +150,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   placeholder={t('cardio.cooperPlaceholder')}
                   aria-label={t('cardio.cooperDistanceLabel')}
                 />
-                <p className="text-xs leading-relaxed text-zinc-500">
-                  {t('cardio.cooperHint', cooperHintCaps)}
-                </p>
                 {cooperDistanceOverCap && cooperCapMeters !== null ? (
                   <p
                     className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"

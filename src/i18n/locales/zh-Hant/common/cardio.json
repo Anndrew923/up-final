@@ -1,0 +1,43 @@
+{
+  "cardio": {
+    "kicker": "心肺耐力",
+    "title": "心肺評測",
+    "subtitle": "可用 Cooper 12 分鐘距離或 5 公里時間計算心肺分數。",
+    "tabCooper": "Cooper（12 分）",
+    "tab5km": "5 公里",
+    "tabsAria": "心肺測驗方式",
+    "cooperDistanceLabel": "12 分鐘跑距離（公尺）",
+    "cooperPlaceholder": "例如 2600",
+    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。對標田徑長距離世界級表現之上限：男性 {{maleCap}} m、女性 {{femaleCap}} m；超過時分數將鎖在此上限。",
+    "cooperWorldRecordCapHint": "輸入距離超過對標 5000 m 級世界紀錄情境之模型上限（{{capMeters}} m）。已改以該距離計分並鎖定最高分。",
+    "cooperInfo": {
+      "toggleExpand": "展開說明",
+      "toggleCollapse": "收合說明",
+      "title": "Cooper 12 分鐘跑步測驗",
+      "p1": "十二分鐘跑步測驗由美國空軍退役上校 Kenneth H. Cooper（肯尼斯·庫柏）博士推廣為經典有氧體適能場測：傳統最大攝氧量（VO₂ Max）多在實驗室以極限負荷量測，難以大規模施測；庫柏博士主張以「固定時間內盡可能跑出的距離」作為推估心肺耐力／最大攝氧的實用工具，並曾用於美軍體能篩檢脈絡。（僅衛教／體適能對照說明，不作醫療診斷。）",
+      "p2": "施測建議：選擇田徑場或平坦、安全跑步環境；以圈數或運動手錶／GPS 紀錄 12 分鐘內總距離（公尺）；測前建議動態熱身約 10–15 分鐘以降低受傷風險。",
+      "p3": "本分數依首頁身體資料的性別與年齡組，對照常模距離表換算：不同年齡組之 60 分／100 分門檻不同，同一距離在不同組別得分可能差異很大。介於表上 60 與 100 分錨點之間為線性內插；超過 100 分錨點可高於 100 分。須年滿 13 歲始有本表對照組。",
+      "p4": "常模距離與「Cooper Test Chart」等公開教材、圖表整理之脈絡相近；文獻與次要來源亦常提及 Carl Magnus Swahn 對圖表呈現之貢獻。各機構年齡分組與數值可能略有出入；本 App 依專案採用的同一套距離錨點做線性內插。",
+      "p5": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。對標田徑長距離世界級表現之上限：男性 4900 m、女性 4400 m；超過時分數將鎖在此上限。"
+    },
+    "run5kmHeading": "5 公里完成時間",
+    "minutesLabel": "分",
+    "secondsLabel": "秒",
+    "run5kmHint": "快於 20:00 可超過 100 分；45:00 或更慢為 0。資料僅存本機。",
+    "previewLabel": "預覽分數",
+    "performanceSpecHeader": "PERFORMANCE SPEC / 性能規格",
+    "nextMilestoneHint": "Next Milestone：距離下一階升級尚需 {{points}} 分。",
+    "calculate": "計算",
+    "submitRadar": "寫入雷達（心肺軸）",
+    "submitDone": "已儲存 — 首頁雷達與紀錄將使用此分數。",
+    "profileIncompleteHint": "Cooper 需要首頁的年齡與性別；仍可只用「5 公里」分頁輸入時間。",
+    "ctaProfile": "前往首頁填寫身體資料",
+    "errors": {
+      "missing-profile": "使用 Cooper 前請先在首頁填寫完整身體資料。",
+      "missing-profile-cooper": "請先在首頁設定年齡與性別後再計算 Cooper。",
+      "invalid-cooper-distance": "請輸入大於 0 的距離（公尺）。",
+      "cooper-no-standard": "此年齡區間無對照表 — 請確認首頁年齡為 13 歲以上。",
+      "invalid-5km-time": "請輸入有效的 5 公里時間（分／秒）。"
+    }
+  }
+}
