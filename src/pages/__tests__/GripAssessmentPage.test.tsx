@@ -32,7 +32,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('../../components/DisclosurePanel', () => ({
-  DisclosurePanel: ({ children }: { children?: unknown }) => <div>{children}</div>,
+  DisclosurePanel: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
