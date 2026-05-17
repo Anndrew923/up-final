@@ -2,9 +2,12 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 
@@ -34,10 +37,25 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     calculate,
     submitToRadar,
   } = useCardioAssessmentPage();
-  const scoreMeaning = useScoreMeaning('cardio', previewScore);
+  const reveal = useAssessmentRevealFlow({
+    pool: 'cardio',
+    metric: 'cardio',
+    scoreDecimals: 2,
+    getScore: () => previewScore,
+    hasError: () => errorKey != null,
+    compute: calculate,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
+
+  const heroScore = displayScore ?? previewScore;
+  const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
+  const scoreMeaning = useScoreMeaning('cardio', previewScore ?? heroScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="cardio" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
       </div>
@@ -82,6 +100,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
               role="tab"
               aria-selected={activeTab === 'cooper'}
               aria-controls="cardio-panel-cooper"
+              disabled={!profileReady || revealBlocking}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'cooper'
                   ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
@@ -97,6 +116,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
               role="tab"
               aria-selected={activeTab === '5km'}
               aria-controls="cardio-panel-5km"
+              disabled={!profileReady || revealBlocking}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === '5km'
                   ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
@@ -118,47 +138,48 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             hidden={activeTab !== 'cooper'}
             className="space-y-5"
           >
-              <DisclosurePanel
-                instanceId="cooper-info"
-                expanded={cooperInfoOpen}
-                onToggle={() => setCooperInfoOpen((v) => !v)}
-                title={t('assessment.referenceInfo.title')}
-                toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-                toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
-              >
-                <p>{t('cardio.cooperInfo.p1')}</p>
-                <p>{t('cardio.cooperInfo.p2')}</p>
-                <p>{t('cardio.cooperInfo.p3')}</p>
-                <p>{t('cardio.cooperInfo.p4')}</p>
-                <p>{t('cardio.cooperInfo.p5')}</p>
-              </DisclosurePanel>
+            <DisclosurePanel
+              instanceId="cooper-info"
+              expanded={cooperInfoOpen}
+              onToggle={() => setCooperInfoOpen((v) => !v)}
+              title={t('assessment.referenceInfo.title')}
+              toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
+              toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
+            >
+              <p>{t('cardio.cooperInfo.p1')}</p>
+              <p>{t('cardio.cooperInfo.p2')}</p>
+              <p>{t('cardio.cooperInfo.p3')}</p>
+              <p>{t('cardio.cooperInfo.p4')}</p>
+              <p>{t('cardio.cooperInfo.p5')}</p>
+            </DisclosurePanel>
 
-              <div className="space-y-3">
-                <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {t('cardio.cooperDistanceLabel')}
-                </label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  className="ui-input max-w-md"
-                  value={distanceInput}
-                  onChange={(e) => {
-                    clearError();
-                    setDistanceInput(e.target.value);
-                  }}
-                  placeholder={t('cardio.cooperPlaceholder')}
-                  aria-label={t('cardio.cooperDistanceLabel')}
-                />
-                {cooperDistanceOverCap && cooperCapMeters !== null ? (
-                  <p
-                    className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
-                    role="status"
-                  >
-                    {t('cardio.cooperWorldRecordCapHint', { capMeters: cooperCapMeters })}
-                  </p>
-                ) : null}
-              </div>
+            <div className="space-y-3">
+              <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t('cardio.cooperDistanceLabel')}
+              </label>
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                className="ui-input max-w-md"
+                value={distanceInput}
+                disabled={!profileReady || revealBlocking}
+                onChange={(e) => {
+                  clearError();
+                  setDistanceInput(e.target.value);
+                }}
+                placeholder={t('cardio.cooperPlaceholder')}
+                aria-label={t('cardio.cooperDistanceLabel')}
+              />
+              {cooperDistanceOverCap && cooperCapMeters !== null ? (
+                <p
+                  className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
+                  role="status"
+                >
+                  {t('cardio.cooperWorldRecordCapHint', { capMeters: cooperCapMeters })}
+                </p>
+              ) : null}
+            </div>
           </div>
           <div
             id="cardio-panel-5km"
@@ -167,42 +188,44 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             hidden={activeTab !== '5km'}
             className="space-y-3"
           >
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {t('cardio.run5kmHeading')}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                  <span>{t('cardio.minutesLabel')}</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    className="ui-input w-28"
-                    value={runMinutesInput}
-                    onChange={(e) => {
-                      clearError();
-                      setRunMinutesInput(e.target.value);
-                    }}
-                    aria-label={t('cardio.minutesLabel')}
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                  <span>{t('cardio.secondsLabel')}</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    className="ui-input w-28"
-                    value={runSecondsInput}
-                    onChange={(e) => {
-                      clearError();
-                      setRunSecondsInput(e.target.value);
-                    }}
-                    aria-label={t('cardio.secondsLabel')}
-                  />
-                </label>
-              </div>
-              <p className="text-xs leading-relaxed text-zinc-500">{t('cardio.run5kmHint')}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+              {t('cardio.run5kmHeading')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                <span>{t('cardio.minutesLabel')}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  className="ui-input w-28"
+                  value={runMinutesInput}
+                  disabled={!profileReady || revealBlocking}
+                  onChange={(e) => {
+                    clearError();
+                    setRunMinutesInput(e.target.value);
+                  }}
+                  aria-label={t('cardio.minutesLabel')}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                <span>{t('cardio.secondsLabel')}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  className="ui-input w-28"
+                  value={runSecondsInput}
+                  disabled={!profileReady || revealBlocking}
+                  onChange={(e) => {
+                    clearError();
+                    setRunSecondsInput(e.target.value);
+                  }}
+                  aria-label={t('cardio.secondsLabel')}
+                />
+              </label>
+            </div>
+            <p className="text-xs leading-relaxed text-zinc-500">{t('cardio.run5kmHint')}</p>
           </div>
 
           {errorKey ? (
@@ -217,7 +240,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 {t('cardio.previewLabel')}
               </p>
               <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                {previewScore.toFixed(2)}
+                {heroScoreText ?? previewScore.toFixed(2)}
               </p>
             </div>
           ) : null}
@@ -241,10 +264,22 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button type="button" className="ui-btn ui-btn-primary" onClick={calculate}>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={!profileReady || revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+            >
               {t('cardio.calculate')}
             </button>
-            <button type="button" className="ui-btn" onClick={submitToRadar}>
+            <button
+              type="button"
+              className="ui-btn"
+              disabled={!profileReady || revealBlocking}
+              onClick={submitToRadar}
+            >
               {t('cardio.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>

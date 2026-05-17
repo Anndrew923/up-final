@@ -1,7 +1,7 @@
 import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
 
-export type DiagnosticAccent = 'strength' | 'grip';
+export type DiagnosticAccent = 'strength' | 'grip' | 'cardio';
 
 export interface DiagnosticOverlayProps {
   open: boolean;
@@ -28,6 +28,13 @@ const ACCENT_STYLES: Record<
     bracket: 'border-accent-info/70 shadow-[0_0_18px_rgba(0,191,255,0.35)]',
     text: 'text-accent-info',
     glow: 'bg-accent-info/10',
+  },
+  cardio: {
+    beam: 'from-transparent via-cyan-400/55 to-transparent',
+    grid: 'bg-[linear-gradient(rgba(34,211,238,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.14)_1px,transparent_1px)]',
+    bracket: 'border-cyan-400/70 shadow-[0_0_18px_rgba(34,211,238,0.35)]',
+    text: 'text-cyan-300',
+    glow: 'bg-cyan-500/10',
   },
 };
 

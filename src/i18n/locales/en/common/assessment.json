@@ -118,6 +118,16 @@
           "m5": "Synthesizing grip-axis preview score…",
           "m6": "Locking potential spec output…",
           "m7": "Completing grip diagnostic sequence…"
+        },
+        "cardio": {
+          "m0": "Reading aerobic output signal…",
+          "m1": "Calibrating Cooper / 5K conversion channel…",
+          "m2": "Matching cardio thermal-layer model…",
+          "m3": "Scanning endurance-axis dynamic range…",
+          "m4": "Verifying distance and pace input bounds…",
+          "m5": "Synthesizing cardio-axis preview score…",
+          "m6": "Locking thermal spec output…",
+          "m7": "Completing cardio diagnostic sequence…"
         }
       }
     }

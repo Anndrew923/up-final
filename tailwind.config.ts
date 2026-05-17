@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -42,8 +43,16 @@ export default {
           },
         },
         'breakthrough-enter': {
-          '0%': { opacity: '0', transform: 'scale(0.92)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          '0%': { opacity: '0', transform: 'scale3d(0.92, 0.92, 1)' },
+          '100%': { opacity: '1', transform: 'scale3d(1, 1, 1)' },
+        },
+        'aura-bleed-enter': {
+          '0%': { opacity: '0', transform: 'scale3d(0.78, 0.78, 1)' },
+          '100%': { opacity: '1', transform: 'scale3d(1, 1, 1)' },
+        },
+        'tachometer-glow-pulse': {
+          '0%, 100%': { opacity: '0.35' },
+          '50%': { opacity: '0.75' },
         },
         'aura-pulse': {
           '0%, 100%': { opacity: '0.55' },
@@ -76,6 +85,8 @@ export default {
         'diagnostic-scan': 'diagnostic-scan 1.75s linear infinite',
         'diagnostic-grid-breathe': 'diagnostic-grid-breathe 2.5s ease-in-out infinite',
         'breakthrough-enter': 'breakthrough-enter 420ms ease-out forwards',
+        'aura-bleed-enter': 'aura-bleed-enter 520ms ease-out forwards',
+        'tachometer-glow-pulse': 'tachometer-glow-pulse 2s ease-in-out infinite',
         'aura-pulse': 'aura-pulse 2.4s ease-in-out infinite',
         'aura-flow': 'aura-flow 3.2s ease-in-out infinite alternate',
         'aura-shimmer': 'aura-shimmer 2.8s ease-in-out infinite alternate',
@@ -85,5 +96,36 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addUtilities }) => {
+      addUtilities({
+        '.magitek-chassis-grid': {
+          position: 'relative',
+          isolation: 'isolate',
+        },
+        '.magitek-chassis-grid::before': {
+          content: '""',
+          position: 'absolute',
+          inset: '0',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          opacity: '0.05',
+          zIndex: '0',
+          backgroundImage: [
+            'repeating-linear-gradient(0deg, transparent 0, transparent 15px, rgba(255,255,255,1) 15px, rgba(255,255,255,1) 16px)',
+            'repeating-linear-gradient(90deg, transparent 0, transparent 15px, rgba(255,255,255,1) 15px, rgba(255,255,255,1) 16px)',
+            'repeating-linear-gradient(45deg, transparent 0, transparent 22px, rgba(255,255,255,0.55) 22px, rgba(255,255,255,0.55) 23px)',
+          ].join(', '),
+          backgroundSize: '16px 16px, 16px 16px, 32px 32px',
+        },
+        '.text-aura-neon': {
+          textShadow:
+            '0 0 5px rgb(var(--aura-neon-rgb) / 0.95), 0 0 10px rgb(var(--aura-neon-rgb) / 0.55), 0 0 18px rgb(var(--aura-neon-rgb) / 0.28)',
+        },
+        '.tachometer-fill-glow': {
+          filter: 'drop-shadow(0 0 6px rgb(var(--aura-neon-rgb) / 0.55)) drop-shadow(0 0 14px rgb(var(--aura-neon-rgb) / 0.28))',
+        },
+      });
+    }),
+  ],
 } satisfies Config;

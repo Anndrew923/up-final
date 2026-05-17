@@ -70,11 +70,15 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-500">
               {t('assessment.breakthrough.kicker')}
             </p>
-            <p className={`text-xs font-medium ${theme.text}`}>{payload.rankLabel}</p>
+            <p className={`text-xs font-semibold tracking-wide text-aura-neon ${theme.text}`}>
+              {payload.rankLabel}
+            </p>
             <h2 id={titleId} className="text-xl font-bold tracking-tight text-zinc-50">
               {payload.title}
             </h2>
-            <p className="font-mono text-4xl tabular-nums text-zinc-50">{payload.scoreDisplay}</p>
+            <p className={`font-mono text-4xl font-bold tabular-nums text-aura-neon text-zinc-50`}>
+              {payload.scoreDisplay}
+            </p>
           </header>
 
           <p className="mt-4 text-center text-sm leading-relaxed text-zinc-300">{payload.summary}</p>
@@ -83,6 +87,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             <TachometerMilestoneBar
               progress01={payload.milestone.progress01}
               remainingPoints={payload.milestone.remainingPoints}
+              auraKey={payload.auraKey}
             />
           </div>
 

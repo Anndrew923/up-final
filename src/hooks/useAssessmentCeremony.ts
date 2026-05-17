@@ -10,7 +10,7 @@ const HAPTIC_MEDIUM_MS = 450;
 const HAPTIC_HEAVY_MS = 1100;
 const REDUCED_MOTION_MS = 400;
 
-export type CeremonyPool = 'strength' | 'grip';
+export type CeremonyPool = 'strength' | 'grip' | 'cardio';
 
 export type CeremonyHapticProfile = 'scan-only' | 'full';
 
