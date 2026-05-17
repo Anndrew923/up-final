@@ -92,7 +92,8 @@
         "TIER_121": "Sequence Dominance",
         "TIER_131": "Phantom Compression",
         "TIER_141": "Eternal Interface",
-        "LEGEND": "Pantheon Serial"
+        "LEGEND": "Pantheon Serial",
+        "PANTHEON": "Pantheon Overflow"
       }
     },
     "ceremony": {
@@ -128,6 +129,46 @@
           "m5": "Synthesizing cardio-axis preview score…",
           "m6": "Locking thermal spec output…",
           "m7": "Completing cardio diagnostic sequence…"
+        },
+        "muscle": {
+          "m0": "Reading skeletal muscle mass signal…",
+          "m1": "Calibrating SMM / SM% dual-branch model…",
+          "m2": "Matching age-group norm anchors…",
+          "m3": "Scanning muscle-axis dynamic range…",
+          "m4": "Verifying SMM input and sex ceiling…",
+          "m5": "Synthesizing muscle-axis preview score…",
+          "m6": "Locking build-spec output…",
+          "m7": "Completing muscle diagnostic sequence…"
+        },
+        "ffmi": {
+          "m0": "Reading body-fat and lean-mass inputs…",
+          "m1": "Calibrating FFMI conversion curve…",
+          "m2": "Matching height adjustment and sex anchors…",
+          "m3": "Scanning refine-spectrum dynamic range…",
+          "m4": "Verifying world-record ceiling logic…",
+          "m5": "Synthesizing body-fat-axis preview score…",
+          "m6": "Locking refine-spec output…",
+          "m7": "Completing FFMI diagnostic sequence…"
+        },
+        "explosive": {
+          "m0": "Reading vertical jump impulse channel…",
+          "m1": "Calibrating standing-long-jump torque curve…",
+          "m2": "Matching sprint transient decay model…",
+          "m3": "Scanning explosive-axis dynamic range…",
+          "m4": "Verifying elite cap and floor guards…",
+          "m5": "Synthesizing power-axis preview score…",
+          "m6": "Locking torque-spec output…",
+          "m7": "Completing explosive diagnostic sequence…"
+        },
+        "armSize": {
+          "m0": "Reading upper-arm circumference signal…",
+          "m1": "Calibrating body-fat rim offset model…",
+          "m2": "Matching benchmark radius anchors…",
+          "m3": "Scanning rim-spec dynamic range…",
+          "m4": "Verifying axis ceiling logic…",
+          "m5": "Synthesizing arm-size preview score…",
+          "m6": "Locking rim-spec output…",
+          "m7": "Completing arm-size diagnostic sequence…"
         }
       }
     }

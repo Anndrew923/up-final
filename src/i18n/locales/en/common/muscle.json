@@ -11,9 +11,6 @@
     "metaGender": "Sex: {{value}}",
     "smmCeilingLine": "Accepted SMM for scoring: up to {{max}} kg for your sex (male cap ~ Ronnie Coleman–class public numbers; female cap ~ top-tier pro stage).",
     "standardsInfo": {
-      "toggleExpand": "Show how scoring works",
-      "toggleCollapse": "Hide how scoring works",
-      "title": "Muscle score — what we measure",
       "p1": "Skeletal muscle mass (SMM) is the kilograms of muscle typically reported by body-composition devices (for example BIA scales or professional scans). Enter the value your device shows; we do not estimate SMM from height or photos here.",
       "p2": "Skeletal muscle percentage (SM%) is SMM ÷ body weight × 100, using the weight saved on Home. Absolute SMM and SM% answer different questions: a high SMM with a high body weight can still yield a moderate SM%, and vice versa. Using both reduces one-sided readings.",
       "p3": "Each branch is scored against age- and sex-specific norm tables (decile anchors from 0 to 100 points). Between anchors we linearly interpolate; beyond the top anchor the model can extend the branch score above 100 on a damped curve — so elite readings are not artificially flattened. Norm bands in this app run roughly ages 10–80; your Home profile must be at least 13 and at most 80 for a table row to apply.",
@@ -21,6 +18,8 @@
       "p5": "For product sanity we also apply a maximum SMM input by sex (shown above). Values above that are treated as outside the scoring model — not a medical judgment. If your device reads higher, double-check calibration, posture, or pick a consistent measurement protocol."
     },
     "previewLabel": "Preview score",
+    "performanceSpecHeader": "BUILD SPEC / Muscle Mass",
+    "nextMilestoneHint": "{{points}} pts until next tier upgrade",
     "breakdownLine": "SMM score: {{smmScore}} · SM%: {{smPct}} · SM% score: {{smPctScore}}",
     "calculate": "Calculate",
     "submitRadar": "Save to radar (muscle axis)",

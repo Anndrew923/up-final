@@ -18,6 +18,8 @@
     "capNoticeTitle": "Leaderboard value capped by axis ceiling",
     "capNoticeBody": "When raw score exceeds the per-axis ceiling (200), leaderboard submission is stored as 200.",
     "previewLabel": "Preview score",
+    "performanceSpecHeader": "PERFORMANCE SPEC / Rim Spec",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "submittedScoreLabel": "Leaderboard submission value: {{score}}",
     "calculate": "Calculate",
     "saveLeaderboard": "Save leaderboard score (arm size)",

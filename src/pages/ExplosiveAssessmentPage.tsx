@@ -2,10 +2,15 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 
 export interface ExplosiveAssessmentPageProps {
   onBack?: () => void;
@@ -43,6 +48,18 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     submitToRadar,
   } = useExplosiveAssessmentPage();
 
+  const reveal = useAssessmentRevealFlow({
+    pool: 'explosive',
+    metric: 'explosivePower',
+    scoreDecimals: 2,
+    getScore: () =>
+      previewScore ?? (previewBreakdown != null ? previewBreakdown.averageRaw : null),
+    hasError: () => errorKey != null || !profileReady,
+    compute: calculate,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
+
   const genderLabel =
     !profile ? '' : profile.gender === 'female'
       ? t('home.profile.female')
@@ -54,8 +71,15 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
   const showCapNoticeBlock =
     profileReady && profile && capNoticeInterpolation != null;
 
+  const interpretationScore =
+    previewScore ?? (previewBreakdown != null ? previewBreakdown.averageRaw : null);
+  const heroScore = displayScore ?? interpretationScore;
+  const scoreMeaning = useScoreMeaning('explosivePower', heroScore);
+
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="explosive" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
       </div>
@@ -283,7 +307,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
                   {t('explosive.previewLabel')}
                 </p>
                 <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                  {(previewScore ?? previewBreakdown.averageRaw).toFixed(2)}
+                  {(heroScore ?? previewBreakdown.averageRaw).toFixed(2)}
                 </p>
                 {previewScore !== null &&
                 Math.abs(previewScore - previewBreakdown.averageRaw) > 0.001 ? (
@@ -293,11 +317,31 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             </div>
           ) : null}
 
+          {heroScore !== null && scoreMeaning ? (
+            <AssessmentScoreMeaningPanel
+              tone="amber"
+              headerLabel={t('explosive.performanceSpecHeader')}
+              meaning={scoreMeaning}
+              milestoneHintLabel={
+                scoreMeaning.remainingPoints != null
+                  ? t('explosive.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
+                  : null
+              }
+            />
+          ) : null}
+
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button type="button" className="ui-btn ui-btn-primary" onClick={calculate}>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={!profileReady || revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+            >
               {t('explosive.calculate')}
             </button>
-            <button type="button" className="ui-btn" onClick={submitToRadar}>
+            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={submitToRadar}>
               {t('explosive.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>

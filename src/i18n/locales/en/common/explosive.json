@@ -22,6 +22,8 @@
     "averageRawLabel": "Average of entered tests (mean of branch scores)",
     "radarClampNote": "Radar axis uses your profile score cap (0–200) when the formula average is outside that range.",
     "previewLabel": "Radar axis score",
+    "performanceSpecHeader": "PERFORMANCE SPEC / Torque Spec",
+    "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "calculate": "Calculate",
     "submitRadar": "Save to radar (explosive axis)",
     "submitDone": "Saved — Home radar and merged scores use this explosive axis.",

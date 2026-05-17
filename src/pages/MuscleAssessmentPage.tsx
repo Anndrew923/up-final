@@ -2,10 +2,14 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 
 export interface MuscleAssessmentPageProps {
   onBack?: () => void;
@@ -31,13 +35,30 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
     scoreLocked,
   } = useMuscleAssessmentPage();
 
+  const reveal = useAssessmentRevealFlow({
+    pool: 'muscle',
+    metric: 'muscleMass',
+    scoreDecimals: 2,
+    getScore: () => previewScore,
+    hasError: () => errorKey != null || scoreLocked,
+    compute: calculate,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
+
   const genderLabel =
     !profile ? '' : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
 
+  const heroScore = displayScore ?? previewScore;
+  const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
+  const scoreMeaning = useScoreMeaning('muscleMass', previewScore ?? heroScore);
+
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="muscle" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
       </div>
@@ -114,6 +135,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
                 className="ui-input max-w-xs"
                 placeholder={t('muscle.smmPlaceholder')}
                 value={smmInput}
+                disabled={!profileReady || revealBlocking}
                 onChange={(e) => {
                   clearError();
                   setSmmInput(e.target.value);
@@ -138,13 +160,15 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
           ) : null}
 
           {previewScore !== null && !scoreLocked ? (
-            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
+            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('muscle.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">{previewScore.toFixed(2)}</p>
+              <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
+                {heroScoreText ?? previewScore.toFixed(2)}
+              </p>
               {previewBreakdown ? (
-                <p className="text-xs leading-relaxed text-zinc-500">
+                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
                   {t('muscle.breakdownLine', {
                     smmScore: previewBreakdown.smmScoreRaw.toFixed(2),
                     smPct: previewBreakdown.smPercent.toFixed(2),
@@ -155,20 +179,40 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             </div>
           ) : null}
 
+          {previewScore !== null && !scoreLocked && scoreMeaning ? (
+            <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
+                {t('muscle.performanceSpecHeader')}
+              </p>
+              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
+                {scoreMeaning.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
+              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-orange-300">
+                  {t('muscle.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
             <button
               type="button"
               className="ui-btn ui-btn-primary disabled:pointer-events-none disabled:opacity-40"
-              onClick={calculate}
-              disabled={!profileReady || scoreLocked}
+              disabled={!profileReady || revealBlocking || scoreLocked}
+              onClick={() => {
+                void revealCalculate();
+              }}
             >
               {t('muscle.calculate')}
             </button>
             <button
               type="button"
               className="ui-btn disabled:pointer-events-none disabled:opacity-40"
+              disabled={!profileReady || revealBlocking || scoreLocked}
               onClick={submitToRadar}
-              disabled={!profileReady || scoreLocked}
             >
               {t('muscle.submitRadar')}
             </button>

@@ -2,10 +2,15 @@ import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
 import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
 import { useScoreStore } from '../stores/scoreStore';
@@ -33,14 +38,31 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     saveForLeaderboard,
   } = useArmSizeAssessmentPage();
 
+  const reveal = useAssessmentRevealFlow({
+    pool: 'armSize',
+    metric: 'armSize',
+    scoreDecimals: 2,
+    getScore: () => previewScore,
+    hasError: () => errorKey != null,
+    compute: calculate,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
+
   const armLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
     const score = submittedScore ?? persistedArmSizeScore;
     if (score == null || !Number.isFinite(score) || score <= 0) return undefined;
     return [{ metric: leaderboardShardForArmSize(), score }];
   }, [submittedScore, persistedArmSizeScore]);
 
+  const interpretationScore = previewScore ?? submittedScore ?? persistedArmSizeScore ?? null;
+  const heroScore = displayScore ?? interpretationScore;
+  const scoreMeaning = useScoreMeaning('armSize', heroScore);
+
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="armSize" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
@@ -127,12 +149,12 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          {previewScore !== null ? (
+          {heroScore !== null ? (
             <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('armSize.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">{previewScore.toFixed(2)}</p>
+              <p className="font-mono text-2xl tabular-nums text-accent-info">{heroScore.toFixed(2)}</p>
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-300">
                   {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}
@@ -141,11 +163,31 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </div>
           ) : null}
 
+          {heroScore !== null && scoreMeaning ? (
+            <AssessmentScoreMeaningPanel
+              tone="slate"
+              headerLabel={t('armSize.performanceSpecHeader')}
+              meaning={scoreMeaning}
+              milestoneHintLabel={
+                scoreMeaning.remainingPoints != null
+                  ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
+                  : null
+              }
+            />
+          ) : null}
+
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button type="button" className="ui-btn ui-btn-primary" onClick={calculate}>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+            >
               {t('armSize.calculate')}
             </button>
-            <button type="button" className="ui-btn" onClick={saveForLeaderboard}>
+            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={saveForLeaderboard}>
               {t('armSize.saveLeaderboard')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>

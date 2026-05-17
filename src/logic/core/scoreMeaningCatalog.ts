@@ -64,12 +64,45 @@ export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
 ] as const;
 
+/**
+ * Shared 14-tier ladder — LEGEND caps at 180; PANTHEON for limit-break scores (181+).
+ * WHY: FFMI and muscle-mass axes share identical score steps; one source prevents drift.
+ */
+export const FOURTEEN_TIER_SCORE_BANDS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 40 },
+  { id: 'TIER_41', min: 41, max: 50 },
+  { id: 'TIER_51', min: 51, max: 60 },
+  { id: 'TIER_61', min: 61, max: 70 },
+  { id: 'TIER_71', min: 71, max: 80 },
+  { id: 'TIER_81', min: 81, max: 90 },
+  { id: 'TIER_91', min: 91, max: 100 },
+  { id: 'TIER_101', min: 101, max: 110 },
+  { id: 'TIER_111', min: 111, max: 120 },
+  { id: 'TIER_121', min: 121, max: 130 },
+  { id: 'TIER_131', min: 131, max: 140 },
+  { id: 'TIER_141', min: 141, max: 150 },
+  { id: 'LEGEND', min: 151, max: 180 },
+  { id: 'PANTHEON', min: 181, max: Number.POSITIVE_INFINITY },
+] as const;
+
+/** 14-tier FFMI (bodyFat axis). */
+export const FFMI_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
+
+/** 14-tier muscle-mass axis. */
+export const MUSCLE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
+
+/** 14-tier explosive power (Torque Spec). */
+export const EXPLOSIVE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
+
+/** 14-tier arm size (Rim Spec) — optional storage; same ladder as explosive/muscle 14-tier. */
+export const ARM_SIZE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
+
 export const SCORE_MEANING_CATALOG: AxisTitleMapping = {
   strength: STRENGTH_SCORE_BANDS,
-  explosivePower: DEFAULT_SCORE_BANDS,
+  explosivePower: EXPLOSIVE_SCORE_BANDS,
   cardio: CARDIO_SCORE_BANDS,
-  muscleMass: DEFAULT_SCORE_BANDS,
-  bodyFat: DEFAULT_SCORE_BANDS,
+  muscleMass: MUSCLE_SCORE_BANDS,
+  bodyFat: FFMI_SCORE_BANDS,
   gripStrength: GRIP_SCORE_BANDS,
 };
 
@@ -78,26 +111,71 @@ function normalizeScore(score: number): number {
   return Math.max(0, score);
 }
 
-export function resolveScoreBand(metric: SixAxisMetric, score: number): ScoreBand {
-  const bands = [...SCORE_MEANING_CATALOG[metric]].sort((a, b) => a.min - b.min);
+export function resolveScoreBandFromBands(bands: readonly ScoreBand[], score: number): ScoreBand {
+  const sorted = [...bands].sort((a, b) => a.min - b.min);
   const safe = normalizeScore(score);
-  if (bands.length === 0) {
+  if (sorted.length === 0) {
     return { id: 'BASE', min: 0, max: Number.POSITIVE_INFINITY };
   }
 
-  for (let i = 0; i < bands.length - 1; i += 1) {
-    const current = bands[i];
-    const next = bands[i + 1];
+  for (let i = 0; i < sorted.length - 1; i += 1) {
+    const current = sorted[i];
+    const next = sorted[i + 1];
     if (safe < next.min) return current;
   }
 
-  return bands[bands.length - 1];
+  return sorted[sorted.length - 1];
+}
+
+export function resolveScoreBand(metric: SixAxisMetric, score: number): ScoreBand {
+  return resolveScoreBandFromBands(SCORE_MEANING_CATALOG[metric], score);
+}
+
+export function resolveArmSizeScoreBand(score: number): ScoreBand {
+  return resolveScoreBandFromBands(ARM_SIZE_SCORE_BANDS, score);
+}
+
+export type ScoreMeaningBandMetric = SixAxisMetric | 'armSize';
+
+export function getScoreMeaningBands(metric: ScoreMeaningBandMetric): readonly ScoreBand[] {
+  return metric === 'armSize' ? ARM_SIZE_SCORE_BANDS : SCORE_MEANING_CATALOG[metric];
+}
+
+export function resolveScoreMeaningBand(metric: ScoreMeaningBandMetric, score: number): ScoreBand {
+  return resolveScoreBandFromBands(getScoreMeaningBands(metric), score);
+}
+
+export interface ScoreMeaningMilestone {
+  currentBand: ScoreBand;
+  nextMilestone: number | null;
+  remainingPoints: number | null;
+}
+
+/** Next-tier milestone for UI and breakthrough modal — single source for band index walks. */
+export function resolveScoreMeaningMilestone(
+  metric: ScoreMeaningBandMetric,
+  score: number,
+): ScoreMeaningMilestone {
+  const safeScore = normalizeScore(score);
+  const currentBand = resolveScoreMeaningBand(metric, safeScore);
+  const bands = getScoreMeaningBands(metric);
+  const currentIndex = bands.findIndex((band) => band.id === currentBand.id);
+  const nextBand = currentIndex >= 0 ? bands[currentIndex + 1] : undefined;
+  if (!nextBand) {
+    return { currentBand, nextMilestone: null, remainingPoints: null };
+  }
+  const nextMilestone = nextBand.min;
+  return {
+    currentBand,
+    nextMilestone,
+    remainingPoints: Math.max(0, Math.ceil(nextMilestone - safeScore)),
+  };
 }
 
 export function getAxisMeaningI18nPrefix(metric: SixAxisMetric): string {
   return `scoreMeaning.axis.${metric}`;
 }
 
-export function getBandMeaningI18nPrefix(metric: SixAxisMetric, bandId: string): string {
+export function getBandMeaningI18nPrefix(metric: ScoreMeaningBandMetric, bandId: string): string {
   return `scoreMeaning.bands.${metric}.${bandId}`;
 }

@@ -1,5 +1,5 @@
 import type { SixAxisMetric } from '../../types/scoring';
-import { resolveScoreBand } from './scoreMeaningCatalog';
+import { resolveScoreMeaningBand, type ScoreMeaningBandMetric } from './scoreMeaningCatalog';
 
 export type PerformanceAuraKey =
   | 'none'
@@ -11,7 +11,7 @@ export type PerformanceAuraKey =
   | 'divine_light';
 
 /**
- * Shared 13-band → 7-tier aura map for assessment breakthrough surfaces.
+ * Band id → aura presentation map for assessment breakthrough surfaces (13- or 14-tier axes).
  * WHY: scoreMeaningCatalog owns bands; aura is presentation-only and must stay in sync across axes.
  */
 export function resolveAuraFromBandId(bandId: string): PerformanceAuraKey {
@@ -35,6 +35,7 @@ export function resolveAuraFromBandId(bandId: string): PerformanceAuraKey {
     case 'TIER_141':
       return 'void_flame';
     case 'LEGEND':
+    case 'PANTHEON':
       return 'divine_light';
     default:
       return 'none';
@@ -42,6 +43,12 @@ export function resolveAuraFromBandId(bandId: string): PerformanceAuraKey {
 }
 
 export function resolvePerformanceAura(metric: SixAxisMetric, score: number): PerformanceAuraKey {
-  const band = resolveScoreBand(metric, score);
-  return resolveAuraFromBandId(band.id);
+  return resolveAuraFromBandId(resolveScoreMeaningBand(metric, score).id);
+}
+
+export function resolvePerformanceAuraForMetric(
+  metric: ScoreMeaningBandMetric,
+  score: number,
+): PerformanceAuraKey {
+  return resolveAuraFromBandId(resolveScoreMeaningBand(metric, score).id);
 }

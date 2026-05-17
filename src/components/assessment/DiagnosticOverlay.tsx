@@ -1,7 +1,14 @@
 import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
 
-export type DiagnosticAccent = 'strength' | 'grip' | 'cardio';
+export type DiagnosticAccent =
+  | 'strength'
+  | 'grip'
+  | 'cardio'
+  | 'muscle'
+  | 'ffmi'
+  | 'explosive'
+  | 'armSize';
 
 export interface DiagnosticOverlayProps {
   open: boolean;
@@ -35,6 +42,34 @@ const ACCENT_STYLES: Record<
     bracket: 'border-cyan-400/70 shadow-[0_0_18px_rgba(34,211,238,0.35)]',
     text: 'text-cyan-300',
     glow: 'bg-cyan-500/10',
+  },
+  muscle: {
+    beam: 'from-transparent via-orange-400/55 to-transparent',
+    grid: 'bg-[linear-gradient(rgba(251,146,60,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(251,146,60,0.14)_1px,transparent_1px)]',
+    bracket: 'border-orange-400/70 shadow-[0_0_18px_rgba(251,146,60,0.35)]',
+    text: 'text-orange-300',
+    glow: 'bg-orange-500/10',
+  },
+  ffmi: {
+    beam: 'from-transparent via-violet-400/55 to-transparent',
+    grid: 'bg-[linear-gradient(rgba(167,139,250,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(167,139,250,0.14)_1px,transparent_1px)]',
+    bracket: 'border-violet-400/70 shadow-[0_0_18px_rgba(139,92,246,0.35)]',
+    text: 'text-violet-300',
+    glow: 'bg-violet-500/10',
+  },
+  explosive: {
+    beam: 'from-transparent via-amber-400/55 to-transparent',
+    grid: 'bg-[linear-gradient(rgba(251,191,36,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(251,191,36,0.14)_1px,transparent_1px)]',
+    bracket: 'border-amber-400/70 shadow-[0_0_18px_rgba(245,158,11,0.35)]',
+    text: 'text-amber-300',
+    glow: 'bg-amber-500/10',
+  },
+  armSize: {
+    beam: 'from-transparent via-zinc-400/55 to-transparent',
+    grid: 'bg-[linear-gradient(rgba(161,161,170,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(161,161,170,0.14)_1px,transparent_1px)]',
+    bracket: 'border-zinc-400/70 shadow-[0_0_18px_rgba(113,113,122,0.35)]',
+    text: 'text-zinc-300',
+    glow: 'bg-zinc-500/10',
   },
 };
 

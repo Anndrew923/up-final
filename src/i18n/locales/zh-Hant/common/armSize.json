@@ -18,6 +18,8 @@
     "capNoticeTitle": "排行榜分數已套用單軸上限",
     "capNoticeBody": "原始分數超過單軸封頂（200）時，排行榜提交值將以 200 儲存。",
     "previewLabel": "預覽分數",
+    "performanceSpecHeader": "性能規格 / 輪框頻譜",
+    "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
     "submittedScoreLabel": "排行榜提交值：{{score}}",
     "calculate": "計算",
     "saveLeaderboard": "儲存排行榜分數（臂圍）",

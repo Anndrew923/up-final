@@ -70,9 +70,11 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-500">
               {t('assessment.breakthrough.kicker')}
             </p>
-            <p className={`text-xs font-semibold tracking-wide text-aura-neon ${theme.text}`}>
-              {payload.rankLabel}
-            </p>
+            {payload.rankLabel !== payload.title ? (
+              <p className={`text-xs font-semibold tracking-wide text-aura-neon ${theme.text}`}>
+                {payload.rankLabel}
+              </p>
+            ) : null}
             <h2 id={titleId} className="text-xl font-bold tracking-tight text-zinc-50">
               {payload.title}
             </h2>

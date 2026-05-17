@@ -83,6 +83,64 @@
           "summary": "[ABSOLUTE RIGID BODY] Data overflow. Beyond ordinary physiology; the legendary crystallization of pure structural will."
         }
       },
+      "explosivePower": {
+        "BASE": {
+          "title": "Stock Torque",
+          "summary": "[STOCK TQ] Baseline transient response; drivetrain awaiting high-stall conversion."
+        },
+        "TIER_41": {
+          "title": "Ignition Tuning",
+          "summary": "[IGNITION TUNING] Improved throttle response; establishing peak rotational inertia."
+        },
+        "TIER_51": {
+          "title": "Lightweight Flywheel",
+          "summary": "[LIGHTWEIGHT FLYWHEEL] High-revving engine response; lightweight agile launch."
+        },
+        "TIER_61": {
+          "title": "Stage 1 Map",
+          "summary": "[STAGE 1 MAP] Torque curve extended; reliable fast power delivery."
+        },
+        "TIER_71": {
+          "title": "High-Boost Launch",
+          "summary": "[HIGH-BOOST LAUNCH] Boost pressure spools instantly; superior transient response."
+        },
+        "TIER_81": {
+          "title": "Launch Control",
+          "summary": "[LAUNCH CONTROL] Matching track-spec launch systems; extreme bite with minimal traction loss."
+        },
+        "TIER_91": {
+          "title": "Supercharged",
+          "summary": "[SUPERCHARGED] Full RPM torque curve; clearing amateur limits instantly."
+        },
+        "TIER_101": {
+          "title": "Drag Spec Clutch",
+          "summary": "[DRAG SPEC CLUTCH] Zero-latency power transmission; built for drag-strip launches."
+        },
+        "TIER_111": {
+          "title": "Rocket Thruster",
+          "summary": "[ROCKET THRUSTER] Overclocked compression; superior shaft twisting power."
+        },
+        "TIER_121": {
+          "title": "Hypercar Instant",
+          "summary": "[HYPERCAR INSTANT] Flawless electric-mechanical link; absolute authority over initial friction."
+        },
+        "TIER_131": {
+          "title": "Mega-Torque Plateau",
+          "summary": "[MEGA-TORQUE PLATEAU] Heavy industrial motor torque; zero loss to structural flex."
+        },
+        "TIER_141": {
+          "title": "Phantom Transient",
+          "summary": "[PHANTOM TRANSIENT] Pushing material shear stress limits; elite kinetic delivery."
+        },
+        "LEGEND": {
+          "title": "Absolute Torque",
+          "summary": "[ABSOLUTE TORQUE] Transcending biological boundaries; the ultimate kinetic snap."
+        },
+        "PANTHEON": {
+          "title": "Pantheon Torque",
+          "summary": "[PANTHEON TQ] Mythical transient coupling; archives reserved for legends."
+        }
+      },
       "cardio": {
         "BASE": {
           "title": "Baseline Calibration",
@@ -137,6 +195,122 @@
           "summary": "[ABSOLUTE DOMAIN] Data overflow. This is the realm of legends, a crystalline form of pure power."
         }
       },
+      "bodyFat": {
+        "BASE": {
+          "title": "Stock Displacement",
+          "summary": "[STOCK CC] Base displacement; cylinders awaiting overbore expansion."
+        },
+        "TIER_41": {
+          "title": "Intake Optimization",
+          "summary": "[INTAKE OPTIMIZED] Initial volumetric efficiency gains."
+        },
+        "TIER_51": {
+          "title": "Sport Compact Spec",
+          "summary": "[SPORT COMPACT] Refined density; high-response baseline."
+        },
+        "TIER_61": {
+          "title": "Mid-Displacement Spec",
+          "summary": "[MID-DISPLACEMENT] Cylinder walls built for higher pressure cycles."
+        },
+        "TIER_71": {
+          "title": "High-Revving NA",
+          "summary": "[HIGH-REVVING NA] High volumetric efficiency powertrain."
+        },
+        "TIER_81": {
+          "title": "V6 Performance",
+          "summary": "[V6 PERFORMANCE] Stepping into high-capacity architecture."
+        },
+        "TIER_91": {
+          "title": "V8 Muscle Spec",
+          "summary": "[V8 MUSCLE] Classic high-displacement density; massive torque potential."
+        },
+        "TIER_101": {
+          "title": "Race-Bored Engine",
+          "summary": "[RACE-BORED] Displacing professional competitive volumes; amateur ceiling cleared."
+        },
+        "TIER_111": {
+          "title": "Twin-Turbo V8",
+          "summary": "[TWIN-TURBO V8] High-boost compression; elite mechanical density."
+        },
+        "TIER_121": {
+          "title": "V10 Supercar Engine",
+          "summary": "[V10 SUPERCAR] V10-tier displacement architecture; supreme output depth."
+        },
+        "TIER_131": {
+          "title": "V12 Twin-Turbo",
+          "summary": "[V12 TWIN-TURBO] Pinnacle 12-cylinder displacement; ultimate density."
+        },
+        "TIER_141": {
+          "title": "W16 Quad-Turbo",
+          "summary": "[W16 QUAD-TURBO] Defying mechanical thresholds; aviation-grade scale."
+        },
+        "LEGEND": {
+          "title": "Absolute Displacement",
+          "summary": "[ABSOLUTE POWER] Transcending biological limits; pure displacement supremacy."
+        },
+        "PANTHEON": {
+          "title": "Pantheon Displacement",
+          "summary": "[PANTHEON CC] Rocket-propulsion data overflow."
+        }
+      },
+      "muscleMass": {
+        "BASE": {
+          "title": "Stock Configuration",
+          "summary": "[STOCK SETUP] Original factory body; room for structural expansion."
+        },
+        "TIER_41": {
+          "title": "Street Package",
+          "summary": "[STREET SPEC] Subtle visual enhancement; initial aerodynamic optimization."
+        },
+        "TIER_51": {
+          "title": "Sport Trim",
+          "summary": "[SPORT TRIM] Fuller body contours; establishing performance presence."
+        },
+        "TIER_61": {
+          "title": "Advanced Aero",
+          "summary": "[ADVANCED AERO] Aero components installed; improved visual stance."
+        },
+        "TIER_71": {
+          "title": "Performance Body Kit",
+          "summary": "[PERFORMANCE KIT] Enhanced visual presence; exceeding standard vehicle profiles."
+        },
+        "TIER_81": {
+          "title": "Track Edition",
+          "summary": "[TRACK EDITION] Sharper body lines; strong competitive presence."
+        },
+        "TIER_91": {
+          "title": "Competitive Widebody",
+          "summary": "[WIDEBODY CONVERSION] Aggressive expansion; transitioning into professional scale."
+        },
+        "TIER_101": {
+          "title": "Regional GT Spec",
+          "summary": "[GT SPEC] Regional podium presence; seamless integration of aero and scale."
+        },
+        "TIER_111": {
+          "title": "High-Downforce Package",
+          "summary": "[HIGH DOWNFORCE] Massive physical scale generating overwhelming visual authority."
+        },
+        "TIER_121": {
+          "title": "Sequence Widebody",
+          "summary": "[SEQUENCE WIDEBODY] National elite benchmarks; absolute structural balance."
+        },
+        "TIER_131": {
+          "title": "Pro Drift/Circuit Spec",
+          "summary": "[PRO SPEC] Professional-tier scale; engineered for maximum impact."
+        },
+        "TIER_141": {
+          "title": "Phantom Bodywork",
+          "summary": "[PHANTOM BODYWORK] Defying material boundaries; incredible physical mass."
+        },
+        "LEGEND": {
+          "title": "GT3 RS Spec",
+          "summary": "[ABSOLUTE DOMAIN] The ultimate fusion of aesthetics and raw physical power."
+        },
+        "PANTHEON": {
+          "title": "Legendary Widebody",
+          "summary": "[PANTHEON] Legendary scale; archives reserved for historical icons."
+        }
+      },
       "gripStrength": {
         "BASE": {
           "title": "Baseline Calibration",
@@ -189,6 +363,64 @@
         "LEGEND": {
           "title": "Pantheon Serial",
           "summary": "[PANTHEON] 151+ score confirmed. Benchmarking mythic records such as Magnus Samuelsson."
+        }
+      },
+      "armSize": {
+        "BASE": {
+          "title": "Stock Steelies",
+          "summary": "[STOCK STEELIES] Basic rim dimensions; substantial volume for structural widening."
+        },
+        "TIER_41": {
+          "title": "Alloy Upgrade",
+          "summary": "[ALLOY UPGRADE] Subtle increase in overall radius; initial street presence."
+        },
+        "TIER_51": {
+          "title": "Sport Rim",
+          "summary": "[SPORT RIM] Fuller wheel housing profile; basic performance signature."
+        },
+        "TIER_61": {
+          "title": "Advanced Forged",
+          "summary": "[ADVANCED FORGED] Forged alloy stiffness; lower visual center of mass."
+        },
+        "TIER_71": {
+          "title": "Track Rim Spec",
+          "summary": "[TRACK RIM SPEC] Wheel arches at peak filling phase; outclassing standard vehicles."
+        },
+        "TIER_81": {
+          "title": "Over-Sized Track",
+          "summary": "[OVER-SIZED TRACK] Razor-sharp multi-spoke geometry; aggressive physical stance."
+        },
+        "TIER_91": {
+          "title": "Deep-Dish Concave",
+          "summary": "[DEEP-DISH CONCAVE] Aggressive offset; entering professional physical scale."
+        },
+        "TIER_101": {
+          "title": "Regional Flush",
+          "summary": "[REGIONAL FLUSH] Perfect fender-to-lip alignment; regional podium aesthetics."
+        },
+        "TIER_111": {
+          "title": "Drag Rear Rim",
+          "summary": "[DRAG REAR RIM] Massive rear stance optimizing absolute visual downforce."
+        },
+        "TIER_121": {
+          "title": "Sequence Forged",
+          "summary": "[SEQUENCE FORGED] National elite benchmarks; perfect visual proportions."
+        },
+        "TIER_131": {
+          "title": "Pro Circuit Rim",
+          "summary": "[PRO CIRCUIT] Top-tier circuit sizing; built exclusively for structural dominance."
+        },
+        "TIER_141": {
+          "title": "Phantom Wheelbase",
+          "summary": "[PHANTOM WHEELBASE] Defying track norms; massive unmatched structural diameter."
+        },
+        "LEGEND": {
+          "title": "Absolute Rim Spec",
+          "summary": "[ABSOLUTE RIM] Transcending standard proportions; pure physical sculpting."
+        },
+        "PANTHEON": {
+          "title": "Pantheon Rim Spec",
+          "summary": "[PANTHEON RIM] God-tier sizing overflow; permanently archived in the Pantheon."
         }
       }
     },

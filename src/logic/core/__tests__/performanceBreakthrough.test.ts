@@ -18,4 +18,9 @@ describe('resolveAuraFromBandId', () => {
   it('maps TIER_91 to shimmer for 92-point resonance', () => {
     expect(resolveAuraFromBandId('TIER_91')).toBe('shimmer');
   });
+
+  it('maps PANTHEON to divine_light like LEGEND', () => {
+    expect(resolveAuraFromBandId('LEGEND')).toBe('divine_light');
+    expect(resolveAuraFromBandId('PANTHEON')).toBe('divine_light');
+  });
 });

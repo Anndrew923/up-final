@@ -35,6 +35,8 @@ export interface UseFfmiPageResult {
   gender: 'male' | 'female' | null;
   bodyFatInput: string;
   setBodyFatInput: (v: string) => void;
+  /** Radar score when eligible; uncapped formula score when world-record locked (for tier copy). */
+  previewScore: number | null;
   breakdown: FfmiScoringBreakdown | null;
   categorySuffix: FfmiCategorySuffix | null;
   submitDone: boolean;
@@ -89,11 +91,17 @@ export function useFfmiPage(): UseFfmiPageResult {
       : getFfmiFemaleCategorySuffix(breakdown.rawAdjustedFfmi);
   }, [breakdown, profile]);
 
+  const previewScore = useMemo(() => {
+    if (!breakdown) return null;
+    return breakdown.allowsRadarSubmit ? breakdown.submittedScore : breakdown.uncappedScore;
+  }, [breakdown]);
+
   const clearError = useCallback(() => setErrorKey(null), []);
 
   const setBodyFatInput = useCallback((v: string) => {
     setBodyFatInputState(v);
     saveFfmiDraft({ bodyFatPctInput: v });
+    setBreakdown(null);
     setSubmitDone(false);
     setErrorKey(null);
   }, []);
@@ -151,6 +159,7 @@ export function useFfmiPage(): UseFfmiPageResult {
     gender: profile && profileReady ? profile.gender : null,
     bodyFatInput,
     setBodyFatInput,
+    previewScore,
     breakdown,
     categorySuffix,
     submitDone,

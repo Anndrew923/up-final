@@ -5,7 +5,7 @@ import {
   buildPerformanceBreakthroughPayload,
   type PerformanceBreakthroughPayload,
 } from '../logic/core/performanceBreakthrough';
-import type { SixAxisMetric } from '../types/scoring';
+import type { BreakthroughMetric } from '../logic/core/performanceBreakthrough';
 import { useAnimatedScore } from './useAnimatedScore';
 import {
   useAssessmentCeremony,
@@ -20,7 +20,7 @@ export type RevealFlowPhase = 'idle' | 'scanning' | 'revealing' | 'modal';
 
 export interface UseAssessmentRevealFlowOptions {
   pool: CeremonyPool;
-  metric: SixAxisMetric;
+  metric: BreakthroughMetric;
   scoreDecimals: number;
   getScore: () => number | null;
   hasError: () => boolean;

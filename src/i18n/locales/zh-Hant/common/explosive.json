@@ -22,6 +22,8 @@
     "averageRawLabel": "已填項目之平均（各支線分數算術平均）",
     "radarClampNote": "寫入雷達時若公式平均超出 0–200，會套用軸向封頂後再儲存。",
     "previewLabel": "雷達軸分數",
+    "performanceSpecHeader": "性能規格 / 扭矩頻譜",
+    "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
     "calculate": "計算",
     "submitRadar": "寫入雷達（爆發力軸）",
     "submitDone": "已儲存 — 首頁雷達與合併分數將使用此爆發力軸。",
