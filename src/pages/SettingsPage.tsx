@@ -23,6 +23,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     goToContact,
     goToPrivacyPolicy,
     goToJoinArena,
+    reCalibrateBoot,
     toggleLocale,
     deleteAccount,
     signInGoogle,
@@ -80,6 +81,22 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
               {t('settings.openPrivacyPolicy')}
             </button>
           </div>
+        </section>
+
+        <section className="rounded-2xl border border-accent-primary/25 bg-bg-panel/40 p-5 shadow-panel backdrop-blur-md">
+          <button
+            type="button"
+            className="flex w-full flex-col gap-1 rounded-xl border border-zinc-700/60 bg-zinc-950/50 px-4 py-4 text-left transition-colors hover:border-accent-primary/40 hover:bg-accent-primary/5"
+            onClick={reCalibrateBoot}
+          >
+            <span className="text-sm font-semibold text-zinc-100">
+              {t('settings.system.reCalibrate')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/80">
+              {t('settings.system.reCalibrateKicker')}
+            </span>
+            <span className="mt-1 text-xs text-zinc-500">{t('settings.system.reCalibrateHint')}</span>
+          </button>
         </section>
 
         <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">

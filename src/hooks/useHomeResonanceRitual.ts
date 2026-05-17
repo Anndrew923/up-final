@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { prefersReducedMotion } from '../lib/motionPreference';
 import { consumePendingRadarResonance } from '../services/radarResonanceSession';
+import { useBootSequenceStore } from '../stores/bootSequenceStore';
 import { useUiInteractionStore } from '../stores/uiInteractionStore';
 import { resolveOverallGradeBand } from '../logic/core/scoreMeaningCatalog';
 import type { RadarChartPoint } from '../types/radarDisplay';
@@ -110,6 +111,7 @@ export function useHomeResonanceRitual({
   const runIdRef = useRef(0);
   const fillRafRef = useRef<number | null>(null);
   const timeoutIdsRef = useRef<number[]>([]);
+  const bootCompleted = useBootSequenceStore((s) => s.completed);
   const setBlocking = useUiInteractionStore((s) => s.setHomeResonanceBlocking);
 
   const invalidateRun = useCallback(() => {
@@ -232,9 +234,10 @@ export function useHomeResonanceRitual({
   startRitualRef.current = startRitual;
 
   useEffect(() => {
+    if (!bootCompleted) return;
     if (!consumePendingRadarResonance()) return;
     void startRitualRef.current();
-  }, []);
+  }, [bootCompleted]);
 
   useEffect(
     () => () => {

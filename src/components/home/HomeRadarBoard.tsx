@@ -18,7 +18,8 @@ import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
 import type { PhysicalProfile } from '../../types/userProfile';
-import { useUiInteractionStore } from '../../stores/uiInteractionStore';
+import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
+import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 
 /**
  * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
@@ -27,7 +28,7 @@ export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation();
   const { radarPoints, overallScore, scaleMax, completionCount } = useCoreSixRadar();
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() => loadPhysicalProfile());
-  const isBlocking = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
+  const isBlocking = useShellInteractionBlocked();
 
   useEffect(() => {
     const sync = () => setPhysicalProfile(loadPhysicalProfile());
@@ -118,6 +119,7 @@ export const HomeRadarBoard: FC = () => {
 
           <div className="mt-6 flex flex-col items-center gap-8">
             <div
+              id={ONBOARDING_RADAR_TARGET_ID}
               className={`w-full transition-opacity duration-300 motion-reduce:transition-none ${
                 ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
               }`}

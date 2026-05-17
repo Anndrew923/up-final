@@ -11,6 +11,11 @@
     "infoHint": "查看產品背景與隱私權政策。",
     "openAbout": "關於我",
     "openPrivacyPolicy": "隱私權政策",
+    "system": {
+      "reCalibrate": "重新執行全車通電校準",
+      "reCalibrateKicker": "RE-CALIBRATION",
+      "reCalibrateHint": "重置首次通電聚光燈引導，並立即返回首頁重新啟動。"
+    },
     "supportSection": "官方支援",
     "supportHint": "若你有帳號、隱私或產品使用問題，請聯繫官方支援管道。",
     "contactUs": "聯絡我們",

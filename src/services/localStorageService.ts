@@ -20,7 +20,11 @@ const STORAGE_KEYS = {
   strengthInputs: 'up.strengthInputs',
   gripInputs: 'up.gripInputs',
   armSizeInputs: 'up.armSizeInputs',
+  bootSequenceCompleted: 'up:completed-boot-sequence',
 } as const;
+
+/** First-run spotlight onboarding — persisted across sessions. */
+export const BOOT_SEQUENCE_COMPLETED_KEY = STORAGE_KEYS.bootSequenceCompleted;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
 export const PROFILE_STORAGE_KEY = STORAGE_KEYS.profile;
@@ -261,6 +265,14 @@ export function appendHistory(record: LocalHistoryRecord, maxRecords = 200): Loc
   const next = [record, ...current].slice(0, maxRecords);
   saveHistory(next);
   return next;
+}
+
+export function loadBootSequenceCompleted(): boolean {
+  return safeGetItem(BOOT_SEQUENCE_COMPLETED_KEY) === '1';
+}
+
+export function saveBootSequenceCompleted(completed: boolean): void {
+  safeSetItem(BOOT_SEQUENCE_COMPLETED_KEY, completed ? '1' : '0');
 }
 
 export function clearLocalData(): void {

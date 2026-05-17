@@ -11,6 +11,11 @@
     "infoHint": "Review product background and privacy policy.",
     "openAbout": "About",
     "openPrivacyPolicy": "Privacy policy",
+    "system": {
+      "reCalibrate": "Re-run full vehicle power-on calibration",
+      "reCalibrateKicker": "RE-CALIBRATION",
+      "reCalibrateHint": "Reset the first-run spotlight tour and return to Home."
+    },
     "supportSection": "Support",
     "supportHint": "Need help or have feedback? Contact the official support channel.",
     "contactUs": "Contact us",

@@ -1,0 +1,20 @@
+{
+  "onboarding": {
+    "overlayAria": "First power-on guidance",
+    "scrimDismissBlocked": "Complete power-on calibration to continue",
+    "next": "Continue",
+    "ignite": "IGNITE",
+    "phase1": {
+      "kicker": "Phase 01 · System wake",
+      "body": "Systems online. Factory chassis scan complete. Building your body is like tuning a performance car — the factory floor may be set, but how you break limits and extract every horsepower is where the fun begins. Welcome to Ultimate Physique."
+    },
+    "phase2": {
+      "kicker": "Phase 02 · Performance overview",
+      "body": "This is your six-axis resonance radar — your performance dashboard. It reflects your physical rigidity and pilot compatibility. Data does not lie; you set the engine's operating temperature."
+    },
+    "phase3": {
+      "kicker": "Phase 03 · Horsepower calibration",
+      "body": "Enter the dyno. Log your limit data and the system unlocks matching auras and tiers. Torque the bolts — start your first chassis calibration now."
+    }
+  }
+}

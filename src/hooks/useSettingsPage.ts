@@ -5,6 +5,7 @@ import { ROUTES } from '../config/routes';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
+import { useBootSequence } from './useBootSequence';
 import { useAuthStore } from '../stores/authStore';
 
 export type SettingsBanner =
@@ -34,6 +35,7 @@ export interface SettingsPageState {
   goToContact(): void;
   goToPrivacyPolicy(): void;
   goToJoinArena(): void;
+  reCalibrateBoot(): void;
   toggleLocale(): void;
   signInGoogle(): Promise<void>;
   signOut(): Promise<void>;
@@ -43,6 +45,7 @@ export interface SettingsPageState {
 export function useSettingsPage(): SettingsPageState {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const { resetBoot } = useBootSequence();
   const authStatus = useAuthStore((s) => s.status);
   const displayName = useAuthStore((s) => s.displayName);
   const email = useAuthStore((s) => s.email);
@@ -81,6 +84,10 @@ export function useSettingsPage(): SettingsPageState {
       },
       goToJoinArena() {
         navigate(ROUTES.joinArena);
+      },
+      reCalibrateBoot() {
+        resetBoot();
+        navigate(ROUTES.home, { replace: true });
       },
       toggleLocale() {
         const next: SupportedLng = locale === 'zh-Hant' ? 'en' : 'zh-Hant';
@@ -168,6 +175,7 @@ export function useSettingsPage(): SettingsPageState {
       canDeleteAccount,
       t,
       navigate,
+      resetBoot,
     ]
   );
 
