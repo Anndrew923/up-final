@@ -18,6 +18,7 @@ import {
   saveFfmiDraft,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
 
@@ -148,7 +149,8 @@ export function useFfmiPage(): UseFfmiPageResult {
     setScore('bodyFat', breakdown.submittedScore);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
-  }, [breakdown, setScore]);
+    navigateHomeWithResonance(navigate);
+  }, [breakdown, navigate, setScore]);
 
   const goHome = useCallback(() => {
     navigate(ROUTES.home);

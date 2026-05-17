@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   getExplosiveCapNoticeInterpolation,
   hasAnyExplosiveCap,
@@ -18,6 +19,7 @@ import {
   savePowerInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import type { PowerInputsPersisted } from '../types/powerInputs';
@@ -84,6 +86,7 @@ function readInitialForm(): {
 }
 
 export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [form, setForm] = useState(() => readInitialForm());
@@ -199,14 +202,16 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     applySuccessfulExplosivePreview(result);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    navigateHomeWithResonance(navigate);
   }, [
-    verticalJumpInput,
-    standingLongJumpInput,
-    sprintInput,
+    applySuccessfulExplosivePreview,
+    navigate,
     profile,
     profileReady,
     setStoreScore,
-    applySuccessfulExplosivePreview,
+    sprintInput,
+    standingLongJumpInput,
+    verticalJumpInput,
   ]);
 
   return {

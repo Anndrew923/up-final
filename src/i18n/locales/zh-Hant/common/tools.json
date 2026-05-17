@@ -43,7 +43,8 @@
         "resultLabel": "估算 1RM",
         "resultValue": "{{value}} kg",
         "resultEmpty": "—",
-        "hint": "提示：次數越高通常誤差越大；若有低次數、接近力竭的組數，建議優先輸入該組。"
+        "hint": "提示：次數越高通常誤差越大；若有低次數、接近力竭的組數，建議優先輸入該組。",
+        "calculate": "計算 1RM"
       },
       "plates": {
         "kicker": "力量工具",
@@ -83,7 +84,30 @@
         "resultEmpty": "—",
         "inputHint": "請輸入可行目標（總重量需大於槓鈴重量）。",
         "leftoverWarning": "以目前槓片組合無法精準湊到目標，每邊尚差 {{value}} {{unit}}。",
-        "activePlateSet": "目前槓片組：{{values}}（{{unit}}）。"
+        "activePlateSet": "目前槓片組：{{values}}（{{unit}}）。",
+        "calculate": "計算配重"
+      },
+      "resultModal": {
+        "closeAria": "關閉結果",
+        "dismiss": "確認",
+        "oneRm": {
+          "kicker": "1RM 預測報告",
+          "title": "估算單次最大重量",
+          "heroValue": "{{value}} kg",
+          "percentHeading": "訓練百分比對照",
+          "percentRow": "{{percent}}% — {{value}} kg"
+        },
+        "plates": {
+          "kicker": "槓片裝載藍圖",
+          "title": "單邊槓片配置",
+          "blueprintAria": "槓鈴配重藍圖",
+          "barCenter": "槓",
+          "barBase": "槓鈴桿本體：{{value}} {{unit}}",
+          "perSideHeading": "單邊裝載明細",
+          "loadLine": "單邊裝載：{{value}} {{unit}} × {{count}}",
+          "perSideTotal": "每邊合計：{{value}} {{unit}}",
+          "leftoverWarning": "無法精準湊齊目標，每邊尚差 {{value}} {{unit}}。"
+        }
       }
     },
     "sync": {

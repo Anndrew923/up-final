@@ -9,14 +9,12 @@ import {
   planBarbellPlates,
   type TrainingUnit,
 } from '../logic/core/trainingTools';
+import type { PlateDisplayPick } from '../types/trainingToolsDisplay';
 
 export type BarbellPreset = 'olympic' | 'women' | 'technique' | 'custom';
 export type PlateSetPreset = 'commercial' | 'competition' | 'homeBasic';
 
-export interface PlateDisplayPick {
-  plateValue: number;
-  count: number;
-}
+export type { PlateDisplayPick };
 
 export interface PlateCalculatorState {
   unit: TrainingUnit;

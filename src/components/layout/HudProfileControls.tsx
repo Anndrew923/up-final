@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '../../config/routes';
+import { useUiInteractionStore } from '../../stores/uiInteractionStore';
 import HudAvatar from './HudAvatar';
 
 function SettingsGlyph() {
@@ -18,9 +19,13 @@ function SettingsGlyph() {
 export default function HudProfileControls() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
+  const isBlocked = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
 
   return (
-    <div className="ml-auto flex items-center gap-2">
+    <div
+      className={`ml-auto flex items-center gap-2 motion-safe:transition-opacity motion-safe:duration-300 ${isBlocked ? 'pointer-events-none opacity-40 saturate-50' : ''}`}
+      aria-hidden={isBlocked}
+    >
       <button
         type="button"
         onClick={() => navigate(ROUTES.settings)}

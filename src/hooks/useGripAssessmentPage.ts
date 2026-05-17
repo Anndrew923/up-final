@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   applyGripPeakCap,
   calculateGripStrengthScore,
@@ -12,6 +13,7 @@ import {
   saveGripInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
 import type { PhysicalProfile } from '../types/userProfile';
@@ -39,6 +41,7 @@ function parsePeakKg(raw: string): number | null {
 }
 
 export function useGripAssessmentPage(): UseGripAssessmentPageResult {
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [peakKgInput, setPeakKgInput] = useState(() => {
@@ -108,7 +111,8 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
-  }, [peakKgInput, profile, profileReady, setStoreScore]);
+    navigateHomeWithResonance(navigate);
+  }, [navigate, peakKgInput, profile, profileReady, setStoreScore]);
 
   return {
     profile,

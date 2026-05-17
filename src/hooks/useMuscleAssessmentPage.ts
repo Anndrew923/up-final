@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { MuscleAssessmentBreakdown, MuscleAssessmentComputeError } from '../logic/core/muscleScoring';
 import {
   getSmmKgCeilingForGender,
@@ -13,6 +14,7 @@ import {
   saveMuscleInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import { useScoreStore } from '../stores/scoreStore';
@@ -42,6 +44,7 @@ export interface UseMuscleAssessmentPageResult {
 }
 
 export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
 
   const [profile, setProfile] = useState<PhysicalProfile | null>(loadPhysicalProfile);
@@ -126,7 +129,8 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
     setStoreScore('muscleMass', result.score);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
-  }, [profile, profileReady, setStoreScore, smmInput]);
+    navigateHomeWithResonance(navigate);
+  }, [navigate, profile, profileReady, setStoreScore, smmInput]);
 
   return {
     profileReady,

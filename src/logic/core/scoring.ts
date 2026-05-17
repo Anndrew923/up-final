@@ -362,6 +362,12 @@ export function clampSixAxisRawInput(raw: number): number {
   return clampScoreMapValue(raw);
 }
 
+/** Home resonance / console overall — always two decimal places for display. */
+export function formatOverallResonanceScore(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
+  return round2(value).toFixed(2);
+}
+
 /** Linear mean of six core dimensions (each slot defaults to 0). */
 export function calculateSixAxisOverall(scores: ScoreMap): number {
   const sum = SIX_AXIS_METRICS.reduce(

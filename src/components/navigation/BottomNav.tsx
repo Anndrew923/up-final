@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NAV_ITEMS } from '../../config/nav.config';
+import { useUiInteractionStore } from '../../stores/uiInteractionStore';
 import { NavGlyph } from './NavIcons';
 
 /**
@@ -12,11 +13,13 @@ import { NavGlyph } from './NavIcons';
 export default function BottomNav() {
   const { t } = useTranslation();
   const centerIndex = 2;
+  const isBlocked = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex h-[calc(78px+env(safe-area-inset-bottom,0px))] w-screen max-w-[100vw] items-end px-2 pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]"
+      className={`fixed bottom-0 left-0 right-0 z-50 flex h-[calc(78px+env(safe-area-inset-bottom,0px))] w-screen max-w-[100vw] items-end px-2 pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] motion-safe:transition-opacity motion-safe:duration-300 ${isBlocked ? 'pointer-events-none opacity-40 saturate-50' : ''}`}
       aria-label={t('bottomNavAria', { ns: 'common' })}
+      aria-hidden={isBlocked}
     >
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] border-t border-cyan-200/20 bg-slate-950/50 shadow-[0_-14px_36px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-[190%]" />
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] bg-gradient-to-t from-cyan-950/10 to-transparent" />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
@@ -17,6 +18,7 @@ import {
   subscribePhysicalProfile,
   subscribeStrengthInputs,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
@@ -69,6 +71,7 @@ function readInitialForm(): StrengthFormStrings {
 
 export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm());
@@ -266,12 +269,13 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
       setSubmitDone(true);
       setSubmitNotice({ kind: 'success', savedScore: result.score });
       queueStructuredProfileAfterRadarSubmit();
+      navigateHomeWithResonance(navigate);
     }
     if (!ok && !result.ok) {
       setSubmitNotice({ kind: 'error', error: result.error });
     }
     setSubmitBusy(false);
-  }, [computeArgs, applyCombinedComputeResult, submitBusy]);
+  }, [applyCombinedComputeResult, computeArgs, navigate, submitBusy]);
 
   return {
     profile,

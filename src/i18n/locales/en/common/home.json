@@ -105,7 +105,26 @@
     "radarOverview": "Ability radar",
     "radarCompletion": "Progress: {{count}} / {{total}} axes",
     "radarAria": "Six-axis hex radar chart",
-    "overallAverage": "Overall average",
+    "diagnostics": {
+      "kicker": "Identity archetype",
+      "archetypeHint": "Homologation profile derived from your six-axis resonance map.",
+      "cta": "Run full performance spec diagnostics",
+      "ctaSub": "DIAGNOSTICS"
+    },
+    "resonance": {
+      "overlayAria": "Global performance resonance ritual",
+      "dismiss": "Dismiss overlay",
+      "kicker": "HOLOGRAPHIC RESONANCE / CORE SYNC",
+      "bootScore": "---",
+      "close": "Return to console",
+      "phase": {
+        "boot": "Chassis power-on…",
+        "charge": "Six-axis charge…",
+        "count": "Overall output lock-in…",
+        "reveal": "Homologation readout"
+      }
+    },
+    "overallAverage": "Resonance output",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE",
       "BASE": "「STOCK COMMUTER」Factory-stock daily driver. Architecture still awaiting full unlock.",

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   COOPER_MAX_DISTANCE_FEMALE_METERS,
   COOPER_MAX_DISTANCE_MALE_METERS,
@@ -16,6 +17,7 @@ import {
   saveCardioInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
 import { useScoreStore } from '../stores/scoreStore';
@@ -62,6 +64,7 @@ function readInitialCardioForm(): { distance: string; minutes: string; seconds: 
 }
 
 export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
 
   const [profile, setProfile] = useState(loadPhysicalProfile);
@@ -174,6 +177,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       setStoreScore('cardio', scoreToSave);
       setSubmitDone(true);
       queueStructuredProfileAfterRadarSubmit();
+      navigateHomeWithResonance(navigate);
       return;
     }
 
@@ -195,9 +199,11 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     setStoreScore('cardio', scoreToSave);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    navigateHomeWithResonance(navigate);
   }, [
     activeTab,
     distanceInput,
+    navigate,
     profile,
     profileReady,
     runMinutesInput,

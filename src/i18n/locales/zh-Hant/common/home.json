@@ -105,6 +105,25 @@
     "radarOverview": "能力雷達",
     "radarCompletion": "開發進度：{{count}} / {{total}}",
     "radarAria": "六維雷達圖",
+    "diagnostics": {
+      "kicker": "適格者相性代號",
+      "archetypeHint": "依六維共鳴圖譜推算的載具適格檔案。",
+      "cta": "啟動全域性能規格診斷",
+      "ctaSub": "DIAGNOSTICS"
+    },
+    "resonance": {
+      "overlayAria": "全域性能共鳴儀式",
+      "dismiss": "關閉覆蓋層",
+      "kicker": "全息共鳴 / 核心同步",
+      "bootScore": "---",
+      "close": "返回主控台",
+      "phase": {
+        "boot": "底盤通電中…",
+        "charge": "六軸充能中…",
+        "count": "共鳴出力鎖定中…",
+        "reveal": "賽會認證輸出"
+      }
+    },
     "overallAverage": "共鳴出力",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE / 賽會認證評等",

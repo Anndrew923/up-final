@@ -12,6 +12,7 @@ import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { leaderboardShardForSixAxisMetric } from '../logic/core/assessmentLeaderboardShards';
 import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
 import { clampScoreMapValue } from '../logic/core/scoring';
+import { formatOverallResonanceScore } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
 
 export interface GripAssessmentPageProps {
@@ -37,7 +38,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
   const reveal = useAssessmentRevealFlow({
     pool: 'grip',
     metric: 'gripStrength',
-    scoreDecimals: 1,
+    scoreDecimals: 2,
     getScore: () => previewScore,
     hasError: () => errorKey != null,
     compute: calculate,
@@ -60,7 +61,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       ? t('home.profile.female')
       : t('home.profile.male');
   const heroScore = displayScore ?? previewScore;
-  const heroScoreText = heroScore != null ? heroScore.toFixed(1) : null;
+  const heroScoreText = heroScore != null ? formatOverallResonanceScore(heroScore) : null;
   const scoreMeaning = useScoreMeaning('gripStrength', previewScore ?? heroScore);
 
   return (
@@ -161,7 +162,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
                 {t('grip.previewLabel')}
               </p>
               <p className="font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? previewScore.toFixed(1)}
+                {heroScoreText ?? formatOverallResonanceScore(previewScore)}
               </p>
             </div>
           ) : null}

@@ -43,7 +43,8 @@
         "resultLabel": "Estimated 1RM",
         "resultValue": "{{value}} kg",
         "resultEmpty": "—",
-        "hint": "Note: higher-rep sets usually have larger estimation error; prefer lower-rep near-failure sets when available."
+        "hint": "Note: higher-rep sets usually have larger estimation error; prefer lower-rep near-failure sets when available.",
+        "calculate": "Calculate 1RM"
       },
       "plates": {
         "kicker": "Strength tool",
@@ -83,7 +84,30 @@
         "resultEmpty": "—",
         "inputHint": "Enter a valid target (total weight must be greater than barbell weight).",
         "leftoverWarning": "Current plate set cannot match target exactly; {{value}} {{unit}} remains per side.",
-        "activePlateSet": "Active plate set: {{values}} ({{unit}})."
+        "activePlateSet": "Active plate set: {{values}} ({{unit}}).",
+        "calculate": "Calculate loading"
+      },
+      "resultModal": {
+        "closeAria": "Close result",
+        "dismiss": "Got it",
+        "oneRm": {
+          "kicker": "1RM report",
+          "title": "Estimated one-rep max",
+          "heroValue": "{{value}} kg",
+          "percentHeading": "Training percentages",
+          "percentRow": "{{percent}}% — {{value}} kg"
+        },
+        "plates": {
+          "kicker": "Loading blueprint",
+          "title": "Per-side plate layout",
+          "blueprintAria": "Barbell loading blueprint",
+          "barCenter": "BAR",
+          "barBase": "Barbell: {{value}} {{unit}}",
+          "perSideHeading": "Per-side loading",
+          "loadLine": "Per side: {{value}} {{unit}} × {{count}}",
+          "perSideTotal": "{{value}} {{unit}} / side",
+          "leftoverWarning": "Cannot match exactly; {{value}} {{unit}} remains per side."
+        }
       }
     },
     "sync": {
