@@ -4,6 +4,7 @@ import {
   calculateGripStrengthScore,
   GRIP_MAX_PEAK_KG,
   getGripRankMetadata,
+  resolveGripAuraFromBandId,
   resolveGripStrengthScoreFromInputs,
 } from '../gripStrength';
 
@@ -43,9 +44,45 @@ describe('applyGripPeakCap', () => {
   });
 });
 
+describe('resolveGripAuraFromBandId', () => {
+  it('maps 13 bands to 7 aura tiers per product spec', () => {
+    expect(resolveGripAuraFromBandId('BASE')).toBe('none');
+    expect(resolveGripAuraFromBandId('TIER_51')).toBe('none');
+    expect(resolveGripAuraFromBandId('TIER_61')).toBe('pulse');
+    expect(resolveGripAuraFromBandId('TIER_81')).toBe('flow');
+    expect(resolveGripAuraFromBandId('TIER_91')).toBe('shimmer');
+    expect(resolveGripAuraFromBandId('TIER_101')).toBe('shimmer');
+    expect(resolveGripAuraFromBandId('TIER_111')).toBe('lightning');
+    expect(resolveGripAuraFromBandId('TIER_131')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('LEGEND')).toBe('divine_light');
+  });
+});
+
 describe('getGripRankMetadata', () => {
-  it('returns divine rank for high scores', () => {
-    expect(getGripRankMetadata(224).rankKey).toBe('godHand');
+  it('derives rankKey from score bands (13-tier)', () => {
+    expect(getGripRankMetadata(63)).toEqual({
+      rankKey: 'TIER_61',
+      color: 'green',
+      aura: 'pulse',
+    });
+    expect(getGripRankMetadata(92)).toEqual({
+      rankKey: 'TIER_91',
+      color: 'purple',
+      aura: 'shimmer',
+    });
+    expect(getGripRankMetadata(135)).toEqual({
+      rankKey: 'TIER_131',
+      color: 'black',
+      aura: 'void_flame',
+    });
+  });
+
+  it('returns LEGEND with divine_light for top scores', () => {
+    expect(getGripRankMetadata(224)).toEqual({
+      rankKey: 'LEGEND',
+      color: 'gold',
+      aura: 'divine_light',
+    });
   });
 });
 

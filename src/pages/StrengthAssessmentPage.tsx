@@ -6,6 +6,9 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import HexRadarChart from '../components/radar/HexRadarChart';
 import { ROUTES } from '../config/routes';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE } from '../logic/core/assessmentLeaderboardShards';
@@ -56,6 +59,16 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     submitDone,
     submitToRadar,
   } = useStrengthAssessmentPage();
+  const reveal = useAssessmentRevealFlow({
+    pool: 'strength',
+    metric: 'strength',
+    scoreDecimals: 2,
+    getScore: () => combinedScore ?? combinedBreakdown?.averageRaw ?? null,
+    hasError: () => combinedError != null,
+    compute: calculateCombined,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
 
   const genderLabel =
     !profile ? '' : profile.gender === 'female'
@@ -85,11 +98,19 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     }
     return weakest?.key;
   }, [strengthRadarPoints]);
-  const interpretationScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
-  const scoreMeaning = useScoreMeaning('strength', interpretationScore);
+  const liveScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
+  const interpretationScore =
+    displayScore ?? liveScore;
+  const heroScoreText =
+    interpretationScore != null && Number.isFinite(interpretationScore)
+      ? interpretationScore.toFixed(2)
+      : null;
+  const scoreMeaning = useScoreMeaning('strength', liveScore ?? interpretationScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="strength" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
       </div>
@@ -176,6 +197,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         placeholder={t('strength.weightPlaceholder')}
                         value={form[lift].weight}
                         onChange={(e) => setWeight(lift, e.target.value)}
+                        disabled={revealBlocking}
                         aria-label={t('strength.weightAria', { lift: t(`strength.lifts.${lift}`) })}
                       />
                     </label>
@@ -192,6 +214,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         placeholder={t('strength.repsPlaceholder')}
                         value={form[lift].reps}
                         onChange={(e) => setReps(lift, e.target.value)}
+                        disabled={revealBlocking}
                         aria-label={t('strength.repsAria', { lift: t(`strength.lifts.${lift}`) })}
                         aria-describedby={showRepsAccuracyNudge ? repsAccuracyNudgeId : undefined}
                       />
@@ -211,7 +234,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                     <button
                       type="button"
                       className="ui-btn ui-btn-primary text-sm"
-                      disabled={!profileReady}
+                      disabled={!profileReady || revealBlocking}
                       onClick={() => calculateLift(lift)}
                     >
                       {t('strength.calculateThisLift')}
@@ -292,7 +315,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                     {t('strength.previewLabel')}
                   </p>
                   <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                    {(combinedScore ?? combinedBreakdown.averageRaw).toFixed(2)}
+                    {heroScoreText ?? combinedBreakdown.averageRaw.toFixed(2)}
                   </p>
                   {combinedScore !== null &&
                   Math.abs(combinedScore - combinedBreakdown.averageRaw) > 0.001 ? (
@@ -364,15 +387,17 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               <button
                 type="button"
                 className="ui-btn ui-btn-primary"
-                disabled={!profileReady || submitBusy}
-                onClick={calculateCombined}
+                disabled={!profileReady || submitBusy || revealBlocking}
+                onClick={() => {
+                  void revealCalculate();
+                }}
               >
                 {t('strength.calculateCombined')}
               </button>
               <button
                 type="button"
                 className="ui-btn"
-                disabled={!profileReady || submitBusy}
+                disabled={!profileReady || submitBusy || revealBlocking}
                 onClick={() => {
                   void submitToRadar();
                 }}

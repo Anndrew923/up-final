@@ -19,6 +19,34 @@ vi.mock('../../hooks/useScoreMeaning', () => ({
   useScoreMeaning: (...args: unknown[]) => mockUseScoreMeaning(...args),
 }));
 
+vi.mock('../../hooks/useAssessmentRevealFlow', () => ({
+  useAssessmentRevealFlow: () => ({
+    ceremony: {
+      isActive: false,
+      statusLine: '',
+      scanningLabel: '',
+      overlayAriaLabel: '',
+      wrapCalculate: vi.fn(),
+      cancel: vi.fn(),
+    },
+    phase: 'idle',
+    isBlocking: false,
+    displayScore: null,
+    revealCalculate: vi.fn(),
+    modalOpen: false,
+    modalPayload: null,
+    closeModal: vi.fn(),
+  }),
+}));
+
+vi.mock('../../components/assessment/AssessmentCeremonyOverlay', () => ({
+  default: () => null,
+}));
+
+vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
+  default: () => null,
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
@@ -67,7 +95,7 @@ afterEach(() => {
 });
 
 describe('GripAssessmentPage performance spec', () => {
-  it('shows PANTHEON meaning and hides next milestone at previewScore=181', () => {
+  it('shows top-tier meaning and hides next milestone at previewScore=181', () => {
     mockUseGripAssessmentPage.mockReturnValue({
       profile: { gender: 'male', weightKg: 80 },
       profileReady: true,
@@ -82,8 +110,8 @@ describe('GripAssessmentPage performance spec', () => {
       submitToRadar: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue({
-      title: 'Pantheon',
-      summary: 'God-tier data overflow.',
+      title: 'Pantheon Serial',
+      summary: 'Legend-tier data overflow.',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -93,8 +121,8 @@ describe('GripAssessmentPage performance spec', () => {
 
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 181);
     expect(text).toContain('PERFORMANCE SPEC / Potential Spec');
-    expect(text).toContain('Pantheon');
-    expect(text).toContain('God-tier data overflow.');
+    expect(text).toContain('Pantheon Serial');
+    expect(text).toContain('Legend-tier data overflow.');
     expect(text).not.toContain('Next Milestone:');
 
     unmount();

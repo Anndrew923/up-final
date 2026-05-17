@@ -2,6 +2,8 @@ import type { GripInputsPersisted } from '../../types/gripInputs';
 import type { ScoreMap } from '../../types/scoring';
 import type { PhysicalProfile } from '../../types/userProfile';
 import { isPhysicalProfileComplete } from './physicalProfile';
+import { resolveAuraFromBandId } from './performanceAura';
+import { resolveScoreBand } from './scoreMeaningCatalog';
 import { clampScoreMapValue } from './scoring';
 
 export const GRIP_MALE_MULTIPLIER = 1.4;
@@ -9,18 +11,52 @@ export const GRIP_FEMALE_COMPENSATION = 1.6;
 /** Product model ceiling aligned with Magnus Samuelsson-level public records context. */
 export const GRIP_MAX_PEAK_KG = 175;
 
+export type GripBandId =
+  | 'BASE'
+  | 'TIER_41'
+  | 'TIER_51'
+  | 'TIER_61'
+  | 'TIER_71'
+  | 'TIER_81'
+  | 'TIER_91'
+  | 'TIER_101'
+  | 'TIER_111'
+  | 'TIER_121'
+  | 'TIER_131'
+  | 'TIER_141'
+  | 'LEGEND';
+
+export type GripAuraKey =
+  | 'none'
+  | 'pulse'
+  | 'flow'
+  | 'shimmer'
+  | 'lightning'
+  | 'void_flame'
+  | 'divine_light';
+
+export type GripRankColor = 'gray' | 'green' | 'blue' | 'purple' | 'red' | 'black' | 'gold';
+
 export type GripRankMetadata = {
-  rankKey:
-    | 'ironApprentice'
-    | 'athleticElite'
-    | 'vanguard'
-    | 'bossClass'
-    | 'titan'
-    | 'grandmaster'
-    | 'godHand';
-  color: 'gray' | 'green' | 'blue' | 'purple' | 'red' | 'black' | 'gold';
-  aura: 'none' | 'pulse' | 'flow' | 'shimmer' | 'lightning' | 'void_flame' | 'divine_light';
+  rankKey: GripBandId;
+  color: GripRankColor;
+  aura: GripAuraKey;
 };
+
+const AURA_COLORS: Record<GripAuraKey, GripRankColor> = {
+  none: 'gray',
+  pulse: 'green',
+  flow: 'blue',
+  shimmer: 'purple',
+  lightning: 'red',
+  void_flame: 'black',
+  divine_light: 'gold',
+};
+
+/** Delegates to shared band→aura map in performanceAura. */
+export function resolveGripAuraFromBandId(bandId: string): GripAuraKey {
+  return resolveAuraFromBandId(bandId);
+}
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
@@ -61,13 +97,14 @@ export function calculateGripStrengthScore(
 }
 
 export function getGripRankMetadata(score: number): GripRankMetadata {
-  if (score < 40) return { rankKey: 'ironApprentice', color: 'gray', aura: 'none' };
-  if (score < 65) return { rankKey: 'athleticElite', color: 'green', aura: 'pulse' };
-  if (score < 85) return { rankKey: 'vanguard', color: 'blue', aura: 'flow' };
-  if (score < 100) return { rankKey: 'bossClass', color: 'purple', aura: 'shimmer' };
-  if (score < 140) return { rankKey: 'titan', color: 'red', aura: 'lightning' };
-  if (score < 200) return { rankKey: 'grandmaster', color: 'black', aura: 'void_flame' };
-  return { rankKey: 'godHand', color: 'gold', aura: 'divine_light' };
+  const band = resolveScoreBand('gripStrength', score);
+  const rankKey = band.id as GripBandId;
+  const aura = resolveGripAuraFromBandId(band.id);
+  return {
+    rankKey,
+    color: AURA_COLORS[aura],
+    aura,
+  };
 }
 
 export function resolveGripStrengthScoreFromInputs(

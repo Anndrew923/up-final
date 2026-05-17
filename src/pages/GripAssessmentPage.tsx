@@ -2,6 +2,9 @@ import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
@@ -31,6 +34,16 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     calculate,
     submitToRadar,
   } = useGripAssessmentPage();
+  const reveal = useAssessmentRevealFlow({
+    pool: 'grip',
+    metric: 'gripStrength',
+    scoreDecimals: 1,
+    getScore: () => previewScore,
+    hasError: () => errorKey != null,
+    compute: calculate,
+  });
+  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
+    reveal;
 
   const gripLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
     if (previewScore == null || !Number.isFinite(previewScore) || previewScore <= 0) return undefined;
@@ -46,10 +59,14 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     !profile ? '' : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
-  const scoreMeaning = useScoreMeaning('gripStrength', previewScore);
+  const heroScore = displayScore ?? previewScore;
+  const heroScoreText = heroScore != null ? heroScore.toFixed(1) : null;
+  const scoreMeaning = useScoreMeaning('gripStrength', previewScore ?? heroScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
+      <AssessmentCeremonyOverlay ceremony={ceremony} accent="grip" />
+      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
@@ -114,6 +131,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
                 clearError();
                 setPeakKgInput(e.target.value);
               }}
+              disabled={revealBlocking}
               aria-label={t('grip.peakLabel')}
             />
           </label>
@@ -142,7 +160,9 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('grip.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">{previewScore.toFixed(1)}</p>
+              <p className="font-mono text-2xl tabular-nums text-accent-info">
+                {heroScoreText ?? previewScore.toFixed(1)}
+              </p>
             </div>
           ) : null}
 
@@ -165,10 +185,17 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button type="button" className="ui-btn ui-btn-primary" onClick={calculate}>
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+            >
               {t('grip.calculate')}
             </button>
-            <button type="button" className="ui-btn" onClick={submitToRadar}>
+            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={submitToRadar}>
               {t('grip.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>

@@ -21,13 +21,19 @@
     "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "rankLabel": "Rank: {{label}} (Aura: {{aura}})",
     "ranks": {
-      "ironApprentice": "Iron Apprentice",
-      "athleticElite": "Athletic Elite",
-      "vanguard": "Vanguard",
-      "bossClass": "Boss Class",
-      "titan": "Titan",
-      "grandmaster": "Grandmaster",
-      "godHand": "God Hand"
+      "BASE": "Native Frame",
+      "TIER_41": "Friction Wake",
+      "TIER_51": "Stable Bite",
+      "TIER_61": "Control Upgrade",
+      "TIER_71": "Thermal Grip",
+      "TIER_81": "Performance Apex",
+      "TIER_91": "Athletic Elite",
+      "TIER_101": "Regional Podium",
+      "TIER_111": "Anti-Slip Spec",
+      "TIER_121": "Sequence Dominance",
+      "TIER_131": "Phantom Compression",
+      "TIER_141": "Eternal Interface",
+      "LEGEND": "Pantheon Serial"
     },
     "auras": {
       "none": "None",

@@ -1,23 +1,66 @@
-# Up Final Blueprint (Global Constitution)
+# ==============================================================================
+# 最強肉體 (Ultimate Physique) - Global Constitution & AI Execution Rules
+# Current Temporal Context: 2026 | Environment: Cursor AI (Bruce) Focus Protocol
+# ==============================================================================
 
-1. Primary workspace is `up-final`; `reference-app`, `reference-app-fitness`, and `lbj-goat-meter` are read-only references.
-2. Business model is fixed:
-   - Core App: one-time purchase unlocks all local features (assessment, 6-axis radar, personal history, widgets).
-   - Pro Service: monthly subscription unlocks leaderboard participation and cloud sync.
-3. Local-first is mandatory:
-   - Arm size and grip strength data must remain fully usable without subscription.
-   - Personal detailed history must not be blocked behind Pro.
-4. Access control is mandatory in `src/logic/core`:
-   - Centralize entitlement checks for core access and Pro access.
-   - Leaderboard actions require valid Pro status.
-5. Firebase cost guardrails are mandatory:
-   - Non-Pro users must not generate Firestore leaderboard read/write traffic.
-   - Leaderboard stores summary data only (best score + minimal profile fields).
-   - Enforce leaderboard caching and write throttling.
-6. Architecture discipline:
-   - Keep separation across `logic` / `services` / `stores` / `hooks` / `components`.
-   - UI stays presentational; business logic and SDK calls stay out of components.
-7. Scoring roadmap:
-   - Preserve existing arm-size scoring.
-   - Add grip-strength scoring.
-   - Radar chart must support six dimensions.
+# ------------------------------------------------------------------------------
+# SECTION 1: TOKEN FIREWALL & DIRECTORY ISOLATION (極致節能與防線鎖定)
+# ------------------------------------------------------------------------------
+Primary_Workspace: "up-final"
+ReadOnly_References: ["reference-app", "reference-app-fitness", "lbj-goat-meter"]
+
+AI_Context_Restriction:
+  - Your execution, analysis, and autocomplete context MUST be strictly limited to the `up-final` directory.
+  - NEVER run active codebase indexing, global semantic searches, or automatic cross-project scanning on sibling reference directories.
+  - You are strictly forbidden from reading, referencing, or analyzing files in reference directories unless the user explicitly invokes them using pinpoint tokens (e.g., @filename).
+  - Maintain a zero-token-waste policy. Keep responses concise, targeted, and highly decoupled.
+
+# ------------------------------------------------------------------------------
+# SECTION 2: BUSINESS MODEL & ACCESS CONTROL CONSTITUTION (商業模式與權限憲法)
+# ------------------------------------------------------------------------------
+Product_Branding:
+  Official_Name: "最強肉體 (Ultimate Physique)"
+
+Business_Architecture:
+  Core_Tier: "One-time purchase. Unlocks ALL local features (Assessment pages, 6-axis radar, personal detailed history, local tools, widgets)."
+  Pro_Tier: "Monthly subscription. Unlocks Firestore global leaderboard interaction, cloud synchronization, and remote telemetry."
+
+Local_First_Mandate:
+  - Detailed physical logs, training history, arm-size, and grip-strength data must remain FULLY FUNCTIONAL locally without any subscription.
+  - Personal history screens and snapshot storage must NEVER be locked behind a Pro paywall.
+
+Access_Control_Enforcement:
+  - Centralize all entitlement verification inside `src/logic/core/entitlement.ts`.
+  - Global leaderboard submission or remote data fetch actions require strict and explicit verification of Pro status.
+
+# ------------------------------------------------------------------------------
+# SECTION 3: CLOUD GUARDRAILS & PERFORMANCES (Firebase 成本與效能防禦)
+# ------------------------------------------------------------------------------
+Firebase_Cost_Guardrails:
+  - Non-Pro or anonymous guest users MUST NOT generate any Firestore leaderboard read/write traffic.
+  - Leaderboard collections must store lightweight summary shards only (best score, minimal profile bucket fields).
+  - Rigid enforcement of client-side caching (TTL session cache) and write throttling (rolling hourly limits per shard) is mandatory.
+
+# ------------------------------------------------------------------------------
+# SECTION 4: ENGINEERING CULTURE & ARCHITECTURE DISCIPLINE (工程文化與架構準則)
+# ------------------------------------------------------------------------------
+Architecture_Decoupling:
+  - Strictly maintain clean separation across layers: `logic` (pure calculations) / `services` (SDK/infra) / `stores` (state) / `hooks` (facades) / `components` (UI).
+  - UI components must remain strictly presentational. Business logic, mathematical conversions, and Firebase SDK calls must never leak into components.
+
+Industry_Benchmarks:
+  - Do not reinvent standard product patterns. Align UX interactions, screen rendering, off-screen optimization, and state management mechanics with world-class apps such as Spotify, Instagram, and Strava.
+
+Deep_Documentation_Standard:
+  - When writing complex or non-trivial engineering logic, code comments MUST clearly document the **"Design Intent (WHY)"** rather than merely describing the **"Action (WHAT)"**.
+
+Structural_Review_Trigger:
+  - If any single feature, bug, or calculation function undergoes more than 3 consecutive hotfixes or demonstrates architectural divergence, stop immediately and flag for a full refactoring audit.
+
+# ------------------------------------------------------------------------------
+# SECTION 5: EVOLUTIONARY ROADMAP (計分與雷達演進)
+# ------------------------------------------------------------------------------
+Scoring_Mandate:
+  - Harmonize and preserve the existing arm-size leaderboard formula.
+  - Fully integrate the extended grip-strength evaluation tiers into the radar metrics catalog.
+  - The core canvas radar component must natively support and cleanly map across exactly 6 active dimensions.

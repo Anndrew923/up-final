@@ -21,13 +21,19 @@
     "nextMilestoneHint": "Next Milestone：距離下一階升級尚需 {{points}} 分。",
     "rankLabel": "階級：{{label}}（Aura：{{aura}}）",
     "ranks": {
-      "ironApprentice": "鋼鐵學徒",
-      "athleticElite": "運動精英",
-      "vanguard": "悍將",
-      "bossClass": "精英（Boss Class）",
-      "titan": "泰坦（Titan）",
-      "grandmaster": "宗師（Grandmaster）",
-      "godHand": "神選之手（God Hand）"
+      "BASE": "骨骼原生",
+      "TIER_41": "摩擦覺醒",
+      "TIER_51": "穩定咬合",
+      "TIER_61": "操控升級",
+      "TIER_71": "熱感抓地",
+      "TIER_81": "性能巔峰",
+      "TIER_91": "運動精英",
+      "TIER_101": "地區拿牌",
+      "TIER_111": "極限抗滑",
+      "TIER_121": "序列支配",
+      "TIER_131": "幻影握壓",
+      "TIER_141": "永動介面",
+      "LEGEND": "神選序號"
     },
     "auras": {
       "none": "無",

@@ -63,6 +63,63 @@
       "title": "Arm size assessment",
       "body": "Enter arm circumference and body fat to calculate arm leaderboard score.",
       "cta": "Open arm-size assessment"
+    },
+    "auras": {
+      "none": "None",
+      "pulse": "Pulse",
+      "flow": "Flow",
+      "shimmer": "Shimmer",
+      "lightning": "Lightning",
+      "void_flame": "Void Flame",
+      "divine_light": "Divine Light"
+    },
+    "breakthrough": {
+      "kicker": "Axis breakthrough",
+      "closeAria": "Close breakthrough card",
+      "dismiss": "Confirm",
+      "peakReached": "Peak sequence reached",
+      "milestoneRemaining": "{{points}} pts until next tier",
+      "ranks": {
+        "BASE": "Native Frame",
+        "TIER_41": "Friction Wake",
+        "TIER_51": "Stable Bite",
+        "TIER_61": "Control Upgrade",
+        "TIER_71": "Thermal Grip",
+        "TIER_81": "Performance Apex",
+        "TIER_91": "Athletic Elite",
+        "TIER_101": "Regional Podium",
+        "TIER_111": "Anti-Slip Spec",
+        "TIER_121": "Sequence Dominance",
+        "TIER_131": "Phantom Compression",
+        "TIER_141": "Eternal Interface",
+        "LEGEND": "Pantheon Serial"
+      }
+    },
+    "ceremony": {
+      "scanning": "Diagnostic scan in progress…",
+      "overlayAria": "Assessment diagnostic scan in progress",
+      "messages": {
+        "strength": {
+          "m0": "Calibrating DOTS anchor coefficients…",
+          "m1": "Parsing five-axis strength spectrum…",
+          "m2": "Matching hardened load curves…",
+          "m3": "Estimating per-lift 1RM convergence…",
+          "m4": "Scanning five-lift balance profile…",
+          "m5": "Synthesizing radar strength-axis preview…",
+          "m6": "Verifying body-profile weight parameters…",
+          "m7": "Locking combined score output channel…"
+        },
+        "grip": {
+          "m0": "Reading peak grip signal…",
+          "m1": "Calibrating grip conversion factor…",
+          "m2": "Matching gender-weighted model…",
+          "m3": "Scanning grip-axis dynamic range…",
+          "m4": "Verifying model cap logic…",
+          "m5": "Synthesizing grip-axis preview score…",
+          "m6": "Locking potential spec output…",
+          "m7": "Completing grip diagnostic sequence…"
+        }
+      }
     }
   }
 }

@@ -47,6 +47,7 @@ export const STRENGTH_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
 ] as const;
 
+/** Symmetric 13-tier grip ladder — aligned with STRENGTH_SCORE_BANDS (10-point steps). */
 export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'BASE', min: 0, max: 40 },
   { id: 'TIER_41', min: 41, max: 50 },
@@ -58,9 +59,9 @@ export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'TIER_101', min: 101, max: 110 },
   { id: 'TIER_111', min: 111, max: 120 },
   { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_141', min: 141, max: 160 },
-  { id: 'TIER_161', min: 161, max: 189 },
-  { id: 'PANTHEON', min: 190, max: Number.POSITIVE_INFINITY },
+  { id: 'TIER_131', min: 131, max: 140 },
+  { id: 'TIER_141', min: 141, max: 150 },
+  { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
 ] as const;
 
 export const SCORE_MEANING_CATALOG: AxisTitleMapping = {

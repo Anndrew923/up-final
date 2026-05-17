@@ -23,7 +23,7 @@ describe('resolveScoreBand(cardio)', () => {
     expect(resolveScoreBand('cardio', 0).id).toBe('BASE');
   });
 
-  it('bridges high-end float gap before LEGEND', () => {
+  it('bridges decimal gaps correctly around transitions', () => {
     expect(resolveScoreBand('cardio', 150.5).id).toBe('TIER_141');
   });
 });
@@ -89,26 +89,13 @@ describe('resolveScoreBand(strength)', () => {
 });
 
 describe('resolveScoreBand(gripStrength)', () => {
-  it('keeps the updated 13-tier grip map', () => {
-    const ids = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
-    expect(ids).toEqual([
-      'BASE',
-      'TIER_41',
-      'TIER_51',
-      'TIER_61',
-      'TIER_71',
-      'TIER_81',
-      'TIER_91',
-      'TIER_101',
-      'TIER_111',
-      'TIER_121',
-      'TIER_141',
-      'TIER_161',
-      'PANTHEON',
-    ]);
+  it('mirrors strength 13-tier symmetric map', () => {
+    const gripIds = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
+    const strengthIds = SCORE_MEANING_CATALOG.strength.map((band) => band.id);
+    expect(gripIds).toEqual(strengthIds);
   });
 
-  it('maps requested boundaries including pantheon overflow', () => {
+  it('maps all boundary checkpoints aligned with strength tiers', () => {
     const checkpoints: Array<[number, string]> = [
       [40, 'BASE'],
       [41, 'TIER_41'],
@@ -122,6 +109,7 @@ describe('resolveScoreBand(gripStrength)', () => {
       [81, 'TIER_81'],
       [90, 'TIER_81'],
       [91, 'TIER_91'],
+      [92, 'TIER_91'],
       [100, 'TIER_91'],
       [101, 'TIER_101'],
       [110, 'TIER_101'],
@@ -129,13 +117,13 @@ describe('resolveScoreBand(gripStrength)', () => {
       [120, 'TIER_111'],
       [121, 'TIER_121'],
       [130, 'TIER_121'],
-      [140, 'TIER_121'],
+      [131, 'TIER_131'],
+      [140, 'TIER_131'],
       [141, 'TIER_141'],
-      [160, 'TIER_141'],
-      [161, 'TIER_161'],
-      [189, 'TIER_161'],
-      [190, 'PANTHEON'],
-      [250, 'PANTHEON'],
+      [150, 'TIER_141'],
+      [151, 'LEGEND'],
+      [181, 'LEGEND'],
+      [224, 'LEGEND'],
     ];
 
     for (const [score, expectedBand] of checkpoints) {
@@ -143,10 +131,12 @@ describe('resolveScoreBand(gripStrength)', () => {
     }
   });
 
-  it('bridges decimal gaps correctly at upper thresholds', () => {
-    expect(resolveScoreBand('gripStrength', 160.9).id).toBe('TIER_141');
-    expect(resolveScoreBand('gripStrength', 161.0).id).toBe('TIER_161');
-    expect(resolveScoreBand('gripStrength', 189.9).id).toBe('TIER_161');
-    expect(resolveScoreBand('gripStrength', 190.0).id).toBe('PANTHEON');
+  it('bridges decimal gaps correctly around transitions', () => {
+    expect(resolveScoreBand('gripStrength', 40.9).id).toBe('BASE');
+    expect(resolveScoreBand('gripStrength', 130.9).id).toBe('TIER_121');
+    expect(resolveScoreBand('gripStrength', 131.0).id).toBe('TIER_131');
+    expect(resolveScoreBand('gripStrength', 150.5).id).toBe('TIER_141');
+    expect(resolveScoreBand('gripStrength', 150.9).id).toBe('TIER_141');
+    expect(resolveScoreBand('gripStrength', 151.0).id).toBe('LEGEND');
   });
 });
