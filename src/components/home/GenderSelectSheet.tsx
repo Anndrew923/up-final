@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 
 export type GenderValue = '' | 'male' | 'female';
 
@@ -55,7 +56,7 @@ export default function GenderSelectSheet({
     createPortal(
       /* Reserve same bottom inset as AppShell (`layer-shell-scroll` pb) so sheet clears BottomNav + safe area. */
       <div
-        className="fixed inset-0 z-[200] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
+        className={`fixed inset-0 ${Z_INDEX_CLASS.genderSelectSheet} flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
         role="presentation"
       >
         <button

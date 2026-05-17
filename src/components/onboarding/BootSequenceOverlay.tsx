@@ -1,6 +1,7 @@
 import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useBootSequenceRitual } from '../../hooks/useBootSequenceRitual';
 import BootProfileBaselineForm from './BootProfileBaselineForm';
 
@@ -49,7 +50,7 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[300] isolate"
+      className={`fixed inset-0 ${Z_INDEX_CLASS.bootSequenceOverlay} isolate`}
       role="dialog"
       aria-modal="true"
       aria-label={t('onboarding.overlayAria')}
