@@ -68,7 +68,13 @@ function readFormFieldsFromStorage(): {
   };
 }
 
-export function usePhysicalProfileForm() {
+export interface UsePhysicalProfileFormOptions {
+  /** Fires after a successful `savePhysicalProfile` (boot onboarding haptics, etc.). */
+  onSaveSuccess?: () => void;
+}
+
+export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = {}) {
+  const { onSaveSuccess } = options;
   const initial = readFormFieldsFromStorage();
   const [gender, setGender] = useState(initial.gender);
   const [age, setAge] = useState(initial.age);
@@ -186,6 +192,7 @@ export function usePhysicalProfileForm() {
       setLoading(false);
       setJustSaved(true);
       setSyncGeneration((g) => g + 1);
+      onSaveSuccess?.();
       if (saveToastTimerRef.current !== null) {
         clearTimeout(saveToastTimerRef.current);
       }
@@ -208,6 +215,7 @@ export function usePhysicalProfileForm() {
       city,
       district,
       isAnonymousInLadder,
+      onSaveSuccess,
     ]
   );
 

@@ -4,21 +4,33 @@ import {
   ONBOARDING_ASSESS_TARGET_ID,
   ONBOARDING_RADAR_TARGET_ID,
 } from '../constants/onboardingTargets';
+import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
+import {
+  BOOT_SEQUENCE_STEPS,
+  getBootStorePhase,
+  getNarrativePhase,
+  isProfileInputStep,
+  type BootSequenceStep,
+} from '../types/bootSequence';
+import {
+  LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT,
+  loadPhysicalProfile,
+} from '../services/localStorageService';
 import { useUiInteractionStore } from '../stores/uiInteractionStore';
 import { useDopamineFeedback } from './useDopamineFeedback';
 import { useTypewriterText } from './useTypewriterText';
 
-export type BootSequencePhase = 1 | 2 | 3;
-
-const PHASE_BODY_KEYS: Record<BootSequencePhase, string> = {
+const PHASE_BODY_KEYS: Record<1 | 2 | 3, string> = {
   1: 'onboarding.phase1.body',
   2: 'onboarding.phase2.body',
   3: 'onboarding.phase3.body',
 };
 
-const PHASE_TARGET_IDS: Partial<Record<BootSequencePhase, string>> = {
-  2: ONBOARDING_RADAR_TARGET_ID,
-  3: ONBOARDING_ASSESS_TARGET_ID,
+const PROFILE_INPUT_BODY_KEY = 'onboarding.profileInput.body';
+
+const SPOTLIGHT_TARGET_BY_STEP: Partial<Record<BootSequenceStep, string>> = {
+  phase2: ONBOARDING_RADAR_TARGET_ID,
+  phase3: ONBOARDING_ASSESS_TARGET_ID,
 };
 
 export interface SpotlightRect {
@@ -71,19 +83,32 @@ function waitForTargetRect(
   });
 }
 
+function stepBodyKey(step: BootSequenceStep): string {
+  if (isProfileInputStep(step)) return PROFILE_INPUT_BODY_KEY;
+  const phase = getNarrativePhase(step);
+  return phase ? PHASE_BODY_KEYS[phase] : PROFILE_INPUT_BODY_KEY;
+}
+
 export interface UseBootSequenceRitualInput {
   active: boolean;
   onComplete: () => void;
 }
 
 export interface UseBootSequenceRitualResult {
-  phase: BootSequencePhase;
+  step: BootSequenceStep;
+  variant: 'narrative' | 'profile_input';
+  narrativePhase: 1 | 2 | 3 | null;
   spotlightRect: SpotlightRect | null;
   visibleText: string;
   typewriterDone: boolean;
+  profileReady: boolean;
+  /** True only after user saves baseline body specs during this boot run. */
+  profileCommittedInBoot: boolean;
+  canContinue: boolean;
   showIgnite: boolean;
   advancePhase: () => void;
   ignite: () => void;
+  onProfileSaved: () => void;
 }
 
 export function useBootSequenceRitual({
@@ -93,22 +118,47 @@ export function useBootSequenceRitual({
   const { t } = useTranslation('common');
   const { triggerImpact } = useDopamineFeedback();
   const { visibleText, play, reset, cancel } = useTypewriterText();
-  const [phase, setPhase] = useState<BootSequencePhase>(1);
+  const [step, setStep] = useState<BootSequenceStep>('phase1');
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [typewriterDone, setTypewriterDone] = useState(false);
+  const [profileReady, setProfileReady] = useState(() =>
+    isPhysicalProfileComplete(loadPhysicalProfile()),
+  );
+  const [profileCommittedInBoot, setProfileCommittedInBoot] = useState(false);
   const runIdRef = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;
-  const setBootPhase = useUiInteractionStore((s) => s.setBootSequencePhase);
+  const setBootStep = useUiInteractionStore((s) => s.setBootSequenceStep);
 
-  const playPhaseText = useCallback(
-    async (nextPhase: BootSequencePhase, runId: number) => {
+  const syncProfileReady = useCallback(() => {
+    setProfileReady(isPhysicalProfileComplete(loadPhysicalProfile()));
+  }, []);
+
+  useEffect(() => {
+    syncProfileReady();
+    window.addEventListener(LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT, syncProfileReady);
+    return () => window.removeEventListener(LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT, syncProfileReady);
+  }, [syncProfileReady]);
+
+  const publishStoreStep = useCallback(
+    (nextStep: BootSequenceStep) => {
+      if (isProfileInputStep(nextStep)) {
+        setBootStep({ phase: 1, variant: 'profile_input' });
+        return;
+      }
+      setBootStep({ phase: getBootStorePhase(nextStep), variant: 'narrative' });
+    },
+    [setBootStep],
+  );
+
+  const playStepText = useCallback(
+    async (nextStep: BootSequenceStep, runId: number) => {
       const isActive = () => runId === runIdRef.current && activeRef.current;
       if (!isActive()) return;
 
       setTypewriterDone(false);
       reset();
-      const body = t(PHASE_BODY_KEYS[nextPhase]);
+      const body = t(stepBodyKey(nextStep));
       await play(body);
       if (!isActive()) return;
       setTypewriterDone(true);
@@ -116,9 +166,9 @@ export function useBootSequenceRitual({
     [play, reset, t],
   );
 
-  const syncSpotlight = useCallback(async (nextPhase: BootSequencePhase, runId: number) => {
+  const syncSpotlight = useCallback(async (nextStep: BootSequenceStep, runId: number) => {
     const isActive = () => runId === runIdRef.current && activeRef.current;
-    const targetId = PHASE_TARGET_IDS[nextPhase];
+    const targetId = SPOTLIGHT_TARGET_BY_STEP[nextStep];
     if (!targetId) {
       setSpotlightRect(null);
       return;
@@ -128,53 +178,58 @@ export function useBootSequenceRitual({
     setSpotlightRect(rect);
   }, []);
 
-  const startPhase = useCallback(
-    async (nextPhase: BootSequencePhase) => {
+  const startStep = useCallback(
+    async (nextStep: BootSequenceStep) => {
       const runId = ++runIdRef.current;
       const isActive = () => runId === runIdRef.current && activeRef.current;
+      const stepIndex = BOOT_SEQUENCE_STEPS.indexOf(nextStep);
 
-      if (nextPhase > 1) {
+      if (stepIndex > 0) {
         triggerImpact('medium');
       }
 
-      setPhase(nextPhase);
-      setBootPhase(nextPhase);
-      await syncSpotlight(nextPhase, runId);
+      setStep(nextStep);
+      if (isProfileInputStep(nextStep)) {
+        setProfileCommittedInBoot(false);
+      }
+      publishStoreStep(nextStep);
+      await syncSpotlight(nextStep, runId);
       if (!isActive()) return;
-      await playPhaseText(nextPhase, runId);
+      await playStepText(nextStep, runId);
     },
-    [playPhaseText, setBootPhase, syncSpotlight, triggerImpact],
+    [playStepText, publishStoreStep, syncSpotlight, triggerImpact],
   );
 
-  const startPhaseRef = useRef(startPhase);
-  startPhaseRef.current = startPhase;
+  const startStepRef = useRef(startStep);
+  startStepRef.current = startStep;
 
   useEffect(() => {
     if (!active) {
       runIdRef.current += 1;
       cancel();
-      setPhase(1);
+      setStep('phase1');
       setSpotlightRect(null);
       setTypewriterDone(false);
-      setBootPhase(0);
+      setProfileCommittedInBoot(false);
+      setBootStep({ phase: 0, variant: 'none' });
       return;
     }
 
-    setBootPhase(1);
-    void startPhaseRef.current(1);
+    setBootStep({ phase: 1, variant: 'narrative' });
+    void startStepRef.current('phase1');
 
     return () => {
       runIdRef.current += 1;
       cancel();
-      setBootPhase(0);
+      setBootStep({ phase: 0, variant: 'none' });
     };
-  }, [active, cancel, setBootPhase]);
+  }, [active, cancel, setBootStep]);
 
   useEffect(() => {
     if (!active) return;
 
     const remeasure = () => {
-      const targetId = PHASE_TARGET_IDS[phase];
+      const targetId = SPOTLIGHT_TARGET_BY_STEP[step];
       if (!targetId) return;
       const rect = measureTargetRect(targetId);
       if (rect) setSpotlightRect(rect);
@@ -186,26 +241,53 @@ export function useBootSequenceRitual({
       window.removeEventListener('resize', remeasure);
       window.removeEventListener('scroll', remeasure, true);
     };
-  }, [active, phase]);
+  }, [active, step]);
+
+  const variant = isProfileInputStep(step) ? 'profile_input' : 'narrative';
+  const narrativePhase = getNarrativePhase(step);
+  const isLastStep = step === 'phase3';
+
+  const canContinue = isProfileInputStep(step)
+    ? typewriterDone && profileReady && profileCommittedInBoot
+    : typewriterDone && !isLastStep;
 
   const advancePhase = useCallback(() => {
-    if (!typewriterDone || phase >= 3) return;
-    void startPhaseRef.current((phase + 1) as BootSequencePhase);
-  }, [phase, typewriterDone]);
+    const index = BOOT_SEQUENCE_STEPS.indexOf(step);
+    const next = BOOT_SEQUENCE_STEPS[index + 1];
+    if (!next) return;
+    if (isProfileInputStep(step)) {
+      if (!typewriterDone || !profileReady || !profileCommittedInBoot) return;
+    } else if (!typewriterDone) {
+      return;
+    }
+    void startStepRef.current(next);
+  }, [profileCommittedInBoot, profileReady, step, typewriterDone]);
+
+  const onProfileSaved = useCallback(() => {
+    setProfileCommittedInBoot(true);
+    syncProfileReady();
+    triggerImpact('light');
+  }, [syncProfileReady, triggerImpact]);
 
   const ignite = useCallback(() => {
-    if (phase !== 3 || !typewriterDone) return;
+    if (step !== 'phase3' || !typewriterDone) return;
     triggerImpact('heavy');
     onComplete();
-  }, [onComplete, phase, triggerImpact, typewriterDone]);
+  }, [onComplete, step, triggerImpact, typewriterDone]);
 
   return {
-    phase,
+    step,
+    variant,
+    narrativePhase,
     spotlightRect,
     visibleText,
     typewriterDone,
-    showIgnite: phase === 3 && typewriterDone,
+    profileReady,
+    profileCommittedInBoot,
+    canContinue,
+    showIgnite: step === 'phase3' && typewriterDone,
     advancePhase,
     ignite,
+    onProfileSaved,
   };
 }

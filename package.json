@@ -17,6 +17,7 @@
     "@capacitor/core": "^8.3.1",
     "@revenuecat/purchases-capacitor": "^13.0.1",
     "firebase": "^11.10.0",
+    "framer-motion": "^12.38.0",
     "i18next": "^25.1.4",
     "i18next-browser-languagedetector": "^8.2.1",
     "react": "^19.1.0",

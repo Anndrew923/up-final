@@ -2,6 +2,7 @@ import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useBootSequenceRitual } from '../../hooks/useBootSequenceRitual';
+import BootProfileBaselineForm from './BootProfileBaselineForm';
 
 export interface BootSequenceOverlayProps {
   active: boolean;
@@ -11,13 +12,18 @@ export interface BootSequenceOverlayProps {
 const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete }) => {
   const { t } = useTranslation('common');
   const {
-    phase,
+    step,
+    variant,
+    narrativePhase,
     spotlightRect,
     visibleText,
     typewriterDone,
+    profileCommittedInBoot,
+    canContinue,
     showIgnite,
     advancePhase,
     ignite,
+    onProfileSaved,
   } = useBootSequenceRitual({ active, onComplete });
 
   useEffect(() => {
@@ -31,9 +37,15 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
 
   if (!active) return null;
 
-  const phaseKicker = t(`onboarding.phase${phase}.kicker`);
-  const showContinue = typewriterDone && phase < 3;
+  const phaseKicker =
+    variant === 'profile_input'
+      ? t('onboarding.profileInput.kicker')
+      : narrativePhase
+        ? t(`onboarding.phase${narrativePhase}.kicker`)
+        : '';
+  const showContinue = typewriterDone && step !== 'phase3';
   const useSpotlightScrim = spotlightRect != null;
+  const isProfileStep = variant === 'profile_input';
 
   return createPortal(
     <div
@@ -68,27 +80,42 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
       )}
 
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-[calc(120px+env(safe-area-inset-bottom,0px))] flex justify-center px-6"
+        className={`pointer-events-none absolute inset-x-0 flex justify-center px-4 ${
+          isProfileStep
+            ? 'top-[max(5rem,env(safe-area-inset-top,0px))] bottom-[calc(88px+env(safe-area-inset-bottom,0px))]'
+            : 'bottom-[calc(120px+env(safe-area-inset-bottom,0px))]'
+        }`}
       >
         <div
-          className="pointer-events-auto w-full max-w-md rounded-2xl border border-accent-primary/35 bg-zinc-950/95 px-5 py-5 shadow-[0_0_48px_rgba(56,189,248,0.12),inset_0_1px_0_rgba(56,189,248,0.2)] backdrop-blur-md"
+          className={`pointer-events-auto flex w-full max-w-md flex-col rounded-2xl border border-accent-primary/35 bg-zinc-950/95 shadow-[0_0_48px_rgba(56,189,248,0.12),inset_0_1px_0_rgba(56,189,248,0.2)] backdrop-blur-md ${
+            isProfileStep ? 'max-h-full overflow-y-auto px-5 py-5' : 'px-5 py-5'
+          }`}
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/90">
+          <p className="shrink-0 font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/90">
             {phaseKicker}
           </p>
-          <p className="mt-3 min-h-[5.5rem] text-sm leading-relaxed text-zinc-200 [text-shadow:0_0_14px_rgba(56,189,248,0.28)]">
+          <p className="mt-3 shrink-0 text-sm leading-relaxed text-zinc-200 [text-shadow:0_0_14px_rgba(56,189,248,0.28)]">
             {visibleText}
             {!typewriterDone ? (
               <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-accent-primary/80 align-middle motion-reduce:hidden" />
             ) : null}
           </p>
 
-          <div className="mt-5 flex min-h-12 items-center justify-end gap-2">
+          {isProfileStep && typewriterDone ? (
+            <BootProfileBaselineForm
+              onSaved={onProfileSaved}
+              showComplete={profileCommittedInBoot}
+            />
+          ) : null}
+
+          <div className="mt-5 flex min-h-12 shrink-0 items-center justify-end gap-2">
             {showContinue ? (
               <button
                 type="button"
-                className="ui-btn border-accent-primary/50 text-accent-primary hover:bg-accent-primary/10"
+                className="ui-btn border-accent-primary/50 text-accent-primary hover:bg-accent-primary/10 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={advancePhase}
+                disabled={!canContinue}
+                aria-disabled={!canContinue}
               >
                 {t('onboarding.next')}
               </button>

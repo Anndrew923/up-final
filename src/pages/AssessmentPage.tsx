@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '../config/routes';
+import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
+import {
+  ASSESSMENT_LOBBY_CARD_KEYS,
+  ASSESSMENT_LOBBY_ROUTES,
+} from '../config/assessmentLobby';
 import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 import { calculateSixAxisOverall, clampSixAxisRawInput, SCORE_AXIS_MAX } from '../logic/core/scoring';
@@ -24,6 +27,19 @@ export default function AssessmentPage() {
   const setScore = useScoreStore((s) => s.setScore);
   const resetScores = useScoreStore((s) => s.resetScores);
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
+
+  const lobbyCards = useMemo(
+    () =>
+      ASSESSMENT_LOBBY_CARD_KEYS.map((key) => ({
+        key,
+        to: ASSESSMENT_LOBBY_ROUTES[key],
+        kicker: t(`assessment.${key}.kicker`, { ns: 'common' }),
+        title: t(`assessment.${key}.title`, { ns: 'common' }),
+        body: t(`assessment.${key}.body`, { ns: 'common' }),
+        stampLabel: t(`assessment.${key}.cta`, { ns: 'common' }),
+      })),
+    [t]
+  );
 
   const onAxisChange = (metric: SixAxisMetric, value: string) => {
     setJustSaved(false);
@@ -49,131 +65,16 @@ export default function AssessmentPage() {
         <p className="text-sm text-zinc-400">{t('assessment.subtitle', { ns: 'common' })}</p>
       </section>
 
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.strength.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.strength.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.strength.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.strength}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.strength.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.grip.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.grip.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.grip.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.grip}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.grip.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.armSize.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.armSize.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.armSize.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.armSize}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.armSize.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.explosive.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.explosive.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.explosive.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.explosive}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.explosive.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.cardio.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.cardio.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.cardio.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.cardio}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.cardio.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.muscle.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.muscle.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.muscle.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.muscle}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.muscle.cta', { ns: 'common' })}
-        </Link>
-      </section>
-
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary">
-          {t('assessment.ffmi.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100">
-          {t('assessment.ffmi.title', { ns: 'common' })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-          {t('assessment.ffmi.body', { ns: 'common' })}
-        </p>
-        <Link
-          to={ROUTES.ffmi}
-          className="ui-btn mt-4 inline-flex border-accent-primary/40 text-accent-primary hover:bg-accent-primary/10"
-        >
-          {t('assessment.ffmi.cta', { ns: 'common' })}
-        </Link>
-      </section>
+      {lobbyCards.map((card) => (
+        <AssessmentLobbyCard
+          key={card.key}
+          to={card.to}
+          kicker={card.kicker}
+          title={card.title}
+          body={card.body}
+          stampLabel={card.stampLabel}
+        />
+      ))}
 
       <section className="ui-card space-y-4">
         <h2 className="text-sm font-medium text-zinc-300">
