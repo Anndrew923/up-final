@@ -12,6 +12,9 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
   },
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -19,8 +22,22 @@ export default defineConfig({
           if (!id.includes('node_modules')) return undefined;
           if (id.includes('firebase')) return 'vendor-firebase';
           if (id.includes('react-router')) return 'vendor-router';
-          if (id.includes('react') || id.includes('scheduler')) return 'vendor-react';
           if (id.includes('i18next')) return 'vendor-i18n';
+          // Keep React shims in the React chunk — avoids vendor-misc ↔ vendor-react circular imports
+          // that leave `React.createContext` undefined at runtime (production black screen).
+          if (
+            id.includes('/react/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/scheduler/') ||
+            id.includes('use-sync-external-store') ||
+            id.includes('framer-motion') ||
+            id.includes('motion-dom') ||
+            id.includes('motion-utils') ||
+            id.includes('zustand')
+          ) {
+            return 'vendor-react';
+          }
+          if (id.includes('@revenuecat') || id.includes('@capacitor')) return 'vendor-native';
           return 'vendor-misc';
         },
       },
