@@ -7,7 +7,10 @@ import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { getWeakestRadarAxis } from '../../logic/core/scoring';
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
-import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
+import {
+  getAxisMeaningI18nPrefix,
+  resolveOverallGradeBand,
+} from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
@@ -51,6 +54,11 @@ export const HomeRadarBoard: FC = () => {
     }
     return t('identity.genderGroup.male', { ns: 'common' });
   }, [physicalProfile?.gender, t]);
+
+  const overallGradeBandId = useMemo(
+    () => resolveOverallGradeBand(overallScore),
+    [overallScore],
+  );
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)] motion-safe:transition-[box-shadow,border-color] motion-safe:duration-[480ms]">
@@ -99,6 +107,12 @@ export const HomeRadarBoard: FC = () => {
               </p>
               <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent-info sm:text-6xl">
                 {overallScore}
+              </p>
+              <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+                {t('home.overallGrade.kicker', { ns: 'common' })}
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
+                {t(`home.overallGrade.${overallGradeBandId}`, { ns: 'common' })}
               </p>
             </div>
 

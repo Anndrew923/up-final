@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import enCore from '../../../i18n/locales/en/common/core.json';
 import zhCore from '../../../i18n/locales/zh-Hant/common/core.json';
 import { SIX_AXIS_METRICS } from '../../../types/scoring';
+import enHome from '../../../i18n/locales/en/common/home.json';
+import zhHome from '../../../i18n/locales/zh-Hant/common/home.json';
 import {
   ARM_SIZE_SCORE_BANDS,
   EXPLOSIVE_SCORE_BANDS,
+  OVERALL_SCORE_BANDS,
+  resolveOverallGradeBand,
   resolveScoreBand,
   resolveScoreMeaningMilestone,
   SCORE_MEANING_CATALOG,
@@ -186,6 +190,43 @@ const FOURTEEN_TIER_CHECKPOINTS: Array<[number, string]> = [
   [181, 'PANTHEON'],
   [224, 'PANTHEON'],
 ];
+
+describe('resolveOverallGradeBand', () => {
+  it('exposes the full 14-tier homologation map', () => {
+    expect(OVERALL_SCORE_BANDS.map((band) => band.id)).toEqual([...FOURTEEN_TIER_IDS]);
+  });
+
+  it('maps boundary checkpoints to expected tiers', () => {
+    for (const [score, expectedBand] of FOURTEEN_TIER_CHECKPOINTS) {
+      expect(resolveOverallGradeBand(score)).toBe(expectedBand);
+    }
+  });
+
+  it('bridges decimal gaps around LEGEND and PANTHEON', () => {
+    expect(resolveOverallGradeBand(150.5)).toBe('TIER_141');
+    expect(resolveOverallGradeBand(180.9)).toBe('LEGEND');
+    expect(resolveOverallGradeBand(181.0)).toBe('PANTHEON');
+  });
+
+  it('clamps invalid scores to BASE', () => {
+    expect(resolveOverallGradeBand(Number.NaN)).toBe('BASE');
+    expect(resolveOverallGradeBand(-10)).toBe('BASE');
+  });
+});
+
+describe('home.overallGrade i18n coverage', () => {
+  const enGrade = (enHome as { home: { overallGrade: Record<string, string> } }).home.overallGrade;
+  const zhGrade = (zhHome as { home: { overallGrade: Record<string, string> } }).home.overallGrade;
+
+  it('defines en/zh copy for every overall grade band', () => {
+    expect(enGrade.kicker?.trim().length).toBeGreaterThan(0);
+    expect(zhGrade.kicker?.trim().length).toBeGreaterThan(0);
+    for (const band of OVERALL_SCORE_BANDS) {
+      expect(enGrade[band.id]?.trim().length, `${band.id} en`).toBeGreaterThan(0);
+      expect(zhGrade[band.id]?.trim().length, `${band.id} zh`).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe('scoreMeaning i18n coverage (core.json)', () => {
   const metricsWithBandCopy = SIX_AXIS_METRICS.filter(

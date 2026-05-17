@@ -97,6 +97,32 @@ export const EXPLOSIVE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
 /** 14-tier arm size (Rim Spec) — optional storage; same ladder as explosive/muscle 14-tier. */
 export const ARM_SIZE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
 
+/** 14-tier homologation grade for Overall Score (共鳴出力) — LEGEND caps at 180; PANTHEON for 181+. */
+export const OVERALL_SCORE_BANDS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 40 },
+  { id: 'TIER_41', min: 41, max: 50 },
+  { id: 'TIER_51', min: 51, max: 60 },
+  { id: 'TIER_61', min: 61, max: 70 },
+  { id: 'TIER_71', min: 71, max: 80 },
+  { id: 'TIER_81', min: 81, max: 90 },
+  { id: 'TIER_91', min: 91, max: 100 },
+  { id: 'TIER_101', min: 101, max: 110 },
+  { id: 'TIER_111', min: 111, max: 120 },
+  { id: 'TIER_121', min: 121, max: 130 },
+  { id: 'TIER_131', min: 131, max: 140 },
+  { id: 'TIER_141', min: 141, max: 150 },
+  { id: 'LEGEND', min: 151, max: 180 },
+  { id: 'PANTHEON', min: 181, max: Number.POSITIVE_INFINITY },
+] as const;
+
+export function resolveOverallGradeBand(score: number): string {
+  const safe = Math.max(0, Number(score) || 0);
+  for (let i = 0; i < OVERALL_SCORE_BANDS.length - 1; i += 1) {
+    if (safe < OVERALL_SCORE_BANDS[i + 1].min) return OVERALL_SCORE_BANDS[i].id;
+  }
+  return 'PANTHEON';
+}
+
 export const SCORE_MEANING_CATALOG: AxisTitleMapping = {
   strength: STRENGTH_SCORE_BANDS,
   explosivePower: EXPLOSIVE_SCORE_BANDS,
