@@ -32,55 +32,55 @@
       "strength": {
         "BASE": {
           "title": "Baseline Calibration",
-          "summary": "[CHASSIS READY] Foundational phase. Establishing torque transmission paths and kinematic precision so Torque Output and Chassis Integrity can scale consistently."
+          "summary": "[CHASSIS READY] You're on the board. Every lift still has room to grow—steady work is how you unlock the full power curve."
         },
         "TIER_41": {
-          "title": "Torque Emergence",
-          "summary": "[TORQUE EMERGENCE] Initial entry into strength training. The system begins building load tolerance and structural stability."
+          "title": "Horsepower Online",
+          "summary": "[HORSEPOWER ONLINE] Early days in the weight room. Your body is learning to sit under load and stay structurally tight."
         },
         "TIER_51": {
-          "title": "Optimization Ignition",
-          "summary": "[CORE STABILIZED] Foundational movement patterns are now established. Torque Efficiency improves while chassis deformation is reduced."
+          "title": "Structure Locked",
+          "summary": "[STRUCTURE LOCKED] Foundations are in place—you're a solid presence in any gym. Output is cleaner, and you hold your shape better when the weight gets heavy."
         },
         "TIER_61": {
-          "title": "Sustained Load Capacity",
-          "summary": "[STABLE LOAD] Entering the regular lifter sequence. Sustained load-bearing and continuous torque delivery are now reliable."
+          "title": "Steady Load Bearer",
+          "summary": "[STEADY LOAD] You're in the regular heavy-training lane now—reliable under high resistance and able to keep driving force through the whole set."
         },
         "TIER_71": {
-          "title": "Thermal Optimization",
-          "summary": "[THERMAL PEAK] High-tier performance within commercial gyms. Strong output and structural consistency hold under dense loading."
+          "title": "Serious Horsepower",
+          "summary": "[SERIOUS HORSEPOWER] Standout strength in a commercial gym. You stay strong and composed even when the loading is dense and unforgiving."
         },
         "TIER_81": {
           "title": "Performance Apex",
-          "summary": "[PERFORMANCE APEX] Top-tier local benchmark. Mechanical leverage and rigidity are approaching competitive thresholds."
+          "summary": "[PERFORMANCE APEX] Top of the everyday lifter range—output and bar control are knocking on competitive doors. Outside dedicated powerlifting, you're ready for most physical challenges."
         },
         "TIER_91": {
-          "title": "Competitive Awakening",
-          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. High-torque traits are now visible and aligning toward professional-grade output."
+          "title": "Competitive Output",
+          "summary": "[COMPETITIVE OUTPUT] Past the amateur ceiling. Real horsepower on tap, clear natural strength, and you're edging into professional-grade territory."
         },
         "TIER_101": {
-          "title": "High-Pressure Tolerance",
-          "summary": "[ARMORED RESILIENCE] Regional podium potential. Maintains low-loss transmission and stable output under extreme compression."
+          "title": "Regional Dominance",
+          "summary": "[REGIONAL DOMINANCE] Podium-level potential at regional power meets. Matched rivals are scarce—pin the throttle and most people aren't catching you."
         },
         "TIER_111": {
-          "title": "Structural Rigidity",
-          "summary": "[STRUCTURAL RIGIDITY] Elite sequence confirmed. Chassis Rigidity and Torque Efficiency rise together with a deep reserve of raw force."
+          "title": "Elite Competition",
+          "summary": "[ELITE COMPETITION] A familiar winner at regional powerlifting. In daily training, peers are rare—you carry devastating output in reserve."
         },
         "TIER_121": {
-          "title": "Sequence Dominance",
-          "summary": "[SEQUENCE DOMINANCE] National-elite territory. Absolute command over gravity and resistance in high-load attrition environments."
+          "title": "National Elite",
+          "summary": "[NATIONAL ELITE] Strength that benchmarks against national elites. Few domestic rivals left—and under a loaded bar, your control over the weight is outright dominant."
         },
         "TIER_131": {
-          "title": "Perpetual Architecture",
-          "summary": "[PERPETUAL ARCHITECTURE] A consistent international winner profile. Approaching physical limits as biological tissue and engineered rigidity converge."
+          "title": "Physiological Limit",
+          "summary": "[PHYSIOLOGICAL LIMIT] International meet-winner material, knocking on what humans can actually do. Strength, skill, and genetics all have to show up—factory build and years of hard tuning, fused into one package."
         },
         "TIER_141": {
-          "title": "Phantom Load",
-          "summary": "[PHANTOM LOAD] Challenging the boundaries of material mechanics. Operating within international-master territory."
+          "title": "Transcendent Data",
+          "summary": "[PHANTOM LOAD] You're picking fights with gravity itself—international master territory. A thousand horsepower still undersells what you can move."
         },
         "LEGEND": {
-          "title": "Absolute Rigid Body",
-          "summary": "[ABSOLUTE RIGID BODY] Data overflow. Beyond ordinary physiology; the legendary crystallization of pure structural will."
+          "title": "Legend Crystallized",
+          "summary": "[LEGEND CRYSTALLIZED] Off the charts. Beyond normal human limits—your strength sits at the apex of the species. No debate: superhuman tier."
         }
       },
       "explosivePower": {
@@ -144,55 +144,55 @@
       "cardio": {
         "BASE": {
           "title": "Baseline Calibration",
-          "summary": "[SYSTEM INITIALIZATION] Foundational phase. Focus on establishing a consistent aerobic baseline."
+          "summary": "[BASELINE CALIBRATION] Early days—building a steady aerobic foundation. Huge room still on the table."
         },
         "TIER_41": {
-          "title": "Kinetic Thermal Spec",
-          "summary": "[THERMAL START] System beginning to develop managed tolerance for sustained output."
+          "title": "Cooling Online",
+          "summary": "[COOLING ONLINE] Still below the general population average. Your engine is building its first real cardio base—a little focused work goes a long way."
         },
         "TIER_51": {
-          "title": "Efficiency Launch",
-          "summary": "[EFFICIENCY OPTIMIZED] Core tuning stabilized. Improved management of performance decay under load."
+          "title": "Efficiency Tuned",
+          "summary": "[EFFICIENCY TUNED] Sitting around the population average. You're getting comfortable with what steady endurance work feels like."
         },
         "TIER_61": {
           "title": "Stable Cruise",
-          "summary": "[STABLE CRUISE] Entering regular runner sequence. Demonstrating solid, sustained cruising capacity."
+          "summary": "[STABLE CRUISE] You're in the regular-runner lane—long, controlled efforts and sharp pacing. Most people on factory settings never touch this level."
         },
         "TIER_71": {
-          "title": "Advanced Thermal Spec",
-          "summary": "[THERMAL PEAK] Components at optimal temperature. Capable of handling high-intensity tactical efforts."
+          "title": "Full Heat Cycle",
+          "summary": "[FULL HEAT CYCLE] Cruising power took a big step up. Clearly above the crowd—enough engine to handle the tactical surges in other sports."
         },
         "TIER_81": {
-          "title": "Performance Apex",
-          "summary": "[PERFORMANCE APEX] Peak amateur output. Dominating local club tiers; approaching competitive-grade thresholds."
+          "title": "Balanced Performance",
+          "summary": "[BALANCED PERFORMANCE] Ahead of most recreational athletes your age. This endurance carries into other sports—and you're right at the edge of breaking out of amateur tier."
         },
         "TIER_91": {
           "title": "Competitive Awakening",
-          "summary": "[ELITE AWAKENING] Breaking the amateur ceiling. Accessing potential usually reserved for professional domains."
+          "summary": "[COMPETITIVE AWAKENING] Competitive genes showing. This kind of output doesn't happen without serious training—you're pointed at the professional lane."
         },
         "TIER_101": {
-          "title": "Endurance Stint",
-          "summary": "[ENDURANCE STINT] Regional podium potential. Cardiopulmonary resilience capable of leading under prolonged pressure."
+          "title": "High-Efficiency Cruise",
+          "summary": "[HIGH-EFFICIENCY CRUISE] Few real rivals on the track—regional ace level. Remarkable cardio resilience; built to lead under long, hard pressure."
         },
         "TIER_111": {
-          "title": "Extreme Anti-Fade",
-          "summary": "[EXTREME ANTI-FADE] Elite sequence detected. Rapid thermal recovery; optimized for immediate follow-up attacks."
+          "title": "Limit Endurance",
+          "summary": "[LIMIT ENDURANCE] Elite competition tier. Podiums at regional meets are within reach—extreme endurance, recovery stays ice-cold."
         },
         "TIER_121": {
-          "title": "Sequence Dominance",
-          "summary": "[SEQUENCE DOMINANCE] National elite benchmarks. Absolute command over energy systems in high-attrition scenarios."
+          "title": "Track Dominance",
+          "summary": "[TRACK DOMINANCE] Ceiling of the amateur runner class. On the long-course circuit you run the show—endurance events rarely produce a match."
         },
         "TIER_131": {
-          "title": "Eternal Prototype",
-          "summary": "[ETERNAL PROTOTYPE] Approaching physical limits. Mastery-level efficiency where fatigue is no longer a factor."
+          "title": "Apex Runner",
+          "summary": "[APEX RUNNER] Front row of national athletes. Cardiopulmonary system tuned to top spec—you're the one setting cruise at the front."
         },
         "TIER_141": {
-          "title": "Phantom Sequence",
-          "summary": "[PHANTOM SEQUENCE] International master-level alerts. Defying standard physical norms through sheer metabolic power."
+          "title": "Dream Endurance",
+          "summary": "[DREAM ENDURANCE] The final boss of every meet tier. Opponents don't want to see your name on the start list."
         },
         "LEGEND": {
-          "title": "Absolute Domain",
-          "summary": "[ABSOLUTE DOMAIN] Data overflow. This is the realm of legends, a crystalline form of pure power."
+          "title": "God of the Long Run",
+          "summary": "[GOD OF THE LONG RUN] Data overflow. Legend territory—almost nobody on Earth can stay in your slipstream. Aliens might be the fair fight."
         }
       },
       "bodyFat": {
