@@ -47,7 +47,10 @@ export const STRENGTH_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
 ] as const;
 
-/** Symmetric 13-tier grip ladder — aligned with STRENGTH_SCORE_BANDS (10-point steps). */
+/**
+ * Grip-only 18-tier ladder — high bands split 151–200; PANTHEON for model overflow (191+).
+ * WHY: Grip raw scores routinely exceed 150 after the 1.4× formula; other axes keep 13/14 tiers.
+ */
 export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'BASE', min: 0, max: 40 },
   { id: 'TIER_41', min: 41, max: 50 },
@@ -61,7 +64,11 @@ export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'TIER_121', min: 121, max: 130 },
   { id: 'TIER_131', min: 131, max: 140 },
   { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
+  { id: 'TIER_151', min: 151, max: 160 },
+  { id: 'TIER_161', min: 161, max: 170 },
+  { id: 'TIER_171', min: 171, max: 180 },
+  { id: 'LEGEND', min: 181, max: 190 },
+  { id: 'PANTHEON', min: 191, max: Number.POSITIVE_INFINITY },
 ] as const;
 
 /**

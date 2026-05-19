@@ -45,7 +45,7 @@ describe('applyGripPeakCap', () => {
 });
 
 describe('resolveGripAuraFromBandId', () => {
-  it('maps 13 bands to 7 aura tiers per product spec', () => {
+  it('maps 18 grip bands to 7 aura tiers per product spec', () => {
     expect(resolveGripAuraFromBandId('BASE')).toBe('none');
     expect(resolveGripAuraFromBandId('TIER_51')).toBe('none');
     expect(resolveGripAuraFromBandId('TIER_61')).toBe('pulse');
@@ -54,12 +54,15 @@ describe('resolveGripAuraFromBandId', () => {
     expect(resolveGripAuraFromBandId('TIER_101')).toBe('shimmer');
     expect(resolveGripAuraFromBandId('TIER_111')).toBe('lightning');
     expect(resolveGripAuraFromBandId('TIER_131')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('TIER_151')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('TIER_171')).toBe('void_flame');
     expect(resolveGripAuraFromBandId('LEGEND')).toBe('divine_light');
+    expect(resolveGripAuraFromBandId('PANTHEON')).toBe('divine_light');
   });
 });
 
 describe('getGripRankMetadata', () => {
-  it('derives rankKey from score bands (13-tier)', () => {
+  it('derives rankKey from score bands (18-tier)', () => {
     expect(getGripRankMetadata(63)).toEqual({
       rankKey: 'TIER_61',
       color: 'green',
@@ -77,9 +80,14 @@ describe('getGripRankMetadata', () => {
     });
   });
 
-  it('returns LEGEND with divine_light for top scores', () => {
-    expect(getGripRankMetadata(224)).toEqual({
+  it('returns LEGEND or PANTHEON with divine_light for top scores', () => {
+    expect(getGripRankMetadata(185)).toEqual({
       rankKey: 'LEGEND',
+      color: 'gold',
+      aura: 'divine_light',
+    });
+    expect(getGripRankMetadata(224)).toEqual({
+      rankKey: 'PANTHEON',
       color: 'gold',
       aura: 'divine_light',
     });

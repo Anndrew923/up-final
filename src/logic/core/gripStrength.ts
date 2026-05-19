@@ -24,7 +24,11 @@ export type GripBandId =
   | 'TIER_121'
   | 'TIER_131'
   | 'TIER_141'
-  | 'LEGEND';
+  | 'TIER_151'
+  | 'TIER_161'
+  | 'TIER_171'
+  | 'LEGEND'
+  | 'PANTHEON';
 
 export type GripAuraKey =
   | 'none'

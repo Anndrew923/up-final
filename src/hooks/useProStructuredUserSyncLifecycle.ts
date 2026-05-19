@@ -60,9 +60,20 @@ export function useProStructuredUserSyncLifecycle(): void {
         }, SNAPSHOT_DEBOUNCE_MS);
       },
       (err) => {
-        if (import.meta.env.DEV) {
-          console.warn('[structured-sync] profile baseline listener', err);
-        }
+        if (!import.meta.env.DEV) return;
+        const message = err instanceof Error ? err.message : String(err);
+        const looksLikeTransportGlitch =
+          /quic|webchannel|transport|network|ERR_/i.test(message) ||
+          (typeof err === 'object' &&
+            err !== null &&
+            'code' in err &&
+            String((err as { code?: unknown }).code).includes('unavailable'));
+        console.warn(
+          looksLikeTransportGlitch
+            ? '[structured-sync] Firestore Listen transport glitch (often VPN/QUIC/Wi‑Fi). SDK will retry; local data is unaffected.'
+            : '[structured-sync] profile baseline listener',
+          err,
+        );
       }
     );
 

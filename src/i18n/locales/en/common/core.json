@@ -256,59 +256,59 @@
       "muscleMass": {
         "BASE": {
           "title": "Stock Configuration",
-          "summary": "[STOCK SETUP] Original factory body; room for structural expansion."
+          "summary": "[STOCK CONFIG] Untrained factory state—still on the stock exterior setup, with huge chassis volume left to develop."
         },
         "TIER_41": {
-          "title": "Street Package",
-          "summary": "[STREET SPEC] Subtle visual enhancement; initial aerodynamic optimization."
+          "title": "Street Upgrade",
+          "summary": "[STREET UPGRADE] Muscle mass at a typical healthy baseline—a focused tune and the upgrade shows clearly."
         },
         "TIER_51": {
-          "title": "Sport Trim",
-          "summary": "[SPORT TRIM] Fuller body contours; establishing performance presence."
+          "title": "Performance Trim",
+          "summary": "[PERFORMANCE TRIM] Regular trainer tier. Body lines filling out—you read as a performance model at a glance."
         },
         "TIER_61": {
           "title": "Advanced Aero",
-          "summary": "[ADVANCED AERO] Aero components installed; improved visual stance."
+          "summary": "[ADVANCED AERO] Training shows in the mirror—real gym progress. Aero package fitted, visual center of gravity dropped; you look grounded and solid."
         },
         "TIER_71": {
-          "title": "Performance Body Kit",
-          "summary": "[PERFORMANCE KIT] Enhanced visual presence; exceeding standard vehicle profiles."
+          "title": "Heat-Soak Wrap",
+          "summary": "[HEAT-SOAK WRAP] In a crowd, your muscle mass is hard to miss—exterior in performance heat-soak phase, visual presence above most stock rigs."
         },
         "TIER_81": {
           "title": "Track Edition",
-          "summary": "[TRACK EDITION] Sharper body lines; strong competitive presence."
+          "summary": "[TRACK EDITION] You're often the biggest presence in the room. Many natural bodybuilders sit around this level—track-spec config, lines cut sharp, real intimidation on the platform."
         },
         "TIER_91": {
-          "title": "Competitive Widebody",
-          "summary": "[WIDEBODY CONVERSION] Aggressive expansion; transitioning into professional scale."
+          "title": "Competition Widebody",
+          "summary": "[COMPETITION WIDEBODY] Near the natural-training ceiling. Horizontal visual tension maxed out—past amateur limits, competition-scale mass detected."
         },
         "TIER_101": {
-          "title": "Regional GT Spec",
-          "summary": "[GT SPEC] Regional podium presence; seamless integration of aero and scale."
+          "title": "Natural Ceiling",
+          "summary": "[NATURAL CEILING] Benchmarks natural physique world-champion territory—podium-tier visuals, wild wing and widebody in perfect harmony."
         },
         "TIER_111": {
-          "title": "High-Downforce Package",
-          "summary": "[HIGH DOWNFORCE] Massive physical scale generating overwhelming visual authority."
+          "title": "Monster Spec",
+          "summary": "[MONSTER SPEC] Past normal genetic limits—monster territory. Extreme physical volume, crushing visual impact, owns the room."
         },
         "TIER_121": {
-          "title": "Sequence Widebody",
-          "summary": "[SEQUENCE WIDEBODY] National elite benchmarks; absolute structural balance."
+          "title": "Limit Build",
+          "summary": "[LIMIT BUILD] International meet elite spec. On the street you're the obvious focal point—absolute scale and fullness in the structure."
         },
         "TIER_131": {
-          "title": "Pro Drift/Circuit Spec",
-          "summary": "[PRO SPEC] Professional-tier scale; engineered for maximum impact."
+          "title": "Ultimate Build",
+          "summary": "[ULTIMATE BUILD] Professional monster tier. Factory genetics and brutal aftermarket fused—every inch of the exterior built for the limit."
         },
         "TIER_141": {
-          "title": "Phantom Bodywork",
-          "summary": "[PHANTOM BODYWORK] Defying material boundaries; incredible physical mass."
+          "title": "Inhuman Monster",
+          "summary": "[INHUMAN MONSTER] You're no longer the same species as everyone else—physical mass that defies belief."
         },
         "LEGEND": {
-          "title": "GT3 RS Spec",
-          "summary": "[ABSOLUTE DOMAIN] The ultimate fusion of aesthetics and raw physical power."
+          "title": "Planetary Asset",
+          "summary": "[PLANETARY ASSET] Beyond physiology—an unexplained volume of matter. Alien-species tier; a miracle among billions."
         },
         "PANTHEON": {
-          "title": "Legendary Widebody",
-          "summary": "[PANTHEON] Legendary scale; archives reserved for historical icons."
+          "title": "Pantheon Widebody",
+          "summary": "[PANTHEON WIDEBODY] Data overflow. Visual spec matched to historical myth—archived to the Pantheon."
         }
       },
       "gripStrength": {
@@ -360,9 +360,25 @@
           "title": "Eternal Interface",
           "summary": "[ETERNAL INTERFACE] International master-level grip. Challenging friction boundaries of material mechanics."
         },
+        "TIER_151": {
+          "title": "Serial Awakening",
+          "summary": "[SERIAL AWAKENING] Factory race serial online. Grip output enters mythic calibration—benchmarking top-tier arm-wrestling podiums."
+        },
+        "TIER_161": {
+          "title": "Core Traction",
+          "summary": "[CORE TRACTION] Molten caliper-class compression. Load and gravity struggle to escape your terminal interface—international arm-wrestling elite."
+        },
+        "TIER_171": {
+          "title": "Record Archive",
+          "summary": "[RECORD ARCHIVE] Nordic myth serial. Benchmarking public dyno narratives such as Magnus Samuelsson."
+        },
         "LEGEND": {
-          "title": "Pantheon Serial",
-          "summary": "[PANTHEON] 151+ score confirmed. Benchmarking mythic records such as Magnus Samuelsson."
+          "title": "Planetary Grip",
+          "summary": "[PLANETARY GRIP] Grip spec beyond most physiological definitions—extreme outlier among billions."
+        },
+        "PANTHEON": {
+          "title": "Pantheon Compression",
+          "summary": "[PANTHEON COMPRESSION] Model ceiling reached. Grip data overflow archived to the Pantheon—mythic grip spec tier."
         }
       },
       "armSize": {

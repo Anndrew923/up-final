@@ -44,13 +44,16 @@ let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
 
 /**
- * When proxies / HTTP2 / extensions break the default WebChannel stream, Firestore Listen
- * may return HTML 400 "Unknown SID". Long-polling auto-detect avoids that transport path.
+ * When proxies / HTTP2 / QUIC / extensions break the default WebChannel Listen stream, Firestore
+ * may log `ERR_QUIC_PROTOCOL_ERROR.QUIC_TOO_MANY_RTOS` or HTML 400 "Unknown SID".
+ * Long-polling avoids that transport path; DEV forces it because auto-detect may run too late.
  */
 function initFirestoreForApp(app: FirebaseApp): Firestore {
+  const isDev = import.meta.env.DEV;
   try {
     return initializeFirestore(app, {
-      experimentalAutoDetectLongPolling: true,
+      experimentalForceLongPolling: isDev,
+      experimentalAutoDetectLongPolling: !isDev,
       localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
     });
   } catch (e: unknown) {

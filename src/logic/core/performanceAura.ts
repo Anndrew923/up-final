@@ -33,6 +33,9 @@ export function resolveAuraFromBandId(bandId: string): PerformanceAuraKey {
       return 'lightning';
     case 'TIER_131':
     case 'TIER_141':
+    case 'TIER_151':
+    case 'TIER_161':
+    case 'TIER_171':
       return 'void_flame';
     case 'LEGEND':
     case 'PANTHEON':

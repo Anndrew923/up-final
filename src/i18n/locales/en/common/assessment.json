@@ -92,8 +92,11 @@
         "TIER_121": "Sequence Dominance",
         "TIER_131": "Phantom Compression",
         "TIER_141": "Eternal Interface",
-        "LEGEND": "Pantheon Serial",
-        "PANTHEON": "Pantheon Overflow"
+        "TIER_151": "Serial Awakening",
+        "TIER_161": "Core Traction",
+        "TIER_171": "Record Archive",
+        "LEGEND": "Planetary Grip",
+        "PANTHEON": "Pantheon Compression"
       }
     },
     "ceremony": {

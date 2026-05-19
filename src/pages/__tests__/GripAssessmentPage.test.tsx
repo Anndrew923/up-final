@@ -95,13 +95,13 @@ afterEach(() => {
 });
 
 describe('GripAssessmentPage performance spec', () => {
-  it('shows top-tier meaning and hides next milestone at previewScore=181', () => {
+  it('shows top-tier meaning and hides next milestone at previewScore=191', () => {
     mockUseGripAssessmentPage.mockReturnValue({
       profile: { gender: 'male', weightKg: 80 },
       profileReady: true,
       peakKgInput: '120',
       setPeakKgInput: vi.fn(),
-      previewScore: 181,
+      previewScore: 191,
       capNotice: null,
       errorKey: null,
       submitDone: false,
@@ -110,8 +110,8 @@ describe('GripAssessmentPage performance spec', () => {
       submitToRadar: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue({
-      title: 'Pantheon Serial',
-      summary: 'Legend-tier data overflow.',
+      title: 'Pantheon Compression',
+      summary: 'Model ceiling reached.',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -119,10 +119,10 @@ describe('GripAssessmentPage performance spec', () => {
     const { container, unmount } = renderPage();
     const text = container.textContent ?? '';
 
-    expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 181);
+    expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 191);
     expect(text).toContain('PERFORMANCE SPEC / Potential Spec');
-    expect(text).toContain('Pantheon Serial');
-    expect(text).toContain('Legend-tier data overflow.');
+    expect(text).toContain('Pantheon Compression');
+    expect(text).toContain('Model ceiling reached.');
     expect(text).not.toContain('Next Milestone:');
 
     unmount();

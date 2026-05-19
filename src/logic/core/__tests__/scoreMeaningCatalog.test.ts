@@ -107,14 +107,35 @@ describe('resolveScoreBand(strength)', () => {
   });
 });
 
+const GRIP_EIGHTEEN_TIER_IDS = [
+  'BASE',
+  'TIER_41',
+  'TIER_51',
+  'TIER_61',
+  'TIER_71',
+  'TIER_81',
+  'TIER_91',
+  'TIER_101',
+  'TIER_111',
+  'TIER_121',
+  'TIER_131',
+  'TIER_141',
+  'TIER_151',
+  'TIER_161',
+  'TIER_171',
+  'LEGEND',
+  'PANTHEON',
+] as const;
+
 describe('resolveScoreBand(gripStrength)', () => {
-  it('mirrors strength 13-tier symmetric map', () => {
+  it('uses grip-only 18-tier map (not strength 13-tier)', () => {
     const gripIds = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
     const strengthIds = SCORE_MEANING_CATALOG.strength.map((band) => band.id);
-    expect(gripIds).toEqual(strengthIds);
+    expect(gripIds).toEqual([...GRIP_EIGHTEEN_TIER_IDS]);
+    expect(gripIds).not.toEqual(strengthIds);
   });
 
-  it('maps all boundary checkpoints aligned with strength tiers', () => {
+  it('maps all boundary checkpoints including high grip bands', () => {
     const checkpoints: Array<[number, string]> = [
       [40, 'BASE'],
       [41, 'TIER_41'],
@@ -140,9 +161,16 @@ describe('resolveScoreBand(gripStrength)', () => {
       [140, 'TIER_131'],
       [141, 'TIER_141'],
       [150, 'TIER_141'],
-      [151, 'LEGEND'],
+      [151, 'TIER_151'],
+      [160, 'TIER_151'],
+      [161, 'TIER_161'],
+      [170, 'TIER_161'],
+      [171, 'TIER_171'],
+      [180, 'TIER_171'],
       [181, 'LEGEND'],
-      [224, 'LEGEND'],
+      [190, 'LEGEND'],
+      [191, 'PANTHEON'],
+      [224, 'PANTHEON'],
     ];
 
     for (const [score, expectedBand] of checkpoints) {
@@ -156,7 +184,11 @@ describe('resolveScoreBand(gripStrength)', () => {
     expect(resolveScoreBand('gripStrength', 131.0).id).toBe('TIER_131');
     expect(resolveScoreBand('gripStrength', 150.5).id).toBe('TIER_141');
     expect(resolveScoreBand('gripStrength', 150.9).id).toBe('TIER_141');
-    expect(resolveScoreBand('gripStrength', 151.0).id).toBe('LEGEND');
+    expect(resolveScoreBand('gripStrength', 151.0).id).toBe('TIER_151');
+    expect(resolveScoreBand('gripStrength', 180.9).id).toBe('TIER_171');
+    expect(resolveScoreBand('gripStrength', 181.0).id).toBe('LEGEND');
+    expect(resolveScoreBand('gripStrength', 190.9).id).toBe('LEGEND');
+    expect(resolveScoreBand('gripStrength', 191.0).id).toBe('PANTHEON');
   });
 });
 
