@@ -53,4 +53,29 @@ i18n.on('languageChanged', (lng) => {
   syncDocumentLang(lng);
 });
 
+/** Dev-only: re-merge locale JSON without Vite full-page reload (see `vite/i18nLocaleHmr.ts`). */
+async function reloadLocaleResourceBundles(): Promise<void> {
+  const [commonMod, enArenaMod, zhArenaMod] = await Promise.all([
+    import('./i18n/locales/common'),
+    import('./i18n/locales/en/arena.json'),
+    import('./i18n/locales/zh-Hant/arena.json'),
+  ]);
+
+  i18n.addResourceBundle('en', 'common', commonMod.enCommon, true, true);
+  i18n.addResourceBundle('zh-Hant', 'common', commonMod.zhHantCommon, true, true);
+  i18n.addResourceBundle('en', 'arena', enArenaMod.default, true, true);
+  i18n.addResourceBundle('zh-Hant', 'arena', zhArenaMod.default, true, true);
+}
+
+if (import.meta.hot) {
+  let localeReloadTimer: ReturnType<typeof setTimeout> | null = null;
+  import.meta.hot.on('locales-update', () => {
+    if (localeReloadTimer) clearTimeout(localeReloadTimer);
+    localeReloadTimer = setTimeout(() => {
+      localeReloadTimer = null;
+      void reloadLocaleResourceBundles();
+    }, 120);
+  });
+}
+
 export default i18n;

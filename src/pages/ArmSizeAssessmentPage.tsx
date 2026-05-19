@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { DisclosurePanel } from '../components/DisclosurePanel';
@@ -64,20 +65,12 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="armSize" />
       <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="ui-shell relative max-w-3xl space-y-8">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-              {t('armSize.kicker')}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('armSize.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('armSize.subtitle')}</p>
-          </div>
-          {onBack ? (
-            <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-              {t('back')}
-            </button>
-          ) : null}
-        </header>
+        <AssessmentPageHeader
+          kicker={t('armSize.kicker')}
+          title={t('armSize.title')}
+          subtitle={t('armSize.subtitle')}
+          onBack={onBack}
+        />
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <DisclosurePanel

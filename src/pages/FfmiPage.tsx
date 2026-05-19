@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
@@ -56,26 +57,12 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
       </div>
 
       <div className="ui-shell relative max-w-3xl space-y-8">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-              {t('ffmi.kicker')}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('ffmi.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('ffmi.subtitle')}</p>
-          </div>
-          <div className="flex gap-2">
-            {onBack ? (
-              <button type="button" className="ui-btn" onClick={onBack}>
-                {t('back')}
-              </button>
-            ) : (
-              <button type="button" className="ui-btn" onClick={goHome}>
-                {t('back')}
-              </button>
-            )}
-          </div>
-        </header>
+        <AssessmentPageHeader
+          kicker={t('ffmi.kicker')}
+          title={t('ffmi.title')}
+          subtitle={t('ffmi.subtitle')}
+          onBack={onBack ?? goHome}
+        />
 
         {!profileReady ? (
           <section

@@ -148,12 +148,18 @@ export default function App() {
   const shouldShowAuthBootstrapFallback =
     isFirebaseReady && authStatus === 'loading' && !isGoogleSignedIn && !hasOnboarding;
 
-  if (shouldShowAuthBootstrapFallback) {
-    return <AuthBootstrapFallback />;
-  }
-
   return (
-    <Routes>
+    <>
+      {shouldShowAuthBootstrapFallback ? (
+        <div
+          className="fixed inset-0 z-[300] bg-bg-base"
+          aria-busy="true"
+          aria-live="polite"
+        >
+          <AuthBootstrapFallback />
+        </div>
+      ) : null}
+      <Routes>
       <Route
         path={toRelativeRoutePath(ROUTES.authChoice)}
         element={
@@ -198,5 +204,6 @@ export default function App() {
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>
+    </>
   );
 }

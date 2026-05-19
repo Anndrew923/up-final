@@ -7,6 +7,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import HexRadarChart from '../components/radar/HexRadarChart';
 import { ROUTES } from '../config/routes';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -116,20 +117,12 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       </div>
 
       <div className="ui-shell relative max-w-3xl space-y-8">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-              {t('strength.kicker')}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('strength.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('strength.subtitle')}</p>
-          </div>
-          {onBack ? (
-            <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-              {t('back')}
-            </button>
-          ) : null}
-        </header>
+        <AssessmentPageHeader
+          kicker={t('strength.kicker')}
+          title={t('strength.title')}
+          subtitle={t('strength.subtitle')}
+          onBack={onBack}
+        />
 
         {!profileReady ? (
           <section

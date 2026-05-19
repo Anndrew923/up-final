@@ -2,15 +2,22 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { i18nLocaleHmr } from './vite/i18nLocaleHmr';
 
 const packageJsonPath = resolve(__dirname, 'package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as { version?: string };
 const appVersion = packageJson.version ?? '0.0.0';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), i18nLocaleHmr()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
+  },
+  // WHY: `tsc -b` / IDE project builds touch *.tsbuildinfo — ignore them so Vite does not full-reload the tab.
+  server: {
+    watch: {
+      ignored: ['**/*.tsbuildinfo', '**/dist/**'],
+    },
   },
   resolve: {
     dedupe: ['react', 'react-dom'],

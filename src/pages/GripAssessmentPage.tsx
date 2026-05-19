@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { DisclosurePanel } from '../components/DisclosurePanel';
@@ -69,20 +70,12 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="grip" />
       <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
       <div className="ui-shell relative max-w-3xl space-y-8">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-              {t('grip.kicker')}
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('grip.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('grip.subtitle')}</p>
-          </div>
-          {onBack ? (
-            <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-              {t('back')}
-            </button>
-          ) : null}
-        </header>
+        <AssessmentPageHeader
+          kicker={t('grip.kicker')}
+          title={t('grip.title')}
+          subtitle={t('grip.subtitle')}
+          onBack={onBack}
+        />
 
         {!profileReady ? (
           <section

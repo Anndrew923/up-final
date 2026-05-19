@@ -17,7 +17,12 @@ export function useAuthSessionBootstrap(): void {
   const refreshEntitlement = useEntitlementStore((s) => s.refreshEntitlement);
 
   useEffect(() => {
-    setLoading();
+    // WHY: React StrictMode remounts this effect; resetting signed-in → loading flashes AppShell on deep routes (/muscle, etc.).
+    const statusBeforeBootstrap = useAuthStore.getState().status;
+    if (statusBeforeBootstrap === 'loading') {
+      setLoading();
+    }
+
     let isDisposed = false;
     let unsubscribe: (() => void) | null = null;
 
