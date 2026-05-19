@@ -197,60 +197,60 @@
       },
       "bodyFat": {
         "BASE": {
-          "title": "Stock Displacement",
-          "summary": "[STOCK CC] Base displacement; cylinders awaiting overbore expansion."
+          "title": "Micro Displacement",
+          "summary": "[MICRO DISPLACEMENT] Muscle mass well below normal—nutrition and training are urgent. Start the rebuild now."
         },
         "TIER_41": {
-          "title": "Intake Optimization",
-          "summary": "[INTAKE OPTIMIZED] Initial volumetric efficiency gains."
+          "title": "Intake Optimized",
+          "summary": "[INTAKE OPTIMIZED] Below-average muscle mass. Huge upgrade room—a focused tune delivers a big jump."
         },
         "TIER_51": {
-          "title": "Sport Compact Spec",
-          "summary": "[SPORT COMPACT] Refined density; high-response baseline."
+          "title": "Small-Block Hot Hatch",
+          "summary": "[SMALL-BLOCK HOT HATCH] Still on the lean side. Tight structural density—street-spec small-turbo agility in the chassis."
         },
         "TIER_61": {
-          "title": "Mid-Displacement Spec",
-          "summary": "[MID-DISPLACEMENT] Cylinder walls built for higher pressure cycles."
+          "title": "Mid-Displacement Step-Up",
+          "summary": "[MID-DISPLACEMENT STEP-UP] Early recreational athlete tier. Displacement climbing steadily; cylinder walls handle higher pressure cycles."
         },
         "TIER_71": {
-          "title": "High-Revving NA",
-          "summary": "[HIGH-REVVING NA] High volumetric efficiency powertrain."
+          "title": "NA Enthusiast Spec",
+          "summary": "[NA ENTHUSIAST SPEC] Regular training athlete tier. High-rev naturally aspirated setup—performance above most stock power units."
         },
         "TIER_81": {
-          "title": "V6 Performance",
-          "summary": "[V6 PERFORMANCE] Stepping into high-capacity architecture."
+          "title": "Big-Block Foundation",
+          "summary": "[BIG-BLOCK FOUNDATION] Strong amateur athlete. Crossed into big displacement—smooth six-cylinder delivery, excellent balanced output."
         },
         "TIER_91": {
-          "title": "V8 Muscle Spec",
-          "summary": "[V8 MUSCLE] Classic high-displacement density; massive torque potential."
+          "title": "Big-Block Muscle",
+          "summary": "[BIG-BLOCK MUSCLE] Near the natural-training ceiling. Classic high-displacement V8—peak NA engine, massive burst energy."
         },
         "TIER_101": {
-          "title": "Race-Bored Engine",
-          "summary": "[RACE-BORED] Displacing professional competitive volumes; amateur ceiling cleared."
+          "title": "Race-Class Displacement",
+          "summary": "[RACE-CLASS DISPLACEMENT] Elite output—few natural lifters ever reach this. Bore-and-stroke optimized; track-spec displacement, amateur ceiling cleared."
         },
         "TIER_111": {
-          "title": "Twin-Turbo V8",
-          "summary": "[TWIN-TURBO V8] High-boost compression; elite mechanical density."
+          "title": "Twin-Turbo",
+          "summary": "[TWIN-TURBO] Past the natural-training ceiling—genetic outlier territory. Twin turbos on full boost, engine bay heavily modified; the build tells the story before you even move."
         },
         "TIER_121": {
-          "title": "V10 Supercar Engine",
-          "summary": "[V10 SUPERCAR] V10-tier displacement architecture; supreme output depth."
+          "title": "Supercar Powerplant",
+          "summary": "[SUPERCAR POWERPLANT] Inhuman muscle density. Ten-cylinder myth-tier density—dominates heavy load output, brutally capable."
         },
         "TIER_131": {
-          "title": "V12 Twin-Turbo",
-          "summary": "[V12 TWIN-TURBO] Pinnacle 12-cylinder displacement; ultimate density."
+          "title": "Ultimate Displacement",
+          "summary": "[ULTIMATE DISPLACEMENT] Cyborg-grade heavy engineering. Top-spec twin-turbo twelve—every inch of muscle built for maximum power."
         },
         "TIER_141": {
-          "title": "W16 Quad-Turbo",
-          "summary": "[W16 QUAD-TURBO] Defying mechanical thresholds; aviation-grade scale."
+          "title": "Aerospace Power Module",
+          "summary": "[AEROSPACE POWER MODULE] Advanced augmented build. Fighter-jet quad-turbo sixteen—pushing physiological and structural limits."
         },
         "LEGEND": {
           "title": "Absolute Displacement",
-          "summary": "[ABSOLUTE POWER] Transcending biological limits; pure displacement supremacy."
+          "summary": "[ABSOLUTE DISPLACEMENT] Beyond normal physics—pure big-displacement force fused with engineering aesthetics."
         },
         "PANTHEON": {
           "title": "Pantheon Displacement",
-          "summary": "[PANTHEON CC] Rocket-propulsion data overflow."
+          "summary": "[PANTHEON DISPLACEMENT] Data overflow. Myth-tier rocket engine—archived to the Ultimate Physique Pantheon."
         }
       },
       "muscleMass": {
