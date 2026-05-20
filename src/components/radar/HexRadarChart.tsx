@@ -184,9 +184,9 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   }, [cx, cy, maxR, n]);
 
   return (
-    <div className={`${className ?? ''} relative aspect-square`}>
+    <div className={`relative aspect-square w-full ${className ?? ''}`}>
       <div
-        className="pointer-events-none absolute inset-[7%] rounded-full motion-safe:transition-opacity motion-safe:duration-500 motion-reduce:transition-none"
+        className="pointer-events-none absolute inset-[7%] aspect-square rounded-full motion-safe:transition-opacity motion-safe:duration-500 motion-reduce:transition-none"
         aria-hidden
         style={{
           background: `conic-gradient(from 180deg at 50% 50%, rgba(24,24,27,1) 0%, ${scannerSweepPeak} 50%, rgba(24,24,27,1) 100%)`,
@@ -195,7 +195,8 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
       />
       <svg
         viewBox="0 0 200 200"
-        className="relative z-10 h-full w-full motion-safe:transition-all motion-safe:duration-[560ms]"
+        preserveAspectRatio="xMidYMid meet"
+        className="relative z-10 size-full motion-safe:transition-all motion-safe:duration-[560ms]"
         role="img"
         aria-label={ariaLabel}
         xmlns="http://www.w3.org/2000/svg"

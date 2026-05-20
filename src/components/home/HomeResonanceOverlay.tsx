@@ -99,9 +99,9 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
             </p>
             <p className="mt-1 text-center text-xs text-zinc-500">{snapshot.archetypeTitle}</p>
 
-            <div className="relative mx-auto mt-3 h-[220px] w-full max-w-[260px] shrink-0 overflow-visible px-1 sm:mt-5 sm:h-[260px] sm:max-w-[280px] md:mt-6 md:h-[280px]">
+            <div className="relative mx-auto mt-3 aspect-square w-full max-w-[min(280px,100%)] shrink-0 overflow-visible px-1 sm:mt-5 md:mt-6">
               <div
-                className={`pointer-events-none absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full sm:h-60 sm:w-60 md:h-64 md:w-64 ${theme.diffusedRadial} motion-reduce:opacity-50 motion-safe:transition-opacity motion-safe:duration-500`}
+                className={`pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[88%] -translate-x-1/2 -translate-y-1/2 rounded-full ${theme.diffusedRadial} motion-reduce:opacity-50 motion-safe:transition-opacity motion-safe:duration-500`}
                 style={{ filter: 'blur(25px)', opacity: glowOpacity }}
                 aria-hidden
               />
@@ -111,7 +111,7 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
                 ritualFill={ritualFill}
                 suppressEntryAnimation
                 gridFadeOpacity={gridFadeOpacity}
-                className="relative z-10 mx-auto h-full w-full origin-center scale-[0.94] sm:scale-100"
+                className="relative z-10 size-full origin-center scale-[0.94] sm:scale-100"
                 aria-label={t('home.radarAria')}
               />
             </div>
