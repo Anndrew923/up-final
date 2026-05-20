@@ -31,168 +31,172 @@
     "bands": {
       "strength": {
         "BASE": {
-          "title": "Baseline Calibration",
-          "summary": "[CHASSIS READY] You're on the board. Every lift still has room to grow—steady work is how you unlock the full power curve."
+          "title": "10 hp Scooter",
+          "summary": "[10 hp SCOOTER] Fresh on the board. Every strength axis still has huge upgrade room—steady, consistent work stiffens the chassis and lifts overall performance for the first time."
         },
         "TIER_41": {
-          "title": "Horsepower Online",
-          "summary": "[HORSEPOWER ONLINE] Early days in the weight room. Your body is learning to sit under load and stay structurally tight."
+          "title": "90 hp Daily Driver",
+          "summary": "[90 hp DAILY] First contact with strength training. Your system is building early tolerance to external load and structural integrity."
         },
         "TIER_51": {
-          "title": "Structure Locked",
-          "summary": "[STRUCTURE LOCKED] Foundations are in place—you're a solid presence in any gym. Output is cleaner, and you hold your shape better when the weight gets heavy."
+          "title": "140 hp Compact",
+          "summary": "[140 hp COMPACT] Foundation lifts are dialed in—you're a solid mid-pack presence in any gym. Cleaner output, less form breakdown under load, chassis structure clearly improved."
         },
         "TIER_61": {
-          "title": "Steady Load Bearer",
-          "summary": "[STEADY LOAD] You're in the regular heavy-training lane now—reliable under high resistance and able to keep driving force through the whole set."
+          "title": "180 hp Hot Hatch",
+          "summary": "[180 hp HOT HATCH] You're in the regular heavy-training lane—stable under high resistance with continuous, uninterrupted power delivery."
         },
         "TIER_71": {
-          "title": "Serious Horsepower",
-          "summary": "[SERIOUS HORSEPOWER] Standout strength in a commercial gym. You stay strong and composed even when the loading is dense and unforgiving."
+          "title": "250 hp RWD Coupe",
+          "summary": "[250 hp RWD] High-tier output in a commercial gym. You hold strong power and rigid-body consistency even under dense, punishing loads."
         },
         "TIER_81": {
-          "title": "Performance Apex",
-          "summary": "[PERFORMANCE APEX] Top of the everyday lifter range—output and bar control are knocking on competitive doors. Outside dedicated powerlifting, you're ready for most physical challenges."
+          "title": "350 hp Coupe",
+          "summary": "[350 hp COUPE] Peak amateur-athlete strength. Output and load control are knocking on competitive doors—enough to handle most challenges across specialized sports."
         },
         "TIER_91": {
-          "title": "Competitive Output",
-          "summary": "[COMPETITIVE OUTPUT] Past the amateur ceiling. Real horsepower on tap, clear natural strength, and you're edging into professional-grade territory."
+          "title": "430 hp Sport Flagship",
+          "summary": "[430 hp FLAGSHIP] Past the amateur ceiling. Serious horsepower on tap, exceptional natural strength—the chassis core is drifting toward pro-grade output."
         },
         "TIER_101": {
-          "title": "Regional Dominance",
-          "summary": "[REGIONAL DOMINANCE] Podium-level potential at regional power meets. Matched rivals are scarce—pin the throttle and most people aren't catching you."
+          "title": "550 hp Track Supercar",
+          "summary": "[550 hp TRACK] Regional podium material. Few rivals in a crowd—floor the throttle and most people aren't catching the burst."
         },
         "TIER_111": {
-          "title": "Elite Competition",
-          "summary": "[ELITE COMPETITION] A familiar winner at regional powerlifting. In daily training, peers are rare—you carry devastating output in reserve."
+          "title": "680 hp Factory Racer",
+          "summary": "[680 hp FACTORY] A regular winner at regional meets. Rarely matched on a normal track day—devastating horsepower in reserve and elite rigid-body control."
         },
         "TIER_121": {
-          "title": "National Elite",
-          "summary": "[NATIONAL ELITE] Strength that benchmarks against national elites. Few domestic rivals left—and under a loaded bar, your control over the weight is outright dominant."
+          "title": "820 hp Le Mans Prototype",
+          "summary": "[820 hp LE MANS] Strength benchmarks national elites. Few domestic rivals left—under limit loads, your dominance is absolute."
         },
         "TIER_131": {
-          "title": "Physiological Limit",
-          "summary": "[PHYSIOLOGICAL LIMIT] International meet-winner material, knocking on what humans can actually do. Strength, skill, and genetics all have to show up—factory build and years of hard tuning, fused into one package."
+          "title": "1000 hp Megacar",
+          "summary": "[1000 hp MEGA] International meet-level output. Knocking on the human ceiling—factory genetics and years of brutal tuning fused into one package."
         },
         "TIER_141": {
-          "title": "Transcendent Data",
-          "summary": "[PHANTOM LOAD] You're picking fights with gravity itself—international master territory. A thousand horsepower still undersells what you can move."
+          "title": "1200 hp Rocket Rig",
+          "summary": "[1200 hp ROCKET] You're picking fights with gravity—international master-tier strength. A thousand horsepower still isn't enough to describe your power."
         },
         "LEGEND": {
-          "title": "Legend Crystallized",
-          "summary": "[LEGEND CRYSTALLIZED] Off the charts. Beyond normal human limits—your strength sits at the apex of the species. No debate: superhuman tier."
+          "title": "1500 hp Planetary Asset",
+          "summary": "[1500 hp PLANET] Data overflow. Beyond normal physiology and mechanics—your existence is a legend-tier crystallization of human strength aesthetics."
+        },
+        "PANTHEON": {
+          "title": "2000 hp Pantheon",
+          "summary": "[2000 hp PANTHEON] Data archived. Ultimate output spec aligned with historical myth—the eternal core of the Ultimate Physique Pantheon."
         }
       },
       "explosivePower": {
         "BASE": {
-          "title": "Stock Torque",
-          "summary": "[STOCK TQ] Baseline transient response; drivetrain awaiting high-stall conversion."
+          "title": "9 Nm Stock Torque",
+          "summary": "[9 Nm STOCK] Fresh on the board—baseline launch settings. Transient drivetrain engagement still needs development; power release has huge room to optimize."
         },
         "TIER_41": {
-          "title": "Ignition Tuning",
-          "summary": "[IGNITION TUNING] Improved throttle response; establishing peak rotational inertia."
+          "title": "95 Nm Ignition Tune",
+          "summary": "[95 Nm IGNITION] Beginner tier—throttle response is picking up. You're building launch-phase transient twist and cutting power-transfer lag."
         },
         "TIER_51": {
-          "title": "Lightweight Flywheel",
-          "summary": "[LIGHTWEIGHT FLYWHEEL] High-revving engine response; lightweight agile launch."
+          "title": "150 Nm Light Flywheel",
+          "summary": "[150 Nm FLYWHEEL] You're getting the rhythm—revs climb faster and neural recruitment delay shrinks. Hot-hatch agility off the line."
         },
         "TIER_61": {
-          "title": "Stage 1 Map",
-          "summary": "[STAGE 1 MAP] Torque curve extended; reliable fast power delivery."
+          "title": "240 Nm Stage 1 NA",
+          "summary": "[240 Nm STAGE 1] Around the average recreational athlete. Instant power-release skill is maturing; your drive platform is stabilizing."
         },
         "TIER_71": {
-          "title": "High-Boost Launch",
-          "summary": "[HIGH-BOOST LAUNCH] Boost pressure spools instantly; superior transient response."
+          "title": "330 Nm Staged Boost",
+          "summary": "[330 Nm BOOST] Explosiveness above the crowd—your snap clearly outruns stock units with strong launch acceleration."
         },
         "TIER_81": {
-          "title": "Launch Control",
-          "summary": "[LAUNCH CONTROL] Matching track-spec launch systems; extreme bite with minimal traction loss."
+          "title": "450 Nm Launch Control",
+          "summary": "[450 Nm LAUNCH] Upper amateur tier—track launch control equipped. Neural recruitment bites instantly on the first hit."
         },
         "TIER_91": {
-          "title": "Supercharged",
-          "summary": "[SUPERCHARGED] Full RPM torque curve; clearing amateur limits instantly."
+          "title": "600 Nm Supercharged",
+          "summary": "[600 Nm SC] Top-tier amateur explosiveness—about to clear the amateur ceiling. Launch-control speed is shocking."
         },
         "TIER_101": {
-          "title": "Drag Spec Clutch",
-          "summary": "[DRAG SPEC CLUTCH] Zero-latency power transmission; built for drag-strip launches."
+          "title": "760 Nm Race Transmission",
+          "summary": "[760 Nm RACE TRANS] NBA combine average—straight-line release with near-zero lag, brutal efficiency, past normal limits."
         },
         "TIER_111": {
-          "title": "Rocket Thruster",
-          "summary": "[ROCKET THRUSTER] Overclocked compression; superior shaft twisting power."
+          "title": "950 Nm Twin-Turbo V8",
+          "summary": "[950 Nm ROCKET] Elite NBA guard explosiveness—dynamic response is startling. Nearly a thousand newton-meters in an instant; the burst is faster than the eye can track."
         },
         "TIER_121": {
-          "title": "Hypercar Instant",
-          "summary": "[HYPERCAR INSTANT] Flawless electric-mechanical link; absolute authority over initial friction."
+          "title": "1200 Nm Hypercar Quad-Motor",
+          "summary": "[1200 Nm HYPERCAR] Top NBA guard explosiveness—electric and mechanical mesh perfectly. The first step feels like a pure EV hypercar tearing through the air."
         },
         "TIER_131": {
-          "title": "Mega-Torque Plateau",
-          "summary": "[MEGA-TORQUE PLATEAU] Heavy industrial motor torque; zero loss to structural flex."
+          "title": "1400 Nm Ultimate Hybrid",
+          "summary": "[1400 Nm HYBRID] NFL wide receiver and running back explosiveness—like a top-tier heavy industrial motor. Industrial-grade rigidity, unmatched core stability, peak concurrent output."
         },
         "TIER_141": {
-          "title": "Phantom Transient",
-          "summary": "[PHANTOM TRANSIENT] Pushing material shear stress limits; elite kinetic delivery."
+          "title": "1600 Nm Aerospace Turbine",
+          "summary": "[1600 Nm AERO] Elite NFL running back explosiveness—instant output at world-top level. The first step shreds the defensive line."
         },
         "LEGEND": {
-          "title": "Absolute Torque",
-          "summary": "[ABSOLUTE TORQUE] Transcending biological boundaries; the ultimate kinetic snap."
+          "title": "Aerospace Rocket Thruster",
+          "summary": "[AERO ROCKET] Legend-athlete tier—the domain of basketball gods and sprint gods. Data overflow. Beyond normal biomechanics; instantaneous kinetic energy that tears gravity apart."
         },
         "PANTHEON": {
-          "title": "Pantheon Torque",
-          "summary": "[PANTHEON TQ] Mythical transient coupling; archives reserved for legends."
+          "title": "Pantheon",
+          "summary": "[PANTHEON] Archived to the Pantheon. Undisputed strongest on Earth."
         }
       },
       "cardio": {
         "BASE": {
           "title": "Baseline Calibration",
-          "summary": "[BASELINE CALIBRATION] Early days—building a steady aerobic foundation. Huge room still on the table."
+          "summary": "[BASELINE CAL] Entry-level—focus on building a stable aerobic base first. Massive upgrade room still on the table."
         },
         "TIER_41": {
           "title": "Cooling Online",
-          "summary": "[COOLING ONLINE] Still below the general population average. Your engine is building its first real cardio base—a little focused work goes a long way."
+          "summary": "[COOLING ONLINE] Still below the general average—the system is building its first real cardio base. A focused tune delivers a big jump."
         },
         "TIER_51": {
-          "title": "Efficiency Tuned",
-          "summary": "[EFFICIENCY TUNED] Sitting around the population average. You're getting comfortable with what steady endurance work feels like."
+          "title": "Efficiency Tune",
+          "summary": "[EFFICIENCY TUNE] Around population average—you're getting used to what steady endurance work feels like on the lungs."
         },
         "TIER_61": {
           "title": "Stable Cruise",
-          "summary": "[STABLE CRUISE] You're in the regular-runner lane—long, controlled efforts and sharp pacing. Most people on factory settings never touch this level."
+          "summary": "[STABLE CRUISE] Regular-runner tier—long, controlled cruising with sharp pacing. Most people on factory settings never touch this."
         },
         "TIER_71": {
-          "title": "Full Heat Cycle",
-          "summary": "[FULL HEAT CYCLE] Cruising power took a big step up. Clearly above the crowd—enough engine to handle the tactical surges in other sports."
+          "title": "Heat Soak",
+          "summary": "[HEAT SOAK] Cruising power took a serious step up—clearly above the crowd, enough engine for tactical surges in other sports."
         },
         "TIER_81": {
           "title": "Balanced Performance",
-          "summary": "[BALANCED PERFORMANCE] Ahead of most recreational athletes your age. This endurance carries into other sports—and you're right at the edge of breaking out of amateur tier."
+          "summary": "[BALANCED PERF] Ahead of most recreational athletes your age. This endurance carries into other sports—you're right at the amateur breakout line."
         },
         "TIER_91": {
           "title": "Competitive Awakening",
-          "summary": "[COMPETITIVE AWAKENING] Competitive genes showing. This kind of output doesn't happen without serious training—you're pointed at the professional lane."
+          "summary": "[COMP AWAKENING] Competitive genes detected. This output doesn't happen without serious training—you're aimed at the professional lane."
         },
         "TIER_101": {
           "title": "High-Efficiency Cruise",
-          "summary": "[HIGH-EFFICIENCY CRUISE] Few real rivals on the track—regional ace level. Remarkable cardio resilience; built to lead under long, hard pressure."
+          "summary": "[HIGH-EFF CRUISE] Few real rivals on the track—regional ace level. Remarkable cardio resilience; built to lead under long, hard pressure."
         },
         "TIER_111": {
           "title": "Limit Endurance",
-          "summary": "[LIMIT ENDURANCE] Elite competition tier. Podiums at regional meets are within reach—extreme endurance, recovery stays ice-cold."
+          "summary": "[LIMIT ENDURANCE] Elite competition tier. Regional podiums are realistic—extreme endurance with ice-cold recovery."
         },
         "TIER_121": {
           "title": "Track Dominance",
-          "summary": "[TRACK DOMINANCE] Ceiling of the amateur runner class. On the long-course circuit you run the show—endurance events rarely produce a match."
+          "summary": "[TRACK DOMINANCE] Amateur-runner ceiling. On the long course you run the show—endurance events rarely find a match."
         },
         "TIER_131": {
           "title": "Apex Runner",
-          "summary": "[APEX RUNNER] Front row of national athletes. Cardiopulmonary system tuned to top spec—you're the one setting cruise at the front."
+          "summary": "[APEX RUNNER] Front row of national athletes. Cardiopulmonary system tuned to top spec—you set the pace at the front."
         },
         "TIER_141": {
           "title": "Dream Endurance",
-          "summary": "[DREAM ENDURANCE] The final boss of every meet tier. Opponents don't want to see your name on the start list."
+          "summary": "[DREAM ENDURANCE] Final-boss tier at every meet level. Opponents don't want your name on the start list."
         },
         "LEGEND": {
           "title": "God of the Long Run",
-          "summary": "[GOD OF THE LONG RUN] Data overflow. Legend territory—almost nobody on Earth can stay in your slipstream. Aliens might be the fair fight."
+          "summary": "[LONG-RUN GOD] Data overflow. Legend territory—almost nobody on Earth can stay in your slipstream. Aliens might be the fair fight."
         }
       },
       "bodyFat": {
@@ -206,51 +210,51 @@
         },
         "TIER_51": {
           "title": "Small-Block Hot Hatch",
-          "summary": "[SMALL-BLOCK HOT HATCH] Still on the lean side. Tight structural density—street-spec small-turbo agility in the chassis."
+          "summary": "[SMALL-BLOCK] Still on the lean side—tight structural density with street-spec small-turbo agility in the chassis."
         },
         "TIER_61": {
-          "title": "Mid-Displacement Step-Up",
-          "summary": "[MID-DISPLACEMENT STEP-UP] Early recreational athlete tier. Displacement climbing steadily; cylinder walls handle higher pressure cycles."
+          "title": "Mid-Displacement Plus",
+          "summary": "[MID DISPLACEMENT] Early recreational athlete tier. Displacement climbing steadily; cylinder walls handle higher pressure cycles."
         },
         "TIER_71": {
-          "title": "NA Enthusiast Spec",
-          "summary": "[NA ENTHUSIAST SPEC] Regular training athlete tier. High-rev naturally aspirated setup—performance above most stock power units."
+          "title": "3.5L NA Enthusiast",
+          "summary": "[3.5L NA] Regular training athlete tier. High-rev naturally aspirated setup—performance above most stock power units."
         },
         "TIER_81": {
-          "title": "Big-Block Foundation",
-          "summary": "[BIG-BLOCK FOUNDATION] Strong amateur athlete. Crossed into big displacement—smooth six-cylinder delivery, excellent balanced output."
+          "title": "4.4L Big Block",
+          "summary": "[4.4L BIG BLOCK] Strong amateur athlete. Crossed into big displacement—smooth eight-cylinder delivery, excellent balanced output."
         },
         "TIER_91": {
-          "title": "Big-Block Muscle",
-          "summary": "[BIG-BLOCK MUSCLE] Near the natural-training ceiling. Classic high-displacement V8—peak NA engine, massive burst energy."
+          "title": "6.2L Muscle Car",
+          "summary": "[6.2L MUSCLE] Near the natural-training ceiling. Classic high-displacement V8—peak NA engine with massive burst energy."
         },
         "TIER_101": {
-          "title": "Race-Class Displacement",
-          "summary": "[RACE-CLASS DISPLACEMENT] Elite output—few natural lifters ever reach this. Bore-and-stroke optimized; track-spec displacement, amateur ceiling cleared."
+          "title": "Twin-Turbo V6",
+          "summary": "[TT V6] Elite output—few natural lifters reach this. Bore optimized, track-spec displacement, amateur ceiling cleared."
         },
         "TIER_111": {
-          "title": "Twin-Turbo",
-          "summary": "[TWIN-TURBO] Past the natural-training ceiling—genetic outlier territory. Twin turbos on full boost, engine bay heavily modified; the build tells the story before you even move."
+          "title": "Twin-Turbo V8",
+          "summary": "[TT V8] Past the natural ceiling—genetic outlier territory. Twin turbos on full boost, engine bay heavily modified; the build tells the story before you move."
         },
         "TIER_121": {
-          "title": "Supercar Powerplant",
-          "summary": "[SUPERCAR POWERPLANT] Inhuman muscle density. Ten-cylinder myth-tier density—dominates heavy load output, brutally capable."
+          "title": "W16 Supercar Plant",
+          "summary": "[W16 PLANT] Inhuman muscle density. Sixteen-cylinder myth-tier density—dominates heavy load output, brutally capable."
         },
         "TIER_131": {
-          "title": "Ultimate Displacement",
-          "summary": "[ULTIMATE DISPLACEMENT] Cyborg-grade heavy engineering. Top-spec twin-turbo twelve—every inch of muscle built for maximum power."
+          "title": "Rocket Thruster",
+          "summary": "[ROCKET THRUSTER] Cyborg-grade heavy engineering. Rocket thrusters mounted—every inch of muscle built for maximum power."
         },
         "TIER_141": {
           "title": "Aerospace Power Module",
-          "summary": "[AEROSPACE POWER MODULE] Advanced augmented build. Fighter-jet quad-turbo sixteen—pushing physiological and structural limits."
+          "summary": "[AEROSPACE MODULE] Advanced augmented build. Fighter-jet quad-turbo sixteen—pushing physiological and structural limits."
         },
         "LEGEND": {
-          "title": "Absolute Displacement",
-          "summary": "[ABSOLUTE DISPLACEMENT] Beyond normal physics—pure big-displacement force fused with engineering aesthetics."
+          "title": "Stellar Powerplant",
+          "summary": "[STELLAR PLANT] Beyond normal physics—pure big-displacement force fused with engineering aesthetics. Only a handful exist worldwide."
         },
         "PANTHEON": {
           "title": "Pantheon Displacement",
-          "summary": "[PANTHEON DISPLACEMENT] Data overflow. Myth-tier rocket engine—archived to the Ultimate Physique Pantheon."
+          "summary": "[PANTHEON DISPLACEMENT] Data overflow. Beyond human reach—myth-tier rocket engine archived to the Ultimate Physique Pantheon."
         }
       },
       "muscleMass": {
@@ -259,20 +263,20 @@
           "summary": "[STOCK CONFIG] Untrained factory state—still on the stock exterior setup, with huge chassis volume left to develop."
         },
         "TIER_41": {
-          "title": "Street Upgrade",
-          "summary": "[STREET UPGRADE] Muscle mass at a typical healthy baseline—a focused tune and the upgrade shows clearly."
+          "title": "Basic Upgrade",
+          "summary": "[BASIC UPGRADE] Muscle mass at a typical healthy baseline—a focused tune and the upgrade shows clearly."
         },
         "TIER_51": {
-          "title": "Performance Trim",
-          "summary": "[PERFORMANCE TRIM] Regular trainer tier. Body lines filling out—you read as a performance model at a glance."
+          "title": "Performance Body Kit",
+          "summary": "[PERF BODY KIT] Regular trainer tier. Body lines filling out—you read as a performance model at a glance."
         },
         "TIER_61": {
           "title": "Advanced Aero",
           "summary": "[ADVANCED AERO] Training shows in the mirror—real gym progress. Aero package fitted, visual center of gravity dropped; you look grounded and solid."
         },
         "TIER_71": {
-          "title": "Heat-Soak Wrap",
-          "summary": "[HEAT-SOAK WRAP] In a crowd, your muscle mass is hard to miss—exterior in performance heat-soak phase, visual presence above most stock rigs."
+          "title": "Widebody Kit",
+          "summary": "[WIDEBODY KIT] In a crowd, your muscle mass is hard to miss—exterior in performance heat-soak phase, visual presence above most stock rigs."
         },
         "TIER_81": {
           "title": "Track Edition",
@@ -280,7 +284,7 @@
         },
         "TIER_91": {
           "title": "Competition Widebody",
-          "summary": "[COMPETITION WIDEBODY] Near the natural-training ceiling. Horizontal visual tension maxed out—past amateur limits, competition-scale mass detected."
+          "summary": "[COMP WIDEBODY] Near the natural-training ceiling. Horizontal visual tension maxed out—past amateur limits, competition-scale mass detected."
         },
         "TIER_101": {
           "title": "Natural Ceiling",
@@ -299,8 +303,8 @@
           "summary": "[ULTIMATE BUILD] Professional monster tier. Factory genetics and brutal aftermarket fused—every inch of the exterior built for the limit."
         },
         "TIER_141": {
-          "title": "Inhuman Monster",
-          "summary": "[INHUMAN MONSTER] You're no longer the same species as everyone else—physical mass that defies belief."
+          "title": "Megabeast Widebody",
+          "summary": "[MEGABEAST] You're no longer the same species as everyone else—physical mass that defies belief."
         },
         "LEGEND": {
           "title": "Planetary Asset",
@@ -308,135 +312,135 @@
         },
         "PANTHEON": {
           "title": "Pantheon Widebody",
-          "summary": "[PANTHEON WIDEBODY] Data overflow. Visual spec matched to historical myth—archived to the Pantheon."
+          "summary": "[PANTHEON WIDEBODY] Data overflow. Visual spec matched to historical myth—only a handful on Earth; archived to the Pantheon."
         }
       },
       "gripStrength": {
         "BASE": {
-          "title": "Baseline Calibration",
-          "summary": "[SYSTEM START] Foundational neural links are online. Performance aligns with population averages."
+          "title": "Urgent Tune-Up",
+          "summary": "[URGENT TUNE-UP] Grip needs work—plenty of room to upgrade. On the track, you'd want to baby the throttle with grip this light."
         },
         "TIER_41": {
-          "title": "Friction Sensing",
-          "summary": "[TRACTION SENSING] Beginning to exceed general population averages."
+          "title": "Baseline Grip",
+          "summary": "[BASELINE GRIP] Slightly below the crowd. Terminal control is coming online—still a big upgrade path ahead."
         },
         "TIER_51": {
-          "title": "Stable Engagement",
-          "summary": "[STABLE ENGAGEMENT] Efficient power transfer is established. Performance aligns with active athletes."
+          "title": "Street Grip",
+          "summary": "[STREET GRIP] Right at population average—grip on par with most people, and you're getting comfortable managing load in your hands."
         },
         "TIER_61": {
-          "title": "Control Spec",
-          "summary": "[CONTROL UPGRADE] High-level precision handling of heavy loads."
+          "title": "Control Upgrade",
+          "summary": "[CONTROL UPGRADE] Regular trainer tier—grip above average. You can hold different loads steady and keep traction consistent across surfaces."
         },
         "TIER_71": {
-          "title": "Thermal Grip",
-          "summary": "[THERMAL GRIP] Peak interface temperature; exceeding gym benchmarks."
+          "title": "Performance Tires",
+          "summary": "[PERF TIRES] Advanced trainer—high amateur tier. Power transfer through the hands took a serious step up."
         },
         "TIER_81": {
-          "title": "Performance Apex",
-          "summary": "[PERFORMANCE APEX] Matching pro boxer and BJJ elite benchmarks."
+          "title": "Mountain Hairpins",
+          "summary": "[MOUNTAIN HAIRPINS] Grip at pro boxer and BJJ elite levels—near competition threshold. More than enough for daily life."
         },
         "TIER_91": {
-          "title": "Traction Awakening",
-          "summary": "[TRACTION AWAKENING] Breaking amateur ceilings. High-torque potential detected."
+          "title": "Track Setup",
+          "summary": "[TRACK SETUP] Past the amateur ceiling. Most lifts get clean control—cornering limits jumped noticeably."
         },
         "TIER_101": {
-          "title": "Regional Traction",
-          "summary": "[REGIONAL TRACTION] Matching NHL and regional-podium standards."
+          "title": "Achievement Unlocked",
+          "summary": "[ACHIEVEMENT UNLOCKED] Top 1% globally—NFL and elite rock-climber grip territory. Heavy loads stay locked in."
         },
         "TIER_111": {
-          "title": "Anti-Slip Spec",
-          "summary": "[ANTI-SLIP SPEC] Matching elite powerlifter compression levels."
+          "title": "Max Anti-Slip",
+          "summary": "[MAX ANTI-SLIP] Elite powerlifter grip—power bleed at the interface is minimal even under brutal loading."
         },
         "TIER_121": {
-          "title": "Sequence Dominance",
-          "summary": "[SEQUENCE DOMINANCE] National-elite benchmarks. Absolute command over gravity."
+          "title": "Glued to the Track",
+          "summary": "[GLUED TO TRACK] Pro arm-wrestler entry tier—high command over gravity and load. Throws feel like you're skimming the asphalt."
         },
         "TIER_131": {
-          "title": "Phantom Compression",
-          "summary": "[PHANTOM COMPRESSION] Elite arm-wrestling and regional strongman grip. Near zero-decay terminal output."
+          "title": "Raptor Clamp",
+          "summary": "[RAPTOR CLAMP] Elite arm-wrestler and strongman grip—everyday objects are starting to lose the fight. Ultimate track-day traction."
         },
         "TIER_141": {
-          "title": "Eternal Interface",
-          "summary": "[ETERNAL INTERFACE] International master-level grip. Challenging friction boundaries of material mechanics."
+          "title": "Hydraulic Vise",
+          "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide—get caught in this crush and something's breaking. On the track you bite the pavement and don't let go."
         },
         "TIER_151": {
-          "title": "Serial Awakening",
-          "summary": "[SERIAL AWAKENING] Factory race serial online. Grip output enters mythic calibration—benchmarking top-tier arm-wrestling podiums."
+          "title": "Grip Monster",
+          "summary": "[GRIP MONSTER] World-class strongman grip—competition output like a factory race car. Stock hardware can't keep up."
         },
         "TIER_161": {
-          "title": "Core Traction",
-          "summary": "[CORE TRACTION] Molten caliper-class compression. Load and gravity struggle to escape your terminal interface—international arm-wrestling elite."
+          "title": "Gravity Grip",
+          "summary": "[GRAVITY GRIP] World-top arm-wrestler tier—standard dynamometers are tapping out. Grip that shouldn't exist on paper."
         },
         "TIER_171": {
-          "title": "Record Archive",
-          "summary": "[RECORD ARCHIVE] Nordic myth serial. Benchmarking public dyno narratives such as Magnus Samuelsson."
+          "title": "Record Sealed",
+          "summary": "[RECORD SEALED] Top ~100 globally—both hands are weapons now."
         },
         "LEGEND": {
-          "title": "Planetary Grip",
-          "summary": "[PLANETARY GRIP] Grip spec beyond most physiological definitions—extreme outlier among billions."
+          "title": "Planetary Asset",
+          "summary": "[PLANETARY ASSET] World-top arm-wrestling god tier—grip spec beyond most human biology. Extreme outlier among billions."
         },
         "PANTHEON": {
-          "title": "Pantheon Compression",
-          "summary": "[PANTHEON COMPRESSION] Model ceiling reached. Grip data overflow archived to the Pantheon—mythic grip spec tier."
+          "title": "Pantheon",
+          "summary": "[PANTHEON] Single-digit humans on the planet—measurement model capped, grip data overflow. Archived to the Pantheon; written into the record books."
         }
       },
       "armSize": {
         "BASE": {
           "title": "Stock Steelies",
-          "summary": "[STOCK STEELIES] Basic rim dimensions; substantial volume for structural widening."
+          "summary": "[STOCK STEELIES] Factory rim diameter—visual and physical scale still have major development room."
         },
         "TIER_41": {
           "title": "Alloy Upgrade",
-          "summary": "[ALLOY UPGRADE] Subtle increase in overall radius; initial street presence."
+          "summary": "[ALLOY UPGRADE] Rim diameter nudged up—street presence and fullness starting to show."
         },
         "TIER_51": {
-          "title": "Sport Rim",
-          "summary": "[SPORT RIM] Fuller wheel housing profile; basic performance signature."
+          "title": "Sport Wheels",
+          "summary": "[SPORT WHEELS] Wheel profile filling out—basic performance-model edge tension."
         },
         "TIER_61": {
           "title": "Advanced Forged",
-          "summary": "[ADVANCED FORGED] Forged alloy stiffness; lower visual center of mass."
+          "summary": "[ADV FORGED] Forged-alloy stiffness—tighter structure, lower visual center of gravity, steadier stance."
         },
         "TIER_71": {
-          "title": "Track Rim Spec",
-          "summary": "[TRACK RIM SPEC] Wheel arches at peak filling phase; outclassing standard vehicles."
+          "title": "Heat-Soak Competition",
+          "summary": "[HEAT-SOAK RIM] Wheels in performance heat-soak phase—visual tension above most stock rigs."
         },
         "TIER_81": {
-          "title": "Over-Sized Track",
-          "summary": "[OVER-SIZED TRACK] Razor-sharp multi-spoke geometry; aggressive physical stance."
+          "title": "Track Oversize",
+          "summary": "[TRACK OVERSIZE] Track-grade oversize spec—lines cut sharp, strong visual pressure."
         },
         "TIER_91": {
-          "title": "Deep-Dish Concave",
-          "summary": "[DEEP-DISH CONCAVE] Aggressive offset; entering professional physical scale."
+          "title": "Deep Multi-Spoke",
+          "summary": "[DEEP MULTI-SPOKE] Deep-lip forged design—past amateur limits, serious physical presence."
         },
         "TIER_101": {
-          "title": "Regional Flush",
-          "summary": "[REGIONAL FLUSH] Perfect fender-to-lip alignment; regional podium aesthetics."
+          "title": "Podium Flush Fit",
+          "summary": "[PODIUM FLUSH] Regional podium-level flush fit—limit size integrated cleanly with the body."
         },
         "TIER_111": {
-          "title": "Drag Rear Rim",
-          "summary": "[DRAG REAR RIM] Massive rear stance optimizing absolute visual downforce."
+          "title": "Competition Mega-Rim",
+          "summary": "[COMP MEGA-RIM] Extreme rear-axle grip scale—massive visual downforce that owns the room."
         },
         "TIER_121": {
-          "title": "Sequence Forged",
-          "summary": "[SEQUENCE FORGED] National elite benchmarks; perfect visual proportions."
+          "title": "Serial Oversize",
+          "summary": "[SERIAL OVERSIZE] National-elite spec—rim scale hits absolute visual balance and impact."
         },
         "TIER_131": {
-          "title": "Pro Circuit Rim",
-          "summary": "[PRO CIRCUIT] Top-tier circuit sizing; built exclusively for structural dominance."
+          "title": "Pro Meet Spec",
+          "summary": "[PRO MEET SPEC] Professional monster sequence—every inch of diameter built to show structural limits."
         },
         "TIER_141": {
           "title": "Phantom Wheelbase",
-          "summary": "[PHANTOM WHEELBASE] Defying track norms; massive unmatched structural diameter."
+          "summary": "[PHANTOM WHEELBASE] Pushing material mechanics—giant rim scale that's hard to believe."
         },
         "LEGEND": {
-          "title": "Absolute Rim Spec",
-          "summary": "[ABSOLUTE RIM] Transcending standard proportions; pure physical sculpting."
+          "title": "Absolute Domain Rim",
+          "summary": "[ABSOLUTE RIM] Beyond physiology—the ultimate crystallization of limb aesthetics and physical fullness."
         },
         "PANTHEON": {
-          "title": "Pantheon Rim Spec",
-          "summary": "[PANTHEON RIM] God-tier sizing overflow; permanently archived in the Pantheon."
+          "title": "Pantheon Rim",
+          "summary": "[PANTHEON RIM] Data overflow. Myth-tier immortal rim size—archived to the Pantheon."
         }
       }
     },
