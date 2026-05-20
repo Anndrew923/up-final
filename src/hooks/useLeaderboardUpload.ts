@@ -4,7 +4,10 @@ import { canUploadLeaderboard } from '../logic/core/entitlement';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { ROUTES } from '../config/routes';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
-import { submitLeaderboardScore, type SubmitLeaderboardResult } from '../services/leaderboardService';
+import {
+  submitLeaderboardScore,
+  type SubmitLeaderboardResult,
+} from '../services/leaderboardService';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import type { EntitlementState } from '../types/entitlement';
@@ -29,7 +32,9 @@ export type LeaderboardUploadGate =
   | 'no-pro'
   | 'invalid-score';
 
-export function resolveLeaderboardUploadGate(score: number | null | undefined): LeaderboardUploadGate {
+export function resolveLeaderboardUploadGate(
+  score: number | null | undefined
+): LeaderboardUploadGate {
   if (score === null || score === undefined || !Number.isFinite(score) || score <= 0) {
     return 'no-score';
   }

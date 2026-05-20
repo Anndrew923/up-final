@@ -10,17 +10,17 @@
     },
     "rawInputsHeading": "六軸原始輸入",
     "homeRadarHint": "雷達與總分在首頁。",
-    "viewHomeRadar": "前往首頁雷達",
+    "viewHomeRadar": "前往首頁性能儀表",
     "saveToHistory": "儲存快照到紀錄",
     "saveToHistoryDone": "已寫入本機紀錄。",
     "resetScores": "重設六軸分數",
     "axis": {
-      "strength": "力量",
-      "explosivePower": "爆發力",
-      "cardio": "心肺",
-      "muscleMass": "肌肉量",
-      "bodyFat": "體脂",
-      "gripStrength": "握力"
+      "strength": "馬力",
+      "explosivePower": "扭矩",
+      "cardio": "續航",
+      "muscleMass": "車身構型",
+      "bodyFat": "配重",
+      "gripStrength": "抓地"
     },
     "ffmi": {
       "kicker": "換算",

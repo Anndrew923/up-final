@@ -2,19 +2,19 @@
 
 **專案:** up-final  
 **日期:** 2026-04-19  
-**範圍:** 天梯閘門、本地歷史、Widget 快照、非 Pro 零遠端流量驗證  
+**範圍:** 天梯閘門、本地歷史、Widget 快照、非 Pro 零遠端流量驗證
 
 ---
 
 ## 1. 執行摘要
 
-| 需求 | 狀態 | 說明 |
-|------|------|------|
-| `/ladder` 正式頁 + 權限閘門 | 通過 | 非 `canEnter` 即 `replace` 導向 `join-arena`；頁面不 import 任何 leaderboard / Firestore 服務 |
-| `/history` 讀 localStorage | 通過 | 使用既有 `loadHistory` + `useHistoryStore`；純裝置端 |
-| Assessment 儲存快照 | 通過 | 「Save snapshot to history」寫入 `LocalHistoryRecord`（日期、六維/全分 map、總分） |
-| `scoreStore` → `widgetSnapshotService` | 通過 | 每次分數變更、reset、recompute 及啟動時同步寫入 `up.widget.snapshot` |
-| Community / Tools | N/A | 維持 Placeholder（P1/P2） |
+| 需求                                   | 狀態 | 說明                                                                                          |
+| -------------------------------------- | ---- | --------------------------------------------------------------------------------------------- |
+| `/ladder` 正式頁 + 權限閘門            | 通過 | 非 `canEnter` 即 `replace` 導向 `join-arena`；頁面不 import 任何 leaderboard / Firestore 服務 |
+| `/history` 讀 localStorage             | 通過 | 使用既有 `loadHistory` + `useHistoryStore`；純裝置端                                          |
+| Assessment 儲存快照                    | 通過 | 「Save snapshot to history」寫入 `LocalHistoryRecord`（日期、六維/全分 map、總分）            |
+| `scoreStore` → `widgetSnapshotService` | 通過 | 每次分數變更、reset、recompute 及啟動時同步寫入 `up.widget.snapshot`                          |
+| Community / Tools                      | N/A  | 維持 Placeholder（P1/P2）                                                                     |
 
 ---
 
@@ -64,10 +64,10 @@
 
 ### 5.2 建議手動烟測（瀏覽器）
 
-1. DevTools → Network：篩選 **Firebase / googleapis / firestore** → 應為 **0** 請求  
-2. Application → Local Storage：確認僅 `up.*` 鍵寫入  
-3. 身分：`Set Free`（Home）→ 開啟 `/ladder` → 應立即到 Join Arena，無額外請求  
-4. Assessment → Save snapshot → History 頁面出現一筆  
+1. DevTools → Network：篩選 **Firebase / googleapis / firestore** → 應為 **0** 請求
+2. Application → Local Storage：確認僅 `up.*` 鍵寫入
+3. 身分：`Set Free`（Home）→ 開啟 `/ladder` → 應立即到 Join Arena，無額外請求
+4. Assessment → Save snapshot → History 頁面出現一筆
 
 ---
 
@@ -79,5 +79,5 @@
 
 ## 7. 後續建議（非 P0）
 
-- 真實 Firestore 上線前：為 `initFirebase` 加環境閘門與 E2E 監聽  
+- 真實 Firestore 上線前：為 `initFirebase` 加環境閘門與 E2E 監聽
 - `LadderPage` Phase 1：在安全 `canEnter` 下再接 `leaderboardService.listLeaderboard`（仍須先過 entitlement）

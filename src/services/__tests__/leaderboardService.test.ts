@@ -242,7 +242,14 @@ describe('leaderboard service guards', () => {
       entitlement: ownedProEntitlement(),
       uid: 'u-prev-sync',
       displayName: 'Pilot',
-      mergedScores: { strength: 55, cardio: 12, explosivePower: 20, muscleMass: 8, bodyFat: 15, gripStrength: 30 },
+      mergedScores: {
+        strength: 55,
+        cardio: 12,
+        explosivePower: 20,
+        muscleMass: 8,
+        bodyFat: 15,
+        gripStrength: 30,
+      },
     });
     expect(r.ok).toBe(true);
   });

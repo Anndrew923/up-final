@@ -23,7 +23,13 @@ function isModifiedPointerEvent(event: {
 }
 
 /** Presentational lobby card — tap-only navigation via Framer Motion gesture isolation. */
-export function AssessmentLobbyCard({ to, kicker, title, body, stampLabel }: AssessmentLobbyCardProps) {
+export function AssessmentLobbyCard({
+  to,
+  kicker,
+  title,
+  body,
+  stampLabel,
+}: AssessmentLobbyCardProps) {
   const navigate = useNavigate();
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);

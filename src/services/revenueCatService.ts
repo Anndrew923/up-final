@@ -94,7 +94,9 @@ export async function logInRevenueCatUser(appUserId: string): Promise<void> {
   }
 }
 
-export async function fetchRevenueCatEntitlement(appUserId: string): Promise<RevenueCatEntitlementSnapshot | null> {
+export async function fetchRevenueCatEntitlement(
+  appUserId: string
+): Promise<RevenueCatEntitlementSnapshot | null> {
   const ok = await ensureRevenueCatConfigured(appUserId);
   if (!ok) return null;
   const { customerInfo } = await Purchases.getCustomerInfo();
@@ -111,7 +113,9 @@ function resolvePurchasePackage(offering: PurchasesOffering): PurchasesPackage |
   );
 }
 
-export async function purchaseRevenueCatPro(appUserId: string): Promise<RevenueCatEntitlementSnapshot | null> {
+export async function purchaseRevenueCatPro(
+  appUserId: string
+): Promise<RevenueCatEntitlementSnapshot | null> {
   const ok = await ensureRevenueCatConfigured(appUserId);
   if (!ok) return null;
   const offerings = await Purchases.getOfferings();
@@ -131,4 +135,3 @@ export async function restoreRevenueCatPurchases(
   const result = await Purchases.restorePurchases();
   return parseEntitlement(result.customerInfo);
 }
-

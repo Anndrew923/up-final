@@ -102,29 +102,29 @@
       "errorSave": "Could not save. Please try again."
     },
     "consoleKicker": "Main console",
-    "radarOverview": "Ability radar",
+    "radarOverview": "Performance dashboard",
     "radarCompletion": "Progress: {{count}} / {{total}} axes",
     "radarAria": "Six-axis hex radar chart",
     "diagnostics": {
       "kicker": "Identity archetype",
-      "archetypeHint": "Homologation profile derived from your six-axis resonance map.",
+      "archetypeHint": "Homologation profile derived from your six-axis performance map.",
       "cta": "Run full performance spec diagnostics",
       "ctaSub": "DIAGNOSTICS"
     },
     "resonance": {
-      "overlayAria": "Global performance resonance ritual",
+      "overlayAria": "Global performance spec readout",
       "dismiss": "Dismiss overlay",
-      "kicker": "HOLOGRAPHIC RESONANCE / CORE SYNC",
+      "kicker": "PERFORMANCE SYNC / SPEC READOUT",
       "bootScore": "---",
       "close": "Return to console",
       "phase": {
         "boot": "Chassis power-on…",
         "charge": "Six-axis charge…",
-        "count": "Overall output lock-in…",
+        "count": "Performance index calibrating…",
         "reveal": "Homologation readout"
       }
     },
-    "overallAverage": "Resonance output",
+    "overallAverage": "Performance Index",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE",
       "BASE": "「STOCK COMMUTER」Factory-stock daily driver. Architecture still awaiting full unlock.",
@@ -147,20 +147,20 @@
     "radarOverclockHint": "Overclock axis: {{axis}} +{{score}}",
     "radar": {
       "axis": {
-        "strength": "Strength",
-        "explosivePower": "Explosive",
-        "cardio": "Cardio",
-        "muscleMass": "Muscle",
-        "bodyFat": "FFMI",
-        "gripStrength": "Grip"
+        "strength": "Horsepower",
+        "explosivePower": "Torque",
+        "cardio": "Stint",
+        "muscleMass": "Chassis",
+        "bodyFat": "Kerb weight",
+        "gripStrength": "Traction"
       },
       "axisCard": {
-        "strength": "Hardened",
-        "explosivePower": "Impulse",
-        "cardio": "Endurance",
-        "muscleMass": "Forge",
-        "bodyFat": "Balance",
-        "gripStrength": "Pulse"
+        "strength": "HP",
+        "explosivePower": "TRQ",
+        "cardio": "STINT",
+        "muscleMass": "CHSS",
+        "bodyFat": "P2W",
+        "gripStrength": "GRIP"
       }
     }
   }

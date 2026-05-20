@@ -27,7 +27,8 @@ export interface RadarMergedScoresInput {
 
 /** Zustand scores + persisted local inputs → same map as Home six-axis radar. */
 export function mergeScoreMapForHomeRadar(input: RadarMergedScoresInput): ScoreMap {
-  const { scores, profile, cardioInputs, muscleInputs, powerInputs, strengthInputs, gripInputs } = input;
+  const { scores, profile, cardioInputs, muscleInputs, powerInputs, strengthInputs, gripInputs } =
+    input;
   const withCardio = mergeScoreMapWithResolvedCardio(scores, profile, cardioInputs);
   const withMuscle = mergeScoreMapWithResolvedMuscle(withCardio, profile, muscleInputs);
   const withExplosive = mergeScoreMapWithResolvedExplosivePower(withMuscle, profile, powerInputs);

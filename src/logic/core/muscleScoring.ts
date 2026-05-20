@@ -40,7 +40,9 @@ export const SMM_KG_CEILING_MALE = 80;
 export const SMM_KG_CEILING_FEMALE = 52;
 
 export function getSmmKgCeilingForGender(gender: string | null | undefined): number {
-  return normalizeGenderForNormTables(gender) === 'female' ? SMM_KG_CEILING_FEMALE : SMM_KG_CEILING_MALE;
+  return normalizeGenderForNormTables(gender) === 'female'
+    ? SMM_KG_CEILING_FEMALE
+    : SMM_KG_CEILING_MALE;
 }
 
 export function isSmmKgAboveCeiling(smmKg: number, gender: string | null | undefined): boolean {
@@ -209,7 +211,11 @@ export function resolveMuscleLadderScoreBundle(
   profile: PhysicalProfile | null | undefined,
   inputs: MuscleInputsPersisted | null | undefined
 ): MuscleLadderScoreBundle {
-  const empty: MuscleLadderScoreBundle = { composite: null, weightBranchScore: null, ratioBranchScore: null };
+  const empty: MuscleLadderScoreBundle = {
+    composite: null,
+    weightBranchScore: null,
+    ratioBranchScore: null,
+  };
   if (!inputs?.muscle?.smmKg) return empty;
   const smmKg = Number(inputs.muscle.smmKg);
   if (!Number.isFinite(smmKg) || smmKg <= 0) return empty;
@@ -263,7 +269,9 @@ export function tryComputeMuscleAssessmentScore(args: {
   smmInput: string;
   profile: PhysicalProfile | null;
   profileReady: boolean;
-}): { ok: true; score: number; breakdown: MuscleAssessmentBreakdown } | { ok: false; error: MuscleAssessmentComputeError } {
+}):
+  | { ok: true; score: number; breakdown: MuscleAssessmentBreakdown }
+  | { ok: false; error: MuscleAssessmentComputeError } {
   if (!args.profileReady || !args.profile) {
     return { ok: false, error: 'missing-profile' };
   }

@@ -41,7 +41,9 @@ const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
 };
 
 function RouteFallback() {
-  return <main className="ui-shell min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />;
+  return (
+    <main className="ui-shell min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />
+  );
 }
 
 function AuthBootstrapFallback() {
@@ -141,69 +143,75 @@ export default function App() {
   const isFirebaseReady = isFirestoreConfigured();
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
   const shouldForceAuthChoice =
-    isFirebaseReady &&
-    authStatus !== 'loading' &&
-    !isGoogleSignedIn &&
-    !hasOnboarding;
+    isFirebaseReady && authStatus !== 'loading' && !isGoogleSignedIn && !hasOnboarding;
   const shouldShowAuthBootstrapFallback =
     isFirebaseReady && authStatus === 'loading' && !isGoogleSignedIn && !hasOnboarding;
 
   return (
     <>
       {shouldShowAuthBootstrapFallback ? (
-        <div
-          className="fixed inset-0 z-[300] bg-bg-base"
-          aria-busy="true"
-          aria-live="polite"
-        >
+        <div className="fixed inset-0 z-[300] bg-bg-base" aria-busy="true" aria-live="polite">
           <AuthBootstrapFallback />
         </div>
       ) : null}
       <Routes>
-      <Route
-        path={toRelativeRoutePath(ROUTES.authChoice)}
-        element={
-          (shouldForceAuthChoice || !isGoogleSignedIn)
-            ? withRouteSuspense(<AuthChoicePage />)
-            : <Navigate to={ROUTES.home} replace />
-        }
-      />
-      <Route
-        path="/"
-        element={shouldForceAuthChoice ? <Navigate to={ROUTES.authChoice} replace /> : <AppShell />}
-      >
-        <Route index element={<Navigate to={ROUTES.home} replace />} />
-        {NAV_ITEMS.map((item) => {
-          const Tab = NAV_TAB_PAGE[item.key];
-          return (
-            <Route
-              key={item.key}
-              path={toRelativeRoutePath(item.path)}
-              element={withRouteSuspense(Tab ? <Tab /> : <PlaceholderPage />)}
-            />
-          );
-        })}
-        <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.privacyPolicy)} element={<PrivacyPolicyRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
         <Route
-          path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
-          element={<LeaderboardDebugRoute />}
+          path={toRelativeRoutePath(ROUTES.authChoice)}
+          element={
+            shouldForceAuthChoice || !isGoogleSignedIn ? (
+              withRouteSuspense(<AuthChoicePage />)
+            ) : (
+              <Navigate to={ROUTES.home} replace />
+            )
+          }
         />
-        <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.oneRmCalculator)} element={<OneRmCalculatorRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.plateCalculator)} element={<PlateCalculatorRoute />} />
-        <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
-      </Route>
-    </Routes>
+        <Route
+          path="/"
+          element={
+            shouldForceAuthChoice ? <Navigate to={ROUTES.authChoice} replace /> : <AppShell />
+          }
+        >
+          <Route index element={<Navigate to={ROUTES.home} replace />} />
+          {NAV_ITEMS.map((item) => {
+            const Tab = NAV_TAB_PAGE[item.key];
+            return (
+              <Route
+                key={item.key}
+                path={toRelativeRoutePath(item.path)}
+                element={withRouteSuspense(Tab ? <Tab /> : <PlaceholderPage />)}
+              />
+            );
+          })}
+          <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
+          <Route
+            path={toRelativeRoutePath(ROUTES.privacyPolicy)}
+            element={<PrivacyPolicyRoute />}
+          />
+          <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
+          <Route
+            path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
+            element={<LeaderboardDebugRoute />}
+          />
+          <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
+          <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
+          <Route
+            path={toRelativeRoutePath(ROUTES.oneRmCalculator)}
+            element={<OneRmCalculatorRoute />}
+          />
+          <Route
+            path={toRelativeRoutePath(ROUTES.plateCalculator)}
+            element={<PlateCalculatorRoute />}
+          />
+          <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
+        </Route>
+      </Routes>
     </>
   );
 }

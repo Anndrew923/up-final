@@ -158,11 +158,7 @@ export default function ToolsPage() {
             </p>
           ) : null}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
-              onClick={handleBackup}
-            >
+            <button type="button" className="ui-btn ui-btn-primary" onClick={handleBackup}>
               {t('tools.syncBackup', { ns: 'common' })}
             </button>
             <button type="button" className="ui-btn" onClick={handleRestore}>

@@ -23,7 +23,9 @@ export const AssessmentPageHeader: FC<AssessmentPageHeaderProps> = ({
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
       <div className="min-w-0 space-y-2">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">{kicker}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
+          {kicker}
+        </p>
         <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{title}</h1>
         {subtitle ? (
           <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{subtitle}</p>

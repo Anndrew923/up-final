@@ -79,4 +79,3 @@ Applied as token-only tweaks (no logic changes):
 - Do not let visual effects distort score interpretation
 - Keep overclock and weakest cues independent and visible
 - Keep all user-facing copy under i18n keys
-

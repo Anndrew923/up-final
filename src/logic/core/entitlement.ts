@@ -43,7 +43,10 @@ export function shouldBlockFirebase(
 }
 
 /** Pro-only structured user-data sync (independent of leaderboard beta paywall). */
-export function shouldBlockStructuredUserSync(ent: EntitlementState, now: Date = new Date()): boolean {
+export function shouldBlockStructuredUserSync(
+  ent: EntitlementState,
+  now: Date = new Date()
+): boolean {
   return !hasProAccess(ent, now);
 }
 

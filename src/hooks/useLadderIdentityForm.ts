@@ -14,7 +14,10 @@ import {
 } from '../services/ladderIdentityService';
 import { useAuthStore } from '../stores/authStore';
 
-function readIdentityFieldsFromStorage(): { displayName: string; committedAvatarUrl: string | undefined } {
+function readIdentityFieldsFromStorage(): {
+  displayName: string;
+  committedAvatarUrl: string | undefined;
+} {
   const p = loadProfile();
   return {
     displayName: p?.displayName?.trim() ?? '',
@@ -72,7 +75,7 @@ export function useLadderIdentityForm() {
 
   const previewAvatarUrl = avatarRemoved
     ? undefined
-    : pendingAvatarUrl ?? committedAvatarUrl ?? undefined;
+    : (pendingAvatarUrl ?? committedAvatarUrl ?? undefined);
 
   const pickAvatarFile = async (file: File | null) => {
     if (!file) return;

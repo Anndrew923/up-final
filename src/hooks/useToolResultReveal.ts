@@ -27,7 +27,9 @@ export interface UseToolResultRevealResult {
  * Tool calculator dopamine timeline: count-up → settle → modal + haptic.
  * WHY: Keeps page hooks math-only; ceremony timing lives in one reusable facade.
  */
-export function useToolResultReveal({ haptic }: UseToolResultRevealOptions): UseToolResultRevealResult {
+export function useToolResultReveal({
+  haptic,
+}: UseToolResultRevealOptions): UseToolResultRevealResult {
   const { triggerImpact } = useDopamineFeedback();
   const { displayValue, animateTo, cancel } = useAnimatedScore({ durationMs: COUNT_UP_MS });
   const [modalOpen, setModalOpen] = useState(false);

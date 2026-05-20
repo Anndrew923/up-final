@@ -48,7 +48,10 @@ const DEFAULT_VALUES: LadderFilterValues = {
   district: 'all',
 };
 
-function resolveProjectForDivision(division: LadderFilterValues['division'], project: string): string {
+function resolveProjectForDivision(
+  division: LadderFilterValues['division'],
+  project: string
+): string {
   const options = getProjectOptionsForDivision(division).map((o) => o.value);
   if (!options.length) return project;
   const defaultProject = getDefaultProjectForDivision(division);
@@ -81,7 +84,9 @@ function isSameFilterValues(a: LadderFilterValues, b: LadderFilterValues): boole
   );
 }
 
-export function useLadderFiltersDraft(options: UseLadderFiltersDraftOptions = {}): UseLadderFiltersDraftResult {
+export function useLadderFiltersDraft(
+  options: UseLadderFiltersDraftOptions = {}
+): UseLadderFiltersDraftResult {
   const onAppliedChange = options.onAppliedChange;
   const initialApplied: LadderFilterValues = normalizeDraft({
     ...DEFAULT_VALUES,

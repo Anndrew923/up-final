@@ -60,4 +60,3 @@ No additional routing or entitlement refactor should be needed.
    - Restore updates entitlement and re-enables leaderboard
 3. Error path:
    - Broken RC key shows billing unavailable banner on Join Arena
-

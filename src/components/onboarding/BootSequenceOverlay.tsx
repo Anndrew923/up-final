@@ -134,7 +134,7 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 };
 

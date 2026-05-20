@@ -46,7 +46,9 @@ export function isPreviewRadarComplete(radar: Partial<Record<SixAxisMetric, numb
  * Build stored radar map from merged local scores (same clamp as Home radar).
  * Only keys with value > 0 (memory / optimistic paths).
  */
-export function buildPositivePreviewRadarFromMergedScores(merged: ScoreMap): Partial<Record<SixAxisMetric, number>> {
+export function buildPositivePreviewRadarFromMergedScores(
+  merged: ScoreMap
+): Partial<Record<SixAxisMetric, number>> {
   const out: Partial<Record<SixAxisMetric, number>> = {};
   for (const m of SIX_AXIS_METRICS) {
     const v = clampScoreMapValue(merged[m] ?? 0);
@@ -60,7 +62,9 @@ export function buildPositivePreviewRadarFromMergedScores(merged: ScoreMap): Par
  * WHY: `setDoc` merge must use `{ radarScores: { strength: n, ... } }` — flat keys like
  * `"radarScores.strength"` become literal root field names and break `mapPreview` reads.
  */
-export function buildFullRadarScoresMapForFirestore(merged: ScoreMap): Record<SixAxisMetric, number> {
+export function buildFullRadarScoresMapForFirestore(
+  merged: ScoreMap
+): Record<SixAxisMetric, number> {
   const out = {} as Record<SixAxisMetric, number>;
   for (const m of SIX_AXIS_METRICS) {
     out[m] = clampScoreMapValue(merged[m] ?? 0);

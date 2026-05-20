@@ -9,6 +9,8 @@ describe('assessmentLobby config', () => {
   });
 
   it('keeps keys and routes in sync', () => {
-    expect(Object.keys(ASSESSMENT_LOBBY_ROUTES).sort()).toEqual([...ASSESSMENT_LOBBY_CARD_KEYS].sort());
+    expect(Object.keys(ASSESSMENT_LOBBY_ROUTES).sort()).toEqual(
+      [...ASSESSMENT_LOBBY_CARD_KEYS].sort()
+    );
   });
 });

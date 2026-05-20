@@ -94,9 +94,8 @@ export function calculateGripStrengthScore(
 ): number {
   const { usedKg } = applyGripPeakCap(peakKg);
   if (usedKg <= 0) return 0;
-  const multiplier = gender === 'female'
-    ? GRIP_MALE_MULTIPLIER * GRIP_FEMALE_COMPENSATION
-    : GRIP_MALE_MULTIPLIER;
+  const multiplier =
+    gender === 'female' ? GRIP_MALE_MULTIPLIER * GRIP_FEMALE_COMPENSATION : GRIP_MALE_MULTIPLIER;
   return round1(usedKg * multiplier);
 }
 

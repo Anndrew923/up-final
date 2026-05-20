@@ -44,11 +44,19 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
     hasError: () => errorKey != null || scoreLocked,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
-  const genderLabel =
-    !profile ? '' : profile.gender === 'female'
+  const genderLabel = !profile
+    ? ''
+    : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
 
@@ -86,16 +94,16 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
 
         {profileReady && profile ? (
           <p className="text-xs text-zinc-500">
-            <span className="mr-3">
-              {t('muscle.metaWeight', { value: profile.weightKg })}
-            </span>
+            <span className="mr-3">{t('muscle.metaWeight', { value: profile.weightKg })}</span>
             <span className="mr-3">{t('muscle.metaAge', { value: profile.age })}</span>
             <span>{t('muscle.metaGender', { value: genderLabel })}</span>
           </p>
         ) : null}
 
         {profileReady && smmCeilingKg != null ? (
-          <p className="text-xs text-zinc-500">{t('muscle.smmCeilingLine', { max: smmCeilingKg })}</p>
+          <p className="text-xs text-zinc-500">
+            {t('muscle.smmCeilingLine', { max: smmCeilingKg })}
+          </p>
         ) : null}
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">

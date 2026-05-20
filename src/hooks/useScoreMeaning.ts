@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateScoreBandMeaning } from '../logic/core/scoreMeaningCopy';
-import { resolveScoreMeaningMilestone, type ScoreMeaningBandMetric } from '../logic/core/scoreMeaningCatalog';
+import {
+  resolveScoreMeaningMilestone,
+  type ScoreMeaningBandMetric,
+} from '../logic/core/scoreMeaningCatalog';
 
 export type ScoreMeaningMetric = ScoreMeaningBandMetric;
 
@@ -14,7 +17,7 @@ export interface ScoreMeaningResult {
 
 export function useScoreMeaning(
   metric: ScoreMeaningMetric,
-  score: number | null | undefined,
+  score: number | null | undefined
 ): ScoreMeaningResult | null {
   const { t } = useTranslation('common');
 

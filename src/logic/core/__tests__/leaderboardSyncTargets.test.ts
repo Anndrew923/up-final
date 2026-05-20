@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PhysicalProfile } from '../../../types/userProfile';
 import { buildLeaderboardSyncTargets } from '../leaderboardSyncTargets';
-import { computeStrengthFiveLiftLadderMeanScore, computeStrengthSbdOneRmSumKg } from '../strengthAssessment';
+import {
+  computeStrengthFiveLiftLadderMeanScore,
+  computeStrengthSbdOneRmSumKg,
+} from '../strengthAssessment';
 
 const maleProfile30: PhysicalProfile = {
   gender: 'male',

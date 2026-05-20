@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  calculateOneRm,
-  type OneRmMethod,
-} from '../logic/core/trainingTools';
+import { calculateOneRm, type OneRmMethod } from '../logic/core/trainingTools';
 
 export interface OneRmCalculatorState {
   weightInput: string;

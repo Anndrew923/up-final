@@ -48,7 +48,7 @@ export function useTypewriterText(options: UseTypewriterTextOptions = {}) {
         }, charIntervalMs);
       });
     },
-    [cancel, charIntervalMs],
+    [cancel, charIntervalMs]
   );
 
   const reset = useCallback(() => {

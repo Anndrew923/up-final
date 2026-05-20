@@ -45,10 +45,13 @@ export function useAnimatedScore(options: UseAnimatedScoreOptions = {}): UseAnim
 
   useEffect(() => () => cancel(), [cancel]);
 
-  const setInstant = useCallback((value: number | null) => {
-    cancel();
-    setDisplayValue(value);
-  }, [cancel]);
+  const setInstant = useCallback(
+    (value: number | null) => {
+      cancel();
+      setDisplayValue(value);
+    },
+    [cancel]
+  );
 
   const animateTo = useCallback(
     (target: number, from?: number | null): Promise<void> => {

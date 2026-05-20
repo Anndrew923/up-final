@@ -30,12 +30,16 @@ export default function HomeLadderIdentitySection() {
         <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
           {t('home.ladderIdentity.title', { ns: 'common' })}
         </h2>
-        <p className="text-sm leading-relaxed text-zinc-400">{t('home.ladderIdentity.subtitle', { ns: 'common' })}</p>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          {t('home.ladderIdentity.subtitle', { ns: 'common' })}
+        </p>
       </header>
 
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor={nameFieldId}>
-          <span className="font-medium text-zinc-300">{t('home.ladderIdentity.displayName', { ns: 'common' })}</span>
+          <span className="font-medium text-zinc-300">
+            {t('home.ladderIdentity.displayName', { ns: 'common' })}
+          </span>
           <input
             id={nameFieldId}
             type="text"
@@ -52,7 +56,9 @@ export default function HomeLadderIdentitySection() {
         </label>
 
         <div className="flex flex-col gap-2 text-xs text-zinc-400">
-          <span className="font-medium text-zinc-300">{t('home.ladderIdentity.avatar', { ns: 'common' })}</span>
+          <span className="font-medium text-zinc-300">
+            {t('home.ladderIdentity.avatar', { ns: 'common' })}
+          </span>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent-info/40 bg-zinc-900 text-lg font-semibold uppercase text-zinc-200">
               {previewAvatarUrl ? (
@@ -108,7 +114,9 @@ export default function HomeLadderIdentitySection() {
 
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" className="ui-btn ui-btn-primary" disabled={saving}>
-            {saving ? t('home.ladderIdentity.saving', { ns: 'common' }) : t('home.ladderIdentity.save', { ns: 'common' })}
+            {saving
+              ? t('home.ladderIdentity.saving', { ns: 'common' })
+              : t('home.ladderIdentity.save', { ns: 'common' })}
           </button>
           {justSaved ? (
             <span className="text-sm font-medium text-emerald-400/90">

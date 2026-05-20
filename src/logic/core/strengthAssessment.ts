@@ -304,7 +304,8 @@ function computeStrengthResultFromNumericLifts(
   if (branches.length === 0) {
     return { ok: false, reason: 'no-valid-lift' };
   }
-  const averageRaw = Math.round((sumForComposite / STRENGTH_COMPOSITE_FIXED_DENOMINATOR) * 100) / 100;
+  const averageRaw =
+    Math.round((sumForComposite / STRENGTH_COMPOSITE_FIXED_DENOMINATOR) * 100) / 100;
   return { ok: true, branches, averageRaw };
 }
 
@@ -324,7 +325,11 @@ export function computeStrengthBranchesFromPersisted(
 }
 
 /** Squat / bench / dead only — stable order for SBD totals. */
-const STRENGTH_SBD_LIFT_KEYS = ['squat', 'benchPress', 'deadlift'] as const satisfies readonly StrengthLiftKey[];
+const STRENGTH_SBD_LIFT_KEYS = [
+  'squat',
+  'benchPress',
+  'deadlift',
+] as const satisfies readonly StrengthLiftKey[];
 
 /**
  * Sum of estimated 1RM (kg) for squat + bench + deadlift only.
@@ -356,7 +361,6 @@ export function computeStrengthFiveLiftLadderMeanScore(
 ): number | null {
   return resolveStrengthScoreFromInputs(profile, inputs);
 }
-
 
 /** kg label for strength diagnostics (mean 1RM vs five-lift 1RM sum); not written to leaderboard rows. */
 export interface StrengthLadderWeightKgSummary {

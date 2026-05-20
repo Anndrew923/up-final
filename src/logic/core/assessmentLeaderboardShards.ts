@@ -1,4 +1,8 @@
-import { getLeaderboardShardId, LADDER_PROJECT_NONE, type LeaderboardShardId } from './ladderShards';
+import {
+  getLeaderboardShardId,
+  LADDER_PROJECT_NONE,
+  type LeaderboardShardId,
+} from './ladderShards';
 import type { SixAxisMetric } from '../../types/scoring';
 import type { StrengthLiftKey } from '../../types/strengthInputs';
 
@@ -47,7 +51,9 @@ export function leaderboardShardForSixAxisMetric(metric: SixAxisMetric): Leaderb
 }
 
 export function leaderboardShardForCardioTab(tab: 'cooper' | '5km'): LeaderboardShardId {
-  return tab === '5km' ? getLeaderboardShardId('stats_cooper', '5km') : getLeaderboardShardId('stats_cooper', 'cooper');
+  return tab === '5km'
+    ? getLeaderboardShardId('stats_cooper', '5km')
+    : getLeaderboardShardId('stats_cooper', 'cooper');
 }
 
 export function leaderboardShardForArmSize(): LeaderboardShardId {

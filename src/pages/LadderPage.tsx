@@ -13,7 +13,10 @@ import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProf
 import { useLadderLeaderboard } from '../hooks/useLadderLeaderboard';
 import { useLeaderboardAccess } from '../hooks/useLeaderboardAccess';
 import { useLadderFiltersDraft } from '../hooks/useLadderFiltersDraft';
-import { resolveEffectiveLadderCityFilter, resolveEffectiveLadderDistrictFilter } from '../logic/core/ladderFilters';
+import {
+  resolveEffectiveLadderCityFilter,
+  resolveEffectiveLadderDistrictFilter,
+} from '../logic/core/ladderFilters';
 import {
   divisionUsesProjectFilter,
   getLeaderboardShardId,
@@ -24,11 +27,18 @@ import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
-import { getLadderUserPreview, type LadderUserPreview } from '../services/leaderboardPreviewService';
+import {
+  getLadderUserPreview,
+  type LadderUserPreview,
+} from '../services/leaderboardPreviewService';
 import { useShallow } from 'zustand/react/shallow';
 import type { EntitlementState } from '../types/entitlement';
 
-function formatLeaderboardRowScore(shardId: LeaderboardShardId, scoreBest: number, t: TFunction): string {
+function formatLeaderboardRowScore(
+  shardId: LeaderboardShardId,
+  scoreBest: number,
+  t: TFunction
+): string {
   if (!Number.isFinite(scoreBest)) return '—';
   if (shardId === 'strength') {
     return t('ladder.rowScoreStrengthKg', { ns: 'common', kg: scoreBest.toFixed(1) });
@@ -137,8 +147,9 @@ export default function LadderPage() {
   }, [draft.division, t]);
 
   /** Align Firestore shard with the sub-ranking `<select>` (resolved default when state is still `__none__`). */
-  const shardProjectParam =
-    divisionUsesProjectFilter(applied.division) ? appliedProjectControlValue : applied.filterProject;
+  const shardProjectParam = divisionUsesProjectFilter(applied.division)
+    ? appliedProjectControlValue
+    : applied.filterProject;
 
   const shardId = useMemo(
     () => getLeaderboardShardId(applied.division, shardProjectParam),
@@ -160,11 +171,15 @@ export default function LadderPage() {
     [applied]
   );
 
-  const { items, datasetItems, loading, error, myEntry, myRank } = useLadderLeaderboard(shardId, initialFilters, {
-    refreshNonce: ladderRefreshNonce,
-    page: currentPage,
-    pageSize,
-  });
+  const { items, datasetItems, loading, error, myEntry, myRank } = useLadderLeaderboard(
+    shardId,
+    initialFilters,
+    {
+      refreshNonce: ladderRefreshNonce,
+      page: currentPage,
+      pageSize,
+    }
+  );
 
   useEffect(() => {
     previousRankRef.current = null;
@@ -259,7 +274,8 @@ export default function LadderPage() {
   }, [promotionBanner, triggerRankUpCombo, clearPromotion]);
 
   const formatFloatingScore = useCallback(
-    (metric: LeaderboardShardId, scoreBest: number) => formatLeaderboardRowScore(metric, scoreBest, t),
+    (metric: LeaderboardShardId, scoreBest: number) =>
+      formatLeaderboardRowScore(metric, scoreBest, t),
     [t]
   );
 
@@ -332,9 +348,7 @@ export default function LadderPage() {
       {/* `top-shell-top` must stay aligned with `AppShell` `#layer-shell-scroll` padding (`pt-shell-top`). */}
       <div className="sticky top-shell-top z-20 -mx-1 sm:-mx-0">
         <div className="ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/90 py-2.5 backdrop-blur-md shadow-[0_12px_28px_-24px_rgba(239,68,68,0.45)]">
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-red-500/35 to-transparent"
-          />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-red-500/35 to-transparent" />
           <div className="relative z-10 flex items-center justify-between gap-3">
             <h1 className="truncate text-base font-semibold tracking-tight text-zinc-50 md:text-lg">
               {t('ladder.title', { ns: 'common' })}
@@ -423,13 +437,18 @@ export default function LadderPage() {
           <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
             {t('ladder.rankings.title', { ns: 'common' })}
           </h2>
-          <p className="text-sm leading-relaxed text-zinc-400">{t('ladder.rankings.subtitle', { ns: 'common' })}</p>
+          <p className="text-sm leading-relaxed text-zinc-400">
+            {t('ladder.rankings.subtitle', { ns: 'common' })}
+          </p>
         </header>
 
         {loading ? (
           <div className="space-y-3 pt-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-12 animate-pulse rounded-lg border border-zinc-800/80 bg-zinc-900/50" />
+              <div
+                key={i}
+                className="h-12 animate-pulse rounded-lg border border-zinc-800/80 bg-zinc-900/50"
+              />
             ))}
           </div>
         ) : error ? (
@@ -449,8 +468,12 @@ export default function LadderPage() {
               const isRank3 = rank === 3;
               const isMe = row.uid === authUid;
               const isAnonymousRow = row.isAnonymousInLadder === true;
-              const displayName = isAnonymousRow ? t('ladder.anonymousName', { ns: 'common' }) : row.displayName || row.uid;
-              const secondaryLine = isAnonymousRow ? t('ladder.anonymousIdLabel', { ns: 'common' }) : row.uid;
+              const displayName = isAnonymousRow
+                ? t('ladder.anonymousName', { ns: 'common' })
+                : row.displayName || row.uid;
+              const secondaryLine = isAnonymousRow
+                ? t('ladder.anonymousIdLabel', { ns: 'common' })
+                : row.uid;
               const rowTierClass = isRank1
                 ? 'bg-gradient-to-r from-amber-500/10 to-bg-panel/40 border-l-4 border-l-amber-500 border-y border-r border-y-amber-500/20 border-r-amber-500/20'
                 : isRank2
@@ -458,7 +481,9 @@ export default function LadderPage() {
                   : isRank3
                     ? 'bg-gradient-to-r from-orange-500/10 to-bg-panel/40 border-l-4 border-l-orange-500 border-y border-r border-y-orange-500/20 border-r-orange-500/20'
                     : 'bg-zinc-900/40 border-l-2 border-l-zinc-700 border-y border-r border-zinc-800/80 hover:bg-zinc-800/60';
-              const meHighlightClass = isMe ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10' : '';
+              const meHighlightClass = isMe
+                ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10'
+                : '';
               const rankClass = isRank1
                 ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-xs sm:text-sm'
                 : isRank2
@@ -490,39 +515,50 @@ export default function LadderPage() {
                     }}
                     className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass} disabled:cursor-not-allowed disabled:opacity-90`}
                   >
-                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <span className={`shrink-0 w-7 text-center font-mono sm:w-10 sm:text-left ${rankClass}`}>
-                      {isRank1 ? `✦ #${rank}` : `#${rank}`}
-                    </span>
-                    {!isAnonymousRow && row.avatarUrl ? (
-                      <img
-                        src={row.avatarUrl}
-                        alt=""
-                        aria-hidden
-                        className="h-8 w-8 shrink-0 rounded-full border border-zinc-700 object-cover sm:h-10 sm:w-10"
-                      />
-                    ) : null}
-                    <div className="min-w-0">
-                      <p className={`truncate font-medium text-zinc-100 ${isAnonymousRow ? 'italic opacity-70' : ''}`}>
-                        {displayName}
+                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                      <span
+                        className={`shrink-0 w-7 text-center font-mono sm:w-10 sm:text-left ${rankClass}`}
+                      >
+                        {isRank1 ? `✦ #${rank}` : `#${rank}`}
+                      </span>
+                      {!isAnonymousRow && row.avatarUrl ? (
+                        <img
+                          src={row.avatarUrl}
+                          alt=""
+                          aria-hidden
+                          className="h-8 w-8 shrink-0 rounded-full border border-zinc-700 object-cover sm:h-10 sm:w-10"
+                        />
+                      ) : null}
+                      <div className="min-w-0">
+                        <p
+                          className={`truncate font-medium text-zinc-100 ${isAnonymousRow ? 'italic opacity-70' : ''}`}
+                        >
+                          {displayName}
+                        </p>
+                        <p
+                          className={`hidden truncate text-[10px] uppercase sm:block ${
+                            isAnonymousRow
+                              ? 'font-mono tracking-widest text-zinc-600'
+                              : 'tracking-widest text-zinc-500'
+                          }`}
+                        >
+                          {secondaryLine}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 min-w-[56px] text-right sm:min-w-[84px]">
+                      <p
+                        className={`font-mono text-xs font-semibold tabular-nums transition-colors duration-200 sm:text-base ${scoreClass}`}
+                      >
+                        {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
                       </p>
                       <p
-                        className={`hidden truncate text-[10px] uppercase sm:block ${
-                          isAnonymousRow ? 'font-mono tracking-widest text-zinc-600' : 'tracking-widest text-zinc-500'
-                        }`}
+                        className="hidden text-[10px] text-zinc-500 sm:block"
+                        title={new Date(row.updatedAt).toLocaleString()}
                       >
-                        {secondaryLine}
+                        {compactUpdatedAt}
                       </p>
                     </div>
-                  </div>
-                  <div className="shrink-0 min-w-[56px] text-right sm:min-w-[84px]">
-                    <p className={`font-mono text-xs font-semibold tabular-nums transition-colors duration-200 sm:text-base ${scoreClass}`}>
-                      {formatLeaderboardRowScore(shardId, row.scoreBest, t)}
-                    </p>
-                    <p className="hidden text-[10px] text-zinc-500 sm:block" title={new Date(row.updatedAt).toLocaleString()}>
-                      {compactUpdatedAt}
-                    </p>
-                  </div>
                   </button>
                 </li>
               );

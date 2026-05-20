@@ -104,7 +104,7 @@ export const EXPLOSIVE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
 /** 14-tier arm size (Rim Spec) — optional storage; same ladder as explosive/muscle 14-tier. */
 export const ARM_SIZE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
 
-/** 14-tier homologation grade for Overall Score (共鳴出力) — LEGEND caps at 180; PANTHEON for 181+. */
+/** 14-tier homologation grade for Overall Score (整車性能指數) — LEGEND caps at 180; PANTHEON for 181+. */
 export const OVERALL_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'BASE', min: 0, max: 40 },
   { id: 'TIER_41', min: 41, max: 50 },
@@ -187,7 +187,7 @@ export interface ScoreMeaningMilestone {
 /** Next-tier milestone for UI and breakthrough modal — single source for band index walks. */
 export function resolveScoreMeaningMilestone(
   metric: ScoreMeaningBandMetric,
-  score: number,
+  score: number
 ): ScoreMeaningMilestone {
   const safeScore = normalizeScore(score);
   const currentBand = resolveScoreMeaningBand(metric, safeScore);

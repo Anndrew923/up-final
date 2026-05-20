@@ -33,7 +33,7 @@ export interface PerformanceBreakthroughPayload {
 export function computeMilestoneProgress(
   score: number,
   currentMin: number,
-  nextMin: number | null,
+  nextMin: number | null
 ): number {
   if (nextMin === null) return 1;
   const span = nextMin - currentMin;
@@ -57,18 +57,17 @@ export function buildPerformanceBreakthroughPayload(
   t: TFunction,
   metric: BreakthroughMetric,
   score: number,
-  scoreDecimals: number,
+  scoreDecimals: number
 ): PerformanceBreakthroughPayload | null {
   if (!Number.isFinite(score)) return null;
   const safeScore = Math.max(0, score);
   const meaning = translateScoreBandMeaning(t, metric, safeScore);
   const auraKey = resolvePerformanceAuraForMetric(metric, safeScore);
   const auraLabel = t(`assessment.auras.${auraKey}`);
-  const resolvedAura =
-    auraLabel === `assessment.auras.${auraKey}` ? auraKey : auraLabel;
+  const resolvedAura = auraLabel === `assessment.auras.${auraKey}` ? auraKey : auraLabel;
   const { currentBand, nextMilestone, remainingPoints } = resolveScoreMeaningMilestone(
     metric,
-    safeScore,
+    safeScore
   );
 
   return {

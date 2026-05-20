@@ -31,4 +31,3 @@ export function detectPromotion(
     milestone: detectTierMilestone(previousRank, currentRank),
   };
 }
-

@@ -13,8 +13,7 @@ export interface DisclosurePanelProps {
   panelBodyClassName?: string;
 }
 
-const defaultPanelBodyClassName =
-  'space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400';
+const defaultPanelBodyClassName = 'space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400';
 
 function onDisclosureButtonKeyDown(
   e: KeyboardEvent<HTMLButtonElement>,

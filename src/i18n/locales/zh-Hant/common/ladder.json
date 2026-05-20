@@ -167,12 +167,12 @@
       "grip": "握力"
     },
     "metrics": {
-      "strength": "力量",
-      "explosivePower": "爆發",
-      "cardio": "心肺",
-      "muscleMass": "肌肉量",
-      "bodyFat": "體脂",
-      "gripStrength": "握力",
+      "strength": "馬力",
+      "explosivePower": "扭矩",
+      "cardio": "續航",
+      "muscleMass": "車身構型",
+      "bodyFat": "配重",
+      "gripStrength": "抓地",
       "armSize": "臂圍"
     },
     "filters": {

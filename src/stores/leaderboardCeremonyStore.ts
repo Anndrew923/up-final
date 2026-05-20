@@ -23,4 +23,3 @@ export const useLeaderboardCeremonyStore = create<LeaderboardCeremonyStore>((set
     set({ pendingPromotion: null });
   },
 }));
-

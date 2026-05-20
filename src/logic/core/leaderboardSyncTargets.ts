@@ -32,7 +32,11 @@ export interface LeaderboardSyncTarget {
   score: number;
 }
 
-function pushIfPositive(targets: LeaderboardSyncTarget[], metric: LeaderboardShardId, score: number | undefined): void {
+function pushIfPositive(
+  targets: LeaderboardSyncTarget[],
+  metric: LeaderboardShardId,
+  score: number | undefined
+): void {
   if (score == null || !Number.isFinite(score) || score <= 0) return;
   targets.push({ metric, score });
 }
@@ -71,7 +75,12 @@ export function appendCardioLeaderboardTargets(
 
   if (inputs) {
     const distanceMeters = Number(inputs.cardio?.distance);
-    if (Number.isFinite(distanceMeters) && distanceMeters > 0 && profile?.age != null && profile.gender) {
+    if (
+      Number.isFinite(distanceMeters) &&
+      distanceMeters > 0 &&
+      profile?.age != null &&
+      profile.gender
+    ) {
       const s = calculateCooperScore({
         distanceMeters,
         age: profile.age,
@@ -224,23 +233,29 @@ export type AssessmentLadderSyncScope =
   | 'gripStrength'
   | 'bodyFat_ffmi';
 
-const ASSESSMENT_SCOPE_SHARD_IDS: Record<AssessmentLadderSyncScope, readonly LeaderboardShardId[]> = {
-  strength: [
-    'strength',
-    'strength_totalFive',
-    'strength_squat',
-    'strength_bench',
-    'strength_deadlift',
-    'strength_ohp',
-    'strength_latPull',
-  ],
-  explosivePower: ['explosive_composite', 'explosive_vertical', 'explosive_broad', 'explosive_sprint'],
-  muscleMass: ['muscleMass', 'muscleMass_weightKg', 'muscleMass_ratio'],
-  cardio: ['cardio', 'cardio_5km'],
-  armSize: ['armSize'],
-  gripStrength: ['gripStrength'],
-  bodyFat_ffmi: ['bodyFat_ffmi'],
-};
+const ASSESSMENT_SCOPE_SHARD_IDS: Record<AssessmentLadderSyncScope, readonly LeaderboardShardId[]> =
+  {
+    strength: [
+      'strength',
+      'strength_totalFive',
+      'strength_squat',
+      'strength_bench',
+      'strength_deadlift',
+      'strength_ohp',
+      'strength_latPull',
+    ],
+    explosivePower: [
+      'explosive_composite',
+      'explosive_vertical',
+      'explosive_broad',
+      'explosive_sprint',
+    ],
+    muscleMass: ['muscleMass', 'muscleMass_weightKg', 'muscleMass_ratio'],
+    cardio: ['cardio', 'cardio_5km'],
+    armSize: ['armSize'],
+    gripStrength: ['gripStrength'],
+    bodyFat_ffmi: ['bodyFat_ffmi'],
+  };
 
 export function pickLeaderboardSyncTargetsForAssessmentScope(
   all: LeaderboardSyncTarget[],

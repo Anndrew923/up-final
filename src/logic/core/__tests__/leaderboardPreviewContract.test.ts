@@ -19,7 +19,16 @@ describe('leaderboardPreviewContract', () => {
 
   it('counts filled axes and completion', () => {
     expect(countPreviewRadarAxesFilled({ strength: 10 })).toBe(1);
-    expect(isPreviewRadarComplete({ strength: 1, explosivePower: 1, cardio: 1, muscleMass: 1, bodyFat: 1, gripStrength: 1 })).toBe(true);
+    expect(
+      isPreviewRadarComplete({
+        strength: 1,
+        explosivePower: 1,
+        cardio: 1,
+        muscleMass: 1,
+        bodyFat: 1,
+        gripStrength: 1,
+      })
+    ).toBe(true);
     expect(isPreviewRadarComplete({ strength: 1 })).toBe(false);
     expect(countPreviewRadarAxesFilled({ strength: 0 })).toBe(0);
   });

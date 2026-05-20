@@ -32,9 +32,7 @@ describe('calculateCooperScore', () => {
   });
 
   it('returns 0 for non-positive distance', () => {
-    expect(
-      calculateCooperScore({ distanceMeters: 0, age: 25, gender: 'male' })
-    ).toBe(0);
+    expect(calculateCooperScore({ distanceMeters: 0, age: 25, gender: 'male' })).toBe(0);
   });
 
   it(`caps male distance at ${COOPER_MAX_DISTANCE_MALE_METERS} m`, () => {
@@ -180,11 +178,9 @@ describe('tryComputeCardioAssessmentScore', () => {
 
 describe('mergeScoreMapWithResolvedCardio', () => {
   it('overrides stored cardio when inputs resolve', () => {
-    const merged = mergeScoreMapWithResolvedCardio(
-      { cardio: 10, strength: 50 },
-      maleProfile,
-      { cardio: { distance: 2800 } }
-    );
+    const merged = mergeScoreMapWithResolvedCardio({ cardio: 10, strength: 50 }, maleProfile, {
+      cardio: { distance: 2800 },
+    });
     expect(merged.strength).toBe(50);
     expect(merged.cardio).toBeGreaterThan(10);
   });

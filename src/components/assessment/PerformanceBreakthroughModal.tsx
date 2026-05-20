@@ -83,7 +83,9 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             </p>
           </header>
 
-          <p className="mt-4 text-center text-sm leading-relaxed text-zinc-300">{payload.summary}</p>
+          <p className="mt-4 text-center text-sm leading-relaxed text-zinc-300">
+            {payload.summary}
+          </p>
 
           <div className="mt-6 border-t border-zinc-800/90 pt-5">
             <TachometerMilestoneBar

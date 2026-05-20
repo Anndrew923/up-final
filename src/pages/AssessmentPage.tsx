@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
-import {
-  ASSESSMENT_LOBBY_CARD_KEYS,
-  ASSESSMENT_LOBBY_ROUTES,
-} from '../config/assessmentLobby';
+import { ASSESSMENT_LOBBY_CARD_KEYS, ASSESSMENT_LOBBY_ROUTES } from '../config/assessmentLobby';
 import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
-import { calculateSixAxisOverall, clampSixAxisRawInput, SCORE_AXIS_MAX } from '../logic/core/scoring';
+import {
+  calculateSixAxisOverall,
+  clampSixAxisRawInput,
+  SCORE_AXIS_MAX,
+} from '../logic/core/scoring';
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';

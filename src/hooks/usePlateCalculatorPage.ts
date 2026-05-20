@@ -81,7 +81,9 @@ export function usePlateCalculatorPage(): PlateCalculatorState {
     const targetTotalKg = unit === 'kg' ? targetTotalDisplay : convertLbToKg(targetTotalDisplay);
     const barWeightKg = unit === 'kg' ? barWeightDisplay : convertLbToKg(barWeightDisplay);
     const plateSetKg =
-      unit === 'kg' ? activePlateSetDisplay : activePlateSetDisplay.map((value) => convertLbToKg(value));
+      unit === 'kg'
+        ? activePlateSetDisplay
+        : activePlateSetDisplay.map((value) => convertLbToKg(value));
     return planBarbellPlates(targetTotalKg, barWeightKg, plateSetKg);
   }, [activePlateSetDisplay, resolvedBarWeightDisplay, targetTotalInput, unit]);
 

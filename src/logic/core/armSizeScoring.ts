@@ -30,11 +30,7 @@ export function evaluateArmSizeScore(input: ArmSizeScoringInput): ArmSizeScoring
   const arm = Number(input.armCircumferenceCm);
   const bf = Number(input.bodyFatPct);
   if (!Number.isFinite(arm) || arm <= 0 || arm > ARM_SIZE_MAX_CM) return null;
-  if (
-    !Number.isFinite(bf) ||
-    bf < ARM_SIZE_BODY_FAT_MIN_PCT ||
-    bf > ARM_SIZE_BODY_FAT_MAX_PCT
-  ) {
+  if (!Number.isFinite(bf) || bf < ARM_SIZE_BODY_FAT_MIN_PCT || bf > ARM_SIZE_BODY_FAT_MAX_PCT) {
     return null;
   }
 

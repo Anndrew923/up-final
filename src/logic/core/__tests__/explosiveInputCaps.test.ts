@@ -19,9 +19,9 @@ const maleProfile: PhysicalProfile = {
 
 describe('hasAnyExplosiveCap / getExplosiveCapNoticeInterpolation', () => {
   it('hasAnyExplosiveCap is false when no branch capped', () => {
-    expect(hasAnyExplosiveCap({ verticalJump: false, standingLongJump: false, sprint: false })).toBe(
-      false
-    );
+    expect(
+      hasAnyExplosiveCap({ verticalJump: false, standingLongJump: false, sprint: false })
+    ).toBe(false);
   });
 
   it('hasAnyExplosiveCap is true when any branch capped', () => {

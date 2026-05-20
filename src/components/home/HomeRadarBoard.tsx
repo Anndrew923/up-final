@@ -14,6 +14,8 @@ import {
   getAxisMeaningI18nPrefix,
   resolveOverallGradeBand,
 } from '../../logic/core/scoreMeaningCatalog';
+import { buildIdentityLiveSpecRows } from './identityLiveSpecRows';
+import IdentityLiveSpecList from './IdentityLiveSpecList';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
@@ -27,7 +29,9 @@ import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation();
   const { radarPoints, overallScore, scaleMax, completionCount } = useCoreSixRadar();
-  const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() => loadPhysicalProfile());
+  const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
+    loadPhysicalProfile()
+  );
   const isBlocking = useShellInteractionBlocked();
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export const HomeRadarBoard: FC = () => {
         ...point,
         label: t(`home.radar.axis.${point.key}`, { ns: 'common' }),
       })),
-    [radarPoints, t],
+    [radarPoints, t]
   );
 
   const valueByKey = useMemo(() => {
@@ -61,9 +65,11 @@ export const HomeRadarBoard: FC = () => {
     return t('identity.genderGroup.male', { ns: 'common' });
   }, [physicalProfile?.gender, t]);
 
-  const overallGradeBandId = useMemo(
-    () => resolveOverallGradeBand(overallScore),
-    [overallScore],
+  const overallGradeBandId = useMemo(() => resolveOverallGradeBand(overallScore), [overallScore]);
+
+  const liveSpecRows = useMemo(
+    () => buildIdentityLiveSpecRows(t, localizedRadarPoints),
+    [localizedRadarPoints, t]
   );
 
   const {
@@ -204,6 +210,10 @@ export const HomeRadarBoard: FC = () => {
                     genderGroup,
                   })}
                 </p>
+                <IdentityLiveSpecList
+                  kicker={t('identity.liveSpecKicker', { ns: 'common' })}
+                  rows={liveSpecRows}
+                />
               </section>
             </div>
 

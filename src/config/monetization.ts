@@ -7,4 +7,3 @@ export const MONETIZATION_CONFIG = {
   leaderboardRequireGoogleSignIn: true,
   leaderboardPromotionMilestones: [1, 3, 10, 100, 500, 1000] as const,
 } as const;
-

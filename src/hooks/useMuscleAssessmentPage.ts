@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { MuscleAssessmentBreakdown, MuscleAssessmentComputeError } from '../logic/core/muscleScoring';
+import type {
+  MuscleAssessmentBreakdown,
+  MuscleAssessmentComputeError,
+} from '../logic/core/muscleScoring';
 import {
   getSmmKgCeilingForGender,
   isSmmKgAboveCeiling,

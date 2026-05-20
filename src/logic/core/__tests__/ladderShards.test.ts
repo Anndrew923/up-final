@@ -73,7 +73,10 @@ describe('ladderShards', () => {
       'ohp',
       'latPull',
     ]);
-    expect(getProjectOptionsForDivision('stats_cooper').map((o) => o.value)).toEqual(['cooper', '5km']);
+    expect(getProjectOptionsForDivision('stats_cooper').map((o) => o.value)).toEqual([
+      'cooper',
+      '5km',
+    ]);
     expect(getProjectOptionsForDivision('stats_bodyFat').map((o) => o.value)).toEqual(['ffmi']);
     expect(getProjectOptionsForDivision('stats_vertical').map((o) => o.value)).toEqual([
       'composite',

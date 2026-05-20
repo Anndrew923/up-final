@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
-import ToolResultModal, { type ToolResultModalOneRmPayload } from '../components/tools/ToolResultModal';
+import ToolResultModal, {
+  type ToolResultModalOneRmPayload,
+} from '../components/tools/ToolResultModal';
 import { useOneRmCalculatorPage } from '../hooks/useOneRmCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 
@@ -22,7 +24,9 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
     setMethod,
     estimatedOneRmKg,
   } = useOneRmCalculatorPage();
-  const { displayValue, isBlocking, modalOpen, reveal, closeModal } = useToolResultReveal({ haptic: 'medium' });
+  const { displayValue, isBlocking, modalOpen, reveal, closeModal } = useToolResultReveal({
+    haptic: 'medium',
+  });
   const [modalPayload, setModalPayload] = useState<ToolResultModalOneRmPayload | null>(null);
 
   const canCalculate = estimatedOneRmKg > 0;
@@ -70,7 +74,12 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
               {t('tools.calculators.oneRm.subtitle')}
             </p>
           </div>
-          <button type="button" className="ui-btn" onClick={onBack ?? (() => navigate(-1))} disabled={isBlocking}>
+          <button
+            type="button"
+            className="ui-btn"
+            onClick={onBack ?? (() => navigate(-1))}
+            disabled={isBlocking}
+          >
             {t('back')}
           </button>
         </header>

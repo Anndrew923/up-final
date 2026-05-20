@@ -9,7 +9,7 @@ import {
 export function translateScoreBandMeaning(
   t: TFunction,
   metric: ScoreMeaningBandMetric,
-  score: number,
+  score: number
 ): { title: string; summary: string } {
   const band = resolveScoreMeaningBand(metric, score);
   const prefix = getBandMeaningI18nPrefix(metric, band.id);

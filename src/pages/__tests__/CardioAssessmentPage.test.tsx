@@ -10,8 +10,9 @@ const mockUseCardioAssessmentPage = vi.fn();
 const mockUseScoreMeaning = vi.fn();
 const mockRevealCalculate = vi.fn();
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock('../../hooks/useCardioAssessmentPage', () => ({
   useCardioAssessmentPage: () => mockUseCardioAssessmentPage(),

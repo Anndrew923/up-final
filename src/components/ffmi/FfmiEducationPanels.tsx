@@ -2,10 +2,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DisclosurePanel } from '../DisclosurePanel';
-import {
-  FFMI_TABLE_FEMALE_ORDER,
-  FFMI_TABLE_MALE_ORDER,
-} from '../../logic/core/ffmiTableRows';
+import { FFMI_TABLE_FEMALE_ORDER, FFMI_TABLE_MALE_ORDER } from '../../logic/core/ffmiTableRows';
 
 export const FfmiEducationPanels: FC = () => {
   const { t } = useTranslation('common');
@@ -21,7 +18,9 @@ export const FfmiEducationPanels: FC = () => {
       toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
       panelBodyClassName="space-y-4 px-5 pb-5 pt-4 text-sm leading-relaxed text-zinc-300"
     >
-      <h3 className="text-sm font-semibold tracking-tight text-zinc-100">{t('ffmi.info.whatIsTitle')}</h3>
+      <h3 className="text-sm font-semibold tracking-tight text-zinc-100">
+        {t('ffmi.info.whatIsTitle')}
+      </h3>
       <p>{t('ffmi.info.whatIsIntro')}</p>
       <ol className="list-decimal space-y-2 pl-5 text-zinc-400">
         <li>{t('ffmi.info.caveats.tall')}</li>
@@ -30,7 +29,9 @@ export const FfmiEducationPanels: FC = () => {
       </ol>
 
       <div className="border-t border-zinc-800/80 pt-4">
-        <h3 className="text-sm font-semibold tracking-tight text-zinc-100">{t('ffmi.table.sectionTitle')}</h3>
+        <h3 className="text-sm font-semibold tracking-tight text-zinc-100">
+          {t('ffmi.table.sectionTitle')}
+        </h3>
         <p className="mt-1 text-xs text-zinc-500">{t('ffmi.table.sectionHint')}</p>
       </div>
 
@@ -48,7 +49,9 @@ export const FfmiEducationPanels: FC = () => {
           <tbody>
             {FFMI_TABLE_MALE_ORDER.map((suffix) => (
               <tr key={suffix} className="border-b border-zinc-800/80">
-                <td className="py-2 pr-4 font-mono text-zinc-200">{t(`ffmi.table.rangeMale.${suffix}`)}</td>
+                <td className="py-2 pr-4 font-mono text-zinc-200">
+                  {t(`ffmi.table.rangeMale.${suffix}`)}
+                </td>
                 <td className="py-2">{t(`ffmi.category.male.${suffix}`)}</td>
               </tr>
             ))}
@@ -70,7 +73,9 @@ export const FfmiEducationPanels: FC = () => {
           <tbody>
             {FFMI_TABLE_FEMALE_ORDER.map((suffix) => (
               <tr key={suffix} className="border-b border-zinc-800/80">
-                <td className="py-2 pr-4 font-mono text-zinc-200">{t(`ffmi.table.rangeFemale.${suffix}`)}</td>
+                <td className="py-2 pr-4 font-mono text-zinc-200">
+                  {t(`ffmi.table.rangeFemale.${suffix}`)}
+                </td>
                 <td className="py-2">{t(`ffmi.category.female.${suffix}`)}</td>
               </tr>
             ))}

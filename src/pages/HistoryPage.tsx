@@ -53,7 +53,9 @@ export default function HistoryPage() {
                       {t(`history.shortAxis.${m}`, { ns: 'common' })}
                     </th>
                   ))}
-                  <th className="whitespace-nowrap px-2 py-2">{t('history.colActions', { ns: 'common' })}</th>
+                  <th className="whitespace-nowrap px-2 py-2">
+                    {t('history.colActions', { ns: 'common' })}
+                  </th>
                 </tr>
               </thead>
               <tbody>

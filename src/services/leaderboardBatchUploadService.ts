@@ -27,8 +27,14 @@ export async function runLeaderboardBatchUpload(options: {
     avatarUrl?: string | null;
   };
 }): Promise<LeaderboardSyncRunSummary> {
-  const { targets, uid, displayName, entitlement, delayMs = DEFAULT_INTER_SHARD_DELAY_MS, previewSnapshot } =
-    options;
+  const {
+    targets,
+    uid,
+    displayName,
+    entitlement,
+    delayMs = DEFAULT_INTER_SHARD_DELAY_MS,
+    previewSnapshot,
+  } = options;
   const tally = createEmptyLeaderboardSyncRunSummary();
 
   for (const { metric, score } of targets) {

@@ -5,7 +5,11 @@ import { useAuthStore } from '../../stores/authStore';
 /** Commander avatar slot — initials from local profile (`localStorage`). */
 export default function HudAvatar() {
   const { t } = useTranslation();
-  const { initial: localInitial, displayName: localDisplayName, avatarUrl: localAvatarUrl } = useLocalProfileBrief();
+  const {
+    initial: localInitial,
+    displayName: localDisplayName,
+    avatarUrl: localAvatarUrl,
+  } = useLocalProfileBrief();
   const authStatus = useAuthStore((s) => s.status);
   const authDisplayName = useAuthStore((s) => s.displayName);
   const authPhotoURL = useAuthStore((s) => s.photoURL);

@@ -27,8 +27,9 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 function renderHookHarness(): {
   getCurrent: () => UseAssessmentCeremonyResult | null;

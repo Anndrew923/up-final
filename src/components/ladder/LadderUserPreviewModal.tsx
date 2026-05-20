@@ -21,7 +21,13 @@ export interface LadderUserPreviewModalProps {
   onClose: () => void;
 }
 
-const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({ open, loading, error, user, onClose }) => {
+const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
+  open,
+  loading,
+  error,
+  user,
+  onClose,
+}) => {
   const { t } = useTranslation();
 
   const dash = t('ladder.userPreview.valueEmpty', { ns: 'common' });
@@ -86,7 +92,12 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({ open, loading
           <div className="space-y-4">
             <div className="flex items-center gap-3 rounded-md border border-zinc-800 bg-zinc-900/30 p-3">
               {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt="" aria-hidden className="h-12 w-12 rounded-full object-cover" />
+                <img
+                  src={user.avatarUrl}
+                  alt=""
+                  aria-hidden
+                  className="h-12 w-12 rounded-full object-cover"
+                />
               ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-lg text-zinc-300">
                   {user.displayName.charAt(0).toUpperCase()}
@@ -113,19 +124,27 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({ open, loading
               <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
                 <dt className="text-zinc-500">{t('ladder.filters.ageBucket', { ns: 'common' })}</dt>
                 <dd className="mt-0.5 text-zinc-200">
-                  {user.ageBucket ? t(`ladder.filters.ageBucketOptions.${user.ageBucket}`, { ns: 'common' }) : dash}
+                  {user.ageBucket
+                    ? t(`ladder.filters.ageBucketOptions.${user.ageBucket}`, { ns: 'common' })
+                    : dash}
                 </dd>
               </div>
               <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
-                <dt className="text-zinc-500">{t('ladder.filters.jobCategory', { ns: 'common' })}</dt>
+                <dt className="text-zinc-500">
+                  {t('ladder.filters.jobCategory', { ns: 'common' })}
+                </dt>
                 <dd className="mt-0.5 text-zinc-200">
-                  {user.jobCategory ? t(`home.profile.jobOptions.${user.jobCategory}`, { ns: 'common' }) : dash}
+                  {user.jobCategory
+                    ? t(`home.profile.jobOptions.${user.jobCategory}`, { ns: 'common' })
+                    : dash}
                 </dd>
               </div>
               <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
                 <dt className="text-zinc-500">{t('home.profile.countryCode', { ns: 'common' })}</dt>
                 <dd className="mt-0.5 text-zinc-200">
-                  {user.countryCode ? t(`home.profile.countryOptions.${user.countryCode}`, { ns: 'common' }) : dash}
+                  {user.countryCode
+                    ? t(`home.profile.countryOptions.${user.countryCode}`, { ns: 'common' })
+                    : dash}
                 </dd>
               </div>
             </dl>

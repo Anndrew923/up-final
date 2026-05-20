@@ -3,7 +3,11 @@ import { useShallow } from 'zustand/react/shallow';
 import { normalizeLocationFiltersForLadderDataset } from '../logic/core/ladderFilters';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import type { LeaderboardEntry } from '../services/leaderboardCacheService';
-import { getMyLeaderboardEntry, getRankByScoreBest, listLeaderboard } from '../services/leaderboardService';
+import {
+  getMyLeaderboardEntry,
+  getRankByScoreBest,
+  listLeaderboard,
+} from '../services/leaderboardService';
 import type { EntitlementState } from '../types/entitlement';
 import type {
   LadderAgeBucket,
@@ -87,8 +91,10 @@ export function useLadderLeaderboard(
       return rows.filter((row) => {
         if (filters.gender !== 'all' && row.gender !== filters.gender) return false;
         if (filters.ageBucket !== 'all' && row.ageBucket !== filters.ageBucket) return false;
-        if (filters.heightBucket !== 'all' && row.heightBucket !== filters.heightBucket) return false;
-        if (filters.weightBucket !== 'all' && row.weightBucket !== filters.weightBucket) return false;
+        if (filters.heightBucket !== 'all' && row.heightBucket !== filters.heightBucket)
+          return false;
+        if (filters.weightBucket !== 'all' && row.weightBucket !== filters.weightBucket)
+          return false;
         if (filters.jobCategory !== 'all' && row.jobCategory !== filters.jobCategory) return false;
         if (filters.countryCode !== 'all' && row.countryCode !== filters.countryCode) return false;
         if (normCity !== 'all' && row.city !== normCity) return false;
@@ -183,5 +189,15 @@ export function useLadderLeaderboard(
     };
   }, [shardId, entitlement, refreshNonce, page, pageSize, authUid]);
 
-  return { items, datasetItems: fetchedRows, loading, error, fromCache, page, pageSize, myEntry, myRank };
+  return {
+    items,
+    datasetItems: fetchedRows,
+    loading,
+    error,
+    fromCache,
+    page,
+    pageSize,
+    myEntry,
+    myRank,
+  };
 }

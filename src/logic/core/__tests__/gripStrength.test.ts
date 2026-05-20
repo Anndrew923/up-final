@@ -22,7 +22,9 @@ describe('calculateGripStrengthScore', () => {
 
   it('locks scoring at 175kg model cap', () => {
     expect(calculateGripStrengthScore(180, 'male')).toBe(calculateGripStrengthScore(175, 'male'));
-    expect(calculateGripStrengthScore(180, 'female')).toBe(calculateGripStrengthScore(175, 'female'));
+    expect(calculateGripStrengthScore(180, 'female')).toBe(
+      calculateGripStrengthScore(175, 'female')
+    );
   });
 });
 

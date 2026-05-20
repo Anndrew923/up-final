@@ -43,14 +43,7 @@ export type LadderCountryCode =
   | 'FR'
   | 'OTHER';
 
-export type LadderAgeBucket =
-  | 'under-20'
-  | '20-29'
-  | '30-39'
-  | '40-49'
-  | '50-59'
-  | '60-69'
-  | '70+';
+export type LadderAgeBucket = 'under-20' | '20-29' | '30-39' | '40-49' | '50-59' | '60-69' | '70+';
 
 export type LadderHeightBucket = '<160' | '160-170' | '170-180' | '180-190' | '>190';
 
@@ -67,7 +60,11 @@ export type LadderWeightBucket =
 export type LadderRegionScope = 'country' | 'city' | 'district';
 
 /** Stable order for ladder region-segmentation filters (UI + queries). */
-export const LADDER_REGION_SCOPES = ['country', 'city', 'district'] as const satisfies readonly LadderRegionScope[];
+export const LADDER_REGION_SCOPES = [
+  'country',
+  'city',
+  'district',
+] as const satisfies readonly LadderRegionScope[];
 
 export interface LadderProfileRaw {
   gender: LadderGender;
@@ -169,4 +166,3 @@ export const LADDER_WEIGHT_BUCKETS: readonly LadderWeightBucket[] = [
   '100-110kg',
   '110kg+',
 ] as const;
-

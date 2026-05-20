@@ -53,7 +53,10 @@ const TachometerMilestoneBar: FC<TachometerMilestoneBarProps> = ({
           style={{ transform: `scaleX(${filled})` }}
           aria-hidden
         />
-        <div className="pointer-events-none absolute inset-0 flex justify-between px-0.5" aria-hidden>
+        <div
+          className="pointer-events-none absolute inset-0 flex justify-between px-0.5"
+          aria-hidden
+        >
           {Array.from({ length: 11 }).map((_, index) => (
             <span key={index} className="h-full w-px bg-zinc-950/50" />
           ))}

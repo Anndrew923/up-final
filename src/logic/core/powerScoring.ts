@@ -5,10 +5,7 @@
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
 import type { ScoreMap } from '../../types/scoring';
-import {
-  applyExplosiveInputCapsForProfile,
-  type ExplosiveCapApplied,
-} from './explosiveInputCaps';
+import { applyExplosiveInputCapsForProfile, type ExplosiveCapApplied } from './explosiveInputCaps';
 import { normalizeGenderForNormTables } from './genderNormalize';
 import { isPhysicalProfileComplete } from './physicalProfile';
 import { clampScoreMapValue } from './scoring';
@@ -55,16 +52,17 @@ export const VERTICAL_JUMP_STANDARDS_FEMALE: Readonly<Record<PowerAgeBucket, Pow
   '71-80': { 0: 0, 50: 15, 100: 30 },
 };
 
-export const STANDING_LONG_JUMP_STANDARDS_MALE: Readonly<Record<PowerAgeBucket, PowerStandardRow>> = {
-  '12-15': { 0: 150, 50: 200, 100: 250 },
-  '16-20': { 0: 180, 50: 230, 100: 280 },
-  '21-30': { 0: 170, 50: 220, 100: 270 },
-  '31-40': { 0: 150, 50: 200, 100: 250 },
-  '41-50': { 0: 130, 50: 180, 100: 230 },
-  '51-60': { 0: 110, 50: 160, 100: 210 },
-  '61-70': { 0: 90, 50: 140, 100: 190 },
-  '71-80': { 0: 70, 50: 120, 100: 170 },
-};
+export const STANDING_LONG_JUMP_STANDARDS_MALE: Readonly<Record<PowerAgeBucket, PowerStandardRow>> =
+  {
+    '12-15': { 0: 150, 50: 200, 100: 250 },
+    '16-20': { 0: 180, 50: 230, 100: 280 },
+    '21-30': { 0: 170, 50: 220, 100: 270 },
+    '31-40': { 0: 150, 50: 200, 100: 250 },
+    '41-50': { 0: 130, 50: 180, 100: 230 },
+    '51-60': { 0: 110, 50: 160, 100: 210 },
+    '61-70': { 0: 90, 50: 140, 100: 190 },
+    '71-80': { 0: 70, 50: 120, 100: 170 },
+  };
 
 export const STANDING_LONG_JUMP_STANDARDS_FEMALE: Readonly<
   Record<PowerAgeBucket, PowerStandardRow>
@@ -130,7 +128,8 @@ export function getPowerStandardsForProfile(profile: PhysicalProfile): {
   if (!range) return null;
   const g = normalizeGenderForNormTables(profile.gender) ?? 'male';
   const vjMap = g === 'male' ? VERTICAL_JUMP_STANDARDS_MALE : VERTICAL_JUMP_STANDARDS_FEMALE;
-  const sljMap = g === 'male' ? STANDING_LONG_JUMP_STANDARDS_MALE : STANDING_LONG_JUMP_STANDARDS_FEMALE;
+  const sljMap =
+    g === 'male' ? STANDING_LONG_JUMP_STANDARDS_MALE : STANDING_LONG_JUMP_STANDARDS_FEMALE;
   const spMap = g === 'male' ? SPRINT_STANDARDS_MALE : SPRINT_STANDARDS_FEMALE;
   const vjump = vjMap[range];
   const slj = sljMap[range];
@@ -213,13 +212,12 @@ export function calculateExplosivePowerBreakdown(input: {
       : null;
 
   const hasAnyBranch =
-    verticalJumpRaw !== null ||
-    standingLongJumpRaw !== null ||
-    sprintRaw !== null;
+    verticalJumpRaw !== null || standingLongJumpRaw !== null || sprintRaw !== null;
   if (!hasAnyBranch) return null;
 
   const vj = verticalJumpRaw !== null && Number.isFinite(verticalJumpRaw) ? verticalJumpRaw : 0;
-  const slj = standingLongJumpRaw !== null && Number.isFinite(standingLongJumpRaw) ? standingLongJumpRaw : 0;
+  const slj =
+    standingLongJumpRaw !== null && Number.isFinite(standingLongJumpRaw) ? standingLongJumpRaw : 0;
   const sp = sprintRaw !== null && Number.isFinite(sprintRaw) ? sprintRaw : 0;
   const averageRaw = round2((vj + slj + sp) / EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR);
   return { verticalJumpRaw, standingLongJumpRaw, sprintRaw, averageRaw };
@@ -301,7 +299,12 @@ export function resolveExplosiveLadderScoreBundle(
   profile: PhysicalProfile | null | undefined,
   inputs: PowerInputsPersisted | null | undefined
 ): ExplosiveLadderScoreBundle {
-  const empty: ExplosiveLadderScoreBundle = { composite: null, vertical: null, broad: null, sprint: null };
+  const empty: ExplosiveLadderScoreBundle = {
+    composite: null,
+    vertical: null,
+    broad: null,
+    sprint: null,
+  };
   if (!profile || !isPhysicalProfileComplete(profile)) return empty;
   const block = inputs?.explosivePower;
   if (!block) return empty;
@@ -309,7 +312,8 @@ export function resolveExplosiveLadderScoreBundle(
   const verticalJumpCm = persistedNumber(block.verticalJumpCm);
   const standingLongJumpCm = persistedNumber(block.standingLongJumpCm);
   const sprintSeconds = persistedNumber(block.sprintSeconds);
-  if (verticalJumpCm === null && standingLongJumpCm === null && sprintSeconds === null) return empty;
+  if (verticalJumpCm === null && standingLongJumpCm === null && sprintSeconds === null)
+    return empty;
 
   const capped = applyExplosiveInputCapsForProfile(profile, {
     verticalJumpCm,

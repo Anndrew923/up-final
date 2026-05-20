@@ -46,8 +46,15 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     hasError: () => errorKey != null,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;

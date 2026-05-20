@@ -53,24 +53,30 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     pool: 'explosive',
     metric: 'explosivePower',
     scoreDecimals: 2,
-    getScore: () =>
-      previewScore ?? (previewBreakdown != null ? previewBreakdown.averageRaw : null),
+    getScore: () => previewScore ?? (previewBreakdown != null ? previewBreakdown.averageRaw : null),
     hasError: () => errorKey != null || !profileReady,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
-  const genderLabel =
-    !profile ? '' : profile.gender === 'female'
+  const genderLabel = !profile
+    ? ''
+    : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
 
   const dash = t('explosive.branchDash');
   const fmtBranch = (v: number | null) => (v === null ? dash : v.toFixed(2));
 
-  const showCapNoticeBlock =
-    profileReady && profile && capNoticeInterpolation != null;
+  const showCapNoticeBlock = profileReady && profile && capNoticeInterpolation != null;
 
   const interpretationScore =
     previewScore ?? (previewBreakdown != null ? previewBreakdown.averageRaw : null);
@@ -130,7 +136,9 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             <p>{t('explosive.standardsInfo.disclaimer')}</p>
             {powerNormAnchors ? (
               <>
-                <p className="font-medium text-zinc-300">{t('explosive.standardsInfo.anchorsIntro')}</p>
+                <p className="font-medium text-zinc-300">
+                  {t('explosive.standardsInfo.anchorsIntro')}
+                </p>
                 <p className="text-xs text-zinc-500">
                   {t('explosive.standardsInfo.ageBand', {
                     band: t(`explosive.standardsInfo.ageBands.${powerNormAnchors.ageRange}`),
@@ -163,10 +171,14 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             ) : profileReady && profile ? (
               <p className="text-amber-100/90">{t('explosive.standardsInfo.noAnchorsHint')}</p>
             ) : (
-              <p className="text-zinc-500">{t('explosive.standardsInfo.profileIncompleteForAnchors')}</p>
+              <p className="text-zinc-500">
+                {t('explosive.standardsInfo.profileIncompleteForAnchors')}
+              </p>
             )}
             <p>
-              <span className="font-medium text-zinc-300">{t('explosive.standardsInfo.sourceLabel')}</span>{' '}
+              <span className="font-medium text-zinc-300">
+                {t('explosive.standardsInfo.sourceLabel')}
+              </span>{' '}
               {t('explosive.standardsInfo.sourceBody')}
             </p>
             <p className="font-medium text-zinc-300">{t('explosive.standardsInfo.basisLabel')}</p>
@@ -198,7 +210,9 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-slj">
-              <span className="font-medium text-zinc-200">{t('explosive.standingLongJumpLabel')}</span>
+              <span className="font-medium text-zinc-200">
+                {t('explosive.standingLongJumpLabel')}
+              </span>
               <input
                 id="exp-slj"
                 type="number"
@@ -281,7 +295,9 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
                   <span>{fmtBranch(previewBreakdown.verticalJumpRaw)}</span>
                 </li>
                 <li className="flex justify-between gap-4 font-mono tabular-nums">
-                  <span className="text-zinc-400">{t('explosive.branchStandingLongJumpShort')}</span>
+                  <span className="text-zinc-400">
+                    {t('explosive.branchStandingLongJumpShort')}
+                  </span>
                   <span>{fmtBranch(previewBreakdown.standingLongJumpRaw)}</span>
                 </li>
                 <li className="flex justify-between gap-4 font-mono tabular-nums">
@@ -334,7 +350,12 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             >
               {t('explosive.calculate')}
             </button>
-            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={submitToRadar}>
+            <button
+              type="button"
+              className="ui-btn"
+              disabled={revealBlocking}
+              onClick={submitToRadar}
+            >
               {t('explosive.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>

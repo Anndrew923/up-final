@@ -61,7 +61,12 @@ export interface AccountDeletionFailure {
 export type DeleteAccountResult = AccountDeletionSuccess | AccountDeletionFailure;
 
 function isFirebaseErrorCode(error: unknown, code: string): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === code;
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === code
+  );
 }
 
 /**
@@ -93,8 +98,18 @@ export async function deleteSignedInAccount(): Promise<DeleteAccountResult> {
       collection(db, USER_CLOUD_COLLECTION, user.uid, USER_HISTORY_SUBCOLLECTION)
     );
     const deleteTasks: Promise<unknown>[] = [
-      deleteDoc(doc(db, USER_CLOUD_COLLECTION, user.uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID)),
-      deleteDoc(doc(db, USER_CLOUD_COLLECTION, user.uid, USER_PROFILE_SUBCOLLECTION, USER_PROFILE_BASELINE_DOC_ID)),
+      deleteDoc(
+        doc(db, USER_CLOUD_COLLECTION, user.uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID)
+      ),
+      deleteDoc(
+        doc(
+          db,
+          USER_CLOUD_COLLECTION,
+          user.uid,
+          USER_PROFILE_SUBCOLLECTION,
+          USER_PROFILE_BASELINE_DOC_ID
+        )
+      ),
       ...histSnap.docs.map((d) => deleteDoc(d.ref)),
       ...LEADERBOARD_METRICS.map((metric) =>
         deleteDoc(doc(db, LEADERBOARDS_COLLECTION, metric, ENTRIES_SUBCOLLECTION, user.uid))

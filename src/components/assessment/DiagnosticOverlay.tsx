@@ -127,8 +127,12 @@ const DiagnosticOverlay: FC<DiagnosticOverlayProps> = ({
       </div>
 
       <div className="pointer-events-none absolute inset-6 sm:inset-10" aria-hidden>
-        <span className={`absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 ${styles.bracket}`} />
-        <span className={`absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 ${styles.bracket}`} />
+        <span
+          className={`absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 ${styles.bracket}`}
+        />
+        <span
+          className={`absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 ${styles.bracket}`}
+        />
         <span
           className={`absolute bottom-0 left-0 h-10 w-10 border-b-2 border-l-2 ${styles.bracket}`}
         />

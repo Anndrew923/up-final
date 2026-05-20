@@ -46,7 +46,11 @@ import {
   LEADERBOARDS_COLLECTION,
   LEADERBOARD_PREVIEWS_COLLECTION,
 } from './firestorePaths';
-import { checkUploadRateLimit, consumeUploadQuota, LEADERBOARD_UPLOADS_PER_HOUR } from './rateLimitService';
+import {
+  checkUploadRateLimit,
+  consumeUploadQuota,
+  LEADERBOARD_UPLOADS_PER_HOUR,
+} from './rateLimitService';
 import {
   clearLeaderboardCache,
   getCachedLeaderboard,
@@ -110,7 +114,11 @@ const memoryPreviewDb = new Map<string, Record<string, unknown>>();
 const GLOBAL_RANK_CACHE_TTL_MS = 30_000;
 const globalRankCacheMemory = new Map<string, { rank: number; cachedAt: number }>();
 
-function buildGlobalRankCacheKey(uid: string, metric: LeaderboardShardId, scoreBest: number): string {
+function buildGlobalRankCacheKey(
+  uid: string,
+  metric: LeaderboardShardId,
+  scoreBest: number
+): string {
   return `${uid}::${metric}::${scoreBest}`;
 }
 
@@ -205,12 +213,15 @@ function mapFirestoreDoc(d: QueryDocumentSnapshot): LeaderboardEntry {
     uid: d.id,
     displayName: String(data.displayName ?? ''),
     displayRaw:
-      typeof data.displayRaw === 'number' && Number.isFinite(data.displayRaw) ? data.displayRaw : undefined,
+      typeof data.displayRaw === 'number' && Number.isFinite(data.displayRaw)
+        ? data.displayRaw
+        : undefined,
     displayRawUnit:
       typeof data.displayRawUnit === 'string' && data.displayRawUnit.trim().length > 0
         ? data.displayRawUnit.trim()
         : undefined,
-    avatarUrl: typeof data.avatarUrl === 'string' && data.avatarUrl.length > 0 ? data.avatarUrl : undefined,
+    avatarUrl:
+      typeof data.avatarUrl === 'string' && data.avatarUrl.length > 0 ? data.avatarUrl : undefined,
     scoreBest: Number(data.scoreBest ?? 0),
     updatedAt,
     isPro: data.isPro === true,
@@ -252,7 +263,9 @@ function mapFirestoreDoc(d: QueryDocumentSnapshot): LeaderboardEntry {
         ? (data.weightBucket as LadderProfileProjection['weightBucket'])
         : undefined,
     regionScope:
-      data.regionScope === 'country' || data.regionScope === 'city' || data.regionScope === 'district'
+      data.regionScope === 'country' ||
+      data.regionScope === 'city' ||
+      data.regionScope === 'district'
         ? data.regionScope
         : undefined,
   };
@@ -284,7 +297,10 @@ async function fetchFirestoreLeaderboardPage(
     cursor = docs[docs.length - 1];
     if (p === page) {
       const offset = (page - 1) * pageSize;
-      return withRank(docs.map((x) => mapFirestoreDoc(x)), offset);
+      return withRank(
+        docs.map((x) => mapFirestoreDoc(x)),
+        offset
+      );
     }
     if (!cursor) return [];
   }
@@ -368,7 +384,13 @@ export async function getMyLeaderboardEntry(params: {
   const db = getFirestoreDb();
   if (db) {
     try {
-      const ref = doc(db, LEADERBOARDS_COLLECTION, params.metric, ENTRIES_SUBCOLLECTION, params.uid);
+      const ref = doc(
+        db,
+        LEADERBOARDS_COLLECTION,
+        params.metric,
+        ENTRIES_SUBCOLLECTION,
+        params.uid
+      );
       const snap = await getDoc(ref);
       if (!snap.exists()) {
         return { ok: true, item: null };
@@ -424,7 +446,9 @@ export async function getRankByScoreBest(params: {
 
   const store = getMetricStore(params.metric);
   const rank =
-    Array.from(store.values()).filter((row) => Number.isFinite(row.scoreBest) && row.scoreBest > params.scoreBest).length + 1;
+    Array.from(store.values()).filter(
+      (row) => Number.isFinite(row.scoreBest) && row.scoreBest > params.scoreBest
+    ).length + 1;
   writeGlobalRankCache(cacheKey, rank);
   return { ok: true, rank, fromCache: false };
 }
@@ -541,7 +565,9 @@ function applyMemoryPreviewFullSixAxis(options: {
   const previousPreview = memoryPreviewDb.get(uid) ?? {};
   const rowProfile = profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? {};
   const isAnonymousInLadder = rowProfile.isAnonymousInLadder === true;
-  const safeAvatar = isAnonymousInLadder ? undefined : sanitizeAvatarUrlForLeaderboard(avatarUrl ?? undefined);
+  const safeAvatar = isAnonymousInLadder
+    ? undefined
+    : sanitizeAvatarUrlForLeaderboard(avatarUrl ?? undefined);
   const now = new Date().toISOString();
   const radarScores = isAnonymousInLadder ? {} : buildFullRadarScoresMapForFirestore(mergedScores);
   memoryPreviewDb.set(uid, {
@@ -549,7 +575,9 @@ function applyMemoryPreviewFullSixAxis(options: {
     ...rowProfile,
     uid,
     schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
-    displayName: isAnonymousInLadder ? 'Anonymous' : normalizeLadderDisplayName(displayName.trim() || 'Pilot'),
+    displayName: isAnonymousInLadder
+      ? 'Anonymous'
+      : normalizeLadderDisplayName(displayName.trim() || 'Pilot'),
     avatarUrl: safeAvatar,
     updatedAt: now,
     radarUpdatedAt: isAnonymousInLadder ? undefined : now,
@@ -588,7 +616,9 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
   const profileProjection =
     profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
   const identity = getLeaderboardIdentityPayload();
-  const dn = normalizeLadderDisplayName((displayName && displayName.trim()) || identity.displayName || '');
+  const dn = normalizeLadderDisplayName(
+    (displayName && displayName.trim()) || identity.displayName || ''
+  );
   const av = sanitizeAvatarUrlForLeaderboard(avatarUrl ?? identity.avatarUrl);
 
   const db = getFirestoreDb();
@@ -665,25 +695,45 @@ export async function submitLeaderboardScore(params: {
     profile: profileProjection,
   };
   if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
-    return { ok: false, reason: 'pro-required', updated: false, previousScore: null, submittedScore: null };
+    return {
+      ok: false,
+      reason: 'pro-required',
+      updated: false,
+      previousScore: null,
+      submittedScore: null,
+    };
   }
 
   const identity = getLeaderboardIdentityPayload();
   const mergedForWrite: SubmitLeaderboardInput = {
     ...normalizedInput,
     displayName: normalizeLadderDisplayName(
-      (normalizedInput.displayName && normalizedInput.displayName.trim()) || identity.displayName || ''
+      (normalizedInput.displayName && normalizedInput.displayName.trim()) ||
+        identity.displayName ||
+        ''
     ),
     avatarUrl: sanitizeAvatarUrlForLeaderboard(normalizedInput.avatarUrl ?? identity.avatarUrl),
   };
 
   if (!validateInput(mergedForWrite)) {
-    return { ok: false, reason: 'invalid-input', updated: false, previousScore: null, submittedScore: null };
+    return {
+      ok: false,
+      reason: 'invalid-input',
+      updated: false,
+      previousScore: null,
+      submittedScore: null,
+    };
   }
 
   const resolved = await resolveLeaderboardUid(mergedForWrite.uid);
   if (resolved.backend === 'error') {
-    return { ok: false, reason: 'unknown', updated: false, previousScore: null, submittedScore: null };
+    return {
+      ok: false,
+      reason: 'unknown',
+      updated: false,
+      previousScore: null,
+      submittedScore: null,
+    };
   }
 
   const uid = resolved.uid;
@@ -719,7 +769,10 @@ export async function submitLeaderboardScore(params: {
       }
 
       const payload: Record<string, unknown> = {
-        displayName: mergedForWrite.profile?.isAnonymousInLadder === true ? 'Anonymous' : mergedForWrite.displayName,
+        displayName:
+          mergedForWrite.profile?.isAnonymousInLadder === true
+            ? 'Anonymous'
+            : mergedForWrite.displayName,
         scoreBest: mergedForWrite.score,
         updatedAt: new Date().toISOString(),
         isPro: true,
@@ -798,7 +851,13 @@ export async function submitLeaderboardScore(params: {
       if (import.meta.env.DEV) {
         console.warn('[leaderboard] submitLeaderboardScore Firestore error', err);
       }
-      return { ok: false, reason: 'unknown', updated: false, previousScore: null, submittedScore: null };
+      return {
+        ok: false,
+        reason: 'unknown',
+        updated: false,
+        previousScore: null,
+        submittedScore: null,
+      };
     }
   }
 

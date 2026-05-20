@@ -37,7 +37,13 @@ export function useProStructuredUserSyncLifecycle(): void {
     }
 
     let cancelled = false;
-    const pref = doc(db, USER_CLOUD_COLLECTION, user.uid, USER_PROFILE_SUBCOLLECTION, USER_PROFILE_BASELINE_DOC_ID);
+    const pref = doc(
+      db,
+      USER_CLOUD_COLLECTION,
+      user.uid,
+      USER_PROFILE_SUBCOLLECTION,
+      USER_PROFILE_BASELINE_DOC_ID
+    );
 
     void mergeRemoteProfileIfNewer(ent).catch((err) => {
       if (import.meta.env.DEV) {
@@ -72,7 +78,7 @@ export function useProStructuredUserSyncLifecycle(): void {
           looksLikeTransportGlitch
             ? '[structured-sync] Firestore Listen transport glitch (often VPN/QUIC/Wi‑Fi). SDK will retry; local data is unaffected.'
             : '[structured-sync] profile baseline listener',
-          err,
+          err
         );
       }
     );

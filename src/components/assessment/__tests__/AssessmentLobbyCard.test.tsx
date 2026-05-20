@@ -8,8 +8,9 @@ import { AssessmentLobbyCard } from '../AssessmentLobbyCard';
 
 const mockNavigate = vi.fn();
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -100,7 +101,9 @@ describe('AssessmentLobbyCard', () => {
     const { container, unmount } = renderCard();
     const link = container.querySelector('a') as HTMLAnchorElement;
     act(() => {
-      link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      link.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })
+      );
     });
     expect(mockNavigate).toHaveBeenCalledWith(ROUTES.strength);
     unmount();

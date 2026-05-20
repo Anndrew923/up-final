@@ -55,4 +55,3 @@ describe('ladder profile bucket derivation', () => {
     });
   });
 });
-

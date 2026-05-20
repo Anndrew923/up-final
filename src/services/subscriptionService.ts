@@ -115,4 +115,3 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
     proActive: hasProAccess(next),
   };
 }
-

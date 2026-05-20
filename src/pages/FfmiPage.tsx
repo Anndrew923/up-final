@@ -41,8 +41,15 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
     hasError: () => errorKey != null,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
@@ -128,7 +135,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                     <dt className="text-zinc-500">{t('ffmi.resultRadarScore')}</dt>
                     <dd className="font-mono text-lg text-accent-primary">
                       {breakdown.allowsRadarSubmit ? (
-                        heroScoreText ?? breakdown.submittedScore.toFixed(2)
+                        (heroScoreText ?? breakdown.submittedScore.toFixed(2))
                       ) : (
                         <span className="text-zinc-500">{t('ffmi.radarScoreLockedLabel')}</span>
                       )}
@@ -168,8 +175,11 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                     <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
                       {scoreMeaning.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-                    {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+                    <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                      {scoreMeaning.summary}
+                    </p>
+                    {scoreMeaning.nextMilestone !== null &&
+                    scoreMeaning.remainingPoints !== null ? (
                       <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-violet-300">
                         {t('ffmi.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
                       </p>

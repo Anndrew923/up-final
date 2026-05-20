@@ -19,25 +19,25 @@ without introducing unstable ad-hoc fields.
 
 ## Mapping table (name + type + migration notes)
 
-| reference-app-fitness field | up-final field | up-final type | required | migration notes |
-| --- | --- | --- | --- | --- |
-| `gender` | `gender` | `'male' \| 'female'` | yes | Already in physical profile. |
-| `age` | `age` | `number` | yes | Whole years; keep validated bounds from profile rules. |
-| `height` | `heightCm` | `number` | yes | Normalize to cm naming used by `up-final`. |
-| `weight` | `weightKg` | `number` | yes | Normalize to kg naming used by `up-final`. |
-| `job_category` | `jobCategory` | `LadderJobCategory \| ''` | optional | Use normalized enum key, avoid localized labels in storage. |
-| `weeklyTrainingHours` | `weeklyTrainingHours` | `number \| null` | optional | Nullable when not provided; no string persistence. |
-| `trainingYears` | `trainingYears` | `number \| null` | optional | Nullable when not provided; decimal allowed. |
-| `country` | `countryCode` | `LadderCountryCode \| ''` | optional | Prefer ISO-like short code (`TW`, `US`, ...). |
-| `city` | `city` | `string` | optional | Free text or controlled list value. |
-| `district` | `district` | `string` | optional | Usually used with TW city flow. |
-| `region` | `region` | `string` | optional | Keep for non-TW administrative region. |
-| `isAnonymousInLadder` | `isAnonymousInLadder` | `boolean` | optional | Defaults to `false`. |
-| `filter_weightClass` | `weightBucket` | `LadderWeightBucket` | derived | Do not store user input string directly; derive from `weightKg`. |
-| `filter_job` | `jobCategory` | `LadderJobCategory \| ''` | optional | Legacy duplicate; collapse into one canonical field. |
-| derived age grouping | `ageBucket` | `LadderAgeBucket` | derived | Derive from `age` in pure logic. |
-| derived height grouping | `heightBucket` | `LadderHeightBucket` | derived | Derive from `heightCm` in pure logic. |
-| region-level filter state (`country/city/district`) | `regionScope` | `LadderRegionScope` | derived | Optional cached scope for fast UI filtering. |
+| reference-app-fitness field                         | up-final field        | up-final type             | required | migration notes                                                  |
+| --------------------------------------------------- | --------------------- | ------------------------- | -------- | ---------------------------------------------------------------- |
+| `gender`                                            | `gender`              | `'male' \| 'female'`      | yes      | Already in physical profile.                                     |
+| `age`                                               | `age`                 | `number`                  | yes      | Whole years; keep validated bounds from profile rules.           |
+| `height`                                            | `heightCm`            | `number`                  | yes      | Normalize to cm naming used by `up-final`.                       |
+| `weight`                                            | `weightKg`            | `number`                  | yes      | Normalize to kg naming used by `up-final`.                       |
+| `job_category`                                      | `jobCategory`         | `LadderJobCategory \| ''` | optional | Use normalized enum key, avoid localized labels in storage.      |
+| `weeklyTrainingHours`                               | `weeklyTrainingHours` | `number \| null`          | optional | Nullable when not provided; no string persistence.               |
+| `trainingYears`                                     | `trainingYears`       | `number \| null`          | optional | Nullable when not provided; decimal allowed.                     |
+| `country`                                           | `countryCode`         | `LadderCountryCode \| ''` | optional | Prefer ISO-like short code (`TW`, `US`, ...).                    |
+| `city`                                              | `city`                | `string`                  | optional | Free text or controlled list value.                              |
+| `district`                                          | `district`            | `string`                  | optional | Usually used with TW city flow.                                  |
+| `region`                                            | `region`              | `string`                  | optional | Keep for non-TW administrative region.                           |
+| `isAnonymousInLadder`                               | `isAnonymousInLadder` | `boolean`                 | optional | Defaults to `false`.                                             |
+| `filter_weightClass`                                | `weightBucket`        | `LadderWeightBucket`      | derived  | Do not store user input string directly; derive from `weightKg`. |
+| `filter_job`                                        | `jobCategory`         | `LadderJobCategory \| ''` | optional | Legacy duplicate; collapse into one canonical field.             |
+| derived age grouping                                | `ageBucket`           | `LadderAgeBucket`         | derived  | Derive from `age` in pure logic.                                 |
+| derived height grouping                             | `heightBucket`        | `LadderHeightBucket`      | derived  | Derive from `heightCm` in pure logic.                            |
+| region-level filter state (`country/city/district`) | `regionScope`         | `LadderRegionScope`       | derived  | Optional cached scope for fast UI filtering.                     |
 
 ## Canonical naming decisions
 

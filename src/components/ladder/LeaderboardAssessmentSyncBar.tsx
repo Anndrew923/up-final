@@ -66,7 +66,9 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.assessmentSync.hint')}</p>
 
       {targetCount === 0 ? (
-        <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.assessmentSync.noTargets')}</p>
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {t('ladder.assessmentSync.noTargets')}
+        </p>
       ) : gate !== 'ok' ? (
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
       ) : null}

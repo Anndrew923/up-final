@@ -28,8 +28,7 @@ export const RADAR_CARD_V2 = {
   shadow: {
     panel:
       'shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)]',
-    overall:
-      'shadow-[inset_0_0_0_1px_rgba(56,189,248,0.08),inset_0_0_20px_rgba(59,130,246,0.08)]',
+    overall: 'shadow-[inset_0_0_0_1px_rgba(56,189,248,0.08),inset_0_0_20px_rgba(59,130,246,0.08)]',
     weakestInset: 'shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]',
   },
   font: {
@@ -140,4 +139,3 @@ export const getRadarPalette = (dominantKey: SixAxisMetric | null): RadarPalette
   }
   return RADAR_PALETTES[dominantKey] ?? CYAN_DEFAULT_PALETTE;
 };
-

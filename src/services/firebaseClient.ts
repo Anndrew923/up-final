@@ -203,7 +203,9 @@ export async function consumeFirebaseRedirectResult(): Promise<UserCredential | 
     ) {
       writeSessionFlag(GOOGLE_REDIRECT_RETRY_KEY, true);
       if (import.meta.env.DEV) {
-        console.warn('[auth] redirect result conflict, retrying once with signed-out state', { code });
+        console.warn('[auth] redirect result conflict, retrying once with signed-out state', {
+          code,
+        });
       }
       await signOut(firebaseAuth);
       const provider = new GoogleAuthProvider();
@@ -252,7 +254,10 @@ export async function signInWithGoogleWeb(): Promise<User | null> {
     const code = getFirebaseAuthErrorCode(error);
     if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user') {
       if (import.meta.env.DEV) {
-        console.warn('[auth] popup unavailable, switching to redirect sign-in', { code, wasAnonymous });
+        console.warn('[auth] popup unavailable, switching to redirect sign-in', {
+          code,
+          wasAnonymous,
+        });
       }
       return startGoogleRedirect(firebaseAuth, provider);
     }

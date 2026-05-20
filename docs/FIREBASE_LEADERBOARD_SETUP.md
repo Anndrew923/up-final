@@ -10,13 +10,13 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 在 **Firebase Console → Firestore → `leaderboard_previews` → 點選一筆文件** 時，預期應類似：
 
-| 欄位 | 預期 |
-|------|------|
-| `displayName` | string（規則必填） |
-| `updatedAt` | string（規則必填） |
-| `radarScores` | **map**；展開後為上列六個子欄位（number） |
-| `schemaVersion` | number（選填，新客戶端為 `1`） |
-| `gender`、`ageBucket`、`jobCategory` 等 | 選填摘要欄位 |
+| 欄位                                    | 預期                                      |
+| --------------------------------------- | ----------------------------------------- |
+| `displayName`                           | string（規則必填）                        |
+| `updatedAt`                             | string（規則必填）                        |
+| `radarScores`                           | **map**；展開後為上列六個子欄位（number） |
+| `schemaVersion`                         | number（選填，新客戶端為 `1`）            |
+| `gender`、`ageBucket`、`jobCategory` 等 | 選填摘要欄位                              |
 
 **請勿**在文件**根層級**出現「整段字當欄位名」的鍵（例如字面意義的 `radarScores.strength`）。`setDoc` + `merge` 若用扁平物件鍵名帶點號，Firestore 會當成根上的單一欄位，App 讀取 `data.radarScores` 會是空的，天梯預覽雷達會變成 **0/6**。若曾誤寫，可在 Console 手動刪除這類錯誤欄位後，再用新客戶端上傳一次即可。
 
@@ -49,12 +49,12 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 1. **Project settings（齒輪）→ Your apps → Web** 註冊應用程式。
 2. 將 `firebaseConfig` 對應到專案根目錄 **`.env`**（勿提交 git；參考 `.env.example`）：
 
-| Firebase SDK 欄位 | 本專案 env |
-|-------------------|------------|
-| `apiKey` | `VITE_FIREBASE_API_KEY` |
-| `authDomain` | `VITE_FIREBASE_AUTH_DOMAIN` |
-| `projectId` | `VITE_FIREBASE_PROJECT_ID` |
-| `appId` | `VITE_FIREBASE_APP_ID` |
+| Firebase SDK 欄位 | 本專案 env                  |
+| ----------------- | --------------------------- |
+| `apiKey`          | `VITE_FIREBASE_API_KEY`     |
+| `authDomain`      | `VITE_FIREBASE_AUTH_DOMAIN` |
+| `projectId`       | `VITE_FIREBASE_PROJECT_ID`  |
+| `appId`           | `VITE_FIREBASE_APP_ID`      |
 
 **四個都要填**，存檔後 **重啟 `npm run dev`**（Vite 只會在啟動時讀 env）。
 
@@ -64,16 +64,16 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 **擇一即可：**
 
-- **A. Firebase CLI（建議）**  
-  1. 安裝 CLI：`npm install -g firebase-tools`（或每次 `npx firebase-tools ...`）。  
-  2. `firebase login`  
-  3. 在專案根目錄：`firebase use <你的_projectId>`（若尚無 `.firebaserc` 會建立）。  
+- **A. Firebase CLI（建議）**
+  1. 安裝 CLI：`npm install -g firebase-tools`（或每次 `npx firebase-tools ...`）。
+  2. `firebase login`
+  3. 在專案根目錄：`firebase use <你的_projectId>`（若尚無 `.firebaserc` 會建立）。
   4. 部署：`firebase deploy --only firestore:rules`  
      （或 `firebase deploy --only firestore` 一併部署規則與 `firestore.indexes.json`。）
 
-- **B. 只用手動貼上**  
-  1. Console → **Firestore → Rules**。  
-  2. 將本 repo **`firestore.rules` 全文** 合併進現有規則（若專案內已有其他 `match`，勿覆蓋刪除，應合併邏輯）。  
+- **B. 只用手動貼上**
+  1. Console → **Firestore → Rules**。
+  2. 將本 repo **`firestore.rules` 全文** 合併進現有規則（若專案內已有其他 `match`，勿覆蓋刪除，應合併邏輯）。
   3. **Publish**。
 
 ### 6. 索引（多數情況不必手動）
@@ -86,22 +86,22 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 ## 本 repo 已替你準備好的部分（無需再改）
 
-| 項目 | 說明 |
-|------|------|
-| `firebase.json` | 指向 `firestore.rules` 與 `firestore.indexes.json` |
-| `firestore.rules` | `leaderboards/{metric}/entries/{uid}` 讀寫條件 |
-| `firestore.indexes.json` | 佔位；可透過 CLI 部署 |
-| `src/services/firestorePaths.ts` | 路徑常數 |
-| `src/main.tsx` | 啟動時呼叫 `tryInitFirebaseFromEnv()` |
+| 項目                                 | 說明                                                             |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| `firebase.json`                      | 指向 `firestore.rules` 與 `firestore.indexes.json`               |
+| `firestore.rules`                    | `leaderboards/{metric}/entries/{uid}` 讀寫條件                   |
+| `firestore.indexes.json`             | 佔位；可透過 CLI 部署                                            |
+| `src/services/firestorePaths.ts`     | 路徑常數                                                         |
+| `src/main.tsx`                       | 啟動時呼叫 `tryInitFirebaseFromEnv()`                            |
 | `src/services/leaderboardService.ts` | DEV 下 Firestore 錯誤會 `console.warn`，便於對照規則／索引／權限 |
 
 ---
 
 ## 驗收建議
 
-1. `.env` 四個變數齊全 → 重啟 dev server。  
-2. Google 登入後開 **天梯 `/ladder`**。  
-3. 若仍失敗：開 **DevTools → Console**，查看 `[leaderboard] listLeaderboard Firestore error` 的完整錯誤（權限 / 索引 / 網路）。  
+1. `.env` 四個變數齊全 → 重啟 dev server。
+2. Google 登入後開 **天梯 `/ladder`**。
+3. 若仍失敗：開 **DevTools → Console**，查看 `[leaderboard] listLeaderboard Firestore error` 的完整錯誤（權限 / 索引 / 網路）。
 4. （選用）使用專案內 **Leaderboard Debug** 路由做 list / submit 煙霧測試（若路由已啟用）。
 
 ---

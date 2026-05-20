@@ -42,7 +42,5 @@ export const useUiInteractionStore = create<UiInteractionStore>((set) => ({
 
 /** Shell-level dim / pointer lock while ritual overlays are active. */
 export function useShellInteractionBlocked(): boolean {
-  return useUiInteractionStore(
-    (s) => s.isHomeResonanceBlocking || s.isBootSequenceBlocking,
-  );
+  return useUiInteractionStore((s) => s.isHomeResonanceBlocking || s.isBootSequenceBlocking);
 }

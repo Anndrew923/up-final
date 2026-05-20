@@ -9,12 +9,7 @@ export type CloudSyncOutcome =
   | { ok: true }
   | {
       ok: false;
-      reason:
-        | 'unavailable'
-        | 'empty-restore'
-        | 'auth-failed'
-        | 'permission-denied'
-        | 'unknown';
+      reason: 'unavailable' | 'empty-restore' | 'auth-failed' | 'permission-denied' | 'unknown';
     };
 
 type CloudSyncErrorReason = Extract<CloudSyncOutcome, { ok: false }>['reason'];

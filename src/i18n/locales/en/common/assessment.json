@@ -10,17 +10,17 @@
     },
     "rawInputsHeading": "Core six inputs",
     "homeRadarHint": "Radar and overall average are shown on Home.",
-    "viewHomeRadar": "Open Home radar",
+    "viewHomeRadar": "Open performance dashboard",
     "saveToHistory": "Save snapshot to history",
     "saveToHistoryDone": "Saved to local history.",
     "resetScores": "Reset core scores",
     "axis": {
-      "strength": "Strength",
-      "explosivePower": "Explosive power",
-      "cardio": "Cardio",
-      "muscleMass": "Muscle mass",
-      "bodyFat": "Body fat",
-      "gripStrength": "Grip strength"
+      "strength": "Horsepower",
+      "explosivePower": "Torque",
+      "cardio": "Stint",
+      "muscleMass": "Chassis",
+      "bodyFat": "Kerb weight",
+      "gripStrength": "Traction"
     },
     "ffmi": {
       "kicker": "Calculated",

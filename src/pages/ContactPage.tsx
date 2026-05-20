@@ -18,7 +18,9 @@ const ContactPage: FC<ContactPageProps> = ({ onBack }) => {
               {t('contact.kicker')}
             </p>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('contact.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('contact.subtitle')}</p>
+            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+              {t('contact.subtitle')}
+            </p>
           </div>
           {onBack ? (
             <button type="button" className="ui-btn shrink-0" onClick={onBack}>

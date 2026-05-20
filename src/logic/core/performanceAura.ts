@@ -51,7 +51,7 @@ export function resolvePerformanceAura(metric: SixAxisMetric, score: number): Pe
 
 export function resolvePerformanceAuraForMetric(
   metric: ScoreMeaningBandMetric,
-  score: number,
+  score: number
 ): PerformanceAuraKey {
   return resolveAuraFromBandId(resolveScoreMeaningBand(metric, score).id);
 }

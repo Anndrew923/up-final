@@ -113,12 +113,7 @@ export type FfmiMaleCategorySuffix =
   | 'r26_27'
   | 'r28_30';
 
-export type FfmiFemaleCategorySuffix =
-  | 'r13_14'
-  | 'r15_16'
-  | 'r17_18'
-  | 'r19_21'
-  | 'r22plus';
+export type FfmiFemaleCategorySuffix = 'r13_14' | 'r15_16' | 'r17_18' | 'r19_21' | 'r22plus';
 
 export function getFfmiMaleCategorySuffix(adjustedFfmi: number): FfmiMaleCategorySuffix {
   if (adjustedFfmi < 18) return 'r16_17';

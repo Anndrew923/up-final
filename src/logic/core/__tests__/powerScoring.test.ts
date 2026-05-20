@@ -75,9 +75,7 @@ describe('calculateExplosivePowerFinalRaw', () => {
     expect(b.standingLongJumpRaw).toBeNull();
     expect(b.sprintRaw).toBeNull();
     expect(b.averageRaw).toBe(
-      b.verticalJumpRaw != null
-        ? Math.round((b.verticalJumpRaw / 3) * 100) / 100
-        : 0
+      b.verticalJumpRaw != null ? Math.round((b.verticalJumpRaw / 3) * 100) / 100 : 0
     );
   });
 
@@ -174,11 +172,9 @@ describe('mergeScoreMapWithResolvedExplosivePower', () => {
   };
 
   it('overrides explosivePower when persisted inputs resolve', () => {
-    const merged = mergeScoreMapWithResolvedExplosivePower(
-      { explosivePower: 10 },
-      profile,
-      { explosivePower: { verticalJumpCm: 40 } }
-    );
+    const merged = mergeScoreMapWithResolvedExplosivePower({ explosivePower: 10 }, profile, {
+      explosivePower: { verticalJumpCm: 40 },
+    });
     expect(merged.explosivePower).not.toBe(10);
     expect(merged.explosivePower).toBeGreaterThan(0);
   });
@@ -216,8 +212,7 @@ describe('resolveExplosiveLadderScoreBundle', () => {
     expect(b.broad).not.toBeNull();
     expect(b.broad).toBeGreaterThan(0);
     expect(b.sprint).toBeNull();
-    const expectedComposite =
-      b.broad != null ? Math.round((b.broad / 3) * 100) / 100 : 0;
+    const expectedComposite = b.broad != null ? Math.round((b.broad / 3) * 100) / 100 : 0;
     expect(b.composite).toBeCloseTo(expectedComposite, 5);
   });
 });

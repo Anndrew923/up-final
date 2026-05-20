@@ -9,6 +9,9 @@ export function parseIsoMs(iso: string | null | undefined): number {
 }
 
 /** True when `remote` is strictly newer than `local` (equal counts as not newer). */
-export function isRemoteNewer(remote: string | null | undefined, local: string | null | undefined): boolean {
+export function isRemoteNewer(
+  remote: string | null | undefined,
+  local: string | null | undefined
+): boolean {
   return parseIsoMs(remote) > parseIsoMs(local);
 }

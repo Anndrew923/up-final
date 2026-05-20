@@ -123,7 +123,8 @@ export default {
             '0 0 5px rgb(var(--aura-neon-rgb) / 0.95), 0 0 10px rgb(var(--aura-neon-rgb) / 0.55), 0 0 18px rgb(var(--aura-neon-rgb) / 0.28)',
         },
         '.tachometer-fill-glow': {
-          filter: 'drop-shadow(0 0 6px rgb(var(--aura-neon-rgb) / 0.55)) drop-shadow(0 0 14px rgb(var(--aura-neon-rgb) / 0.28))',
+          filter:
+            'drop-shadow(0 0 6px rgb(var(--aura-neon-rgb) / 0.55)) drop-shadow(0 0 14px rgb(var(--aura-neon-rgb) / 0.28))',
         },
       });
     }),

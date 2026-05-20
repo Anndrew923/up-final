@@ -79,7 +79,10 @@ function LadderFilterSheetComponent({
       >
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-start justify-between gap-3">
-            <h2 id={titleId} className="text-sm font-semibold tracking-tight text-zinc-50 sm:text-base">
+            <h2
+              id={titleId}
+              className="text-sm font-semibold tracking-tight text-zinc-50 sm:text-base"
+            >
               {t('ladder.filters.title')}
             </h2>
             <div className="flex items-center gap-2">
@@ -88,7 +91,11 @@ function LadderFilterSheetComponent({
                   {activeFilterCount}
                 </span>
               ) : null}
-              <button type="button" className="ui-btn py-1 text-[11px] sm:py-1.5 sm:text-xs" onClick={onClose}>
+              <button
+                type="button"
+                className="ui-btn py-1 text-[11px] sm:py-1.5 sm:text-xs"
+                onClick={onClose}
+              >
                 {t('cancel')}
               </button>
             </div>
@@ -221,7 +228,11 @@ function LadderFilterSheetComponent({
             ) : null}
           </div>
           <div className="sticky bottom-0 z-20 -mx-4 grid grid-cols-2 gap-2 border-t border-zinc-800/80 bg-bg-card/95 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur-sm sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-3 sm:backdrop-blur-none">
-            <button type="button" className="ui-btn py-1.5 text-[11px] sm:py-2 sm:text-xs" onClick={onClear}>
+            <button
+              type="button"
+              className="ui-btn py-1.5 text-[11px] sm:py-2 sm:text-xs"
+              onClick={onClear}
+            >
               {t('ladder.filters.clear')}
             </button>
             <button

@@ -81,7 +81,9 @@ function readInitialForm(): {
         ? String(raw.standingLongJumpCm)
         : '',
     sprint:
-      raw?.sprintSeconds !== undefined && raw.sprintSeconds !== null ? String(raw.sprintSeconds) : '',
+      raw?.sprintSeconds !== undefined && raw.sprintSeconds !== null
+        ? String(raw.sprintSeconds)
+        : '',
   };
 }
 

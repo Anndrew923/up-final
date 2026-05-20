@@ -5,8 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getDefaultProjectForDivision } from '../../logic/core/ladderShards';
 import { useLadderFiltersDraft, type UseLadderFiltersDraftResult } from '../useLadderFiltersDraft';
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 function renderHookHarness(
   onAppliedChange?: (next: ReturnType<typeof useLadderFiltersDraft>['applied']) => void

@@ -46,7 +46,9 @@ function PlateBlock({ value, unitLabel }: { value: number; unitLabel: string }) 
       className="inline-flex min-h-[2.75rem] min-w-[2.75rem] shrink-0 flex-col items-center justify-center rounded-md border-2 border-accent-primary/70 bg-zinc-950 px-1 py-1 text-center shadow-[0_0_12px_rgba(255,140,0,0.15)]"
       aria-label={`${formatToolWeight(value)} ${unitLabel}`}
     >
-      <span className="font-mono text-sm font-bold leading-none text-zinc-50">{formatToolWeight(value)}</span>
+      <span className="font-mono text-sm font-bold leading-none text-zinc-50">
+        {formatToolWeight(value)}
+      </span>
     </span>
   );
 }

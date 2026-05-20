@@ -11,12 +11,12 @@
     "deleteConfirm": "確定要刪除這筆紀錄嗎？此操作無法復原。",
     "valueEmpty": "—",
     "shortAxis": {
-      "strength": "力量",
-      "explosivePower": "爆發",
-      "cardio": "心肺",
-      "muscleMass": "肌肉",
-      "bodyFat": "體脂",
-      "gripStrength": "握力"
+      "strength": "馬力",
+      "explosivePower": "扭矩",
+      "cardio": "續航",
+      "muscleMass": "構型",
+      "bodyFat": "配重",
+      "gripStrength": "抓地"
     }
   }
 }

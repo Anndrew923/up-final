@@ -5,7 +5,10 @@ import LeaderboardGateSheet from './LeaderboardGateSheet';
 import { useTranslation } from 'react-i18next';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
-import { useLeaderboardUpload, resolveLeaderboardUploadGate } from '../../hooks/useLeaderboardUpload';
+import {
+  useLeaderboardUpload,
+  resolveLeaderboardUploadGate,
+} from '../../hooks/useLeaderboardUpload';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../services/rateLimitService';
 
 export interface LeaderboardUploadBarProps {
@@ -36,10 +39,7 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
   }, [metric, score, showSectionTitle, clearFeedback]);
 
   const disabled =
-    busy ||
-    !Number.isFinite(score ?? NaN) ||
-    gate === 'no-score' ||
-    gate === 'invalid-score';
+    busy || !Number.isFinite(score ?? NaN) || gate === 'no-score' || gate === 'invalid-score';
 
   const statusText = (() => {
     if (!lastResult) return null;

@@ -132,14 +132,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       return;
     }
     setPreviewScore(result.score);
-  }, [
-    activeTab,
-    distanceInput,
-    profile,
-    profileReady,
-    runMinutesInput,
-    runSecondsInput,
-  ]);
+  }, [activeTab, distanceInput, profile, profileReady, runMinutesInput, runSecondsInput]);
 
   const submitToRadar = useCallback(() => {
     setSubmitDone(false);

@@ -39,8 +39,12 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
               {t('settings.kicker')}
             </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('settings.subtitle')}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">
+              {t('settings.title')}
+            </h1>
+            <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
+              {t('settings.subtitle')}
+            </p>
           </div>
           {onBack ? (
             <button type="button" className="ui-btn shrink-0" onClick={onBack}>
@@ -95,7 +99,9 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
             <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/80">
               {t('settings.system.reCalibrateKicker')}
             </span>
-            <span className="mt-1 text-xs text-zinc-500">{t('settings.system.reCalibrateHint')}</span>
+            <span className="mt-1 text-xs text-zinc-500">
+              {t('settings.system.reCalibrateHint')}
+            </span>
           </button>
         </section>
 
@@ -162,9 +168,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
               onClick={() => void signInGoogle()}
               disabled={!canSignIn}
             >
-              {busyAction === 'sign-in'
-                ? t('settings.signInBusy')
-                : t('settings.signInGoogle')}
+              {busyAction === 'sign-in' ? t('settings.signInBusy') : t('settings.signInGoogle')}
             </button>
             <button
               type="button"

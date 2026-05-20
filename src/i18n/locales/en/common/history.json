@@ -11,12 +11,12 @@
     "deleteConfirm": "Delete this record? This action cannot be undone.",
     "valueEmpty": "—",
     "shortAxis": {
-      "strength": "STR",
-      "explosivePower": "PWR",
-      "cardio": "CAR",
-      "muscleMass": "MUS",
-      "bodyFat": "BF",
-      "gripStrength": "GRP"
+      "strength": "HP",
+      "explosivePower": "TRQ",
+      "cardio": "STINT",
+      "muscleMass": "CHSS",
+      "bodyFat": "P2W",
+      "gripStrength": "GRIP"
     }
   }
 }

@@ -22,7 +22,9 @@ export function normalizeLadderDisplayName(raw: string): string {
  * Returns a leaderboard-safe avatar URL, or `undefined` if absent or invalid / oversized.
  * Allows `data:image/jpeg|png;base64,...` and `https://` URLs only.
  */
-export function sanitizeAvatarUrlForLeaderboard(raw: string | undefined | null): string | undefined {
+export function sanitizeAvatarUrlForLeaderboard(
+  raw: string | undefined | null
+): string | undefined {
   if (raw == null) return undefined;
   const t = raw.trim();
   if (!t) return undefined;

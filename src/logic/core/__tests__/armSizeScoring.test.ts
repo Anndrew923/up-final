@@ -45,7 +45,10 @@ describe('armSizeScoring', () => {
   });
 
   it('max valid inputs stay under global axis ceiling (200)', () => {
-    const result = evaluateArmSizeScore({ armCircumferenceCm: ARM_SIZE_MAX_CM, bodyFatPct: ARM_SIZE_BODY_FAT_MIN_PCT });
+    const result = evaluateArmSizeScore({
+      armCircumferenceCm: ARM_SIZE_MAX_CM,
+      bodyFatPct: ARM_SIZE_BODY_FAT_MIN_PCT,
+    });
     expect(result).not.toBeNull();
     expect(result!.submittedScore).toBeLessThanOrEqual(200);
     expect(result!.limitedByAxisCap).toBe(false);

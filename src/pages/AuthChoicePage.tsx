@@ -11,9 +11,10 @@ const AuthChoicePage: FC = () => {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<'none' | 'google' | 'guest'>('none');
   const [error, setError] = useState(false);
-  const returnTo = location.state && typeof location.state === 'object' && 'returnTo' in location.state
-    ? location.state.returnTo
-    : undefined;
+  const returnTo =
+    location.state && typeof location.state === 'object' && 'returnTo' in location.state
+      ? location.state.returnTo
+      : undefined;
   const targetRoute = (() => {
     if (returnTo === ROUTES.ladder) return ROUTES.ladder;
     if (returnTo === ROUTES.tools) return ROUTES.tools;
@@ -64,7 +65,9 @@ const AuthChoicePage: FC = () => {
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-accent-info">
               {t('authChoice.kicker')}
             </p>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('authChoice.title')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-50">
+              {t('authChoice.title')}
+            </h1>
             <p className="text-sm leading-relaxed text-zinc-400">{t('authChoice.subtitle')}</p>
           </header>
 

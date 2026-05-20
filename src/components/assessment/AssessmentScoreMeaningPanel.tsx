@@ -42,7 +42,8 @@ const TONE_STYLES: Record<
     milestone: 'text-amber-300',
   },
   slate: {
-    section: 'border-zinc-500/40 shadow-[inset_0_1px_0_rgba(161,161,170,0.15),0_0_24px_rgba(113,113,122,0.12)]',
+    section:
+      'border-zinc-500/40 shadow-[inset_0_1px_0_rgba(161,161,170,0.15),0_0_24px_rgba(113,113,122,0.12)]',
     gradient: 'via-zinc-400/55',
     header: 'text-zinc-300/90',
     milestone: 'text-zinc-300',
@@ -73,13 +74,17 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
         className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${styles.gradient} to-transparent`}
         aria-hidden
       />
-      <p className={`font-mono text-[10px] uppercase tracking-[0.28em] ${styles.header}`}>{headerLabel}</p>
+      <p className={`font-mono text-[10px] uppercase tracking-[0.28em] ${styles.header}`}>
+        {headerLabel}
+      </p>
       <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">{meaning.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">{meaning.summary}</p>
       {milestoneHintLabel != null &&
       meaning.nextMilestone !== null &&
       meaning.remainingPoints !== null ? (
-        <p className={`mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium ${styles.milestone}`}>
+        <p
+          className={`mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium ${styles.milestone}`}
+        >
           {milestoneHintLabel}
         </p>
       ) : null}

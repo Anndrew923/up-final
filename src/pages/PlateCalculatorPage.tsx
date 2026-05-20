@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
-import ToolResultModal, { type ToolResultModalPlatesPayload } from '../components/tools/ToolResultModal';
+import ToolResultModal, {
+  type ToolResultModalPlatesPayload,
+} from '../components/tools/ToolResultModal';
 import { usePlateCalculatorPage } from '../hooks/usePlateCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 
@@ -33,7 +35,9 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
     hasResult,
     activePlateSetDisplay,
   } = usePlateCalculatorPage();
-  const { displayValue, isBlocking, modalOpen, reveal, closeModal } = useToolResultReveal({ haptic: 'heavy' });
+  const { displayValue, isBlocking, modalOpen, reveal, closeModal } = useToolResultReveal({
+    haptic: 'heavy',
+  });
   const [modalPayload, setModalPayload] = useState<ToolResultModalPlatesPayload | null>(null);
 
   const unitLabel = t(`tools.calculators.plates.unitOptions.${unit}`);
@@ -115,7 +119,12 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
               {t('tools.calculators.plates.subtitle')}
             </p>
           </div>
-          <button type="button" className="ui-btn" onClick={onBack ?? (() => navigate(-1))} disabled={isBlocking}>
+          <button
+            type="button"
+            className="ui-btn"
+            onClick={onBack ?? (() => navigate(-1))}
+            disabled={isBlocking}
+          >
             {t('back')}
           </button>
         </header>
@@ -142,7 +151,9 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
                 </span>
                 <OptionSelectSheet
                   value={plateSetPreset}
-                  onChange={(next) => setPlateSetPreset((next || 'commercial') as typeof plateSetPreset)}
+                  onChange={(next) =>
+                    setPlateSetPreset((next || 'commercial') as typeof plateSetPreset)
+                  }
                   placeholder={t('tools.calculators.plates.plateSetOptions.commercial')}
                   title={t('tools.calculators.plates.plateSetSheetTitle')}
                   options={plateSetPresetOptions}
@@ -244,7 +255,9 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
                   ))}
                 </ul>
               ) : (
-                <p className="mt-4 text-xs text-zinc-500">{t('tools.calculators.plates.inputHint')}</p>
+                <p className="mt-4 text-xs text-zinc-500">
+                  {t('tools.calculators.plates.inputHint')}
+                </p>
               )}
 
               {hasResult && !isExactMatch ? (

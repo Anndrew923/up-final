@@ -52,7 +52,7 @@ function mergeCommonSections(sections: CommonSection[]): CommonLocale {
       const existingOwner = ownerByKey.get(key);
       if (existingOwner != null) {
         throw new Error(
-          `Duplicate common key "${key}" found in sections "${existingOwner}" and "${section.name}".`,
+          `Duplicate common key "${key}" found in sections "${existingOwner}" and "${section.name}".`
         );
       }
       ownerByKey.set(key, section.name);

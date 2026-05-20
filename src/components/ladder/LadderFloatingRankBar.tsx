@@ -10,7 +10,13 @@ export interface LadderFloatingRankBarProps {
   formatScore: (shardId: LeaderboardShardId, scoreBest: number) => string;
 }
 
-const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({ shardId, myRank, myScore, onJumpToMyRow, formatScore }) => {
+const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({
+  shardId,
+  myRank,
+  myScore,
+  onJumpToMyRow,
+  formatScore,
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -32,8 +38,12 @@ const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({ shardId, myRank
           </p>
         </div>
         <div className="shrink-0 text-right">
-          <p className="font-mono text-sm font-semibold text-accent-primary">{formatScore(shardId, myScore)}</p>
-          <p className="text-[10px] text-zinc-500">{t('ladder.floatingRank.cta', { ns: 'common' })}</p>
+          <p className="font-mono text-sm font-semibold text-accent-primary">
+            {formatScore(shardId, myScore)}
+          </p>
+          <p className="text-[10px] text-zinc-500">
+            {t('ladder.floatingRank.cta', { ns: 'common' })}
+          </p>
         </div>
       </div>
     </button>

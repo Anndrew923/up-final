@@ -21,4 +21,3 @@ describe('leaderboard progress logic', () => {
     expect(detectTierMilestone(12, 2)).toBe(3);
   });
 });
-

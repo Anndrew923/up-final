@@ -51,7 +51,7 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
             value={gender === 'male' || gender === 'female' ? gender : ''}
             onChange={(v) => setGender(v)}
             aria-invalid={Boolean(
-              errorCode === 'required-gender' || errorCode === 'invalid-gender',
+              errorCode === 'required-gender' || errorCode === 'invalid-gender'
             )}
           />
         </label>
@@ -88,7 +88,7 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
             aria-invalid={Boolean(
-              errorCode === 'required-height' || errorCode === 'invalid-height',
+              errorCode === 'required-height' || errorCode === 'invalid-height'
             )}
           />
         </label>
@@ -108,7 +108,7 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
             aria-invalid={Boolean(
-              errorCode === 'required-weight' || errorCode === 'invalid-weight',
+              errorCode === 'required-weight' || errorCode === 'invalid-weight'
             )}
           />
         </label>
@@ -131,7 +131,9 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
       )}
 
       <button type="submit" className="ui-btn ui-btn-primary w-full" disabled={loading}>
-        {loading ? t('home.profile.saving', { ns: 'common' }) : t('home.profile.save', { ns: 'common' })}
+        {loading
+          ? t('home.profile.saving', { ns: 'common' })
+          : t('home.profile.save', { ns: 'common' })}
       </button>
     </form>
   );

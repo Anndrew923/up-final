@@ -45,9 +45,10 @@ export function normalizeLocationFiltersForLadderDataset(
   const scoped = rows.filter((r) => r.countryCode === countryFilter);
   const cityKeys = [...new Set(scoped.map((r) => r.city).filter((c): c is string => Boolean(c)))];
   const effectiveCity = resolveEffectiveLadderCityFilter(city, cityKeys);
-  const base =
-    effectiveCity === 'all' ? scoped : scoped.filter((r) => r.city === effectiveCity);
-  const districtKeys = [...new Set(base.map((r) => r.district).filter((d): d is string => Boolean(d)))];
+  const base = effectiveCity === 'all' ? scoped : scoped.filter((r) => r.city === effectiveCity);
+  const districtKeys = [
+    ...new Set(base.map((r) => r.district).filter((d): d is string => Boolean(d))),
+  ];
   const effectiveDistrict = resolveEffectiveLadderDistrictFilter(district, districtKeys);
   return { city: effectiveCity, district: effectiveDistrict };
 }

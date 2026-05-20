@@ -58,7 +58,7 @@ function measureTargetRect(targetId: string): SpotlightRect | null {
 
 function waitForTargetRect(
   targetId: string,
-  isActive: () => boolean,
+  isActive: () => boolean
 ): Promise<SpotlightRect | null> {
   return new Promise((resolve) => {
     let frames = 0;
@@ -122,7 +122,7 @@ export function useBootSequenceRitual({
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
   const [typewriterDone, setTypewriterDone] = useState(false);
   const [profileReady, setProfileReady] = useState(() =>
-    isPhysicalProfileComplete(loadPhysicalProfile()),
+    isPhysicalProfileComplete(loadPhysicalProfile())
   );
   const [profileCommittedInBoot, setProfileCommittedInBoot] = useState(false);
   const runIdRef = useRef(0);
@@ -148,7 +148,7 @@ export function useBootSequenceRitual({
       }
       setBootStep({ phase: getBootStorePhase(nextStep), variant: 'narrative' });
     },
-    [setBootStep],
+    [setBootStep]
   );
 
   const playStepText = useCallback(
@@ -163,7 +163,7 @@ export function useBootSequenceRitual({
       if (!isActive()) return;
       setTypewriterDone(true);
     },
-    [play, reset, t],
+    [play, reset, t]
   );
 
   const syncSpotlight = useCallback(async (nextStep: BootSequenceStep, runId: number) => {
@@ -197,7 +197,7 @@ export function useBootSequenceRitual({
       if (!isActive()) return;
       await playStepText(nextStep, runId);
     },
-    [playStepText, publishStoreStep, syncSpotlight, triggerImpact],
+    [playStepText, publishStoreStep, syncSpotlight, triggerImpact]
   );
 
   const startStepRef = useRef(startStep);

@@ -167,12 +167,12 @@
       "grip": "Grip strength"
     },
     "metrics": {
-      "strength": "Strength",
-      "explosivePower": "Explosive",
-      "cardio": "Cardio",
-      "muscleMass": "Muscle",
-      "bodyFat": "Body fat",
-      "gripStrength": "Grip",
+      "strength": "Horsepower",
+      "explosivePower": "Torque",
+      "cardio": "Stint",
+      "muscleMass": "Chassis",
+      "bodyFat": "Kerb weight",
+      "gripStrength": "Traction",
       "armSize": "Arm size"
     },
     "filters": {

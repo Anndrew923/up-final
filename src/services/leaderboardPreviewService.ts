@@ -42,7 +42,15 @@ export interface GetLadderUserPreviewResult {
 
 const DEFAULT_PREVIEW_TTL_MS = 120000;
 const previewCache = new Map<string, { item: LadderUserPreview; cachedAt: number }>();
-const AGE_BUCKET_SET = new Set<LadderAgeBucket>(['under-20', '20-29', '30-39', '40-49', '50-59', '60-69', '70+']);
+const AGE_BUCKET_SET = new Set<LadderAgeBucket>([
+  'under-20',
+  '20-29',
+  '30-39',
+  '40-49',
+  '50-59',
+  '60-69',
+  '70+',
+]);
 const JOB_CATEGORY_SET = new Set<LadderJobCategory>([
   'engineering',
   'medical',
@@ -92,24 +100,30 @@ function mapPreview(data: Record<string, unknown>, uid: string): LadderUserPrevi
   const radarAxisCount = countPreviewRadarAxesFilled(radarScores);
   const radarComplete = isPreviewRadarComplete(radarScores);
   const radarUpdatedAt =
-    typeof data.radarUpdatedAt === 'string' && data.radarUpdatedAt.length > 0 ? data.radarUpdatedAt : undefined;
+    typeof data.radarUpdatedAt === 'string' && data.radarUpdatedAt.length > 0
+      ? data.radarUpdatedAt
+      : undefined;
 
   return {
     uid,
     displayName: typeof data.displayName === 'string' ? data.displayName : uid,
-    avatarUrl: typeof data.avatarUrl === 'string' && data.avatarUrl.length > 0 ? data.avatarUrl : undefined,
+    avatarUrl:
+      typeof data.avatarUrl === 'string' && data.avatarUrl.length > 0 ? data.avatarUrl : undefined,
     gender: data.gender === 'male' || data.gender === 'female' ? data.gender : undefined,
-    ageBucket: typeof data.ageBucket === 'string' && AGE_BUCKET_SET.has(data.ageBucket as LadderAgeBucket)
-      ? (data.ageBucket as LadderAgeBucket)
-      : undefined,
+    ageBucket:
+      typeof data.ageBucket === 'string' && AGE_BUCKET_SET.has(data.ageBucket as LadderAgeBucket)
+        ? (data.ageBucket as LadderAgeBucket)
+        : undefined,
     jobCategory:
-      typeof data.jobCategory === 'string' && JOB_CATEGORY_SET.has(data.jobCategory as LadderJobCategory)
+      typeof data.jobCategory === 'string' &&
+      JOB_CATEGORY_SET.has(data.jobCategory as LadderJobCategory)
         ? (data.jobCategory as LadderJobCategory)
         : undefined,
     countryCode: typeof data.countryCode === 'string' ? data.countryCode : undefined,
     city: typeof data.city === 'string' ? data.city : undefined,
     district: typeof data.district === 'string' ? data.district : undefined,
-    weeklyTrainingHours: typeof data.weeklyTrainingHours === 'number' ? data.weeklyTrainingHours : null,
+    weeklyTrainingHours:
+      typeof data.weeklyTrainingHours === 'number' ? data.weeklyTrainingHours : null,
     trainingYears: typeof data.trainingYears === 'number' ? data.trainingYears : null,
     isAnonymousInLadder: data.isAnonymousInLadder === true,
     radarScores,

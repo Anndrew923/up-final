@@ -70,34 +70,34 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBanner('idle');
     setBillingBusy(true);
     try {
-    if (!paywallEnabled) {
-      if (MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn && !isGoogleLinked) {
-        navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.ladder } });
+      if (!paywallEnabled) {
+        if (MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn && !isGoogleLinked) {
+          navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.ladder } });
+          return;
+        }
+        navigate(ROUTES.ladder);
+        return;
+      }
+      if (!isGoogleLinked) {
+        setBanner('auth-fail');
+        return;
+      }
+      if (!coreOwned) {
+        setBanner('core');
+        return;
+      }
+      const result = await purchaseProSubscription();
+      if (!result.ok) {
+        if (result.reason === 'core-required') {
+          setBanner('core');
+        } else if (result.reason === 'auth-required') {
+          setBanner('auth-fail');
+        } else {
+          setBanner('billing-fail');
+        }
         return;
       }
       navigate(ROUTES.ladder);
-      return;
-    }
-    if (!isGoogleLinked) {
-      setBanner('auth-fail');
-      return;
-    }
-    if (!coreOwned) {
-      setBanner('core');
-      return;
-    }
-    const result = await purchaseProSubscription();
-    if (!result.ok) {
-      if (result.reason === 'core-required') {
-        setBanner('core');
-      } else if (result.reason === 'auth-required') {
-        setBanner('auth-fail');
-      } else {
-        setBanner('billing-fail');
-      }
-      return;
-    }
-    navigate(ROUTES.ladder);
     } finally {
       setBillingBusy(false);
     }
@@ -107,19 +107,19 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBanner('idle');
     setBillingBusy(true);
     try {
-    if (!paywallEnabled) {
-      navigate(ROUTES.ladder);
-      return;
-    }
-    const result = await restorePurchasesFromDevice();
-    if (!result.hadSnapshot) {
-      setBanner('restore-empty');
-      return;
-    }
-    setBanner(result.proActive ? 'restore-ok' : 'restore-empty');
-    if (result.proActive) {
-      navigate(ROUTES.ladder);
-    }
+      if (!paywallEnabled) {
+        navigate(ROUTES.ladder);
+        return;
+      }
+      const result = await restorePurchasesFromDevice();
+      if (!result.hadSnapshot) {
+        setBanner('restore-empty');
+        return;
+      }
+      setBanner(result.proActive ? 'restore-ok' : 'restore-empty');
+      if (result.proActive) {
+        navigate(ROUTES.ladder);
+      }
     } finally {
       setBillingBusy(false);
     }
@@ -221,8 +221,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {!paywallEnabled
               ? t('identityOptionalBeta')
               : isGoogleLinked
-              ? t('signedInAs', { name: signedInDisplayName })
-              : t('identityRequired')}
+                ? t('signedInAs', { name: signedInDisplayName })
+                : t('identityRequired')}
           </p>
           <button
             type="button"
@@ -233,10 +233,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {!paywallEnabled
               ? t('betaNoLoginNeeded')
               : authBusy
-              ? t('googleLoginLoading')
-              : isGoogleLinked
-                ? t('googleLoginDone')
-                : t('googleLogin')}
+                ? t('googleLoginLoading')
+                : isGoogleLinked
+                  ? t('googleLoginDone')
+                  : t('googleLogin')}
           </button>
         </section>
 
@@ -279,8 +279,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             }}
             disabled={
               billingBusy ||
-              paywallEnabled &&
-              (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro))
+              (paywallEnabled &&
+                (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)))
             }
             className="rounded-xl border border-accent-primary bg-accent-primary px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(255,140,0,0.35)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
           >

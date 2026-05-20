@@ -9,7 +9,13 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 export interface LeaderboardAccessResult {
   canEnter: boolean;
   shouldShowJoinArena: boolean;
-  reason: 'ok' | 'open-access' | 'auth-required' | 'core-not-owned' | 'pro-required' | 'pro-expired';
+  reason:
+    | 'ok'
+    | 'open-access'
+    | 'auth-required'
+    | 'core-not-owned'
+    | 'pro-required'
+    | 'pro-expired';
   goToLeaderboard(): void;
   goToJoinArena(): void;
 }
@@ -33,17 +39,26 @@ export function useLeaderboardAccess(): LeaderboardAccessResult {
       return 'auth-required';
     }
     return getEntitlementReasonCode(
-        {
-          purchaseStatus,
-          subscriptionStatus,
-          isPro,
-          proExpiresAt,
-          planId,
-          lastCheckedAt,
-        },
-        'leaderboard-read'
-      );
-  }, [authStatus, isAnonymous, purchaseStatus, subscriptionStatus, isPro, proExpiresAt, planId, lastCheckedAt]);
+      {
+        purchaseStatus,
+        subscriptionStatus,
+        isPro,
+        proExpiresAt,
+        planId,
+        lastCheckedAt,
+      },
+      'leaderboard-read'
+    );
+  }, [
+    authStatus,
+    isAnonymous,
+    purchaseStatus,
+    subscriptionStatus,
+    isPro,
+    proExpiresAt,
+    planId,
+    lastCheckedAt,
+  ]);
 
   const goToLeaderboard = useCallback(() => {
     navigate(ROUTES.ladder);

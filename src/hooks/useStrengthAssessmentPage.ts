@@ -76,13 +76,17 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm());
 
-  const [perLiftResult, setPerLiftResult] = useState<Partial<Record<StrengthLiftKey, PerLiftScore>>>({});
+  const [perLiftResult, setPerLiftResult] = useState<
+    Partial<Record<StrengthLiftKey, PerLiftScore>>
+  >({});
   const [perLiftError, setPerLiftError] = useState<
     Partial<Record<StrengthLiftKey, StrengthSingleLiftError>>
   >({});
 
   const [combinedScore, setCombinedScore] = useState<number | null>(null);
-  const [combinedBreakdown, setCombinedBreakdown] = useState<StrengthAssessmentBreakdown | null>(null);
+  const [combinedBreakdown, setCombinedBreakdown] = useState<StrengthAssessmentBreakdown | null>(
+    null
+  );
   const [combinedError, setCombinedError] = useState<StrengthAssessmentComputeError | null>(null);
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitNotice, setSubmitNotice] = useState<StrengthSubmitNotice | null>(null);
@@ -222,12 +226,19 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     return STRENGTH_LIFT_KEYS.map((lift) => ({
       key: lift,
       label: t(`strength.lifts.${lift}`),
-      value: branchScoreByLift.get(lift) ?? liveScoreByLift.get(lift) ?? perLiftResult[lift]?.finalScore ?? 0,
+      value:
+        branchScoreByLift.get(lift) ??
+        liveScoreByLift.get(lift) ??
+        perLiftResult[lift]?.finalScore ??
+        0,
     }));
   }, [combinedBreakdown?.branches, form, perLiftResult, profile, profileReady, t]);
 
   const applyCombinedComputeResult = useCallback(
-    (result: ReturnType<typeof tryComputeStrengthAssessmentScore>, options: { persist: boolean }) => {
+    (
+      result: ReturnType<typeof tryComputeStrengthAssessmentScore>,
+      options: { persist: boolean }
+    ) => {
       if (!result.ok) {
         setCombinedError(result.error);
         setCombinedScore(null);

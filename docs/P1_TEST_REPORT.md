@@ -10,11 +10,11 @@
 
 ## 自動化驗證（本機）
 
-| 指令 | 結果 |
-|------|------|
-| `npm run build` | 通過 |
-| `npm test` | 21 通過（含 `listLeaderboard` non-Pro gate 新測試） |
-| `npm run lint` | 通過 |
+| 指令            | 結果                                                |
+| --------------- | --------------------------------------------------- |
+| `npm run build` | 通過                                                |
+| `npm test`      | 21 通過（含 `listLeaderboard` non-Pro gate 新測試） |
+| `npm run lint`  | 通過                                                |
 
 ## Non-Pro「零 leaderboard 流量」說明
 
@@ -46,17 +46,17 @@
 
 ## 相關檔案索引
 
-| 區域 | 路徑 |
-|------|------|
-| Firebase 客戶端 | `src/services/firebaseClient.ts` |
-| 戰場 | `src/services/leaderboardService.ts`, `src/services/leaderboardCacheService.ts`, `src/services/rateLimitService.ts` |
-| 權益持久化 | `src/services/entitlementPersistenceService.ts`, `src/stores/entitlementStore.ts` |
-| 訂閱／還原 | `src/services/subscriptionService.ts` |
-| 雲端同步 | `src/services/localCloudAdapter.ts`, `src/services/cloudSyncService.ts` |
-| UI | `src/pages/LadderPage.tsx`, `JoinArenaPage.tsx`, `CommunityPage.tsx`, `ToolsPage.tsx` |
-| 規則範例 | `firestore.rules` |
-| 環境範例 | `.env.example` |
+| 區域            | 路徑                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Firebase 客戶端 | `src/services/firebaseClient.ts`                                                                                    |
+| 戰場            | `src/services/leaderboardService.ts`, `src/services/leaderboardCacheService.ts`, `src/services/rateLimitService.ts` |
+| 權益持久化      | `src/services/entitlementPersistenceService.ts`, `src/stores/entitlementStore.ts`                                   |
+| 訂閱／還原      | `src/services/subscriptionService.ts`                                                                               |
+| 雲端同步        | `src/services/localCloudAdapter.ts`, `src/services/cloudSyncService.ts`                                             |
+| UI              | `src/pages/LadderPage.tsx`, `JoinArenaPage.tsx`, `CommunityPage.tsx`, `ToolsPage.tsx`                               |
+| 規則範例        | `firestore.rules`                                                                                                   |
+| 環境範例        | `.env.example`                                                                                                      |
 
 ---
 
-*產出日：2026-04-19 · 工作區：`up-final`。*
+_產出日：2026-04-19 · 工作區：`up-final`。_

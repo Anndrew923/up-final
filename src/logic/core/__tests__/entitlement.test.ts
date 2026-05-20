@@ -49,7 +49,11 @@ describe('entitlement core guards', () => {
   });
 
   it('structured user sync is Pro-only regardless of leaderboard paywall mode', () => {
-    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'free' }))).toBe(true);
-    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'pro' }))).toBe(false);
+    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'free' }))).toBe(
+      true
+    );
+    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'pro' }))).toBe(
+      false
+    );
   });
 });

@@ -44,11 +44,19 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     hasError: () => errorKey != null,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
   const gripLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
-    if (previewScore == null || !Number.isFinite(previewScore) || previewScore <= 0) return undefined;
+    if (previewScore == null || !Number.isFinite(previewScore) || previewScore <= 0)
+      return undefined;
     return [
       {
         metric: leaderboardShardForSixAxisMetric('gripStrength'),
@@ -57,8 +65,9 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     ];
   }, [previewScore]);
 
-  const genderLabel =
-    !profile ? '' : profile.gender === 'female'
+  const genderLabel = !profile
+    ? ''
+    : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
   const heroScore = displayScore ?? previewScore;
@@ -189,7 +198,12 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             >
               {t('grip.calculate')}
             </button>
-            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={submitToRadar}>
+            <button
+              type="button"
+              className="ui-btn"
+              disabled={revealBlocking}
+              onClick={submitToRadar}
+            >
               {t('grip.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>
@@ -203,7 +217,10 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="gripStrength" supplementalTargets={gripLadderSupplemental} />
+          <LeaderboardAssessmentSyncBar
+            scope="gripStrength"
+            supplementalTargets={gripLadderSupplemental}
+          />
         </section>
       </div>
     </main>

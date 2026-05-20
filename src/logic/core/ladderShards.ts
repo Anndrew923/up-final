@@ -94,7 +94,9 @@ export interface LadderProjectOption {
 }
 
 /** Mirrors `LadderSubFilters.jsx` `getProjectOptions` + UP `stats_grip`. */
-export function getProjectOptionsForDivision(division: LadderDivisionId): readonly LadderProjectOption[] {
+export function getProjectOptionsForDivision(
+  division: LadderDivisionId
+): readonly LadderProjectOption[] {
   switch (division) {
     case 'stats_sbdTotal':
       return [
@@ -143,8 +145,12 @@ export function divisionUsesProjectFilter(division: LadderDivisionId): boolean {
  * Maps fitness division + filterProject to Firestore leaderboard shard id.
  * @see reference-app-fitness `useLadder.js` sortField overrides (~431–480).
  */
-export function getLeaderboardShardId(division: LadderDivisionId, project: string): LeaderboardShardId {
-  const p = project && project !== LADDER_PROJECT_NONE ? project : getDefaultProjectForDivision(division);
+export function getLeaderboardShardId(
+  division: LadderDivisionId,
+  project: string
+): LeaderboardShardId {
+  const p =
+    project && project !== LADDER_PROJECT_NONE ? project : getDefaultProjectForDivision(division);
 
   switch (division) {
     case 'ladderScore':

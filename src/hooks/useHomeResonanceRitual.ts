@@ -40,7 +40,7 @@ export interface UseHomeResonanceRitualResult {
 function waitMs(
   ms: number,
   isActive: () => boolean,
-  timeoutIdsRef: { current: number[] },
+  timeoutIdsRef: { current: number[] }
 ): Promise<void> {
   return new Promise((resolve) => {
     if (!isActive()) {
@@ -59,7 +59,7 @@ function animateRitualFill(
   setFill: (value: number) => void,
   durationMs: number,
   isActive: () => boolean,
-  rafRef: { current: number | null },
+  rafRef: { current: number | null }
 ): Promise<void> {
   if (!isActive()) return Promise.resolve();
   if (prefersReducedMotion()) {
@@ -96,11 +96,20 @@ export function useHomeResonanceRitual({
 }: UseHomeResonanceRitualInput): UseHomeResonanceRitualResult {
   const { t } = useTranslation('common');
   const { triggerImpact } = useDopamineFeedback();
-  const { displayValue, animateTo, cancel: cancelScoreAnim, setInstant } = useAnimatedScore({
+  const {
+    displayValue,
+    animateTo,
+    cancel: cancelScoreAnim,
+    setInstant,
+  } = useAnimatedScore({
     durationMs: 480,
   });
-  const { visibleText: typedGradeLine, play: playTypewriter, reset: resetTypewriter, cancel: cancelTypewriter } =
-    useTypewriterText();
+  const {
+    visibleText: typedGradeLine,
+    play: playTypewriter,
+    reset: resetTypewriter,
+    cancel: cancelTypewriter,
+  } = useTypewriterText();
 
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<HomeResonancePhase>('idle');
@@ -149,14 +158,7 @@ export function useHomeResonanceRitual({
     resetTypewriter();
     setInstant(null);
     setBlocking(false);
-  }, [
-    cancelScoreAnim,
-    cancelTypewriter,
-    invalidateRun,
-    resetTypewriter,
-    setBlocking,
-    setInstant,
-  ]);
+  }, [cancelScoreAnim, cancelTypewriter, invalidateRun, resetTypewriter, setBlocking, setInstant]);
 
   const startRitual = useCallback(async () => {
     invalidateRun();
@@ -244,7 +246,7 @@ export function useHomeResonanceRitual({
       invalidateRun();
       setBlocking(false);
     },
-    [invalidateRun, setBlocking],
+    [invalidateRun, setBlocking]
   );
 
   return {

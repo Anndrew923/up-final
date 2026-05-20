@@ -68,11 +68,19 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     hasError: () => combinedError != null,
     compute: calculateCombined,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
-  const genderLabel =
-    !profile ? '' : profile.gender === 'female'
+  const genderLabel = !profile
+    ? ''
+    : profile.gender === 'female'
       ? t('home.profile.female')
       : t('home.profile.male');
 
@@ -100,8 +108,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     return weakest?.key;
   }, [strengthRadarPoints]);
   const liveScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
-  const interpretationScore =
-    displayScore ?? liveScore;
+  const interpretationScore = displayScore ?? liveScore;
   const heroScoreText =
     interpretationScore != null && Number.isFinite(interpretationScore)
       ? interpretationScore.toFixed(2)
@@ -178,7 +185,10 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                     {t(`strength.lifts.${lift}`)}
                   </legend>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor={`st-w-${lift}`}>
+                    <label
+                      className="flex flex-col gap-1 text-xs text-zinc-400"
+                      htmlFor={`st-w-${lift}`}
+                    >
                       <span>{t('strength.weightLabel')}</span>
                       <input
                         id={`st-w-${lift}`}
@@ -194,7 +204,10 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         aria-label={t('strength.weightAria', { lift: t(`strength.lifts.${lift}`) })}
                       />
                     </label>
-                    <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor={`st-r-${lift}`}>
+                    <label
+                      className="flex flex-col gap-1 text-xs text-zinc-400"
+                      htmlFor={`st-r-${lift}`}
+                    >
                       <span>{t('strength.repsLabel')}</span>
                       <input
                         id={`st-r-${lift}`}
@@ -215,10 +228,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   </div>
 
                   {showRepsAccuracyNudge ? (
-                    <p
-                      id={repsAccuracyNudgeId}
-                      className="text-xs leading-relaxed text-zinc-500"
-                    >
+                    <p id={repsAccuracyNudgeId} className="text-xs leading-relaxed text-zinc-500">
                       {t('strength.repsAccuracyNudge')}
                     </p>
                   ) : null}
@@ -261,7 +271,9 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         <p className="font-mono text-xs tabular-nums text-zinc-300">
                           <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
                           <span className="text-zinc-100">
-                            {t('strength.singleOneRmValue', { value: rowResult.oneRepMax.toFixed(2) })}
+                            {t('strength.singleOneRmValue', {
+                              value: rowResult.oneRepMax.toFixed(2),
+                            })}
                           </span>
                         </p>
                         <p className="font-mono text-sm tabular-nums text-accent-info">
@@ -294,7 +306,9 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                     {t('strength.spectrumKicker')}
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">{t('strength.spectrumSub')}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                    {t('strength.spectrumSub')}
+                  </p>
                   <HexRadarChart
                     points={strengthRadarPoints}
                     scaleMax={100}
@@ -420,7 +434,10 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               </p>
             ) : null}
 
-            <LeaderboardAssessmentSyncBar scope="strength" supplementalTargets={strengthSupplementalTargets} />
+            <LeaderboardAssessmentSyncBar
+              scope="strength"
+              supplementalTargets={strengthSupplementalTargets}
+            />
           </div>
         </section>
       </div>

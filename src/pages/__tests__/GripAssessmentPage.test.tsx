@@ -8,8 +8,9 @@ import GripAssessmentPage from '../GripAssessmentPage';
 const mockUseGripAssessmentPage = vi.fn();
 const mockUseScoreMeaning = vi.fn();
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock('../../hooks/useGripAssessmentPage', () => ({
   useGripAssessmentPage: () => mockUseGripAssessmentPage(),

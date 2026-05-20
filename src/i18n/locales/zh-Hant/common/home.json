@@ -102,29 +102,29 @@
       "errorSave": "儲存失敗，請再試一次。"
     },
     "consoleKicker": "主控台",
-    "radarOverview": "能力雷達",
+    "radarOverview": "性能儀表",
     "radarCompletion": "開發進度：{{count}} / {{total}}",
     "radarAria": "六維雷達圖",
     "diagnostics": {
       "kicker": "適格者相性代號",
-      "archetypeHint": "依六維共鳴圖譜推算的載具適格檔案。",
+      "archetypeHint": "依六維性能圖譜推算的載具適格檔案。",
       "cta": "啟動全域性能規格診斷",
       "ctaSub": "DIAGNOSTICS"
     },
     "resonance": {
-      "overlayAria": "全域性能共鳴儀式",
+      "overlayAria": "全域性能儀表讀取",
       "dismiss": "關閉覆蓋層",
-      "kicker": "全息共鳴 / 核心同步",
+      "kicker": "性能儀表同步 / SPEC READOUT",
       "bootScore": "---",
       "close": "返回主控台",
       "phase": {
         "boot": "底盤通電中…",
         "charge": "六軸充能中…",
-        "count": "共鳴出力鎖定中…",
+        "count": "性能指數校準中…",
         "reveal": "賽會認證輸出"
       }
     },
-    "overallAverage": "共鳴出力",
+    "overallAverage": "整車性能指數",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE / 賽會認證評等",
       "BASE": "「STOCK COMMUTER」原廠常規街車。架構尚待全面解鎖。",
@@ -147,20 +147,20 @@
     "radarOverclockHint": "",
     "radar": {
       "axis": {
-        "strength": "力量",
-        "explosivePower": "爆發",
-        "cardio": "心肺",
-        "muscleMass": "肌肉",
-        "bodyFat": "FFMI",
-        "gripStrength": "握力"
+        "strength": "馬力",
+        "explosivePower": "扭矩",
+        "cardio": "續航",
+        "muscleMass": "車身構型",
+        "bodyFat": "配重",
+        "gripStrength": "抓地"
       },
       "axisCard": {
-        "strength": "Hardened",
-        "explosivePower": "Impulse",
-        "cardio": "Endurance",
-        "muscleMass": "Forge",
-        "bodyFat": "Balance",
-        "gripStrength": "Pulse"
+        "strength": "HP",
+        "explosivePower": "TRQ",
+        "cardio": "STINT",
+        "muscleMass": "CHSS",
+        "bodyFat": "P2W",
+        "gripStrength": "GRIP"
       }
     }
   }

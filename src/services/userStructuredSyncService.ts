@@ -76,7 +76,13 @@ function requireNonAnonymousUid(): string {
 }
 
 function profileRef(db: Firestore, uid: string) {
-  return doc(db, USER_CLOUD_COLLECTION, uid, USER_PROFILE_SUBCOLLECTION, USER_PROFILE_BASELINE_DOC_ID);
+  return doc(
+    db,
+    USER_CLOUD_COLLECTION,
+    uid,
+    USER_PROFILE_SUBCOLLECTION,
+    USER_PROFILE_BASELINE_DOC_ID
+  );
 }
 
 function historyRef(db: Firestore, uid: string, recordId: string) {
@@ -161,7 +167,9 @@ async function commitHistoryBatchWrites(
     const slice = entries.slice(i, i + HISTORY_BATCH_SIZE);
     const batch = writeBatch(db);
     for (const { record, cloudAt } of slice) {
-      batch.set(historyRef(db, uid, record.id), historyRecordToFirestore(record, cloudAt), { merge: true });
+      batch.set(historyRef(db, uid, record.id), historyRecordToFirestore(record, cloudAt), {
+        merge: true,
+      });
     }
     await batch.commit();
   }
@@ -237,7 +245,10 @@ export async function pushAllStructuredHistoryFromLocal(ent: EntitlementState): 
   await commitHistoryBatchWrites(db, uid, entries);
 }
 
-export async function pushStructuredHistoryRecord(ent: EntitlementState, record: LocalHistoryRecord): Promise<void> {
+export async function pushStructuredHistoryRecord(
+  ent: EntitlementState,
+  record: LocalHistoryRecord
+): Promise<void> {
   if (!canRunStructuredUserSync(ent)) return;
   const db = getFirestoreDb();
   if (!db) return;
@@ -278,7 +289,10 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
   }
 
   const data = profileSnap.data() as StructuredProfileFirestoreV1;
-  if (data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION || typeof data.updatedAt !== 'string') {
+  if (
+    data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
+    typeof data.updatedAt !== 'string'
+  ) {
     return false;
   }
 
@@ -316,10 +330,16 @@ export async function mergeRemoteProfileIfNewer(ent: EntitlementState): Promise<
 /**
  * Applies remote profile from a listener snapshot when strictly newer than local watermark (avoids extra getDoc).
  */
-export function tryApplyRemoteProfileFromSnapshot(ent: EntitlementState, snap: DocumentSnapshot): boolean {
+export function tryApplyRemoteProfileFromSnapshot(
+  ent: EntitlementState,
+  snap: DocumentSnapshot
+): boolean {
   if (!canRunStructuredUserSync(ent) || !snap.exists()) return false;
   const data = snap.data() as StructuredProfileFirestoreV1;
-  if (data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION || typeof data.updatedAt !== 'string') {
+  if (
+    data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
+    typeof data.updatedAt !== 'string'
+  ) {
     return false;
   }
   const localMark = readWatermark();

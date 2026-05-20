@@ -16,8 +16,9 @@ type MutableMonetizationConfig = {
 
 const mutableMonetizationConfig = MONETIZATION_CONFIG as unknown as MutableMonetizationConfig;
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 const defaultConfigSnapshot: MutableMonetizationConfig = {
   leaderboardPaywallEnabled: mutableMonetizationConfig.leaderboardPaywallEnabled,
@@ -37,7 +38,10 @@ function setSignedInAuthState(): void {
   });
 }
 
-function setEntitlementState(params: { purchaseStatus: 'none' | 'owned'; subscriptionStatus: 'free' | 'pro' }): void {
+function setEntitlementState(params: {
+  purchaseStatus: 'none' | 'owned';
+  subscriptionStatus: 'free' | 'pro';
+}): void {
   useEntitlementStore.setState({
     purchaseStatus: params.purchaseStatus,
     subscriptionStatus: params.subscriptionStatus,
@@ -48,7 +52,10 @@ function setEntitlementState(params: { purchaseStatus: 'none' | 'owned'; subscri
   });
 }
 
-function renderHookHarness(): { getCurrent: () => LeaderboardAccessResult | null; unmount: () => void } {
+function renderHookHarness(): {
+  getCurrent: () => LeaderboardAccessResult | null;
+  unmount: () => void;
+} {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
@@ -79,7 +86,8 @@ function renderHookHarness(): { getCurrent: () => LeaderboardAccessResult | null
 }
 
 afterEach(() => {
-  mutableMonetizationConfig.leaderboardPaywallEnabled = defaultConfigSnapshot.leaderboardPaywallEnabled;
+  mutableMonetizationConfig.leaderboardPaywallEnabled =
+    defaultConfigSnapshot.leaderboardPaywallEnabled;
   mutableMonetizationConfig.leaderboardRequireGoogleSignIn =
     defaultConfigSnapshot.leaderboardRequireGoogleSignIn;
   useEntitlementStore.getState().resetEntitlement();
@@ -131,4 +139,3 @@ describe('useLeaderboardAccess', () => {
     expect(result?.shouldShowJoinArena).toBe(true);
   });
 });
-

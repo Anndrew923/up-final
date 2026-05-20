@@ -9,8 +9,10 @@ export interface PrivacyPolicyPageProps {
 const PrivacyPolicyPage: FC<PrivacyPolicyPageProps> = ({ onBack }) => {
   const { t, i18n } = useTranslation('common');
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
-  const policyHref = locale === 'zh-Hant' ? '/privacy-policy.zh-Hant.html' : '/privacy-policy.en.html';
-  const togglePolicyHref = locale === 'zh-Hant' ? '/privacy-policy.en.html' : '/privacy-policy.zh-Hant.html';
+  const policyHref =
+    locale === 'zh-Hant' ? '/privacy-policy.zh-Hant.html' : '/privacy-policy.en.html';
+  const togglePolicyHref =
+    locale === 'zh-Hant' ? '/privacy-policy.en.html' : '/privacy-policy.zh-Hant.html';
   const toggleLabel = locale === 'zh-Hant' ? 'English' : '繁中';
 
   return (
@@ -22,7 +24,9 @@ const PrivacyPolicyPage: FC<PrivacyPolicyPageProps> = ({ onBack }) => {
               {t('privacy.kicker')}
             </p>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('privacy.title')}</h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">{t('privacy.subtitle')}</p>
+            <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">
+              {t('privacy.subtitle')}
+            </p>
           </div>
           {onBack ? (
             <button type="button" className="ui-btn shrink-0" onClick={onBack}>

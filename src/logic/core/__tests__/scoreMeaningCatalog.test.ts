@@ -262,7 +262,7 @@ describe('home.overallGrade i18n coverage', () => {
 
 describe('scoreMeaning i18n coverage (core.json)', () => {
   const metricsWithBandCopy = SIX_AXIS_METRICS.filter(
-    (metric) => enBands[metric] != null && zhBands[metric] != null,
+    (metric) => enBands[metric] != null && zhBands[metric] != null
   );
 
   it.each(metricsWithBandCopy)('defines en/zh title+summary for every %s band', (metric) => {
@@ -296,7 +296,9 @@ describe('scoreMeaning i18n coverage (core.json)', () => {
 
 describe('resolveScoreBand(explosivePower)', () => {
   it('exposes the full 14-tier Torque Spec map', () => {
-    expect(SCORE_MEANING_CATALOG.explosivePower.map((band) => band.id)).toEqual([...FOURTEEN_TIER_IDS]);
+    expect(SCORE_MEANING_CATALOG.explosivePower.map((band) => band.id)).toEqual([
+      ...FOURTEEN_TIER_IDS,
+    ]);
     expect(EXPLOSIVE_SCORE_BANDS).toBe(SCORE_MEANING_CATALOG.explosivePower);
     expect(ARM_SIZE_SCORE_BANDS).toBe(EXPLOSIVE_SCORE_BANDS);
   });

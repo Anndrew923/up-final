@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseFirestoreHistoryDoc, STRUCTURED_PROFILE_SCHEMA_VERSION } from '../structuredUserSyncPayload';
+import {
+  parseFirestoreHistoryDoc,
+  STRUCTURED_PROFILE_SCHEMA_VERSION,
+} from '../structuredUserSyncPayload';
 
 describe('parseFirestoreHistoryDoc', () => {
   it('accepts a valid v1 payload', () => {
@@ -34,6 +37,8 @@ describe('parseFirestoreHistoryDoc', () => {
   it('rejects malformed payloads', () => {
     expect(parseFirestoreHistoryDoc(null)).toBeNull();
     expect(parseFirestoreHistoryDoc({})).toBeNull();
-    expect(parseFirestoreHistoryDoc({ id: '', createdAt: 'x', scores: {}, overallScore: 0 })).toBeNull();
+    expect(
+      parseFirestoreHistoryDoc({ id: '', createdAt: 'x', scores: {}, overallScore: 0 })
+    ).toBeNull();
   });
 });

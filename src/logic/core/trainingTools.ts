@@ -84,7 +84,11 @@ export function calculateOneRmLombardi(weightKg: number, reps: number): number {
   return weight * Math.pow(repCount, 0.1);
 }
 
-export function calculateOneRm(weightKg: number, reps: number, method: OneRmMethod = 'average'): number {
+export function calculateOneRm(
+  weightKg: number,
+  reps: number,
+  method: OneRmMethod = 'average'
+): number {
   if (method === 'epley') return calculateOneRmEpley(weightKg, reps);
   if (method === 'brzycki') return calculateOneRmBrzycki(weightKg, reps);
   if (method === 'lombardi') return calculateOneRmLombardi(weightKg, reps);

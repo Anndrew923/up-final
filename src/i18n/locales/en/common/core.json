@@ -4,28 +4,28 @@
   "scoreMeaning": {
     "axis": {
       "strength": {
-        "label": "Rigid Spectrum (Strength)",
-        "desc": "Measures neuromuscular recruitment efficiency relative to body weight (DOTS coefficient). Higher values indicate stronger absolute rigidity output per unit body mass."
+        "label": "Horsepower Spectrum (HP)",
+        "desc": "Measures neuromuscular recruitment efficiency relative to body weight (DOTS coefficient). Higher values indicate stronger peak horsepower and chassis rigidity per unit body mass."
       },
       "explosivePower": {
-        "label": "Burst Spectrum (Power)",
-        "desc": "Measures instantaneous kinetic discharge and power output. Higher values indicate greater explosive force and vertical work capacity in very short time windows."
+        "label": "Torque Spectrum (TRQ)",
+        "desc": "Measures instantaneous kinetic discharge and launch torque. Higher values indicate greater launch torque and vertical work capacity in very short time windows."
       },
       "cardio": {
-        "label": "Rhythm Spectrum (Cardio)",
-        "desc": "Measures cardiovascular stability and aerobic ceiling. Higher values indicate stronger thermal management and endurance under sustained high-intensity operation."
+        "label": "Stint Spectrum (STINT)",
+        "desc": "Measures cardiovascular stability and aerobic ceiling. Higher values indicate stronger thermal management and long-stint endurance under sustained high-intensity operation."
       },
       "muscleMass": {
-        "label": "Build Spectrum (Muscle)",
-        "desc": "Measures skeletal-muscle density relative to height. Higher values indicate more mature physical structure and stronger baseline metabolic capacity."
+        "label": "Chassis Spectrum (CHSS)",
+        "desc": "Measures skeletal-muscle density relative to height. Higher values indicate a more mature chassis build, structural load capacity, and baseline metabolic output."
       },
       "bodyFat": {
-        "label": "Refine Spectrum (FFMI/Fat)",
-        "desc": "Measures optimization between body-fat ratio and lean mass. Higher values indicate cleaner tissue composition and a stronger power-to-weight profile."
+        "label": "Kerb Spectrum (P2W)",
+        "desc": "Measures optimization between body-fat ratio and lean mass. Higher values indicate cleaner kerb-weight composition and a stronger power-to-weight profile."
       },
       "gripStrength": {
-        "label": "Potential Spectrum (Grip)",
-        "desc": "Measures terminal neural response and grip output. Higher values indicate shorter neural transmission paths, higher precision, and stronger limit control."
+        "label": "Traction Spectrum (GRIP)",
+        "desc": "Measures terminal neural response and grip output. Higher values indicate stronger tire traction and limit grip control."
       }
     },
     "bands": {
@@ -454,6 +454,7 @@
     }
   },
   "identity": {
+    "liveSpecKicker": "LIVE CHASSIS SPECIFICATIONS",
     "vehicleSectionKicker": "Racing Spec Identity",
     "genderGroup": {
       "male": "Male Qualified Pilot",

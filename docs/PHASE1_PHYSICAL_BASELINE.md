@@ -10,15 +10,15 @@
 
 ## In scope（Phase 1 必須交付）
 
-| 區域 | 要求 |
-|------|------|
-| **型別** | `PhysicalProfile` / `PhysicalProfileGender`（`src/types/userProfile.ts`） |
+| 區域         | 要求                                                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **型別**     | `PhysicalProfile` / `PhysicalProfileGender`（`src/types/userProfile.ts`）                                                        |
 | **領域驗證** | `validatePhysicalProfile`、`isPhysicalProfileComplete`、`PHYSICAL_LIMITS`（`src/logic/core/physicalProfile.ts`），**無外部 SDK** |
-| **持久化** | `up.physicalProfile`（`loadPhysicalProfile` / `savePhysicalProfile`）、跨分頁事件（`src/services/localStorageService.ts`） |
-| **UI** | `HomeProfileForm` 掛在 `HomePage`、**Tailwind + 既有 `ui-*` 元件**、**全表單 i18n** |
-| **文案** | 英語 `en` 完整；**本表單相關**繁中 **zh-Hant** 有對應 key（`home.profile.*` 等） |
-| **測試** | `physicalProfile` 之邏輯單元測試通過 |
-| **品質** | 自訂 hook 內 **Hook 順序固定**、計時器有 **unmount / 重送** 清理，不違反 Rules of Hooks |
+| **持久化**   | `up.physicalProfile`（`loadPhysicalProfile` / `savePhysicalProfile`）、跨分頁事件（`src/services/localStorageService.ts`）       |
+| **UI**       | `HomeProfileForm` 掛在 `HomePage`、**Tailwind + 既有 `ui-*` 元件**、**全表單 i18n**                                              |
+| **文案**     | 英語 `en` 完整；**本表單相關**繁中 **zh-Hant** 有對應 key（`home.profile.*` 等）                                                 |
+| **測試**     | `physicalProfile` 之邏輯單元測試通過                                                                                             |
+| **品質**     | 自訂 hook 內 **Hook 順序固定**、計時器有 **unmount / 重送** 清理，不違反 Rules of Hooks                                          |
 
 ---
 
@@ -46,15 +46,15 @@
 
 ## 实作索引（給接手／審查）
 
-| 項目 | 路徑 |
-|------|------|
-| 型別 | `src/types/userProfile.ts` |
-| 驗證 | `src/logic/core/physicalProfile.ts`、`src/logic/core/__tests__/physicalProfile.test.ts` |
-| 儲存 | `src/services/localStorageService.ts`（`PHYSICAL_PROFILE_STORAGE_KEY` 等） |
-| Hook | `src/hooks/usePhysicalProfileForm.ts` |
-| UI | `src/components/home/HomeProfileForm.tsx`、`src/pages/HomePage.tsx` |
+| 項目 | 路徑                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------- |
+| 型別 | `src/types/userProfile.ts`                                                                  |
+| 驗證 | `src/logic/core/physicalProfile.ts`、`src/logic/core/__tests__/physicalProfile.test.ts`     |
+| 儲存 | `src/services/localStorageService.ts`（`PHYSICAL_PROFILE_STORAGE_KEY` 等）                  |
+| Hook | `src/hooks/usePhysicalProfileForm.ts`                                                       |
+| UI   | `src/components/home/HomeProfileForm.tsx`、`src/pages/HomePage.tsx`                         |
 | i18n | `src/i18n/locales/en/common.json`、`src/i18n/locales/zh-Hant/common.json`（`home.profile`） |
 
 ---
 
-*文件版本：與 Repo 現況對齊；若範圍需擴張請改文件並標註新版本日期。*
+_文件版本：與 Repo 現況對齊；若範圍需擴張請改文件並標註新版本日期。_

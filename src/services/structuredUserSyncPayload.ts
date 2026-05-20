@@ -66,7 +66,8 @@ function isScoreMapLike(value: unknown): value is ScoreMap {
 export function parseFirestoreHistoryDoc(raw: unknown): LocalHistoryRecord | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const d = raw as Record<string, unknown>;
-  if (d.schemaVersion !== undefined && d.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION) return null;
+  if (d.schemaVersion !== undefined && d.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION)
+    return null;
   if (typeof d.id !== 'string' || !d.id) return null;
   if (typeof d.createdAt !== 'string' || !d.createdAt) return null;
   if (typeof d.overallScore !== 'number' || !Number.isFinite(d.overallScore)) return null;

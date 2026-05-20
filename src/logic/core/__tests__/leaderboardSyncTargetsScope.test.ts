@@ -15,7 +15,10 @@ describe('pickLeaderboardSyncTargetsForAssessmentScope', () => {
 
   it('keeps only explosive shards for explosivePower scope', () => {
     const picked = pickLeaderboardSyncTargetsForAssessmentScope(mixed, 'explosivePower');
-    expect(picked.map((t) => t.metric).sort()).toEqual(['explosive_composite', 'explosive_vertical']);
+    expect(picked.map((t) => t.metric).sort()).toEqual([
+      'explosive_composite',
+      'explosive_vertical',
+    ]);
   });
 
   it('keeps strength family for strength scope', () => {
@@ -37,7 +40,10 @@ describe('mergeLeaderboardSyncTargetsWithSupplemental', () => {
   });
 
   it('adds supplemental when base lacks the metric', () => {
-    const merged = mergeLeaderboardSyncTargetsWithSupplemental([], [{ metric: 'armSize', score: 42 }]);
+    const merged = mergeLeaderboardSyncTargetsWithSupplemental(
+      [],
+      [{ metric: 'armSize', score: 42 }]
+    );
     expect(merged).toEqual([{ metric: 'armSize', score: 42 }]);
   });
 

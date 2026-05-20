@@ -47,8 +47,15 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     hasError: () => errorKey != null,
     compute: calculate,
   });
-  const { ceremony, isBlocking: revealBlocking, displayScore, revealCalculate, modalOpen, modalPayload, closeModal } =
-    reveal;
+  const {
+    ceremony,
+    isBlocking: revealBlocking,
+    displayScore,
+    revealCalculate,
+    modalOpen,
+    modalPayload,
+    closeModal,
+  } = reveal;
 
   const armLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
     const score = submittedScore ?? persistedArmSizeScore;
@@ -147,7 +154,9 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('armSize.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">{heroScore.toFixed(2)}</p>
+              <p className="font-mono text-2xl tabular-nums text-accent-info">
+                {heroScore.toFixed(2)}
+              </p>
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-300">
                   {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}
@@ -180,7 +189,12 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             >
               {t('armSize.calculate')}
             </button>
-            <button type="button" className="ui-btn" disabled={revealBlocking} onClick={saveForLeaderboard}>
+            <button
+              type="button"
+              className="ui-btn"
+              disabled={revealBlocking}
+              onClick={saveForLeaderboard}
+            >
               {t('armSize.saveLeaderboard')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>
@@ -194,7 +208,10 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="armSize" supplementalTargets={armLadderSupplemental} />
+          <LeaderboardAssessmentSyncBar
+            scope="armSize"
+            supplementalTargets={armLadderSupplemental}
+          />
         </section>
       </div>
     </main>

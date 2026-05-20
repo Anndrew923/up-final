@@ -2,16 +2,11 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ONBOARDING_ASSESS_TARGET_ID } from '../../constants/onboardingTargets';
 import { NAV_ITEMS } from '../../config/nav.config';
-import {
-  useShellInteractionBlocked,
-  useUiInteractionStore,
-} from '../../stores/uiInteractionStore';
+import { useShellInteractionBlocked, useUiInteractionStore } from '../../stores/uiInteractionStore';
 import { NavGlyph } from './NavIcons';
 
-const CENTER_HEX_ACTIVE =
-  'bg-cyan-600/90 text-white shadow-[0_0_22px_rgba(34,211,238,0.65)]';
-const CENTER_HEX_INACTIVE =
-  'bg-slate-800/95 text-cyan-200/70 shadow-[0_0_12px_rgba(15,23,42,0.7)]';
+const CENTER_HEX_ACTIVE = 'bg-cyan-600/90 text-white shadow-[0_0_22px_rgba(34,211,238,0.65)]';
+const CENTER_HEX_INACTIVE = 'bg-slate-800/95 text-cyan-200/70 shadow-[0_0_12px_rgba(15,23,42,0.7)]';
 const CENTER_HEX_SPOTLIGHT =
   'bg-cyan-500 text-white shadow-[0_0_28px_rgba(34,211,238,0.85),0_0_48px_rgba(34,211,238,0.35)] ring-2 ring-cyan-300/90';
 
@@ -29,8 +24,7 @@ export default function BottomNav() {
   const isResonanceBlocking = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
 
   const isBootPhase3Spotlight = bootPhase === 3;
-  const dimEntireNav =
-    isResonanceBlocking || (isBlocked && bootPhase !== 0 && bootPhase !== 3);
+  const dimEntireNav = isResonanceBlocking || (isBlocked && bootPhase !== 0 && bootPhase !== 3);
 
   return (
     <nav
@@ -44,7 +38,7 @@ export default function BottomNav() {
       aria-hidden={isBlocked}
     >
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] border-t border-cyan-200/20 bg-slate-950/50 shadow-[0_-14px_36px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-[190%]" />
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] bg-gradient-to-t from-cyan-950/10 to-transparent" ></div>
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] bg-gradient-to-t from-cyan-950/10 to-transparent"></div>
 
       {NAV_ITEMS.map((item, index) => {
         const isCenter = index === centerIndex;

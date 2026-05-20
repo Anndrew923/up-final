@@ -67,4 +67,3 @@ describe('subscription service', () => {
     expect(restored.proActive).toBe(false);
   });
 });
-

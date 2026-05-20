@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties, type FC } from 'react';
+import { useEffect, useMemo, type CSSProperties, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
@@ -6,6 +6,8 @@ import { AURA_THEME, auraNeonCssVars } from '../assessment/auraThemeTokens';
 import { resolveAuraFromBandId } from '../../logic/core/performanceAura';
 import { formatOverallResonanceScore } from '../../logic/core/scoring';
 import type { HomeResonancePhase, HomeResonanceSnapshot } from '../../types/homeResonance';
+import { buildIdentityLiveSpecRows } from './identityLiveSpecRows';
+import IdentityLiveSpecList from './IdentityLiveSpecList';
 
 export interface HomeResonanceOverlayProps {
   open: boolean;
@@ -44,6 +46,11 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
       document.body.style.overflow = prev;
     };
   }, [open]);
+
+  const liveSpecRows = useMemo(
+    () => (snapshot ? buildIdentityLiveSpecRows(t, snapshot.radarPoints) : []),
+    [snapshot, t]
+  );
 
   if (!open || !snapshot) return null;
 
@@ -160,9 +167,22 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
                 )}
               </div>
 
+              {showReveal ? (
+                <IdentityLiveSpecList
+                  variant="overlay"
+                  kickerId="identity-live-spec-kicker-overlay"
+                  kicker={t('identity.liveSpecKicker')}
+                  rows={liveSpecRows}
+                />
+              ) : null}
+
               <div className={`mt-3 sm:mt-5 ${CTA_SLOT_H} shrink-0`}>
                 {showReveal ? (
-                  <button type="button" className="ui-btn ui-btn-primary h-full w-full" onClick={onClose}>
+                  <button
+                    type="button"
+                    className="ui-btn ui-btn-primary h-full w-full"
+                    onClick={onClose}
+                  >
                     {t('home.resonance.close')}
                   </button>
                 ) : (
@@ -174,7 +194,7 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 };
 
