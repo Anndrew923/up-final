@@ -150,8 +150,8 @@
         "strength": "馬力",
         "explosivePower": "扭矩",
         "cardio": "續航",
-        "muscleMass": "車身構型",
-        "bodyFat": "配重",
+        "muscleMass": "車體外觀",
+        "bodyFat": "引擎排量",
         "gripStrength": "抓地"
       },
       "axisCard": {

@@ -14,8 +14,8 @@
       "strength": "HP",
       "explosivePower": "TRQ",
       "cardio": "STINT",
-      "muscleMass": "CHSS",
-      "bodyFat": "P2W",
+      "muscleMass": "Exterior",
+      "bodyFat": "Disp.",
       "gripStrength": "GRIP"
     }
   }

@@ -16,12 +16,12 @@
         "desc": "Measures cardiovascular stability and aerobic ceiling. Higher values indicate stronger thermal management and long-stint endurance under sustained high-intensity operation."
       },
       "muscleMass": {
-        "label": "Chassis Spectrum (CHSS)",
-        "desc": "Measures skeletal-muscle density relative to height. Higher values indicate a more mature chassis build, structural load capacity, and baseline metabolic output."
+        "label": "Exterior Spectrum (CHSS)",
+        "desc": "Maps skeletal muscle mass (SMM) relative to height onto body-line visual tension. Higher values indicate a fuller exterior profile, stronger structural load capacity, and higher baseline metabolic output."
       },
       "bodyFat": {
-        "label": "Kerb Spectrum (P2W)",
-        "desc": "Measures optimization between body-fat ratio and lean mass. Higher values indicate cleaner kerb-weight composition and a stronger power-to-weight profile."
+        "label": "Displacement Spectrum (P2W)",
+        "desc": "Converts profile and body-fat input into FFMI (fat-free mass index), mapped to engine-bay displacement. Higher values indicate a larger powerplant and a stronger power-to-weight profile."
       },
       "gripStrength": {
         "label": "Traction Spectrum (GRIP)",
@@ -90,59 +90,59 @@
       "explosivePower": {
         "BASE": {
           "title": "9 Nm Stock Street Torque",
-          "summary": "[9 Nm STOCK] Baseline launch settings. Transient drivetrain engagement still needs development; power release has huge room to optimize."
+          "summary": "[9 Nm STOCK] Fresh on the board—baseline launch settings. Transient drivetrain engagement still needs development; power release has huge room to optimize."
         },
         "TIER_41": {
           "title": "140 Nm Ignition Tune",
-          "summary": "[140 Nm IGNITION] Throttle response is picking up. You're building launch-phase transient twist and cutting power-transfer lag."
+          "summary": "[140 Nm IGNITION] Beginner tier—throttle response is picking up. You're building launch-phase transient twist and cutting power-transfer lag."
         },
         "TIER_51": {
           "title": "210 Nm Light Flywheel",
-          "summary": "[210 Nm FLYWHEEL] Rev rise is quicker—neural recruitment delay shrinks. Hot-hatch agility off the line."
+          "summary": "[210 Nm FLYWHEEL] Training fundamentals are clicking—rev rise is quicker and neural recruitment delay shrinks. Hot-hatch agility off the line."
         },
         "TIER_61": {
           "title": "320 Nm Stage 1 NA",
-          "summary": "[320 Nm STAGE 1] Torque plateau sits further back—instant power release shows a steadier structure and a stabilizing drive platform."
+          "summary": "[320 Nm STAGE 1] Around the average recreational athlete. Instant power release is getting cleaner and the drive platform is stabilizing."
         },
         "TIER_71": {
           "title": "400 Nm Staged Boost",
-          "summary": "[400 Nm BOOST] Boost steps in steadily—snap response clearly outruns stock units with excellent initial burst."
+          "summary": "[400 Nm BOOST] Above the crowd—snap response clearly outruns stock units with excellent initial burst and launch acceleration."
         },
         "TIER_81": {
           "title": "450 Nm Launch Control",
-          "summary": "[450 Nm LAUNCH] Track launch control spec—neural recruitment bites instantly, aligned with the golden torque band of a 350 hp coupe."
+          "summary": "[450 Nm LAUNCH] Upper amateur tier with track launch control—neural recruitment bites instantly and first-step burst already feels competitive."
         },
         "TIER_91": {
           "title": "600 Nm Supercharged",
-          "summary": "[600 Nm SC] Torque erupts across the rev range—past the amateur ceiling, launch instant ignores equipment drag."
+          "summary": "[600 Nm SC] Peak amateur explosive output, brushing the amateur ceiling. Torque erupts across the rev range—launch instant barely cares about equipment drag."
         },
         "TIER_101": {
           "title": "750 Nm Race Transmission",
-          "summary": "[750 Nm RACE TRANS] Drag-strip-grade engagement—zero-lag, near-zero-loss power release; short-range burst crosses normal limits."
+          "summary": "[750 Nm RACE TRANS] NBA Combine–average explosive profile. Drag-strip-grade engagement—zero-lag, low-loss release; short-range burst crosses normal limits."
         },
         "TIER_111": {
           "title": "850 Nm Twin-Turbo Overboost",
-          "summary": "[850 Nm LIMIT ICE] Knocking on top-tier ICE physics—the engine bay is deeply rebuilt, meshed with the 680 hp factory racer ECU loop."
+          "summary": "[850 Nm LIMIT ICE] Elite NBA guard burst—dynamic response is frightening and instantaneous torque knocks on top-tier ICE physics."
         },
         "TIER_121": {
           "title": "950 Nm Prototype Transient",
-          "summary": "[950 Nm PROTO SNAP] Benchmarks a top Le Mans prototype driveline—launch torque feels alien-craft lossless, dominating the gravity field in an instant."
+          "summary": "[950 Nm PROTO SNAP] Top NBA guard tier—launch torque feels EV-hypercar lossless, dominating the gravity field in an instant."
         },
         "TIER_131": {
           "title": "1250 Nm Heavy Hybrid Plateau",
-          "summary": "[1250 Nm HYBRID] Top heavy motor plus ICE linked torque—instant output barely cares about material flex, industrial-grade rigidity."
+          "summary": "[1250 Nm HYBRID] NFL wide receiver / running back burst—heavy motor plus ICE linked torque, industrial-grade rigidity, output barely cares about material flex."
         },
         "TIER_141": {
           "title": "1400 Nm Aerospace Phantom Snap",
-          "summary": "[1400 Nm PHANTOM] Pushing top hypercar driveshaft shear limits—international master-tier snap; the first hit shreds the line."
+          "summary": "[1400 Nm PHANTOM] Elite NFL running back tier—instant output at world-class levels. International master-tier snap; the first hit shreds the line."
         },
         "LEGEND": {
-          "title": "1600 Nm Absolute Gravity Torque",
-          "summary": "[1600 Nm ABSOLUTE] Data overflow. Beyond normal biomechanics—Bugatti myth-tier driveline; pure instantaneous kinetic energy crystallized against gravity."
+          "title": "Aerospace Rocket Propulsion",
+          "summary": "[AEROSPACE ROCKET] Legend-athlete tier—basketball god, sprint-god territory. Data overflow beyond normal biomechanics; instantaneous kinetic energy tears at gravity."
         },
         "PANTHEON": {
-          "title": "2000 Nm Pantheon Overload",
-          "summary": "[2000 Nm PANTHEON] Archived to the Pantheon. Myth-tier quad-motor pure-EV transient mesh—kinetic legend the naked eye can't track."
+          "title": "Pantheon",
+          "summary": "[PANTHEON] Archived to the Pantheon. Undisputed strongest explosive spec on Earth—a kinetic legend the naked eye can't track."
         }
       },
       "cardio": {

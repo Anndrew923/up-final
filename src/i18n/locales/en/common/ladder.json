@@ -170,8 +170,8 @@
       "strength": "Horsepower",
       "explosivePower": "Torque",
       "cardio": "Stint",
-      "muscleMass": "Chassis",
-      "bodyFat": "Kerb weight",
+      "muscleMass": "Exterior",
+      "bodyFat": "Displacement",
       "gripStrength": "Traction",
       "armSize": "Arm size"
     },

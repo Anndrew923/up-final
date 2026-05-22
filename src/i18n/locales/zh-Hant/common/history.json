@@ -14,8 +14,8 @@
       "strength": "馬力",
       "explosivePower": "扭矩",
       "cardio": "續航",
-      "muscleMass": "構型",
-      "bodyFat": "配重",
+      "muscleMass": "外觀",
+      "bodyFat": "排量",
       "gripStrength": "抓地"
     }
   }
