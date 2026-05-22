@@ -2,13 +2,16 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { exitIfRunCancelled, useHomeResonanceRitual } from '../useHomeResonanceRitual';
+import { useHomeResonanceRitual } from '../useHomeResonanceRitual';
 import type { UseHomeResonanceRitualInput } from '../useHomeResonanceRitual';
+import { ROUTES } from '../../config/routes';
 import { useBootSequenceStore } from '../../stores/bootSequenceStore';
 import { useUiInteractionStore } from '../../stores/uiInteractionStore';
 import {
   markPendingRadarResonance,
   clearPendingRadarResonance,
+  hasPendingRadarResonance,
+  consumePendingRadarResonance,
 } from '../../services/radarResonanceSession';
 import type { RadarChartPoint } from '../../types/radarDisplay';
 
@@ -25,6 +28,10 @@ const playTypewriterMock = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock('../../lib/motionPreference', () => ({
   prefersReducedMotion: motionMocks.prefersReducedMotion,
+}));
+
+vi.mock('react-router-dom', () => ({
+  useLocation: () => ({ pathname: ROUTES.home }),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -106,29 +113,6 @@ function renderRitualHook(input: UseHomeResonanceRitualInput = defaultInput): {
   };
 }
 
-describe('exitIfRunCancelled', () => {
-  it('returns false while the run still owns the timeline', () => {
-    const runIdRef = { current: 3 };
-    const close = vi.fn();
-    expect(exitIfRunCancelled(3, runIdRef, close)).toBe(false);
-    expect(close).not.toHaveBeenCalled();
-  });
-
-  it('returns true without closing when a newer startRitual superseded this run', () => {
-    const runIdRef = { current: 4 };
-    const close = vi.fn();
-    expect(exitIfRunCancelled(3, runIdRef, close)).toBe(true);
-    expect(close).not.toHaveBeenCalled();
-  });
-
-  it('closes the overlay when this run was cancelled without a superseding run', () => {
-    const runIdRef = { current: 2 };
-    const close = vi.fn();
-    expect(exitIfRunCancelled(3, runIdRef, close)).toBe(true);
-    expect(close).toHaveBeenCalledOnce();
-  });
-});
-
 describe('useHomeResonanceRitual', () => {
   beforeEach(() => {
     motionMocks.prefersReducedMotion.mockReturnValue(true);
@@ -169,8 +153,8 @@ describe('useHomeResonanceRitual', () => {
     let resolveFirstAnimate: (() => void) | undefined;
     animateToMock.mockImplementationOnce(
       () =>
-        new Promise<void>((resolve) => {
-          resolveFirstAnimate = resolve;
+        new Promise<undefined>((resolve) => {
+          resolveFirstAnimate = () => resolve(undefined);
         })
     );
 
@@ -200,12 +184,7 @@ describe('useHomeResonanceRitual', () => {
   });
 
   it('clears shell blocking on unmount while ritual is in flight', async () => {
-    animateToMock.mockImplementationOnce(
-      () =>
-        new Promise<void>(() => {
-          /* never resolves — simulates in-flight ritual */
-        })
-    );
+    animateToMock.mockImplementationOnce(() => new Promise<undefined>(() => {}));
 
     const harness = renderRitualHook();
 
@@ -233,6 +212,30 @@ describe('useHomeResonanceRitual', () => {
 
     expect(harness.read().open).toBe(true);
     expect(harness.read().phase).toBe('report');
+    expect(hasPendingRadarResonance()).toBe(false);
+    harness.unmount();
+  });
+
+  it('defers consuming pending until report and keeps flag if closed early', async () => {
+    markPendingRadarResonance();
+    animateToMock.mockImplementationOnce(() => new Promise<undefined>(() => {}));
+
+    const harness = renderRitualHook();
+
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 0);
+      });
+    });
+
+    expect(hasPendingRadarResonance()).toBe(true);
+
+    act(() => {
+      harness.read().closeRitual();
+    });
+
+    expect(hasPendingRadarResonance()).toBe(true);
+    expect(consumePendingRadarResonance()).toBe(true);
     harness.unmount();
   });
 

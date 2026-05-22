@@ -3,13 +3,14 @@ import * as localStorageService from '../localStorageService';
 import {
   clearPendingRadarResonance,
   consumePendingRadarResonance,
+  hasPendingRadarResonance,
   markPendingRadarResonance,
 } from '../radarResonanceSession';
 
-/** Mirrors `useHomeResonanceRitual` mount gate — pending must survive until boot completes. */
-function tryConsumeResonanceWhenBootReady(): boolean {
+/** Mirrors `useHomeResonanceRitual` mount gate — pending is peeked until boot completes. */
+function canAutoStartResonanceWhenBootReady(): boolean {
   if (!localStorageService.loadBootSequenceCompleted()) return false;
-  return consumePendingRadarResonance();
+  return hasPendingRadarResonance();
 }
 
 describe('radar resonance boot guard contract', () => {
@@ -18,19 +19,22 @@ describe('radar resonance boot guard contract', () => {
     vi.restoreAllMocks();
   });
 
-  it('does not consume pending resonance while boot is incomplete', () => {
+  it('does not auto-start while boot is incomplete and leaves pending intact', () => {
     vi.spyOn(localStorageService, 'loadBootSequenceCompleted').mockReturnValue(false);
     markPendingRadarResonance();
 
-    expect(tryConsumeResonanceWhenBootReady()).toBe(false);
+    expect(canAutoStartResonanceWhenBootReady()).toBe(false);
+    expect(hasPendingRadarResonance()).toBe(true);
     expect(consumePendingRadarResonance()).toBe(true);
   });
 
-  it('consumes pending after boot completes', () => {
+  it('allows auto-start peek after boot completes without consuming yet', () => {
     vi.spyOn(localStorageService, 'loadBootSequenceCompleted').mockReturnValue(true);
     markPendingRadarResonance();
 
-    expect(tryConsumeResonanceWhenBootReady()).toBe(true);
-    expect(tryConsumeResonanceWhenBootReady()).toBe(false);
+    expect(canAutoStartResonanceWhenBootReady()).toBe(true);
+    expect(hasPendingRadarResonance()).toBe(true);
+    expect(consumePendingRadarResonance()).toBe(true);
+    expect(hasPendingRadarResonance()).toBe(false);
   });
 });

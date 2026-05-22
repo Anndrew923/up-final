@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import { exitIfRunCancelled } from '../lib/ritualRunGuard';
 import { prefersReducedMotion } from '../lib/motionPreference';
-import { consumePendingRadarResonance } from '../services/radarResonanceSession';
+import {
+  consumePendingRadarResonance,
+  hasPendingRadarResonance,
+} from '../services/radarResonanceSession';
+import { ROUTES } from '../config/routes';
 import { useBootSequenceStore } from '../stores/bootSequenceStore';
 import { useUiInteractionStore } from '../stores/uiInteractionStore';
 import { resolveOverallGradeTierCopy } from '../i18n/resolveOverallGradeCopy';
@@ -61,23 +67,6 @@ function waitMs(
   });
 }
 
-/**
- * Ends the async ritual timeline when this run was cancelled.
- * WHY: A superseding `startRitual` bumps `runIdRef` without tearing down UI — only the stale
- * run must not call `closeRitual()` or it would kill the new overlay (boot-phase freeze).
- */
-/** @internal Exported for unit tests — ritual abort guard. */
-export function exitIfRunCancelled(
-  runId: number,
-  runIdRef: { current: number },
-  closeRitual: () => void
-): boolean {
-  if (runId === runIdRef.current) return false;
-  if (runIdRef.current > runId) return true;
-  closeRitual();
-  return true;
-}
-
 function animateRitualFill(
   setFill: (value: number) => void,
   durationMs: number,
@@ -112,6 +101,12 @@ function animateRitualFill(
   });
 }
 
+function acknowledgePendingResonanceIfNeeded(shouldConsumeRef: { current: boolean }): void {
+  if (!shouldConsumeRef.current) return;
+  shouldConsumeRef.current = false;
+  consumePendingRadarResonance();
+}
+
 export function useHomeResonanceRitual({
   overallScore,
   radarPoints,
@@ -119,6 +114,7 @@ export function useHomeResonanceRitual({
   genderGroup,
 }: UseHomeResonanceRitualInput): UseHomeResonanceRitualResult {
   const { t } = useTranslation('common');
+  const location = useLocation();
   const { triggerImpact } = useDopamineFeedback();
   const {
     displayValue,
@@ -144,8 +140,12 @@ export function useHomeResonanceRitual({
   const runIdRef = useRef(0);
   const fillRafRef = useRef<number | null>(null);
   const timeoutIdsRef = useRef<number[]>([]);
+  const phaseRef = useRef<HomeResonancePhase>('idle');
+  const pendingAckRef = useRef(false);
   const bootCompleted = useBootSequenceStore((s) => s.completed);
   const setBlocking = useUiInteractionStore((s) => s.setHomeResonanceBlocking);
+
+  phaseRef.current = phase;
 
   const invalidateRun = useCallback(() => {
     runIdRef.current += 1;
@@ -184,6 +184,7 @@ export function useHomeResonanceRitual({
     resetTypewriter();
     setInstant(null);
     setBlocking(false);
+    pendingAckRef.current = false;
   }, [cancelScoreAnim, cancelTypewriter, invalidateRun, resetTypewriter, setBlocking, setInstant]);
 
   const closeRitualRef = useRef(closeRitual);
@@ -221,6 +222,7 @@ export function useHomeResonanceRitual({
         await playTypewriter(nextSnapshot.gradeLine);
         if (exitIfCancelled()) return;
         setPhase('report');
+        acknowledgePendingResonanceIfNeeded(pendingAckRef);
         return;
       }
 
@@ -248,6 +250,7 @@ export function useHomeResonanceRitual({
       await playTypewriter(nextSnapshot.gradeLine);
       if (exitIfCancelled()) return;
       setPhase('report');
+      acknowledgePendingResonanceIfNeeded(pendingAckRef);
     } catch {
       if (runIdRef.current === runId) {
         closeRitual();
@@ -270,9 +273,11 @@ export function useHomeResonanceRitual({
 
   useEffect(() => {
     if (!bootCompleted) return;
-    if (!consumePendingRadarResonance()) return;
+    if (location.pathname !== ROUTES.home) return;
+    if (!hasPendingRadarResonance()) return;
+    pendingAckRef.current = true;
     void startRitualRef.current();
-  }, [bootCompleted]);
+  }, [bootCompleted, location.pathname]);
 
   // WHY: Empty deps — tying cleanup to `closeRitual` identity re-ran teardown on every render
   // when upstream hooks return unstable cancel fns, closing the overlay mid-ritual.

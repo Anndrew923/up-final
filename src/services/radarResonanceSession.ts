@@ -6,6 +6,12 @@ export function markPendingRadarResonance(): void {
   window.sessionStorage.setItem(PENDING_RADAR_RESONANCE_KEY, '1');
 }
 
+/** Non-destructive check — use before starting the ritual; consume after success. */
+export function hasPendingRadarResonance(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.sessionStorage.getItem(PENDING_RADAR_RESONANCE_KEY) === '1';
+}
+
 /** Returns true once per pending session, then clears the flag. */
 export function consumePendingRadarResonance(): boolean {
   if (typeof window === 'undefined') return false;
