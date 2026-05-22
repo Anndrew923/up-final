@@ -7,7 +7,10 @@ import zhHome from '../../../i18n/locales/zh-Hant/common/home.json';
 import {
   ARM_SIZE_SCORE_BANDS,
   EXPLOSIVE_SCORE_BANDS,
+  OVERALL_GRADE_BAND_IDS,
   OVERALL_SCORE_BANDS,
+  formatOverallGradeRevealLine,
+  getOverallGradeKeys,
   resolveOverallGradeBand,
   resolveScoreBand,
   resolveScoreMeaningMilestone,
@@ -223,9 +226,27 @@ const FOURTEEN_TIER_CHECKPOINTS: Array<[number, string]> = [
   [224, 'PANTHEON'],
 ];
 
+describe('overall grade i18n helpers', () => {
+  it('getOverallGradeKeys returns stable paths per band', () => {
+    expect(getOverallGradeKeys('TIER_51')).toEqual({
+      name: 'home.overallGrade.TIER_51.name',
+      desc: 'home.overallGrade.TIER_51.desc',
+      kicker: 'home.overallGrade.kicker',
+      hint: 'home.overallGrade.viewDetailHint',
+    });
+  });
+
+  it('formatOverallGradeRevealLine joins name and desc for ritual typewriter', () => {
+    expect(formatOverallGradeRevealLine('STAGE 1 TUNE', 'Power platform now taking shape.')).toBe(
+      'STAGE 1 TUNE\nPower platform now taking shape.'
+    );
+  });
+});
+
 describe('resolveOverallGradeBand', () => {
   it('exposes the full 14-tier homologation map', () => {
-    expect(OVERALL_SCORE_BANDS.map((band) => band.id)).toEqual([...FOURTEEN_TIER_IDS]);
+    expect(OVERALL_SCORE_BANDS.map((band) => band.id)).toEqual([...OVERALL_GRADE_BAND_IDS]);
+    expect([...OVERALL_GRADE_BAND_IDS]).toEqual([...FOURTEEN_TIER_IDS]);
   });
 
   it('maps boundary checkpoints to expected tiers', () => {
@@ -246,16 +267,45 @@ describe('resolveOverallGradeBand', () => {
   });
 });
 
-describe('home.overallGrade i18n coverage', () => {
-  const enGrade = (enHome as { home: { overallGrade: Record<string, string> } }).home.overallGrade;
-  const zhGrade = (zhHome as { home: { overallGrade: Record<string, string> } }).home.overallGrade;
+describe('home.diagnostics and resonance i18n', () => {
+  const enHomeBlock = (enHome as { home: Record<string, unknown> }).home;
+  const zhHomeBlock = (zhHome as { home: Record<string, unknown> }).home;
+  const enDiag = enHomeBlock.diagnostics as Record<string, string>;
+  const zhDiag = zhHomeBlock.diagnostics as Record<string, string>;
+  const enRes = enHomeBlock.resonance as Record<string, string>;
+  const zhRes = zhHomeBlock.resonance as Record<string, string>;
 
-  it('defines en/zh copy for every overall grade band', () => {
+  it('defines panelTitle and report copy in en/zh', () => {
+    expect(enDiag.panelTitle?.trim().length).toBeGreaterThan(0);
+    expect(zhDiag.panelTitle?.trim().length).toBeGreaterThan(0);
+    expect(enRes.reportTitle?.trim().length).toBeGreaterThan(0);
+    expect(zhRes.reportTitle?.trim().length).toBeGreaterThan(0);
+  });
+});
+
+describe('home.overallGrade i18n coverage', () => {
+  type OverallGradeTierCopy = { name: string; desc: string };
+  type OverallGradeLocale = {
+    kicker: string;
+    viewDetailHint: string;
+    [bandId: string]: string | OverallGradeTierCopy;
+  };
+
+  const enGrade = (enHome as { home: { overallGrade: OverallGradeLocale } }).home.overallGrade;
+  const zhGrade = (zhHome as { home: { overallGrade: OverallGradeLocale } }).home.overallGrade;
+
+  it('defines en/zh kicker, hint, and name+desc for every overall grade band', () => {
     expect(enGrade.kicker?.trim().length).toBeGreaterThan(0);
     expect(zhGrade.kicker?.trim().length).toBeGreaterThan(0);
-    for (const band of OVERALL_SCORE_BANDS) {
-      expect(enGrade[band.id]?.trim().length, `${band.id} en`).toBeGreaterThan(0);
-      expect(zhGrade[band.id]?.trim().length, `${band.id} zh`).toBeGreaterThan(0);
+    expect(enGrade.viewDetailHint?.trim().length).toBeGreaterThan(0);
+    expect(zhGrade.viewDetailHint?.trim().length).toBeGreaterThan(0);
+    for (const bandId of OVERALL_GRADE_BAND_IDS) {
+      const enTier = enGrade[bandId] as OverallGradeTierCopy;
+      const zhTier = zhGrade[bandId] as OverallGradeTierCopy;
+      expect(enTier?.name?.trim().length, `${bandId} name en`).toBeGreaterThan(0);
+      expect(enTier?.desc?.trim().length, `${bandId} desc en`).toBeGreaterThan(0);
+      expect(zhTier?.name?.trim().length, `${bandId} name zh`).toBeGreaterThan(0);
+      expect(zhTier?.desc?.trim().length, `${bandId} desc zh`).toBeGreaterThan(0);
     }
   });
 });

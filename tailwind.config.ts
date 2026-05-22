@@ -1,6 +1,11 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
 
+/** Fine grain for frosted-glass CTA — SVG turbulence, no external asset. */
+const DIAGNOSTICS_GLASS_NOISE = `url("data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
+)}")`;
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -80,6 +85,20 @@ export default {
           '0%, 100%': { opacity: '0.7' },
           '50%': { opacity: '1' },
         },
+        /** Track-mode diagnostics CTA — box-shadow only for compositor-friendly breathe. */
+        'track-mode-glow': {
+          '0%, 100%': {
+            boxShadow:
+              'inset 0 0 14px rgba(255, 149, 0, 0.1), 0 0 10px rgba(255, 149, 0, 0.3), 0 0 20px rgba(255, 149, 0, 0.15)',
+          },
+          '50%': {
+            boxShadow:
+              'inset 0 0 18px rgba(255, 149, 0, 0.16), 0 0 14px rgba(255, 149, 0, 0.42), 0 0 26px rgba(255, 149, 0, 0.2)',
+          },
+        },
+      },
+      transitionTimingFunction: {
+        'report-ease': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       animation: {
         'diagnostic-scan': 'diagnostic-scan 1.75s linear infinite',
@@ -93,6 +112,7 @@ export default {
         'aura-lightning': 'aura-lightning 1.1s ease-in-out infinite',
         'aura-void': 'aura-void 8s linear infinite',
         'aura-divine': 'aura-divine 2.2s ease-in-out infinite',
+        'track-mode-glow': 'track-mode-glow 4s ease-in-out infinite',
       },
     },
   },
@@ -125,6 +145,49 @@ export default {
         '.tachometer-fill-glow': {
           filter:
             'drop-shadow(0 0 6px rgb(var(--aura-neon-rgb) / 0.55)) drop-shadow(0 0 14px rgb(var(--aura-neon-rgb) / 0.28))',
+        },
+        '.ui-btn-diagnostics': {
+          position: 'relative',
+          isolation: 'isolate',
+          overflow: 'hidden',
+        },
+        '.ui-btn-diagnostics-glass': {
+          position: 'absolute',
+          inset: '0',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          backgroundColor: 'rgba(32, 32, 32, 0.6)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          willChange: 'backdrop-filter',
+          transform: 'translateZ(0)',
+        },
+        '.ui-btn-diagnostics-noise': {
+          position: 'absolute',
+          inset: '0',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          opacity: '0.07',
+          mixBlendMode: 'overlay',
+          backgroundImage: DIAGNOSTICS_GLASS_NOISE,
+          backgroundSize: '128px 128px',
+        },
+        '.ui-btn-diagnostics-inset-glow': {
+          position: 'absolute',
+          inset: '0',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          boxShadow: 'inset 0 0 16px rgba(255, 149, 0, 0.12)',
+        },
+        /** Animated neon halo — isolated from button hover so shadow breathe stays smooth. */
+        '.ui-btn-diagnostics-glow': {
+          position: 'absolute',
+          inset: '0',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          zIndex: '0',
+          boxShadow:
+            'inset 0 0 14px rgba(255, 149, 0, 0.1), 0 0 10px rgba(255, 149, 0, 0.3), 0 0 20px rgba(255, 149, 0, 0.15)',
         },
       });
     }),

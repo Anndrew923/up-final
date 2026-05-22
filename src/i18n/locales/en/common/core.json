@@ -454,40 +454,40 @@
     }
   },
   "identity": {
-    "liveSpecKicker": "LIVE CHASSIS SPECIFICATIONS",
+    "liveSpecKicker": "Live Chassis Spec // LIVE CHASSIS SPEC",
     "vehicleSectionKicker": "Racing Spec Identity",
     "genderGroup": {
-      "male": "Male Qualified Pilot",
-      "female": "Female Qualified Pilot"
+      "male": "Male Qualifier",
+      "female": "Female Qualifier"
     },
     "archetypes": {
       "G_PLATFORM": {
         "title": "Serial Code: Iron Chassis (G-Platform)",
-        "summary": "Chassis rigidity is exceptionally high. In the {{genderGroup}} sequence, your torque output falls into heavy-platform class; gravity loads read as light cruising resistance."
+        "summary": "Strength leads across all six metrics. Chassis rigidity is extreme—in the {{genderGroup}} lineup, your horsepower sits in the heavy-platform class; gravity barely registers as a light-load cruise."
       },
       "HIGH_OUTPUT": {
-        "title": "Serial Code: High Output Afterburn (High-Output)",
-        "summary": "Throttle response is extremely sensitive. Neural recruitment behaves like launch-control ignition, pushing power to redline in minimal distance."
+        "title": "Serial Code: High-Output Afterburn (High-Output)",
+        "summary": "Explosive power leads across all six metrics. Throttle response is razor-sharp—neural recruitment fires like launch control, with the burst to hit redline in the shortest distance."
       },
       "ENDURANCE_PROTO": {
         "title": "Serial Code: Endurance Prototype (Endurance-P)",
-        "summary": "Thermal management is outstanding. You demonstrate 24-hour Le Mans style stability, built to lead long-range endurance sectors."
+        "summary": "Cardio endurance leads across all six metrics. Thermal management is elite—you show 24-hour Le Mans stability and dominate long-range endurance battles."
       },
       "WIDE_BODY": {
         "title": "Serial Code: Wide-Body Architecture (Wide-Body)",
-        "summary": "Structural load profile shows dominant downforce characteristics. High-density fibers provide a powerful foundation, making you a stable heavyweight target across all terrain."
+        "summary": "Muscle mass leads across all six metrics. Your frame generates serious downforce—dense fiber gives you a powerful strength base, and you’re an immovable heavyweight target in any arena."
       },
       "AERO_SPEC": {
         "title": "Serial Code: Aero Optimization (Aero-Spec)",
-        "summary": "Power-to-weight has reached track-record class. With low drag and low fat ratio, every gram of mass is allocated for pure performance."
+        "summary": "FFMI leads across all six metrics. Displacement and power-to-weight are track-record class; body fat and drag stay minimal—every gram is tuned for peak performance."
       },
       "MR_SPEC": {
         "title": "Serial Code: Mid-Engine Balance (MR-Spec)",
-        "summary": "Steering feedback is surgically precise. Neural control resembles a mid-engine layout, enabling elegant corner entry and stable output through the apex."
+        "summary": "Grip strength leads across all six metrics. Steering feedback is surgical, tire grip is fierce—neural control like a mid-engine layout lets you carve the apex with grace and hold steady power through the corner."
       },
       "GT_CRUISER": {
-        "title": "Serial Code: Grand Tourer (Grand Tourer)",
-        "summary": "All-spectrum performance is fully unlocked. You carry flagship-grade elegance and aggression, with no power dead zones across sector or weather. You are the most complete fit in this sequence."
+        "title": "Serial Code: Global Grand Tourer (Grand Tourer)",
+        "summary": "All six metrics are perfectly balanced—full-spectrum performance is unlocked. You carry flagship elegance and ferocity with no power gaps in any sector or weather. You’re the most complete qualifier in the current sequence."
       }
     }
   },

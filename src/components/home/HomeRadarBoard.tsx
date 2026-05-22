@@ -10,12 +10,7 @@ import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
 import { formatOverallResonanceScore, getWeakestRadarAxis } from '../../logic/core/scoring';
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
-import {
-  getAxisMeaningI18nPrefix,
-  resolveOverallGradeBand,
-} from '../../logic/core/scoreMeaningCatalog';
-import { buildIdentityLiveSpecRows } from './identityLiveSpecRows';
-import IdentityLiveSpecList from './IdentityLiveSpecList';
+import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
@@ -65,13 +60,6 @@ export const HomeRadarBoard: FC = () => {
     return t('identity.genderGroup.male', { ns: 'common' });
   }, [physicalProfile?.gender, t]);
 
-  const overallGradeBandId = useMemo(() => resolveOverallGradeBand(overallScore), [overallScore]);
-
-  const liveSpecRows = useMemo(
-    () => buildIdentityLiveSpecRows(t, localizedRadarPoints),
-    [localizedRadarPoints, t]
-  );
-
   const {
     open: ritualOpen,
     phase: ritualPhase,
@@ -86,6 +74,7 @@ export const HomeRadarBoard: FC = () => {
     overallScore,
     radarPoints: localizedRadarPoints,
     vehicleClassId,
+    genderGroup,
   });
 
   return (
@@ -140,7 +129,6 @@ export const HomeRadarBoard: FC = () => {
               />
 
               <HomeDiagnosticsPanel
-                vehicleClassId={vehicleClassId}
                 disabled={isBlocking}
                 onStartDiagnostics={() => {
                   void startRitual();
@@ -160,12 +148,6 @@ export const HomeRadarBoard: FC = () => {
                 </p>
                 <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent-info sm:text-6xl">
                   {formatOverallResonanceScore(overallScore)}
-                </p>
-                <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-                  {t('home.overallGrade.kicker', { ns: 'common' })}
-                </p>
-                <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
-                  {t(`home.overallGrade.${overallGradeBandId}`, { ns: 'common' })}
                 </p>
               </div>
 
@@ -196,25 +178,6 @@ export const HomeRadarBoard: FC = () => {
                   </li>
                 ))}
               </ul>
-
-              <section className="rounded-md border border-zinc-800/80 bg-bg-panel/30 p-3">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-                  {t('identity.vehicleSectionKicker', { ns: 'common' })}
-                </p>
-                <h3 className="mt-1 text-sm font-semibold text-zinc-100">
-                  {t(`identity.archetypes.${vehicleClassId}.title`, { ns: 'common' })}
-                </h3>
-                <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                  {t(`identity.archetypes.${vehicleClassId}.summary`, {
-                    ns: 'common',
-                    genderGroup,
-                  })}
-                </p>
-                <IdentityLiveSpecList
-                  kicker={t('identity.liveSpecKicker', { ns: 'common' })}
-                  rows={liveSpecRows}
-                />
-              </section>
             </div>
 
             <div

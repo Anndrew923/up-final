@@ -1,49 +1,79 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { VehicleClassId } from '../../logic/core/vehicleResolver';
+import { resolveHomeSectionString } from '../../i18n/resolveHomeBundleCopy';
 
 export interface HomeDiagnosticsPanelProps {
-  vehicleClassId: VehicleClassId;
   disabled?: boolean;
   onStartDiagnostics: () => void;
 }
 
+function DiagnosticsArrowIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="shrink-0 text-[#FF9500]"
+      aria-hidden
+    >
+      <path
+        d="M4 10h11M11 6l4 4-4 4"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Track-mode diagnostics CTA — layered frosted glass (blur + grain), neon depth, breathing glow.
+ * WHY: Glow animates on a dedicated layer so hover/active border feedback does not fight box-shadow keyframes.
+ */
 const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
-  vehicleClassId,
   disabled = false,
   onStartDiagnostics,
 }) => {
   const { t } = useTranslation('common');
+  const ctaLabel = resolveHomeSectionString(t, 'diagnostics', 'cta');
+  const ctaSub = resolveHomeSectionString(t, 'diagnostics', 'ctaSub');
 
   return (
-    <section className="w-full max-w-md rounded-lg border border-zinc-800/80 bg-bg-panel/35 p-4 backdrop-blur-sm">
-      <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">
-        {t('home.diagnostics.kicker')}
-      </p>
-      <h3 className="mt-1 text-sm font-semibold text-zinc-100">
-        {t(`identity.archetypes.${vehicleClassId}.title`)}
-      </h3>
-      <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-        {t('home.diagnostics.archetypeHint')}
-      </p>
-      <button
-        type="button"
-        className="relative mt-4 w-full overflow-hidden rounded-md border border-accent-primary/40 bg-zinc-950/70 px-4 py-3 text-left motion-reduce:animate-none motion-safe:transition-[border-color,box-shadow] motion-safe:duration-300 hover:border-accent-info/55 disabled:pointer-events-none disabled:opacity-40"
-        disabled={disabled}
-        onClick={onStartDiagnostics}
-      >
+    <div className="flex w-full justify-center">
+      <div className="relative w-[72%] min-w-[200px] max-w-[280px] pt-4">
         <span
-          className="pointer-events-none absolute inset-0 animate-aura-pulse bg-gradient-to-r from-accent-primary/10 via-accent-info/15 to-accent-primary/10 motion-reduce:animate-none"
+          className="pointer-events-none absolute left-0 top-0 z-10 font-mono text-[11px] font-normal uppercase tracking-[0.15em] text-[#A0A0A0]"
           aria-hidden
-        />
-        <span className="relative block font-mono text-[10px] uppercase tracking-[0.22em] text-accent-primary/90">
-          {t('home.diagnostics.ctaSub')}
+        >
+          {ctaSub}
         </span>
-        <span className="relative mt-1 block text-sm font-semibold text-zinc-100">
-          {t('home.diagnostics.cta')}
-        </span>
-      </button>
-    </section>
+
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={ctaLabel}
+          onClick={onStartDiagnostics}
+          className="ui-btn-diagnostics group flex w-full min-h-12 items-center justify-between gap-3 rounded-lg border border-[#FF9500] px-4 py-3.5 text-left will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9500]/70 motion-safe:transition-[transform,border-color] motion-safe:duration-150 motion-safe:active:scale-[0.98] motion-safe:active:border-[#FFB84D] motion-safe:hover:border-[#FFAA33] disabled:pointer-events-none disabled:opacity-40"
+        >
+          <span
+            className="ui-btn-diagnostics-glow motion-reduce:animate-none motion-safe:animate-track-mode-glow"
+            aria-hidden
+          />
+          <span className="ui-btn-diagnostics-glass motion-reduce:will-change-auto" aria-hidden />
+          <span className="ui-btn-diagnostics-noise" aria-hidden />
+          <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
+          <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
+            <span className="text-sm font-semibold leading-snug tracking-tight text-zinc-100">
+              {ctaLabel}
+            </span>
+            <DiagnosticsArrowIcon />
+          </span>
+        </button>
+      </div>
+    </div>
   );
 };
 

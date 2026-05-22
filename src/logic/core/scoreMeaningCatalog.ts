@@ -122,12 +122,49 @@ export const OVERALL_SCORE_BANDS: readonly ScoreBand[] = [
   { id: 'PANTHEON', min: 181, max: Number.POSITIVE_INFINITY },
 ] as const;
 
-export function resolveOverallGradeBand(score: number): string {
+/** Homologation tier ids — must stay aligned with `OVERALL_SCORE_BANDS`. */
+export const OVERALL_GRADE_BAND_IDS = [
+  'BASE',
+  'TIER_41',
+  'TIER_51',
+  'TIER_61',
+  'TIER_71',
+  'TIER_81',
+  'TIER_91',
+  'TIER_101',
+  'TIER_111',
+  'TIER_121',
+  'TIER_131',
+  'TIER_141',
+  'LEGEND',
+  'PANTHEON',
+] as const;
+
+export type OverallGradeBandId = (typeof OVERALL_GRADE_BAND_IDS)[number];
+
+export function resolveOverallGradeBand(score: number): OverallGradeBandId {
   const safe = Math.max(0, Number(score) || 0);
   for (let i = 0; i < OVERALL_SCORE_BANDS.length - 1; i += 1) {
-    if (safe < OVERALL_SCORE_BANDS[i + 1].min) return OVERALL_SCORE_BANDS[i].id;
+    if (safe < OVERALL_SCORE_BANDS[i + 1].min) {
+      return OVERALL_SCORE_BANDS[i].id as OverallGradeBandId;
+    }
   }
   return 'PANTHEON';
+}
+
+/** Centralizes i18n key paths for homologation grade copy — avoids scattered string templates in UI. */
+export function getOverallGradeKeys(bandId: OverallGradeBandId) {
+  return {
+    name: `home.overallGrade.${bandId}.name`,
+    desc: `home.overallGrade.${bandId}.desc`,
+    kicker: 'home.overallGrade.kicker',
+    hint: 'home.overallGrade.viewDetailHint',
+  } as const;
+}
+
+/** Full reveal line for resonance ritual (name + desc) — homepage badge uses name only. */
+export function formatOverallGradeRevealLine(name: string, desc: string): string {
+  return `${name}\n${desc}`;
 }
 
 export const SCORE_MEANING_CATALOG: AxisTitleMapping = {

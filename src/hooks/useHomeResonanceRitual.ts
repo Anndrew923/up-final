@@ -4,7 +4,12 @@ import { prefersReducedMotion } from '../lib/motionPreference';
 import { consumePendingRadarResonance } from '../services/radarResonanceSession';
 import { useBootSequenceStore } from '../stores/bootSequenceStore';
 import { useUiInteractionStore } from '../stores/uiInteractionStore';
-import { resolveOverallGradeBand } from '../logic/core/scoreMeaningCatalog';
+import { resolveOverallGradeTierCopy } from '../i18n/resolveOverallGradeCopy';
+import {
+  formatOverallGradeRevealLine,
+  resolveOverallGradeBand,
+} from '../logic/core/scoreMeaningCatalog';
+import type { VehicleClassId } from '../logic/core/vehicleResolver';
 import type { RadarChartPoint } from '../types/radarDisplay';
 import type { HomeResonancePhase, HomeResonanceSnapshot } from '../types/homeResonance';
 import { useAnimatedScore } from './useAnimatedScore';
@@ -22,7 +27,8 @@ const FILL_DURATION_MS = T_COUNT - T_CHARGE;
 export interface UseHomeResonanceRitualInput {
   overallScore: number;
   radarPoints: RadarChartPoint[];
-  vehicleClassId: string;
+  vehicleClassId: VehicleClassId;
+  genderGroup: string;
 }
 
 export interface UseHomeResonanceRitualResult {
@@ -53,6 +59,23 @@ function waitMs(
     }, ms);
     timeoutIdsRef.current.push(id);
   });
+}
+
+/**
+ * Ends the async ritual timeline when this run was cancelled.
+ * WHY: A superseding `startRitual` bumps `runIdRef` without tearing down UI — only the stale
+ * run must not call `closeRitual()` or it would kill the new overlay (boot-phase freeze).
+ */
+/** @internal Exported for unit tests — ritual abort guard. */
+export function exitIfRunCancelled(
+  runId: number,
+  runIdRef: { current: number },
+  closeRitual: () => void
+): boolean {
+  if (runId === runIdRef.current) return false;
+  if (runIdRef.current > runId) return true;
+  closeRitual();
+  return true;
 }
 
 function animateRitualFill(
@@ -93,6 +116,7 @@ export function useHomeResonanceRitual({
   overallScore,
   radarPoints,
   vehicleClassId,
+  genderGroup,
 }: UseHomeResonanceRitualInput): UseHomeResonanceRitualResult {
   const { t } = useTranslation('common');
   const { triggerImpact } = useDopamineFeedback();
@@ -137,14 +161,16 @@ export function useHomeResonanceRitual({
 
   const buildSnapshot = useCallback((): HomeResonanceSnapshot => {
     const gradeBandId = resolveOverallGradeBand(overallScore);
+    const { name: gradeName, desc: gradeDesc } = resolveOverallGradeTierCopy(t, gradeBandId);
     return {
       overallScore,
       radarPoints,
       gradeBandId,
-      gradeLine: t(`home.overallGrade.${gradeBandId}`),
+      gradeLine: formatOverallGradeRevealLine(gradeName, gradeDesc),
       archetypeTitle: t(`identity.archetypes.${vehicleClassId}.title`),
+      archetypeSummary: t(`identity.archetypes.${vehicleClassId}.summary`, { genderGroup }),
     };
-  }, [overallScore, radarPoints, t, vehicleClassId]);
+  }, [genderGroup, overallScore, radarPoints, t, vehicleClassId]);
 
   const closeRitual = useCallback(() => {
     invalidateRun();
@@ -160,10 +186,14 @@ export function useHomeResonanceRitual({
     setBlocking(false);
   }, [cancelScoreAnim, cancelTypewriter, invalidateRun, resetTypewriter, setBlocking, setInstant]);
 
+  const closeRitualRef = useRef(closeRitual);
+  closeRitualRef.current = closeRitual;
+
   const startRitual = useCallback(async () => {
     invalidateRun();
     const runId = runIdRef.current;
     const isActive = () => runId === runIdRef.current;
+    const exitIfCancelled = () => exitIfRunCancelled(runId, runIdRef, closeRitual);
 
     const nextSnapshot = buildSnapshot();
     setSnapshot(nextSnapshot);
@@ -179,44 +209,47 @@ export function useHomeResonanceRitual({
 
     try {
       if (reduced) {
-        if (!isActive()) return;
+        if (exitIfCancelled()) return;
         triggerImpact('medium');
         setRitualFill(1);
         setShowBootScore(false);
         setPhase('count');
         await animateTo(nextSnapshot.overallScore, 0);
-        if (!isActive()) return;
+        if (exitIfCancelled()) return;
         setPhase('reveal');
         triggerImpact('heavy');
         await playTypewriter(nextSnapshot.gradeLine);
+        if (exitIfCancelled()) return;
+        setPhase('report');
         return;
       }
 
       triggerImpact('light');
 
       await waitMs(T_CHARGE - T_BOOT, isActive, timeoutIdsRef);
-      if (!isActive()) return;
+      if (exitIfCancelled()) return;
 
       setPhase('charge');
       await animateRitualFill(setRitualFill, FILL_DURATION_MS, isActive, fillRafRef);
-      if (!isActive()) return;
+      if (exitIfCancelled()) return;
 
       triggerImpact('light');
       setPhase('count');
       setShowBootScore(false);
       triggerImpact('medium');
       await animateTo(nextSnapshot.overallScore, 0);
-      if (!isActive()) return;
+      if (exitIfCancelled()) return;
 
       await waitMs(T_REVEAL - T_COUNT, isActive, timeoutIdsRef);
-      if (!isActive()) return;
+      if (exitIfCancelled()) return;
 
       setPhase('reveal');
       triggerImpact('heavy');
       await playTypewriter(nextSnapshot.gradeLine);
+      if (exitIfCancelled()) return;
+      setPhase('report');
     } catch {
-      if (isActive()) {
-        invalidateRun();
+      if (runIdRef.current === runId) {
         closeRitual();
       }
     }
@@ -241,13 +274,9 @@ export function useHomeResonanceRitual({
     void startRitualRef.current();
   }, [bootCompleted]);
 
-  useEffect(
-    () => () => {
-      invalidateRun();
-      setBlocking(false);
-    },
-    [invalidateRun, setBlocking]
-  );
+  // WHY: Empty deps — tying cleanup to `closeRitual` identity re-ran teardown on every render
+  // when upstream hooks return unstable cancel fns, closing the overlay mid-ritual.
+  useEffect(() => () => closeRitualRef.current(), []);
 
   return {
     open,
