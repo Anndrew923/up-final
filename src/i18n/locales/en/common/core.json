@@ -454,7 +454,7 @@
     }
   },
   "identity": {
-    "liveSpecKicker": "Live Chassis Spec // LIVE CHASSIS SPEC",
+    "liveSpecKicker": "Live Chassis Spec",
     "vehicleSectionKicker": "Racing Spec Identity",
     "genderGroup": {
       "male": "Male Qualifier",

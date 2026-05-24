@@ -454,7 +454,7 @@
     }
   },
   "identity": {
-    "liveSpecKicker": "實時載具規格 // LIVE CHASSIS SPEC",
+    "liveSpecKicker": "實時載具規格",
     "vehicleSectionKicker": "Racing Spec Identity",
     "genderGroup": {
       "male": "男性適格者",

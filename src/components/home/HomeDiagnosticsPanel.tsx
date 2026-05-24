@@ -70,7 +70,11 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
           <span className="ui-btn-diagnostics-noise" aria-hidden />
           <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
           <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
-            <span className={ctaLabelClass}>{ctaLabel}</span>
+            <span
+              className={`${ctaLabelClass} min-w-0 flex-1 overflow-hidden text-ellipsis`}
+            >
+              {ctaLabel}
+            </span>
             <DiagnosticsArrowIcon />
           </span>
         </button>

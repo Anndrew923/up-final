@@ -107,9 +107,9 @@
     "radarAria": "Six-axis hex radar chart",
     "diagnostics": {
       "kicker": "Identity archetype",
-      "panelTitle": "Run Full Spec Diagnostics",
+      "panelTitle": "Full Spec Diagnostics",
       "archetypeHint": "Homologation profile derived from your six-axis performance map.",
-      "cta": "Run Full Spec Diagnostics",
+      "cta": "Full Spec Diagnostics",
       "ctaSub": "DIAGNOSTICS"
     },
     "resonance": {
@@ -136,79 +136,79 @@
         "name": "STOCK COMMUTER",
         "desc": "Factory architecture awaiting full unlock.",
         "representativeCar": "Toyota Corolla Altis 1.8",
-        "carPrice": "Under NT$1M Entry Commuter"
+        "carPrice": "Under ~$32K Entry Commuter"
       },
       "TIER_40": {
         "name": "STREET MODIFIED",
         "desc": "Entry street tune. Driveline efficiency and throttle response up.",
         "representativeCar": "Toyota GR Yaris",
-        "carPrice": "~NT$2M Street Hot Hatch"
+        "carPrice": "~$63K Street Hot Hatch"
       },
       "TIER_50": {
         "name": "STAGE 1 TUNE",
         "desc": "Stage-one calibration. Power platform taking shape.",
         "representativeCar": "Volkswagen Golf GTI",
-        "carPrice": "~NT$2.5M Stage 1 Class"
+        "carPrice": "~$80K Stage 1 Class"
       },
       "TIER_60": {
         "name": "CLUB TRACK SPEC",
         "desc": "Club track build. Chassis rigidity beyond stock norms.",
         "representativeCar": "Subaru WRX STI",
-        "carPrice": "~NT$3M AWD Chassis Class"
+        "carPrice": "~$95K AWD Chassis Class"
       },
       "TIER_70": {
         "name": "TRACKDAY ENTHUSIAST",
         "desc": "Weekend hot-lap spec. Control and heat-soak resistance elevated.",
         "representativeCar": "Toyota GR Supra",
-        "carPrice": "~NT$4M RWD Sports Coupe"
+        "carPrice": "~$125K RWD Sports Coupe"
       },
       "TIER_80": {
         "name": "AMATEUR TIME ATTACK",
         "desc": "Amateur time-attack class. High fill-rate under real track pressure.",
         "representativeCar": "Mercedes-Benz E350 Coupe (~350 hp)",
-        "carPrice": "~NT$4.5M Two-Door Coupe"
+        "carPrice": "~$140K Two-Door Coupe"
       },
       "TIER_90": {
         "name": "UNLIMITED ATTACK",
         "desc": "Unlimited time-attack ruleset. Peak power and grip in perfect mesh.",
         "representativeCar": "Porsche 718 Cayman GTS 4.0 (~430 hp)",
-        "carPrice": "~NT$6M Mid-Engine Flagship"
+        "carPrice": "~$190K Mid-Engine Flagship"
       },
       "TIER_100": {
         "name": "GT4 CHAMPIONSHIP",
         "desc": "Regional GT4 homologation. Driveline efficiency at podium threshold.",
         "representativeCar": "Porsche 911 GT3 RS (992)",
-        "carPrice": "~NT$15M NA Track Ceiling"
+        "carPrice": "~$470K NA Track Ceiling"
       },
       "TIER_110": {
         "name": "GT3 COMPETITION",
         "desc": "Elite international GT3. High torque and max aero aligned.",
         "representativeCar": "Mercedes-AMG GT3",
-        "carPrice": "~NT$25M Elite Factory Race Block"
+        "carPrice": "~$780K Elite Factory Race Block"
       },
       "TIER_120": {
         "name": "GTE PRO SPEC",
         "desc": "Pro Le Mans GTE. Dominant efficiency under extreme sustained load.",
         "representativeCar": "Ferrari 488 GTE",
-        "carPrice": "~NT$45M Pro Endurance Tier"
+        "carPrice": "~$1.4M Pro Endurance Tier"
       },
       "TIER_130": {
         "name": "FACTORY PROTOTYPE",
         "desc": "Factory prototype racer. Perfect mechanics at full-load high pressure.",
         "representativeCar": "Toyota GR010 Hybrid",
-        "carPrice": "9-Figure Factory Prototype"
+        "carPrice": "~$3M+ Factory Prototype"
       },
       "TIER_140": {
         "name": "HYPERCAR TIER",
         "desc": "Top hypercar class. Unbelievable transient launch reserve.",
         "representativeCar": "McLaren P1 / Ferrari LaFerrari",
-        "carPrice": "~NT$150M Hypercar Apex"
+        "carPrice": "~$4.7M Hypercar Apex"
       },
       "LEGEND": {
         "name": "LEGENDARY MONSTER",
         "desc": "Legendary build monster. Ultimate crystallization of pure mechanical will.",
         "representativeCar": "Bugatti Bolide / Porsche 919 Hybrid Evo",
-        "carPrice": "NT$300M+ Immortal Legend Tier"
+        "carPrice": "$10M+ Immortal Legend Tier"
       },
       "PANTHEON": {
         "name": "PANTHEON EXPERIMENTAL",
