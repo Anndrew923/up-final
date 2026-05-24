@@ -5,21 +5,21 @@
     "next": "Continue",
     "ignite": "IGNITE",
     "phase1": {
-      "kicker": "Phase 01 · System wake",
-      "body": "Systems online. Factory chassis scan complete. Building your body is like tuning a performance car — the factory floor may be set, but how you break limits and extract every horsepower is where the fun begins. Welcome to Ultimate Physique."
+      "kicker": "Phase 01 · System Wake",
+      "body": "Systems online. Chassis scan complete. Your body is a performance platform — factory set, unlimited tune potential. Welcome to Ultimate Physique."
     },
     "profileInput": {
-      "kicker": "Phase 01.5 · Spec registration",
-      "body": "Before unlocking the performance console, the system must log your native chassis parameters (gender, age, height, weight). This data forges your powertrain ratios — enter it with precision.",
-      "lockHint": "Save your body specs to continue the power-on sequence."
+      "kicker": "Phase 01.5 · Spec Registration",
+      "body": "Log native chassis parameters (gender, age, height, weight) before unlocking the console. Precision input forges your powertrain ratios.",
+      "lockHint": "Save body specs to continue power-on sequence."
     },
     "phase2": {
-      "kicker": "Phase 02 · Performance overview",
-      "body": "This is your six-axis performance dashboard — your full vehicle spec readout. It reflects horsepower, torque, and pilot compatibility. Data does not lie; you set the engine's operating temperature."
+      "kicker": "Phase 02 · Performance Overview",
+      "body": "Six-axis performance dashboard — full vehicle spec readout. Horsepower, torque, pilot compatibility. You set operating temperature."
     },
     "phase3": {
-      "kicker": "Phase 03 · Horsepower calibration",
-      "body": "Enter the dyno. Log your limit data and the system unlocks matching auras and tiers. Torque the bolts — start your first chassis calibration now."
+      "kicker": "Phase 03 · Horsepower Calibration",
+      "body": "Enter the dyno. Log limit data — unlock auras and tiers. Torque the bolts. Start first chassis calibration now."
     }
   }
 }

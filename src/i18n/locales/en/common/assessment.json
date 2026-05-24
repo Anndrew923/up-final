@@ -1,19 +1,19 @@
 {
   "assessment": {
     "title": "Assessment",
-    "subtitle": "Choose an assessment to begin.",
-    "localFirstNote": "Core-only: scores stay on device — no Firebase on this screen.",
+    "subtitle": "Pick an assessment to begin.",
+    "localFirstNote": "Core-only: scores stay on device — no Firebase here.",
     "referenceInfo": {
-      "title": "Assessment references",
-      "toggleExpand": "Show assessment references",
-      "toggleCollapse": "Hide assessment references"
+      "title": "Assessment References",
+      "toggleExpand": "Show References",
+      "toggleCollapse": "Hide References"
     },
-    "rawInputsHeading": "Core six inputs",
-    "homeRadarHint": "Radar and overall average are shown on Home.",
-    "viewHomeRadar": "Open performance dashboard",
-    "saveToHistory": "Save snapshot to history",
+    "rawInputsHeading": "Core Six Inputs",
+    "homeRadarHint": "Radar and performance index live on Home.",
+    "viewHomeRadar": "Open Performance Dashboard",
+    "saveToHistory": "Save Snapshot to History",
     "saveToHistoryDone": "Saved to local history.",
-    "resetScores": "Reset core scores",
+    "resetScores": "Reset Core Scores",
     "axis": {
       "strength": "Horsepower",
       "explosivePower": "Torque",
@@ -24,45 +24,45 @@
     },
     "ffmi": {
       "kicker": "Calculated",
-      "title": "FFMI (displacement axis)",
-      "body": "Use profile + body fat to calculate FFMI and update the displacement axis.",
-      "cta": "Open FFMI page"
+      "title": "FFMI (Displacement Axis)",
+      "body": "Calculate FFMI from profile + body fat. Updates displacement axis.",
+      "cta": "Open FFMI Page"
     },
     "cardio": {
       "kicker": "Endurance",
       "title": "Cardio (Cooper / 5 km)",
-      "body": "Use Cooper distance or 5 km time to calculate cardio score.",
-      "cta": "Open cardio assessment"
+      "body": "Run Cooper distance or 5 km time. Calculates stint-axis score.",
+      "cta": "Open Cardio Assessment"
     },
     "muscle": {
-      "kicker": "Body composition",
-      "title": "Muscle mass (SMM)",
-      "body": "Enter skeletal muscle mass (SMM) to calculate your exterior-axis score.",
-      "cta": "Open muscle assessment"
+      "kicker": "Body Composition",
+      "title": "Muscle Mass (SMM)",
+      "body": "Enter skeletal muscle mass (SMM). Calculates exterior-axis score.",
+      "cta": "Open Muscle Assessment"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Explosive power (jump / sprint)",
-      "body": "Enter at least one metric: vertical jump, standing long jump, or sprint.",
-      "cta": "Open explosive assessment"
+      "title": "Explosive Power (Jump / Sprint)",
+      "body": "Enter vertical jump, standing long jump, or sprint. One metric minimum.",
+      "cta": "Open Explosive Assessment"
     },
     "strength": {
       "kicker": "Strength",
-      "title": "Five-lift strength (DOTS-based)",
-      "body": "Enter weight and reps for the five lifts, then calculate and save to radar.",
-      "cta": "Open strength assessment"
+      "title": "Five-Lift Strength (DOTS)",
+      "body": "Log weight and reps for five lifts. Calculate and save to radar.",
+      "cta": "Open Strength Assessment"
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip strength",
-      "body": "Enter peak grip (kg) to calculate grip-axis score.",
-      "cta": "Open grip assessment"
+      "title": "Grip Strength",
+      "body": "Enter peak grip (kg). Calculates traction-axis score.",
+      "cta": "Open Grip Assessment"
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm size assessment",
-      "body": "Enter arm circumference and body fat to calculate arm leaderboard score.",
-      "cta": "Open arm-size assessment"
+      "title": "Arm Size Assessment",
+      "body": "Enter arm circumference and body fat. Calculates arm leaderboard score.",
+      "cta": "Open Arm-Size Assessment"
     },
     "auras": {
       "none": "None",
@@ -74,10 +74,12 @@
       "divine_light": "Divine Light"
     },
     "breakthrough": {
-      "kicker": "Axis breakthrough",
+      "kicker": "Axis Breakthrough",
       "closeAria": "Close breakthrough card",
       "dismiss": "Confirm",
-      "peakReached": "Peak sequence reached",
+      "syncBtn": "Sync to Dashboard",
+      "syncing": "Syncing…",
+      "peakReached": "Peak Sequence Reached",
       "milestoneRemaining": "{{points}} pts until next tier",
       "ranks": {
         "BASE": "Native Frame",
@@ -100,78 +102,78 @@
       }
     },
     "ceremony": {
-      "scanning": "Diagnostic scan in progress…",
+      "scanning": "Diagnostic Scan In Progress…",
       "overlayAria": "Assessment diagnostic scan in progress",
       "messages": {
         "strength": {
-          "m0": "Calibrating DOTS anchor coefficients…",
-          "m1": "Parsing five-axis strength spectrum…",
-          "m2": "Matching hardened load curves…",
-          "m3": "Estimating per-lift 1RM convergence…",
-          "m4": "Scanning five-lift balance profile…",
-          "m5": "Synthesizing radar strength-axis preview…",
-          "m6": "Verifying body-profile weight parameters…",
-          "m7": "Locking combined score output channel…"
+          "m0": "Calibrating DOTS Anchor Coefficients…",
+          "m1": "Parsing Five-Axis Strength Spectrum…",
+          "m2": "Matching Hardened Load Curves…",
+          "m3": "Estimating Per-Lift 1RM Convergence…",
+          "m4": "Scanning Five-Lift Balance Profile…",
+          "m5": "Synthesizing Strength-Axis Preview…",
+          "m6": "Verifying Body-Profile Weight Parameters…",
+          "m7": "Locking Combined Score Output Channel…"
         },
         "grip": {
-          "m0": "Reading peak grip signal…",
-          "m1": "Calibrating grip conversion factor…",
-          "m2": "Matching gender-weighted model…",
-          "m3": "Scanning grip-axis dynamic range…",
-          "m4": "Verifying model cap logic…",
-          "m5": "Synthesizing grip-axis preview score…",
-          "m6": "Locking potential spec output…",
-          "m7": "Completing grip diagnostic sequence…"
+          "m0": "Reading Peak Grip Signal…",
+          "m1": "Calibrating Grip Conversion Factor…",
+          "m2": "Matching Gender-Weighted Model…",
+          "m3": "Scanning Grip-Axis Dynamic Range…",
+          "m4": "Verifying Model Cap Logic…",
+          "m5": "Synthesizing Grip-Axis Preview Score…",
+          "m6": "Locking Potential Spec Output…",
+          "m7": "Completing Grip Diagnostic Sequence…"
         },
         "cardio": {
-          "m0": "Reading aerobic output signal…",
-          "m1": "Calibrating Cooper / 5K conversion channel…",
-          "m2": "Matching cardio thermal-layer model…",
-          "m3": "Scanning endurance-axis dynamic range…",
-          "m4": "Verifying distance and pace input bounds…",
-          "m5": "Synthesizing cardio-axis preview score…",
-          "m6": "Locking thermal spec output…",
-          "m7": "Completing cardio diagnostic sequence…"
+          "m0": "Reading Aerobic Output Signal…",
+          "m1": "Calibrating Cooper / 5K Conversion Channel…",
+          "m2": "Matching Cardio Thermal-Layer Model…",
+          "m3": "Scanning Endurance-Axis Dynamic Range…",
+          "m4": "Verifying Distance and Pace Input Bounds…",
+          "m5": "Synthesizing Cardio-Axis Preview Score…",
+          "m6": "Locking Thermal Spec Output…",
+          "m7": "Completing Cardio Diagnostic Sequence…"
         },
         "muscle": {
-          "m0": "Reading skeletal muscle mass signal…",
-          "m1": "Calibrating SMM / SM% dual-branch model…",
-          "m2": "Matching age-group norm anchors…",
-          "m3": "Scanning exterior-axis dynamic range…",
-          "m4": "Verifying SMM input and sex ceiling…",
-          "m5": "Synthesizing exterior-axis preview score…",
-          "m6": "Locking exterior-spec output…",
-          "m7": "Completing muscle diagnostic sequence…"
+          "m0": "Reading Skeletal Muscle Mass Signal…",
+          "m1": "Calibrating SMM / SM% Dual-Branch Model…",
+          "m2": "Matching Age-Group Norm Anchors…",
+          "m3": "Scanning Exterior-Axis Dynamic Range…",
+          "m4": "Verifying SMM Input and Sex Ceiling…",
+          "m5": "Synthesizing Exterior-Axis Preview Score…",
+          "m6": "Locking Exterior-Spec Output…",
+          "m7": "Completing Muscle Diagnostic Sequence…"
         },
         "ffmi": {
-          "m0": "Reading body-fat and lean-mass inputs…",
-          "m1": "Calibrating FFMI conversion curve…",
-          "m2": "Matching height adjustment and sex anchors…",
-          "m3": "Scanning displacement-spectrum dynamic range…",
-          "m4": "Verifying world-record ceiling logic…",
-          "m5": "Synthesizing displacement-axis preview score…",
-          "m6": "Locking displacement-spec output…",
-          "m7": "Completing FFMI diagnostic sequence…"
+          "m0": "Reading Body-Fat and Lean-Mass Inputs…",
+          "m1": "Calibrating FFMI Conversion Curve…",
+          "m2": "Matching Height Adjustment and Sex Anchors…",
+          "m3": "Scanning Displacement-Spectrum Dynamic Range…",
+          "m4": "Verifying World-Record Ceiling Logic…",
+          "m5": "Synthesizing Displacement-Axis Preview Score…",
+          "m6": "Locking Displacement-Spec Output…",
+          "m7": "Completing FFMI Diagnostic Sequence…"
         },
         "explosive": {
-          "m0": "Reading vertical jump impulse channel…",
-          "m1": "Calibrating standing-long-jump torque curve…",
-          "m2": "Matching sprint transient decay model…",
-          "m3": "Scanning explosive-axis dynamic range…",
-          "m4": "Verifying elite cap and floor guards…",
-          "m5": "Synthesizing power-axis preview score…",
-          "m6": "Locking torque-spec output…",
-          "m7": "Completing explosive diagnostic sequence…"
+          "m0": "Reading Vertical Jump Impulse Channel…",
+          "m1": "Calibrating Standing-Long-Jump Torque Curve…",
+          "m2": "Matching Sprint Transient Decay Model…",
+          "m3": "Scanning Explosive-Axis Dynamic Range…",
+          "m4": "Verifying Elite Cap and Floor Guards…",
+          "m5": "Synthesizing Power-Axis Preview Score…",
+          "m6": "Locking Torque-Spec Output…",
+          "m7": "Completing Explosive Diagnostic Sequence…"
         },
         "armSize": {
-          "m0": "Reading upper-arm circumference signal…",
-          "m1": "Calibrating body-fat rim offset model…",
-          "m2": "Matching benchmark radius anchors…",
-          "m3": "Scanning rim-spec dynamic range…",
-          "m4": "Verifying axis ceiling logic…",
-          "m5": "Synthesizing arm-size preview score…",
-          "m6": "Locking rim-spec output…",
-          "m7": "Completing arm-size diagnostic sequence…"
+          "m0": "Reading Upper-Arm Circumference Signal…",
+          "m1": "Calibrating Body-Fat Rim Offset Model…",
+          "m2": "Matching Benchmark Radius Anchors…",
+          "m3": "Scanning Rim-Spec Dynamic Range…",
+          "m4": "Verifying Axis Ceiling Logic…",
+          "m5": "Synthesizing Arm-Size Preview Score…",
+          "m6": "Locking Rim-Spec Output…",
+          "m7": "Completing Arm-Size Diagnostic Sequence…"
         }
       }
     }

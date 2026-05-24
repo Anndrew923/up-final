@@ -1,16 +1,16 @@
 {
   "about": {
-    "kicker": "Product profile",
+    "kicker": "Product Profile",
     "title": "About UP Final",
-    "subtitle": "A local-first fitness assessment app focused on clear scoring and long-term progress tracking.",
+    "subtitle": "Local-first fitness assessment — clear scoring, long-term progress tracking.",
     "versionTitle": "Version",
     "versionBody": "Current app version: {{version}}",
     "missionTitle": "Mission",
-    "missionBody": "We build practical fitness scoring tools that stay transparent, deterministic, and useful in everyday training decisions.",
-    "disclaimerTitle": "Medical disclaimer",
-    "disclaimerBody": "UP Final is a fitness self-tracking product and does not provide medical diagnosis, treatment, or emergency guidance.",
+    "missionBody": "Transparent, deterministic fitness scoring for everyday training decisions.",
+    "disclaimerTitle": "Medical Disclaimer",
+    "disclaimerBody": "Fitness self-tracking only — not medical diagnosis, treatment, or emergency guidance.",
     "contactTitle": "Contact",
-    "contactBody": "For product questions or feedback, use the official support channel provided inside the app.",
-    "openPrivacyPolicy": "Open privacy policy"
+    "contactBody": "Product questions or feedback: use in-app support channel.",
+    "openPrivacyPolicy": "Open Privacy Policy"
   }
 }

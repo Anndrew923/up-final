@@ -1,14 +1,14 @@
 {
   "history": {
-    "kicker": "Local archive",
-    "title": "Assessment history",
-    "subtitle": "Snapshots saved from Assessment (device-only, Core — no subscription required).",
-    "empty": "No snapshots yet. Save one from the Assessment tab.",
-    "colDate": "Saved at",
+    "kicker": "Local Archive",
+    "title": "Assessment History",
+    "subtitle": "Snapshots from Assessment — device-only, Core, no subscription.",
+    "empty": "No snapshots yet. Save one from Assessment.",
+    "colDate": "Saved At",
     "colOverall": "Overall",
     "colActions": "Actions",
     "delete": "Delete",
-    "deleteConfirm": "Delete this record? This action cannot be undone.",
+    "deleteConfirm": "Delete this record? Cannot be undone.",
     "valueEmpty": "—",
     "shortAxis": {
       "strength": "HP",

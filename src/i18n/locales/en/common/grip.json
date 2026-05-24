@@ -1,22 +1,22 @@
 {
   "grip": {
     "kicker": "Grip",
-    "title": "Grip strength assessment",
-    "subtitle": "Enter peak grip (kg) to calculate grip-axis score.",
-    "peakLabel": "Peak grip (kg)",
+    "title": "Grip Strength Assessment",
+    "subtitle": "Enter peak grip (kg). Calculates traction-axis score.",
+    "peakLabel": "Peak Grip (kg)",
     "peakPlaceholder": "e.g. 65",
     "referenceInfo": {
-      "toggleExpand": "Show assessment references",
-      "toggleCollapse": "Hide assessment references",
-      "title": "Assessment references",
-      "p1": "Formula: score = peakKg × 1.4, then ×1.6 for female scoring. Score keeps one decimal and may exceed 100.",
-      "p2": "Model cap is 160 kg. Inputs above the cap are clamped for scoring and storage.",
-      "p3": "Cap benchmark: Magnus Samuelsson. This is a product guardrail, not a competition certification."
+      "toggleExpand": "Show References",
+      "toggleCollapse": "Hide References",
+      "title": "Assessment References",
+      "p1": "Formula: score = peakKg × 1.4, ×1.6 for female. One decimal; may exceed 100.",
+      "p2": "Model cap: 160 kg. Inputs above cap clamp for scoring and storage.",
+      "p3": "Cap benchmark: Magnus Samuelsson. Product guardrail — not meet certification."
     },
-    "capNoticeTitle": "Input exceeds model cap",
-    "capNoticeBody": "You entered {{input}} kg, above the grip model cap of {{max}} kg. Scoring and saved value are locked to {{max}} kg.",
-    "capNoticeLegend": "Cap benchmark: Swedish strongman Magnus Samuelsson.",
-    "previewLabel": "Preview score",
+    "capNoticeTitle": "Input Exceeds Model Cap",
+    "capNoticeBody": "Entered {{input}} kg, above cap of {{max}} kg. Scoring and saved value locked to {{max}} kg.",
+    "capNoticeLegend": "Cap benchmark: Magnus Samuelsson (Swedish strongman).",
+    "previewLabel": "Preview Score",
     "performanceSpecHeader": "PERFORMANCE SPEC / Potential Spec",
     "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "rankLabel": "Rank: {{label}} (Aura: {{aura}})",
@@ -49,15 +49,15 @@
       "divine_light": "Divine Light"
     },
     "calculate": "Calculate",
-    "submitRadar": "Save to radar (grip axis)",
-    "submitDone": "Saved — Home radar and merged scores now use this grip axis.",
-    "profileIncompleteHint": "Grip conversion needs a complete Home profile (sex, age, height, weight).",
-    "ctaProfile": "Open Home profile",
+    "submitRadar": "Save to Radar (Grip Axis)",
+    "submitDone": "Saved — Home radar and merged scores use this grip axis.",
+    "profileIncompleteHint": "Complete Home profile (sex, age, height, weight) for grip conversion.",
+    "ctaProfile": "Open Home Profile",
     "metaGender": "Sex: {{value}}",
     "metaWeight": "Weight: {{value}} kg",
     "errors": {
-      "missing-profile": "Add a complete physical profile on Home first.",
-      "invalid-peak": "Enter a positive peak grip value in kg."
+      "missing-profile": "Complete physical profile on Home first.",
+      "invalid-peak": "Enter positive peak grip value in kg."
     }
   }
 }

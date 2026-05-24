@@ -3,8 +3,8 @@
     "profile": {
       "kicker": "Body baseline",
       "title": "Physical profile",
-      "subtitle": "Used as the reference for body-weight and age-based scoring. Stored on this device (Core, no account required).",
-      "completeBadge": "Baseline complete — ready for assessment inputs that use height, weight, age, and gender.",
+      "subtitle": "Body reference for scoring. Stored locally—no account required.",
+      "completeBadge": "Baseline locked. Ready for height, weight, age, and gender inputs.",
       "incompleteHint": "Add your body data so later assessments can convert real metrics to scores.",
       "gender": "Gender",
       "age": "Age (years)",
@@ -85,7 +85,7 @@
     "ladderIdentity": {
       "kicker": "Arena identity",
       "title": "Ladder name & avatar",
-      "subtitle": "Shown on the leaderboard when you upload scores. Stored on this device; avatar is compressed before save.",
+      "subtitle": "Leaderboard display name. Stored locally; avatar auto-compressed.",
       "displayName": "Display name",
       "displayNameHint": "Max {{max}} characters.",
       "avatar": "Avatar",
@@ -107,9 +107,9 @@
     "radarAria": "Six-axis hex radar chart",
     "diagnostics": {
       "kicker": "Identity archetype",
-      "panelTitle": "Performance diagnostics & breakthrough // DIAGNOSTICS & BREAKTHROUGH",
+      "panelTitle": "Run Full Spec Diagnostics",
       "archetypeHint": "Homologation profile derived from your six-axis performance map.",
-      "cta": "Run full performance spec diagnostics",
+      "cta": "Run Full Spec Diagnostics",
       "ctaSub": "DIAGNOSTICS"
     },
     "resonance": {
@@ -130,91 +130,91 @@
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE",
       "viewDetailHint": "Tap to view homologation grade details",
-      "carSpecLabel": "Vehicle benchmark",
-      "priceLabel": "Reference value",
+      "carSpecLabel": "Vehicle Benchmark",
+      "priceLabel": "Est. Value",
       "BASE": {
         "name": "STOCK COMMUTER",
-        "desc": "Factory architecture still awaiting full unlock.",
+        "desc": "Factory architecture awaiting full unlock.",
         "representativeCar": "Toyota Corolla Altis 1.8 (daily commuter)",
-        "carPrice": "Under NT$1M entry commuter class"
+        "carPrice": "Est. Value: Under NT$1M Entry Commuter"
       },
       "TIER_40": {
         "name": "STREET MODIFIED",
-        "desc": "Entry street tune. Baseline driveline efficiency and throttle response improved.",
+        "desc": "Entry street tune. Driveline efficiency and throttle response up.",
         "representativeCar": "Toyota GR Yaris (lightweight hot hatch)",
-        "carPrice": "~NT$2M street hot-hatch class"
+        "carPrice": "Est. Value: ~NT$2M Street Hot Hatch"
       },
       "TIER_50": {
         "name": "STAGE 1 TUNE",
-        "desc": "Stage-one calibration. Power platform now taking shape.",
+        "desc": "Stage-one calibration. Power platform taking shape.",
         "representativeCar": "Volkswagen Golf GTI (Stage 1 tune)",
-        "carPrice": "~NT$2.5M Stage 1 class"
+        "carPrice": "Est. Value: ~NT$2.5M Stage 1 Class"
       },
       "TIER_60": {
         "name": "CLUB TRACK SPEC",
         "desc": "Club track build. Chassis rigidity beyond stock norms.",
         "representativeCar": "Subaru WRX STI (hardcore AWD)",
-        "carPrice": "~NT$3M AWD chassis class"
+        "carPrice": "Est. Value: ~NT$3M AWD Chassis Class"
       },
       "TIER_70": {
         "name": "TRACKDAY ENTHUSIAST",
-        "desc": "Weekend hot-lap spec. Control and heat-soak resistance markedly higher.",
+        "desc": "Weekend hot-lap spec. Control and heat-soak resistance elevated.",
         "representativeCar": "Toyota GR Supra (RWD sports coupe)",
-        "carPrice": "~NT$4M RWD sports coupe class"
+        "carPrice": "Est. Value: ~NT$4M RWD Sports Coupe"
       },
       "TIER_80": {
         "name": "AMATEUR TIME ATTACK",
-        "desc": "Amateur time-attack class. High fill-rate efficiency with real track pressure.",
+        "desc": "Amateur time-attack class. High fill-rate under real track pressure.",
         "representativeCar": "Mercedes-Benz E350 Coupe (~350 hp)",
-        "carPrice": "~NT$4.5M two-door coupe class"
+        "carPrice": "Est. Value: ~NT$4.5M Two-Door Coupe"
       },
       "TIER_90": {
         "name": "UNLIMITED ATTACK",
         "desc": "Unlimited time-attack ruleset. Peak power and grip in perfect mesh.",
         "representativeCar": "Porsche 718 Cayman GTS 4.0 (~430 hp)",
-        "carPrice": "~NT$6M mid-engine sports flagship"
+        "carPrice": "Est. Value: ~NT$6M Mid-Engine Flagship"
       },
       "TIER_100": {
         "name": "GT4 CHAMPIONSHIP",
         "desc": "Regional GT4 homologation. Driveline efficiency at podium threshold.",
         "representativeCar": "Porsche 911 GT3 RS (992)",
-        "carPrice": "~NT$15M NA track-day ceiling"
+        "carPrice": "Est. Value: ~NT$15M NA Track Ceiling"
       },
       "TIER_110": {
         "name": "GT3 COMPETITION",
-        "desc": "Elite international GT3. High torque and max aero in full alignment.",
+        "desc": "Elite international GT3. High torque and max aero aligned.",
         "representativeCar": "Mercedes-AMG GT3 (factory race car)",
-        "carPrice": "~NT$25M elite factory race block"
+        "carPrice": "Est. Value: ~NT$25M Elite Factory Race Block"
       },
       "TIER_120": {
         "name": "GTE PRO SPEC",
-        "desc": "Pro Le Mans GTE. Dominant mechanical efficiency under extreme sustained load.",
+        "desc": "Pro Le Mans GTE. Dominant efficiency under extreme sustained load.",
         "representativeCar": "Ferrari 488 GTE (pro Le Mans weapon)",
-        "carPrice": "~NT$45M pro endurance tier"
+        "carPrice": "Est. Value: ~NT$45M Pro Endurance Tier"
       },
       "TIER_130": {
         "name": "FACTORY PROTOTYPE",
-        "desc": "Factory prototype racer. Perfect mechanics under full-load high-pressure output.",
+        "desc": "Factory prototype racer. Perfect mechanics at full-load high pressure.",
         "representativeCar": "Toyota GR010 Hybrid (Le Mans prototype)",
-        "carPrice": "Nine-figure factory prototype tech"
+        "carPrice": "Est. Value: 9-Figure Factory Prototype"
       },
       "TIER_140": {
         "name": "HYPERCAR TIER",
         "desc": "Top hypercar class. Unbelievable transient launch reserve.",
         "representativeCar": "McLaren P1 / Ferrari LaFerrari",
-        "carPrice": "~NT$150M hypercar apex"
+        "carPrice": "Est. Value: ~NT$150M Hypercar Apex"
       },
       "LEGEND": {
         "name": "LEGENDARY MONSTER",
-        "desc": "Legendary build monster. The ultimate crystallization of pure mechanical will.",
+        "desc": "Legendary build monster. Ultimate crystallization of pure mechanical will.",
         "representativeCar": "Bugatti Bolide / Porsche 919 Hybrid Evo",
-        "carPrice": "NT$300M+ immortal legend tier"
+        "carPrice": "Est. Value: NT$300M+ Immortal Legend Tier"
       },
       "PANTHEON": {
         "name": "PANTHEON EXPERIMENTAL",
-        "desc": "Pantheon experimental. Beyond normal definition — data archived to the Pantheon.",
+        "desc": "Pantheon experimental. Beyond normal definition—spec archived to the Pantheon.",
         "representativeCar": "Red Bull RB20 / ultimate F1 spec",
-        "carPrice": "Priceless // Pantheon archive"
+        "carPrice": "Est. Value: Priceless // Pantheon Archive"
       }
     },
     "overallFormula": "Sum of six core scores ÷ 6 (arm circumference excluded).",

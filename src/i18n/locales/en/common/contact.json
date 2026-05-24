@@ -1,11 +1,11 @@
 {
   "contact": {
     "kicker": "Support",
-    "title": "Contact us",
-    "subtitle": "For account, privacy, or product issues, reach out through the official support mailbox.",
-    "emailTitle": "Official email",
+    "title": "Contact Us",
+    "subtitle": "Account, privacy, or product issues — official support mailbox.",
+    "emailTitle": "Official Email",
     "supportEmail": "topaj01@gmail.com",
-    "sendEmail": "Send email now",
-    "responseSla": "Typical response time: 3-5 business days."
+    "sendEmail": "Send Email Now",
+    "responseSla": "Typical response: 3–5 business days."
   }
 }
