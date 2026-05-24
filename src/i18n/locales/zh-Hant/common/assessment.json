@@ -77,6 +77,8 @@
       "kicker": "單軸性能突破",
       "closeAria": "關閉突破主卡",
       "dismiss": "確認",
+      "syncBtn": "同步至主控台",
+      "syncing": "數據灌注中",
       "peakReached": "已達巔峰序列",
       "milestoneRemaining": "距離下一階升級尚需 {{points}} 分",
       "ranks": {

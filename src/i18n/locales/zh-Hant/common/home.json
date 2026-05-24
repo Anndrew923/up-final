@@ -107,9 +107,9 @@
     "radarAria": "六維雷達圖",
     "diagnostics": {
       "kicker": "適格者相性代號",
-      "panelTitle": "性能診斷與突破 // DIAGNOSTICS & BREAKTHROUGH",
+      "panelTitle": "執行全規格診斷",
       "archetypeHint": "依六維性能圖譜推算的載具適格檔案。",
-      "cta": "啟動全域性能規格診斷",
+      "cta": "執行全規格診斷",
       "ctaSub": "DIAGNOSTICS"
     },
     "resonance": {

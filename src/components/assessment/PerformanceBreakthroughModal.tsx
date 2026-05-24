@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type FC } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
@@ -12,17 +12,40 @@ export interface PerformanceBreakthroughModalProps {
   open: boolean;
   payload: PerformanceBreakthroughPayload | null;
   onClose: () => void;
+  onSyncToDashboard?: () => void | Promise<void>;
+  syncDisabled?: boolean;
+  syncing?: boolean;
 }
 
 const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   open,
   payload,
   onClose,
+  onSyncToDashboard,
+  syncDisabled = false,
+  syncing = false,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [syncPending, setSyncPending] = useState(false);
   useFocusTrap(dialogRef, open);
+
+  const isSyncing = syncing || syncPending;
+
+  const handleSync = useCallback(async () => {
+    if (!onSyncToDashboard || isSyncing || syncDisabled) return;
+    setSyncPending(true);
+    try {
+      await onSyncToDashboard();
+    } finally {
+      setSyncPending(false);
+    }
+  }, [isSyncing, onSyncToDashboard, syncDisabled]);
+
+  useEffect(() => {
+    if (!open) setSyncPending(false);
+  }, [open]);
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') return;
@@ -45,6 +68,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   if (!open || !payload || typeof document === 'undefined') return null;
 
   const theme = AURA_THEME[payload.auraKey];
+  const showSync = onSyncToDashboard != null;
 
   return createPortal(
     <div
@@ -95,10 +119,35 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             />
           </div>
 
-          <div className="mt-6 flex justify-center">
-            <button type="button" className="ui-btn ui-btn-primary min-w-[8rem]" onClick={onClose}>
-              {t('assessment.breakthrough.dismiss')}
-            </button>
+          <div
+            className={`mt-6 flex justify-center gap-2 ${showSync ? 'flex-col sm:flex-row' : ''}`}
+          >
+            {showSync ? (
+              <>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn-primary min-w-[12rem] px-3 text-center text-xs leading-snug sm:min-w-[14rem]"
+                  disabled={syncDisabled || isSyncing}
+                  onClick={() => void handleSync()}
+                >
+                  {isSyncing
+                    ? t('assessment.breakthrough.syncing')
+                    : t('assessment.breakthrough.syncBtn')}
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn min-w-[8rem]"
+                  disabled={isSyncing}
+                  onClick={onClose}
+                >
+                  {t('assessment.breakthrough.dismiss')}
+                </button>
+              </>
+            ) : (
+              <button type="button" className="ui-btn ui-btn-primary min-w-[8rem]" onClick={onClose}>
+                {t('assessment.breakthrough.dismiss')}
+              </button>
+            )}
           </div>
         </AuraReactiveFrame>
       </div>

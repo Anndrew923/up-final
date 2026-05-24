@@ -37,9 +37,13 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
   disabled = false,
   onStartDiagnostics,
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const ctaLabel = resolveHomeSectionString(t, 'diagnostics', 'cta');
   const ctaSub = resolveHomeSectionString(t, 'diagnostics', 'ctaSub');
+  const ctaLabelClass =
+    i18n.language === 'zh-Hant'
+      ? 'whitespace-nowrap text-xs font-semibold leading-none tracking-tight text-zinc-100'
+      : 'whitespace-nowrap text-[11px] font-semibold uppercase leading-none tracking-[0.06em] text-zinc-100';
 
   return (
     <div className="flex w-full justify-center">
@@ -66,9 +70,7 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
           <span className="ui-btn-diagnostics-noise" aria-hidden />
           <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
           <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
-            <span className="text-sm font-semibold leading-snug tracking-tight text-zinc-100">
-              {ctaLabel}
-            </span>
+            <span className={ctaLabelClass}>{ctaLabel}</span>
             <DiagnosticsArrowIcon />
           </span>
         </button>

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
@@ -14,6 +14,7 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
 import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
+import { useArmSizeBreakthroughDashboardSync } from '../hooks/useBreakthroughDashboardSync';
 import { useScoreStore } from '../stores/scoreStore';
 
 export interface ArmSizeAssessmentPageProps {
@@ -22,6 +23,7 @@ export interface ArmSizeAssessmentPageProps {
 
 const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const [referenceOpen, setReferenceOpen] = useState(false);
   const persistedArmSizeScore = useScoreStore((s) => s.scores.armSize);
   const {
@@ -57,6 +59,11 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     closeModal,
   } = reveal;
 
+  const syncBreakthroughToDashboard = useArmSizeBreakthroughDashboardSync(
+    saveForLeaderboard,
+    navigate
+  );
+
   const armLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
     const score = submittedScore ?? persistedArmSizeScore;
     if (score == null || !Number.isFinite(score) || score <= 0) return undefined;
@@ -70,7 +77,12 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="armSize" />
-      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
+      <PerformanceBreakthroughModal
+        open={modalOpen}
+        payload={modalPayload}
+        onClose={closeModal}
+        onSyncToDashboard={syncBreakthroughToDashboard}
+      />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <AssessmentPageHeader
           kicker={t('armSize.kicker')}

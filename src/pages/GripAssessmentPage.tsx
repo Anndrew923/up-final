@@ -77,7 +77,13 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="grip" />
-      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
+      <PerformanceBreakthroughModal
+        open={modalOpen}
+        payload={modalPayload}
+        onClose={closeModal}
+        onSyncToDashboard={submitToRadar}
+        syncDisabled={!profileReady}
+      />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <AssessmentPageHeader
           kicker={t('grip.kicker')}

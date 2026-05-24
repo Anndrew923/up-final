@@ -58,7 +58,13 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="ffmi" />
-      <PerformanceBreakthroughModal open={modalOpen} payload={modalPayload} onClose={closeModal} />
+      <PerformanceBreakthroughModal
+        open={modalOpen}
+        payload={modalPayload}
+        onClose={closeModal}
+        onSyncToDashboard={submitToRadar}
+        syncDisabled={!breakdown?.allowsRadarSubmit}
+      />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
       </div>
