@@ -1110,11 +1110,11 @@
     }
   },
   "navbar": {
-    "home": "首頁",
-    "assessment": "評測",
-    "ladder": "天梯",
-    "history": "紀錄",
-    "tools": "工具"
+    "home": { "title": "主控", "code": "CONSOLE" },
+    "tools": { "title": "整備", "code": "GARAGE" },
+    "assessment": { "title": "測功", "code": "DYNO" },
+    "ladder": { "title": "天梯", "code": "RANK" },
+    "history": { "title": "日誌", "code": "LOGS" }
   },
   "shellAvatarFallback": "訪客",
   "shellAvatarAria": "使用者頭像，縮寫 {{initial}}",

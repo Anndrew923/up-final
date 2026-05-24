@@ -1248,10 +1248,10 @@
     }
   },
   "navbar": {
-    "home": "Home",
-    "assessment": "Assessment",
-    "ladder": "Ladder",
-    "history": "History",
-    "tools": "Tools"
+    "home": { "title": "CONSOLE", "code": "CONSOLE" },
+    "tools": { "title": "GARAGE", "code": "GARAGE" },
+    "assessment": { "title": "DYNO", "code": "DYNO" },
+    "ladder": { "title": "RANK", "code": "RANK" },
+    "history": { "title": "LOGS", "code": "LOGS" }
   }
 }

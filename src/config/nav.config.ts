@@ -22,7 +22,7 @@ export interface NavItemConfig {
    * When true: matches fitness `guestBlock` — gate or prompt guest users (Phase 1 behavior TBD).
    */
   guestRestricted: boolean;
-  /** i18n lookup: `t(labelKey, { ns: 'common' })` */
+  /** i18n base key — UI reads `${labelKey}.title` and `${labelKey}.code` in `common` namespace */
   labelKey:
     | 'navbar.home'
     | 'navbar.assessment'
@@ -77,6 +77,11 @@ export const NAV_ITEMS: readonly NavItemConfig[] = [
     specNotes: 'Local-first history stays Core — no guest modal for browsing own records.',
   },
 ] as const;
+
+/** Center hex tab in `NAV_ITEMS` (assessment / DYNO). */
+export const NAV_CENTER_TAB_KEY: NavItemKey = 'assessment';
+
+export const NAV_CENTER_TAB_INDEX = NAV_ITEMS.findIndex((item) => item.key === NAV_CENTER_TAB_KEY);
 
 /** Strip leading slash for nested `<Route path>` under `/` (React Router). */
 export function toRelativeRoutePath(navPath: string): string {
