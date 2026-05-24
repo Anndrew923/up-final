@@ -34,21 +34,25 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
   snapshot,
   onClose,
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { entered, motionActive } = useDiagnosticsReportEntrance();
   const reportTitle = resolveHomeSectionString(t, 'resonance', 'reportTitle');
   const closeLabel = resolveHomeSectionString(t, 'resonance', 'close');
   const gradeKickerLabel = resolveHomeSectionString(t, 'overallGrade', 'kicker');
   const overallAverageLabel = resolveHomeLeafString(t, 'overallAverage');
   const liveSpecKicker = resolveIdentityString(t, 'liveSpecKicker');
+  const labelSeparator = i18n.language === 'zh-Hant' ? '：' : ': ';
   const liveSpecRows = useMemo(
     () => buildIdentityLiveSpecRows(t, snapshot.radarPoints),
     [snapshot.radarPoints, t]
   );
+  const gradeCopy = useMemo(
+    () => resolveOverallGradeTierCopy(t, snapshot.gradeBandId),
+    [snapshot.gradeBandId, t]
+  );
   const gradeBenchmarkRows = useMemo(() => {
-    const tier = resolveOverallGradeTierCopy(t, snapshot.gradeBandId);
-    return buildOverallGradeDetailRows(t, snapshot.gradeBandId, tier);
-  }, [snapshot.gradeBandId, t]);
+    return buildOverallGradeDetailRows(t, snapshot.gradeBandId, gradeCopy);
+  }, [gradeCopy, snapshot.gradeBandId, t]);
 
   const gpu = diagnosticsWillChange(motionActive);
 
@@ -61,13 +65,15 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
         style={{ transitionDelay: entered ? `${DIAGNOSTICS_STAGGER_DELAY_MS.header}ms` : '0ms' }}
       >
         <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-primary/90">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-accent-primary/90">
             {reportTitle}
           </p>
           <h2 className="text-base font-semibold tracking-tight text-zinc-50">
             {snapshot.archetypeTitle}
           </h2>
-          <p className="text-sm leading-relaxed text-zinc-400">{snapshot.archetypeSummary}</p>
+          <p className="text-xs leading-relaxed text-zinc-400 md:text-sm">
+            {snapshot.archetypeSummary}
+          </p>
         </div>
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
@@ -87,20 +93,23 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
           <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">
             {gradeKickerLabel}
           </p>
-          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-200">
-            {snapshot.gradeLine}
+          <p className="mt-2 font-mono text-sm font-semibold uppercase tracking-wide text-zinc-100">
+            {gradeCopy.name}
           </p>
+          {gradeCopy.desc.length > 0 ? (
+            <p className="mt-1 text-xs leading-relaxed text-zinc-400 md:text-sm">{gradeCopy.desc}</p>
+          ) : null}
           {gradeBenchmarkRows.length > 0 ? (
             <div className="mt-3 space-y-2 border-l-2 border-accent-info/40 pl-3">
               {gradeBenchmarkRows.map((row) => (
                 <p
                   key={row.label}
-                  className="text-xs leading-relaxed tracking-wide text-zinc-400"
+                  className="text-xs leading-relaxed tracking-wide text-zinc-400 md:text-sm"
                 >
                   <span className="font-medium text-accent-info/90" aria-hidden>
                     ✦{' '}
                   </span>
-                  <span className="text-zinc-500">{row.label}：</span>
+                  <span className="font-medium text-zinc-300">{row.label}{labelSeparator}</span>
                   {row.value}
                 </p>
               ))}

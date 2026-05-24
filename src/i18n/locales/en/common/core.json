@@ -462,32 +462,32 @@
     },
     "archetypes": {
       "G_PLATFORM": {
-        "title": "Serial Code: Iron Chassis (G-Platform)",
-        "summary": "Strength leads across all six metrics. Chassis rigidity is extreme—in the {{genderGroup}} lineup, your horsepower sits in the heavy-platform class; gravity barely registers as a light-load cruise."
+        "title": "Serial Code: Iron Chassis",
+        "summary": "Strength leads all six axes. Extreme rigidity—in the {{genderGroup}} lineup, heavy-platform class; gravity reads as light-load cruise."
       },
       "HIGH_OUTPUT": {
-        "title": "Serial Code: High-Output Afterburn (High-Output)",
-        "summary": "Explosive power leads across all six metrics. Throttle response is razor-sharp—neural recruitment fires like launch control, with the burst to hit redline in the shortest distance."
+        "title": "Serial Code: High-Output Afterburn",
+        "summary": "Explosive power leads. Razor throttle—launch-control neural fire, redline in minimum distance."
       },
       "ENDURANCE_PROTO": {
-        "title": "Serial Code: Endurance Prototype (Endurance-P)",
-        "summary": "Cardio endurance leads across all six metrics. Thermal management is elite—you show 24-hour Le Mans stability and dominate long-range endurance battles."
+        "title": "Serial Code: Endurance Prototype",
+        "summary": "Cardio leads all six axes. Elite thermal management—24-hour Le Mans stability, long-range dominance."
       },
       "WIDE_BODY": {
-        "title": "Serial Code: Wide-Body Architecture (Wide-Body)",
-        "summary": "Muscle mass leads across all six metrics. Your frame generates serious downforce—dense fiber gives you a powerful strength base, and you’re an immovable heavyweight target in any arena."
+        "title": "Serial Code: Wide-Body Architecture",
+        "summary": "Muscle mass leads. Serious downforce frame—dense fiber base, immovable heavyweight in any arena."
       },
       "AERO_SPEC": {
-        "title": "Serial Code: Aero Optimization (Aero-Spec)",
-        "summary": "FFMI leads across all six metrics. Displacement and power-to-weight are track-record class; body fat and drag stay minimal—every gram is tuned for peak performance."
+        "title": "Serial Code: Aero Optimization",
+        "summary": "FFMI leads all six axes. Track-record displacement and power-to-weight—minimal drag, every gram tuned."
       },
       "MR_SPEC": {
-        "title": "Serial Code: Mid-Engine Balance (MR-Spec)",
-        "summary": "Grip strength leads across all six metrics. Steering feedback is surgical, tire grip is fierce—neural control like a mid-engine layout lets you carve the apex with grace and hold steady power through the corner."
+        "title": "Serial Code: Mid-Engine Balance",
+        "summary": "Grip leads all six axes. Surgical steering, fierce bite—mid-engine neural control through the apex."
       },
       "GT_CRUISER": {
-        "title": "Serial Code: Global Grand Tourer (Grand Tourer)",
-        "summary": "All six metrics are perfectly balanced—full-spectrum performance is unlocked. You carry flagship elegance and ferocity with no power gaps in any sector or weather. You’re the most complete qualifier in the current sequence."
+        "title": "Serial Code: Global Grand Tourer",
+        "summary": "All six axes balanced—full-spectrum unlocked. Flagship elegance and ferocity, zero power gaps."
       }
     }
   },
