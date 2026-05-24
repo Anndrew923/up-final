@@ -130,20 +130,92 @@
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE // 賽會認證評等",
       "viewDetailHint": "點擊查看賽會認證詳情描述",
-      "BASE": { "name": "STOCK COMMUTER 原廠常規街車", "desc": "架構尚待全面解鎖。" },
-      "TIER_41": { "name": "STREET MODIFIED 街道初階改裝", "desc": "優化基礎傳動效率與響應度。" },
-      "TIER_51": { "name": "STAGE 1 TUNE 進階一階調校", "desc": "動力輸出平台初具規模。" },
-      "TIER_61": { "name": "CLUB TRACK SPEC 俱樂部賽道版", "desc": "結構剛性脫離常規常模。" },
-      "TIER_71": { "name": "TRACKDAY ENTHUSIAST 週末熱道挑戰", "desc": "操控與抗衰減能力大幅提升。" },
-      "TIER_81": { "name": "AMATEUR TIME ATTACK 業餘挑戰組", "desc": "高充填效率展現賽道壓迫感。" },
-      "TIER_91": { "name": "UNLIMITED ATTACK 極限計時賽規", "desc": "極限馬力與抓地完美嚙合。" },
-      "TIER_101": { "name": "GT4 CHAMPIONSHIP 地區錦標賽規", "desc": "傳動效率達到拿牌門檻。" },
-      "TIER_111": { "name": "GT3 COMPETITION 精銳國際錦標", "desc": "高扭矩與極限空力完美咬合。" },
-      "TIER_121": { "name": "GTE PRO SPEC 職業利曼賽規", "desc": "極端重載下展現統治級機械效率。" },
-      "TIER_131": { "name": "FACTORY PROTOTYPE 原型工廠賽車", "desc": "全載高壓輸出下展現完美力學。" },
-      "TIER_141": { "name": "HYPERCAR TIER 頂級超驗載具", "desc": "具備不可思議的瞬態發力底蘊。" },
-      "LEGEND": { "name": "LEGENDARY MONSTER 傳奇改裝怪獸", "desc": "純粹物理意志改裝的終極結晶。" },
-      "PANTHEON": { "name": "PANTHEON EXPERIMENTAL 萬神殿實驗車", "desc": "超越常態定義，數據歸檔萬神殿。" }
+      "carSpecLabel": "載具對標",
+      "priceLabel": "參考身價",
+      "BASE": {
+        "name": "STOCK COMMUTER 原廠常規街車",
+        "desc": "架構尚待全面解鎖。",
+        "representativeCar": "Toyota Altis 1.8 常規街車",
+        "carPrice": "100 萬內代步級"
+      },
+      "TIER_40": {
+        "name": "STREET MODIFIED 街道初階改裝",
+        "desc": "優化基礎傳動效率與響應度。",
+        "representativeCar": "Toyota GR Yaris 輕量化小鴨",
+        "carPrice": "200 萬級街道鋼砲"
+      },
+      "TIER_50": {
+        "name": "STAGE 1 TUNE 進階一階調校",
+        "desc": "動力輸出平台初具規模。",
+        "representativeCar": "Golf GTI (Stage 1 Tune)",
+        "carPrice": "250 萬級進階一階"
+      },
+      "TIER_60": {
+        "name": "CLUB TRACK SPEC 俱樂部賽道版",
+        "desc": "結構剛性脫離常規常模。",
+        "representativeCar": "Subaru WRX STI 硬核機器",
+        "carPrice": "300 萬級四驅底盤"
+      },
+      "TIER_70": {
+        "name": "TRACKDAY ENTHUSIAST 週末熱道挑戰",
+        "desc": "操控與抗衰減能力大幅提升。",
+        "representativeCar": "Toyota GR Supra 後驅跑車",
+        "carPrice": "400 萬級後驅跑車"
+      },
+      "TIER_80": {
+        "name": "AMATEUR TIME ATTACK 業餘挑戰組",
+        "desc": "高充填效率展現賽道壓迫感。",
+        "representativeCar": "Mercedes-Benz E350 Coupe",
+        "carPrice": "450 萬級雙門轎跑"
+      },
+      "TIER_90": {
+        "name": "UNLIMITED ATTACK 極限計時賽規",
+        "desc": "極限馬力與抓地完美嚙合。",
+        "representativeCar": "Porsche 718 Cayman GTS 4.0",
+        "carPrice": "600 萬級中置運動旗艦"
+      },
+      "TIER_100": {
+        "name": "GT4 CHAMPIONSHIP 地區錦標賽規",
+        "desc": "傳動效率達到拿牌門檻。",
+        "representativeCar": "Porsche 911 GT3 RS (992)",
+        "carPrice": "1,500 萬級自然進氣天花板"
+      },
+      "TIER_110": {
+        "name": "GT3 COMPETITION 精銳國際錦標",
+        "desc": "高扭矩與極限空力完美咬合。",
+        "representativeCar": "Mercedes-AMG GT3 工廠賽車",
+        "carPrice": "2,500 萬級精銳賽車缸體"
+      },
+      "TIER_120": {
+        "name": "GTE PRO SPEC 職業利曼賽規",
+        "desc": "極端重載下展現統治級機械效率。",
+        "representativeCar": "Ferrari 488 GTE 職業利曼戰兵",
+        "carPrice": "4,500 萬級職業殿堂"
+      },
+      "TIER_130": {
+        "name": "FACTORY PROTOTYPE 原型工廠賽車",
+        "desc": "全載高壓輸出下展現完美力學。",
+        "representativeCar": "Toyota GR010 Hybrid 利曼原型巨獸",
+        "carPrice": "億級工廠尖端科技"
+      },
+      "TIER_140": {
+        "name": "HYPERCAR TIER 頂級超驗載具",
+        "desc": "具備不可思議的瞬態發力底蘊。",
+        "representativeCar": "McLaren P1 / LaFerrari",
+        "carPrice": "1.5 億級頂級神獸"
+      },
+      "LEGEND": {
+        "name": "LEGENDARY MONSTER 傳奇改裝怪獸",
+        "desc": "純粹物理意志改裝的終極結晶。",
+        "representativeCar": "Bugatti Bolide / 919 Hybrid Evo",
+        "carPrice": "3 億以上傳奇不朽結晶"
+      },
+      "PANTHEON": {
+        "name": "PANTHEON EXPERIMENTAL 萬神殿實驗車",
+        "desc": "超越常態定義，數據歸檔萬神殿。",
+        "representativeCar": "Red Bull RB20 / F1 終極賽車",
+        "carPrice": "無價 // 萬神殿歸檔"
+      }
     },
     "overallFormula": "",
     "radarWeakestHint": "",

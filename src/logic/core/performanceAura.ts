@@ -11,31 +11,31 @@ export type PerformanceAuraKey =
   | 'divine_light';
 
 /**
- * Band id → aura presentation map for assessment breakthrough surfaces (13- or 14-tier axes).
- * WHY: scoreMeaningCatalog owns bands; aura is presentation-only and must stay in sync across axes.
+ * Band id → aura presentation map for assessment breakthrough surfaces.
+ * WHY: scoreMeaningCatalog owns decade gates; aura is presentation-only.
  */
 export function resolveAuraFromBandId(bandId: string): PerformanceAuraKey {
   switch (bandId) {
     case 'BASE':
-    case 'TIER_41':
-    case 'TIER_51':
+    case 'TIER_40':
+    case 'TIER_50':
       return 'none';
-    case 'TIER_61':
-    case 'TIER_71':
+    case 'TIER_60':
+    case 'TIER_70':
       return 'pulse';
-    case 'TIER_81':
+    case 'TIER_80':
       return 'flow';
-    case 'TIER_91':
-    case 'TIER_101':
+    case 'TIER_90':
+    case 'TIER_100':
       return 'shimmer';
-    case 'TIER_111':
-    case 'TIER_121':
+    case 'TIER_110':
+    case 'TIER_120':
       return 'lightning';
-    case 'TIER_131':
-    case 'TIER_141':
-    case 'TIER_151':
-    case 'TIER_161':
-    case 'TIER_171':
+    case 'TIER_130':
+    case 'TIER_140':
+    case 'TIER_150':
+    case 'TIER_160':
+    case 'TIER_170':
       return 'void_flame';
     case 'LEGEND':
     case 'PANTHEON':

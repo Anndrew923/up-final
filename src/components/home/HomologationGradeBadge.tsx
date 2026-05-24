@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import LadderInfoSheet from '../ladder/LadderInfoSheet';
 import { getOverallGradeKeys, type OverallGradeBandId } from '../../logic/core/scoreMeaningCatalog';
-import { resolveOverallGradeTierCopy } from '../../i18n/resolveOverallGradeCopy';
+import {
+  buildOverallGradeDetailRows,
+  resolveOverallGradeTierCopy,
+} from '../../i18n/resolveOverallGradeCopy';
 
 export interface HomologationGradeBadgeProps {
   bandId: OverallGradeBandId;
@@ -13,7 +16,8 @@ export interface HomologationGradeBadgeProps {
 /**
  * HUD homologation badge — homepage shows title (`name`) only.
  * WHY: Progressive disclosure (Spotify Wrapped / Strava badges): avoid stacking long grade copy
- * beside chassis identity on the console card; full `desc` opens in LadderInfoSheet on demand.
+ * beside chassis identity on the console card; full tier copy (desc + vehicle benchmark) opens
+ * in LadderInfoSheet on demand.
  * z-index: sheet uses z-[210]; resonance overlay z-[9999] — no overlap while ritual is closed.
  */
 const HomologationGradeBadge: FC<HomologationGradeBadgeProps> = ({
@@ -23,7 +27,9 @@ const HomologationGradeBadge: FC<HomologationGradeBadgeProps> = ({
   const { t } = useTranslation('common');
   const [sheetOpen, setSheetOpen] = useState(false);
   const keys = getOverallGradeKeys(bandId);
-  const { name: gradeName, desc: gradeDesc } = resolveOverallGradeTierCopy(t, bandId);
+  const tierCopy = resolveOverallGradeTierCopy(t, bandId);
+  const { name: gradeName, desc: gradeDesc } = tierCopy;
+  const detailRows = buildOverallGradeDetailRows(t, bandId, tierCopy);
 
   // WHY: Score band can change after assessment sync; close sheet so title/body never go stale.
   useEffect(() => {
@@ -65,6 +71,7 @@ const HomologationGradeBadge: FC<HomologationGradeBadgeProps> = ({
         onClose={closeSheet}
         title={gradeName}
         body={gradeDesc}
+        detailRows={detailRows.length > 0 ? detailRows : undefined}
       />
     </>
   );

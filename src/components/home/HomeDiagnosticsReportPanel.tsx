@@ -5,6 +5,10 @@ import { resolveIdentityString } from '../../i18n/resolveCoreBundleCopy';
 import { resolveHomeLeafString } from '../../i18n/resolveHomeLeafCopy';
 import { resolveHomeSectionString } from '../../i18n/resolveHomeBundleCopy';
 import {
+  buildOverallGradeDetailRows,
+  resolveOverallGradeTierCopy,
+} from '../../i18n/resolveOverallGradeCopy';
+import {
   DIAGNOSTICS_PANEL_TRANSITION,
   DIAGNOSTICS_STAGGER_DELAY_MS,
   DIAGNOSTICS_STAGGER_TRANSITION,
@@ -41,6 +45,10 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
     () => buildIdentityLiveSpecRows(t, snapshot.radarPoints),
     [snapshot.radarPoints, t]
   );
+  const gradeBenchmarkRows = useMemo(() => {
+    const tier = resolveOverallGradeTierCopy(t, snapshot.gradeBandId);
+    return buildOverallGradeDetailRows(t, snapshot.gradeBandId, tier);
+  }, [snapshot.gradeBandId, t]);
 
   const gpu = diagnosticsWillChange(motionActive);
 
@@ -82,6 +90,22 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-200">
             {snapshot.gradeLine}
           </p>
+          {gradeBenchmarkRows.length > 0 ? (
+            <div className="mt-3 space-y-2 border-l-2 border-accent-info/40 pl-3">
+              {gradeBenchmarkRows.map((row) => (
+                <p
+                  key={row.label}
+                  className="text-xs leading-relaxed tracking-wide text-zinc-400"
+                >
+                  <span className="font-medium text-accent-info/90" aria-hidden>
+                    ✦{' '}
+                  </span>
+                  <span className="text-zinc-500">{row.label}：</span>
+                  {row.value}
+                </p>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <IdentityLiveSpecList

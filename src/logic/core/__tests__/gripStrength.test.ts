@@ -47,44 +47,43 @@ describe('applyGripPeakCap', () => {
 });
 
 describe('resolveGripAuraFromBandId', () => {
-  it('maps 18 grip bands to 7 aura tiers per product spec', () => {
+  it('maps decade grip bands to aura tiers', () => {
     expect(resolveGripAuraFromBandId('BASE')).toBe('none');
-    expect(resolveGripAuraFromBandId('TIER_51')).toBe('none');
-    expect(resolveGripAuraFromBandId('TIER_61')).toBe('pulse');
-    expect(resolveGripAuraFromBandId('TIER_81')).toBe('flow');
-    expect(resolveGripAuraFromBandId('TIER_91')).toBe('shimmer');
-    expect(resolveGripAuraFromBandId('TIER_101')).toBe('shimmer');
-    expect(resolveGripAuraFromBandId('TIER_111')).toBe('lightning');
-    expect(resolveGripAuraFromBandId('TIER_131')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('TIER_151')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('TIER_171')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('LEGEND')).toBe('divine_light');
+    expect(resolveGripAuraFromBandId('TIER_50')).toBe('none');
+    expect(resolveGripAuraFromBandId('TIER_60')).toBe('pulse');
+    expect(resolveGripAuraFromBandId('TIER_80')).toBe('flow');
+    expect(resolveGripAuraFromBandId('TIER_90')).toBe('shimmer');
+    expect(resolveGripAuraFromBandId('TIER_100')).toBe('shimmer');
+    expect(resolveGripAuraFromBandId('TIER_110')).toBe('lightning');
+    expect(resolveGripAuraFromBandId('TIER_130')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('TIER_150')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('TIER_170')).toBe('void_flame');
     expect(resolveGripAuraFromBandId('PANTHEON')).toBe('divine_light');
   });
 });
 
 describe('getGripRankMetadata', () => {
-  it('derives rankKey from score bands (18-tier)', () => {
+  it('derives rankKey from decade score bands', () => {
     expect(getGripRankMetadata(63)).toEqual({
-      rankKey: 'TIER_61',
+      rankKey: 'TIER_60',
       color: 'green',
       aura: 'pulse',
     });
     expect(getGripRankMetadata(92)).toEqual({
-      rankKey: 'TIER_91',
+      rankKey: 'TIER_90',
       color: 'purple',
       aura: 'shimmer',
     });
     expect(getGripRankMetadata(135)).toEqual({
-      rankKey: 'TIER_131',
+      rankKey: 'TIER_130',
       color: 'black',
       aura: 'void_flame',
     });
   });
 
-  it('returns LEGEND or PANTHEON with divine_light for top scores', () => {
+  it('returns PANTHEON with divine_light for scores at or above 180', () => {
     expect(getGripRankMetadata(185)).toEqual({
-      rankKey: 'LEGEND',
+      rankKey: 'PANTHEON',
       color: 'gold',
       aura: 'divine_light',
     });

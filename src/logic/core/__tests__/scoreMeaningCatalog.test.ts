@@ -6,13 +6,17 @@ import enHome from '../../../i18n/locales/en/common/home.json';
 import zhHome from '../../../i18n/locales/zh-Hant/common/home.json';
 import {
   ARM_SIZE_SCORE_BANDS,
+  DECADE_AXIS_TIER_BANDS,
+  DECADE_GRIP_TIER_BANDS,
   EXPLOSIVE_SCORE_BANDS,
   OVERALL_GRADE_BAND_IDS,
+  OVERALL_GRADE_TIERS,
   OVERALL_SCORE_BANDS,
   formatOverallGradeRevealLine,
   getOverallGradeKeys,
   resolveOverallGradeBand,
   resolveScoreBand,
+  resolveScoreMeaningBand,
   resolveScoreMeaningMilestone,
   SCORE_MEANING_CATALOG,
 } from '../scoreMeaningCatalog';
@@ -24,21 +28,21 @@ const enBands = (enCore as { scoreMeaning: { bands: ScoreMeaningBands } }).score
 const zhBands = (zhCore as { scoreMeaning: { bands: ScoreMeaningBands } }).scoreMeaning.bands;
 
 describe('resolveScoreBand(cardio)', () => {
-  it('maps boundary and float gap around 41 correctly', () => {
-    expect(resolveScoreBand('cardio', 40.0).id).toBe('BASE');
-    expect(resolveScoreBand('cardio', 40.1).id).toBe('BASE');
-    expect(resolveScoreBand('cardio', 40.9).id).toBe('BASE');
-    expect(resolveScoreBand('cardio', 41.0).id).toBe('TIER_41');
+  it('maps decade boundary at 40 correctly', () => {
+    expect(resolveScoreBand('cardio', 39.9).id).toBe('BASE');
+    expect(resolveScoreBand('cardio', 40.0).id).toBe('TIER_40');
+    expect(resolveScoreBand('cardio', 49.99).id).toBe('TIER_40');
   });
 
-  it('maps overflow values to LEGEND', () => {
-    expect(resolveScoreBand('cardio', 151.0).id).toBe('LEGEND');
-    expect(resolveScoreBand('cardio', 160.0).id).toBe('LEGEND');
+  it('maps high scores to LEGEND and PANTHEON', () => {
+    expect(resolveScoreBand('cardio', 150.0).id).toBe('LEGEND');
+    expect(resolveScoreBand('cardio', 179.99).id).toBe('LEGEND');
+    expect(resolveScoreBand('cardio', 180.0).id).toBe('PANTHEON');
   });
 
-  it('maps 5km-mid benchmark score 80 to TIER_81', () => {
-    expect(resolveScoreBand('cardio', 79.9).id).toBe('TIER_71');
-    expect(resolveScoreBand('cardio', 80.0).id).toBe('TIER_81');
+  it('maps 5km-mid benchmark score 80 to TIER_80', () => {
+    expect(resolveScoreBand('cardio', 79.9).id).toBe('TIER_70');
+    expect(resolveScoreBand('cardio', 80.0).id).toBe('TIER_80');
   });
 
   it('maps zero to BASE', () => {
@@ -46,191 +50,167 @@ describe('resolveScoreBand(cardio)', () => {
   });
 
   it('bridges decimal gaps correctly around transitions', () => {
-    expect(resolveScoreBand('cardio', 150.5).id).toBe('TIER_141');
+    expect(resolveScoreBand('cardio', 149.99).id).toBe('TIER_140');
+    expect(resolveScoreBand('cardio', 150.5).id).toBe('LEGEND');
   });
 });
 
 describe('resolveScoreBand(strength)', () => {
-  it('keeps the full 13-tier racing spec map', () => {
+  it('uses the shared 14-tier decade axis map with PANTHEON', () => {
     const ids = SCORE_MEANING_CATALOG.strength.map((band) => band.id);
-    expect(ids).toEqual([
-      'BASE',
-      'TIER_41',
-      'TIER_51',
-      'TIER_61',
-      'TIER_71',
-      'TIER_81',
-      'TIER_91',
-      'TIER_101',
-      'TIER_111',
-      'TIER_121',
-      'TIER_131',
-      'TIER_141',
-      'LEGEND',
-    ]);
+    expect(ids).toEqual([...DECADE_AXIS_TIER_IDS]);
   });
 
-  it('maps all requested boundary checkpoints to expected tiers', () => {
-    const checkpoints: Array<[number, string]> = [
-      [40, 'BASE'],
-      [41, 'TIER_41'],
-      [50, 'TIER_41'],
-      [51, 'TIER_51'],
-      [60, 'TIER_51'],
-      [61, 'TIER_61'],
-      [70, 'TIER_61'],
-      [71, 'TIER_71'],
-      [80, 'TIER_71'],
-      [81, 'TIER_81'],
-      [90, 'TIER_81'],
-      [91, 'TIER_91'],
-      [100, 'TIER_91'],
-      [101, 'TIER_101'],
-      [110, 'TIER_101'],
-      [111, 'TIER_111'],
-      [120, 'TIER_111'],
-      [121, 'TIER_121'],
-      [130, 'TIER_121'],
-      [131, 'TIER_131'],
-      [140, 'TIER_131'],
-      [141, 'TIER_141'],
-      [150, 'TIER_141'],
-      [151, 'LEGEND'],
-    ];
-
-    for (const [score, expectedBand] of checkpoints) {
+  it('maps decade boundary checkpoints to expected tiers', () => {
+    for (const [score, expectedBand] of DECADE_AXIS_CHECKPOINTS) {
       expect(resolveScoreBand('strength', score).id).toBe(expectedBand);
     }
   });
 
   it('bridges decimal gaps correctly around transitions', () => {
-    expect(resolveScoreBand('strength', 40.9).id).toBe('BASE');
-    expect(resolveScoreBand('strength', 50.9).id).toBe('TIER_41');
-    expect(resolveScoreBand('strength', 150.5).id).toBe('TIER_141');
+    expect(resolveScoreBand('strength', 39.99).id).toBe('BASE');
+    expect(resolveScoreBand('strength', 49.99).id).toBe('TIER_40');
+    expect(resolveScoreBand('strength', 150.5).id).toBe('LEGEND');
+    expect(resolveScoreBand('strength', 179.99).id).toBe('LEGEND');
+    expect(resolveScoreBand('strength', 180).id).toBe('PANTHEON');
   });
 });
 
-const GRIP_EIGHTEEN_TIER_IDS = [
+const DECADE_GRIP_TIER_IDS = [
   'BASE',
-  'TIER_41',
-  'TIER_51',
-  'TIER_61',
-  'TIER_71',
-  'TIER_81',
-  'TIER_91',
-  'TIER_101',
-  'TIER_111',
-  'TIER_121',
-  'TIER_131',
-  'TIER_141',
-  'TIER_151',
-  'TIER_161',
-  'TIER_171',
-  'LEGEND',
+  'TIER_40',
+  'TIER_50',
+  'TIER_60',
+  'TIER_70',
+  'TIER_80',
+  'TIER_90',
+  'TIER_100',
+  'TIER_110',
+  'TIER_120',
+  'TIER_130',
+  'TIER_140',
+  'TIER_150',
+  'TIER_160',
+  'TIER_170',
   'PANTHEON',
 ] as const;
 
+const DECADE_GRIP_CHECKPOINTS: Array<[number, string]> = [
+  [39.99, 'BASE'],
+  [40, 'TIER_40'],
+  [130, 'TIER_130'],
+  [149.99, 'TIER_140'],
+  [150, 'TIER_150'],
+  [169.99, 'TIER_160'],
+  [170, 'TIER_170'],
+  [179.99, 'TIER_170'],
+  [180, 'PANTHEON'],
+  [224, 'PANTHEON'],
+];
+
 describe('resolveScoreBand(gripStrength)', () => {
-  it('uses grip-only 18-tier map (not strength 13-tier)', () => {
+  it('uses grip-only extended decade map (not strength 14-tier)', () => {
     const gripIds = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
     const strengthIds = SCORE_MEANING_CATALOG.strength.map((band) => band.id);
-    expect(gripIds).toEqual([...GRIP_EIGHTEEN_TIER_IDS]);
+    expect(gripIds).toEqual([...DECADE_GRIP_TIER_IDS]);
     expect(gripIds).not.toEqual(strengthIds);
+    expect(DECADE_GRIP_TIER_BANDS).toBe(SCORE_MEANING_CATALOG.gripStrength);
   });
 
-  it('maps all boundary checkpoints including high grip bands', () => {
-    const checkpoints: Array<[number, string]> = [
-      [40, 'BASE'],
-      [41, 'TIER_41'],
-      [50, 'TIER_41'],
-      [51, 'TIER_51'],
-      [60, 'TIER_51'],
-      [61, 'TIER_61'],
-      [70, 'TIER_61'],
-      [71, 'TIER_71'],
-      [80, 'TIER_71'],
-      [81, 'TIER_81'],
-      [90, 'TIER_81'],
-      [91, 'TIER_91'],
-      [92, 'TIER_91'],
-      [100, 'TIER_91'],
-      [101, 'TIER_101'],
-      [110, 'TIER_101'],
-      [111, 'TIER_111'],
-      [120, 'TIER_111'],
-      [121, 'TIER_121'],
-      [130, 'TIER_121'],
-      [131, 'TIER_131'],
-      [140, 'TIER_131'],
-      [141, 'TIER_141'],
-      [150, 'TIER_141'],
-      [151, 'TIER_151'],
-      [160, 'TIER_151'],
-      [161, 'TIER_161'],
-      [170, 'TIER_161'],
-      [171, 'TIER_171'],
-      [180, 'TIER_171'],
-      [181, 'LEGEND'],
-      [190, 'LEGEND'],
-      [191, 'PANTHEON'],
-      [224, 'PANTHEON'],
-    ];
-
-    for (const [score, expectedBand] of checkpoints) {
+  it('maps boundary checkpoints including high grip bands', () => {
+    for (const [score, expectedBand] of DECADE_GRIP_CHECKPOINTS) {
       expect(resolveScoreBand('gripStrength', score).id).toBe(expectedBand);
     }
   });
 
   it('bridges decimal gaps correctly around transitions', () => {
-    expect(resolveScoreBand('gripStrength', 40.9).id).toBe('BASE');
-    expect(resolveScoreBand('gripStrength', 130.9).id).toBe('TIER_121');
-    expect(resolveScoreBand('gripStrength', 131.0).id).toBe('TIER_131');
-    expect(resolveScoreBand('gripStrength', 150.5).id).toBe('TIER_141');
-    expect(resolveScoreBand('gripStrength', 150.9).id).toBe('TIER_141');
-    expect(resolveScoreBand('gripStrength', 151.0).id).toBe('TIER_151');
-    expect(resolveScoreBand('gripStrength', 180.9).id).toBe('TIER_171');
-    expect(resolveScoreBand('gripStrength', 181.0).id).toBe('LEGEND');
-    expect(resolveScoreBand('gripStrength', 190.9).id).toBe('LEGEND');
-    expect(resolveScoreBand('gripStrength', 191.0).id).toBe('PANTHEON');
+    expect(resolveScoreBand('gripStrength', 39.99).id).toBe('BASE');
+    expect(resolveScoreBand('gripStrength', 130.59).id).toBe('TIER_130');
+    expect(resolveScoreBand('gripStrength', 149.99).id).toBe('TIER_140');
+    expect(resolveScoreBand('gripStrength', 150).id).toBe('TIER_150');
+    expect(resolveScoreBand('gripStrength', 179.99).id).toBe('TIER_170');
+    expect(resolveScoreBand('gripStrength', 180).id).toBe('PANTHEON');
   });
 });
 
-const FOURTEEN_TIER_IDS = [
+const DECADE_AXIS_TIER_IDS = [
   'BASE',
-  'TIER_41',
-  'TIER_51',
-  'TIER_61',
-  'TIER_71',
-  'TIER_81',
-  'TIER_91',
-  'TIER_101',
-  'TIER_111',
-  'TIER_121',
-  'TIER_131',
-  'TIER_141',
+  'TIER_40',
+  'TIER_50',
+  'TIER_60',
+  'TIER_70',
+  'TIER_80',
+  'TIER_90',
+  'TIER_100',
+  'TIER_110',
+  'TIER_120',
+  'TIER_130',
+  'TIER_140',
   'LEGEND',
   'PANTHEON',
 ] as const;
 
-const FOURTEEN_TIER_CHECKPOINTS: Array<[number, string]> = [
-  [40, 'BASE'],
-  [41, 'TIER_41'],
-  [50, 'TIER_41'],
-  [51, 'TIER_51'],
-  [80, 'TIER_71'],
-  [81, 'TIER_81'],
-  [150, 'TIER_141'],
-  [151, 'LEGEND'],
-  [180, 'LEGEND'],
-  [181, 'PANTHEON'],
+const DECADE_AXIS_CHECKPOINTS: Array<[number, string]> = [
+  [39.99, 'BASE'],
+  [40, 'TIER_40'],
+  [49.99, 'TIER_40'],
+  [50, 'TIER_50'],
+  [80, 'TIER_80'],
+  [90, 'TIER_90'],
+  [130, 'TIER_130'],
+  [150, 'LEGEND'],
+  [179.99, 'LEGEND'],
+  [180, 'PANTHEON'],
+  [224, 'PANTHEON'],
+];
+
+const OVERALL_GRADE_TIER_IDS = [
+  'BASE',
+  'TIER_40',
+  'TIER_50',
+  'TIER_60',
+  'TIER_70',
+  'TIER_80',
+  'TIER_90',
+  'TIER_100',
+  'TIER_110',
+  'TIER_120',
+  'TIER_130',
+  'TIER_140',
+  'LEGEND',
+  'PANTHEON',
+] as const;
+
+const OVERALL_GRADE_CHECKPOINTS: Array<[number, string]> = [
+  [39.99, 'BASE'],
+  [40, 'TIER_40'],
+  [49.99, 'TIER_40'],
+  [50, 'TIER_50'],
+  [70, 'TIER_70'],
+  [80, 'TIER_80'],
+  [90, 'TIER_90'],
+  [100, 'TIER_100'],
+  [129.99, 'TIER_120'],
+  [130, 'TIER_130'],
+  [130.59, 'TIER_130'],
+  [139.99, 'TIER_130'],
+  [140, 'TIER_140'],
+  [149.99, 'TIER_140'],
+  [150, 'LEGEND'],
+  [179.99, 'LEGEND'],
+  [180, 'PANTHEON'],
   [224, 'PANTHEON'],
 ];
 
 describe('overall grade i18n helpers', () => {
   it('getOverallGradeKeys returns stable paths per band', () => {
-    expect(getOverallGradeKeys('TIER_51')).toEqual({
-      name: 'home.overallGrade.TIER_51.name',
-      desc: 'home.overallGrade.TIER_51.desc',
+    expect(getOverallGradeKeys('TIER_50')).toEqual({
+      name: 'home.overallGrade.TIER_50.name',
+      desc: 'home.overallGrade.TIER_50.desc',
+      representativeCar: 'home.overallGrade.TIER_50.representativeCar',
+      carPrice: 'home.overallGrade.TIER_50.carPrice',
+      carSpecLabel: 'home.overallGrade.carSpecLabel',
+      priceLabel: 'home.overallGrade.priceLabel',
       kicker: 'home.overallGrade.kicker',
       hint: 'home.overallGrade.viewDetailHint',
     });
@@ -244,21 +224,25 @@ describe('overall grade i18n helpers', () => {
 });
 
 describe('resolveOverallGradeBand', () => {
-  it('exposes the full 14-tier homologation map', () => {
-    expect(OVERALL_SCORE_BANDS.map((band) => band.id)).toEqual([...OVERALL_GRADE_BAND_IDS]);
-    expect([...OVERALL_GRADE_BAND_IDS]).toEqual([...FOURTEEN_TIER_IDS]);
+  it('exposes the full decade-gated homologation map', () => {
+    expect(OVERALL_GRADE_TIERS.map((band) => band.id)).toEqual([...OVERALL_GRADE_BAND_IDS]);
+    expect(OVERALL_SCORE_BANDS).toBe(OVERALL_GRADE_TIERS);
+    expect([...OVERALL_GRADE_BAND_IDS]).toEqual([...OVERALL_GRADE_TIER_IDS]);
+    expect([...OVERALL_GRADE_BAND_IDS]).toEqual([...DECADE_AXIS_TIER_IDS]);
+    expect(DECADE_AXIS_TIER_BANDS.map((band) => band.id)).toEqual([...DECADE_AXIS_TIER_IDS]);
   });
 
-  it('maps boundary checkpoints to expected tiers', () => {
-    for (const [score, expectedBand] of FOURTEEN_TIER_CHECKPOINTS) {
+  it('maps decade boundary checkpoints to expected tiers', () => {
+    for (const [score, expectedBand] of OVERALL_GRADE_CHECKPOINTS) {
       expect(resolveOverallGradeBand(score)).toBe(expectedBand);
     }
   });
 
   it('bridges decimal gaps around LEGEND and PANTHEON', () => {
-    expect(resolveOverallGradeBand(150.5)).toBe('TIER_141');
-    expect(resolveOverallGradeBand(180.9)).toBe('LEGEND');
-    expect(resolveOverallGradeBand(181.0)).toBe('PANTHEON');
+    expect(resolveOverallGradeBand(149.99)).toBe('TIER_140');
+    expect(resolveOverallGradeBand(150.5)).toBe('LEGEND');
+    expect(resolveOverallGradeBand(179.99)).toBe('LEGEND');
+    expect(resolveOverallGradeBand(180)).toBe('PANTHEON');
   });
 
   it('clamps invalid scores to BASE', () => {
@@ -284,7 +268,12 @@ describe('home.diagnostics and resonance i18n', () => {
 });
 
 describe('home.overallGrade i18n coverage', () => {
-  type OverallGradeTierCopy = { name: string; desc: string };
+  type OverallGradeTierCopy = {
+    name: string;
+    desc: string;
+    representativeCar: string;
+    carPrice: string;
+  };
   type OverallGradeLocale = {
     kicker: string;
     viewDetailHint: string;
@@ -306,6 +295,10 @@ describe('home.overallGrade i18n coverage', () => {
       expect(enTier?.desc?.trim().length, `${bandId} desc en`).toBeGreaterThan(0);
       expect(zhTier?.name?.trim().length, `${bandId} name zh`).toBeGreaterThan(0);
       expect(zhTier?.desc?.trim().length, `${bandId} desc zh`).toBeGreaterThan(0);
+      expect(enTier?.representativeCar?.trim().length, `${bandId} car en`).toBeGreaterThan(0);
+      expect(zhTier?.representativeCar?.trim().length, `${bandId} car zh`).toBeGreaterThan(0);
+      expect(enTier?.carPrice?.trim().length, `${bandId} price en`).toBeGreaterThan(0);
+      expect(zhTier?.carPrice?.trim().length, `${bandId} price zh`).toBeGreaterThan(0);
     }
   });
 });
@@ -345,38 +338,45 @@ describe('scoreMeaning i18n coverage (core.json)', () => {
 });
 
 describe('resolveScoreBand(explosivePower)', () => {
-  it('exposes the full 14-tier Torque Spec map', () => {
+  it('exposes the full 14-tier decade Torque Spec map', () => {
     expect(SCORE_MEANING_CATALOG.explosivePower.map((band) => band.id)).toEqual([
-      ...FOURTEEN_TIER_IDS,
+      ...DECADE_AXIS_TIER_IDS,
     ]);
-    expect(EXPLOSIVE_SCORE_BANDS).toBe(SCORE_MEANING_CATALOG.explosivePower);
+    expect(EXPLOSIVE_SCORE_BANDS).toBe(DECADE_AXIS_TIER_BANDS);
     expect(ARM_SIZE_SCORE_BANDS).toBe(EXPLOSIVE_SCORE_BANDS);
   });
 
   it('maps boundary checkpoints to expected tiers', () => {
-    for (const [score, expectedBand] of FOURTEEN_TIER_CHECKPOINTS) {
+    for (const [score, expectedBand] of DECADE_AXIS_CHECKPOINTS) {
       expect(resolveScoreBand('explosivePower', score).id).toBe(expectedBand);
     }
   });
 
   it('bridges decimal gaps around LEGEND and PANTHEON', () => {
-    expect(resolveScoreBand('explosivePower', 150.5).id).toBe('TIER_141');
-    expect(resolveScoreBand('explosivePower', 180.9).id).toBe('LEGEND');
-    expect(resolveScoreBand('explosivePower', 181.0).id).toBe('PANTHEON');
+    expect(resolveScoreBand('explosivePower', 149.99).id).toBe('TIER_140');
+    expect(resolveScoreBand('explosivePower', 150.5).id).toBe('LEGEND');
+    expect(resolveScoreBand('explosivePower', 179.99).id).toBe('LEGEND');
+    expect(resolveScoreBand('explosivePower', 180).id).toBe('PANTHEON');
   });
 });
 
 describe('resolveScoreMeaningMilestone', () => {
   it('returns remaining points until next tier for explosive and armSize', () => {
-    expect(resolveScoreMeaningMilestone('explosivePower', 91).remainingPoints).toBe(10);
-    expect(resolveScoreMeaningMilestone('armSize', 180).remainingPoints).toBe(1);
-    expect(resolveScoreMeaningMilestone('armSize', 181).remainingPoints).toBeNull();
+    expect(resolveScoreMeaningMilestone('explosivePower', 90).remainingPoints).toBe(10);
+    expect(resolveScoreMeaningMilestone('armSize', 179).remainingPoints).toBe(1);
+    expect(resolveScoreMeaningMilestone('armSize', 180).remainingPoints).toBeNull();
   });
 });
 
 describe('ARM_SIZE_SCORE_BANDS (Rim Spec)', () => {
-  it('aliases shared 14-tier ladder for optional storage metric', () => {
-    expect(ARM_SIZE_SCORE_BANDS.map((band) => band.id)).toEqual([...FOURTEEN_TIER_IDS]);
+  it('aliases shared decade axis ladder for optional storage metric', () => {
+    expect(ARM_SIZE_SCORE_BANDS.map((band) => band.id)).toEqual([...DECADE_AXIS_TIER_IDS]);
+  });
+
+  it('maps armSize score 130 to TIER_130', () => {
+    expect(resolveScoreMeaningBand('armSize', 130).id).toBe('TIER_130');
+    expect(resolveScoreMeaningBand('armSize', 39.9).id).toBe('BASE');
+    expect(resolveScoreMeaningBand('armSize', 40).id).toBe('TIER_40');
   });
 });
 
@@ -402,24 +402,25 @@ describe('scoreMeaning i18n coverage (armSize)', () => {
 });
 
 describe.each(['bodyFat', 'muscleMass'] as const)('resolveScoreBand(%s)', (metric) => {
-  it('exposes the full 14-tier map with LEGEND capped at 180', () => {
-    expect(SCORE_MEANING_CATALOG[metric].map((band) => band.id)).toEqual([...FOURTEEN_TIER_IDS]);
+  it('exposes the full decade map with PANTHEON at 180+', () => {
+    expect(SCORE_MEANING_CATALOG[metric].map((band) => band.id)).toEqual([...DECADE_AXIS_TIER_IDS]);
     const legend = SCORE_MEANING_CATALOG[metric].find((band) => band.id === 'LEGEND');
     const pantheon = SCORE_MEANING_CATALOG[metric].find((band) => band.id === 'PANTHEON');
-    expect(legend?.max).toBe(180);
-    expect(pantheon?.min).toBe(181);
-    expect(pantheon?.max).toBe(Number.POSITIVE_INFINITY);
+    expect(legend?.min).toBe(150);
+    expect(legend?.max).toBe(179.99);
+    expect(pantheon?.min).toBe(180);
   });
 
   it('maps boundary checkpoints to expected tiers', () => {
-    for (const [score, expectedBand] of FOURTEEN_TIER_CHECKPOINTS) {
+    for (const [score, expectedBand] of DECADE_AXIS_CHECKPOINTS) {
       expect(resolveScoreBand(metric, score).id).toBe(expectedBand);
     }
   });
 
   it('bridges decimal gaps around LEGEND and PANTHEON', () => {
-    expect(resolveScoreBand(metric, 150.5).id).toBe('TIER_141');
-    expect(resolveScoreBand(metric, 180.9).id).toBe('LEGEND');
-    expect(resolveScoreBand(metric, 181.0).id).toBe('PANTHEON');
+    expect(resolveScoreBand(metric, 149.99).id).toBe('TIER_140');
+    expect(resolveScoreBand(metric, 150.5).id).toBe('LEGEND');
+    expect(resolveScoreBand(metric, 179.99).id).toBe('LEGEND');
+    expect(resolveScoreBand(metric, 180).id).toBe('PANTHEON');
   });
 });

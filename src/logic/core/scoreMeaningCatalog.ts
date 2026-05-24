@@ -8,134 +8,107 @@ export interface ScoreBand {
 
 export type AxisTitleMapping = Record<SixAxisMetric, readonly ScoreBand[]>;
 
+/**
+ * Shared decade gates for six-axis + armSize (Score >= min).
+ * WHY: Aligns with OVERALL_GRADE_TIERS left-digit UX; single source prevents axis/overall drift.
+ */
+export const DECADE_AXIS_TIER_BANDS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 39.99 },
+  { id: 'TIER_40', min: 40, max: 49.99 },
+  { id: 'TIER_50', min: 50, max: 59.99 },
+  { id: 'TIER_60', min: 60, max: 69.99 },
+  { id: 'TIER_70', min: 70, max: 79.99 },
+  { id: 'TIER_80', min: 80, max: 89.99 },
+  { id: 'TIER_90', min: 90, max: 99.99 },
+  { id: 'TIER_100', min: 100, max: 109.99 },
+  { id: 'TIER_110', min: 110, max: 119.99 },
+  { id: 'TIER_120', min: 120, max: 129.99 },
+  { id: 'TIER_130', min: 130, max: 139.99 },
+  { id: 'TIER_140', min: 140, max: 149.99 },
+  { id: 'LEGEND', min: 150, max: 179.99 },
+  { id: 'PANTHEON', min: 180, max: 999 },
+] as const;
+
+/** @deprecated Use `DECADE_AXIS_TIER_BANDS`. */
+export const FOURTEEN_TIER_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+
+/**
+ * Grip-only 18-tier ladder — decade mids + 150/160/170 high bands; PANTHEON >= 180.
+ * WHY: Grip scores often exceed 150 after formula; extra tens before pantheon match product scale.
+ */
+export const DECADE_GRIP_TIER_BANDS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 39.99 },
+  { id: 'TIER_40', min: 40, max: 49.99 },
+  { id: 'TIER_50', min: 50, max: 59.99 },
+  { id: 'TIER_60', min: 60, max: 69.99 },
+  { id: 'TIER_70', min: 70, max: 79.99 },
+  { id: 'TIER_80', min: 80, max: 89.99 },
+  { id: 'TIER_90', min: 90, max: 99.99 },
+  { id: 'TIER_100', min: 100, max: 109.99 },
+  { id: 'TIER_110', min: 110, max: 119.99 },
+  { id: 'TIER_120', min: 120, max: 129.99 },
+  { id: 'TIER_130', min: 130, max: 139.99 },
+  { id: 'TIER_140', min: 140, max: 149.99 },
+  { id: 'TIER_150', min: 150, max: 159.99 },
+  { id: 'TIER_160', min: 160, max: 169.99 },
+  { id: 'TIER_170', min: 170, max: 179.99 },
+  { id: 'PANTHEON', min: 180, max: 999 },
+] as const;
+
+export const GRIP_SCORE_BANDS = DECADE_GRIP_TIER_BANDS;
+
 export const DEFAULT_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 70 },
-  { id: 'TIER_71', min: 71, max: 90 },
-  { id: 'TIER_91', min: 91, max: Number.POSITIVE_INFINITY },
+  { id: 'BASE', min: 0, max: 39.99 },
+  { id: 'TIER_40', min: 40, max: 69.99 },
+  { id: 'TIER_70', min: 70, max: 89.99 },
+  { id: 'TIER_90', min: 90, max: 999 },
 ] as const;
 
-export const CARDIO_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 50 },
-  { id: 'TIER_51', min: 51, max: 60 },
-  { id: 'TIER_61', min: 61, max: 70 },
-  { id: 'TIER_71', min: 71, max: 79 },
-  { id: 'TIER_81', min: 80, max: 90 },
-  { id: 'TIER_91', min: 91, max: 100 },
-  { id: 'TIER_101', min: 101, max: 110 },
-  { id: 'TIER_111', min: 111, max: 120 },
-  { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_131', min: 131, max: 140 },
-  { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
-] as const;
-
-export const STRENGTH_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 50 },
-  { id: 'TIER_51', min: 51, max: 60 },
-  { id: 'TIER_61', min: 61, max: 70 },
-  { id: 'TIER_71', min: 71, max: 80 },
-  { id: 'TIER_81', min: 81, max: 90 },
-  { id: 'TIER_91', min: 91, max: 100 },
-  { id: 'TIER_101', min: 101, max: 110 },
-  { id: 'TIER_111', min: 111, max: 120 },
-  { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_131', min: 131, max: 140 },
-  { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'LEGEND', min: 151, max: Number.POSITIVE_INFINITY },
-] as const;
+export const CARDIO_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+export const STRENGTH_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+export const FFMI_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+export const MUSCLE_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+export const EXPLOSIVE_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+export const ARM_SIZE_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
 
 /**
- * Grip-only 18-tier ladder — high bands split 151–200; PANTHEON for model overflow (191+).
- * WHY: Grip raw scores routinely exceed 150 after the 1.4× formula; other axes keep 13/14 tiers.
+ * Decade-bound homologation tiers for Overall Score (整車性能指數).
+ * WHY: Score >= min crosses a round-ten gate (left-digit UX); separate from axis band copy in core.json.
  */
-export const GRIP_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 50 },
-  { id: 'TIER_51', min: 51, max: 60 },
-  { id: 'TIER_61', min: 61, max: 70 },
-  { id: 'TIER_71', min: 71, max: 80 },
-  { id: 'TIER_81', min: 81, max: 90 },
-  { id: 'TIER_91', min: 91, max: 100 },
-  { id: 'TIER_101', min: 101, max: 110 },
-  { id: 'TIER_111', min: 111, max: 120 },
-  { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_131', min: 131, max: 140 },
-  { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'TIER_151', min: 151, max: 160 },
-  { id: 'TIER_161', min: 161, max: 170 },
-  { id: 'TIER_171', min: 171, max: 180 },
-  { id: 'LEGEND', min: 181, max: 190 },
-  { id: 'PANTHEON', min: 191, max: Number.POSITIVE_INFINITY },
+export const OVERALL_GRADE_TIERS: readonly ScoreBand[] = [
+  { id: 'BASE', min: 0, max: 39.99 },
+  { id: 'TIER_40', min: 40, max: 49.99 },
+  { id: 'TIER_50', min: 50, max: 59.99 },
+  { id: 'TIER_60', min: 60, max: 69.99 },
+  { id: 'TIER_70', min: 70, max: 79.99 },
+  { id: 'TIER_80', min: 80, max: 89.99 },
+  { id: 'TIER_90', min: 90, max: 99.99 },
+  { id: 'TIER_100', min: 100, max: 109.99 },
+  { id: 'TIER_110', min: 110, max: 119.99 },
+  { id: 'TIER_120', min: 120, max: 129.99 },
+  { id: 'TIER_130', min: 130, max: 139.99 },
+  { id: 'TIER_140', min: 140, max: 149.99 },
+  { id: 'LEGEND', min: 150, max: 179.99 },
+  { id: 'PANTHEON', min: 180, max: 999 },
 ] as const;
 
-/**
- * Shared 14-tier ladder — LEGEND caps at 180; PANTHEON for limit-break scores (181+).
- * WHY: FFMI and muscle-mass axes share identical score steps; one source prevents drift.
- */
-export const FOURTEEN_TIER_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 50 },
-  { id: 'TIER_51', min: 51, max: 60 },
-  { id: 'TIER_61', min: 61, max: 70 },
-  { id: 'TIER_71', min: 71, max: 80 },
-  { id: 'TIER_81', min: 81, max: 90 },
-  { id: 'TIER_91', min: 91, max: 100 },
-  { id: 'TIER_101', min: 101, max: 110 },
-  { id: 'TIER_111', min: 111, max: 120 },
-  { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_131', min: 131, max: 140 },
-  { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'LEGEND', min: 151, max: 180 },
-  { id: 'PANTHEON', min: 181, max: Number.POSITIVE_INFINITY },
-] as const;
+/** @deprecated Use `OVERALL_GRADE_TIERS`. */
+export const OVERALL_SCORE_BANDS = OVERALL_GRADE_TIERS;
 
-/** 14-tier FFMI (bodyFat axis). */
-export const FFMI_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
-
-/** 14-tier muscle-mass axis. */
-export const MUSCLE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
-
-/** 14-tier explosive power (Torque Spec). */
-export const EXPLOSIVE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
-
-/** 14-tier arm size (Rim Spec) — optional storage; same ladder as explosive/muscle 14-tier. */
-export const ARM_SIZE_SCORE_BANDS = FOURTEEN_TIER_SCORE_BANDS;
-
-/** 14-tier homologation grade for Overall Score (整車性能指數) — LEGEND caps at 180; PANTHEON for 181+. */
-export const OVERALL_SCORE_BANDS: readonly ScoreBand[] = [
-  { id: 'BASE', min: 0, max: 40 },
-  { id: 'TIER_41', min: 41, max: 50 },
-  { id: 'TIER_51', min: 51, max: 60 },
-  { id: 'TIER_61', min: 61, max: 70 },
-  { id: 'TIER_71', min: 71, max: 80 },
-  { id: 'TIER_81', min: 81, max: 90 },
-  { id: 'TIER_91', min: 91, max: 100 },
-  { id: 'TIER_101', min: 101, max: 110 },
-  { id: 'TIER_111', min: 111, max: 120 },
-  { id: 'TIER_121', min: 121, max: 130 },
-  { id: 'TIER_131', min: 131, max: 140 },
-  { id: 'TIER_141', min: 141, max: 150 },
-  { id: 'LEGEND', min: 151, max: 180 },
-  { id: 'PANTHEON', min: 181, max: Number.POSITIVE_INFINITY },
-] as const;
-
-/** Homologation tier ids — must stay aligned with `OVERALL_SCORE_BANDS`. */
+/** Homologation tier ids — must stay aligned with `OVERALL_GRADE_TIERS`. */
 export const OVERALL_GRADE_BAND_IDS = [
   'BASE',
-  'TIER_41',
-  'TIER_51',
-  'TIER_61',
-  'TIER_71',
-  'TIER_81',
-  'TIER_91',
-  'TIER_101',
-  'TIER_111',
-  'TIER_121',
-  'TIER_131',
-  'TIER_141',
+  'TIER_40',
+  'TIER_50',
+  'TIER_60',
+  'TIER_70',
+  'TIER_80',
+  'TIER_90',
+  'TIER_100',
+  'TIER_110',
+  'TIER_120',
+  'TIER_130',
+  'TIER_140',
   'LEGEND',
   'PANTHEON',
 ] as const;
@@ -143,13 +116,7 @@ export const OVERALL_GRADE_BAND_IDS = [
 export type OverallGradeBandId = (typeof OVERALL_GRADE_BAND_IDS)[number];
 
 export function resolveOverallGradeBand(score: number): OverallGradeBandId {
-  const safe = Math.max(0, Number(score) || 0);
-  for (let i = 0; i < OVERALL_SCORE_BANDS.length - 1; i += 1) {
-    if (safe < OVERALL_SCORE_BANDS[i + 1].min) {
-      return OVERALL_SCORE_BANDS[i].id as OverallGradeBandId;
-    }
-  }
-  return 'PANTHEON';
+  return resolveScoreBandFromBands(OVERALL_GRADE_TIERS, score).id as OverallGradeBandId;
 }
 
 /** Centralizes i18n key paths for homologation grade copy — avoids scattered string templates in UI. */
@@ -157,6 +124,10 @@ export function getOverallGradeKeys(bandId: OverallGradeBandId) {
   return {
     name: `home.overallGrade.${bandId}.name`,
     desc: `home.overallGrade.${bandId}.desc`,
+    representativeCar: `home.overallGrade.${bandId}.representativeCar`,
+    carPrice: `home.overallGrade.${bandId}.carPrice`,
+    carSpecLabel: 'home.overallGrade.carSpecLabel',
+    priceLabel: 'home.overallGrade.priceLabel',
     kicker: 'home.overallGrade.kicker',
     hint: 'home.overallGrade.viewDetailHint',
   } as const;

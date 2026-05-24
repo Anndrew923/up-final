@@ -34,47 +34,47 @@
           "title": "10 hp Scooter",
           "summary": "[10 hp SCOOTER] Fresh on the board. Every strength axis still has huge upgrade room—steady, consistent work stiffens the chassis for your first real performance lift."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "90 hp Daily Driver",
           "summary": "[90 hp DAILY] First contact with strength training. Your system is building early tolerance to external load and structural integrity."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "140 hp Compact",
           "summary": "[140 hp COMPACT] Foundation lifts are dialed in—you're a solid mid-pack presence in any gym. Cleaner output, less form breakdown under load, chassis structure clearly improved."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "180 hp Hot Hatch",
           "summary": "[180 hp HOT HATCH] You're in the regular heavy-training lane—stable under high resistance with continuous, uninterrupted power delivery."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "250 hp RWD Coupe",
           "summary": "[250 hp RWD] High-tier output in a commercial gym. You hold strong power and rigid-body consistency even under dense, punishing loads."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "350 hp Coupe",
           "summary": "[350 hp COUPE] Peak amateur-athlete strength. Output and load control are knocking on competitive doors—enough for most challenges outside dedicated strength sport."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "430 hp Sport Flagship",
           "summary": "[430 hp FLAGSHIP] Past the amateur ceiling. Serious horsepower on tap, exceptional natural strength—the chassis core is drifting toward pro-grade output."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "550 hp Track Supercar",
           "summary": "[550 hp TRACK] Regional podium material. Few rivals in a crowd—floor the throttle and most people aren't catching the burst."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "680 hp Factory Racer",
           "summary": "[680 hp FACTORY] A regular winner at regional meets. Rarely matched on a normal track day—devastating horsepower in reserve and elite rigid-body control."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "820 hp Le Mans Prototype",
           "summary": "[820 hp LE MANS] Strength benchmarks national elites. Few domestic rivals left—under limit loads, your dominance is absolute."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "1000 hp Megacar",
           "summary": "[1000 hp MEGA] International meet-level output. Knocking on the human ceiling—factory genetics and years of brutal tuning fused into one package."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "1200 hp Rocket Rig",
           "summary": "[1200 hp ROCKET] You're picking fights with gravity—international master overflow tier. A thousand horsepower still isn't enough to describe your power."
         },
@@ -92,47 +92,47 @@
           "title": "9 Nm Stock Street Torque",
           "summary": "[9 Nm STOCK] Fresh on the board—baseline launch settings. Transient drivetrain engagement still needs development; power release has huge room to optimize."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "140 Nm Ignition Tune",
           "summary": "[140 Nm IGNITION] Beginner tier—throttle response is picking up. You're building launch-phase transient twist and cutting power-transfer lag."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "210 Nm Light Flywheel",
           "summary": "[210 Nm FLYWHEEL] Training fundamentals are clicking—rev rise is quicker and neural recruitment delay shrinks. Hot-hatch agility off the line."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "320 Nm Stage 1 NA",
           "summary": "[320 Nm STAGE 1] Around the average recreational athlete. Instant power release is getting cleaner and the drive platform is stabilizing."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "400 Nm Staged Boost",
           "summary": "[400 Nm BOOST] Above the crowd—snap response clearly outruns stock units with excellent initial burst and launch acceleration."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "450 Nm Launch Control",
           "summary": "[450 Nm LAUNCH] Upper amateur tier with track launch control—neural recruitment bites instantly and first-step burst already feels competitive."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "600 Nm Supercharged",
           "summary": "[600 Nm SC] Peak amateur explosive output, brushing the amateur ceiling. Torque erupts across the rev range—launch instant barely cares about equipment drag."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "750 Nm Race Transmission",
           "summary": "[750 Nm RACE TRANS] NBA Combine–average explosive profile. Drag-strip-grade engagement—zero-lag, low-loss release; short-range burst crosses normal limits."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "850 Nm Twin-Turbo Overboost",
           "summary": "[850 Nm LIMIT ICE] Elite NBA guard burst—dynamic response is frightening and instantaneous torque knocks on top-tier ICE physics."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "950 Nm Prototype Transient",
           "summary": "[950 Nm PROTO SNAP] Top NBA guard tier—launch torque feels EV-hypercar lossless, dominating the gravity field in an instant."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "1250 Nm Heavy Hybrid Plateau",
           "summary": "[1250 Nm HYBRID] NFL wide receiver / running back burst—heavy motor plus ICE linked torque, industrial-grade rigidity, output barely cares about material flex."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "1400 Nm Aerospace Phantom Snap",
           "summary": "[1400 Nm PHANTOM] Elite NFL running back tier—instant output at world-class levels. International master-tier snap; the first hit shreds the line."
         },
@@ -150,47 +150,47 @@
           "title": "0.4 bar Stock NA",
           "summary": "[0.4 bar BASELINE] Entry-level—intake and cooling still on stock street settings. Focus on building stable baseline endurance; massive upgrade room ahead."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "0.6 bar Intake Tune",
           "summary": "[0.6 bar COOLING] Still below population average—the radiator is building its first real cardio base. Oil-temp feedback is steady; a focused tune delivers a big jump."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "0.9 bar Low-Boost Cruise",
           "summary": "[0.9 bar EFFICIENCY] Around population average—the system is getting used to endurance-load on the lungs; core cooling loops are starting to flow clean."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "1.2 bar Hot Hatch Pace",
           "summary": "[1.2 bar CRUISE] Regular-runner tier—long controlled cruising with sharp pacing. Most people on factory settings can't touch this heat-efficiency score."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "1.5 bar Mid-Mount Boost",
           "summary": "[1.5 bar HEAT SOAK] Cruising power took a serious step up—boost steps in steadily, clearly above the crowd, enough for repeated high-frequency tactical surges in sport."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "1.8 bar GT All-Weather Cooling",
           "summary": "[1.8 bar BALANCED] Ahead of most recreational athletes your age. Cooling loop rigidity is excellent—endurance carries into other sports, right at the amateur breakout line."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "2.1 bar Race High-Combustion",
           "summary": "[2.1 bar COMP AWAKEN] Competitive genes detected—fuel and oxygen at extreme cylinder pressure. This output doesn't happen without serious training; you're aimed at the pro lane."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "2.4 bar Supercar Cooling Load",
           "summary": "[2.4 bar HIGH-EFF] Few real rivals on the track—regional ace level. Radiator resilience is remarkable; built for long, high-boost, high-pressure leads."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "2.8 bar Factory Race Cooling",
           "summary": "[2.8 bar LIMIT] Elite competition tier—regional podiums are realistic. Extreme endurance and antioxidant recovery, aligned with 680 hp factory racer heat-soak feedback."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "3.2 bar Prototype Track Rule",
           "summary": "[3.2 bar DOMINANCE] Amateur-runner ceiling—core boost crosses amateur limits, matching Le Mans prototype heat rejection; rarely matched in endurance events."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "3.8 bar Megacar Core Pressure",
           "summary": "[3.8 bar APEX] Front row of national athletes—cardiopulmonary system at top spec. Cylinder walls hold anti-physics overload pressure; you set cruise at the front."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "4.5 bar Rocket Cooling Build",
           "summary": "[4.5 bar DREAM] Final-boss tier at every meet level—cooling ignores high-heat flex. Opponents don't want your name on the start list."
         },
@@ -208,47 +208,47 @@
           "title": "0.1L Single-Cylinder Micro",
           "summary": "[0.1L MICRO] Fresh on the board—chassis muscle mass and structural density sit far below normal. Urgent: high-calorie fueling plus baseline resistance rebuild. Start the power reassembly now."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "1.6L Four-Cylinder Intake",
           "summary": "[1.6L INTAKE] Core muscle mass below population average—huge skeletal-muscle upgrade room. The frame is building its base architecture; a light rebuild delivers a big jump."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "1.5L Small-Block Hot Hatch",
           "summary": "[1.5L SMALL-BLOCK] Muscle displacement still lean—refined base structural density, power modules showing street-spec small-turbo agility and lightweight fundamentals."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "2.0T Mid-Displacement Plus",
           "summary": "[2.0T MID] Early recreational athlete tier. Displacement climbing steadily—cylinder walls handle higher pressure; chassis drive structure is stabilizing."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "3.0L High-Rev Inline-Six",
           "summary": "[3.0L I6] Regular training athlete tier—classic high-rev straight-six setup. Muscle rigidity and performance above most stock power units."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "4.0T V8 Big-Block Core",
           "summary": "[4.0T V8] Strong amateur athlete—crossed into big-displacement performance band. Smooth eight-cylinder delivery; chassis rigidity locked to the 4.0T V8 sync point—350 hp, 450 Nm, 1.8 bar."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "6.2L V8 Muscle Beast",
           "summary": "[6.2L V8 MUSCLE] Near the natural-training structural ceiling—classic American big displacement, peak NA cylinders, massive burst energy in the frame."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "3.5T V6 Track Twin-Turbo",
           "summary": "[3.5T V6 TT] Elite output—few natural lifters reach this muscle density. Bore optimized, track-spec displacement, amateur ceiling fully cleared."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "4.0T V8 Factory Race Block",
           "summary": "[4.0T V8 RACE] Past the natural ceiling—twin turbos on full boost, engine bay deeply rebuilt, meshed with 680 hp factory racer power feedback."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "LMP Hybrid Powerplant",
           "summary": "[LMP HYBRID] Benchmarks top Le Mans hybrid heart—inhuman muscle density and structural displacement; absolute track dominance under limit pressure."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "5.0T V8 Thousand-hp Heavy Host",
           "summary": "[5.0T V8 HEAVY] Cyborg-grade heavy engineering—bore and crank rigidity maxed out; every fiber built to survive thousand-horsepower output."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "6.0T Aerospace Multi-Cylinder",
           "summary": "[6.0T AERO] Advanced augmented build—fighter-jet multi-turbo high-displacement architecture, brutal shear resistance, pushing human physiological density limits."
         },
@@ -266,47 +266,47 @@
           "title": "Stock Plain Exterior",
           "summary": "[STOCK CONFIG] No systematic training yet—pure factory paint, no real visual tension in the body lines, with huge exterior upgrade room ahead."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "Basic Aero Tune",
           "summary": "[BASIC UPGRADE] Muscle mass and visual outline sit at population average—entry-level aero sculpting; a light pass on the lines and the upgrade shows clearly."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "Sport Aero Package",
           "summary": "[PERF BODY KIT] Regular trainer tier—edges filling out, sport front and rear bumpers fitted, already reads as a performance model on the street."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "Advanced Side-Skirt Kit",
           "summary": "[ADVANCED AERO] Daily training shows in the mirror—side skirts and front lip fitted, visual center of gravity dropped, grounded and solid athletic presence."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "Mild Wide Front Fenders",
           "summary": "[MILD WIDEBODY] In a crowd, your frame width is hard to miss—lateral outline expanding, visual presence well above most commuter stock rigs."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "GT-Spec Aero",
           "summary": "[TRACK EDITION] You're often the biggest presence in the room—GT-spec aero locked to the golden quartet: 350 hp, 450 Nm, 1.8 bar, 4.0T V8; muscle lines cut sharp, serious visual pressure."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "Vented Competition Widebody",
           "summary": "[COMP WIDEBODY] Near the natural-training visual ceiling—fenders pushed wide, horizontal tension maxed out, exterior fully past amateur limits."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "High-Downforce GT Swan Neck",
           "summary": "[NATURAL CEILING] Benchmarks top natural physique tier—wild inverted swan-neck wing fused with widebody, proportions showing abnormal track tension."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "FIA Factory Race-Spec Widebody",
           "summary": "[MONSTER SPEC] Past normal genetic limits—FIA factory race-spec widebody synced to 680 hp, 850 Nm, 2.8 bar, 4.0T V8; extreme volume and lateral span, owns the room on arrival."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "LMP Low-Drag Carbon Shell",
           "summary": "[LIMIT BUILD] Benchmarks Le Mans prototype physique—wrapped in near-alien, ultra-low-drag carbon shell, absolute fullness with pure speed aesthetics."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "Thousand-hp Carbon Heavy Shell",
           "summary": "[ULTIMATE BUILD] Top professional titan tier—factory frame plus brutal aftermarket fused; every inch of the exterior built to declare limit horsepower."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "Bespoke Aerospace Widebody",
           "summary": "[MEGABEAST WIDEBODY] Visually in a different species from normal humans—outline width and mass thickness defy belief, pure industrial-monster scale."
         },
@@ -324,59 +324,59 @@
           "title": "Stock Eco Narrow Tires",
           "summary": "[STOCK ECO TIRE] Baseline launch settings—terminal grip is severely lacking; under heavy load, power bleeds off easily. On track you tread carefully—compound upgrade is urgent."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "Standard All-Season",
           "summary": "[BASELINE GRIP] Slightly below population average—terminal control coming online, huge friction upgrade room, still slips under heavy resistance."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "Street Upgrade Compound",
           "summary": "[STABLE GRIP] Population average—friction on par with the crowd, routine loads feel steady, tire feedback stabilizing."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "Performance Sport Street",
           "summary": "[CONTROL UPGRADE] Regular trainer—grip above average, stable across heavy loads and track surfaces, consistent grip rigidity."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "Heat-Soak Performance Tire",
           "summary": "[PERF TIRE] Advanced trainer—high amateur tier, bite structure optimized, power transfer up sharply, slip rate way down under effort."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "Circuit-Spec Semi-Slick Tires",
           "summary": "[MOUNTAIN HAIRPINS] Dominant grip—pro boxer and BJJ elite tier; circuit-spec semi-slicks synced to 350 hp, 450 Nm, 1.8 bar, 4.0T V8, GT-spec aero—minimal chassis flex in drift corners."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "Race Full-Slick Limit",
           "summary": "[TRACK SETUP] Past the amateur ceiling—tire in operating temperature, surface goes tacky, brutal limit control on most heavy-load moves."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "Drag Strip Slick",
           "summary": "[ACHIEVEMENT UNLOCKED] Top 1% globally—NFL and elite rock-climber tier, sidewalls with terrifying transient twist resistance, heavy loads rock solid."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "FIA Competition Racing Slicks",
           "summary": "[MAX ANTI-SLIP] Elite powerlifter tier—FIA competition slicks, no tread grooves, synced to 680 hp, 850 Nm, 2.8 bar, 4.0T V8, FIA factory race-spec widebody; suppresses even micro power bleed."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "LMP All-Weather Ground Tire",
           "summary": "[GLUED TO TRACK] Pro arm-wrestler entry—dominates gravity and limit resistance, high-G corners magnet-lock to the surface."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "Heated-Blanket Full Slick",
           "summary": "[RAPTOR CLAMP] Elite arm-wrestler and strongman—routine handles deform under clamp, ultimate softened bite limit on track."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "Hydraulic Vise Compound",
           "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide—caught in your hands equals hydraulic vise clamp stress, friction coefficient defies physics, flawless control."
         },
-        "TIER_151": {
+        "TIER_150": {
           "title": "Factory Supermaterial Tire",
           "summary": "[GRIP MONSTER] World-top strongman—competition like a factory racer at full load; no stock rig can make this compound slip."
         },
-        "TIER_161": {
+        "TIER_160": {
           "title": "Superconducting Gravity Grip",
           "summary": "[GRAVITY GRIP] World-top arm-wrestler—dynamometers are useless, rubber molecular bond to the ground at chain-level force."
         },
-        "TIER_171": {
+        "TIER_170": {
           "title": "Limit Stress Archive",
           "summary": "[RECORD SEALED] Top ~100 globally—grip stress turned both hands into heavy machinery; no heavy chassis escapes your control."
         },
@@ -394,47 +394,47 @@
           "title": "12\" Stock Steel Wheels",
           "summary": "[12\" STOCK STEEL] Entry-level setup—factory rim diameter untouched, visual and physical scale wide open; upsizing urgent for real tension."
         },
-        "TIER_41": {
+        "TIER_40": {
           "title": "15\" Cast Alloy Wheels",
           "summary": "[15\" ALLOY UPGRADE] Rim diameter and tire width nudged up—street sport presence emerging, first pass of baseline fullness in the outline."
         },
-        "TIER_51": {
+        "TIER_50": {
           "title": "17\" Lightweight Sport Wheels",
           "summary": "[17\" SPORT WHEELS] Rim diameter filling out—edge tension expanding, enough structural skeleton for a performance car on daily streets."
         },
-        "TIER_61": {
+        "TIER_60": {
           "title": "18\" Monoblock Forged",
           "summary": "[18\" FORGED] High-strength monoblock forging—tighter, denser structure, less unsprung weight, visual center of gravity steadier."
         },
-        "TIER_71": {
+        "TIER_70": {
           "title": "19\" Lightweight Competition Flow-Form",
           "summary": "[19\" COMP RIM] Wheels in performance heat-soak phase—stiff spokes pushing outward, visual pressure above most stock rigs."
         },
-        "TIER_81": {
+        "TIER_80": {
           "title": "20-Inch Staggered",
           "summary": "[20\" STAGGERED] Sync point locked—350 hp, 450 Nm, 1.8 bar, 4.0T V8, GT-spec aero, circuit semi-slicks; staggered max width, lines cut sharp, serious track intimidation."
         },
-        "TIER_91": {
+        "TIER_90": {
           "title": "21\" Deep-Dish Multi-Spoke",
           "summary": "[21\" DEEP DISH] Near the natural arm-diameter ceiling—extreme deep-lip design, past amateur limits, massive presence even at rest."
         },
-        "TIER_101": {
+        "TIER_100": {
           "title": "22\" Hellaflush Podium",
           "summary": "[22\" HELLAFLUSH] Regional meet-level Hellaflush—limit size fused with the fenders, proportions border on art."
         },
-        "TIER_111": {
+        "TIER_110": {
           "title": "23-Inch FIA 2-Piece",
           "summary": "[23\" FIA 2-PIECE] Sync point locked—680 hp, 850 Nm, 2.8 bar, 4.0T V8, FIA factory widebody, racing slicks; extreme offset and rear footprint, crushing downforce, owns the room."
         },
-        "TIER_121": {
+        "TIER_120": {
           "title": "24\" LMP Center-Lock",
           "summary": "[24\" SERIAL OVERSIZE] Benchmarks top Le Mans prototype spec—titanium center-lock hardware, rim scale at absolute visual balance and impact."
         },
-        "TIER_131": {
+        "TIER_130": {
           "title": "26\" Custom Polished Mega Wheels",
           "summary": "[26\" PRO MEET] Top professional monster tier—high-pressure forged barrels with insane width; every inch of diameter built for limit fullness."
         },
-        "TIER_141": {
+        "TIER_140": {
           "title": "28\" Supermaterial Phantom Wheelbase",
           "summary": "[28\" PHANTOM WHEELBASE] Pushing material mechanics to the wall—giant visual mass beyond normal human genetics."
         },
