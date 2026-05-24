@@ -86,11 +86,18 @@ function OneRmResultBody({ titleId, oneRmKg, strengthAuraStyle }: OneRmResultBod
         <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
           {t('tools.calculators.resultModal.oneRm.loadSpecLabel')}
         </p>
-        <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <ul
+          className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4"
+          aria-label={t('tools.calculators.resultModal.oneRm.loadSpecLabel')}
+        >
           {percentRows.map((row) => (
             <li
               key={row.percent}
               className="flex flex-col items-center justify-center rounded-lg border border-zinc-800/90 bg-black/25 p-3 text-center"
+              aria-label={t('tools.calculators.resultModal.oneRm.loadSpecRowAria', {
+                percent: row.percent,
+                value: row.weightKg.toFixed(1),
+              })}
             >
               <span className="whitespace-nowrap text-sm font-semibold text-zinc-100 md:text-base">
                 {row.percent}%

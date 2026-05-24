@@ -95,6 +95,7 @@
           "title": "Estimated One-Rep Max",
           "heroValue": "{{value}} kg",
           "loadSpecLabel": "LOAD OUTPUT SPEC",
+          "loadSpecRowAria": "{{percent}} percent, {{value}} kg",
           "weightKgLine": "{{value}} kg"
         },
         "plates": {

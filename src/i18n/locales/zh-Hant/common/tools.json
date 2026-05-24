@@ -95,6 +95,7 @@
           "title": "估算單次最大重量",
           "heroValue": "{{value}} kg",
           "loadSpecLabel": "輸出負荷對照 // LOAD SPEC",
+          "loadSpecRowAria": "{{percent}}%，{{value}} 公斤",
           "weightKgLine": "{{value}} kg"
         },
         "plates": {
