@@ -94,8 +94,8 @@
           "kicker": "1RM 預測報告",
           "title": "估算單次最大重量",
           "heroValue": "{{value}} kg",
-          "percentHeading": "訓練百分比對照",
-          "percentRow": "{{percent}}% — {{value}} kg"
+          "loadSpecLabel": "輸出負荷對照 // LOAD SPEC",
+          "weightKgLine": "{{value}} kg"
         },
         "plates": {
           "kicker": "槓片裝載藍圖",

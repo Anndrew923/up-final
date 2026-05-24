@@ -84,18 +84,22 @@ function OneRmResultBody({ titleId, oneRmKg, strengthAuraStyle }: OneRmResultBod
 
       <div className="mt-6 border-t border-zinc-800/90 pt-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          {t('tools.calculators.resultModal.oneRm.percentHeading')}
+          {t('tools.calculators.resultModal.oneRm.loadSpecLabel')}
         </p>
         <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {percentRows.map((row) => (
             <li
               key={row.percent}
-              className="rounded-lg border border-zinc-800/90 bg-black/25 px-3 py-2 text-center font-mono text-sm text-zinc-200"
+              className="flex flex-col items-center justify-center rounded-lg border border-zinc-800/90 bg-black/25 p-3 text-center"
             >
-              {t('tools.calculators.resultModal.oneRm.percentRow', {
-                percent: row.percent,
-                value: row.weightKg.toFixed(1),
-              })}
+              <span className="whitespace-nowrap text-sm font-semibold text-zinc-100 md:text-base">
+                {row.percent}%
+              </span>
+              <span className="mt-1 whitespace-nowrap font-mono text-xs text-zinc-400 md:text-sm">
+                {t('tools.calculators.resultModal.oneRm.weightKgLine', {
+                  value: row.weightKg.toFixed(1),
+                })}
+              </span>
             </li>
           ))}
         </ul>

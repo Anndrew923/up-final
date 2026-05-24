@@ -94,8 +94,8 @@
           "kicker": "1RM Report",
           "title": "Estimated One-Rep Max",
           "heroValue": "{{value}} kg",
-          "percentHeading": "Training Percentages",
-          "percentRow": "{{percent}}% — {{value}} kg"
+          "loadSpecLabel": "LOAD OUTPUT SPEC",
+          "weightKgLine": "{{value}} kg"
         },
         "plates": {
           "kicker": "Loading Blueprint",
