@@ -65,6 +65,12 @@ async function reloadLocaleResourceBundles(): Promise<void> {
   i18n.addResourceBundle('zh-Hant', 'common', commonMod.zhHantCommon, true, true);
   i18n.addResourceBundle('en', 'arena', enArenaMod.default, true, true);
   i18n.addResourceBundle('zh-Hant', 'arena', zhArenaMod.default, true, true);
+
+  const lng = i18n.resolvedLanguage ?? i18n.language;
+  if (lng) {
+    // WHY: Re-bind react-i18next subscribers without re-running language detection.
+    i18n.emit('languageChanged', lng);
+  }
 }
 
 if (import.meta.hot) {

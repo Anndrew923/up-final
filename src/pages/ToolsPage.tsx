@@ -1,12 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { VehicleSpecificationCodex } from '../components/tools/VehicleSpecificationCodex';
 import LeaderboardGateSheet from '../components/ladder/LeaderboardGateSheet';
-import { useCoreSixRadar } from '../hooks/useCoreSixRadar';
-import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
-import type { VehicleCodexScores } from '../logic/core/codexCatalog';
+import { useVehicleCodexScores } from '../hooks/useVehicleCodexScores';
 import { ROUTES } from '../config/routes';
 import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
@@ -21,21 +19,7 @@ export default function ToolsPage() {
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [syncGateType, setSyncGateType] = useState<'auth' | 'pro' | null>(null);
   const [codexOpen, setCodexOpen] = useState(false);
-  const mergedScores = useMergedScoresFromLocalStores();
-  const { overallScore } = useCoreSixRadar();
-
-  const codexScores = useMemo((): VehicleCodexScores => {
-    return {
-      overall: overallScore ?? 0,
-      strength: mergedScores.strength ?? 0,
-      explosivePower: mergedScores.explosivePower ?? 0,
-      gripStrength: mergedScores.gripStrength ?? 0,
-      cardio: mergedScores.cardio ?? 0,
-      muscleMass: mergedScores.muscleMass ?? 0,
-      bodyFat: mergedScores.bodyFat ?? 0,
-      armSize: mergedScores.armSize ?? 0,
-    };
-  }, [mergedScores, overallScore]);
+  const codexScores = useVehicleCodexScores();
 
   const entitlement = useEntitlementStore(
     useShallow(

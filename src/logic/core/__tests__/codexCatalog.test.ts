@@ -5,6 +5,7 @@ import {
   getBandsForCodexTab,
   getMetricForCodexTab,
   getUserScoreForCodexTab,
+  isOverallGradeBandId,
 } from '../codexCatalog';
 
 const SAMPLE_SCORES = {
@@ -54,5 +55,11 @@ describe('codexCatalog', () => {
 
   it('exposes nine codex tabs', () => {
     expect(CODEX_TABS).toHaveLength(9);
+  });
+
+  it('isOverallGradeBandId narrows overall tier ids', () => {
+    expect(isOverallGradeBandId('TIER_80')).toBe(true);
+    expect(isOverallGradeBandId('BASE')).toBe(true);
+    expect(isOverallGradeBandId('NOT_A_TIER')).toBe(false);
   });
 });

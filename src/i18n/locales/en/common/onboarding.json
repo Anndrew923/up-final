@@ -13,6 +13,37 @@
       "body": "Log native chassis parameters (gender, age, height, weight) before unlocking the console. Precision input forges your powertrain ratios.",
       "lockHint": "Save body specs to continue power-on sequence."
     },
+    "baseline": {
+      "protocolTitle": "🛠️ UNIFIED DYNO CALIBRATION PROTOCOL",
+      "protocolDesc": "No arbitrary scoring. Six axes below are computed by exercise-science engines; your inputs lock the chassis baseline for every later dyno run.",
+      "authorityFooter": "⚠️ WARNING: Zero cosmetic inflation. After power-on, calibration uses raw telemetry only.",
+      "features": {
+        "strength": {
+          "label": "CHASSIS / HP",
+          "desc": "DOTS-adjusted strength—negates bodyweight bonus, extracts structural output per kg."
+        },
+        "cardio": {
+          "label": "STINT / THERMAL",
+          "desc": "Cooper 12-min and 5K dual-track benchmarks for aerobic norms and VO₂ estimates."
+        },
+        "skeletalMuscle": {
+          "label": "EXTERIOR / CHSS",
+          "desc": "Skeletal muscle mass (SMM) vs sex/age norms—maps shell profile and load capacity."
+        },
+        "ffmi": {
+          "label": "DISPLACEMENT / P2W",
+          "desc": "Fat-Free Mass Index (FFMI) from profile + body fat—lean powerplant decoupled from fat/height bonuses."
+        },
+        "explosive": {
+          "label": "TORQUE / TRQ",
+          "desc": "Instantaneous power output matrix for neuromuscular burst and launch thrust."
+        },
+        "grip": {
+          "label": "GRIP / TRACTION",
+          "desc": "Hand neuromuscular drive norms—audits CNS-to-terminal force transfer and bite torque."
+        }
+      }
+    },
     "phase2": {
       "kicker": "Phase 02 · Performance Overview",
       "body": "Six-axis performance dashboard — full vehicle spec readout. Horsepower, torque, pilot compatibility. You set operating temperature."

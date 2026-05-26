@@ -1,6 +1,8 @@
 import {
   getScoreMeaningBands,
+  OVERALL_GRADE_BAND_IDS,
   OVERALL_GRADE_TIERS,
+  type OverallGradeBandId,
   type ScoreBand,
   type ScoreMeaningBandMetric,
 } from './scoreMeaningCatalog';
@@ -51,8 +53,14 @@ export function getMetricForCodexTab(tab: CodexTab): ScoreMeaningBandMetric | nu
 export function getBandsForCodexTab(tab: CodexTab): readonly ScoreBand[] {
   if (tab === 'overall') return OVERALL_GRADE_TIERS;
   const metric = getMetricForCodexTab(tab);
-  if (!metric) return OVERALL_GRADE_TIERS;
+  if (metric === null) {
+    throw new Error(`Codex tab "${tab}" must resolve to a score-meaning metric`);
+  }
   return getScoreMeaningBands(metric);
+}
+
+export function isOverallGradeBandId(bandId: string): bandId is OverallGradeBandId {
+  return (OVERALL_GRADE_BAND_IDS as readonly string[]).includes(bandId);
 }
 
 export function getUserScoreForCodexTab(tab: CodexTab, scores: VehicleCodexScores): number {

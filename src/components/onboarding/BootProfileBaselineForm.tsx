@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import GenderSelectSheet from '../home/GenderSelectSheet';
+import UnifiedDynoProtocolPanel from './UnifiedDynoProtocolPanel';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
 
@@ -37,11 +38,10 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
   } = usePhysicalProfileForm({ onSaveSuccess: onSaved });
 
   return (
-    <form
-      className="mt-4 space-y-3 border-t border-zinc-800/80 pt-4"
-      onSubmit={handleSubmit}
-      noValidate
-    >
+    <div className="mt-4 space-y-3 border-t border-zinc-800/80 pt-4">
+      <UnifiedDynoProtocolPanel />
+
+      <form className="space-y-3" onSubmit={handleSubmit} noValidate>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-xs text-zinc-400 sm:col-span-2">
           <span className="font-medium text-zinc-300">
@@ -135,7 +135,8 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
           ? t('home.profile.saving', { ns: 'common' })
           : t('home.profile.save', { ns: 'common' })}
       </button>
-    </form>
+      </form>
+    </div>
   );
 };
 
