@@ -27,7 +27,6 @@
         "kicker": "力量工具",
         "title": "1RM 計算機",
         "subtitle": "輸入重量與次數，估算單次最大重量（1RM）。",
-        "cardBody": "用 Epley / Brzycki / Lombardi 或平均法快速估算 1RM。",
         "weightLabel": "重量（kg）",
         "weightPlaceholder": "例如 100",
         "repsLabel": "次數（reps）",
@@ -50,7 +49,6 @@
         "kicker": "力量工具",
         "title": "槓片計算器",
         "subtitle": "輸入總重量與槓鈴重量，計算每邊建議槓片配置。",
-        "cardBody": "自動拆分每邊槓片，快速完成配重設定。",
         "unitLabel": "單位制",
         "unitSheetTitle": "選擇單位制",
         "unitOptions": {
@@ -123,9 +121,7 @@
     },
     "codex": {
       "panelTitle": "載具全規格整備圖鑑",
-      "panelHint": "對照各維度改裝頻譜與賽會認證階層；Cooper 與 5K 共用目前心肺分數。",
       "mainTitle": "🏁 VEHICLE SPECIFICATION CODEX / 載具全規格整備圖鑑",
-      "subTitle": "開放式 Dyno 測試對照教科書。全開放查閱載具改裝頻譜，對標全球賽會認證評等指標。",
       "activeSetup": "當前載具設定",
       "tierRange": "階層區間",
       "tabs": {

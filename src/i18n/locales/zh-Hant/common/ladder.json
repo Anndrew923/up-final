@@ -29,8 +29,7 @@
     "activeFilterCount": "已選 {{count}} 項",
     "rankings": {
       "kicker": "即時榜單",
-      "title": "排名",
-      "subtitle": "依目前分區與篩選顯示。"
+      "title": "排名"
     },
     "floatingRank": {
       "kicker": "我的位置",

@@ -76,9 +76,6 @@ export default function HomeProfileForm() {
         <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
           {t('home.profile.title', { ns: 'common' })}
         </h2>
-        <p className="text-sm leading-relaxed text-zinc-400">
-          {t('home.profile.subtitle', { ns: 'common' })}
-        </p>
         {baselineComplete ? (
           <p className="text-xs font-medium text-emerald-400/90">
             {t('home.profile.completeBadge', { ns: 'common' })}

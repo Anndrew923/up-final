@@ -3,7 +3,6 @@
     "profile": {
       "kicker": "身體基準",
       "title": "身體資料",
-      "subtitle": "作為體重加權、年齡相關計分的參考。僅存於本裝置（Core，不需帳號）。",
       "completeBadge": "基準已齊 — 後續可接需要身高、體重、年齡、性別的評測換算。",
       "incompleteHint": "請補齊身體資料，之後評測才能從實測值換算分數。",
       "gender": "性別",
@@ -85,12 +84,10 @@
     "ladderIdentity": {
       "kicker": "天梯身份",
       "title": "暱稱與頭像",
-      "subtitle": "上傳分數至榜單時顯示。存於本機；頭像會自動壓縮後再儲存。",
       "displayName": "顯示名稱",
       "displayNameHint": "最多 {{max}} 字。",
       "avatar": "頭像",
       "avatarAlt": "天梯頭像預覽",
-      "avatarHint": "建議使用方形照片。支援 JPEG／PNG，會自動縮圖。",
       "pickAvatar": "選擇圖片",
       "removeAvatar": "移除圖片",
       "save": "儲存天梯身份",

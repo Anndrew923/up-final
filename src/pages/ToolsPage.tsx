@@ -132,9 +132,6 @@ export default function ToolsPage() {
                 <p className="text-sm font-semibold text-zinc-100">
                   {t('tools.calculators.oneRm.title', { ns: 'common' })}
                 </p>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                  {t('tools.calculators.oneRm.cardBody', { ns: 'common' })}
-                </p>
               </Link>
               <Link
                 to={ROUTES.plateCalculator}
@@ -142,9 +139,6 @@ export default function ToolsPage() {
               >
                 <p className="text-sm font-semibold text-zinc-100">
                   {t('tools.calculators.plates.title', { ns: 'common' })}
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                  {t('tools.calculators.plates.cardBody', { ns: 'common' })}
                 </p>
               </Link>
             </div>
@@ -160,9 +154,6 @@ export default function ToolsPage() {
               toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse', { ns: 'common' })}
               panelBodyClassName="space-y-3 px-0 pb-2 pt-2"
             >
-              <p className="font-sans text-xs leading-relaxed text-zinc-500">
-                {t('tools.codex.panelHint', { ns: 'common' })}
-              </p>
               <VehicleSpecificationCodex currentScores={codexScores} />
             </DisclosurePanel>
           </article>

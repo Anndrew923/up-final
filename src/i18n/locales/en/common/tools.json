@@ -27,7 +27,6 @@
         "kicker": "Strength Tool",
         "title": "1RM Calculator",
         "subtitle": "Enter weight and reps. Estimate one-rep max.",
-        "cardBody": "Estimate 1RM: Epley, Brzycki, Lombardi, or average.",
         "weightLabel": "Weight (kg)",
         "weightPlaceholder": "e.g. 100",
         "repsLabel": "Repetitions (reps)",
@@ -50,7 +49,6 @@
         "kicker": "Strength Tool",
         "title": "Plate Calculator",
         "subtitle": "Enter target total and bar weight. Get per-side plate layout.",
-        "cardBody": "Auto-split each side with common plate denominations.",
         "unitLabel": "Unit",
         "unitSheetTitle": "Choose Unit",
         "unitOptions": {
@@ -123,9 +121,7 @@
     },
     "codex": {
       "panelTitle": "Vehicle Specification Codex",
-      "panelHint": "Browse modification bands per axis; Cooper and 5K share your current cardio score.",
       "mainTitle": "🏁 VEHICLE SPECIFICATION CODEX",
-      "subTitle": "Open Dyno specification manual. Transparent overview of vehicle modification bands.",
       "activeSetup": "Active Setup",
       "tierRange": "Tier Range",
       "tabs": {

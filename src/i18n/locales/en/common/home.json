@@ -3,7 +3,6 @@
     "profile": {
       "kicker": "Body baseline",
       "title": "Physical profile",
-      "subtitle": "Body reference for scoring. Stored locally—no account required.",
       "completeBadge": "Baseline locked. Ready for height, weight, age, and gender inputs.",
       "incompleteHint": "Add your body data so later assessments can convert real metrics to scores.",
       "gender": "Gender",
@@ -85,12 +84,10 @@
     "ladderIdentity": {
       "kicker": "Arena identity",
       "title": "Ladder name & avatar",
-      "subtitle": "Leaderboard display name. Stored locally; avatar auto-compressed.",
       "displayName": "Display name",
       "displayNameHint": "Max {{max}} characters.",
       "avatar": "Avatar",
       "avatarAlt": "Arena avatar preview",
-      "avatarHint": "Square photo works best. JPEG/PNG, resized automatically.",
       "pickAvatar": "Choose image",
       "removeAvatar": "Remove image",
       "save": "Save arena identity",

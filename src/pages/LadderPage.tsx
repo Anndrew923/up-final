@@ -437,9 +437,6 @@ export default function LadderPage() {
           <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
             {t('ladder.rankings.title', { ns: 'common' })}
           </h2>
-          <p className="text-sm leading-relaxed text-zinc-400">
-            {t('ladder.rankings.subtitle', { ns: 'common' })}
-          </p>
         </header>
 
         {loading ? (

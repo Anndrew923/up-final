@@ -34,7 +34,6 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'tools.codex.mainTitle': '載具全規格整備圖鑑',
-        'tools.codex.subTitle': '開放式 Dyno 教科書',
         'tools.codex.panelTitle': '圖鑑',
         'tools.codex.tierRange': '階層區間',
         'tools.codex.activeSetup': '當前載具設定',
@@ -84,6 +83,7 @@ describe('VehicleSpecificationCodex', () => {
   it('renders resolved copy and active row marker', () => {
     const { container, unmount } = renderCodex();
     expect(container.textContent).toContain('載具全規格整備圖鑑');
+    expect(container.textContent).not.toContain('開放式 Dyno');
     expect(container.textContent).toContain('350hp雙門跑車');
     expect(container.textContent).toContain('當前載具設定');
     expect(container.querySelector('[aria-current="true"]')).not.toBeNull();

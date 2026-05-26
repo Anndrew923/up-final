@@ -30,9 +30,6 @@ export default function HomeLadderIdentitySection() {
         <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
           {t('home.ladderIdentity.title', { ns: 'common' })}
         </h2>
-        <p className="text-sm leading-relaxed text-zinc-400">
-          {t('home.ladderIdentity.subtitle', { ns: 'common' })}
-        </p>
       </header>
 
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
@@ -99,9 +96,6 @@ export default function HomeLadderIdentitySection() {
                   </button>
                 ) : null}
               </div>
-              <p className="text-[11px] leading-snug text-zinc-500">
-                {t('home.ladderIdentity.avatarHint', { ns: 'common' })}
-              </p>
             </div>
           </div>
         </div>

@@ -25,9 +25,6 @@ export const VehicleSpecificationCodex: FC<VehicleSpecificationCodexProps> = ({ 
         <h2 className="text-lg font-black leading-snug tracking-wide text-orange-500 sm:text-xl sm:tracking-widest">
           {t(`${CODEX_I18N}.mainTitle`)}
         </h2>
-        <p className="mt-2 font-sans text-xs leading-relaxed text-zinc-500">
-          {t(`${CODEX_I18N}.subTitle`)}
-        </p>
       </div>
 
       <div

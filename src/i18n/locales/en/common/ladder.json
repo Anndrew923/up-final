@@ -29,8 +29,7 @@
     "activeFilterCount": "{{count}} active",
     "rankings": {
       "kicker": "Live Rankings",
-      "title": "Leaderboard",
-      "subtitle": "Rows for current zone and filters."
+      "title": "Leaderboard"
     },
     "floatingRank": {
       "kicker": "My Position",
