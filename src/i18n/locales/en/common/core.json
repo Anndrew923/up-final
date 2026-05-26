@@ -218,19 +218,19 @@
         },
         "TIER_60": {
           "title": "1.2 bar Hot Hatch Timed Redline",
-          "summary": "[1.2 bar TIMED HOLD] Regular field-test tier. Locks engine at high RPM for the full 12-minute window—most stock chassis face blow-by risk at this boost."
+          "summary": "[1.2 bar TIMED HOLD] Entering the regular-runner cohort—rhythm locked in, max distance steadily pushed. Holds high RPM for the full 12-minute window with anti-overheat headroom; most stock chassis flirt with blow-by at this boost."
         },
         "TIER_70": {
           "title": "1.5 bar Anti-Lactate Transient Grip",
-          "summary": "[1.5 bar PEAK TRANSIENT] Timed output upgraded. Boost dumps hard in short windows—beats population lactate and burn better, survives high-frequency heat-soak surges."
+          "summary": "[1.5 bar PEAK TRANSIENT] Above population average—timed endurance output upgraded sharply. Boost dumps hard in short windows—beats population burn and lactate, survives high-frequency heat-soak surges."
         },
         "TIER_80": {
           "title": "1.8 bar GT Full-Time Transient Cooling",
-          "summary": "[1.8 bar BALANCED] VO₂ max output ahead of most age-group peers. EGT and cooling loop rigidity excellent—12-minute high-pressure field test, fatigue feedback clean, amateur ceiling next."
+          "summary": "[1.8 bar BALANCED] VO₂ max output ahead of most active peers your age—a strong showing in the cohort. EGT and cooling loop rigidity excellent—12-minute high-pressure field test, fatigue feedback clean."
         },
         "TIER_90": {
           "title": "2.1 bar Race Cylinder Detonation Heat",
-          "summary": "[2.1 bar HEAT AWAKEN] Competitive genes flagged. Fuel and O₂ at extreme cylinder pressure—unfazed by 12-minute hypoxic choke, serious training only, pro lane ahead."
+          "summary": "[2.1 bar HEAT AWAKEN] Among active peers your age, already high-tier—earned only through serious training. Fuel and O₂ at extreme cylinder pressure—unfazed by 12-minute hypoxic choke; without relentless work this tier stays out of reach, pro lane ahead."
         },
         "TIER_100": {
           "title": "2.4 bar Supercar Full-Load HR Cooling",
@@ -246,7 +246,7 @@
         },
         "TIER_130": {
           "title": "3.8 bar Megacar Overload Core",
-          "summary": "[3.8 bar APEX THRESH] National front row in 12-minute clean timed test. Cardio and intake at top spec—cylinder walls hold impossible transient overload, leader in high-output band."
+          "summary": "[3.8 bar APEX THRESH] National front row in the 12-minute timed test. Cardio and intake at top spec—cylinder walls hold impossible transient overload, leader in the high-output band."
         },
         "TIER_140": {
           "title": "4.5 bar Rocket Transient Cooling Module",

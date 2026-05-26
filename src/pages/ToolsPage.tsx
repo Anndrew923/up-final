@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { DisclosurePanel } from '../components/DisclosurePanel';
+import { VehicleSpecificationCodex } from '../components/tools/VehicleSpecificationCodex';
 import LeaderboardGateSheet from '../components/ladder/LeaderboardGateSheet';
+import { useCoreSixRadar } from '../hooks/useCoreSixRadar';
+import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
+import type { VehicleCodexScores } from '../logic/core/codexCatalog';
 import { ROUTES } from '../config/routes';
 import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
@@ -15,6 +20,22 @@ export default function ToolsPage() {
   const navigate = useNavigate();
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [syncGateType, setSyncGateType] = useState<'auth' | 'pro' | null>(null);
+  const [codexOpen, setCodexOpen] = useState(false);
+  const mergedScores = useMergedScoresFromLocalStores();
+  const { overallScore } = useCoreSixRadar();
+
+  const codexScores = useMemo((): VehicleCodexScores => {
+    return {
+      overall: overallScore ?? 0,
+      strength: mergedScores.strength ?? 0,
+      explosivePower: mergedScores.explosivePower ?? 0,
+      gripStrength: mergedScores.gripStrength ?? 0,
+      cardio: mergedScores.cardio ?? 0,
+      muscleMass: mergedScores.muscleMass ?? 0,
+      bodyFat: mergedScores.bodyFat ?? 0,
+      armSize: mergedScores.armSize ?? 0,
+    };
+  }, [mergedScores, overallScore]);
 
   const entitlement = useEntitlementStore(
     useShallow(
@@ -143,6 +164,23 @@ export default function ToolsPage() {
                 </p>
               </Link>
             </div>
+          </article>
+
+          <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+            <DisclosurePanel
+              instanceId="tools-vehicle-codex"
+              expanded={codexOpen}
+              onToggle={() => setCodexOpen((open) => !open)}
+              title={t('tools.codex.panelTitle', { ns: 'common' })}
+              toggleExpandLabel={t('assessment.referenceInfo.toggleExpand', { ns: 'common' })}
+              toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse', { ns: 'common' })}
+              panelBodyClassName="space-y-3 px-0 pb-2 pt-2"
+            >
+              <p className="font-sans text-xs leading-relaxed text-zinc-500">
+                {t('tools.codex.panelHint', { ns: 'common' })}
+              </p>
+              <VehicleSpecificationCodex currentScores={codexScores} />
+            </DisclosurePanel>
           </article>
         </section>
 

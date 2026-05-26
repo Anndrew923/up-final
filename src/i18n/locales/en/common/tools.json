@@ -120,6 +120,36 @@
       "restoreOk": "Local scores and history replaced from cloud snapshot.",
       "restoreEmpty": "No cloud snapshot found.",
       "restoreFail": "Restore failed — check network and retry."
+    },
+    "codex": {
+      "panelTitle": "Vehicle Specification Codex",
+      "panelHint": "Browse modification bands per axis; Cooper and 5K share your current cardio score.",
+      "mainTitle": "🏁 VEHICLE SPECIFICATION CODEX",
+      "subTitle": "Open Dyno specification manual. Transparent overview of vehicle modification bands.",
+      "activeSetup": "Active Setup",
+      "tierRange": "Tier Range",
+      "tabs": {
+        "overall": "OVERALL",
+        "strength": "STRENGTH",
+        "explosivePower": "EXPLOSIVE",
+        "gripStrength": "GRIP",
+        "cooper": "CARDIO-12M",
+        "fiveK": "CARDIO-5K",
+        "muscleMass": "MUSCLE MASS",
+        "bodyFat": "BODY FAT",
+        "armSize": "ARM SIZE"
+      },
+      "systems": {
+        "overall": "Overall Drive Performance",
+        "strength": "Chassis Rigid Limits",
+        "explosivePower": "Instant Thrust Torque",
+        "gripStrength": "Axle Grip Bite",
+        "cooper": "Transient Heat Management",
+        "fiveK": "Cruise Thermal Efficiency",
+        "muscleMass": "Vehicle Mass Weight",
+        "bodyFat": "Body Fat Exhaust",
+        "armSize": "Wheel & Tire Setup"
+      }
     }
   }
 }

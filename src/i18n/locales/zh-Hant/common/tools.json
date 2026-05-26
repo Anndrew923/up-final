@@ -120,6 +120,36 @@
       "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
       "restoreEmpty": "尚無雲端快照。",
       "restoreFail": "還原失敗 — 請檢查網路或稍後再試。"
+    },
+    "codex": {
+      "panelTitle": "載具全規格整備圖鑑",
+      "panelHint": "對照各維度改裝頻譜與賽會認證階層；Cooper 與 5K 共用目前心肺分數。",
+      "mainTitle": "🏁 VEHICLE SPECIFICATION CODEX / 載具全規格整備圖鑑",
+      "subTitle": "開放式 Dyno 測試對照教科書。全開放查閱載具改裝頻譜，對標全球賽會認證評等指標。",
+      "activeSetup": "當前載具設定",
+      "tierRange": "階層區間",
+      "tabs": {
+        "overall": "OVERALL",
+        "strength": "STRENGTH",
+        "explosivePower": "EXPLOSIVE",
+        "gripStrength": "GRIP",
+        "cooper": "CARDIO-12M",
+        "fiveK": "CARDIO-5K",
+        "muscleMass": "MUSCLE MASS",
+        "bodyFat": "BODY FAT",
+        "armSize": "ARM SIZE"
+      },
+      "systems": {
+        "overall": "總合驅動性能",
+        "strength": "底盤推拉剛性極限",
+        "explosivePower": "瞬時馬力與推力爆發",
+        "gripStrength": "前軸咬合與抓地力",
+        "cooper": "瞬態進氣與排溫管理",
+        "fiveK": "巡航長時高熱效率",
+        "muscleMass": "載具肌肉淨重噸位",
+        "bodyFat": "載具體脂排量設定",
+        "armSize": "輪框大小與胎圈設定"
+      }
     }
   }
 }
