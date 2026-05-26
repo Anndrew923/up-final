@@ -9,6 +9,7 @@ import CardioAssessmentPage from '../CardioAssessmentPage';
 const mockUseCardioAssessmentPage = vi.fn();
 const mockUseScoreMeaning = vi.fn();
 const mockRevealCalculate = vi.fn();
+let lastRevealFlowMetric: string | undefined;
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -23,7 +24,9 @@ vi.mock('../../hooks/useScoreMeaning', () => ({
 }));
 
 vi.mock('../../hooks/useAssessmentRevealFlow', () => ({
-  useAssessmentRevealFlow: () => ({
+  useAssessmentRevealFlow: (options: { metric: string }) => {
+    lastRevealFlowMetric = options.metric;
+    return {
     ceremony: {
       isActive: false,
       statusLine: '',
@@ -39,7 +42,8 @@ vi.mock('../../hooks/useAssessmentRevealFlow', () => ({
     modalOpen: false,
     modalPayload: null,
     closeModal: vi.fn(),
-  }),
+    };
+  },
 }));
 
 vi.mock('../../components/assessment/AssessmentCeremonyOverlay', () => ({
@@ -95,6 +99,7 @@ afterEach(() => {
   mockUseCardioAssessmentPage.mockReset();
   mockUseScoreMeaning.mockReset();
   mockRevealCalculate.mockReset();
+  lastRevealFlowMetric = undefined;
 });
 
 describe('CardioAssessmentPage', () => {
@@ -128,7 +133,8 @@ describe('CardioAssessmentPage', () => {
     const { container, unmount } = renderPage();
     const text = container.textContent ?? '';
 
-    expect(mockUseScoreMeaning).toHaveBeenCalledWith('cardio', 88.5);
+    expect(mockUseScoreMeaning).toHaveBeenCalledWith('cooper', 88.5);
+    expect(lastRevealFlowMetric).toBe('cooper');
     expect(text).toContain('PERFORMANCE SPEC / Thermal Spec');
     expect(text).toContain('Thermal Elite');
     expect(text).toContain('Next Milestone: 3');
@@ -172,6 +178,41 @@ describe('CardioAssessmentPage', () => {
       el.textContent?.includes('Calculate')
     );
     expect(calculateBtn?.disabled).toBe(true);
+
+    unmount();
+  });
+
+  it('routes score meaning to cardio on 5km tab', () => {
+    mockUseCardioAssessmentPage.mockReturnValue({
+      profileReady: true,
+      cooperDistanceOverCap: false,
+      cooperCapMeters: null,
+      activeTab: '5km',
+      setActiveTab: vi.fn(),
+      distanceInput: '',
+      setDistanceInput: vi.fn(),
+      runMinutesInput: '22',
+      setRunMinutesInput: vi.fn(),
+      runSecondsInput: '30',
+      setRunSecondsInput: vi.fn(),
+      previewScore: 72.25,
+      submitDone: false,
+      errorKey: null,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: 'Cruise Tier',
+      summary: '5km endurance copy path.',
+      nextMilestone: 80,
+      remainingPoints: 8,
+    });
+
+    const { unmount } = renderPage();
+
+    expect(mockUseScoreMeaning).toHaveBeenCalledWith('cardio', 72.25);
+    expect(lastRevealFlowMetric).toBe('cardio');
 
     unmount();
   });

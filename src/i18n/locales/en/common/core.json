@@ -203,6 +203,64 @@
           "summary": "[PANTHEON COOLING] Spec archived. Myth-tier cardiorespiratory output—unkillable engine, Pantheon sealed."
         }
       },
+      "cooper": {
+        "BASE": {
+          "title": "0.4 bar OEM Transient Intake",
+          "summary": "[0.4 bar TIMED CAL] Cooper 12-min entry tier. Stock intake and cylinder heat management—timed full-throttle output spikes HR and lactate early, huge upgrade headroom."
+        },
+        "TIER_40": {
+          "title": "0.6 bar Transient EGT Tune",
+          "summary": "[0.6 bar EGT START] Below age-group norm. Exhaust heat loop building first cardio tolerance—holding high load inside 12 minutes, oil temp stabilizing, one tune away from a big jump."
+        },
+        "TIER_50": {
+          "title": "0.9 bar Street Transient Boost",
+          "summary": "[0.9 bar HIGH LOAD] Population-average tier. System adapting to 12-minute all-out HR—core cooling and transient intake flowing, rear-half EGT still runs hot under pressure."
+        },
+        "TIER_60": {
+          "title": "1.2 bar Hot Hatch Timed Redline",
+          "summary": "[1.2 bar TIMED HOLD] Regular field-test tier. Locks engine at high RPM for the full 12-minute window—most stock chassis face blow-by risk at this boost."
+        },
+        "TIER_70": {
+          "title": "1.5 bar Anti-Lactate Transient Grip",
+          "summary": "[1.5 bar PEAK TRANSIENT] Timed output upgraded. Boost dumps hard in short windows—beats population lactate and burn better, survives high-frequency heat-soak surges."
+        },
+        "TIER_80": {
+          "title": "1.8 bar GT Full-Time Transient Cooling",
+          "summary": "[1.8 bar BALANCED] VO₂ max output ahead of most age-group peers. EGT and cooling loop rigidity excellent—12-minute high-pressure field test, fatigue feedback clean, amateur ceiling next."
+        },
+        "TIER_90": {
+          "title": "2.1 bar Race Cylinder Detonation Heat",
+          "summary": "[2.1 bar HEAT AWAKEN] Competitive genes flagged. Fuel and O₂ at extreme cylinder pressure—unfazed by 12-minute hypoxic choke, serious training only, pro lane ahead."
+        },
+        "TIER_100": {
+          "title": "2.4 bar Supercar Full-Load HR Cooling",
+          "summary": "[2.4 bar NORM PEAK] Age-group 100-point ceiling unlocked. Radiator and VO₂ resilience remarkable—12-minute full-load torture, leading pace without stride or intake drop."
+        },
+        "TIER_110": {
+          "title": "2.8 bar Factory Race High-EGT Limit",
+          "summary": "[2.8 bar FACTORY PEAK] Elite competition tier. Rare match in age-group norms—oxidative reserve and max-HR tolerance extreme under 12-minute overload, reverse heat-stress mastered."
+        },
+        "TIER_120": {
+          "title": "3.2 bar Prototype Transient Dominance",
+          "summary": "[3.2 bar NORM RULE] 12-minute timed ceiling. Boost crosses amateur bounds—Le Mans prototype full-load heat rejection, countdown torture without flinch."
+        },
+        "TIER_130": {
+          "title": "3.8 bar Megacar Overload Core",
+          "summary": "[3.8 bar APEX THRESH] National front row in 12-minute clean timed test. Cardio and intake at top spec—cylinder walls hold impossible transient overload, leader in high-output band."
+        },
+        "TIER_140": {
+          "title": "4.5 bar Rocket Transient Cooling Module",
+          "summary": "[4.5 bar DREAM BURST] Final boss of the 12-minute timed test. EGT and cooling ignore max-HR flex—full-throttle cardiorespiratory dump leaves the norm cohort behind."
+        },
+        "LEGEND": {
+          "title": "5.5 bar Planetary Transient Heat Asset",
+          "summary": "[5.5 bar THRESHOLD GOD] Spec overflow. Beyond age-group physiology—12-minute VO₂ at world-elite tier, extreme lactate tolerance, unkillable heat efficiency."
+        },
+        "PANTHEON": {
+          "title": "6.5 bar Pantheon Vacuum Superconductor Cooling",
+          "summary": "[PANTHEON BURST] 12-minute distance archived overflow. Myth-tier instantaneous cardiorespiratory spec—undisputed Earth-strongest aerobic/anaerobic core, Pantheon sealed."
+        }
+      },
       "bodyFat": {
         "BASE": {
           "title": "0.1L Single-Cylinder Micro",

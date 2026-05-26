@@ -6,7 +6,10 @@ import enHome from '../../../i18n/locales/en/common/home.json';
 import zhHome from '../../../i18n/locales/zh-Hant/common/home.json';
 import {
   ARM_SIZE_SCORE_BANDS,
+  CARDIO_SCORE_BANDS,
+  COOPER_SCORE_MEANING_METRIC,
   DECADE_AXIS_TIER_BANDS,
+  scoreMeaningMetricForCardioTab,
   DECADE_GRIP_TIER_BANDS,
   EXPLOSIVE_SCORE_BANDS,
   OVERALL_GRADE_BAND_IDS,
@@ -377,6 +380,39 @@ describe('ARM_SIZE_SCORE_BANDS (Rim Spec)', () => {
     expect(resolveScoreMeaningBand('armSize', 130).id).toBe('TIER_130');
     expect(resolveScoreMeaningBand('armSize', 39.9).id).toBe('BASE');
     expect(resolveScoreMeaningBand('armSize', 40).id).toBe('TIER_40');
+  });
+});
+
+describe('scoreMeaningMetricForCardioTab', () => {
+  it('routes Cooper tab to cooper copy and 5km to cardio', () => {
+    expect(scoreMeaningMetricForCardioTab('cooper')).toBe(COOPER_SCORE_MEANING_METRIC);
+    expect(scoreMeaningMetricForCardioTab('5km')).toBe('cardio');
+  });
+});
+
+describe('scoreMeaning i18n coverage (cooper)', () => {
+  it('defines en/zh title+summary for every cooper band', () => {
+    for (const band of CARDIO_SCORE_BANDS) {
+      const enEntry = enBands.cooper?.[band.id];
+      const zhEntry = zhBands.cooper?.[band.id];
+      expect(enEntry?.title?.trim().length, `cooper.${band.id}.title en`).toBeGreaterThan(0);
+      expect(enEntry?.summary?.trim().length, `cooper.${band.id}.summary en`).toBeGreaterThan(0);
+      expect(zhEntry?.title?.trim().length, `cooper.${band.id}.title zh`).toBeGreaterThan(0);
+      expect(zhEntry?.summary?.trim().length, `cooper.${band.id}.summary zh`).toBeGreaterThan(0);
+    }
+  });
+
+  it('resolves cooper bands via CARDIO_SCORE_BANDS ladder', () => {
+    expect(resolveScoreMeaningBand(COOPER_SCORE_MEANING_METRIC, 88.5).id).toBe('TIER_80');
+    expect(resolveScoreMeaningBand(COOPER_SCORE_MEANING_METRIC, 39.9).id).toBe('BASE');
+  });
+
+  it('keeps zh-Hant cooper band copy monolingual (no bilingual slash merge)', () => {
+    for (const band of CARDIO_SCORE_BANDS) {
+      const zh = zhBands.cooper?.[band.id];
+      expect(zh?.title, `cooper.${band.id}.title`).not.toMatch(/\s\/\s/);
+      expect(zh?.summary, `cooper.${band.id}.summary`).not.toMatch(/\s\/\s\[/);
+    }
   });
 });
 

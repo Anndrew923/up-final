@@ -11,6 +11,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
 
 export interface CardioAssessmentPageProps {
   onBack?: () => void;
@@ -38,9 +39,10 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     calculate,
     submitToRadar,
   } = useCardioAssessmentPage();
+  const scoreMeaningMetric = scoreMeaningMetricForCardioTab(activeTab);
   const reveal = useAssessmentRevealFlow({
     pool: 'cardio',
-    metric: 'cardio',
+    metric: scoreMeaningMetric,
     scoreDecimals: 2,
     getScore: () => previewScore,
     hasError: () => errorKey != null,
@@ -58,7 +60,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
 
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
-  const scoreMeaning = useScoreMeaning('cardio', previewScore ?? heroScore);
+  const scoreMeaning = useScoreMeaning(scoreMeaningMetric, previewScore ?? heroScore);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">

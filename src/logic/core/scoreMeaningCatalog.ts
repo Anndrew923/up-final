@@ -1,3 +1,4 @@
+import type { CardioAssessmentTab } from './cardioScoring';
 import type { SixAxisMetric } from '../../types/scoring';
 
 export interface ScoreBand {
@@ -65,6 +66,9 @@ export const DEFAULT_SCORE_BANDS: readonly ScoreBand[] = [
 ] as const;
 
 export const CARDIO_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
+
+/** Copy-only metric for Cooper 12-min band text — shares cardio decade gates, not a six-axis id. */
+export const COOPER_SCORE_MEANING_METRIC = 'cooper' as const;
 export const STRENGTH_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
 export const FFMI_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
 export const MUSCLE_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
@@ -176,10 +180,12 @@ export function resolveArmSizeScoreBand(score: number): ScoreBand {
   return resolveScoreBandFromBands(ARM_SIZE_SCORE_BANDS, score);
 }
 
-export type ScoreMeaningBandMetric = SixAxisMetric | 'armSize';
+export type ScoreMeaningBandMetric = SixAxisMetric | 'armSize' | typeof COOPER_SCORE_MEANING_METRIC;
 
 export function getScoreMeaningBands(metric: ScoreMeaningBandMetric): readonly ScoreBand[] {
-  return metric === 'armSize' ? ARM_SIZE_SCORE_BANDS : SCORE_MEANING_CATALOG[metric];
+  if (metric === 'armSize') return ARM_SIZE_SCORE_BANDS;
+  if (metric === COOPER_SCORE_MEANING_METRIC) return CARDIO_SCORE_BANDS;
+  return SCORE_MEANING_CATALOG[metric];
 }
 
 export function resolveScoreMeaningBand(metric: ScoreMeaningBandMetric, score: number): ScoreBand {
@@ -219,4 +225,9 @@ export function getAxisMeaningI18nPrefix(metric: SixAxisMetric): string {
 
 export function getBandMeaningI18nPrefix(metric: ScoreMeaningBandMetric, bandId: string): string {
   return `scoreMeaning.bands.${metric}.${bandId}`;
+}
+
+/** Maps cardio assessment tab → band-copy i18n metric (Cooper vs 5km cruise). */
+export function scoreMeaningMetricForCardioTab(tab: CardioAssessmentTab): ScoreMeaningBandMetric {
+  return tab === 'cooper' ? COOPER_SCORE_MEANING_METRIC : 'cardio';
 }
