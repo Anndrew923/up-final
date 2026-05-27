@@ -94,7 +94,7 @@
       "hint": "Upload overall and every eligible shard from your radar and assessments.",
       "infoButtonAria": "View upload limit details",
       "advancedTitle": "Upload Limits",
-      "advancedTip": "Up to {{limit}} counted writes per shard per hour (rolling window). Unchanged scores skip writes and quota; better or worse scores both count. Sequential sync; missing scores, ineligible users, or rate limits skip shards.",
+      "advancedTip": "Sync uploads every eligible shard in sequence with these limits:\n\n- Up to {{limit}} counted writes per shard per hour (rolling 60 minutes).\n- When the score matches the cloud value, no write occurs and no quota is used.\n- When the score changes (higher or lower), the row is updated and 1 write is counted.\n- Full sync itself has cooldown: roughly once every 90 minutes, up to 3 times per day.\n- Shards with incomplete tests, no radar value, or Non‑Pro access are skipped or blocked.",
       "noTargets": "No scores ready — complete assessments or save to radar first.",
       "button": "Sync to Ladder",
       "busy": "Syncing…",

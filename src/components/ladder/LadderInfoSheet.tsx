@@ -14,9 +14,53 @@ export interface LadderInfoSheetProps {
   body: string;
   /** Optional labeled rows (e.g. homologation vehicle benchmark + reference value). */
   detailRows?: LadderInfoSheetDetailRow[];
+  /** Optional visual variant for specialized layouts (e.g. sync-all ladder limits). */
+  variant?: 'default' | 'syncAll';
 }
 
-const LadderInfoSheet: FC<LadderInfoSheetProps> = ({ open, onClose, title, body, detailRows }) => {
+interface LadderSyncLimitInfoProps {
+  bodyId: string;
+  body: string;
+}
+
+const LadderSyncLimitInfo: FC<LadderSyncLimitInfoProps> = ({ bodyId, body }) => {
+  // Split advancedTip-style body into intro + bullet lines.
+  const lines = body.split('\n').filter((line) => line.trim().length > 0);
+  const intro = lines[0] ?? '';
+  const bullets = lines.slice(1);
+
+  return (
+    <div id={bodyId} className="mt-3 space-y-4 text-[11px] leading-relaxed text-zinc-300">
+      <p className="text-xs text-zinc-400">{intro}</p>
+      {bullets.length > 0 ? (
+        <div className="space-y-2.5">
+          {bullets.map((line, index) => {
+            const content = line.replace(/^-+\s*/, '');
+            return (
+              <div
+                // eslint-disable-next-line react/no-array-index-key
+                key={`${content}-${index}`}
+                className="flex items-start gap-2 rounded-md border border-zinc-800/80 bg-zinc-900/50 px-2.5 py-2"
+              >
+                <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent-primary" />
+                <p className="text-[11px] leading-snug text-zinc-300">{content}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const LadderInfoSheet: FC<LadderInfoSheetProps> = ({
+  open,
+  onClose,
+  title,
+  body,
+  detailRows,
+  variant = 'default',
+}) => {
   const { t } = useTranslation('common');
   const titleId = useId();
   const bodyId = useId();
@@ -46,7 +90,7 @@ const LadderInfoSheet: FC<LadderInfoSheetProps> = ({ open, onClose, title, body,
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[210] flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
+      className="fixed inset-0 z-[210] flex items-center justify-center px-4 pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
       role="presentation"
     >
       <button
@@ -65,9 +109,13 @@ const LadderInfoSheet: FC<LadderInfoSheetProps> = ({ open, onClose, title, body,
         <h2 id={titleId} className="text-base font-semibold tracking-tight text-zinc-50">
           {title}
         </h2>
-        <p id={bodyId} className="mt-3 text-sm leading-relaxed text-zinc-300">
-          {body}
-        </p>
+        {variant === 'syncAll' ? (
+          <LadderSyncLimitInfo bodyId={bodyId} body={body} />
+        ) : (
+          <p id={bodyId} className="mt-3 text-sm leading-relaxed text-zinc-300">
+            {body}
+          </p>
+        )}
         {hasDetailRows ? (
           <dl id={detailsId} className="mt-4 space-y-3 border-t border-zinc-700/80 pt-4">
             {detailRows.map((row, index) => (

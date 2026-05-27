@@ -106,6 +106,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         onClose={() => setInfoOpen(false)}
         title={t('ladder.syncAll.advancedTitle')}
         body={quotaModalBody}
+        variant="syncAll"
       />
       {gateSheetCopy ? (
         <LeaderboardGateSheet
