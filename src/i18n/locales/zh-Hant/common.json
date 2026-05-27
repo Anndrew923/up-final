@@ -68,7 +68,7 @@
         },
         "TIER_121": {
           "title": "全國精英",
-          "summary": "【序列支配】對標全國精英，能在高荷重消耗戰中支配重力與節奏，展現統治級結構韌性。"
+          "summary": "【序列支配】達全國精英水準，能在高荷重消耗戰中支配重力與節奏，展現統治級結構韌性。"
         },
         "TIER_131": {
           "title": "物理極限",
@@ -122,7 +122,7 @@
         },
         "TIER_121": {
           "title": "序列支配",
-          "summary": "對標全國頂尖表現。對能量具備絕對統治力，是極限對抗中的絕對生存者。"
+          "summary": "達全國頂尖水準。對能量具備絕對統治力，是極限對抗中的絕對生存者。"
         },
         "TIER_131": {
           "title": "永動原案",
@@ -717,7 +717,7 @@
     "combinedSectionTitle": "全部完成列（雷達力量軸）",
     "combinedHint": "只平均「重量與次數皆已填」的列；未填的列不納入。不得只填一欄 — 請兩欄都填或都留空。",
     "calculateCombined": "合併計算（雷達預覽）",
-    "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（對標菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
+    "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（比照菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
     "branchScoresHeading": "各項結果",
     "branchLine": "{{weight}} kg × {{reps}} 次 · 估計 1RM {{oneRm}} kg · 單項分 {{score}}",
     "averageRawLabel": "已完成項目之平均",
@@ -783,11 +783,11 @@
       "title": "評測參考資料",
       "p1": "計算式：score = peakKg × 1.4（女性再乘 1.6）。分數保留 1 位小數，並保留超過 100 的上行空間。",
       "p2": "模型上限為 160 kg；超過時會以 160 kg 進行計分與儲存，避免極端值破壞體驗尺度。",
-      "p3": "上限對標人物：Magnus Samuelsson。此設定為產品量測保護，非競賽認證。"
+      "p3": "上限參照人物：Magnus Samuelsson。此設定為產品量測保護，非競賽認證。"
     },
     "capNoticeTitle": "輸入已超過模型上限",
     "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
-    "capNoticeLegend": "上限對標人物：瑞典大力士 Magnus Samuelsson。",
+    "capNoticeLegend": "上限參照人物：瑞典大力士 Magnus Samuelsson。",
     "previewLabel": "預覽分數",
     "rankLabel": "階級：{{label}}（Aura：{{aura}}）",
     "ranks": {
@@ -860,11 +860,11 @@
     "standingLongJumpPlaceholder": "例如 220",
     "sprintLabel": "100 公尺衝刺（秒 — 愈快愈好）",
     "sprintPlaceholder": "例如 13.5",
-    "fieldsHint": "年齡與性別取自首頁身體資料。常模表涵蓋 12–80 歲（本 App 身體資料年齡下限為 13；超過 80 歲則無對照組）。短跑分支採「時間愈低分數愈高」之同一套公式。各欄另有對標菁英／紀錄級情境之模型上限或下限；若輸入被調整，按「計算」後會顯示說明。",
+    "fieldsHint": "年齡與性別取自首頁身體資料。常模表涵蓋 12–80 歲（本 App 身體資料年齡下限為 13；超過 80 歲則無對照組）。短跑分支採「時間愈低分數愈高」之同一套公式。各欄另有比照菁英／紀錄級情境之模型上限或下限；若輸入被調整，按「計算」後會顯示說明。",
     "capNoticeTitle": "輸入已依模型調整",
-    "capVerticalJump": "垂直跳已封頂為 {{max}} cm（對標 NBA／NFL 頂尖體測量級）。計分與儲存皆採用封頂後數值。",
-    "capStandingLongJump": "立定跳遠已封頂為 {{max}} cm（對標菁英體測／田徑量級，如 Byron Jones 等公開紀錄情境）。計分與儲存皆採用封頂後數值。",
-    "capSprint100m": "100 公尺成績已設下限為 {{min}} 秒（快於此視為紀錄級模型地板，對標菁英 100m）。計分與儲存皆採用調整後時間。",
+    "capVerticalJump": "垂直跳已封頂為 {{max}} cm（比照 NBA／NFL 頂尖體測量級）。計分與儲存皆採用封頂後數值。",
+    "capStandingLongJump": "立定跳遠已封頂為 {{max}} cm（比照菁英體測／田徑量級，如 Byron Jones 等公開紀錄情境）。計分與儲存皆採用封頂後數值。",
+    "capSprint100m": "100 公尺成績已設下限為 {{min}} 秒（快於此視為紀錄級模型地板，比照菁英 100m）。計分與儲存皆採用調整後時間。",
     "branchScoresHeading": "各項原始分",
     "branchVerticalJumpShort": "垂直跳",
     "branchStandingLongJumpShort": "立定跳遠",
@@ -938,8 +938,8 @@
     "tabsAria": "心肺測驗方式",
     "cooperDistanceLabel": "12 分鐘跑距離（公尺）",
     "cooperPlaceholder": "例如 2600",
-    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。對標田徑長距離世界級表現之上限：男性 {{maleCap}} m、女性 {{femaleCap}} m；超過時分數將鎖在此上限。",
-    "cooperWorldRecordCapHint": "輸入距離超過對標 5000 m 級世界紀錄情境之模型上限（{{capMeters}} m）。已改以該距離計分並鎖定最高分。",
+    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。比照田徑長距離世界級表現之上限：男性 {{maleCap}} m、女性 {{femaleCap}} m；超過時分數將鎖在此上限。",
+    "cooperWorldRecordCapHint": "輸入距離超過比照 5000 m 級世界紀錄情境之模型上限（{{capMeters}} m）。已改以該距離計分並鎖定最高分。",
     "cooperInfo": {
       "toggleExpand": "展開說明",
       "toggleCollapse": "收合說明",
@@ -980,7 +980,7 @@
     "metaWeight": "體重：{{value}} kg",
     "metaAge": "年齡：{{value}} 歲",
     "metaGender": "性別：{{value}}",
-    "smmCeilingLine": "本評測可計分之骨骼肌量上限：{{max}} kg（男性對標 Ronnie Coleman 量級之公開量級；女性對標頂級女子職業選手表現帶）。",
+    "smmCeilingLine": "本評測可計分之骨骼肌量上限：{{max}} kg（男性比照 Ronnie Coleman 量級之公開量級；女性比照頂級女子職業選手表現帶）。",
     "standardsInfo": {
       "toggleExpand": "展開評分說明",
       "toggleCollapse": "收合評分說明",
@@ -1002,7 +1002,7 @@
       "missing-profile": "請先在首頁填寫完整身體資料。",
       "invalid-smm": "請輸入大於 0 的骨骼肌量（kg）。",
       "age-out-of-range": "此年齡無肌肉常模表（表定至 80 歲）。請確認首頁年齡。",
-      "smm-exceeds-ceiling": "骨骼肌量超過本評測上限（{{max}} kg）。男性以上限對標 Ronnie Coleman 量級之公開量級；女性對標頂級女子職業選手表現帶。請調整至 {{max}} kg 或以下以解鎖計分與儲存；若數值異常，建議重複確認量測來源。",
+      "smm-exceeds-ceiling": "骨骼肌量超過本評測上限（{{max}} kg）。男性以上限比照 Ronnie Coleman 量級之公開量級；女性比照頂級女子職業選手表現帶。請調整至 {{max}} kg 或以下以解鎖計分與儲存；若數值異常，建議重複確認量測來源。",
       "standards-not-found": "無法對照常模列 — 請確認首頁年齡與性別。"
     }
   },

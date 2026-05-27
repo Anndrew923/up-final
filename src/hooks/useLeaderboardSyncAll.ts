@@ -7,6 +7,7 @@ import {
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { ROUTES } from '../config/routes';
+import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
 import {
@@ -166,6 +167,9 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
         refreshFullSyncBlock(user.uid);
       }
       setSummaryState({ signature: targetsSignature, summary: tally });
+      if (tally.updated > 0) {
+        void hapticService.trigger('success');
+      }
       onFinishedRef.current?.();
     } finally {
       setBusy(false);

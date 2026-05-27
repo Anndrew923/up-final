@@ -18,7 +18,7 @@
     "combinedSectionTitle": "全部完成列（雷達力量軸）",
     "combinedHint": "只平均「重量與次數皆已填」的列；未填的列不納入。不得只填一欄 — 請兩欄都填或都留空。",
     "calculateCombined": "合併計算（雷達預覽）",
-    "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（對標菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
+    "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（比照菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
     "combinedDetailsTitle": "計算細節",
     "combinedDetailsExpand": "展開細節",
     "combinedDetailsCollapse": "收合細節",

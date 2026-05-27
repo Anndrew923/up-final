@@ -6,6 +6,10 @@ import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
 import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
 import { useProStructuredUserSyncLifecycle } from './hooks/useProStructuredUserSyncLifecycle';
+import {
+  shouldForceAuthChoice as resolveShouldForceAuthChoice,
+  shouldShowAuthBootstrapFallback as resolveShouldShowAuthBootstrapFallback,
+} from './logic/core/authGate';
 import { isFirestoreConfigured } from './services/firebaseClient';
 import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
 import { useAuthStore } from './stores/authStore';
@@ -142,10 +146,14 @@ export default function App() {
   const hasOnboarding = hasCompletedAuthOnboarding();
   const isFirebaseReady = isFirestoreConfigured();
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
-  const shouldForceAuthChoice =
-    isFirebaseReady && authStatus !== 'loading' && !isGoogleSignedIn && !hasOnboarding;
-  const shouldShowAuthBootstrapFallback =
-    isFirebaseReady && authStatus === 'loading' && !isGoogleSignedIn && !hasOnboarding;
+  const gateInput = {
+    isFirebaseReady,
+    authStatus,
+    isAnonymous,
+    hasOnboarding,
+  };
+  const shouldForceAuthChoice = resolveShouldForceAuthChoice(gateInput);
+  const shouldShowAuthBootstrapFallback = resolveShouldShowAuthBootstrapFallback(gateInput);
 
   return (
     <>

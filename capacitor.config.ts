@@ -2,10 +2,10 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 /**
  * Capacitor shell for Android (Google Play) + future iOS.
- * appId must match Play Console package name and RevenueCat Android app id.
+ * appId must match `android/app/google-services.json` package_name, Play Console, and RevenueCat.
  */
 const config: CapacitorConfig = {
-  appId: 'com.ultimatephysique.app',
+  appId: 'com.ultimatephysique.fitness2025',
   appName: 'Ultimate Physique',
   webDir: 'dist',
   server: {
@@ -14,6 +14,12 @@ const config: CapacitorConfig = {
   android: {
     buildOptions: {
       releaseType: 'AAB',
+    },
+  },
+  plugins: {
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['google.com'],
     },
   },
 };

@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const memory = new Map<string, string>();
 
+const triggerProPurchaseCelebration = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('../hapticService', () => ({
+  hapticService: {
+    triggerProPurchaseCelebration,
+  },
+}));
+
 vi.mock('../../lib/safeLocalStorage', () => ({
   safeGetItem: (key: string) => memory.get(key) ?? null,
   safeSetItem: (key: string, value: string) => {
@@ -21,6 +29,7 @@ const { purchaseProSubscription, restorePurchasesFromDevice } =
 describe('subscription service', () => {
   beforeEach(() => {
     memory.clear();
+    triggerProPurchaseCelebration.mockClear();
   });
 
   afterEach(() => {
@@ -46,6 +55,7 @@ describe('subscription service', () => {
     if (!result.ok) {
       expect(result.reason).toBe('core-required');
     }
+    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
   });
 
   it('requires signed-in identity when purchasing', async () => {
@@ -84,6 +94,7 @@ describe('subscription service', () => {
 
     const result = await purchaseProSubscription();
     expect(result.ok).toBe(true);
+    expect(triggerProPurchaseCelebration).toHaveBeenCalledTimes(1);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
     expect(useEntitlementStore.getState().isPro).toBe(true);
 

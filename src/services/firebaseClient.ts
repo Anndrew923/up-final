@@ -9,6 +9,8 @@ import {
   getAuth,
   getRedirectResult,
   GoogleAuthProvider,
+  indexedDBLocalPersistence,
+  initializeAuth,
   onAuthStateChanged,
   reauthenticateWithPopup,
   signInAnonymously,
@@ -20,6 +22,8 @@ import {
   type User,
   type Unsubscribe,
 } from 'firebase/auth';
+import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { hapticService } from './hapticService';
 import {
   getFirestore,
   initializeFirestore,
@@ -82,6 +86,11 @@ function initFirestoreForApp(app: FirebaseApp): Firestore {
 const GOOGLE_REDIRECT_PENDING_KEY = 'up.auth.googleRedirectPending';
 const GOOGLE_REDIRECT_RETRY_KEY = 'up.auth.googleRedirectRetry';
 
+/** Native Google via Capacitor — avoids WebView redirect sessionStorage failures. */
+export function isNativeGoogleSignInAvailable(): boolean {
+  return isCapacitorNativePlatform() && !isFirebaseEmulatorEnabled();
+}
+
 /**
  * Reads `VITE_FIREBASE_*` from `import.meta.env`.
  * Local-first app runs without Firebase until all fields are configured.
@@ -118,9 +127,30 @@ export function initFirebase(config: FirebaseConfig): void {
 
   firebaseApp = getApps().length ? getApp() : initializeApp(opts);
   firestoreDb = initFirestoreForApp(firebaseApp);
-  firebaseAuth = getAuth(firebaseApp);
+  firebaseAuth = initFirebaseAuthForApp(firebaseApp);
   firebaseFunctions = getFunctions(firebaseApp, getLadderFunctionsRegion());
   connectFirebaseEmulatorsIfEnabled();
+}
+
+/**
+ * WHY: Capacitor WebView + redirect/popup loses OAuth state; native Google + indexedDB keeps JS Auth in sync.
+ */
+function initFirebaseAuthForApp(app: FirebaseApp): Auth {
+  if (isCapacitorNativePlatform() && !isFirebaseEmulatorEnabled()) {
+    try {
+      return initializeAuth(app, { persistence: indexedDBLocalPersistence });
+    } catch (error: unknown) {
+      const code =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? String((error as { code?: unknown }).code)
+          : '';
+      if (code === 'auth/already-initialized') {
+        return getAuth(app);
+      }
+      throw error;
+    }
+  }
+  return getAuth(app);
 }
 
 function connectFirebaseEmulatorsIfEnabled(): void {
@@ -220,11 +250,12 @@ async function startGoogleRedirect(auth: Auth, provider: GoogleAuthProvider): Pr
  * This prevents transient redirect errors from surfacing as noisy unhandled flashes.
  */
 export async function consumeFirebaseRedirectResult(): Promise<UserCredential | null> {
-  if (!firebaseAuth) return null;
+  if (!firebaseAuth || isNativeGoogleSignInAvailable()) return null;
   try {
     const result = await getRedirectResult(firebaseAuth);
     if (result?.user) {
       clearGoogleRedirectPending();
+      notifyGoogleSignInSuccess(result.user);
     } else if (isGoogleRedirectPending()) {
       // No result after returning from redirect means flow has ended; clear stale pending flag.
       clearGoogleRedirectPending();
@@ -269,6 +300,11 @@ function getFirebaseAuthErrorCode(error: unknown): string {
     : '';
 }
 
+/** Fires haptic only for a completed Google link (not anonymous guest). */
+function notifyGoogleSignInSuccess(user: User): void {
+  hapticService.triggerGoogleSignInSuccess(user);
+}
+
 /**
  * Starts Google redirect sign-in for all web cases.
  * Returns null because redirect flow completes after page reload.
@@ -277,14 +313,28 @@ export async function signInWithGoogleWeb(): Promise<User | null> {
   if (!firebaseAuth) {
     throw new Error('firebase-auth-not-configured');
   }
-  const provider = new GoogleAuthProvider();
 
   const currentUser = firebaseAuth.currentUser;
   const wasAnonymous = Boolean(currentUser?.isAnonymous);
   if (wasAnonymous) {
-    // Keep this in the same user gesture path, then open exactly one popup sign-in.
+    // Keep this in the same user gesture path, then open exactly one sign-in flow.
     await signOut(firebaseAuth);
+    const { signOutNative } = await import('./firebaseNativeAuth');
+    await signOutNative();
   }
+
+  if (isNativeGoogleSignInAvailable()) {
+    if (import.meta.env.DEV) {
+      console.warn('[auth] starting google native sign-in', { wasAnonymous });
+    }
+    const { signInWithGoogleNative } = await import('./firebaseNativeAuth');
+    const user = await signInWithGoogleNative(firebaseAuth);
+    clearGoogleRedirectPending();
+    notifyGoogleSignInSuccess(user);
+    return user;
+  }
+
+  const provider = new GoogleAuthProvider();
 
   try {
     if (import.meta.env.DEV) {
@@ -292,6 +342,7 @@ export async function signInWithGoogleWeb(): Promise<User | null> {
     }
     const credential = await signInWithPopup(firebaseAuth, provider);
     clearGoogleRedirectPending();
+    notifyGoogleSignInSuccess(credential.user);
     return credential.user;
   } catch (error) {
     const code = getFirebaseAuthErrorCode(error);
@@ -325,6 +376,10 @@ export async function signInAnonymouslyWeb(): Promise<User> {
 export async function signOutFirebase(): Promise<void> {
   if (!firebaseAuth) return;
   await signOut(firebaseAuth);
+  if (isCapacitorNativePlatform()) {
+    const { signOutNative } = await import('./firebaseNativeAuth');
+    await signOutNative();
+  }
 }
 
 /**
@@ -337,6 +392,11 @@ export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
   const user = firebaseAuth.currentUser;
   if (!user || user.isAnonymous) {
     throw new Error('auth-not-ready');
+  }
+  if (isNativeGoogleSignInAvailable()) {
+    const { reauthenticateWithGoogleNative } = await import('./firebaseNativeAuth');
+    await reauthenticateWithGoogleNative(firebaseAuth);
+    return;
   }
   const provider = new GoogleAuthProvider();
   await reauthenticateWithPopup(user, provider);

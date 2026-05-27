@@ -2,6 +2,7 @@ import { hasCoreAccess, hasProAccess } from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { loadPersistedEntitlement } from './entitlementPersistenceService';
+import { hapticService } from './hapticService';
 import {
   isRevenueCatConfiguredFromEnv,
   isRevenueCatNativeBillingAvailable,
@@ -49,6 +50,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
 
   if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
     applySimulatedProSnapshot();
+    void hapticService.triggerProPurchaseCelebration();
     return { ok: true };
   }
 
@@ -59,11 +61,14 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
       return { ok: false, reason: 'billing-unavailable' };
     }
     useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+    if (!snapshot.active) {
+      return { ok: false, reason: 'failed' };
+    }
+    void hapticService.triggerProPurchaseCelebration();
+    return { ok: true };
   } catch {
     return { ok: false, reason: 'failed' };
   }
-
-  return { ok: true };
 }
 
 export interface RestorePurchasesResult {

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { hapticService } from '../services/hapticService';
 import { canUploadLeaderboard } from '../logic/core/entitlement';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { ROUTES } from '../config/routes';
@@ -73,8 +74,11 @@ export function useLeaderboardUpload() {
         },
       });
       setLastResult(result);
+      hapticService.fireLeaderboardUploadResult(result);
     } catch {
-      setLastResult({ ok: false, reason: 'unknown', updated: false });
+      const failed = { ok: false, reason: 'unknown' as const, updated: false };
+      setLastResult(failed);
+      hapticService.fireLeaderboardUploadResult(failed);
     } finally {
       setBusy(false);
     }

@@ -1,0 +1,71 @@
+{
+  "project_info": {
+    "project_number": "5144099869",
+    "project_id": "fitness-app-69f08",
+    "storage_bucket": "fitness-app-69f08.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5144099869:android:49fb1163c8b18ff0ce1af4",
+        "android_client_info": {
+          "package_name": "com.ultimatephysique.fitness2025"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5144099869-484pilt5daqpscf5bs4i2ca3qhpvd64a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "88ec67781c823cda061a92dac74c234846925e1a"
+          }
+        },
+        {
+          "client_id": "5144099869-org039ohcg6l5h83n3bndr0qirisnai6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "94d30cc0dfeca9fc7c2cf3fd96fea71e17e7ff82"
+          }
+        },
+        {
+          "client_id": "5144099869-p4u6re7hj6tctinkhem4vfpg96skq3pc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "95904a605c5a8b83c7b11010f7bd6cada524c085"
+          }
+        },
+        {
+          "client_id": "5144099869-sl5cra0skr95cj2uq7jitgdg8br23svd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "78664aca759d1a793f1f9fc7a808e5daf3fbf860"
+          }
+        },
+        {
+          "client_id": "5144099869-6kes2gchrinle0io7dl8c12f83rgfso6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBepeUQJpu0wPI0Y_G3NadXsf8_UJmwM1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5144099869-6kes2gchrinle0io7dl8c12f83rgfso6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

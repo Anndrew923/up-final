@@ -16,10 +16,15 @@
     "firebase:emulators": "firebase emulators:start --only auth,functions,firestore",
     "functions:test": "npm test --prefix functions",
     "cap:sync": "npm run build && npx cap sync android",
-    "cap:open": "npx cap open android"
+    "cap:open": "npx cap open android",
+    "android:signing-report": "cd android && ./gradlew signingReport",
+    "android:assemble-debug": "cd android && ./gradlew assembleDebug",
+    "android:apk:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
+    "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor/core": "^8.3.1",
+    "@capacitor/haptics": "^8.0.0",
     "@revenuecat/purchases-capacitor": "^13.0.1",
     "firebase": "^11.10.0",
     "framer-motion": "^12.38.0",

@@ -37,7 +37,7 @@ describe('resolveOverallGradeTierCopy', () => {
     const copy = resolveOverallGradeTierCopy(i18n.t.bind(i18n), 'TIER_90');
     const rows = buildOverallGradeDetailRows(i18n.t.bind(i18n), 'TIER_90', copy);
     expect(rows).toHaveLength(2);
-    expect(rows[0]?.label).toContain('載具');
+    expect(rows[0]?.label).toContain('車款');
     expect(rows[0]?.value).toContain('718 Cayman');
     expect(rows[1]?.label).toContain('身價');
     expect(rows[1]?.value).toContain('600 萬');

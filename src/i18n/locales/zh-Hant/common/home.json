@@ -127,7 +127,7 @@
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE // 賽會認證評等",
       "viewDetailHint": "點擊查看賽會認證詳情描述",
-      "carSpecLabel": "載具對標",
+      "carSpecLabel": "參考車款",
       "priceLabel": "參考身價",
       "BASE": {
         "name": "STOCK COMMUTER 原廠常規街車",

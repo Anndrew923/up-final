@@ -2,8 +2,9 @@ import { useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
-import { signInAnonymouslyWeb, signInWithGoogleWeb } from '../services/firebaseClient';
 import { markAuthOnboardingCompleted } from '../services/authOnboardingService';
+import { waitForAnonymousAuthSession } from '../services/authSessionWait';
+import { signInAnonymouslyWeb, signInWithGoogleWeb } from '../services/firebaseClient';
 
 const AuthChoicePage: FC = () => {
   const { t } = useTranslation('common');
@@ -47,6 +48,7 @@ const AuthChoicePage: FC = () => {
     setBusy('guest');
     try {
       await signInAnonymouslyWeb();
+      await waitForAnonymousAuthSession();
       completeFlow();
     } catch {
       setError(true);

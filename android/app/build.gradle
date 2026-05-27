@@ -4,7 +4,7 @@ android {
     namespace = "com.ultimatephysique.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.ultimatephysique.app"
+        applicationId "com.ultimatephysique.fitness2025"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

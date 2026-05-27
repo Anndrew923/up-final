@@ -1,29 +1,39 @@
 import { useCallback } from 'react';
-
-function safeVibrate(pattern: number | number[]): void {
-  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
-  navigator.vibrate(pattern);
-}
+import { hapticService, type HapticPreset } from '../services/hapticService';
 
 export function useDopamineFeedback() {
+  const triggerHaptic = useCallback((preset: HapticPreset) => {
+    void hapticService.trigger(preset);
+  }, []);
+
   const triggerImpact = useCallback((strength: 'light' | 'medium' | 'heavy' = 'medium') => {
-    if (strength === 'light') {
-      safeVibrate(12);
-      return;
-    }
-    if (strength === 'heavy') {
-      safeVibrate([26, 30, 44]);
-      return;
-    }
-    safeVibrate(20);
+    const preset: HapticPreset =
+      strength === 'light' ? 'ack' : strength === 'heavy' ? 'climax' : 'milestone';
+    void hapticService.trigger(preset);
+  }, []);
+
+  const triggerLight = useCallback(() => {
+    void hapticService.trigger('ack');
+  }, []);
+
+  const triggerMedium = useCallback(() => {
+    void hapticService.trigger('milestone');
+  }, []);
+
+  const triggerHeavy = useCallback(() => {
+    void hapticService.trigger('climax');
   }, []);
 
   const triggerRankUpCombo = useCallback(() => {
-    safeVibrate([24, 42, 54]);
+    void hapticService.triggerRankUpCombo();
   }, []);
 
   return {
+    triggerHaptic,
     triggerImpact,
+    triggerLight,
+    triggerMedium,
+    triggerHeavy,
     triggerRankUpCombo,
   };
 }

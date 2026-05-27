@@ -44,7 +44,13 @@ export default defineConfig({
           ) {
             return 'vendor-react';
           }
-          if (id.includes('@revenuecat') || id.includes('@capacitor')) return 'vendor-native';
+          if (
+            id.includes('@revenuecat') ||
+            id.includes('@capacitor') ||
+            id.includes('@capacitor-firebase')
+          ) {
+            return 'vendor-native';
+          }
           return 'vendor-misc';
         },
       },

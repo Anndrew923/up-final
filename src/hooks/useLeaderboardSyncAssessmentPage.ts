@@ -11,6 +11,7 @@ import {
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { ROUTES } from '../config/routes';
+import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
@@ -126,6 +127,9 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         },
       });
       setSummaryState({ signature: targetsSignature, summary: batch.summary });
+      if (batch.summary.updated > 0) {
+        void hapticService.trigger('success');
+      }
       queueStructuredProfileAfterRadarSubmit();
       onFinishedRef.current?.();
     } finally {
