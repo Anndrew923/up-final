@@ -44,7 +44,10 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   }, [isSyncing, onSyncToDashboard, syncDisabled]);
 
   useEffect(() => {
-    if (!open) setSyncPending(false);
+    if (!open) {
+      const id = window.setTimeout(() => setSyncPending(false), 0);
+      return () => window.clearTimeout(id);
+    }
   }, [open]);
 
   useEffect(() => {

@@ -61,6 +61,11 @@ export function isRevenueCatConfiguredFromEnv(): boolean {
   return Boolean(resolveApiKey());
 }
 
+/** Store billing via `@revenuecat/purchases-capacitor` — iOS/Android only (not browser). */
+export function isRevenueCatNativeBillingAvailable(): boolean {
+  return isRevenueCatConfiguredFromEnv() && Capacitor.isNativePlatform();
+}
+
 export async function ensureRevenueCatConfigured(appUserId: string): Promise<boolean> {
   if (!isRevenueCatConfiguredFromEnv()) return false;
   if (!Capacitor.isNativePlatform()) return false;

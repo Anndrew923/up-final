@@ -27,6 +27,15 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore';
+import { connectAuthEmulator } from 'firebase/auth';
+import { connectFirestoreEmulator } from 'firebase/firestore';
+import { connectFunctionsEmulator, getFunctions, type Functions } from 'firebase/functions';
+import { getLadderFunctionsRegion } from '../config/ladderCallable';
+import {
+  FIREBASE_EMULATOR_HOST,
+  FIREBASE_EMULATOR_PORTS,
+  isFirebaseEmulatorEnabled,
+} from '../config/firebaseEmulator';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -42,6 +51,8 @@ function trimEnv(value: string | undefined): string {
 let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
+let firebaseFunctions: Functions | null = null;
+let emulatorsConnected = false;
 
 /**
  * When proxies / HTTP2 / QUIC / extensions break the default WebChannel Listen stream, Firestore
@@ -108,6 +119,34 @@ export function initFirebase(config: FirebaseConfig): void {
   firebaseApp = getApps().length ? getApp() : initializeApp(opts);
   firestoreDb = initFirestoreForApp(firebaseApp);
   firebaseAuth = getAuth(firebaseApp);
+  firebaseFunctions = getFunctions(firebaseApp, getLadderFunctionsRegion());
+  connectFirebaseEmulatorsIfEnabled();
+}
+
+function connectFirebaseEmulatorsIfEnabled(): void {
+  if (!isFirebaseEmulatorEnabled() || emulatorsConnected) return;
+  if (!firebaseAuth || !firestoreDb || !firebaseFunctions) return;
+
+  connectAuthEmulator(
+    firebaseAuth,
+    `http://${FIREBASE_EMULATOR_HOST}:${FIREBASE_EMULATOR_PORTS.auth}`,
+    { disableWarnings: true }
+  );
+  connectFirestoreEmulator(
+    firestoreDb,
+    FIREBASE_EMULATOR_HOST,
+    FIREBASE_EMULATOR_PORTS.firestore
+  );
+  connectFunctionsEmulator(
+    firebaseFunctions,
+    FIREBASE_EMULATOR_HOST,
+    FIREBASE_EMULATOR_PORTS.functions
+  );
+  emulatorsConnected = true;
+
+  if (import.meta.env.DEV) {
+    console.warn('[firebase] Connected to local emulators', FIREBASE_EMULATOR_PORTS);
+  }
 }
 
 export function getFirebaseApp(): FirebaseApp | null {
@@ -116,6 +155,10 @@ export function getFirebaseApp(): FirebaseApp | null {
 
 export function getFirestoreDb(): Firestore | null {
   return firestoreDb;
+}
+
+export function getFirebaseFunctions(): Functions | null {
+  return firebaseFunctions;
 }
 
 /** Prefer this over `Boolean(getFirestoreDb())` when only checking configuration (no tree-shaking concerns). */

@@ -25,7 +25,7 @@ export interface CodexBandRowModel {
 }
 
 export function useCodexBandRows(activeTab: CodexTab, scores: VehicleCodexScores) {
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
 
   const rows = useMemo((): CodexBandRowModel[] => {
     const isOverall = activeTab === 'overall';
@@ -61,7 +61,7 @@ export function useCodexBandRows(activeTab: CodexTab, scores: VehicleCodexScores
         isActive: band.id === activeBandId,
       };
     });
-  }, [activeTab, scores, t, i18n.language]);
+  }, [activeTab, scores, t]);
 
   return rows;
 }

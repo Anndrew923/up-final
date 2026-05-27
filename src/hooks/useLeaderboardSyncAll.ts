@@ -9,7 +9,12 @@ import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { ROUTES } from '../config/routes';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
+import {
+  checkFullSyncAllowed,
+  recordFullSyncAllowed,
+} from '../services/fullSyncRateLimitService';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
+import type { FullSyncRateLimitCheck } from '../logic/core/fullSyncRateLimit';
 import {
   loadCardioInputs,
   loadMuscleInputs,
@@ -81,13 +86,32 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   }, [targets]);
 
   const [busy, setBusy] = useState(false);
+  const [fullSyncBlock, setFullSyncBlock] = useState<FullSyncRateLimitCheck | null>(null);
   const [summaryState, setSummaryState] = useState<{
     signature: string;
     summary: LeaderboardSyncRunSummary;
   } | null>(null);
 
-  const clearFeedback = useCallback(() => setSummaryState(null), []);
+  const clearFeedback = useCallback(() => {
+    setSummaryState(null);
+  }, []);
+
+  const refreshFullSyncBlock = useCallback((uid: string) => {
+    const check = checkFullSyncAllowed(uid);
+    setFullSyncBlock(check.allowed ? null : check);
+  }, []);
   const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
+
+  const uid = useAuthStore((s) => s.uid);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+
+  useEffect(() => {
+    if (!uid || isAnonymous || gate !== 'ok') {
+      setFullSyncBlock(null);
+      return;
+    }
+    refreshFullSyncBlock(uid);
+  }, [uid, isAnonymous, gate, refreshFullSyncBlock]);
 
   const goJoinArena = useCallback(() => {
     navigate(ROUTES.joinArena);
@@ -100,6 +124,12 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
+    const fullSyncGate = checkFullSyncAllowed(user.uid);
+    if (!fullSyncGate.allowed) {
+      setFullSyncBlock(fullSyncGate);
+      return;
+    }
+
     const displayName = useAuthStore.getState().displayName?.trim() || 'Pilot';
     const snap = buildEntitlementSnapshot();
 
@@ -107,28 +137,46 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLeaderboardIdentityPayload();
-      const tally = await runLeaderboardBatchUpload({
+      const batch = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,
         displayName,
         entitlement: snap,
+        fullSync: true,
         previewSnapshot: {
           mergedScores: merged,
           profile: ladderProfile,
           avatarUrl: identity.avatarUrl,
         },
       });
+
+      if (batch.fullSyncBlock) {
+        setFullSyncBlock({
+          allowed: false,
+          reason: batch.fullSyncBlock.reason,
+          nextAllowedAt: batch.fullSyncBlock.nextAllowedAt,
+          remainingToday: 0,
+        });
+        return;
+      }
+
+      const tally = batch.summary;
+      if (tally.updated > 0) {
+        recordFullSyncAllowed(user.uid);
+        refreshFullSyncBlock(user.uid);
+      }
       setSummaryState({ signature: targetsSignature, summary: tally });
       onFinishedRef.current?.();
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature, merged]);
+  }, [targets, gate, targetsSignature, merged, refreshFullSyncBlock]);
 
   return {
     syncAll,
     busy,
     summary,
+    fullSyncBlock,
     gate,
     targetCount: targets.length,
     goJoinArena,

@@ -98,7 +98,9 @@
       "noTargets": "No scores ready — complete assessments or save to radar first.",
       "button": "Sync to Ladder",
       "busy": "Syncing…",
-      "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors."
+      "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors.",
+      "fullSyncCooldown": "Full sync is on cooldown. Try again after {{resetTime}}.",
+      "fullSyncDailyCap": "Daily full sync limit reached (3 per day). Use per-page uploads, or try again after {{resetTime}}."
     },
     "assessmentSync": {
       "hint": "Upload all eligible shards for this page in one run.",

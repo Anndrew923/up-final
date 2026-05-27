@@ -15,6 +15,7 @@ export function useAuthSessionBootstrap(): void {
   const setSignedOut = useAuthStore((s) => s.setSignedOut);
   const setFromUser = useAuthStore((s) => s.setFromUser);
   const refreshEntitlement = useEntitlementStore((s) => s.refreshEntitlement);
+  const bindEntitlementSession = useEntitlementStore((s) => s.bindEntitlementSession);
 
   useEffect(() => {
     // WHY: React StrictMode remounts this effect; resetting signed-in → loading flashes AppShell on deep routes (/muscle, etc.).
@@ -37,10 +38,11 @@ export function useAuthSessionBootstrap(): void {
             return;
           }
           setSignedOut();
-          void refreshEntitlement();
+          bindEntitlementSession(null);
           return;
         }
         setFromUser(user);
+        bindEntitlementSession(user.uid);
         void refreshEntitlement();
       });
     })();
@@ -49,5 +51,5 @@ export function useAuthSessionBootstrap(): void {
       isDisposed = true;
       unsubscribe?.();
     };
-  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement]);
+  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement, bindEntitlementSession]);
 }

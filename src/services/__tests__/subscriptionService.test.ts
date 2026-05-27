@@ -1,9 +1,34 @@
-import { describe, expect, it } from 'vitest';
-import { useAuthStore } from '../../stores/authStore';
-import { useEntitlementStore } from '../../stores/entitlementStore';
-import { purchaseProSubscription, restorePurchasesFromDevice } from '../subscriptionService';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const memory = new Map<string, string>();
+
+vi.mock('../../lib/safeLocalStorage', () => ({
+  safeGetItem: (key: string) => memory.get(key) ?? null,
+  safeSetItem: (key: string, value: string) => {
+    memory.set(key, value);
+  },
+  safeRemoveItem: (key: string) => {
+    memory.delete(key);
+  },
+}));
+
+const { useAuthStore } = await import('../../stores/authStore');
+const { useEntitlementStore } = await import('../../stores/entitlementStore');
+const { loadPersistedEntitlement } = await import('../entitlementPersistenceService');
+const { purchaseProSubscription, restorePurchasesFromDevice } =
+  await import('../subscriptionService');
 
 describe('subscription service', () => {
+  beforeEach(() => {
+    memory.clear();
+  });
+
+  afterEach(() => {
+    memory.clear();
+    useEntitlementStore.getState().resetEntitlement();
+    useAuthStore.getState().setSignedOut();
+  });
+
   it('requires core entitlement before purchase', async () => {
     useEntitlementStore.getState().resetEntitlement();
     useAuthStore.setState({
@@ -55,10 +80,16 @@ describe('subscription service', () => {
       photoURL: null,
       isAnonymous: false,
     });
+    useEntitlementStore.getState().bindEntitlementSession('tester');
 
     const result = await purchaseProSubscription();
     expect(result.ok).toBe(true);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+
+    const persisted = loadPersistedEntitlement('tester');
+    expect(persisted?.isPro).toBe(true);
+    expect(persisted?.subscriptionStatus).toBe('pro');
   });
 
   it('returns empty restore result when no provider and no snapshot', async () => {

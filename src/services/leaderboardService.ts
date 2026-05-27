@@ -47,7 +47,9 @@ import {
   LEADERBOARDS_COLLECTION,
   LEADERBOARD_PREVIEWS_COLLECTION,
 } from './firestorePaths';
+import { isLadderCallableWritesEnabled } from '../config/ladderCallable';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../logic/core/ladderUploadPolicy';
+import { callLadderSubmitShard, callLadderSyncPreview } from './ladderCallableService';
 import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
 import {
   clearLeaderboardCache,
@@ -669,6 +671,23 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
   const av = sanitizeAvatarUrlForLeaderboard(avatarUrl ?? identity.avatarUrl);
 
   const db = getFirestoreDb();
+  if (db && resolved.backend === 'firestore' && isLadderCallableWritesEnabled()) {
+    try {
+      const callable = await callLadderSyncPreview({
+        displayName: dn,
+        mergedScores,
+        avatarUrl: av,
+        profile: profileProjection,
+      });
+      if (callable) return callable;
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] ladderSyncPreview callable error', err);
+      }
+      return { ok: false, reason: 'unknown' };
+    }
+  }
+
   if (!db || resolved.backend === 'memory') {
     applyMemoryPreviewFullSixAxis({
       uid: resolved.uid,
@@ -789,6 +808,42 @@ export async function submitLeaderboardScore(params: {
   const db = getFirestoreDb();
 
   if (db && resolved.backend === 'firestore') {
+    if (isLadderCallableWritesEnabled()) {
+      try {
+        const callableResult = await callLadderSubmitShard({
+          input: { ...mergedForWrite, uid },
+          options,
+        });
+        if (callableResult) {
+          if (callableResult.updated) {
+            clearLeaderboardCache(mergedForWrite.metric);
+          }
+          return callableResult;
+        }
+        if (import.meta.env.DEV) {
+          console.warn('[leaderboard] ladderSubmitShard callable unavailable');
+        }
+        return {
+          ok: false,
+          reason: 'unknown',
+          updated: false,
+          previousScore: null,
+          submittedScore: null,
+        };
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.warn('[leaderboard] ladderSubmitShard callable error', err);
+        }
+        return {
+          ok: false,
+          reason: 'unknown',
+          updated: false,
+          previousScore: null,
+          submittedScore: null,
+        };
+      }
+    }
+
     try {
       const ref = doc(
         db,

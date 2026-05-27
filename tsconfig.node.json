@@ -8,5 +8,12 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "tailwind.config.ts", "postcss.config.js", "eslint.config.js"]
+  "include": [
+    "vite.config.ts",
+    "vite/i18nLocaleHmr.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    "eslint.config.js",
+    "capacitor.config.ts"
+  ]
 }

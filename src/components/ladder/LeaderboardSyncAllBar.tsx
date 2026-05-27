@@ -2,6 +2,7 @@ import { type FC, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
@@ -23,16 +24,18 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   className,
   showSectionTitle = false,
 }) => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
-  const { syncAll, busy, summary, gate, targetCount, goJoinArena, clearFeedback } =
+  const { syncAll, busy, summary, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAll({
       onFinished,
     });
 
-  const disabled = busy || targetCount === 0;
+  const fullSyncBlocked = Boolean(fullSyncBlock && !fullSyncBlock.allowed);
+  const disabled = busy || targetCount === 0 || fullSyncBlocked;
   const gateSheetCopy = useMemo(() => {
     if (gate === 'signed-out' || gate === 'anonymous') {
       return {
@@ -54,6 +57,18 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   }, [gate, t]);
 
   const quotaModalBody = t('ladder.syncAll.advancedTip', { limit: LEADERBOARD_UPLOADS_PER_HOUR });
+
+  const fullSyncBlockText = useMemo(() => {
+    if (!fullSyncBlock || fullSyncBlock.allowed) return null;
+    const resetTime = formatRateLimitResetAt(fullSyncBlock.nextAllowedAt, locale);
+    if (fullSyncBlock.reason === 'full-sync-cooldown') {
+      return t('ladder.syncAll.fullSyncCooldown', { resetTime });
+    }
+    if (fullSyncBlock.reason === 'full-sync-daily-cap') {
+      return t('ladder.syncAll.fullSyncDailyCap', { resetTime });
+    }
+    return null;
+  }, [fullSyncBlock, locale, t]);
 
   return (
     <div
@@ -125,6 +140,12 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
             navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
           }}
         />
+      ) : null}
+
+      {fullSyncBlockText ? (
+        <p className="text-sm text-amber-300/90" role="status">
+          {fullSyncBlockText}
+        </p>
       ) : null}
 
       {summary && summary.attempted > 0 ? (

@@ -22,5 +22,19 @@ describe('ladder upload i18n', () => {
     const unchanged = i18n.t('ladder.upload.resultUnchanged', { ns: 'common' });
     expect(unchanged).not.toBe('ladder.upload.resultUnchanged');
     expect(unchanged.length).toBeGreaterThan(4);
+
+    const cooldown = i18n.t('ladder.syncAll.fullSyncCooldown', {
+      ns: 'common',
+      resetTime: '12:00',
+    });
+    expect(cooldown).not.toBe('ladder.syncAll.fullSyncCooldown');
+    expect(cooldown).toContain('12:00');
+
+    const dailyCap = i18n.t('ladder.syncAll.fullSyncDailyCap', {
+      ns: 'common',
+      resetTime: '00:00',
+    });
+    expect(dailyCap).not.toBe('ladder.syncAll.fullSyncDailyCap');
+    expect(dailyCap.length).toBeGreaterThan(8);
   });
 });

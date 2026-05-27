@@ -1,6 +1,7 @@
 /**
  * Central feature flags for monetization rollouts.
- * Keep leaderboard paywall off during migration, then switch to true when billing is ready.
+ * Phase 1 (RC + entitlement): keep `leaderboardPaywallEnabled` false for flow validation.
+ * Phase 2: set true + enable Functions `LEADERBOARD_PAYWALL_ENABLED` for server/client parity.
  */
 export const MONETIZATION_CONFIG = {
   leaderboardPaywallEnabled: false,

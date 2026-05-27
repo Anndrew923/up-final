@@ -1,1 +1,1 @@
-{"root":["./vite.config.ts","./tailwind.config.ts"],"version":"5.9.3"}
+{"root":["./vite.config.ts","./vite/i18nlocalehmr.ts","./tailwind.config.ts","./capacitor.config.ts"],"version":"5.9.3"}

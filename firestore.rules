@@ -135,47 +135,22 @@ service cloud.firestore {
       allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // leaderboards：leaderboards/{metric}/entries/{uid}（metric = 主軸或細項分片 id，見 up-final `ladderShards.ts`）
+    // leaderboards：leaderboards/{metric}/entries/{uid}
+    // P2: client writes denied — use Callable `ladderSubmitShard` / `ladderSyncBatch` (Admin SDK).
     match /leaderboards/{metric}/entries/{uid} {
-      function leaderboardMetricIdOk(m) {
-        return m is string && m.matches('^[a-zA-Z][a-zA-Z0-9_]{0,63}$');
-      }
-      function leaderboardAvatarOk() {
-        return !request.resource.data.keys().hasAny(['avatarUrl'])
-          || (request.resource.data.avatarUrl is string
-            && request.resource.data.avatarUrl.size() <= 250000);
-      }
-      function leaderboardDisplayRawOk() {
-        return !request.resource.data.keys().hasAny(['displayRaw', 'displayRawUnit'])
-          || (request.resource.data.keys().hasAll(['displayRaw', 'displayRawUnit'])
-            && request.resource.data.displayRaw is number
-            && request.resource.data.displayRawUnit is string
-            && request.resource.data.displayRawUnit.size() > 0
-            && request.resource.data.displayRawUnit.size() <= 24);
-      }
       allow read: if signedIn();
-      allow create, update: if signedIn()
-        && request.auth.uid == uid
-        && leaderboardMetricIdOk(metric)
-        // 必須用 `request.resource.data`（Map）；`request.resource` 為 Resource，無 `.keys()`，會導致條件失敗而整筆拒絕。
-        && request.resource.data.keys().hasAll(['displayName', 'scoreBest', 'updatedAt'])
-        && request.resource.data.scoreBest is number
-        && request.resource.data.displayName is string
-        && leaderboardAvatarOk()
-        && leaderboardDisplayRawOk();
-      allow delete: if signedIn() && request.auth.uid == uid;
+      allow create, update, delete: if false;
     }
 
-    // leaderboards preview cache: leaderboard_previews/{uid}
-    // 點擊排行榜用戶時只讀這份摘要（1 doc）以控制成本。
+    // leaderboard_previews/{uid} — P2: writes via Callable `ladderSyncPreview` / batch preview only.
     match /leaderboard_previews/{uid} {
       allow read: if signedIn();
-      allow create, update: if signedIn()
-        && request.auth.uid == uid
-        && request.resource.data.keys().hasAll(['displayName', 'updatedAt'])
-        && request.resource.data.displayName is string
-        && request.resource.data.updatedAt is string;
-      allow delete: if signedIn() && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+
+    // Server-side ladder quotas (per-shard hourly + full-sync daily); Admin SDK only.
+    match /ladder_rate_limits/{uid} {
+      allow read, write: if false;
     }
 
     // history：僅本人可 CRUD

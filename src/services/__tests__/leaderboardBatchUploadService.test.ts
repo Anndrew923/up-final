@@ -29,8 +29,8 @@ describe('runLeaderboardBatchUpload', () => {
       targets,
       delayMs: 0,
     });
-    expect(first.updated).toBe(2);
-    expect(first.unchanged).toBe(0);
+    expect(first.summary.updated).toBe(2);
+    expect(first.summary.unchanged).toBe(0);
 
     const second = await runLeaderboardBatchUpload({
       entitlement,
@@ -39,9 +39,9 @@ describe('runLeaderboardBatchUpload', () => {
       targets,
       delayMs: 0,
     });
-    expect(second.attempted).toBe(2);
-    expect(second.updated).toBe(0);
-    expect(second.unchanged).toBe(2);
-    expect(second.errors).toBe(0);
+    expect(second.summary.attempted).toBe(2);
+    expect(second.summary.updated).toBe(0);
+    expect(second.summary.unchanged).toBe(2);
+    expect(second.summary.errors).toBe(0);
   });
 });

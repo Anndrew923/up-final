@@ -1,19 +1,27 @@
 import { create } from 'zustand';
 import { hasProAccess } from '../logic/core/entitlement';
-import { useAuthStore } from './authStore';
 import {
   loadPersistedEntitlement,
   savePersistedEntitlement,
 } from '../services/entitlementPersistenceService';
 import {
   fetchRevenueCatEntitlement,
-  isRevenueCatConfiguredFromEnv,
+  isRevenueCatNativeBillingAvailable,
   logInRevenueCatUser,
+  type RevenueCatEntitlementSnapshot,
 } from '../services/revenueCatService';
+import { useAuthStore } from './authStore';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
 export interface EntitlementStore extends EntitlementState {
   hydrateEntitlement(payload: Partial<EntitlementState>): void;
+  /** Single path for RevenueCat purchase / restore / refresh outcomes. */
+  applyRevenueCatEntitlement(snapshot: RevenueCatEntitlementSnapshot): void;
+  /**
+   * Bind entitlement cache to the signed-in Firebase uid (or clear Pro on sign-out).
+   * WHY: Prevent prior user's Pro snapshot leaking to the next account on shared localStorage.
+   */
+  bindEntitlementSession(uid: string | null): void;
   setPurchaseStatus(status: PurchaseStatus): void;
   setSubscriptionStatus(status: SubscriptionStatus): void;
   setProExpiry(iso: string | null): void;
@@ -30,13 +38,20 @@ const defaultState: EntitlementState = {
   lastCheckedAt: null,
 };
 
+/** Tracks which uid the in-memory subscription cache belongs to. */
+let boundSessionUid: string | null = null;
+
+function normalizeEntitlementState(state: EntitlementState): EntitlementState {
+  return syncProFlag(normalizeGraceExpiry(state));
+}
+
 function buildInitialEntitlement(): EntitlementState {
   const persisted = loadPersistedEntitlement();
   const merged: EntitlementState = {
     ...defaultState,
     ...(persisted ?? {}),
   };
-  return syncProFlag(normalizeGraceExpiry(merged));
+  return normalizeEntitlementState(merged);
 }
 
 /** Align `isPro` with core `hasProAccess` (grace requires valid `proExpiresAt`). */
@@ -52,88 +67,124 @@ function normalizeGraceExpiry(state: EntitlementState): EntitlementState {
   return { ...state, subscriptionStatus: 'expired' };
 }
 
+function snapshotToEntitlementPatch(
+  snapshot: RevenueCatEntitlementSnapshot
+): Partial<EntitlementState> {
+  return {
+    subscriptionStatus: snapshot.active ? 'pro' : 'free',
+    planId: snapshot.active ? (snapshot.productIdentifier ?? 'pro_monthly_099') : null,
+    proExpiresAt: snapshot.active ? snapshot.expiresDate : null,
+    lastCheckedAt: new Date().toISOString(),
+  };
+}
+
+function clearProSubscriptionFields(state: EntitlementState): EntitlementState {
+  return normalizeEntitlementState({
+    ...state,
+    subscriptionStatus: 'free',
+    proExpiresAt: null,
+    planId: null,
+  });
+}
+
 export const useEntitlementStore = create<EntitlementStore>((set) => ({
   ...buildInitialEntitlement(),
   hydrateEntitlement(payload) {
-    set((state) => {
-      const merged: EntitlementState = {
+    set((state) =>
+      normalizeEntitlementState({
         ...state,
         ...payload,
         subscriptionStatus: payload.subscriptionStatus ?? state.subscriptionStatus,
-      };
-      return syncProFlag(normalizeGraceExpiry(merged));
+      })
+    );
+  },
+  applyRevenueCatEntitlement(snapshot) {
+    set((state) =>
+      normalizeEntitlementState({
+        ...state,
+        ...snapshotToEntitlementPatch(snapshot),
+      })
+    );
+  },
+  bindEntitlementSession(uid) {
+    if (uid === boundSessionUid) return;
+    boundSessionUid = uid;
+
+    if (!uid) {
+      set((state) => clearProSubscriptionFields(state));
+      return;
+    }
+
+    const cached = loadPersistedEntitlement(uid);
+    set((state) => {
+      if (cached) {
+        return normalizeEntitlementState({
+          ...state,
+          purchaseStatus: cached.purchaseStatus ?? state.purchaseStatus,
+          subscriptionStatus: cached.subscriptionStatus,
+          proExpiresAt: cached.proExpiresAt,
+          planId: cached.planId,
+        });
+      }
+      return clearProSubscriptionFields(state);
     });
   },
   setPurchaseStatus(status) {
     set((state) =>
-      syncProFlag(
-        normalizeGraceExpiry({
-          ...state,
-          purchaseStatus: status,
-          lastCheckedAt: new Date().toISOString(),
-        })
-      )
+      normalizeEntitlementState({
+        ...state,
+        purchaseStatus: status,
+        lastCheckedAt: new Date().toISOString(),
+      })
     );
   },
   setSubscriptionStatus(status) {
     set((state) =>
-      syncProFlag(
-        normalizeGraceExpiry({
-          ...state,
-          subscriptionStatus: status,
-          lastCheckedAt: new Date().toISOString(),
-        })
-      )
+      normalizeEntitlementState({
+        ...state,
+        subscriptionStatus: status,
+        lastCheckedAt: new Date().toISOString(),
+      })
     );
   },
   setProExpiry(iso) {
     set((state) =>
-      syncProFlag(
-        normalizeGraceExpiry({
-          ...state,
-          proExpiresAt: iso,
-          lastCheckedAt: new Date().toISOString(),
-        })
-      )
+      normalizeEntitlementState({
+        ...state,
+        proExpiresAt: iso,
+        lastCheckedAt: new Date().toISOString(),
+      })
     );
   },
   async refreshEntitlement() {
     const userId = useAuthStore.getState().uid;
-    if (userId && isRevenueCatConfiguredFromEnv()) {
+    if (userId && isRevenueCatNativeBillingAvailable()) {
       try {
         await logInRevenueCatUser(userId);
         const snapshot = await fetchRevenueCatEntitlement(userId);
         if (snapshot) {
-          set((state) =>
-            syncProFlag(
-              normalizeGraceExpiry({
-                ...state,
-                subscriptionStatus: snapshot.active ? 'pro' : 'free',
-                planId: snapshot.active ? 'pro_monthly_099' : null,
-                proExpiresAt: snapshot.active ? snapshot.expiresDate : null,
-              })
-            )
-          );
+          useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
           return;
         }
       } catch {
-        // Keep local state as fallback if provider sync fails.
+        // Keep uid-scoped local cache if provider sync fails.
       }
     }
     set((state) =>
-      syncProFlag(
-        normalizeGraceExpiry({
-          ...state,
-          lastCheckedAt: new Date().toISOString(),
-        })
-      )
+      normalizeEntitlementState({
+        ...state,
+        lastCheckedAt: new Date().toISOString(),
+      })
     );
   },
   resetEntitlement() {
-    set(syncProFlag(normalizeGraceExpiry({ ...defaultState })));
+    boundSessionUid = null;
+    set(normalizeEntitlementState({ ...defaultState }));
   },
 }));
 
 useEntitlementStore.subscribe((state) => {
-  savePersistedEntitlement(state);
+  const uid = useAuthStore.getState().uid;
+  if (!uid) return;
+  savePersistedEntitlement(state, uid);
 });

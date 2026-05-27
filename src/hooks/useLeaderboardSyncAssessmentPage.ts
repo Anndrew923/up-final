@@ -114,7 +114,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLeaderboardIdentityPayload();
-      const tally = await runLeaderboardBatchUpload({
+      const batch = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,
         displayName,
@@ -125,7 +125,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
           avatarUrl: identity.avatarUrl,
         },
       });
-      setSummaryState({ signature: targetsSignature, summary: tally });
+      setSummaryState({ signature: targetsSignature, summary: batch.summary });
       queueStructuredProfileAfterRadarSubmit();
       onFinishedRef.current?.();
     } finally {

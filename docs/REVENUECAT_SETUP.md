@@ -6,6 +6,8 @@ This project currently keeps leaderboard access open while migration is in progr
 
 RevenueCat integration is already wired in code and ready to activate when you switch paywall on.
 
+**Native Android shell**: see `docs/CAPACITOR_ANDROID.md` (Firebase `google-services.json`, Gradle, SHA-1, `cap:sync` / `cap:open`).
+
 ## What is already implemented
 
 - Runtime adapter: `src/services/revenueCatService.ts`
@@ -33,9 +35,10 @@ RevenueCat integration is already wired in code and ready to activate when you s
      - `VITE_RC_PACKAGE_ID` (if not `$rc_monthly`)
 
 4. **Native sync**
-   - Run Capacitor sync after dependency/env updates:
-     - `npx cap sync ios`
-     - `npx cap sync android`
+   - After dependency/env updates, from repo root:
+     - `npm run cap:sync` (runs `npm run build` then `npx cap sync android`)
+     - or manually: `npx cap sync android`
+   - Open Android Studio: `npm run cap:open`
 
 5. **Sandbox test users**
    - Apple sandbox tester account

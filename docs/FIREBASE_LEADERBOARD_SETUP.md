@@ -58,9 +58,19 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 **四個都要填**，存檔後 **重啟 `npm run dev`**（Vite 只會在啟動時讀 env）。
 
-### 5. 部署 Security Rules（必須與 repo 一致或包含同等條款）
+### 5. P2：天梯寫入 Callable + 規則（2026）
 
-本倉庫規則檔為根目錄 **`firestore.rules`**（`leaderboards/.../entries` 讀寫條件已定義）。
+天梯 **寫入** 已改由 Cloud Functions（`ladderSubmitShard`、`ladderSyncBatch`、`ladderSyncPreview`）。客戶端直寫 `leaderboards/*` / `leaderboard_previews/*` 在規則上已 **拒絕**。
+
+1. `cd functions && npm install && cd ..`
+2. `npm run firebase:deploy:ladder-p2`
+3. `.env` 設 `VITE_LADDER_CALLABLE_WRITES=true` 後重啟 dev / 重建正式版
+
+詳見 **`docs/LADDER_UPLOAD_P2.md`**。
+
+### 6. 部署 Security Rules（必須與 repo 一致或包含同等條款）
+
+本倉庫規則檔為根目錄 **`firestore.rules`**（P2：榜單 entries / previews **僅讀**；寫入走 Callable）。
 
 **擇一即可：**
 
@@ -76,7 +86,7 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
   2. 將本 repo **`firestore.rules` 全文** 合併進現有規則（若專案內已有其他 `match`，勿覆蓋刪除，應合併邏輯）。
   3. **Publish**。
 
-### 6. 索引（多數情況不必手動）
+### 7. 索引（多數情況不必手動）
 
 若瀏覽器或 DevTools 出現 Firestore **`FAILED_PRECONDITION`** 並附 **建立索引的 URL**，直接點連結在 Console 建立即可。
 
@@ -89,7 +99,8 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 | 項目                                 | 說明                                                             |
 | ------------------------------------ | ---------------------------------------------------------------- |
 | `firebase.json`                      | 指向 `firestore.rules` 與 `firestore.indexes.json`               |
-| `firestore.rules`                    | `leaderboards/{metric}/entries/{uid}` 讀寫條件                   |
+| `firestore.rules`                    | P2：榜單 entries / previews 客戶端唯讀；`ladder_rate_limits` 僅後端 |
+| `functions/`                         | `ladderSubmitShard` 等 Callable                                  |
 | `firestore.indexes.json`             | 佔位；可透過 CLI 部署                                            |
 | `src/services/firestorePaths.ts`     | 路徑常數                                                         |
 | `src/main.tsx`                       | 啟動時呼叫 `tryInitFirebaseFromEnv()`                            |

@@ -4,6 +4,7 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 import { loadPersistedEntitlement } from './entitlementPersistenceService';
 import {
   isRevenueCatConfiguredFromEnv,
+  isRevenueCatNativeBillingAvailable,
   logInRevenueCatUser,
   purchaseRevenueCatPro,
   restoreRevenueCatPurchases,
@@ -19,25 +20,18 @@ export type PurchaseProResult =
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-function applyProSnapshot(snapshot: RevenueCatEntitlementSnapshot): void {
-  useEntitlementStore.getState().hydrateEntitlement({
-    subscriptionStatus: snapshot.active ? 'pro' : 'free',
-    planId: snapshot.active ? (snapshot.productIdentifier ?? 'pro_monthly_099') : null,
-    proExpiresAt: snapshot.active ? snapshot.expiresDate : null,
-  });
-}
-
-function applySimulatedProState(): void {
-  useEntitlementStore.getState().hydrateEntitlement({
-    subscriptionStatus: 'pro',
-    planId: 'pro_monthly_099',
-    proExpiresAt: new Date(Date.now() + THIRTY_DAYS_MS).toISOString(),
-  });
+function applySimulatedProSnapshot(): void {
+  const snapshot: RevenueCatEntitlementSnapshot = {
+    active: true,
+    productIdentifier: 'pro_monthly_099',
+    expiresDate: new Date(Date.now() + THIRTY_DAYS_MS).toISOString(),
+  };
+  useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
 }
 
 /**
- * Purchases Pro subscription using RevenueCat when configured.
- * Falls back to local simulation when RC keys are not set yet.
+ * Purchases Pro subscription using RevenueCat when configured on a native build.
+ * Falls back to local simulation when RC keys are unset or on web (Phase 1 flow testing).
  */
 export async function purchaseProSubscription(): Promise<PurchaseProResult> {
   const ent = useEntitlementStore.getState();
@@ -53,8 +47,8 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     return { ok: false, reason: 'auth-required' };
   }
 
-  if (!isRevenueCatConfiguredFromEnv()) {
-    applySimulatedProState();
+  if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
+    applySimulatedProSnapshot();
     return { ok: true };
   }
 
@@ -64,7 +58,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     if (!snapshot) {
       return { ok: false, reason: 'billing-unavailable' };
     }
-    applyProSnapshot(snapshot);
+    useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
   } catch {
     return { ok: false, reason: 'failed' };
   }
@@ -79,18 +73,18 @@ export interface RestorePurchasesResult {
 }
 
 /**
- * Restores purchases from RevenueCat when configured; otherwise uses local snapshot fallback.
+ * Restores purchases from RevenueCat on native when configured; otherwise uses local snapshot.
  */
 export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResult> {
   const userId = useAuthStore.getState().uid;
-  if (userId && isRevenueCatConfiguredFromEnv()) {
+  if (userId && isRevenueCatNativeBillingAvailable()) {
     try {
       await logInRevenueCatUser(userId);
       const snapshot = await restoreRevenueCatPurchases(userId);
       if (!snapshot) {
         return { restored: false, hadSnapshot: false, proActive: false };
       }
-      applyProSnapshot(snapshot);
+      useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
       return {
         restored: true,
         hadSnapshot: true,
@@ -101,7 +95,7 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
     }
   }
 
-  const snapshot = loadPersistedEntitlement();
+  const snapshot = loadPersistedEntitlement(userId);
   if (!snapshot) {
     return { restored: false, hadSnapshot: false, proActive: false };
   }

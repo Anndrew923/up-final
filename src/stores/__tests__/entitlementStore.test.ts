@@ -26,4 +26,32 @@ describe('entitlementStore', () => {
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('grace');
     expect(useEntitlementStore.getState().isPro).toBe(true);
   });
+
+  it('applyRevenueCatEntitlement sets pro and expiry from snapshot', () => {
+    const expires = new Date(Date.now() + 86_400_000).toISOString();
+    useEntitlementStore.getState().applyRevenueCatEntitlement({
+      active: true,
+      productIdentifier: 'rc_monthly_sandbox',
+      expiresDate: expires,
+    });
+
+    const state = useEntitlementStore.getState();
+    expect(state.subscriptionStatus).toBe('pro');
+    expect(state.isPro).toBe(true);
+    expect(state.planId).toBe('rc_monthly_sandbox');
+    expect(state.proExpiresAt).toBe(expires);
+  });
+
+  it('bindEntitlementSession clears pro carryover for a new uid', () => {
+    useEntitlementStore.getState().applyRevenueCatEntitlement({
+      active: true,
+      productIdentifier: 'pro_monthly_099',
+      expiresDate: new Date(Date.now() + 86_400_000).toISOString(),
+    });
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+
+    useEntitlementStore.getState().bindEntitlementSession('new-user');
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+  });
 });

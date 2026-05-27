@@ -10,28 +10,34 @@ P1 (shipped in client) covers UX, cost reduction, and honest feedback. P2 makes 
 - Batch sync: entry writes in loop; **one** `syncLeaderboardPreviewFullSixAxis` when `updated > 0`; `skipPreviewUpdate` per shard.
 - Per-shard rolling cap: `LEADERBOARD_UPLOADS_PER_HOUR` (see `logic/core/ladderUploadPolicy.ts`).
 - Client rate limit: `rateLimitService` (in-memory; resets on full page reload).
+- Full sync-all cooldown: **90 min** + **3 / local day** via `fullSyncRateLimitService` (localStorage; counts only when `updated > 0`).
 
-## P2 scope (recommended order)
+## P2 scope (shipped in repo)
 
-### 1. Callable API
+### 1. Callable API (`functions/`)
 
-- `ladderSubmitShard` — single metric + score.
-- `ladderSyncBatch` — server-built target list or client-sent list with server validation.
-- Admin SDK writes only; return same result shape as `SubmitLeaderboardResult` (+ `unchanged`).
+| Callable | Purpose |
+|----------|---------|
+| `ladderSubmitShard` | Single shard write + per-shard hourly cap |
+| `ladderSyncBatch` | Multi-shard loop; optional `fullSync: true` for 90 min / 3-day cap |
+| `ladderSyncPreview` | Full six-axis `leaderboard_previews/{uid}` |
+
+Enable client path: `VITE_LADDER_CALLABLE_WRITES=true` (after deploy).
 
 ### 2. Firestore rules
 
-- Deny client `create/update` on:
+- Client `create/update/delete` **denied** on:
   - `leaderboards/{metric}/entries/{uid}`
   - `leaderboard_previews/{uid}`
-- Optional: keep client **read** for Pro users with App Check.
+- `ladder_rate_limits/{uid}` — Admin SDK only
+- Signed-in users retain **read** on leaderboard entries + previews
 
 ### 3. Server rate limits (`ladder_rate_limits/{uid}`)
 
 | Bucket | Suggested cap |
 |--------|----------------|
 | Per shard / hour | `LEADERBOARD_UPLOADS_PER_HOUR` (3) — **counted writes only** |
-| Full batch / 6h | 1 global sync (optional, product decision) |
+| Full batch | 90 min cooldown + 3 / local day (mirror client policy in P2) |
 
 Use transactions: check → write entry → increment counter.
 
@@ -53,12 +59,19 @@ Use transactions: check → write entry → increment counter.
 
 - Rename `scoreBest` → public display score field name (schema migration).
 - Leaderboard snapshot aggregation (1 read per shard for all viewers).
-- Global batch cooldown UI (until server enforces it).
+- **Server-side** enforcement of full-sync cooldown (client UI + `fullSyncRateLimitService` already shipped in P1).
 
-## Files to touch in P2
+## Deploy order (production)
 
-- `functions/` (new)
-- `firestore.rules`
-- `src/services/leaderboardService.ts` → call Callable instead of direct `setDoc`
-- `firebase.json` functions config
-- Deploy: `firebase deploy --only functions,firestore:rules`
+1. `cd functions && npm install && cd ..`
+2. `npm run firebase:deploy:ladder-p2` (or `firebase deploy --only functions,firestore:rules`)
+3. Set `VITE_LADDER_CALLABLE_WRITES=true` and rebuild the web app
+4. Optional Functions env: `LEADERBOARD_PAYWALL_ENABLED=true` when billing gate is live
+
+## Files (P2)
+
+- `functions/` — ladder callables + `ladder_rate_limits`
+- `firestore.rules` — deny client ladder writes
+- `src/services/ladderCallableService.ts` — `httpsCallable` wrappers
+- `src/services/leaderboardService.ts` — Callable when flag on
+- `src/services/leaderboardBatchUploadService.ts` — `ladderSyncBatch` for home sync-all

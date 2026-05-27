@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ultimate Physique</string>
+    <string name="title_activity_main">Ultimate Physique</string>
+    <string name="package_name">com.ultimatephysique.app</string>
+    <string name="custom_url_scheme">com.ultimatephysique.app</string>
+</resources>

@@ -38,7 +38,6 @@ const LadderSyncLimitInfo: FC<LadderSyncLimitInfoProps> = ({ bodyId, body }) => 
             const content = line.replace(/^-+\s*/, '');
             return (
               <div
-                // eslint-disable-next-line react/no-array-index-key
                 key={`${content}-${index}`}
                 className="flex items-start gap-2 rounded-md border border-zinc-800/80 bg-zinc-900/50 px-2.5 py-2"
               >

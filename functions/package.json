@@ -1,0 +1,17 @@
+{
+  "name": "up-final-functions",
+  "description": "Cloud Functions for Ultimate Physique (UP Final)",
+  "type": "module",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint": "node --check index.js && node --check ladder/submitShardCore.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.3.2"
+  }
+}

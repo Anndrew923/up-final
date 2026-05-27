@@ -98,7 +98,9 @@
       "noTargets": "尚無可上傳的分數 — 請先完成評測或將分數寫入雷達。",
       "button": "同步至天梯",
       "busy": "同步中…",
-      "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、錯誤 {{errors}}。"
+      "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、錯誤 {{errors}}。",
+      "fullSyncCooldown": "全量同步冷卻中，請於 {{resetTime}} 後再試。",
+      "fullSyncDailyCap": "今日全量同步已達 3 次上限。可改用各評測頁單分片上傳，或於 {{resetTime}} 後再試。"
     },
     "assessmentSync": {
       "hint": "一次上傳本頁可用分片。",
