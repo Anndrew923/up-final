@@ -1,3 +1,7 @@
+import { LEADERBOARD_UPLOADS_PER_HOUR } from '../logic/core/ladderUploadPolicy';
+
+export { LEADERBOARD_UPLOADS_PER_HOUR };
+
 /**
  * In-memory per-tab rolling window for upload cost control. Resets on full page reload; not a security boundary
  * (a determined client can bypass) — for UX pacing and accidental spam only.
@@ -14,8 +18,6 @@ interface RateLimitBucket {
 }
 
 const DEFAULT_KEY = 'leaderboard';
-/** Max successful ladder writes per `key` (per shard) per rolling hour — exported for UI copy. */
-export const LEADERBOARD_UPLOADS_PER_HOUR = 3;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 const buckets = new Map<string, RateLimitBucket>();

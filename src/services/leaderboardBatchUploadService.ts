@@ -2,6 +2,7 @@ import type {
   LeaderboardSyncRunSummary,
   LeaderboardSyncTarget,
 } from '../logic/core/leaderboardSyncTargets';
+import { applyLeaderboardSubmitToSyncSummary } from '../logic/core/ladderSubmitSyncSummary';
 import { createEmptyLeaderboardSyncRunSummary } from '../logic/core/leaderboardSyncTargets';
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
@@ -47,12 +48,13 @@ export async function runLeaderboardBatchUpload(options: {
         score,
         displayName,
       },
+      options: {
+        skipPreviewUpdate: true,
+        skipOverallPreviewSync: true,
+      },
     });
 
-    if (result.ok && result.updated) tally.updated += 1;
-    else if (!result.ok && result.reason === 'rate-limited') tally.rateLimited += 1;
-    else if (!result.ok && result.reason === 'pro-required') tally.proRequired += 1;
-    else if (!result.ok) tally.errors += 1;
+    applyLeaderboardSubmitToSyncSummary(tally, result);
 
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, delayMs);

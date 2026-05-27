@@ -34,7 +34,7 @@ alwaysApply: true
 - Leaderboard documents should store summary-only fields (best score + minimal profile).
 - Add leaderboard caching to avoid repeated reads.
 - Add write throttling (for example, hourly upload cap per user).
-- Only update leaderboard when new score exceeds previous best.
+- Skip Firestore write when public score is unchanged (2dp); allow better or worse scores to write (rank trial / revert).
 
 ## UX Requirements
 - Entering leaderboard must run subscription checks first.

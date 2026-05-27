@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
+import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
 
@@ -10,19 +11,26 @@ export interface LeaderboardSyncAllBarProps {
   /** Called after a full pass completes (e.g. bump ladder fetch nonce). */
   onFinished?: () => void;
   className?: string;
+  /** When true, shows the shared ladder upload section kicker (e.g. ladder filter sheet). */
+  showSectionTitle?: boolean;
 }
 
 /**
  * One-shot upload of every shard derived from the merged radar score map + overall.
  */
-const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, className }) => {
+const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
+  onFinished,
+  className,
+  showSectionTitle = false,
+}) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
-  const { syncAll, busy, gate, targetCount, goJoinArena, clearFeedback } = useLeaderboardSyncAll({
-    onFinished,
-  });
+  const { syncAll, busy, summary, gate, targetCount, goJoinArena, clearFeedback } =
+    useLeaderboardSyncAll({
+      onFinished,
+    });
 
   const disabled = busy || targetCount === 0;
   const gateSheetCopy = useMemo(() => {
@@ -45,9 +53,24 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
     return null;
   }, [gate, t]);
 
+  const quotaModalBody = t('ladder.syncAll.advancedTip', { limit: LEADERBOARD_UPLOADS_PER_HOUR });
+
   return (
-    <div className={`space-y-2 border-t border-zinc-800/80 pt-2 ${className ?? ''}`}>
-      <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.hint')}</p>
+    <div
+      className={`space-y-2 border-t border-zinc-800/80 ${showSectionTitle ? 'pt-4' : 'pt-2'} ${className ?? ''}`}
+    >
+      {showSectionTitle ? (
+        <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+          {t('ladder.syncAll.sectionTitle')}
+        </p>
+      ) : null}
+
+      {targetCount === 0 ? (
+        <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.noTargets')}</p>
+      ) : gate !== 'ok' ? (
+        <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -59,7 +82,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
         </button>
         <button
           type="button"
-          className="ui-btn border-accent-info/35 text-accent-info"
+          className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
           onClick={() => {
             if (gate !== 'ok') {
@@ -82,7 +105,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
         title={t('ladder.syncAll.advancedTitle')}
-        body={t('ladder.syncAll.advancedTip')}
+        body={quotaModalBody}
       />
       {gateSheetCopy ? (
         <LeaderboardGateSheet
@@ -101,6 +124,28 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({ onFinished, cla
             navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
           }}
         />
+      ) : null}
+
+      {summary && summary.attempted > 0 ? (
+        <p
+          className={`text-sm ${
+            summary.updated > 0
+              ? 'text-emerald-400/90'
+              : summary.unchanged === summary.attempted
+                ? 'text-zinc-300'
+                : 'text-zinc-400'
+          }`}
+          role="status"
+        >
+          {t('ladder.syncAll.summary', {
+            attempted: summary.attempted,
+            updated: summary.updated,
+            unchanged: summary.unchanged,
+            errors: summary.errors,
+            rateLimited: summary.rateLimited,
+            proRequired: summary.proRequired,
+          })}
+        </p>
       ) : null}
     </div>
   );

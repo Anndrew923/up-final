@@ -129,10 +129,14 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       ) : null}
 
       {summary && summary.attempted > 0 ? (
-        <p className="text-sm text-zinc-400" role="status">
+        <p
+          className={`text-sm ${summary.updated > 0 ? 'text-emerald-400/90' : 'text-zinc-400'}`}
+          role="status"
+        >
           {t('ladder.syncAll.summary', {
             attempted: summary.attempted,
             updated: summary.updated,
+            unchanged: summary.unchanged,
             errors: summary.errors,
             rateLimited: summary.rateLimited,
             proRequired: summary.proRequired,

@@ -9,7 +9,7 @@ import {
   useLeaderboardUpload,
   resolveLeaderboardUploadGate,
 } from '../../hooks/useLeaderboardUpload';
-import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../services/rateLimitService';
+import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 
 export interface LeaderboardUploadBarProps {
   metric: LeaderboardShardId;
@@ -43,6 +43,9 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
 
   const statusText = (() => {
     if (!lastResult) return null;
+    if (lastResult.reason === 'unchanged') {
+      return t('ladder.upload.resultUnchanged');
+    }
     if (lastResult.ok && lastResult.updated) {
       return t('ladder.upload.resultUpdated');
     }
@@ -55,20 +58,24 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
     if (lastResult.reason === 'pro-required') {
       return t('ladder.upload.resultProRequired');
     }
-    if (lastResult.ok) {
-      return t('ladder.upload.resultNoop');
-    }
     return t('ladder.upload.resultError');
   })();
 
-  const quotaSubline =
-    lastResult?.ok && lastResult.updated && lastResult.rateLimitResetAt != null
-      ? t('ladder.upload.quotaAfterSuccess', {
-          remaining: lastResult.rateLimitRemaining ?? 0,
-          limit: lastResult.limitPerHour ?? LEADERBOARD_UPLOADS_PER_HOUR,
-          resetTime: formatRateLimitResetAt(lastResult.rateLimitResetAt, locale),
-        })
-      : null;
+  const quotaSubline = (() => {
+    if (!lastResult?.ok || lastResult.rateLimitResetAt == null) return null;
+    const args = {
+      remaining: lastResult.rateLimitRemaining ?? 0,
+      limit: lastResult.limitPerHour ?? LEADERBOARD_UPLOADS_PER_HOUR,
+      resetTime: formatRateLimitResetAt(lastResult.rateLimitResetAt, locale),
+    };
+    if (lastResult.reason === 'unchanged') {
+      return t('ladder.upload.quotaAfterUnchanged', args);
+    }
+    if (lastResult.updated) {
+      return t('ladder.upload.quotaAfterSuccess', args);
+    }
+    return null;
+  })();
 
   const gateSheetCopy = useMemo(() => {
     if (gate === 'signed-out' || gate === 'anonymous') {
@@ -132,7 +139,13 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
       {statusText ? (
         <div className="space-y-1" role="status">
           <p
-            className={`text-sm ${lastResult?.ok && lastResult.updated ? 'text-emerald-400/90' : 'text-zinc-400'}`}
+            className={`text-sm ${
+              lastResult?.ok && (lastResult.updated || lastResult.reason === 'unchanged')
+                ? lastResult.updated
+                  ? 'text-emerald-400/90'
+                  : 'text-zinc-300'
+                : 'text-zinc-400'
+            }`}
           >
             {statusText}
           </p>

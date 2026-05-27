@@ -64,6 +64,23 @@ describe('leaderboard service guards', () => {
     expect(result.reason).toBe('rate-limited');
   });
 
+  it('skips write and quota when score is unchanged (memory backend)', async () => {
+    const entitlement = ownedProEntitlement();
+    const input = { uid: 'u-unchanged', metric: 'armSize' as const, score: 95.5, displayName: 'U' };
+
+    const first = await submitLeaderboardScore({ entitlement, input });
+    const second = await submitLeaderboardScore({ entitlement, input });
+
+    expect(first.ok).toBe(true);
+    expect(first.updated).toBe(true);
+    expect(first.rateLimitRemaining).toBe(2);
+
+    expect(second.ok).toBe(true);
+    expect(second.reason).toBe('unchanged');
+    expect(second.updated).toBe(false);
+    expect(second.rateLimitRemaining).toBe(2);
+  });
+
   it('accepts a lower score and updates the stored row (body-weight changes can move rank)', async () => {
     const entitlement = ownedProEntitlement();
     const first = await submitLeaderboardScore({

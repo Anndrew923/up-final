@@ -22,6 +22,7 @@ import {
   LEADERBOARD_PREVIEW_SCHEMA_VERSION,
   resolvePreviewRadarMetric,
 } from '../logic/core/leaderboardPreviewContract';
+import { scoresEqualForLadderWrite } from '../logic/core/ladderScoreCompare';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
@@ -46,11 +47,8 @@ import {
   LEADERBOARDS_COLLECTION,
   LEADERBOARD_PREVIEWS_COLLECTION,
 } from './firestorePaths';
-import {
-  checkUploadRateLimit,
-  consumeUploadQuota,
-  LEADERBOARD_UPLOADS_PER_HOUR,
-} from './rateLimitService';
+import { LEADERBOARD_UPLOADS_PER_HOUR } from '../logic/core/ladderUploadPolicy';
+import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
 import {
   clearLeaderboardCache,
   getCachedLeaderboard,
@@ -71,13 +69,17 @@ export interface SubmitLeaderboardInput {
   profile?: Partial<LadderProfileProjection>;
 }
 
+/** Batch uploads: defer preview to one consolidated write after the loop. */
+export interface SubmitLeaderboardOptions {
+  skipPreviewUpdate?: boolean;
+  skipOverallPreviewSync?: boolean;
+}
+
 export interface SubmitLeaderboardResult {
   ok: boolean;
-  reason?: 'pro-required' | 'rate-limited' | 'invalid-input' | 'unknown';
+  reason?: 'pro-required' | 'rate-limited' | 'invalid-input' | 'unknown' | 'unchanged';
   updated?: boolean;
-  /**
-   * Prior `scoreBest` when known (in-memory mock / dev). Firestore path skips pre-read — always `null` on success.
-   */
+  /** Prior `scoreBest` when known (read-before-write or memory store). */
   previousScore?: number | null;
   /** Score written to the ladder row (`scoreBest` field in Firestore). */
   submittedScore?: number | null;
@@ -120,6 +122,35 @@ function buildGlobalRankCacheKey(
   scoreBest: number
 ): string {
   return `${uid}::${metric}::${scoreBest}`;
+}
+
+function buildUploadQuotaSnapshot(
+  uid: string,
+  rateKey: string
+): Pick<SubmitLeaderboardResult, 'rateLimitRemaining' | 'rateLimitResetAt' | 'limitPerHour'> {
+  const status = checkUploadRateLimit({ uid, key: rateKey });
+  return {
+    rateLimitRemaining: status.remaining,
+    rateLimitResetAt: status.resetAt,
+    limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
+  };
+}
+
+function buildUnchangedSubmitResult(params: {
+  uid: string;
+  rateKey: string;
+  previousScore: number;
+  submittedScore: number;
+}): SubmitLeaderboardResult {
+  return {
+    ok: true,
+    reason: 'unchanged',
+    updated: false,
+    previousScore: params.previousScore,
+    submittedScore: params.submittedScore,
+    improved: false,
+    ...buildUploadQuotaSnapshot(params.uid, params.rateKey),
+  };
 }
 
 function readGlobalRankCache(key: string): number | null {
@@ -455,11 +486,25 @@ export async function getRankByScoreBest(params: {
 
 function applyMemoryLeaderboardSubmit(
   uid: string,
-  input: SubmitLeaderboardInput
+  input: SubmitLeaderboardInput,
+  options?: SubmitLeaderboardOptions
 ): SubmitLeaderboardResult {
   const metricStore = getMetricStore(input.metric);
   const existing = metricStore.get(uid);
   const rateKey = `leaderboard:${input.metric}`;
+
+  if (
+    existing != null &&
+    Number.isFinite(existing.scoreBest) &&
+    scoresEqualForLadderWrite(existing.scoreBest, input.score)
+  ) {
+    return buildUnchangedSubmitResult({
+      uid,
+      rateKey,
+      previousScore: existing.scoreBest,
+      submittedScore: input.score,
+    });
+  }
 
   const rateLimitStatus = checkUploadRateLimit({
     uid,
@@ -498,44 +543,46 @@ function applyMemoryLeaderboardSubmit(
   }
   metricStore.set(uid, row);
 
-  const previousPreview = memoryPreviewDb.get(uid) ?? {};
-  const previewMetric = resolvePreviewRadarMetric(input.metric);
-  const updatedAt = new Date().toISOString();
-  const previewRow: Record<string, unknown> = {
-    ...previousPreview,
-    ...input.profile,
-    uid,
-    displayName: row.displayName,
-    avatarUrl: row.avatarUrl,
-    updatedAt,
-    isPro: true,
-    schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
-  };
-  if (isAnonymousInLadder) {
-    previewRow.radarScores = {};
-    delete previewRow.radarUpdatedAt;
-  } else if (previewMetric) {
-    const currentRadar = (previousPreview.radarScores as Record<string, number> | undefined) ?? {};
-    previewRow.radarScores = {
-      ...currentRadar,
-      [previewMetric]: input.score,
+  if (!options?.skipPreviewUpdate) {
+    const previousPreview = memoryPreviewDb.get(uid) ?? {};
+    const previewMetric = resolvePreviewRadarMetric(input.metric);
+    const updatedAt = row.updatedAt;
+    const previewRow: Record<string, unknown> = {
+      ...previousPreview,
+      ...input.profile,
+      uid,
+      displayName: row.displayName,
+      avatarUrl: row.avatarUrl,
+      updatedAt,
+      isPro: true,
+      schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
     };
-    previewRow.radarUpdatedAt = updatedAt;
-  }
-  memoryPreviewDb.set(uid, previewRow);
+    if (isAnonymousInLadder) {
+      previewRow.radarScores = {};
+      delete previewRow.radarUpdatedAt;
+    } else if (previewMetric) {
+      const currentRadar = (previousPreview.radarScores as Record<string, number> | undefined) ?? {};
+      previewRow.radarScores = {
+        ...currentRadar,
+        [previewMetric]: input.score,
+      };
+      previewRow.radarUpdatedAt = updatedAt;
+    }
+    memoryPreviewDb.set(uid, previewRow);
 
-  if (input.metric === LEADERBOARD_SHARD_OVERALL) {
-    try {
-      applyMemoryPreviewFullSixAxis({
-        uid,
-        displayName: input.displayName,
-        avatarUrl: input.avatarUrl,
-        profile: input.profile,
-        mergedScores: getMergedScoresSnapshotForRadar(),
-      });
-    } catch (e) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] ladderScore → memory preview full radar error', e);
+    if (input.metric === LEADERBOARD_SHARD_OVERALL && !options?.skipOverallPreviewSync) {
+      try {
+        applyMemoryPreviewFullSixAxis({
+          uid,
+          displayName: input.displayName,
+          avatarUrl: input.avatarUrl,
+          profile: input.profile,
+          mergedScores: getMergedScoresSnapshotForRadar(),
+        });
+      } catch (e) {
+        if (import.meta.env.DEV) {
+          console.warn('[leaderboard] ladderScore → memory preview full radar error', e);
+        }
       }
     }
   }
@@ -686,8 +733,9 @@ async function resolveLeaderboardUid(
 export async function submitLeaderboardScore(params: {
   entitlement: EntitlementState;
   input: SubmitLeaderboardInput;
+  options?: SubmitLeaderboardOptions;
 }): Promise<SubmitLeaderboardResult> {
-  const { entitlement, input } = params;
+  const { entitlement, input, options } = params;
   const profileProjection =
     input.profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
   const normalizedInput: SubmitLeaderboardInput = {
@@ -751,6 +799,23 @@ export async function submitLeaderboardScore(params: {
       );
       const rateKey = `leaderboard:${mergedForWrite.metric}`;
 
+      const existingSnap = await getDoc(ref);
+      const previousScore = existingSnap.exists()
+        ? Number(existingSnap.data()?.scoreBest)
+        : null;
+      if (
+        previousScore != null &&
+        Number.isFinite(previousScore) &&
+        scoresEqualForLadderWrite(previousScore, mergedForWrite.score)
+      ) {
+        return buildUnchangedSubmitResult({
+          uid,
+          rateKey,
+          previousScore,
+          submittedScore: mergedForWrite.score,
+        });
+      }
+
       const rateLimitStatus = checkUploadRateLimit({
         uid,
         key: rateKey,
@@ -760,7 +825,7 @@ export async function submitLeaderboardScore(params: {
           ok: false,
           reason: 'rate-limited',
           updated: false,
-          previousScore: null,
+          previousScore: Number.isFinite(previousScore ?? NaN) ? previousScore : null,
           submittedScore: null,
           rateLimitRemaining: rateLimitStatus.remaining,
           rateLimitResetAt: rateLimitStatus.resetAt,
@@ -789,48 +854,48 @@ export async function submitLeaderboardScore(params: {
 
       await setDoc(ref, payload, { merge: true });
 
-      const previewRef = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
-      const previewMetric = resolvePreviewRadarMetric(mergedForWrite.metric);
-      const isAnonymousInLadder = mergedForWrite.profile?.isAnonymousInLadder === true;
-      const nowIso = String(payload.updatedAt);
-      const previewPayload: Record<string, unknown> = {
-        uid,
-        schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
-        displayName: payload.displayName,
-        avatarUrl: payload.avatarUrl,
-        updatedAt: payload.updatedAt,
-        ...ladderPreviewProfileFirestoreFields(mergedForWrite.profile),
-        isAnonymousInLadder,
-      };
-      if (isAnonymousInLadder) {
-        previewPayload.radarScores = deleteField();
-        previewPayload.radarUpdatedAt = deleteField();
-      } else {
-        if (previewMetric) {
+      if (!options?.skipPreviewUpdate) {
+        const previewRef = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
+        const previewMetric = resolvePreviewRadarMetric(mergedForWrite.metric);
+        const isAnonymousInLadder = mergedForWrite.profile?.isAnonymousInLadder === true;
+        const nowIso = String(payload.updatedAt);
+        const previewPayload: Record<string, unknown> = {
+          uid,
+          schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+          displayName: payload.displayName,
+          avatarUrl: payload.avatarUrl,
+          updatedAt: payload.updatedAt,
+          ...ladderPreviewProfileFirestoreFields(mergedForWrite.profile),
+          isAnonymousInLadder,
+        };
+        if (isAnonymousInLadder) {
+          previewPayload.radarScores = deleteField();
+          previewPayload.radarUpdatedAt = deleteField();
+        } else if (previewMetric) {
           previewPayload.radarScores = {
             [previewMetric]: mergedForWrite.score,
           };
           previewPayload.radarUpdatedAt = nowIso;
         }
-      }
-      await setDoc(previewRef, previewPayload, { merge: true });
+        await setDoc(previewRef, previewPayload, { merge: true });
 
-      if (mergedForWrite.metric === LEADERBOARD_SHARD_OVERALL) {
-        try {
-          const snap = await syncLeaderboardPreviewFullSixAxis({
-            entitlement,
-            uid,
-            displayName: mergedForWrite.displayName,
-            mergedScores: getMergedScoresSnapshotForRadar(),
-            avatarUrl: mergedForWrite.avatarUrl,
-            profile: mergedForWrite.profile,
-          });
-          if (!snap.ok && import.meta.env.DEV) {
-            console.warn('[leaderboard] ladderScore → preview full radar skipped', snap.reason);
-          }
-        } catch (e) {
-          if (import.meta.env.DEV) {
-            console.warn('[leaderboard] ladderScore → preview full radar error', e);
+        if (mergedForWrite.metric === LEADERBOARD_SHARD_OVERALL && !options?.skipOverallPreviewSync) {
+          try {
+            const snap = await syncLeaderboardPreviewFullSixAxis({
+              entitlement,
+              uid,
+              displayName: mergedForWrite.displayName,
+              mergedScores: getMergedScoresSnapshotForRadar(),
+              avatarUrl: mergedForWrite.avatarUrl,
+              profile: mergedForWrite.profile,
+            });
+            if (!snap.ok && import.meta.env.DEV) {
+              console.warn('[leaderboard] ladderScore → preview full radar skipped', snap.reason);
+            }
+          } catch (e) {
+            if (import.meta.env.DEV) {
+              console.warn('[leaderboard] ladderScore → preview full radar error', e);
+            }
           }
         }
       }
@@ -838,11 +903,17 @@ export async function submitLeaderboardScore(params: {
       const afterConsume = consumeUploadQuota({ uid, key: rateKey });
       clearLeaderboardCache(mergedForWrite.metric);
 
+      const improved =
+        previousScore != null && Number.isFinite(previousScore)
+          ? mergedForWrite.score > previousScore
+          : true;
+
       return {
         ok: true,
         updated: true,
-        previousScore: null,
+        previousScore: Number.isFinite(previousScore ?? NaN) ? previousScore : null,
         submittedScore: mergedForWrite.score,
+        improved,
         rateLimitRemaining: afterConsume.remaining,
         rateLimitResetAt: afterConsume.resetAt,
         limitPerHour: LEADERBOARD_UPLOADS_PER_HOUR,
@@ -861,5 +932,5 @@ export async function submitLeaderboardScore(params: {
     }
   }
 
-  return applyMemoryLeaderboardSubmit(uid, mergedForWrite);
+  return applyMemoryLeaderboardSubmit(uid, mergedForWrite, options);
 }

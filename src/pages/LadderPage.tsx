@@ -384,7 +384,9 @@ export default function LadderPage() {
         districtSelectOptions={twDistrictSelectOptions}
         effectiveCityValue={effectiveCityFilter}
         effectiveDistrictValue={effectiveDistrictFilter}
-        syncAllSlot={<LeaderboardSyncAllBar onFinished={bumpLadderRefresh} />}
+        syncAllSlot={
+          <LeaderboardSyncAllBar showSectionTitle onFinished={bumpLadderRefresh} />
+        }
         onClose={closeSheet}
         onApply={applyDraft}
         onClear={clearDraftFilters}

@@ -66,9 +66,11 @@
         "no-pro": "Pro subscription required for live ladder upload.",
         "invalid-score": "Score not ready to upload."
       },
-      "resultUpdated": "Uploaded — ladder row reflects current radar score for this shard.",
-      "quotaHint": "Up to {{limit}} uploads per shard per hour (rolling window).",
-      "quotaAfterSuccess": "{{remaining}} upload(s) left this hour ({{limit}}/shard); refreshes at {{resetTime}}.",
+      "resultUpdated": "Uploaded — ladder row updated.",
+      "resultUnchanged": "Score matches cloud — no upload quota used this hour.",
+      "quotaHint": "Up to {{limit}} writes per shard per hour (rolling window).",
+      "quotaAfterSuccess": "{{remaining}} write(s) left this hour for this shard ({{limit}}/hour); refreshes at {{resetTime}}.",
+      "quotaAfterUnchanged": "{{remaining}} write(s) left this hour for this shard ({{limit}}/hour); refreshes at {{resetTime}}.",
       "resultRateLimitedDetail": "Hourly cap ({{limit}}) reached. Retry after {{resetTime}}.",
       "resultProRequired": "Upload blocked — Pro required.",
       "resultNoop": "No change applied.",
@@ -88,15 +90,15 @@
       }
     },
     "syncAll": {
-      "sectionTitle": "Sync All Ladders",
-      "hint": "Upload every eligible shard from Home radar.",
-      "infoButtonAria": "View sync-all limits",
-      "advancedTitle": "Sync-All Limits",
-      "advancedTip": "Sequential uploads. Each shard has hourly cap. Skipped when scores missing, ineligible, or rate-limited.",
+      "sectionTitle": "Arena Upload",
+      "hint": "Upload overall and every eligible shard from your radar and assessments.",
+      "infoButtonAria": "View upload limit details",
+      "advancedTitle": "Upload Limits",
+      "advancedTip": "Up to {{limit}} counted writes per shard per hour (rolling window). Unchanged scores skip writes and quota; better or worse scores both count. Sequential sync; missing scores, ineligible users, or rate limits skip shards.",
       "noTargets": "No scores ready — complete assessments or save to radar first.",
-      "button": "Sync All to Ladder",
+      "button": "Sync to Ladder",
       "busy": "Syncing…",
-      "summary": "Finished {{attempted}} uploads: {{updated}} written, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors."
+      "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors."
     },
     "assessmentSync": {
       "hint": "Upload all eligible shards for this page in one run.",

@@ -211,13 +211,15 @@ export function buildLeaderboardSyncTargets(args: {
 export interface LeaderboardSyncRunSummary {
   attempted: number;
   updated: number;
+  /** Score matched cloud row — no write, no quota consumed. */
+  unchanged: number;
   errors: number;
   rateLimited: number;
   proRequired: number;
 }
 
 export function createEmptyLeaderboardSyncRunSummary(): LeaderboardSyncRunSummary {
-  return { attempted: 0, updated: 0, errors: 0, rateLimited: 0, proRequired: 0 };
+  return { attempted: 0, updated: 0, unchanged: 0, errors: 0, rateLimited: 0, proRequired: 0 };
 }
 
 /**

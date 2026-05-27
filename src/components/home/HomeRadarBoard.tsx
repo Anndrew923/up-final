@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
-import { LEADERBOARD_SHARD_OVERALL } from '../../logic/core/assessmentLeaderboardShards';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
@@ -12,7 +11,6 @@ import { formatOverallResonanceScore, getWeakestRadarAxis } from '../../logic/co
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
 import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
-import LeaderboardUploadBar from '../ladder/LeaderboardUploadBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
 import type { PhysicalProfile } from '../../types/userProfile';
 import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
@@ -186,12 +184,7 @@ export const HomeRadarBoard: FC = () => {
               }`}
               aria-hidden={ritualOpen}
             >
-              <LeaderboardUploadBar
-                metric={LEADERBOARD_SHARD_OVERALL}
-                score={overallScore}
-                showSectionTitle={false}
-              />
-              <LeaderboardSyncAllBar className="mt-2" />
+              <LeaderboardSyncAllBar />
             </div>
           </div>
         </div>
