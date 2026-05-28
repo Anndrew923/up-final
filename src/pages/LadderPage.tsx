@@ -344,23 +344,45 @@ export default function LadderPage() {
   }
 
   return (
-    <main className="ui-shell flex max-w-3xl flex-col gap-3 pb-28">
+    <div className="relative min-h-screen overflow-hidden bg-[#090b0e]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03] mix-blend-overlay [transform:translateZ(0)]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #22d3ee 1px, transparent 1px),
+            linear-gradient(to bottom, #22d3ee 1px, transparent 1px)
+          `,
+          backgroundSize: '24px 24px',
+        }}
+      />
+      <div className="pointer-events-none absolute left-[-10%] top-[-5%] h-[45vh] w-[70vw] rounded-full bg-cyan-500/10 blur-[120px] [transform:translateZ(0)]" />
+      <div className="pointer-events-none absolute right-[-15%] top-[20%] h-[40vh] w-[60vw] rounded-full bg-amber-500/5 blur-[100px] [transform:translateZ(0)]" />
+
+      <main className="ui-shell relative z-10 flex max-w-3xl flex-col gap-3 pb-28">
       {/* `top-shell-top` must stay aligned with `AppShell` `#layer-shell-scroll` padding (`pt-shell-top`). */}
       <div className="sticky top-shell-top z-20 -mx-1 sm:-mx-0">
-        <div className="ui-card relative overflow-hidden border-accent-info/25 bg-bg-card/90 py-2.5 backdrop-blur-md shadow-[0_12px_28px_-24px_rgba(239,68,68,0.45)]">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-red-500/35 to-transparent" />
+        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-3 backdrop-blur-md shadow-xl shadow-black/25">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
           <div className="relative z-10 flex items-center justify-between gap-3">
-            <h1 className="truncate text-base font-semibold tracking-tight text-zinc-50 md:text-lg">
-              {t('ladder.title', { ns: 'common' })}
-            </h1>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+              <div className="flex min-w-0 flex-col">
+                <h1 className="truncate bg-gradient-to-r from-zinc-50 via-slate-100 to-slate-300 bg-clip-text text-xl font-black tracking-wide text-transparent md:text-2xl">
+                  {t('ladder.title', { ns: 'common' })}
+                </h1>
+                <span className="mt-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-cyan-400/60">
+                  {t('ladder.liveSubtitle', { ns: 'common' })}
+                </span>
+              </div>
+            </div>
             <button
               type="button"
-              className="inline-flex items-center rounded-full border border-accent-info/35 bg-zinc-950/70 px-3 py-1.5 text-xs font-semibold tracking-wide text-accent-info transition hover:border-accent-info/60 hover:text-cyan-300"
+              className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
               onClick={openSheet}
             >
               {t('ladder.moreFilters', { ns: 'common' })}
               {activeAppliedFilterCount > 0 ? (
-                <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300">
+                <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
                   {activeAppliedFilterCount}
                 </span>
               ) : null}
@@ -430,8 +452,8 @@ export default function LadderPage() {
         </section>
       ) : null}
 
-      <section className="ui-card relative min-h-[50vh] flex-1 overflow-hidden border-accent-info/25 shadow-panel">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+      <section className="ui-card relative min-h-[50vh] flex-1 overflow-hidden border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
         <header className="space-y-1 pb-4">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
             {t('ladder.rankings.kicker', { ns: 'common' })}
@@ -603,6 +625,7 @@ export default function LadderPage() {
         user={previewUser}
         onClose={closePreviewModal}
       />
-    </main>
+      </main>
+    </div>
   );
 }

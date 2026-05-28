@@ -22,29 +22,19 @@ export function waitForAnonymousAuthSession(timeoutMs = DEFAULT_TIMEOUT_MS): Pro
   }
 
   return new Promise((resolve, reject) => {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let unsubStore: (() => void) | undefined;
-    let unsubAuth: (() => void) | undefined;
-
-    const cleanup = () => {
-      if (timer !== undefined) clearTimeout(timer);
-      unsubStore?.();
-      unsubAuth?.();
-    };
-
-    timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       cleanup();
       reject(new Error('auth-anonymous-timeout'));
     }, timeoutMs);
 
-    unsubStore = useAuthStore.subscribe((state) => {
+    const unsubStore = useAuthStore.subscribe((state) => {
       if (state.status === 'signed-in' && state.isAnonymous) {
         cleanup();
         resolve();
       }
     });
 
-    unsubAuth = onFirebaseAuthStateChanged((authUser) => {
+    const unsubAuth = onFirebaseAuthStateChanged((authUser) => {
       if (!authUser?.isAnonymous) return;
       if (useAuthStore.getState().status !== 'signed-in') {
         useAuthStore.getState().setFromUser(authUser);
@@ -54,5 +44,11 @@ export function waitForAnonymousAuthSession(timeoutMs = DEFAULT_TIMEOUT_MS): Pro
         resolve();
       }
     });
+
+    const cleanup = () => {
+      clearTimeout(timer);
+      unsubStore();
+      unsubAuth();
+    };
   });
 }

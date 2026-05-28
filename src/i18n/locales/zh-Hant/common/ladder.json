@@ -3,6 +3,7 @@
     "redirecting": "正在導向加入戰場…",
     "kicker": "全球天梯",
     "title": "即時天梯",
+    "liveSubtitle": "Live Leaderboard",
     "body": "你已擁有 Core + Pro 權限。排行榜資料會透過 leaderboard service 載入。",
     "bodyRemote": "已連線至 Firestore — 僅摘要欄位，並搭配快取與每小時上傳次數限制。",
     "bodyLocalMock": "尚未設定 Firebase — 開發環境使用記憶體模擬資料。",

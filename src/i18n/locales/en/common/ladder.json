@@ -3,6 +3,7 @@
     "redirecting": "Redirecting to Join Arena…",
     "kicker": "Global Arena",
     "title": "Live Ladder",
+    "liveSubtitle": "Live Leaderboard",
     "body": "Core + Pro active. Rankings load via leaderboard service.",
     "bodyRemote": "Firestore connected — summary rows, client cache, hourly upload limits.",
     "bodyLocalMock": "Firebase env unset — in-memory mock data for development.",
