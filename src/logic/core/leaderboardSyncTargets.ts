@@ -207,19 +207,52 @@ export function buildLeaderboardSyncTargets(args: {
   return Array.from(dedup.entries()).map(([metric, score]) => ({ metric, score }));
 }
 
+/** Stable failure reasons returned by Callable batch + client sequential sync. */
+export type LadderSyncFailureReason =
+  | 'invalid-input'
+  | 'rate-limited'
+  | 'pro-required'
+  | 'internal'
+  | 'unknown'
+  | 'anonymous';
+
+/** Per-shard diagnostic row — mirrors Functions `runLadderSyncBatch` failures payload. */
+export interface LadderSyncShardFailure {
+  metric: string;
+  reason: LadderSyncFailureReason | string;
+  message?: string;
+}
+
 /** Outcome tallies for sequential multi-shard uploads (sync-all + per-assessment batch). */
 export interface LeaderboardSyncRunSummary {
   attempted: number;
   updated: number;
   /** Score matched cloud row — no write, no quota consumed. */
   unchanged: number;
+  /**
+   * Legacy aggregate for quick display: `invalidInput + internal` only.
+   * WHY: Rate-limit and Pro blocks are counted separately and must not inflate "errors".
+   */
   errors: number;
+  /** Shard id / score rejected before or during validation (e.g. unknown metric on server). */
+  invalidInput: number;
+  /** Callable/Firestore/transaction failures — needs ops attention. */
+  internal: number;
   rateLimited: number;
   proRequired: number;
 }
 
 export function createEmptyLeaderboardSyncRunSummary(): LeaderboardSyncRunSummary {
-  return { attempted: 0, updated: 0, unchanged: 0, errors: 0, rateLimited: 0, proRequired: 0 };
+  return {
+    attempted: 0,
+    updated: 0,
+    unchanged: 0,
+    errors: 0,
+    invalidInput: 0,
+    internal: 0,
+    rateLimited: 0,
+    proRequired: 0,
+  };
 }
 
 /**

@@ -1,10 +1,15 @@
 import type {
+  LadderSyncShardFailure,
   LeaderboardSyncRunSummary,
   LeaderboardSyncTarget,
 } from '../logic/core/leaderboardSyncTargets';
-import { applyLeaderboardSubmitToSyncSummary } from '../logic/core/ladderSubmitSyncSummary';
+import {
+  applyLeaderboardSubmitToSyncSummary,
+  recordLadderSyncShardFailure,
+} from '../logic/core/ladderSubmitSyncSummary';
 import { createEmptyLeaderboardSyncRunSummary } from '../logic/core/leaderboardSyncTargets';
 import { isLadderCallableWritesEnabled } from '../config/ladderCallable';
+import { logLadderCallableError } from '../lib/ladderCallableDevLog';
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
 import type { LadderProfileProjection } from '../types/ladderProfile';
@@ -16,6 +21,7 @@ const DEFAULT_INTER_SHARD_DELAY_MS = 60;
 
 export type LeaderboardBatchUploadResult = {
   summary: LeaderboardSyncRunSummary;
+  failures: LadderSyncShardFailure[];
   /** Set when server rejects a full-sync-all attempt (P2 Callable). */
   fullSyncBlock?: {
     reason: 'full-sync-cooldown' | 'full-sync-daily-cap';
@@ -53,20 +59,17 @@ export async function runLeaderboardBatchUpload(options: {
   } = options;
 
   const empty = createEmptyLeaderboardSyncRunSummary();
+  const emptyFailures: LadderSyncShardFailure[] = [];
 
-  if (
-    targets.length > 0 &&
-    fullSync &&
-    isLadderCallableWritesEnabled() &&
-    getFirestoreDb()
-  ) {
+  // WHY: Prefer server batch whenever Callable writes are on — same failure payload for home + assessment.
+  if (targets.length > 0 && isLadderCallableWritesEnabled() && getFirestoreDb()) {
     try {
       const batch = await callLadderSyncBatch({
         targets: targets.map((t) => ({ metric: t.metric, score: t.score })),
         displayName,
         avatarUrl: previewSnapshot?.avatarUrl,
         profile: previewSnapshot?.profile,
-        fullSync: true,
+        fullSync: fullSync || undefined,
         preview: previewSnapshot
           ? { mergedScores: previewSnapshot.mergedScores }
           : undefined,
@@ -79,43 +82,53 @@ export async function runLeaderboardBatchUpload(options: {
           ) {
             return {
               summary: empty,
+              failures: batch.failures,
               fullSyncBlock: {
                 reason: batch.reason,
                 nextAllowedAt: batch.nextAllowedAt,
               },
             };
           }
-          return { summary: empty };
+          return { summary: empty, failures: batch.failures };
         }
-        return { summary: batch.summary };
+        return { summary: batch.summary, failures: batch.failures };
       }
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] ladderSyncBatch callable error', err);
-      }
-      return { summary: empty };
+      logLadderCallableError('runLeaderboardBatchUpload/ladderSyncBatch', err);
+      return { summary: empty, failures: emptyFailures };
     }
   }
 
   const tally = createEmptyLeaderboardSyncRunSummary();
+  const failures: LadderSyncShardFailure[] = [];
 
   for (const { metric, score } of targets) {
     tally.attempted += 1;
-    const result = await submitLeaderboardScore({
-      entitlement,
-      input: {
-        uid,
-        metric,
-        score,
-        displayName,
-      },
-      options: {
-        skipPreviewUpdate: true,
-        skipOverallPreviewSync: true,
-      },
-    });
+    try {
+      const result = await submitLeaderboardScore({
+        entitlement,
+        input: {
+          uid,
+          metric,
+          score,
+          displayName,
+        },
+        options: {
+          skipPreviewUpdate: true,
+          skipOverallPreviewSync: true,
+        },
+      });
 
-    applyLeaderboardSubmitToSyncSummary(tally, result);
+      applyLeaderboardSubmitToSyncSummary(tally, result, { metric, failures });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      recordLadderSyncShardFailure(failures, metric, 'internal', message);
+      tally.internal += 1;
+      tally.errors += 1;
+      if (import.meta.env.DEV) {
+        logLadderCallableError(`runLeaderboardBatchUpload/submit/${metric}`, err);
+      }
+    }
 
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, delayMs);
@@ -133,5 +146,9 @@ export async function runLeaderboardBatchUpload(options: {
     });
   }
 
-  return { summary: tally };
+  if (import.meta.env.DEV && failures.length > 0) {
+    console.warn('[ladder] sequential batch shard failures', failures);
+  }
+
+  return { summary: tally, failures };
 }

@@ -5,6 +5,7 @@ import {
   mergeLeaderboardSyncTargetsWithSupplemental,
   pickLeaderboardSyncTargetsForAssessmentScope,
   type AssessmentLadderSyncScope,
+  type LadderSyncShardFailure,
   type LeaderboardSyncRunSummary,
   type LeaderboardSyncTarget,
 } from '../logic/core/leaderboardSyncTargets';
@@ -92,10 +93,13 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   const [summaryState, setSummaryState] = useState<{
     signature: string;
     summary: LeaderboardSyncRunSummary;
+    failures: LadderSyncShardFailure[];
   } | null>(null);
 
   const clearFeedback = useCallback(() => setSummaryState(null), []);
   const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
+  const failures =
+    summaryState?.signature === targetsSignature ? summaryState.failures : [];
 
   const goJoinArena = useCallback(() => {
     navigate(ROUTES.joinArena);
@@ -126,7 +130,11 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
           avatarUrl: identity.avatarUrl,
         },
       });
-      setSummaryState({ signature: targetsSignature, summary: batch.summary });
+      setSummaryState({
+        signature: targetsSignature,
+        summary: batch.summary,
+        failures: batch.failures,
+      });
       if (batch.summary.updated > 0) {
         void hapticService.trigger('success');
       }
@@ -141,6 +149,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     syncPage,
     busy,
     summary,
+    failures,
     gate,
     targetCount: targets.length,
     goJoinArena,

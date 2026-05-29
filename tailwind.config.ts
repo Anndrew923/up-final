@@ -10,9 +10,16 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      /** Scroll padding under fixed HUD — pair with `AppShell` `pt-shell-top` and page `sticky top-shell-top`. */
+      /**
+       * Scroll offset under the fixed HUD (`AppShell` `shell-hud-slot`).
+       *
+       * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
+       * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
+       * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so `#layer-shell-scroll` and any
+       * `sticky top-shell-top` (e.g. Ladder) share one coordinate system — no overlap, no jump.
+       */
       spacing: {
-        'shell-top': '4rem',
+        'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
       },
       colors: {
         bg: {

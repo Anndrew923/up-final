@@ -90,6 +90,10 @@
         "primary": "Upgrade to Pro"
       }
     },
+    "devWriteMode": {
+      "clientDirectWarning": "⚠️ Client direct-write mode (rules block writes — check .env and restart dev)",
+      "callableOk": "🟢 Callable write mode"
+    },
     "syncAll": {
       "sectionTitle": "Arena Upload",
       "hint": "Upload overall and every eligible shard from your radar and assessments.",
@@ -99,7 +103,16 @@
       "noTargets": "No scores ready — complete assessments or save to radar first.",
       "button": "Sync to Ladder",
       "busy": "Syncing…",
-      "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{errors}} errors.",
+      "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{invalidInput}} invalid, {{internal}} system errors ({{errors}} total errors).",
+      "failuresTitle": "Failed shards ({{count}})",
+      "failureReason": {
+        "invalid-input": "Invalid input",
+        "rate-limited": "Rate limited",
+        "pro-required": "Pro required",
+        "internal": "System error",
+        "unknown": "Unknown error",
+        "anonymous": "Anonymous account"
+      },
       "fullSyncCooldown": "Full sync is on cooldown. Try again after {{resetTime}}.",
       "fullSyncDailyCap": "Daily full sync limit reached (3 per day). Use per-page uploads, or try again after {{resetTime}}."
     },

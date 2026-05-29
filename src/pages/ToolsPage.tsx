@@ -109,8 +109,8 @@ export default function ToolsPage() {
         <div className="ui-tools-backdrop absolute inset-0" />
       </div>
 
-      <div className="ui-shell relative max-w-3xl space-y-10">
-        <header className="space-y-3">
+      <div className="ui-shell relative max-w-3xl space-y-6">
+        <header className="space-y-2">
           <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
             {t('tools.kicker', { ns: 'common' })}
           </p>

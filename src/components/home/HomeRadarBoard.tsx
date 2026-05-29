@@ -95,7 +95,8 @@ export const HomeRadarBoard: FC = () => {
         <div className="pointer-events-none absolute bottom-4 left-4 h-5 w-5 rounded-bl-md border-b border-l border-accent-info/50" />
         <div className="pointer-events-none absolute bottom-4 right-4 h-5 w-5 rounded-br-md border-b border-r border-accent-info/50" />
 
-        <div className="relative px-4 pb-6 pt-7 md:px-6">
+        {/* Tighter top inset: shell + ui-shell already reserve HUD; card only needs kicker breathing room. */}
+        <div className="relative px-4 pb-6 pt-5 md:px-6">
           <p className="mb-1 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
             {t('home.consoleKicker', { ns: 'common' })}
           </p>
@@ -110,7 +111,7 @@ export const HomeRadarBoard: FC = () => {
             })}
           </p>
 
-          <div className="mt-6 flex flex-col items-center gap-8">
+          <div className="mt-4 flex flex-col items-center gap-6">
             <div
               id={ONBOARDING_RADAR_TARGET_ID}
               className={`w-full transition-opacity duration-300 motion-reduce:transition-none ${

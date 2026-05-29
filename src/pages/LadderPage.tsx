@@ -359,9 +359,13 @@ export default function LadderPage() {
       <div className="pointer-events-none absolute right-[-15%] top-[20%] h-[40vh] w-[60vw] rounded-full bg-amber-500/5 blur-[100px] [transform:translateZ(0)]" />
 
       <main className="ui-shell relative z-10 flex max-w-3xl flex-col gap-3 pb-28">
-      {/* `top-shell-top` must stay aligned with `AppShell` `#layer-shell-scroll` padding (`pt-shell-top`). */}
+      {/*
+        Sticky anchor uses `top-shell-top` — same calc as `AppShell` `pt-shell-top` / tailwind
+        `spacing.shell-top` (safe-area + 3.5rem HUD). Keeps the filter bar flush under the HUD
+        without pixel jump when the user scrolls.
+      */}
       <div className="sticky top-shell-top z-20 -mx-1 sm:-mx-0">
-        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-3 backdrop-blur-md shadow-xl shadow-black/25">
+        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-xl shadow-black/25">
           <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
@@ -454,7 +458,7 @@ export default function LadderPage() {
 
       <section className="ui-card relative min-h-[50vh] flex-1 overflow-hidden border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
-        <header className="space-y-1 pb-4">
+        <header className="space-y-1 pb-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
             {t('ladder.rankings.kicker', { ns: 'common' })}
           </p>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   buildLeaderboardSyncTargets,
+  type LadderSyncShardFailure,
   type LeaderboardSyncRunSummary,
 } from '../logic/core/leaderboardSyncTargets';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
@@ -91,6 +92,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   const [summaryState, setSummaryState] = useState<{
     signature: string;
     summary: LeaderboardSyncRunSummary;
+    failures: LadderSyncShardFailure[];
   } | null>(null);
 
   const clearFeedback = useCallback(() => {
@@ -102,6 +104,8 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     setFullSyncBlock(check.allowed ? null : check);
   }, []);
   const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
+  const failures =
+    summaryState?.signature === targetsSignature ? summaryState.failures : [];
 
   const uid = useAuthStore((s) => s.uid);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
@@ -166,7 +170,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
         recordFullSyncAllowed(user.uid);
         refreshFullSyncBlock(user.uid);
       }
-      setSummaryState({ signature: targetsSignature, summary: tally });
+      setSummaryState({ signature: targetsSignature, summary: tally, failures: batch.failures });
       if (tally.updated > 0) {
         void hapticService.trigger('success');
       }
@@ -180,6 +184,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     syncAll,
     busy,
     summary,
+    failures,
     fullSyncBlock,
     gate,
     targetCount: targets.length,

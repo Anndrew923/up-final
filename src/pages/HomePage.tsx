@@ -17,7 +17,8 @@ export default function HomePage() {
 
   return (
     <main className="ui-shell max-w-4xl space-y-8 pb-6 md:space-y-10 md:pb-10">
-      <section className="py-2 md:py-4">
+      {/* No extra section padding — `ui-shell` + `HomeRadarBoard` control vertical rhythm. */}
+      <section>
         <HomeRadarBoard />
       </section>
 

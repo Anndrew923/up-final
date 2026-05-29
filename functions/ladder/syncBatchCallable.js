@@ -18,9 +18,12 @@ export const ladderSyncBatch = onCall(CALLABLE_OPTS, async (request) => {
           updated: 0,
           unchanged: 0,
           errors: 0,
+          invalidInput: 0,
+          internal: 0,
           rateLimited: 0,
           proRequired: 0,
         },
+        failures: [],
       };
     }
     if (err?.code === "anonymous") {

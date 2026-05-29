@@ -7,6 +7,8 @@ import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
+import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
+import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
 export interface LeaderboardSyncAllBarProps {
   /** Called after a full pass completes (e.g. bump ladder fetch nonce). */
@@ -29,7 +31,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
-  const { syncAll, busy, summary, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
+  const { syncAll, busy, summary, failures, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAll({
       onFinished,
     });
@@ -72,8 +74,12 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
 
   return (
     <div
-      className={`space-y-2 border-t border-zinc-800/80 ${showSectionTitle ? 'pt-4' : 'pt-2'} ${className ?? ''}`}
+      className={`relative space-y-2 border-t border-zinc-800/80 ${showSectionTitle ? 'pt-4' : 'pt-2'} ${className ?? ''}`}
     >
+      <div className="absolute right-0 top-0 z-10 max-w-[55%] sm:max-w-none">
+        <LadderCallableWriteModeBadge />
+      </div>
+
       {showSectionTitle ? (
         <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
           {t('ladder.syncAll.sectionTitle')}
@@ -149,25 +155,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
       ) : null}
 
       {summary && summary.attempted > 0 ? (
-        <p
-          className={`text-sm ${
-            summary.updated > 0
-              ? 'text-emerald-400/90'
-              : summary.unchanged === summary.attempted
-                ? 'text-zinc-300'
-                : 'text-zinc-400'
-          }`}
-          role="status"
-        >
-          {t('ladder.syncAll.summary', {
-            attempted: summary.attempted,
-            updated: summary.updated,
-            unchanged: summary.unchanged,
-            errors: summary.errors,
-            rateLimited: summary.rateLimited,
-            proRequired: summary.proRequired,
-          })}
-        </p>
+        <LadderSyncSummaryStatus summary={summary} failures={failures} />
       ) : null}
     </div>
   );

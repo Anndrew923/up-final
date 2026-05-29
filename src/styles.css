@@ -23,8 +23,15 @@
 }
 
 @layer components {
+  /**
+   * Primary page gutter — paired with `pt-shell-top` on `#layer-shell-scroll`.
+   *
+   * Design intent (WHY): Symmetric `py-8` doubled the HUD reserve and felt loose on phone.
+   * Tighter top (`pt-4` / `md:pt-5`) keeps hero content near the HUD; generous bottom (`pb-8`)
+   * preserves scroll breathing room above the fixed bottom nav + safe-area.
+   */
   .ui-shell {
-    @apply mx-auto w-full max-w-6xl px-5 py-8 md:px-8;
+    @apply mx-auto w-full max-w-6xl px-5 pt-4 pb-8 md:px-8 md:pt-5;
   }
 
   .ui-card {

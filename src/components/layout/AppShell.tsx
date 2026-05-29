@@ -31,6 +31,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         aria-hidden={true}
       />
 
+      {/*
+        `pt-shell-top` = tailwind `spacing.shell-top` (safe-area + 3.5rem).
+        Must stay in lockstep with `shell-hud-slot` min-h-14 + safe-area padding below.
+      */}
       <div
         id="layer-shell-scroll"
         className={`relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-shell-top ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
@@ -42,6 +46,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         id="layer-shell-frame"
         className={`pointer-events-none fixed inset-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
       >
+        {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
         <div
           className={`shell-hud-slot flex min-h-14 shrink-0 items-center px-4 pt-[env(safe-area-inset-top,0px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >

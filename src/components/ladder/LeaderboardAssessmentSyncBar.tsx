@@ -9,6 +9,8 @@ import type {
 import { useLeaderboardSyncAssessmentPage } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
+import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
+import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
 export interface LeaderboardAssessmentSyncBarProps {
   scope: AssessmentLadderSyncScope;
@@ -30,7 +32,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
-  const { syncPage, busy, summary, gate, targetCount, goJoinArena, clearFeedback } =
+  const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAssessmentPage({
       scope,
       supplementalTargets,
@@ -59,7 +61,11 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   }, [gate, t]);
 
   return (
-    <div className={`space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
+    <div className={`relative space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
+      <div className="absolute right-0 top-0 z-10 max-w-[55%] sm:max-w-none">
+        <LadderCallableWriteModeBadge />
+      </div>
+
       <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
         {t('ladder.upload.sectionTitle')}
       </p>
@@ -129,19 +135,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       ) : null}
 
       {summary && summary.attempted > 0 ? (
-        <p
-          className={`text-sm ${summary.updated > 0 ? 'text-emerald-400/90' : 'text-zinc-400'}`}
-          role="status"
-        >
-          {t('ladder.syncAll.summary', {
-            attempted: summary.attempted,
-            updated: summary.updated,
-            unchanged: summary.unchanged,
-            errors: summary.errors,
-            rateLimited: summary.rateLimited,
-            proRequired: summary.proRequired,
-          })}
-        </p>
+        <LadderSyncSummaryStatus summary={summary} failures={failures} />
       ) : null}
     </div>
   );

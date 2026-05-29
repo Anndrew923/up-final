@@ -90,6 +90,10 @@
         "primary": "升級 Pro"
       }
     },
+    "devWriteMode": {
+      "clientDirectWarning": "⚠️ 客戶端直寫模式（Rules 會擋，請檢查 .env 並重啟 dev）",
+      "callableOk": "🟢 Callable 寫入模式"
+    },
     "syncAll": {
       "sectionTitle": "天梯上傳",
       "hint": "依目前雷達與評測資料，上傳總分與各可用分片。",
@@ -99,7 +103,16 @@
       "noTargets": "尚無可上傳的分數 — 請先完成評測或將分數寫入雷達。",
       "button": "同步至天梯",
       "busy": "同步中…",
-      "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、錯誤 {{errors}}。",
+      "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、輸入無效 {{invalidInput}}、系統錯誤 {{internal}}（錯誤合計 {{errors}}）。",
+      "failuresTitle": "失敗分片（{{count}}）",
+      "failureReason": {
+        "invalid-input": "輸入無效",
+        "rate-limited": "觸發限流",
+        "pro-required": "需要 Pro",
+        "internal": "系統錯誤",
+        "unknown": "未知錯誤",
+        "anonymous": "訪客帳號"
+      },
       "fullSyncCooldown": "全量同步冷卻中，請於 {{resetTime}} 後再試。",
       "fullSyncDailyCap": "今日全量同步已達 3 次上限。可改用各評測頁單分片上傳，或於 {{resetTime}} 後再試。"
     },

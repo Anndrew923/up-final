@@ -14,6 +14,8 @@ describe('ladder upload i18n', () => {
       unchanged: 19,
       rateLimited: 0,
       proRequired: 0,
+      invalidInput: 0,
+      internal: 0,
       errors: 0,
     });
     expect(summary).not.toBe('ladder.syncAll.summary');

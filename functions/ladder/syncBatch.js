@@ -7,31 +7,68 @@ import {
 } from "./rateLimits.js";
 import { runLadderSubmitShard, runLadderSyncPreview } from "./submitShardCore.js";
 import { isValidShardId, validateScore } from "./validate.js";
+import {
+  applyFailureReasonToTally,
+  mapLadderShardSubmitError,
+  recordLadderSyncFailure,
+} from "./shardSubmitErrors.js";
 
-function createEmptySummary() {
+/** @typedef {{ metric: string, reason: string, message?: string }} LadderSyncShardFailure */
+
+export function createEmptySummary() {
   return {
     attempted: 0,
     updated: 0,
     unchanged: 0,
     errors: 0,
+    invalidInput: 0,
+    internal: 0,
     rateLimited: 0,
     proRequired: 0,
   };
 }
 
-function applyResult(tally, result) {
+/**
+ * @param {ReturnType<typeof createEmptySummary>} tally
+ * @param {LadderSyncShardFailure[]} failures
+ * @param {string} metric
+ * @param {{ ok?: boolean, updated?: boolean, reason?: string }} result
+ */
+function shouldRecordSyncFailure(reason) {
+  return (
+    reason === "invalid-input" ||
+    reason === "internal" ||
+    reason === "unknown" ||
+    reason === "anonymous"
+  );
+}
+
+function applyShardResult(tally, failures, metric, result) {
   if (!result?.ok) {
-    if (result?.reason === "rate-limited") tally.rateLimited += 1;
-    else if (result?.reason === "pro-required") tally.proRequired += 1;
-    else tally.errors += 1;
+    const reason = result?.reason ?? "internal";
+    if (shouldRecordSyncFailure(reason)) {
+      recordLadderSyncFailure(
+        failures,
+        metric,
+        reason,
+        reason === "invalid-input" ? "Shard rejected by server validation" : undefined
+      );
+    }
+    applyFailureReasonToTally(tally, reason);
     return;
   }
-  if (result.reason === "unchanged") tally.unchanged += 1;
-  else if (result.updated) tally.updated += 1;
+  if (result.reason === "unchanged") {
+    tally.unchanged += 1;
+    return;
+  }
+  if (result.updated) {
+    tally.updated += 1;
+  }
 }
 
 /**
  * Sequential multi-shard upload in one Callable (server-enforced full-sync cap when requested).
+ * Returns per-shard `failures` so clients never collapse unknown errors into one bucket.
  */
 export async function runLadderSyncBatch(request) {
   const uid = request.auth.uid;
@@ -47,9 +84,10 @@ export async function runLadderSyncBatch(request) {
   const targets = Array.isArray(data.targets) ? data.targets : [];
   const fullSync = data.fullSync === true;
   const preview = data.preview;
+  const failures = /** @type {LadderSyncShardFailure[]} */ ([]);
 
   if (targets.length === 0) {
-    return { ok: true, summary: createEmptySummary() };
+    return { ok: true, summary: createEmptySummary(), failures };
   }
 
   const now = new Date();
@@ -63,6 +101,7 @@ export async function runLadderSyncBatch(request) {
         reason: gate.reason,
         nextAllowedAt: gate.nextAllowedAt,
         summary: createEmptySummary(),
+        failures,
       };
     }
   }
@@ -72,9 +111,24 @@ export async function runLadderSyncBatch(request) {
   for (const target of targets) {
     const metric = target?.metric;
     const score = Number(target?.score);
-    if (!isValidShardId(metric) || !validateScore(score)) {
+    const metricLabel = typeof metric === "string" ? metric : "unknown";
+
+    if (!isValidShardId(metric)) {
       tally.attempted += 1;
-      tally.errors += 1;
+      recordLadderSyncFailure(
+        failures,
+        metricLabel,
+        "invalid-input",
+        "Shard id is not in server KNOWN_LEADERBOARD_SHARD_IDS — redeploy functions"
+      );
+      applyFailureReasonToTally(tally, "invalid-input");
+      continue;
+    }
+
+    if (!validateScore(score)) {
+      tally.attempted += 1;
+      recordLadderSyncFailure(failures, metric, "invalid-input", "Score must be a finite number >= 0");
+      applyFailureReasonToTally(tally, "invalid-input");
       continue;
     }
 
@@ -93,10 +147,19 @@ export async function runLadderSyncBatch(request) {
 
     try {
       const result = await runLadderSubmitShard(shardRequest);
-      applyResult(tally, result);
+      applyShardResult(tally, failures, metric, result);
     } catch (err) {
-      console.error("[ladderSyncBatch] shard error", { uid, metric, message: err?.message });
-      tally.errors += 1;
+      const mapped = mapLadderShardSubmitError(err);
+      console.error("[ladderSyncBatch] shard error", {
+        uid,
+        metric,
+        reason: mapped.reason,
+        message: mapped.message,
+      });
+      if (shouldRecordSyncFailure(mapped.reason)) {
+        recordLadderSyncFailure(failures, metric, mapped.reason, mapped.message);
+      }
+      applyFailureReasonToTally(tally, mapped.reason);
     }
   }
 
@@ -113,6 +176,12 @@ export async function runLadderSyncBatch(request) {
       });
     } catch (err) {
       console.error("[ladderSyncBatch] preview error", { uid, message: err?.message });
+      recordLadderSyncFailure(
+        failures,
+        "preview",
+        "internal",
+        err?.message ?? "Full radar preview sync failed"
+      );
     }
   }
 
@@ -124,7 +193,7 @@ export async function runLadderSyncBatch(request) {
     });
   }
 
-  console.info("[ladderSyncBatch]", { uid, fullSync, tally });
+  console.info("[ladderSyncBatch]", { uid, fullSync, tally, failureCount: failures.length });
 
-  return { ok: true, summary: tally };
+  return { ok: true, summary: tally, failures };
 }
