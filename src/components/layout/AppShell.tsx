@@ -22,6 +22,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
+  /** Ladder uses a tighter scroll inset — see `spacing.shell-top-ladder` in tailwind.config. */
+  const isLadderRoute =
+    location.pathname === ROUTES.ladder || location.pathname.startsWith(`${ROUTES.ladder}/`);
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-bg-base text-zinc-100">
@@ -37,7 +40,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       */}
       <div
         id="layer-shell-scroll"
-        className={`relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-shell-top ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        className={`relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isLadderRoute ? 'pt-shell-top-ladder' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
       >
         {children ?? <Outlet />}
       </div>

@@ -20,6 +20,11 @@ export default {
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
+        /**
+         * Ladder-only scroll/sticky offset (WHY): Tighter than `shell-top` so the live header card
+         * sits ~4–6px below the HUD gear/avatar row. Pair with AppShell `pt-shell-top-ladder`.
+         */
+        'shell-top-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
       },
       colors: {
         bg: {

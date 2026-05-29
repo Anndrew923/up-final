@@ -355,17 +355,21 @@ export default function LadderPage() {
           backgroundSize: '24px 24px',
         }}
       />
-      <div className="pointer-events-none absolute left-[-10%] top-[-5%] h-[45vh] w-[70vw] rounded-full bg-cyan-500/10 blur-[120px] [transform:translateZ(0)]" />
-      <div className="pointer-events-none absolute right-[-15%] top-[20%] h-[40vh] w-[60vw] rounded-full bg-amber-500/5 blur-[100px] [transform:translateZ(0)]" />
-
-      <main className="ui-shell relative z-10 flex max-w-3xl flex-col gap-3 pb-28">
       {/*
-        Sticky anchor uses `top-shell-top` — same calc as `AppShell` `pt-shell-top` / tailwind
-        `spacing.shell-top` (safe-area + 3.5rem HUD). Keeps the filter bar flush under the HUD
-        without pixel jump when the user scrolls.
+        Arena atmosphere (WHY): Large negative-top blurs used to read as a tall “HUD glass” band
+        under the fixed icons. Keep glow below the title card — do not bleed into shell-top/HUD.
       */}
-      <div className="sticky top-shell-top z-20 -mx-1 sm:-mx-0">
-        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-xl shadow-black/25">
+      <div className="pointer-events-none absolute left-[-8%] top-[20%] h-[26vh] max-h-52 w-[62vw] rounded-full bg-cyan-500/10 blur-[72px] [transform:translateZ(0)]" />
+      <div className="pointer-events-none absolute right-[-12%] top-[28%] h-[32vh] max-h-60 w-[55vw] rounded-full bg-amber-500/5 blur-[80px] [transform:translateZ(0)]" />
+
+      {/*
+        Black-hole fix (WHY): The ~40px vacuum was `#layer-shell-scroll` `pt-shell-top` (3.5rem)
+        on desktop sim — not failed `!pt-0` on main (that would show red in a dye test). AppShell
+        switches to `pt-shell-top-ladder`; sticky uses the same token so scroll never jumps.
+      */}
+      <main className="ui-shell-ladder relative z-10 flex max-w-3xl flex-col gap-4 pb-28">
+      <div className="sticky top-shell-top-ladder z-20 shrink-0 -mx-1 sm:-mx-0">
+        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-lg shadow-black/20">
           <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
@@ -456,9 +460,9 @@ export default function LadderPage() {
         </section>
       ) : null}
 
-      <section className="ui-card relative min-h-[50vh] flex-1 overflow-hidden border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
+      <section className="ui-card relative z-0 min-h-[50vh] flex-1 overflow-hidden border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
-        <header className="space-y-1 pb-3">
+        <header className="space-y-1.5 pb-3 pt-0.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
             {t('ladder.rankings.kicker', { ns: 'common' })}
           </p>
