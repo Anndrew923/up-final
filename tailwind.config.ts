@@ -15,14 +15,15 @@ export default {
        *
        * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
        * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
-       * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so `#layer-shell-scroll` and any
-       * `sticky top-shell-top` (e.g. Ladder) share one coordinate system — no overlap, no jump.
+       * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so scroll content clears the HUD
+       * slot. Ladder uses `shell-top-ladder` + `top-shell-top-ladder` instead (denser arena layout).
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
         /**
-         * Ladder-only scroll/sticky offset (WHY): Tighter than `shell-top` so the live header card
-         * sits ~4–6px below the HUD gear/avatar row. Pair with AppShell `pt-shell-top-ladder`.
+         * Ladder-only scroll/sticky offset (WHY): Denser than `shell-top`; targets ~4–6px under the
+         * HUD icon row, not the full `min-h-14` slot. Must stay synced: AppShell `pt-shell-top-ladder`
+         * + LadderPage `top-shell-top-ladder`. Re-QA on notched devices if this value changes.
          */
         'shell-top-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
       },

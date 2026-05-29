@@ -2,7 +2,7 @@ import type { FC, ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import BootSequenceOverlay from '../onboarding/BootSequenceOverlay';
 import BottomNav from '../navigation/BottomNav';
-import { ROUTES } from '../../config/routes';
+import { ROUTES, isLadderRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import HudProfileControls from './HudProfileControls';
@@ -22,9 +22,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
-  /** Ladder uses a tighter scroll inset — see `spacing.shell-top-ladder` in tailwind.config. */
-  const isLadderRoute =
-    location.pathname === ROUTES.ladder || location.pathname.startsWith(`${ROUTES.ladder}/`);
+  const isLadderRoute = isLadderRoutePath(location.pathname);
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-bg-base text-zinc-100">
@@ -35,8 +33,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       />
 
       {/*
-        `pt-shell-top` = tailwind `spacing.shell-top` (safe-area + 3.5rem).
-        Must stay in lockstep with `shell-hud-slot` min-h-14 + safe-area padding below.
+        Scroll top inset: `pt-shell-top` (default) or `pt-shell-top-ladder` on `/ladder`.
+        Ladder token is tuned separately — see `spacing.shell-top-ladder` in tailwind.config.
       */}
       <div
         id="layer-shell-scroll"

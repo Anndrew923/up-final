@@ -362,43 +362,38 @@ export default function LadderPage() {
       <div className="pointer-events-none absolute left-[-8%] top-[20%] h-[26vh] max-h-52 w-[62vw] rounded-full bg-cyan-500/10 blur-[72px] [transform:translateZ(0)]" />
       <div className="pointer-events-none absolute right-[-12%] top-[28%] h-[32vh] max-h-60 w-[55vw] rounded-full bg-amber-500/5 blur-[80px] [transform:translateZ(0)]" />
 
-      {/*
-        Black-hole fix (WHY): The ~40px vacuum was `#layer-shell-scroll` `pt-shell-top` (3.5rem)
-        on desktop sim — not failed `!pt-0` on main (that would show red in a dye test). AppShell
-        switches to `pt-shell-top-ladder`; sticky uses the same token so scroll never jumps.
-      */}
       <main className="ui-shell-ladder relative z-10 flex max-w-3xl flex-col gap-4 pb-28">
-      <div className="sticky top-shell-top-ladder z-20 shrink-0 -mx-1 sm:-mx-0">
-        <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-lg shadow-black/20">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
-          <div className="relative z-10 flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-              <div className="flex min-w-0 flex-col">
-                <h1 className="truncate bg-gradient-to-r from-zinc-50 via-slate-100 to-slate-300 bg-clip-text text-xl font-black tracking-wide text-transparent md:text-2xl">
-                  {t('ladder.title', { ns: 'common' })}
-                </h1>
-                <span className="mt-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-cyan-400/60">
-                  {t('ladder.liveSubtitle', { ns: 'common' })}
-                </span>
+        <div className="sticky top-shell-top-ladder z-20 shrink-0 -mx-1 sm:-mx-0">
+          <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-lg shadow-black/20">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
+            <div className="relative z-10 flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                <div className="flex min-w-0 flex-col">
+                  <h1 className="truncate bg-gradient-to-r from-zinc-50 via-slate-100 to-slate-300 bg-clip-text text-xl font-black tracking-wide text-transparent md:text-2xl">
+                    {t('ladder.title', { ns: 'common' })}
+                  </h1>
+                  <span className="mt-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-cyan-400/60">
+                    {t('ladder.liveSubtitle', { ns: 'common' })}
+                  </span>
+                </div>
               </div>
+              <button
+                type="button"
+                className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
+                onClick={openSheet}
+              >
+                {t('ladder.moreFilters', { ns: 'common' })}
+                {activeAppliedFilterCount > 0 ? (
+                  <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
+                    {activeAppliedFilterCount}
+                  </span>
+                ) : null}
+              </button>
             </div>
-            <button
-              type="button"
-              className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
-              onClick={openSheet}
-            >
-              {t('ladder.moreFilters', { ns: 'common' })}
-              {activeAppliedFilterCount > 0 ? (
-                <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
-                  {activeAppliedFilterCount}
-                </span>
-              ) : null}
-            </button>
           </div>
         </div>
-      </div>
-      <LadderFilterSheet
+        <LadderFilterSheet
         open={sheetOpen}
         values={{ ...draft, filterProject: draftProjectControlValue }}
         activeFilterCount={activeAppliedFilterCount}

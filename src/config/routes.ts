@@ -31,3 +31,8 @@ export const ROUTES = {
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
+
+/** True for `/ladder` and nested ladder paths — used for ladder-only shell spacing. */
+export function isLadderRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.ladder || pathname.startsWith(`${ROUTES.ladder}/`);
+}
