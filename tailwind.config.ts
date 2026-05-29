@@ -16,15 +16,17 @@ export default {
        * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
        * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
        * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so scroll content clears the HUD
-       * slot. Ladder uses `shell-top-ladder` + `top-shell-top-ladder` instead (denser arena layout).
+       * slot. Ladder / join-arena use `shell-top-compact` instead (denser arena layout).
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
         /**
-         * Ladder-only scroll/sticky offset (WHY): Denser than `shell-top`; targets ~4–6px under the
-         * HUD icon row, not the full `min-h-14` slot. Must stay synced: AppShell `pt-shell-top-ladder`
-         * + LadderPage `top-shell-top-ladder`. Re-QA on notched devices if this value changes.
+         * Compact scroll/sticky offset for ladder + join-arena (WHY): Denser than `shell-top`;
+         * targets ~4–6px under the HUD icon row. AppShell: `pt-shell-top-compact`.
+         * Ladder sticky: `top-shell-top-compact`. Re-QA on notched devices if this value changes.
          */
+        'shell-top-compact': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
+        /** @deprecated Use `shell-top-compact` — alias kept for existing class names during migration. */
         'shell-top-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
       },
       colors: {
@@ -109,6 +111,27 @@ export default {
               'inset 0 0 18px rgba(255, 149, 0, 0.16), 0 0 14px rgba(255, 149, 0, 0.42), 0 0 26px rgba(255, 149, 0, 0.2)',
           },
         },
+        /** Join Arena Pro CTA — background-position shimmer (compositor-friendly). */
+        'arena-cta-shimmer': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        /** Ladder bullet — slow radar ring on feature icon halo. */
+        'arena-radar-sweep': {
+          '0%': { transform: 'rotate(0deg)', opacity: '0.35' },
+          '50%': { opacity: '0.95' },
+          '100%': { transform: 'rotate(360deg)', opacity: '0.35' },
+        },
+        /** Cloud sync bullet — gentle breathe on icon glow. */
+        'arena-cloud-breathe': {
+          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+          '50%': { opacity: '1', transform: 'scale(1.12)' },
+        },
+        /** Arena telemetry bullet — subtle pulse. */
+        'arena-telemetry-pulse': {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '1' },
+        },
       },
       transitionTimingFunction: {
         'report-ease': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -126,6 +149,10 @@ export default {
         'aura-void': 'aura-void 8s linear infinite',
         'aura-divine': 'aura-divine 2.2s ease-in-out infinite',
         'track-mode-glow': 'track-mode-glow 4s ease-in-out infinite',
+        'arena-cta-shimmer': 'arena-cta-shimmer 4.5s ease-in-out infinite',
+        'arena-radar-sweep': 'arena-radar-sweep 6s linear infinite',
+        'arena-cloud-breathe': 'arena-cloud-breathe 2.8s ease-in-out infinite',
+        'arena-telemetry-pulse': 'arena-telemetry-pulse 2.4s ease-in-out infinite',
       },
     },
   },

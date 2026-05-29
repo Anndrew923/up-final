@@ -100,6 +100,12 @@ export const hapticService = {
     void this.trigger('success');
   },
 
+  /** Native tap on Pro subscribe CTA — light impact before store sheet opens. */
+  triggerProPurchaseIntent(): void {
+    if (!Capacitor.isNativePlatform()) return;
+    void this.trigger('ack');
+  },
+
   /** Pro purchase / sandbox unlock — milestone then success notification. */
   async triggerProPurchaseCelebration(): Promise<void> {
     if (prefersReducedMotion()) return;

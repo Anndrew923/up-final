@@ -32,11 +32,10 @@ function renderCard(): { container: HTMLDivElement; unmount: () => void } {
             path="/assessment"
             element={
               <AssessmentLobbyCard
+                cardKey="strength"
                 to={ROUTES.strength}
                 kicker="STRENGTH"
                 title="Strength test"
-                body="Body copy"
-                stampLabel="Open"
               />
             }
           />
@@ -60,13 +59,15 @@ afterEach(() => {
 });
 
 describe('AssessmentLobbyCard', () => {
-  it('renders navigable link with card copy', () => {
+  it('renders navigable link with kicker, title, and status bar', () => {
     const { container, unmount } = renderCard();
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
     expect(link?.getAttribute('href')).toContain('strength');
+    expect(link?.getAttribute('aria-label')).toBe('Strength test');
+    expect(container.textContent).toContain('STRENGTH');
     expect(container.textContent).toContain('Strength test');
-    expect(container.textContent).toContain('Open');
+    expect(container.querySelector('span[aria-hidden]')).not.toBeNull();
     unmount();
   });
 

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
-import { ASSESSMENT_LOBBY_CARD_KEYS, ASSESSMENT_LOBBY_ROUTES } from '../config/assessmentLobby';
+import { useAssessmentLobbyCards } from '../hooks/useAssessmentLobbyCards';
 import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 import {
@@ -20,7 +20,7 @@ function parseInput(raw: string): number {
 
 /** Core six-axis raw entry — radar lives on Home; scores persist via `scoreStore`. */
 export default function AssessmentPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [justSaved, setJustSaved] = useState(false);
   const scores = useScoreStore((s) => s.scores);
   const mergedScores = useMergedScoresFromLocalStores();
@@ -29,18 +29,7 @@ export default function AssessmentPage() {
   const resetScores = useScoreStore((s) => s.resetScores);
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
 
-  const lobbyCards = useMemo(
-    () =>
-      ASSESSMENT_LOBBY_CARD_KEYS.map((key) => ({
-        key,
-        to: ASSESSMENT_LOBBY_ROUTES[key],
-        kicker: t(`assessment.${key}.kicker`, { ns: 'common' }),
-        title: t(`assessment.${key}.title`, { ns: 'common' }),
-        body: t(`assessment.${key}.body`, { ns: 'common' }),
-        stampLabel: t(`assessment.${key}.cta`, { ns: 'common' }),
-      })),
-    [t]
-  );
+  const lobbyCards = useAssessmentLobbyCards();
 
   const onAxisChange = (metric: SixAxisMetric, value: string) => {
     setJustSaved(false);
@@ -60,33 +49,31 @@ export default function AssessmentPage() {
   return (
     <main className="ui-shell max-w-4xl space-y-6">
       <section className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-100">
-          {t('assessment.title', { ns: 'common' })}
+        <h1 className="max-w-[20rem] text-balance text-2xl font-bold tracking-tight text-zinc-100 sm:max-w-none sm:text-3xl">
+          {t('assessment.title')}
         </h1>
-        <p className="text-sm text-zinc-400">{t('assessment.subtitle', { ns: 'common' })}</p>
       </section>
 
       {lobbyCards.map((card) => (
         <AssessmentLobbyCard
           key={card.key}
+          cardKey={card.key}
           to={card.to}
           kicker={card.kicker}
           title={card.title}
-          body={card.body}
-          stampLabel={card.stampLabel}
         />
       ))}
 
       <section className="ui-card space-y-4">
         <h2 className="text-sm font-medium text-zinc-300">
-          {t('assessment.rawInputsHeading', { ns: 'common' })}
+          {t('assessment.rawInputsHeading')}
         </h2>
-        <p className="text-xs text-zinc-500">{t('assessment.homeRadarHint', { ns: 'common' })}</p>
+        <p className="text-xs text-zinc-500">{t('assessment.homeRadarHint')}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           {SIX_AXIS_METRICS.map((metric) => (
             <label key={metric} className="flex flex-col gap-1 text-xs text-zinc-400">
               <span className="font-medium text-zinc-300">
-                {t(`assessment.axis.${metric}`, { ns: 'common' })}
+                {t(`assessment.axis.${metric}`)}
               </span>
               <input
                 type="number"
@@ -96,7 +83,7 @@ export default function AssessmentPage() {
                 value={scores[metric] ?? 0}
                 onChange={(e) => onAxisChange(metric, e.target.value)}
                 className="rounded-md border border-zinc-700 bg-bg-panel px-2 py-1.5 text-sm text-zinc-100 outline-none ring-accent-info focus:ring-1"
-                aria-label={t(`assessment.axis.${metric}`, { ns: 'common' })}
+                aria-label={t(`assessment.axis.${metric}`)}
               />
             </label>
           ))}
@@ -108,7 +95,7 @@ export default function AssessmentPage() {
             className="ui-btn ui-btn-primary text-sm"
             onClick={saveSnapshotToHistory}
           >
-            {t('assessment.saveToHistory', { ns: 'common' })}
+            {t('assessment.saveToHistory')}
           </button>
           <button
             type="button"
@@ -118,11 +105,11 @@ export default function AssessmentPage() {
               resetScores();
             }}
           >
-            {t('assessment.resetScores', { ns: 'common' })}
+            {t('assessment.resetScores')}
           </button>
           {justSaved ? (
             <span className="text-xs text-accent-info" role="status">
-              {t('assessment.saveToHistoryDone', { ns: 'common' })}
+              {t('assessment.saveToHistoryDone')}
             </span>
           ) : null}
         </div>

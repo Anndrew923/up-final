@@ -4,6 +4,7 @@ import HomeLadderIdentitySection from '../components/home/HomeLadderIdentitySect
 import HomeProfileForm from '../components/home/HomeProfileForm';
 import HomeRadarBoard from '../components/home/HomeRadarBoard';
 import ProBadge from '../components/ProBadge';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { ROUTES } from '../config/routes';
 import { useLeaderboardAccess } from '../hooks/useLeaderboardAccess';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -68,7 +69,7 @@ export default function HomePage() {
                 return;
               }
               if (access.shouldShowJoinArena) {
-                navigate(ROUTES.joinArena);
+                navigate(joinArenaPath('ladder'));
                 return;
               }
               if (access.canEnter) {

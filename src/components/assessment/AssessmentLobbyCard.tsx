@@ -1,16 +1,19 @@
 import { useCallback, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  ASSESSMENT_LOBBY_STATUS_BAR_CLASS,
+  type AssessmentLobbyCardKey,
+} from '../../config/assessmentLobby';
 import type { RoutePath } from '../../config/routes';
 
 const MotionLink = motion.create(Link);
 
 export interface AssessmentLobbyCardProps {
+  cardKey: AssessmentLobbyCardKey;
   to: RoutePath;
   kicker: string;
   title: string;
-  body: string;
-  stampLabel: string;
 }
 
 function isModifiedPointerEvent(event: {
@@ -22,15 +25,18 @@ function isModifiedPointerEvent(event: {
   return Boolean(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
 }
 
-/** Presentational lobby card — tap-only navigation via Framer Motion gesture isolation. */
+/**
+ * Presentational assessment lobby card (WHY): Whole card is the tap target—no faux CTA bar.
+ * StatusBar + kicker + title carry dimension identity; navigation uses Framer tap isolation.
+ */
 export function AssessmentLobbyCard({
+  cardKey,
   to,
   kicker,
   title,
-  body,
-  stampLabel,
 }: AssessmentLobbyCardProps) {
   const navigate = useNavigate();
+  const statusBarClass = ASSESSMENT_LOBBY_STATUS_BAR_CLASS[cardKey];
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);
 
@@ -59,28 +65,24 @@ export function AssessmentLobbyCard({
   return (
     <MotionLink
       to={to}
+      aria-label={title}
       whileTap={{ scale: 0.99 }}
       onClick={handleClick}
       onTap={handleTap}
       onKeyDown={handleKeyDown}
-      className="group block touch-manipulation rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-5 shadow-panel backdrop-blur transition-colors duration-200"
+      className="group relative block touch-manipulation overflow-hidden rounded-2xl border border-accent-primary/25 bg-bg-card/95 px-4 py-3 pl-5 shadow-panel backdrop-blur transition-colors duration-200 hover:border-accent-primary/40"
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary transition-colors group-hover:text-accent-primary">
+      <span
+        aria-hidden
+        className={`absolute left-0 top-0 bottom-0 w-[3px] ${statusBarClass}`}
+      />
+
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-primary transition-colors group-hover:text-accent-primary">
         {kicker}
       </p>
-      <h2 className="mt-2 text-base font-semibold tracking-tight text-zinc-100 transition-colors group-hover:text-accent-primary">
+      <h2 className="mt-1 text-base font-semibold tracking-tight text-zinc-100 transition-colors group-hover:text-zinc-50">
         {title}
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-400">{body}</p>
-
-      <div className="mt-4 flex justify-end">
-        <div
-          className="pointer-events-none inline-flex items-center justify-center rounded-lg border border-accent-primary/40 bg-transparent px-3 py-2 text-xs font-semibold text-accent-primary transition-colors group-hover:border-accent-primary/50 group-hover:text-accent-primary"
-          aria-hidden
-        >
-          {stampLabel}
-        </div>
-      </div>
     </MotionLink>
   );
 }

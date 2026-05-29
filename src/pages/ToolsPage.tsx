@@ -5,6 +5,7 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import { VehicleSpecificationCodex } from '../components/tools/VehicleSpecificationCodex';
 import LeaderboardGateSheet from '../components/ladder/LeaderboardGateSheet';
 import { useVehicleCodexScores } from '../hooks/useVehicleCodexScores';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { ROUTES } from '../config/routes';
 import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
@@ -177,7 +178,7 @@ export default function ToolsPage() {
             <button type="button" className="ui-btn" onClick={handleRestore}>
               {t('tools.syncRestore', { ns: 'common' })}
             </button>
-            <Link to={ROUTES.joinArena} className="ui-btn inline-flex border-zinc-600">
+            <Link to={joinArenaPath('backup')} className="ui-btn inline-flex border-zinc-600">
               {t('tools.syncUpgrade', { ns: 'common' })}
             </Link>
           </div>
@@ -212,7 +213,7 @@ export default function ToolsPage() {
               navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.tools } });
               return;
             }
-            navigate(ROUTES.joinArena);
+            navigate(joinArenaPath('backup'));
           }}
         />
       </div>

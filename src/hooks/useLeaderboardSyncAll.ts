@@ -7,7 +7,7 @@ import {
 } from '../logic/core/leaderboardSyncTargets';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
-import { ROUTES } from '../config/routes';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
@@ -119,7 +119,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   }, [uid, isAnonymous, gate, refreshFullSyncBlock]);
 
   const goJoinArena = useCallback(() => {
-    navigate(ROUTES.joinArena);
+    navigate(joinArenaPath('ladder'));
   }, [navigate]);
 
   const syncAll = useCallback(async () => {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { hapticService } from '../services/hapticService';
 import { canUploadLeaderboard } from '../logic/core/entitlement';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
-import { ROUTES } from '../config/routes';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
 import {
   submitLeaderboardScore,
@@ -85,7 +85,7 @@ export function useLeaderboardUpload() {
   }, []);
 
   const goJoinArena = useCallback(() => {
-    navigate(ROUTES.joinArena);
+    navigate(joinArenaPath('ladder'));
   }, [navigate]);
 
   const clearFeedback = useCallback(() => setLastResult(null), []);

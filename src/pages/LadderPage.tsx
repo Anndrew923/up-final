@@ -6,7 +6,7 @@ import LadderUserPreviewModal from '../components/ladder/LadderUserPreviewModal'
 import LadderFloatingRankBar from '../components/ladder/LadderFloatingRankBar';
 import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import LadderFilterSheet from '../components/ladder/LadderFilterSheet';
-import { ROUTES } from '../config/routes';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
 import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
@@ -253,7 +253,7 @@ export default function LadderPage() {
 
   useEffect(() => {
     if (!canEnter) {
-      navigate(ROUTES.joinArena, { replace: true });
+      navigate(joinArenaPath('ladder'), { replace: true });
     }
   }, [canEnter, navigate]);
 
@@ -362,8 +362,8 @@ export default function LadderPage() {
       <div className="pointer-events-none absolute left-[-8%] top-[20%] h-[26vh] max-h-52 w-[62vw] rounded-full bg-cyan-500/10 blur-[72px] [transform:translateZ(0)]" />
       <div className="pointer-events-none absolute right-[-12%] top-[28%] h-[32vh] max-h-60 w-[55vw] rounded-full bg-amber-500/5 blur-[80px] [transform:translateZ(0)]" />
 
-      <main className="ui-shell-ladder relative z-10 flex max-w-3xl flex-col gap-4 pb-28">
-        <div className="sticky top-shell-top-ladder z-20 shrink-0 -mx-1 sm:-mx-0">
+      <main className="ui-shell-compact relative z-10 flex max-w-3xl flex-col gap-4 pb-28">
+        <div className="sticky top-shell-top-compact z-20 shrink-0 -mx-1 sm:-mx-0">
           <div className="ui-card relative overflow-hidden border border-slate-800/70 bg-slate-900/45 py-2 backdrop-blur-md shadow-lg shadow-black/20">
             <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
             <div className="relative z-10 flex items-center justify-between gap-3">

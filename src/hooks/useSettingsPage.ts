@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
@@ -83,7 +84,7 @@ export function useSettingsPage(): SettingsPageState {
         navigate(ROUTES.privacyPolicy);
       },
       goToJoinArena() {
-        navigate(ROUTES.joinArena);
+        navigate(joinArenaPath('settings'));
       },
       reCalibrateBoot() {
         resetBoot();

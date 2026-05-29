@@ -1,7 +1,6 @@
 {
   "assessment": {
-    "title": "Assessment",
-    "subtitle": "Pick an assessment to begin.",
+    "title": "Performance Dyno",
     "localFirstNote": "Core-only: scores stay on device — no Firebase here.",
     "referenceInfo": {
       "title": "Assessment References",
@@ -24,45 +23,31 @@
     },
     "ffmi": {
       "kicker": "Calculated",
-      "title": "FFMI (Displacement Axis)",
-      "body": "Calculate FFMI from profile + body fat. Updates displacement axis.",
-      "cta": "Open FFMI Page"
+      "title": "FFMI (Displacement Axis)"
     },
     "cardio": {
       "kicker": "Endurance",
-      "title": "Cardio Endurance (Core Boost)",
-      "body": "Run Cooper or 5 km time. Rate heat-efficient long-stint cruise under full load.",
-      "cta": "Open Cardio Assessment"
+      "title": "Cardio Endurance (Core Boost)"
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle Mass (Widebody Aero)",
-      "body": "Enter SMM (kg). Measure widebody width and structural mass—exterior axis score.",
-      "cta": "Open Muscle Assessment"
+      "title": "Muscle Mass (Widebody Aero)"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Explosive Power (Instant Torque)",
-      "body": "Log jump or sprint data. Measure neural ignition response—unlock launch system.",
-      "cta": "Open Explosive Assessment"
+      "title": "Explosive Power (Instant Torque)"
     },
     "strength": {
       "kicker": "Strength",
-      "title": "Max Strength (Chassis HP)",
-      "body": "Log max weight and reps. Estimate chassis limit output—save to radar.",
-      "cta": "Open Strength Assessment"
+      "title": "Max Strength (Chassis HP)"
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip Assessment (Mechanical Grip)",
-      "body": "Enter peak grip (kg). Calculate terminal friction—unlock tire tier.",
-      "cta": "Open Grip Assessment"
+      "title": "Grip Assessment (Mechanical Grip)"
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm Size Assessment (Forged Rims)",
-      "body": "Enter arm circumference and body fat. Measure lateral width—ladder only.",
-      "cta": "Open Arm-Size Assessment"
+      "title": "Arm Size Assessment (Forged Rims)"
     },
     "auras": {
       "none": "None",

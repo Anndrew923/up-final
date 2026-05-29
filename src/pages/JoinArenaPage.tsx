@@ -1,11 +1,19 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
+import JoinArenaComparisonTable from '../components/arena/JoinArenaComparisonTable';
+import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { ROUTES } from '../config/routes';
 import { hasCoreAccess } from '../logic/core/entitlement';
+import {
+  joinArenaDescriptionKey,
+  parseJoinArenaFrom,
+} from '../lib/joinArenaNavigation';
+import { usePrefersReducedMotion } from '../lib/motionPreference';
+import { hapticService } from '../services/hapticService';
 import {
   purchaseProSubscription,
   restorePurchasesFromDevice,
@@ -22,6 +30,13 @@ export interface JoinArenaPageProps {
 const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
+  const location = useLocation();
+  const joinFrom = useMemo(
+    () => parseJoinArenaFrom(location.search),
+    [location.search]
+  );
+  const descriptionKey = joinArenaDescriptionKey(joinFrom);
+
   const [banner, setBanner] = useState<
     'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
   >('idle');
@@ -50,6 +65,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const coreOwned = hasCoreAccess(entitlement);
   const isGoogleLinked = authStatus === 'signed-in' && !isAnonymous;
   const paywallEnabled = MONETIZATION_CONFIG.leaderboardPaywallEnabled;
+  const ctaMotionOn = !usePrefersReducedMotion();
 
   const handleGoogleSignIn = async () => {
     setBanner('idle');
@@ -86,6 +102,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         setBanner('core');
         return;
       }
+      hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
         if (result.reason === 'core-required') {
@@ -125,17 +142,21 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     }
   };
 
+  const subscribeDisabled =
+    billingBusy ||
+    (paywallEnabled && (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)));
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-bg-base text-zinc-100">
       <div
         className="ui-magitek-grid pointer-events-none absolute inset-0 opacity-[0.07]"
         aria-hidden
       />
-      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
+      <div className="pointer-events-none absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
       <div className="pointer-events-none absolute -right-32 bottom-12 h-80 w-80 rounded-full bg-accent-info/10 blur-[110px]" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center gap-8 px-6 py-14">
-        <header className="space-y-3">
+      <div className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 pb-16 pt-1">
+        <header className="space-y-2.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-accent-info">
             {t('magitekKicker')}
           </p>
@@ -148,7 +169,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
             {t('joinTitle')}
           </h1>
-          <p className="text-sm leading-relaxed text-zinc-400">{t('joinDescription')}</p>
+          <p className="text-pretty text-sm leading-relaxed text-zinc-400">{t(descriptionKey)}</p>
         </header>
 
         {banner === 'core' ? (
@@ -187,31 +208,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           </p>
         ) : null}
 
-        <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-bg-card/80 shadow-panel backdrop-blur-md">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/60 to-transparent" />
-          <div className="space-y-5 p-6">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-              {t('featuresTitle')}
-            </h2>
-            <ul className="space-y-4">
-              <li className="flex gap-3 text-sm text-zinc-200">
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-accent-primary shadow-[0_0_12px_rgba(255,140,0,0.8)]" />
-                <span>{t('proFeatureLeaderboard')}</span>
-              </li>
-              <li className="flex gap-3 text-sm text-zinc-200">
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-accent-info shadow-[0_0_12px_rgba(0,191,255,0.7)]" />
-                <span>{t('proFeatureCloudSync')}</span>
-              </li>
-              <li className="flex gap-3 text-sm text-zinc-200">
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-violet-400 shadow-[0_0_12px_rgba(139,92,246,0.55)]" />
-                <span>{t('proFeatureArena')}</span>
-              </li>
-            </ul>
-            <p className="border-t border-zinc-800/80 pt-4 text-xs leading-relaxed text-zinc-500">
-              {t('disclaimer')}
-            </p>
-          </div>
-        </section>
+        <JoinArenaComparisonTable />
+        <JoinArenaProFeatures />
 
         <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -277,18 +275,32 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             onClick={() => {
               void handleSubscribe();
             }}
-            disabled={
-              billingBusy ||
-              (paywallEnabled &&
-                (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)))
-            }
-            className="rounded-xl border border-accent-primary bg-accent-primary px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(255,140,0,0.35)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:shadow-none"
+            disabled={subscribeDisabled}
+            className={`group relative min-w-[12rem] flex-1 overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
+              subscribeDisabled ? 'bg-zinc-800 text-zinc-500' : ''
+            }`}
           >
-            {billingBusy
-              ? t('billingLoading')
-              : paywallEnabled
-                ? t('subscribeNow')
-                : t('betaEnterLeaderboard')}
+            {!subscribeDisabled ? (
+              <>
+                <span
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-primary via-amber-300 to-orange-500 bg-[length:200%_200%] ${
+                    ctaMotionOn ? 'animate-arena-cta-shimmer' : ''
+                  }`}
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_45%)] opacity-60"
+                  aria-hidden
+                />
+              </>
+            ) : null}
+            <span className="relative z-[1]">
+              {billingBusy
+                ? t('billingLoading')
+                : paywallEnabled
+                  ? t('subscribeUnlockPro')
+                  : t('betaEnterLeaderboard')}
+            </span>
           </button>
         </div>
       </div>

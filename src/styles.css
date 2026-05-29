@@ -34,10 +34,15 @@
     @apply mx-auto w-full max-w-6xl px-5 pt-4 pb-8 md:px-8 md:pt-5;
   }
 
-  /** Ladder arena — horizontal shell gutters only; vertical inset is `shell-top-ladder` on AppShell. */
-  .ui-shell-ladder {
+  /** Compact-shell pages — horizontal gutters only; vertical inset is `shell-top-compact` on AppShell. */
+  .ui-shell-compact {
     @apply mx-auto w-full max-w-6xl px-5 pb-8 md:px-8;
     padding-top: 0;
+  }
+
+  /** @deprecated Use `ui-shell-compact` */
+  .ui-shell-ladder {
+    @apply ui-shell-compact;
   }
 
   .ui-card {

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
+import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { getEntitlementReasonCode } from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
@@ -65,7 +66,7 @@ export function useLeaderboardAccess(): LeaderboardAccessResult {
   }, [navigate]);
 
   const goToJoinArena = useCallback(() => {
-    navigate(ROUTES.joinArena);
+    navigate(joinArenaPath('ladder'));
   }, [navigate]);
 
   return {
