@@ -61,8 +61,19 @@ export async function runLeaderboardBatchUpload(options: {
   const empty = createEmptyLeaderboardSyncRunSummary();
   const emptyFailures: LadderSyncShardFailure[] = [];
 
+  const callableWrites = isLadderCallableWritesEnabled();
+  const hasFirestore = Boolean(getFirestoreDb());
+
+  // WHY: Production bundles without Callable use getDoc+setDoc; P2 rules block setDoc (no ladderSyncBatch in Network).
+  if (import.meta.env.PROD && hasFirestore && !callableWrites && targets.length > 0) {
+    console.error(
+      '[ladder] This build was compiled without VITE_LADDER_CALLABLE_WRITES=true. ' +
+        'Run `npm run build` after updating `.env` / `.env.production`, then reinstall or `npm run preview`.'
+    );
+  }
+
   // WHY: Prefer server batch whenever Callable writes are on — same failure payload for home + assessment.
-  if (targets.length > 0 && isLadderCallableWritesEnabled() && getFirestoreDb()) {
+  if (targets.length > 0 && callableWrites && hasFirestore) {
     try {
       const batch = await callLadderSyncBatch({
         targets: targets.map((t) => ({ metric: t.metric, score: t.score })),

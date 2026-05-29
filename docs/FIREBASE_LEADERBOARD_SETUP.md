@@ -64,7 +64,7 @@ Repo 內已具備 **`firestore.rules`**、**`firebase.json`**、**`firestore.ind
 
 1. `cd functions && npm install && cd ..`
 2. `npm run firebase:deploy:ladder-p2`
-3. `.env` 設 `VITE_LADDER_CALLABLE_WRITES=true` 後重啟 dev / 重建正式版
+3. `.env` 與 `.env.production` 設 `VITE_LADDER_CALLABLE_WRITES=true` 後執行 `npm run build`（`npm run preview` / APK 皆依賴此次 build 的 `dist/`）
 
 詳見 **`docs/LADDER_UPLOAD_P2.md`**。
 
