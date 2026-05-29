@@ -169,7 +169,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
             {t('joinTitle')}
           </h1>
-          <p className="text-pretty text-sm leading-relaxed text-zinc-400">{t(descriptionKey)}</p>
+          <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
         </header>
 
         {banner === 'core' ? (

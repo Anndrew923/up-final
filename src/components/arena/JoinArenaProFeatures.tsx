@@ -35,7 +35,7 @@ const FeatureRow: FC<FeatureRowProps> = ({ variant, labelKey, motionOn }) => {
   const anim = motionOn ? iconAnimation[variant] : '';
 
   return (
-    <li className="flex gap-3 text-sm text-zinc-200">
+    <li className="flex gap-3 text-[13px] leading-snug text-zinc-200 sm:text-sm sm:leading-snug">
       <span className="relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center">
         <span
           className={`absolute inset-0 rounded-full border ${haloClass[variant]} ${anim}`}
@@ -52,7 +52,7 @@ const FeatureRow: FC<FeatureRowProps> = ({ variant, labelKey, motionOn }) => {
           aria-hidden
         />
       </span>
-      <span className="break-words pt-0.5 leading-relaxed text-pretty">{t(labelKey)}</span>
+      <span className="min-w-0 flex-1 break-words pt-0.5 text-pretty">{t(labelKey)}</span>
     </li>
   );
 };
@@ -73,7 +73,7 @@ const JoinArenaProFeatures: FC = () => {
           <FeatureRow variant="cloud" labelKey="proFeatureCloudSync" motionOn={motionOn} />
           <FeatureRow variant="telemetry" labelKey="proFeatureArena" motionOn={motionOn} />
         </ul>
-        <p className="border-t border-zinc-800/80 pt-4 text-xs leading-relaxed text-pretty text-zinc-500">
+        <p className="border-t border-zinc-800/80 pt-4 text-[11px] leading-snug text-pretty text-zinc-500 sm:text-xs">
           {t('disclaimer')}
         </p>
       </div>
