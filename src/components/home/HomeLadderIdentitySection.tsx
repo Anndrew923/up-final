@@ -1,11 +1,16 @@
-import { useId, useRef } from 'react';
+import { useEffect, useId, useMemo, useRef } from 'react';
+import { normalizeLadderDisplayName } from '../../services/ladderIdentityService';
+import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
+import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { useLadderIdentityForm } from '../../hooks/useLadderIdentityForm';
+import HomeCollapsibleCard from './HomeCollapsibleCard';
 
 export default function HomeLadderIdentitySection() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formId = useId();
   const nameFieldId = `${formId}-displayName`;
   const fileInputId = `${formId}-avatarFile`;
+  const ladderCopy = useHomeFormCopy('ladderIdentity');
   const {
     t,
     displayName,
@@ -20,19 +25,59 @@ export default function HomeLadderIdentitySection() {
     displayNameMax,
   } = useLadderIdentityForm();
 
-  return (
-    <section className="ui-card relative overflow-hidden border-accent-info/25 shadow-panel">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/40 to-transparent" />
-      <header className="space-y-1 pb-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
-          {t('home.ladderIdentity.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
-          {t('home.ladderIdentity.title', { ns: 'common' })}
-        </h2>
-      </header>
+  const savedName = normalizeLadderDisplayName(displayName);
+  const hasSavedIdentity = savedName.length > 0;
+  const forceExpanded = Boolean(errorKey);
+  const { expanded, toggle, canCollapse, setExpanded } = useHomeSectionExpanded({
+    sectionId: 'ladder-identity',
+    forceExpanded,
+    defaultExpanded: !hasSavedIdentity,
+  });
 
-      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+  useEffect(() => {
+    if (justSaved && hasSavedIdentity) {
+      setExpanded(false);
+    }
+  }, [hasSavedIdentity, justSaved, setExpanded]);
+
+  const collapsedSummary = useMemo(() => {
+    const label = savedName || ladderCopy('collapsedEmpty');
+    return (
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent-info/40 bg-zinc-900 text-sm font-semibold uppercase text-zinc-200">
+          {previewAvatarUrl ? (
+            <img
+              src={previewAvatarUrl}
+              alt=""
+              className="h-full w-full object-cover"
+              aria-hidden
+            />
+          ) : (
+            <span aria-hidden>{(savedName.charAt(0) || 'U').toUpperCase()}</span>
+          )}
+        </div>
+        <span className="truncate font-medium text-zinc-200">{label}</span>
+      </div>
+    );
+  }, [ladderCopy, previewAvatarUrl, savedName]);
+
+  return (
+    <HomeCollapsibleCard
+      instanceId="home-ladder-identity"
+      expanded={expanded}
+      onToggle={toggle}
+      canCollapse={canCollapse}
+      kicker={ladderCopy('kicker')}
+      title={ladderCopy('title')}
+      summarySlot={collapsedSummary}
+      toggleExpandLabel={ladderCopy('toggleExpand')}
+      toggleCollapseLabel={ladderCopy('toggleCollapse')}
+    >
+      <form
+        className="space-y-5 border-t border-zinc-800/90 pt-4"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor={nameFieldId}>
           <span className="font-medium text-zinc-300">
             {t('home.ladderIdentity.displayName', { ns: 'common' })}
@@ -119,6 +164,6 @@ export default function HomeLadderIdentitySection() {
           ) : null}
         </div>
       </form>
-    </section>
+    </HomeCollapsibleCard>
   );
 }

@@ -1,7 +1,13 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DisclosurePanel } from '../DisclosurePanel';
+import HomeCollapsibleCard from './HomeCollapsibleCard';
 import GenderSelectSheet from './GenderSelectSheet';
 import OptionSelectSheet from './OptionSelectSheet';
+import { isPhysicalProfileAdvancedError } from '../../logic/core/homeProfileForm';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
+import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
+import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
 import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../../types/ladderProfile';
 import {
@@ -17,6 +23,7 @@ function errorTranslationKey(code: PhysicalProfileValidationErrorCode): string {
 
 export default function HomeProfileForm() {
   const { t, i18n } = useTranslation();
+  const profileCopy = useHomeFormCopy('profile');
   const {
     gender,
     setGender,
@@ -48,6 +55,28 @@ export default function HomeProfileForm() {
     baselineComplete,
     handleSubmit,
   } = usePhysicalProfileForm();
+
+  const forceExpanded = !baselineComplete || Boolean(errorCode);
+  const { expanded, toggle, canCollapse, setExpanded } = useHomeSectionExpanded({
+    sectionId: 'physical-profile',
+    forceExpanded,
+    defaultExpanded: !baselineComplete,
+  });
+
+  const [advancedExpanded, setAdvancedExpanded] = useState(false);
+
+  useEffect(() => {
+    if (baselineComplete && justSaved) {
+      setExpanded(false);
+    }
+  }, [baselineComplete, justSaved, setExpanded]);
+
+  useEffect(() => {
+    if (isPhysicalProfileAdvancedError(errorCode)) {
+      setAdvancedExpanded(true);
+    }
+  }, [errorCode]);
+
   const jobOptions = LADDER_JOB_CATEGORIES.map((value) => ({
     value,
     label: t(`home.profile.jobOptions.${value}`, { ns: 'common' }),
@@ -66,28 +95,42 @@ export default function HomeProfileForm() {
     label: getTaiwanDistrictLabel(value, i18n.language),
   }));
 
-  return (
-    <section className="ui-card relative overflow-hidden border-accent-info/25 shadow-panel">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-info/40 to-transparent" />
-      <header className="space-y-1 pb-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
-          {t('home.profile.kicker', { ns: 'common' })}
-        </p>
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
-          {t('home.profile.title', { ns: 'common' })}
-        </h2>
-        {baselineComplete ? (
-          <p className="text-xs font-medium text-emerald-400/90">
-            {t('home.profile.completeBadge', { ns: 'common' })}
-          </p>
-        ) : (
-          <p className="text-xs text-amber-200/80">
-            {t('home.profile.incompleteHint', { ns: 'common' })}
-          </p>
-        )}
-      </header>
+  const collapsedSummary = useMemo(() => {
+    if (!baselineComplete) return null;
+    const genderLabel =
+      gender === 'male'
+        ? profileCopy('male')
+        : gender === 'female'
+          ? profileCopy('female')
+          : '—';
+    return profileCopy('collapsedSummary', {
+      gender: genderLabel,
+      age,
+      height: heightCm,
+      weight: weightKg,
+    });
+  }, [age, baselineComplete, gender, heightCm, profileCopy, weightKg]);
 
-      <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+  const statusSlot = baselineComplete ? (
+    <p className="text-xs font-medium text-emerald-400/90">{profileCopy('completeBadge')}</p>
+  ) : (
+    <p className="text-xs text-amber-200/80">{profileCopy('incompleteHint')}</p>
+  );
+
+  return (
+    <HomeCollapsibleCard
+      instanceId="home-physical-profile"
+      expanded={expanded}
+      onToggle={toggle}
+      canCollapse={canCollapse}
+      kicker={profileCopy('kicker')}
+      title={profileCopy('title')}
+      statusSlot={statusSlot}
+      summarySlot={collapsedSummary}
+      toggleExpandLabel={profileCopy('toggleExpand')}
+      toggleCollapseLabel={profileCopy('toggleCollapse')}
+    >
+      <form className="space-y-5 border-t border-zinc-800/90 pt-4" onSubmit={handleSubmit} noValidate>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs text-zinc-400">
             <span className="font-medium text-zinc-300">
@@ -161,119 +204,132 @@ export default function HomeProfileForm() {
               )}
             />
           </label>
-
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">
-              {t('home.profile.jobCategory', { ns: 'common' })}
-            </span>
-            <OptionSelectSheet
-              value={jobCategory}
-              onChange={setJobCategory}
-              placeholder={t('home.profile.selectOptional', { ns: 'common' })}
-              title={t('home.profile.jobSheetTitle', { ns: 'common' })}
-              options={jobOptions}
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">
-              {t('home.profile.weeklyTrainingHours', { ns: 'common' })}
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              max={168}
-              step={0.5}
-              className="ui-input"
-              value={weeklyTrainingHours}
-              onChange={(e) => setWeeklyTrainingHours(e.target.value)}
-              aria-label={t('home.profile.weeklyTrainingHours', { ns: 'common' })}
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">
-              {t('home.profile.trainingYears', { ns: 'common' })}
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              max={80}
-              step={0.5}
-              className="ui-input"
-              value={trainingYears}
-              onChange={(e) => setTrainingYears(e.target.value)}
-              aria-label={t('home.profile.trainingYears', { ns: 'common' })}
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
-            <span className="font-medium text-zinc-300">
-              {t('home.profile.countryCode', { ns: 'common' })}
-            </span>
-            <OptionSelectSheet
-              value={countryCode}
-              onChange={setCountryCode}
-              placeholder={t('home.profile.selectOptional', { ns: 'common' })}
-              title={t('home.profile.countrySheetTitle', { ns: 'common' })}
-              options={countryOptions}
-            />
-          </label>
-
-          {isTaiwan ? (
-            <>
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                <span className="font-medium text-zinc-300">
-                  {t('home.profile.city', { ns: 'common' })}
-                </span>
-                <OptionSelectSheet
-                  value={city}
-                  onChange={setCity}
-                  placeholder={t('home.profile.selectCity', { ns: 'common' })}
-                  title={t('home.profile.citySheetTitle', { ns: 'common' })}
-                  options={taiwanCityOptions}
-                />
-              </label>
-
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                <span className="font-medium text-zinc-300">
-                  {t('home.profile.district', { ns: 'common' })}
-                </span>
-                <OptionSelectSheet
-                  value={district}
-                  onChange={setDistrict}
-                  placeholder={t('home.profile.selectDistrict', { ns: 'common' })}
-                  title={t('home.profile.districtSheetTitle', { ns: 'common' })}
-                  options={taiwanDistrictOptions}
-                />
-              </label>
-            </>
-          ) : (
-            <label className="flex flex-col gap-1 text-xs text-zinc-400">
-              <span className="font-medium text-zinc-300">
-                {t('home.profile.region', { ns: 'common' })}
-              </span>
-              <input
-                type="text"
-                className="ui-input"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-                aria-label={t('home.profile.region', { ns: 'common' })}
-              />
-            </label>
-          )}
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-zinc-300">
-          <input
-            type="checkbox"
-            checked={isAnonymousInLadder}
-            onChange={(e) => setIsAnonymousInLadder(e.target.checked)}
-          />
-          <span>{t('home.profile.isAnonymousInLadder', { ns: 'common' })}</span>
-        </label>
+        <DisclosurePanel
+          instanceId="home-profile-advanced"
+          expanded={advancedExpanded}
+          onToggle={() => setAdvancedExpanded((open) => !open)}
+          title={profileCopy('advancedTitle')}
+          collapsedHint={profileCopy('advancedCollapsedHint')}
+          toggleExpandLabel={profileCopy('advancedExpand')}
+          toggleCollapseLabel={profileCopy('advancedCollapse')}
+          panelBodyClassName="space-y-4 px-4 pb-4 pt-3"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">
+                {t('home.profile.jobCategory', { ns: 'common' })}
+              </span>
+              <OptionSelectSheet
+                value={jobCategory}
+                onChange={setJobCategory}
+                placeholder={t('home.profile.selectOptional', { ns: 'common' })}
+                title={t('home.profile.jobSheetTitle', { ns: 'common' })}
+                options={jobOptions}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">
+                {t('home.profile.weeklyTrainingHours', { ns: 'common' })}
+              </span>
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={168}
+                step={0.5}
+                className="ui-input"
+                value={weeklyTrainingHours}
+                onChange={(e) => setWeeklyTrainingHours(e.target.value)}
+                aria-label={t('home.profile.weeklyTrainingHours', { ns: 'common' })}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">
+                {t('home.profile.trainingYears', { ns: 'common' })}
+              </span>
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={80}
+                step={0.5}
+                className="ui-input"
+                value={trainingYears}
+                onChange={(e) => setTrainingYears(e.target.value)}
+                aria-label={t('home.profile.trainingYears', { ns: 'common' })}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <span className="font-medium text-zinc-300">
+                {t('home.profile.countryCode', { ns: 'common' })}
+              </span>
+              <OptionSelectSheet
+                value={countryCode}
+                onChange={setCountryCode}
+                placeholder={t('home.profile.selectOptional', { ns: 'common' })}
+                title={t('home.profile.countrySheetTitle', { ns: 'common' })}
+                options={countryOptions}
+              />
+            </label>
+
+            {isTaiwan ? (
+              <>
+                <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                  <span className="font-medium text-zinc-300">
+                    {t('home.profile.city', { ns: 'common' })}
+                  </span>
+                  <OptionSelectSheet
+                    value={city}
+                    onChange={setCity}
+                    placeholder={t('home.profile.selectCity', { ns: 'common' })}
+                    title={t('home.profile.citySheetTitle', { ns: 'common' })}
+                    options={taiwanCityOptions}
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                  <span className="font-medium text-zinc-300">
+                    {t('home.profile.district', { ns: 'common' })}
+                  </span>
+                  <OptionSelectSheet
+                    value={district}
+                    onChange={setDistrict}
+                    placeholder={t('home.profile.selectDistrict', { ns: 'common' })}
+                    title={t('home.profile.districtSheetTitle', { ns: 'common' })}
+                    options={taiwanDistrictOptions}
+                  />
+                </label>
+              </>
+            ) : (
+              <label className="flex flex-col gap-1 text-xs text-zinc-400 sm:col-span-2">
+                <span className="font-medium text-zinc-300">
+                  {t('home.profile.region', { ns: 'common' })}
+                </span>
+                <input
+                  type="text"
+                  className="ui-input"
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  aria-label={t('home.profile.region', { ns: 'common' })}
+                />
+              </label>
+            )}
+          </div>
+
+          <label className="flex items-center gap-2 text-xs text-zinc-300">
+            <input
+              type="checkbox"
+              checked={isAnonymousInLadder}
+              onChange={(e) => setIsAnonymousInLadder(e.target.checked)}
+            />
+            <span>{t('home.profile.isAnonymousInLadder', { ns: 'common' })}</span>
+          </label>
+        </DisclosurePanel>
 
         {errorCode ? (
           <p
@@ -298,6 +354,6 @@ export default function HomeProfileForm() {
           </button>
         </div>
       </form>
-    </section>
+    </HomeCollapsibleCard>
   );
 }
