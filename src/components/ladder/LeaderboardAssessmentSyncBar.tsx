@@ -1,4 +1,5 @@
-import { type FC, useMemo, useState } from 'react';
+import { type FC, useEffect, useMemo, useState } from 'react';
+import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
@@ -32,6 +33,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
+  const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAssessmentPage({
       scope,
@@ -39,7 +41,13 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       onFinished,
     });
 
-  const disabled = busy || targetCount === 0;
+  const disabled = busy;
+  const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
+
+  useEffect(() => {
+    setTapHint(null);
+  }, [targetCount, gate, scope, supplementalTargets]);
+
   const gateSheetCopy = useMemo(() => {
     if (gate === 'signed-out' || gate === 'anonymous') {
       return {
@@ -79,6 +87,12 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
       ) : null}
 
+      {tapHint === 'no-targets' ? (
+        <p className="text-sm text-amber-400/90" role="status">
+          {t('ladder.assessmentSync.noTargetsTap')}
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -93,6 +107,11 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
           className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
           onClick={() => {
+            setTapHint(null);
+            if (targetCount === 0) {
+              setTapHint('no-targets');
+              return;
+            }
             if (gate !== 'ok') {
               if (gateSheetCopy) setGateSheetOpen(true);
               return;
@@ -134,7 +153,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         />
       ) : null}
 
-      {summary && summary.attempted > 0 ? (
+      {showSyncFeedback && summary ? (
         <LadderSyncSummaryStatus summary={summary} failures={failures} />
       ) : null}
     </div>

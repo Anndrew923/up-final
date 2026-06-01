@@ -1,4 +1,5 @@
-import { type FC, useMemo, useState } from 'react';
+import { type FC, useEffect, useMemo, useState } from 'react';
+import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
@@ -31,13 +32,19 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const navigate = useNavigate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
+  const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | null>(null);
   const { syncAll, busy, summary, failures, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAll({
       onFinished,
     });
 
   const fullSyncBlocked = Boolean(fullSyncBlock && !fullSyncBlock.allowed);
-  const disabled = busy || targetCount === 0 || fullSyncBlocked;
+  const disabled = busy;
+  const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
+
+  useEffect(() => {
+    setTapHint(null);
+  }, [targetCount, gate, fullSyncBlocked]);
   const gateSheetCopy = useMemo(() => {
     if (gate === 'signed-out' || gate === 'anonymous') {
       return {
@@ -92,6 +99,17 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
       ) : null}
 
+      {tapHint === 'no-targets' ? (
+        <p className="text-sm text-amber-400/90" role="status">
+          {t('ladder.syncAll.noTargets')}
+        </p>
+      ) : null}
+      {tapHint === 'cooldown' && fullSyncBlockText ? (
+        <p className="text-sm text-amber-400/90" role="status">
+          {fullSyncBlockText}
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -106,6 +124,15 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
           className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
           onClick={() => {
+            setTapHint(null);
+            if (fullSyncBlocked) {
+              setTapHint('cooldown');
+              return;
+            }
+            if (targetCount === 0) {
+              setTapHint('no-targets');
+              return;
+            }
             if (gate !== 'ok') {
               if (gateSheetCopy) setGateSheetOpen(true);
               return;
@@ -154,7 +181,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         </p>
       ) : null}
 
-      {summary && summary.attempted > 0 ? (
+      {showSyncFeedback && summary ? (
         <LadderSyncSummaryStatus summary={summary} failures={failures} />
       ) : null}
     </div>

@@ -229,6 +229,8 @@ export interface LeaderboardSyncRunSummary {
   updated: number;
   /** Score matched cloud row — no write, no quota consumed. */
   unchanged: number;
+  /** Portrait-only merge on an existing entry (no score write, no hourly quota). */
+  avatarPatched?: number;
   /**
    * Legacy aggregate for quick display: `invalidInput + internal` only.
    * WHY: Rate-limit and Pro blocks are counted separately and must not inflate "errors".
@@ -247,6 +249,7 @@ export function createEmptyLeaderboardSyncRunSummary(): LeaderboardSyncRunSummar
     attempted: 0,
     updated: 0,
     unchanged: 0,
+    avatarPatched: 0,
     errors: 0,
     invalidInput: 0,
     internal: 0,

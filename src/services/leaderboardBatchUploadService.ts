@@ -8,6 +8,7 @@ import {
   recordLadderSyncShardFailure,
 } from '../logic/core/ladderSubmitSyncSummary';
 import { createEmptyLeaderboardSyncRunSummary } from '../logic/core/leaderboardSyncTargets';
+import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 import { isLadderCallableWritesEnabled } from '../config/ladderCallable';
 import { logLadderCallableError } from '../lib/ladderCallableDevLog';
 import type { EntitlementState } from '../types/entitlement';
@@ -17,7 +18,8 @@ import { getFirestoreDb } from './firebaseClient';
 import { resolveLeaderboardAvatarUrlForCloud } from './ladderIdentityService';
 import { ensureLadderAvatarHttpsForProSync } from './ladderAvatarStorageService';
 import { callLadderSyncBatch } from './ladderCallableService';
-import { submitLeaderboardScore, syncLeaderboardPreviewFullSixAxis } from './leaderboardService';
+import { runLeaderboardBatchPostUpload } from './ladderSyncPostBatch';
+import { submitLeaderboardScore } from './leaderboardService';
 
 const DEFAULT_INTER_SHARD_DELAY_MS = 60;
 
@@ -107,6 +109,7 @@ export async function runLeaderboardBatchUpload(options: {
         preview: previewSnapshot
           ? { mergedScores: previewSnapshot.mergedScores }
           : undefined,
+        propagateAvatarShards: [LEADERBOARD_SHARD_OVERALL],
       });
       if (batch) {
         if (!batch.ok) {
@@ -125,7 +128,23 @@ export async function runLeaderboardBatchUpload(options: {
           }
           return { summary: empty, failures: batch.failures };
         }
-        return { summary: batch.summary, failures: batch.failures };
+        const result = { summary: batch.summary, failures: batch.failures };
+        await runLeaderboardBatchPostUpload({
+          entitlement,
+          uid,
+          displayName,
+          targets,
+          summary: result.summary,
+          resolvedAvatarUrl,
+          previewSnapshot: previewSnapshot
+            ? {
+                mergedScores: previewSnapshot.mergedScores,
+                profile: previewSnapshot.profile,
+              }
+            : undefined,
+          batchFailures: batch.failures,
+        });
+        return result;
       }
     } catch (err) {
       logLadderCallableError('runLeaderboardBatchUpload/ladderSyncBatch', err);
@@ -146,6 +165,7 @@ export async function runLeaderboardBatchUpload(options: {
           metric,
           score,
           displayName,
+          avatarUrl: resolvedAvatarUrl,
         },
         options: {
           skipPreviewUpdate: true,
@@ -170,21 +190,26 @@ export async function runLeaderboardBatchUpload(options: {
     });
   }
 
-  if (previewSnapshot && tally.updated > 0) {
-    await syncLeaderboardPreviewFullSixAxis({
-      entitlement,
-      uid,
-      displayName,
-      mergedScores: previewSnapshot.mergedScores,
-      profile: previewSnapshot.profile,
-      avatarUrl: resolvedAvatarUrl,
-      skipAvatarStorageEnsure: true,
-    });
-  }
+  const result = { summary: tally, failures };
+  await runLeaderboardBatchPostUpload({
+    entitlement,
+    uid,
+    displayName,
+    targets,
+    summary: result.summary,
+    resolvedAvatarUrl,
+    previewSnapshot: previewSnapshot
+      ? {
+          mergedScores: previewSnapshot.mergedScores,
+          profile: previewSnapshot.profile,
+        }
+      : undefined,
+    batchFailures: failures,
+  });
 
   if (import.meta.env.DEV && failures.length > 0) {
     console.warn('[ladder] sequential batch shard failures', failures);
   }
 
-  return { summary: tally, failures };
+  return result;
 }

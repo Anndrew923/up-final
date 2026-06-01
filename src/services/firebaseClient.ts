@@ -51,6 +51,17 @@ export interface FirebaseConfig {
   authDomain: string;
   projectId: string;
   appId: string;
+  /** When omitted, resolved from `VITE_FIREBASE_STORAGE_BUCKET` or `{projectId}.firebasestorage.app`. */
+  storageBucket?: string;
+}
+
+/** Resolves Storage bucket for ladder avatar uploads (`getStorage` requires this). */
+export function resolveFirebaseStorageBucket(projectId: string): string | undefined {
+  const explicit = trimEnv(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET);
+  if (explicit) return explicit;
+  const id = projectId.trim();
+  if (!id) return undefined;
+  return `${id}.firebasestorage.app`;
 }
 
 function trimEnv(value: string | undefined): string {
@@ -120,23 +131,40 @@ export function tryInitFirebaseFromEnv(): void {
     return;
   }
 
-  initFirebase({ apiKey, authDomain, projectId, appId });
+  const storageBucket = resolveFirebaseStorageBucket(projectId);
+  initFirebase({
+    apiKey,
+    authDomain,
+    projectId,
+    appId,
+    ...(storageBucket ? { storageBucket } : {}),
+  });
 }
 
 export function initFirebase(config: FirebaseConfig): void {
+  const storageBucket =
+    trimEnv(config.storageBucket) || resolveFirebaseStorageBucket(config.projectId);
+
   const opts: FirebaseOptions = {
     apiKey: config.apiKey,
     authDomain: config.authDomain,
     projectId: config.projectId,
     appId: config.appId,
+    ...(storageBucket ? { storageBucket } : {}),
   };
 
   firebaseApp = getApps().length ? getApp() : initializeApp(opts);
   firestoreDb = initFirestoreForApp(firebaseApp);
   firebaseAuth = initFirebaseAuthForApp(firebaseApp);
   firebaseFunctions = getFunctions(firebaseApp, getLadderFunctionsRegion());
-  firebaseStorage = getStorage(firebaseApp);
+  firebaseStorage = storageBucket ? getStorage(firebaseApp, storageBucket) : getStorage(firebaseApp);
   connectFirebaseEmulatorsIfEnabled();
+
+  if (import.meta.env.DEV && !storageBucket) {
+    console.warn(
+      '[firebase] VITE_FIREBASE_STORAGE_BUCKET is unset — ladder avatar uploads may fail (storage/no-default-bucket).'
+    );
+  }
 }
 
 /**

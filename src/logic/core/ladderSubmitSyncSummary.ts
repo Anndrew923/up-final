@@ -62,8 +62,11 @@ export function applyLeaderboardSubmitToSyncSummary(
     tally.updated += 1;
     return;
   }
-  if (result.ok && result.reason === 'unchanged') {
+  if (result.ok && (result.reason === 'unchanged' || result.reason === 'avatar-patched')) {
     tally.unchanged += 1;
+    if (result.reason === 'avatar-patched') {
+      tally.avatarPatched = (tally.avatarPatched ?? 0) + 1;
+    }
     return;
   }
 

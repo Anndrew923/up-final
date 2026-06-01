@@ -38,7 +38,7 @@ function previewRef(uid) {
   return db.collection(LEADERBOARD_PREVIEWS_COLLECTION).doc(uid);
 }
 
-function buildEntryPayload({ displayName, score, profile, avatarUrl }) {
+export function buildEntryPayload({ displayName, score, profile, avatarUrl }) {
   const isAnonymous = profile?.isAnonymousInLadder === true;
   const payload = {
     displayName: isAnonymous ? "Anonymous" : displayName,
@@ -119,6 +119,17 @@ export async function runLadderSubmitShard(request) {
       scoresEqualForLadderWrite(previousScore, score)
     ) {
       const quota = checkShardRateLimit(rateDoc, rateKey, nowMs);
+      const storedAvatar = sanitizeAvatarUrl(entrySnap.data()?.avatarUrl);
+      if (avatarUrl && avatarUrl !== storedAvatar && entrySnap.exists) {
+        const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+        tx.set(entryRef(metric, uid), payload, { merge: true });
+        return {
+          outcome: "avatar-patched",
+          previousScore,
+          submittedScore: score,
+          quota,
+        };
+      }
       return {
         outcome: "unchanged",
         previousScore,
@@ -156,11 +167,12 @@ export async function runLadderSubmitShard(request) {
     };
   });
 
-  if (result.outcome === "unchanged") {
+  if (result.outcome === "unchanged" || result.outcome === "avatar-patched") {
     return {
       ok: true,
-      reason: "unchanged",
+      reason: result.outcome === "avatar-patched" ? "avatar-patched" : "unchanged",
       updated: false,
+      avatarPatched: result.outcome === "avatar-patched",
       previousScore: result.previousScore,
       submittedScore: result.submittedScore,
       improved: false,

@@ -39,6 +39,8 @@ type LadderSyncBatchPayload = {
   profile?: Partial<LadderProfileProjection>;
   fullSync?: boolean;
   preview?: { mergedScores: ScoreMap };
+  /** Extra entry shards to receive https avatar without a score change (default: ladderScore). */
+  propagateAvatarShards?: LeaderboardShardId[];
 };
 
 type LadderSyncBatchResponse = {
@@ -100,6 +102,7 @@ function normalizeBatchSummary(raw: LeaderboardSyncRunSummary | undefined): Lead
     ...base,
     invalidInput: base.invalidInput ?? 0,
     internal: base.internal ?? 0,
+    avatarPatched: base.avatarPatched ?? 0,
     errors: base.errors ?? (base.invalidInput ?? 0) + (base.internal ?? 0),
   };
 }
@@ -163,6 +166,7 @@ export async function callLadderSyncBatch(params: {
   profile?: Partial<LadderProfileProjection>;
   fullSync?: boolean;
   preview?: { mergedScores: ScoreMap };
+  propagateAvatarShards?: LeaderboardShardId[];
 }): Promise<
   | LadderSyncBatchSuccess
   | { ok: false; reason: string; nextAllowedAt?: string; failures: LadderSyncShardFailure[] }
@@ -179,6 +183,7 @@ export async function callLadderSyncBatch(params: {
       profile: params.profile,
       fullSync: params.fullSync,
       preview: params.preview,
+      propagateAvatarShards: params.propagateAvatarShards,
     });
 
     const failures = Array.isArray(data?.failures) ? data.failures : [];

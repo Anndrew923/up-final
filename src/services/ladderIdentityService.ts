@@ -1,5 +1,6 @@
 import { isLadderAvatarDataUrl, isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
+import { parseIsoMs } from '../logic/core/structuredSyncReconcile';
 import { loadProfile, saveProfile, type LocalProfile } from './localStorageService';
 
 /**
@@ -109,10 +110,80 @@ export function resolveLeaderboardAvatarUrlForCloud(
   return undefined;
 }
 
+/**
+ * Applies remote `profile/baseline` ladder fields without erasing a newer Home identity.
+ * Remote https avatar wins when present; otherwise keep local (incl. data URL until Pro ladder sync).
+ */
+export function mergeLadderProfileWithLocal(remoteBaseline: LocalProfile): LocalProfile {
+  const local = loadProfile();
+  const remoteName = normalizeLadderDisplayName(remoteBaseline.displayName ?? '');
+  const localName = normalizeLadderDisplayName(local?.displayName ?? '');
+  const remoteMs = parseIsoMs(remoteBaseline.updatedAt);
+  const localMs = parseIsoMs(local?.updatedAt);
+
+  const remoteAvatar = sanitizeAvatarUrlForLeaderboard(remoteBaseline.avatarUrl);
+  const localAvatar = sanitizeAvatarUrlForLeaderboard(local?.avatarUrl);
+
+  // WHY: Stale cloud https must not clobber a newer Home pick (data URL until ladder sync uploads).
+  let avatarUrl: string | undefined;
+  if (localMs > remoteMs && localAvatar) {
+    avatarUrl = localAvatar;
+  } else if (remoteAvatar && isLadderAvatarHttpsUrl(remoteAvatar)) {
+    avatarUrl = remoteAvatar;
+  } else if (localAvatar) {
+    avatarUrl = localAvatar;
+  }
+
+  const displayName =
+    localMs > remoteMs && localName ? localName : remoteName || localName || '';
+
+  const uid =
+    remoteBaseline.uid?.length > 0
+      ? remoteBaseline.uid
+      : local?.uid && local.uid.length > 0
+        ? local.uid
+        : 'local';
+
+  const merged: LocalProfile = {
+    uid,
+    updatedAt: new Date(Math.max(localMs, remoteMs, Date.now())).toISOString(),
+  };
+  if (displayName) merged.displayName = displayName;
+  if (avatarUrl) merged.avatarUrl = avatarUrl;
+  return merged;
+}
+
+/**
+ * After structured cloud pull merge: never drop a valid local avatar the merge omitted.
+ * WHY: Remote baseline omits data URLs; merge timestamps can still yield no `avatarUrl` on disk.
+ */
+export function finalizeLadderProfileMergeForLocalApply(
+  merged: LocalProfile,
+  localBeforeApply?: LocalProfile | null
+): LocalProfile {
+  const prior = sanitizeAvatarUrlForLeaderboard(
+    (localBeforeApply ?? loadProfile())?.avatarUrl
+  );
+  const mergedAvatar = sanitizeAvatarUrlForLeaderboard(merged.avatarUrl);
+  if (prior && !mergedAvatar) {
+    return { ...merged, avatarUrl: prior };
+  }
+  return merged;
+}
+
 /** Display name + avatar for `submitLeaderboardScore` input (falls back to empty avatar). */
 export function getLeaderboardIdentityPayload(): { displayName: string; avatarUrl?: string } {
   const p = loadProfile();
   const displayName = normalizeLadderDisplayName(p?.displayName ?? '');
   const avatarUrl = sanitizeAvatarUrlForLeaderboard(p?.avatarUrl);
   return { displayName, ...(avatarUrl ? { avatarUrl } : {}) };
+}
+
+/** Ladder sync entry point: same identity as payload with upload-safe display name fallback. */
+export function getLadderUploadIdentity(): { displayName: string; avatarUrl?: string } {
+  const { displayName, avatarUrl } = getLeaderboardIdentityPayload();
+  return {
+    displayName: displayName || 'Pilot',
+    ...(avatarUrl ? { avatarUrl } : {}),
+  };
 }

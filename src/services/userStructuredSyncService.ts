@@ -28,7 +28,11 @@ import {
   USER_PROFILE_SUBCOLLECTION,
 } from './firestorePaths';
 import { isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
-import { sanitizeAvatarUrlForLeaderboard } from './ladderIdentityService';
+import {
+  finalizeLadderProfileMergeForLocalApply,
+  mergeLadderProfileWithLocal,
+  sanitizeAvatarUrlForLeaderboard,
+} from './ladderIdentityService';
 import type { LocalHistoryRecord } from './localStorageService';
 import {
   loadArmSizeInputs,
@@ -40,6 +44,7 @@ import {
   loadPhysicalProfile,
   loadPowerInputs,
   loadProfile,
+  type LocalProfile,
   loadScores,
   loadStrengthInputs,
   saveArmSizeInputs,
@@ -120,12 +125,27 @@ function stripDataUrlFromLadderProfile(
   return next;
 }
 
+/**
+ * Omits `ladderProfile` when the portrait is still a local data URL so push does not
+ * overwrite cloud with an avatar-stripped snapshot (主控台 sync / radar debounce).
+ */
+export function ladderProfileForStructuredPush(): LocalProfile | null | undefined {
+  const profile = loadProfile();
+  if (!profile) return undefined;
+  const localAvatar = sanitizeAvatarUrlForLeaderboard(profile.avatarUrl);
+  if (localAvatar && !isLadderAvatarHttpsUrl(localAvatar)) {
+    return undefined;
+  }
+  return stripDataUrlFromLadderProfile(profile);
+}
+
 export function buildStructuredProfileFromLocal(nowIso: string): StructuredProfileFirestoreV1 {
+  const ladderProfile = ladderProfileForStructuredPush();
   return {
     schemaVersion: STRUCTURED_PROFILE_SCHEMA_VERSION,
     updatedAt: nowIso,
     scores: loadScores(),
-    ladderProfile: stripDataUrlFromLadderProfile(loadProfile()),
+    ...(ladderProfile !== undefined ? { ladderProfile } : {}),
     physicalProfile: loadPhysicalProfile(),
     ffmiDraft: loadFfmiDraft(),
     cardioInputs: loadCardioInputs(),
@@ -148,8 +168,12 @@ export function applyStructuredProfileToLocal(data: StructuredProfileFirestoreV1
   if (data.gripInputs) saveGripInputs(data.gripInputs);
   if (data.armSizeInputs) saveArmSizeInputs(data.armSizeInputs);
   if (data.ladderProfile && typeof data.ladderProfile.uid === 'string') {
-    const p = stripDataUrlFromLadderProfile(data.ladderProfile);
-    if (p) saveProfile(p);
+    const localBefore = loadProfile();
+    const remote = stripDataUrlFromLadderProfile(data.ladderProfile);
+    if (remote) {
+      const merged = mergeLadderProfileWithLocal(remote);
+      saveProfile(finalizeLadderProfileMergeForLocalApply(merged, localBefore));
+    }
   }
 }
 
@@ -236,6 +260,8 @@ export async function pushStructuredProfileFromLocal(ent: EntitlementState): Pro
   const uid = requireNonAnonymousUid();
   const payload = buildStructuredProfileFromLocal(new Date().toISOString());
   await setDoc(profileRef(db, uid), payload, { merge: true });
+  // WHY: Skip echo apply of our own push (stripped ladderProfile would merge away data URL avatars).
+  writeWatermark(payload.updatedAt);
 }
 
 export async function pushAllStructuredHistoryFromLocal(ent: EntitlementState): Promise<void> {

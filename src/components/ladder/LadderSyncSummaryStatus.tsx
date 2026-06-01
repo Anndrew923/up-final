@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import { hasAvatarUploadSyncFailure } from '../../logic/core/ladderSyncFeedback';
 import type {
   LadderSyncShardFailure,
   LeaderboardSyncRunSummary,
@@ -22,27 +23,49 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
 }) => {
   const { t } = useTranslation('common');
 
+  const avatarBlocked = summary.attempted === 0 && hasAvatarUploadSyncFailure(failures);
+  const avatarOnlySuccess =
+    summary.updated === 0 && (summary.avatarPatched ?? 0) > 0 && !avatarBlocked;
   const tone =
     summary.updated > 0
       ? 'text-emerald-400/90'
-      : summary.unchanged === summary.attempted
-        ? 'text-zinc-300'
-        : 'text-zinc-400';
+      : avatarOnlySuccess
+        ? 'text-emerald-400/90'
+        : avatarBlocked
+          ? 'text-amber-400/90'
+          : summary.unchanged === summary.attempted && summary.attempted > 0
+            ? 'text-zinc-300'
+            : 'text-zinc-400';
 
   return (
     <div className={`space-y-2 ${className ?? ''}`}>
-      <p className={`text-sm ${tone}`} role="status">
-        {t('ladder.syncAll.summary', {
-          attempted: summary.attempted,
-          updated: summary.updated,
-          unchanged: summary.unchanged,
-          rateLimited: summary.rateLimited,
-          proRequired: summary.proRequired,
-          invalidInput: summary.invalidInput,
-          internal: summary.internal,
-          errors: summary.errors,
-        })}
-      </p>
+      {avatarBlocked ? (
+        <p className={`text-sm ${tone}`} role="status">
+          {t('ladder.upload.resultAvatarUploadFailed')}
+        </p>
+      ) : avatarOnlySuccess ? (
+        <p className={`text-sm ${tone}`} role="status">
+          {t('ladder.syncAll.avatarPortraitUpdated')}
+        </p>
+      ) : summary.attempted > 0 ? (
+        <p className={`text-sm ${tone}`} role="status">
+          {t('ladder.syncAll.summary', {
+            attempted: summary.attempted,
+            updated: summary.updated,
+            unchanged: summary.unchanged,
+            avatarPatched: summary.avatarPatched ?? 0,
+            rateLimited: summary.rateLimited,
+            proRequired: summary.proRequired,
+            invalidInput: summary.invalidInput,
+            internal: summary.internal,
+            errors: summary.errors,
+          })}
+        </p>
+      ) : failures.length > 0 ? (
+        <p className={`text-sm ${tone}`} role="status">
+          {t('ladder.syncAll.preflightBlocked')}
+        </p>
+      ) : null}
 
       {failures.length > 0 ? (
         <div className="rounded-lg border border-zinc-800/90 bg-zinc-950/60 p-2">

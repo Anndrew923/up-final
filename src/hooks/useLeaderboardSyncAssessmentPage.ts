@@ -14,7 +14,7 @@ import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
-import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
+import { getLadderUploadIdentity } from '../services/ladderIdentityService';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import {
@@ -24,7 +24,6 @@ import {
   loadPowerInputs,
   loadStrengthInputs,
 } from '../services/localStorageService';
-import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import type { EntitlementState } from '../types/entitlement';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
@@ -112,17 +111,16 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    const displayName = useAuthStore.getState().displayName?.trim() || 'Pilot';
     const snap = buildEntitlementSnapshot();
 
     setBusy(true);
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
-      const identity = getLeaderboardIdentityPayload();
+      const identity = getLadderUploadIdentity();
       const batch = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,
-        displayName,
+        displayName: identity.displayName,
         entitlement: snap,
         previewSnapshot: {
           mergedScores: merged,
@@ -137,8 +135,14 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       });
       if (batch.summary.updated > 0) {
         void hapticService.trigger('success');
+      } else if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
+        hapticService.fireLeaderboardUploadResult({
+          ok: false,
+          reason: 'avatar-upload-failed',
+          updated: false,
+        });
       }
-      queueStructuredProfileAfterRadarSubmit();
+      queueStructuredProfileAfterRadarSubmit(batch);
       onFinishedRef.current?.();
     } finally {
       setBusy(false);

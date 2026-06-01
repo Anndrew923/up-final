@@ -89,6 +89,7 @@ export interface SubmitLeaderboardResult {
     | 'invalid-input'
     | 'unknown'
     | 'unchanged'
+    | 'avatar-patched'
     | 'avatar-upload-failed';
   updated?: boolean;
   /** Prior `scoreBest` when known (read-before-write or memory store). */

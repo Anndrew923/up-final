@@ -10,7 +10,7 @@ import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
-import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
+import { getLadderUploadIdentity } from '../services/ladderIdentityService';
 import {
   checkFullSyncAllowed,
   recordFullSyncAllowed,
@@ -135,17 +135,16 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
       return;
     }
 
-    const displayName = useAuthStore.getState().displayName?.trim() || 'Pilot';
     const snap = buildEntitlementSnapshot();
 
     setBusy(true);
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
-      const identity = getLeaderboardIdentityPayload();
+      const identity = getLadderUploadIdentity();
       const batch = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,
-        displayName,
+        displayName: identity.displayName,
         entitlement: snap,
         fullSync: true,
         previewSnapshot: {

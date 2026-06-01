@@ -12,6 +12,16 @@ describe('resolveLeaderboardUploadHapticPreset', () => {
     ).toBe('ack');
   });
 
+  it('returns success for avatar-only patch', () => {
+    expect(
+      resolveLeaderboardUploadHapticPreset({
+        ok: true,
+        updated: false,
+        reason: 'avatar-patched',
+      })
+    ).toBe('success');
+  });
+
   it('returns warning when rate limited', () => {
     expect(
       resolveLeaderboardUploadHapticPreset({ ok: false, updated: false, reason: 'rate-limited' })

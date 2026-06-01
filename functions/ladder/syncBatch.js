@@ -5,8 +5,22 @@ import {
   loadRateLimitDoc,
   recordFullSyncSuccess,
 } from "./rateLimits.js";
-import { runLadderSubmitShard, runLadderSyncPreview } from "./submitShardCore.js";
-import { isValidShardId, validateScore } from "./validate.js";
+import {
+  buildEntryPayload,
+  runLadderSubmitShard,
+  runLadderSyncPreview,
+} from "./submitShardCore.js";
+import {
+  isValidShardId,
+  normalizeDisplayName,
+  sanitizeAvatarUrl,
+  sanitizeProfile,
+  validateScore,
+} from "./validate.js";
+import {
+  ENTRIES_SUBCOLLECTION,
+  LEADERBOARDS_COLLECTION,
+} from "../shared/constants.js";
 import {
   applyFailureReasonToTally,
   mapLadderShardSubmitError,
@@ -20,6 +34,7 @@ export function createEmptySummary() {
     attempted: 0,
     updated: 0,
     unchanged: 0,
+    avatarPatched: 0,
     errors: 0,
     invalidInput: 0,
     internal: 0,
@@ -57,12 +72,85 @@ function applyShardResult(tally, failures, metric, result) {
     applyFailureReasonToTally(tally, reason);
     return;
   }
-  if (result.reason === "unchanged") {
+  if (result.reason === "unchanged" || result.reason === "avatar-patched") {
     tally.unchanged += 1;
+    if (result.avatarPatched || result.reason === "avatar-patched") {
+      tally.avatarPatched += 1;
+    }
     return;
   }
   if (result.updated) {
     tally.updated += 1;
+  }
+}
+
+/**
+ * Patches portrait on shards the user can see but did not upload this batch (e.g. `ladderScore`).
+ * WHY: Assessment page sync may only target `bodyFat_ffmi` while the ladder UI shows the overall board.
+ */
+async function propagateAvatarToExtraShards(uid, data, targets, tally, failures) {
+  const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
+  if (!avatarUrl) return;
+
+  const extra =
+    Array.isArray(data.propagateAvatarShards) && data.propagateAvatarShards.length > 0
+      ? data.propagateAvatarShards
+      : ["ladderScore"];
+
+  const batchMetrics = new Set(
+    targets
+      .map((t) => t?.metric)
+      .filter((m) => typeof m === "string" && isValidShardId(m))
+  );
+
+  const seen = new Set();
+  for (const metric of extra) {
+    if (!metric || seen.has(metric) || !isValidShardId(metric)) continue;
+    if (batchMetrics.has(metric)) continue;
+    seen.add(metric);
+
+    const ref = db
+      .collection(LEADERBOARDS_COLLECTION)
+      .doc(metric)
+      .collection(ENTRIES_SUBCOLLECTION)
+      .doc(uid);
+    let snap;
+    try {
+      snap = await ref.get();
+    } catch (err) {
+      recordLadderSyncFailure(
+        failures,
+        metric,
+        "internal",
+        err?.message ?? "Avatar propagate read failed"
+      );
+      continue;
+    }
+    if (!snap.exists) continue;
+
+    const score = Number(snap.data()?.scoreBest);
+    if (!validateScore(score)) continue;
+
+    const storedAvatar = sanitizeAvatarUrl(snap.data()?.avatarUrl);
+    if (storedAvatar === avatarUrl) continue;
+
+    try {
+      const payload = buildEntryPayload({
+        displayName: normalizeDisplayName(data.displayName),
+        score,
+        profile: sanitizeProfile(data.profile),
+        avatarUrl,
+      });
+      await ref.set(payload, { merge: true });
+      tally.avatarPatched += 1;
+    } catch (err) {
+      recordLadderSyncFailure(
+        failures,
+        metric,
+        "internal",
+        err?.message ?? "Avatar propagate write failed"
+      );
+    }
   }
 }
 
@@ -163,7 +251,14 @@ export async function runLadderSyncBatch(request) {
     }
   }
 
-  if (preview?.mergedScores && tally.updated > 0) {
+  await propagateAvatarToExtraShards(uid, data, targets, tally, failures);
+
+  const shouldSyncPreview =
+    preview?.mergedScores &&
+    sanitizeAvatarUrl(data.avatarUrl) &&
+    (tally.updated > 0 || tally.avatarPatched > 0);
+
+  if (shouldSyncPreview) {
     try {
       await runLadderSyncPreview({
         auth: request.auth,

@@ -31,6 +31,7 @@ import {
   getLadderUserPreview,
   type LadderUserPreview,
 } from '../services/leaderboardPreviewService';
+import { LADDER_CACHE_INVALIDATED_EVENT } from '../services/ladderSyncPostBatch';
 import { useShallow } from 'zustand/react/shallow';
 import type { EntitlementState } from '../types/entitlement';
 
@@ -109,6 +110,12 @@ export default function LadderPage() {
   const bumpLadderRefresh = useCallback(() => {
     setLadderRefreshNonce((n) => n + 1);
   }, []);
+
+  useEffect(() => {
+    const onCacheInvalidated = () => bumpLadderRefresh();
+    window.addEventListener(LADDER_CACHE_INVALIDATED_EVENT, onCacheInvalidated);
+    return () => window.removeEventListener(LADDER_CACHE_INVALIDATED_EVENT, onCacheInvalidated);
+  }, [bumpLadderRefresh]);
 
   const {
     applied,

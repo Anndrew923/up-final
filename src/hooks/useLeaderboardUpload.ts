@@ -5,11 +5,11 @@ import { canUploadLeaderboard } from '../logic/core/entitlement';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
+import { getLadderUploadIdentity } from '../services/ladderIdentityService';
 import {
   submitLeaderboardScore,
   type SubmitLeaderboardResult,
 } from '../services/leaderboardService';
-import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import type { EntitlementState } from '../types/entitlement';
 
@@ -61,7 +61,7 @@ export function useLeaderboardUpload() {
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    const displayName = useAuthStore.getState().displayName?.trim() || 'Pilot';
+    const identity = getLadderUploadIdentity();
     setBusy(true);
     try {
       const result = await submitLeaderboardScore({
@@ -70,7 +70,8 @@ export function useLeaderboardUpload() {
           uid: user.uid,
           metric,
           score,
-          displayName,
+          displayName: identity.displayName,
+          avatarUrl: identity.avatarUrl,
         },
       });
       setLastResult(result);

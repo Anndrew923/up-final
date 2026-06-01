@@ -12,6 +12,11 @@ describe('applyLeaderboardSubmitToSyncSummary', () => {
 
     applyLeaderboardSubmitToSyncSummary(tally, { ok: true, updated: true });
     applyLeaderboardSubmitToSyncSummary(tally, { ok: true, reason: 'unchanged', updated: false });
+    applyLeaderboardSubmitToSyncSummary(tally, {
+      ok: true,
+      reason: 'avatar-patched',
+      updated: false,
+    });
     applyLeaderboardSubmitToSyncSummary(
       tally,
       { ok: false, reason: 'rate-limited' },
@@ -31,7 +36,8 @@ describe('applyLeaderboardSubmitToSyncSummary', () => {
     expect(tally).toEqual({
       attempted: 0,
       updated: 1,
-      unchanged: 1,
+      unchanged: 2,
+      avatarPatched: 1,
       rateLimited: 1,
       proRequired: 0,
       invalidInput: 1,

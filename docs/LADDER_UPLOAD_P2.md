@@ -66,8 +66,9 @@ Use transactions: check → write entry → increment counter.
 1. `cd functions && npm install && cd ..`
 2. `npm run firebase:deploy:ladder-p2` (deploys functions, Firestore rules, and **Storage rules**)
 3. Enable Firebase Storage in Console if not already; ladder avatars use `ladder-avatars/{uid}/avatar.jpg`
-4. Set `VITE_LADDER_CALLABLE_WRITES=true` and rebuild the web app
-5. Optional Functions env: `LEADERBOARD_PAYWALL_ENABLED=true` when billing gate is live
+4. Set `VITE_FIREBASE_STORAGE_BUCKET` (e.g. `fitness-app-69f08.firebasestorage.app` from Console → Storage) in `.env` / `.env.production`
+5. Set `VITE_LADDER_CALLABLE_WRITES=true` and rebuild the web app
+6. Optional Functions env: `LEADERBOARD_PAYWALL_ENABLED=true` when billing gate is live
 
 ## Files (P2)
 
