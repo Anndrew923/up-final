@@ -27,6 +27,7 @@ import {
   USER_PROFILE_BASELINE_DOC_ID,
   USER_PROFILE_SUBCOLLECTION,
 } from './firestorePaths';
+import { isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
 import { sanitizeAvatarUrlForLeaderboard } from './ladderIdentityService';
 import type { LocalHistoryRecord } from './localStorageService';
 import {
@@ -104,16 +105,18 @@ export function canRunStructuredUserSync(ent: EntitlementState): boolean {
   return !shouldBlockStructuredUserSync(ent) && structuredFirestoreSessionReady();
 }
 
+/** Pro structured sync stores https ladder avatars only — never multi‑100KB `data:` blobs. */
 function stripDataUrlFromLadderProfile(
   profile: import('./localStorageService').LocalProfile | null | undefined
 ): import('./localStorageService').LocalProfile | null {
   if (!profile) return null;
   const safeUrl = sanitizeAvatarUrlForLeaderboard(profile.avatarUrl);
-  if (safeUrl) {
-    return { ...profile, avatarUrl: safeUrl };
-  }
   const next: import('./localStorageService').LocalProfile = { ...profile };
-  delete next.avatarUrl;
+  if (safeUrl && isLadderAvatarHttpsUrl(safeUrl)) {
+    next.avatarUrl = safeUrl;
+  } else {
+    delete next.avatarUrl;
+  }
   return next;
 }
 

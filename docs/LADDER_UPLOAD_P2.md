@@ -64,9 +64,10 @@ Use transactions: check → write entry → increment counter.
 ## Deploy order (production)
 
 1. `cd functions && npm install && cd ..`
-2. `npm run firebase:deploy:ladder-p2` (or `firebase deploy --only functions,firestore:rules`)
-3. Set `VITE_LADDER_CALLABLE_WRITES=true` and rebuild the web app
-4. Optional Functions env: `LEADERBOARD_PAYWALL_ENABLED=true` when billing gate is live
+2. `npm run firebase:deploy:ladder-p2` (deploys functions, Firestore rules, and **Storage rules**)
+3. Enable Firebase Storage in Console if not already; ladder avatars use `ladder-avatars/{uid}/avatar.jpg`
+4. Set `VITE_LADDER_CALLABLE_WRITES=true` and rebuild the web app
+5. Optional Functions env: `LEADERBOARD_PAYWALL_ENABLED=true` when billing gate is live
 
 ## Files (P2)
 
@@ -75,3 +76,4 @@ Use transactions: check → write entry → increment counter.
 - `src/services/ladderCallableService.ts` — `httpsCallable` wrappers
 - `src/services/leaderboardService.ts` — Callable when flag on
 - `src/services/leaderboardBatchUploadService.ts` — `ladderSyncBatch` for home sync-all
+- `storage.rules` + `src/services/ladderAvatarStorageService.ts` — Pro sync uploads local `data:` avatar to Storage, Callable receives `https://` only

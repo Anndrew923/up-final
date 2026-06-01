@@ -1,7 +1,13 @@
 /** Minimal upload outcome shape for haptic mapping (keeps logic free of service imports). */
 export interface LeaderboardUploadHapticInput {
   ok: boolean;
-  reason?: 'pro-required' | 'rate-limited' | 'invalid-input' | 'unknown' | 'unchanged';
+  reason?:
+    | 'pro-required'
+    | 'rate-limited'
+    | 'invalid-input'
+    | 'unknown'
+    | 'unchanged'
+    | 'avatar-upload-failed';
   updated?: boolean;
 }
 
@@ -21,7 +27,8 @@ export function resolveLeaderboardUploadHapticPreset(
   if (
     result.reason === 'pro-required' ||
     result.reason === 'invalid-input' ||
-    result.reason === 'unknown'
+    result.reason === 'unknown' ||
+    result.reason === 'avatar-upload-failed'
   ) {
     return 'error';
   }

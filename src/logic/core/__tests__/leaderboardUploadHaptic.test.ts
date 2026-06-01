@@ -25,6 +25,9 @@ describe('resolveLeaderboardUploadHapticPreset', () => {
     expect(resolveLeaderboardUploadHapticPreset({ ok: false, reason: 'unknown', updated: false })).toBe(
       'error'
     );
+    expect(
+      resolveLeaderboardUploadHapticPreset({ ok: false, reason: 'avatar-upload-failed', updated: false })
+    ).toBe('error');
   });
 
   it('returns ack for ok write with no delta when reason omitted', () => {

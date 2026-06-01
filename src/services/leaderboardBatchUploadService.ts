@@ -14,6 +14,8 @@ import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
 import type { LadderProfileProjection } from '../types/ladderProfile';
 import { getFirestoreDb } from './firebaseClient';
+import { resolveLeaderboardAvatarUrlForCloud } from './ladderIdentityService';
+import { ensureLadderAvatarHttpsForProSync } from './ladderAvatarStorageService';
 import { callLadderSyncBatch } from './ladderCallableService';
 import { submitLeaderboardScore, syncLeaderboardPreviewFullSixAxis } from './leaderboardService';
 
@@ -61,6 +63,27 @@ export async function runLeaderboardBatchUpload(options: {
   const empty = createEmptyLeaderboardSyncRunSummary();
   const emptyFailures: LadderSyncShardFailure[] = [];
 
+  let resolvedAvatarUrl = previewSnapshot?.avatarUrl ?? undefined;
+  if (targets.length > 0) {
+    const avatarEnsure = await ensureLadderAvatarHttpsForProSync(entitlement);
+    if (!avatarEnsure.ok) {
+      return {
+        summary: empty,
+        failures: [
+          {
+            metric: 'avatar',
+            reason: 'avatar-upload-failed',
+            message: avatarEnsure.message,
+          },
+        ],
+      };
+    }
+    resolvedAvatarUrl = resolveLeaderboardAvatarUrlForCloud(
+      previewSnapshot?.avatarUrl,
+      avatarEnsure.avatarUrl
+    );
+  }
+
   const callableWrites = isLadderCallableWritesEnabled();
   const hasFirestore = Boolean(getFirestoreDb());
 
@@ -78,7 +101,7 @@ export async function runLeaderboardBatchUpload(options: {
       const batch = await callLadderSyncBatch({
         targets: targets.map((t) => ({ metric: t.metric, score: t.score })),
         displayName,
-        avatarUrl: previewSnapshot?.avatarUrl,
+        avatarUrl: resolvedAvatarUrl,
         profile: previewSnapshot?.profile,
         fullSync: fullSync || undefined,
         preview: previewSnapshot
@@ -127,6 +150,7 @@ export async function runLeaderboardBatchUpload(options: {
         options: {
           skipPreviewUpdate: true,
           skipOverallPreviewSync: true,
+          skipAvatarStorageEnsure: true,
         },
       });
 
@@ -153,7 +177,8 @@ export async function runLeaderboardBatchUpload(options: {
       displayName,
       mergedScores: previewSnapshot.mergedScores,
       profile: previewSnapshot.profile,
-      avatarUrl: previewSnapshot.avatarUrl,
+      avatarUrl: resolvedAvatarUrl,
+      skipAvatarStorageEnsure: true,
     });
   }
 

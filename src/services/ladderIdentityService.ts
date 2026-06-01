@@ -1,3 +1,4 @@
+import { isLadderAvatarDataUrl, isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
 import { loadProfile, saveProfile, type LocalProfile } from './localStorageService';
 
@@ -83,6 +84,29 @@ export function saveLadderIdentity(input: SaveLadderIdentityInput): void {
   }
 
   saveProfile(next);
+}
+
+/**
+ * Picks the https avatar to send on ladder Callable writes after optional Storage upload.
+ * WHY: Callers may still hold a stale `data:` URL; post-upload profile / `ensuredHttps` wins.
+ */
+export function resolveLeaderboardAvatarUrlForCloud(
+  preferred?: string | null,
+  ensuredFromStorage?: string
+): string | undefined {
+  const candidates = [
+    sanitizeAvatarUrlForLeaderboard(ensuredFromStorage),
+    sanitizeAvatarUrlForLeaderboard(preferred ?? undefined),
+    sanitizeAvatarUrlForLeaderboard(loadProfile()?.avatarUrl),
+  ].filter((v): v is string => Boolean(v));
+
+  for (const url of candidates) {
+    if (isLadderAvatarHttpsUrl(url)) return url;
+  }
+  for (const url of candidates) {
+    if (isLadderAvatarDataUrl(url)) return url;
+  }
+  return undefined;
 }
 
 /** Display name + avatar for `submitLeaderboardScore` input (falls back to empty avatar). */

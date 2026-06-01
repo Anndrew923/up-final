@@ -25,6 +25,15 @@ describe('ladder upload i18n', () => {
     expect(unchanged).not.toBe('ladder.upload.resultUnchanged');
     expect(unchanged.length).toBeGreaterThan(4);
 
+    const avatarFail = i18n.t('ladder.upload.resultAvatarUploadFailed', { ns: 'common' });
+    expect(avatarFail).not.toBe('ladder.upload.resultAvatarUploadFailed');
+    expect(avatarFail).toContain('大頭照');
+
+    const avatarReason = i18n.t('ladder.syncAll.failureReason.avatar-upload-failed', {
+      ns: 'common',
+    });
+    expect(avatarReason).not.toBe('ladder.syncAll.failureReason.avatar-upload-failed');
+
     const cooldown = i18n.t('ladder.syncAll.fullSyncCooldown', {
       ns: 'common',
       resetTime: '12:00',

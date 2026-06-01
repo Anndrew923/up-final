@@ -58,6 +58,9 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
     if (lastResult.reason === 'pro-required') {
       return t('ladder.upload.resultProRequired');
     }
+    if (lastResult.reason === 'avatar-upload-failed') {
+      return t('ladder.upload.resultAvatarUploadFailed');
+    }
     return t('ladder.upload.resultError');
   })();
 

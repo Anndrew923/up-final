@@ -74,6 +74,7 @@
       "quotaAfterUnchanged": "{{remaining}} write(s) left this hour for this shard ({{limit}}/hour); refreshes at {{resetTime}}.",
       "resultRateLimitedDetail": "Hourly cap ({{limit}}) reached. Retry after {{resetTime}}.",
       "resultProRequired": "Upload blocked — Pro required.",
+      "resultAvatarUploadFailed": "Avatar could not upload to the cloud, so ladder sync was skipped. Check your connection and try again.",
       "resultNoop": "No change applied.",
       "resultError": "Upload failed. Check connection or Firebase rules."
     },
@@ -105,13 +106,17 @@
       "busy": "Syncing…",
       "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{invalidInput}} invalid, {{internal}} system errors ({{errors}} total errors).",
       "failuresTitle": "Failed shards ({{count}})",
+      "failureMetric": {
+        "avatar": "Avatar"
+      },
       "failureReason": {
         "invalid-input": "Invalid input",
         "rate-limited": "Rate limited",
         "pro-required": "Pro required",
         "internal": "System error",
         "unknown": "Unknown error",
-        "anonymous": "Anonymous account"
+        "anonymous": "Anonymous account",
+        "avatar-upload-failed": "Avatar upload failed (Storage unavailable or permission denied)"
       },
       "fullSyncCooldown": "Full sync is on cooldown. Try again after {{resetTime}}.",
       "fullSyncDailyCap": "Daily full sync limit reached (3 per day). Use per-page uploads, or try again after {{resetTime}}."

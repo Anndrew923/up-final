@@ -52,7 +52,11 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
           <ul className="mt-1.5 max-h-40 space-y-1 overflow-y-auto text-xs text-zinc-400">
             {failures.map((row) => (
               <li key={`${row.metric}-${row.reason}-${row.message ?? ''}`}>
-                <span className="font-mono text-zinc-300">{row.metric}</span>
+                <span className="font-mono text-zinc-300">
+                  {t(`ladder.syncAll.failureMetric.${row.metric}`, {
+                    defaultValue: row.metric,
+                  })}
+                </span>
                 {' · '}
                 <span>{t(`ladder.syncAll.failureReason.${row.reason}`, { defaultValue: row.reason })}</span>
                 {row.message ? (

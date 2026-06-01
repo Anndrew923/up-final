@@ -35,9 +35,11 @@ import {
   type LadderProfileProjection,
 } from '../types/ladderProfile';
 import { getCurrentFirebaseUser, getFirestoreDb } from './firebaseClient';
+import { ensureLadderAvatarHttpsForProSync } from './ladderAvatarStorageService';
 import {
   getLeaderboardIdentityPayload,
   normalizeLadderDisplayName,
+  resolveLeaderboardAvatarUrlForCloud,
   sanitizeAvatarUrlForLeaderboard,
 } from './ladderIdentityService';
 import { getMergedScoresSnapshotForRadar } from './mergedLocalScoresSnapshot';
@@ -75,11 +77,19 @@ export interface SubmitLeaderboardInput {
 export interface SubmitLeaderboardOptions {
   skipPreviewUpdate?: boolean;
   skipOverallPreviewSync?: boolean;
+  /** Set when caller already ran `ensureLadderAvatarHttpsForProSync` (batch sync-all). */
+  skipAvatarStorageEnsure?: boolean;
 }
 
 export interface SubmitLeaderboardResult {
   ok: boolean;
-  reason?: 'pro-required' | 'rate-limited' | 'invalid-input' | 'unknown' | 'unchanged';
+  reason?:
+    | 'pro-required'
+    | 'rate-limited'
+    | 'invalid-input'
+    | 'unknown'
+    | 'unchanged'
+    | 'avatar-upload-failed';
   updated?: boolean;
   /** Prior `scoreBest` when known (read-before-write or memory store). */
   previousScore?: number | null;
@@ -647,11 +657,25 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
   mergedScores: ScoreMap;
   avatarUrl?: string | null;
   profile?: Partial<LadderProfileProjection>;
-}): Promise<{ ok: boolean; reason?: 'pro-required' | 'invalid-input' | 'unknown' }> {
-  const { entitlement, uid, displayName, mergedScores, avatarUrl, profile } = params;
+  skipAvatarStorageEnsure?: boolean;
+}): Promise<{
+  ok: boolean;
+  reason?: 'pro-required' | 'invalid-input' | 'unknown' | 'avatar-upload-failed';
+}> {
+  const { entitlement, uid, displayName, mergedScores, avatarUrl, profile, skipAvatarStorageEnsure } =
+    params;
   if (!uid.trim()) return { ok: false, reason: 'invalid-input' };
   if (shouldBlockFirebase(entitlement, 'leaderboard-write')) {
     return { ok: false, reason: 'pro-required' };
+  }
+
+  let ensuredAvatarUrl: string | undefined;
+  if (!skipAvatarStorageEnsure) {
+    const avatarEnsure = await ensureLadderAvatarHttpsForProSync(entitlement);
+    if (!avatarEnsure.ok) {
+      return { ok: false, reason: 'avatar-upload-failed' };
+    }
+    ensuredAvatarUrl = avatarEnsure.avatarUrl;
   }
 
   const resolved = await resolveLeaderboardUid(uid);
@@ -668,7 +692,7 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
   const dn = normalizeLadderDisplayName(
     (displayName && displayName.trim()) || identity.displayName || ''
   );
-  const av = sanitizeAvatarUrlForLeaderboard(avatarUrl ?? identity.avatarUrl);
+  const av = resolveLeaderboardAvatarUrlForCloud(avatarUrl, ensuredAvatarUrl);
 
   const db = getFirestoreDb();
   if (db && resolved.backend === 'firestore' && isLadderCallableWritesEnabled()) {
@@ -771,6 +795,21 @@ export async function submitLeaderboardScore(params: {
     };
   }
 
+  let ensuredAvatarUrl: string | undefined;
+  if (!options?.skipAvatarStorageEnsure) {
+    const avatarEnsure = await ensureLadderAvatarHttpsForProSync(entitlement);
+    if (!avatarEnsure.ok) {
+      return {
+        ok: false,
+        reason: 'avatar-upload-failed',
+        updated: false,
+        previousScore: null,
+        submittedScore: null,
+      };
+    }
+    ensuredAvatarUrl = avatarEnsure.avatarUrl;
+  }
+
   const identity = getLeaderboardIdentityPayload();
   const mergedForWrite: SubmitLeaderboardInput = {
     ...normalizedInput,
@@ -779,7 +818,10 @@ export async function submitLeaderboardScore(params: {
         identity.displayName ||
         ''
     ),
-    avatarUrl: sanitizeAvatarUrlForLeaderboard(normalizedInput.avatarUrl ?? identity.avatarUrl),
+    avatarUrl: resolveLeaderboardAvatarUrlForCloud(
+      normalizedInput.avatarUrl,
+      ensuredAvatarUrl
+    ),
   };
 
   if (!validateInput(mergedForWrite)) {
@@ -943,6 +985,7 @@ export async function submitLeaderboardScore(params: {
               mergedScores: getMergedScoresSnapshotForRadar(),
               avatarUrl: mergedForWrite.avatarUrl,
               profile: mergedForWrite.profile,
+              skipAvatarStorageEnsure: options?.skipAvatarStorageEnsure,
             });
             if (!snap.ok && import.meta.env.DEV) {
               console.warn('[leaderboard] ladderScore → preview full radar skipped', snap.reason);

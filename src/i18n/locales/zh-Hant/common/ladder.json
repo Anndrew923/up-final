@@ -74,6 +74,7 @@
       "quotaAfterUnchanged": "本分片本小時尚餘 {{remaining}} 次（每小時 {{limit}} 次）；下次額度於 {{resetTime}} 重新起算。",
       "resultRateLimitedDetail": "此分片本小時上傳次數已達 {{limit}} 次，請於 {{resetTime}} 之後再試。",
       "resultProRequired": "無法上傳 — 需要 Pro。",
+      "resultAvatarUploadFailed": "大頭照無法上傳至雲端，分數未同步。請檢查網路後重試，或稍後再同步天梯。",
       "resultNoop": "未套用變更。",
       "resultError": "上傳失敗。請檢查網路或 Firebase 規則。"
     },
@@ -105,13 +106,17 @@
       "busy": "同步中…",
       "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、輸入無效 {{invalidInput}}、系統錯誤 {{internal}}（錯誤合計 {{errors}}）。",
       "failuresTitle": "失敗分片（{{count}}）",
+      "failureMetric": {
+        "avatar": "大頭照"
+      },
       "failureReason": {
         "invalid-input": "輸入無效",
         "rate-limited": "觸發限流",
         "pro-required": "需要 Pro",
         "internal": "系統錯誤",
         "unknown": "未知錯誤",
-        "anonymous": "訪客帳號"
+        "anonymous": "訪客帳號",
+        "avatar-upload-failed": "大頭照上傳失敗（Storage 未就緒或權限不足）"
       },
       "fullSyncCooldown": "全量同步冷卻中，請於 {{resetTime}} 後再試。",
       "fullSyncDailyCap": "今日全量同步已達 3 次上限。可改用各評測頁單分片上傳，或於 {{resetTime}} 後再試。"

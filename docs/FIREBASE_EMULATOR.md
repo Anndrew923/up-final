@@ -10,7 +10,7 @@
 |---|---------|----------|
 | 資料 | 雲端 Firestore | 本機 `~/.cache/firebase/emulators` 或匯出目錄 |
 | Functions | 已部署的 `ladderSubmitShard` 等 | 本機執行 `functions/` 原始碼 |
-| Rules | 已部署的 `firestore.rules` | 啟動時載入 repo 內 `firestore.rules` |
+| Rules | 已部署的 `firestore.rules` / `storage.rules` | 啟動時載入 repo 內對應 rules |
 | 費用 | 依用量計費 | 本機免費 |
 
 ## 本專案預設埠（`firebase.json`）
@@ -21,6 +21,7 @@
 | Auth | 9099 |
 | Functions | 5001 |
 | Firestore | 8080 |
+| Storage | 9199 |
 
 ## 啟動步驟
 

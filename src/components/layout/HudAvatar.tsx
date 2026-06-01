@@ -14,7 +14,8 @@ export default function HudAvatar() {
   const authDisplayName = useAuthStore((s) => s.displayName);
   const authPhotoURL = useAuthStore((s) => s.photoURL);
   const displayName = authStatus === 'signed-in' ? authDisplayName : localDisplayName;
-  const avatarUrl = authStatus === 'signed-in' ? authPhotoURL || localAvatarUrl : undefined;
+  // WHY: Ladder identity avatar (Home) is the arena portrait; Google photoURL is fallback only.
+  const avatarUrl = localAvatarUrl ?? (authStatus === 'signed-in' ? authPhotoURL : undefined);
   const initial = (displayName?.charAt(0) || localInitial || 'U').toUpperCase();
   const label =
     avatarUrl && displayName?.trim()

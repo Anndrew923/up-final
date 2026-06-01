@@ -34,6 +34,11 @@ import {
 import { connectAuthEmulator } from 'firebase/auth';
 import { connectFirestoreEmulator } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions, type Functions } from 'firebase/functions';
+import {
+  connectStorageEmulator,
+  getStorage,
+  type FirebaseStorage,
+} from 'firebase/storage';
 import { getLadderFunctionsRegion } from '../config/ladderCallable';
 import {
   FIREBASE_EMULATOR_HOST,
@@ -56,6 +61,7 @@ let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
 let firebaseFunctions: Functions | null = null;
+let firebaseStorage: FirebaseStorage | null = null;
 let emulatorsConnected = false;
 
 /**
@@ -129,6 +135,7 @@ export function initFirebase(config: FirebaseConfig): void {
   firestoreDb = initFirestoreForApp(firebaseApp);
   firebaseAuth = initFirebaseAuthForApp(firebaseApp);
   firebaseFunctions = getFunctions(firebaseApp, getLadderFunctionsRegion());
+  firebaseStorage = getStorage(firebaseApp);
   connectFirebaseEmulatorsIfEnabled();
 }
 
@@ -155,7 +162,7 @@ function initFirebaseAuthForApp(app: FirebaseApp): Auth {
 
 function connectFirebaseEmulatorsIfEnabled(): void {
   if (!isFirebaseEmulatorEnabled() || emulatorsConnected) return;
-  if (!firebaseAuth || !firestoreDb || !firebaseFunctions) return;
+  if (!firebaseAuth || !firestoreDb || !firebaseFunctions || !firebaseStorage) return;
 
   connectAuthEmulator(
     firebaseAuth,
@@ -171,6 +178,11 @@ function connectFirebaseEmulatorsIfEnabled(): void {
     firebaseFunctions,
     FIREBASE_EMULATOR_HOST,
     FIREBASE_EMULATOR_PORTS.functions
+  );
+  connectStorageEmulator(
+    firebaseStorage,
+    FIREBASE_EMULATOR_HOST,
+    FIREBASE_EMULATOR_PORTS.storage
   );
   emulatorsConnected = true;
 
@@ -189,6 +201,10 @@ export function getFirestoreDb(): Firestore | null {
 
 export function getFirebaseFunctions(): Functions | null {
   return firebaseFunctions;
+}
+
+export function getFirebaseStorage(): FirebaseStorage | null {
+  return firebaseStorage;
 }
 
 /** Prefer this over `Boolean(getFirestoreDb())` when only checking configuration (no tree-shaking concerns). */
