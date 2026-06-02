@@ -3,6 +3,7 @@ import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedbac
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import type { AssessmentLadderUploadBundle } from '../../logic/core/assessmentLadderSupplemental';
 import type {
   AssessmentLadderSyncScope,
   LeaderboardSyncTarget,
@@ -15,6 +16,8 @@ import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
 export interface LeaderboardAssessmentSyncBarProps {
   scope: AssessmentLadderSyncScope;
+  uploadBundle?: AssessmentLadderUploadBundle | null;
+  /** @deprecated Prefer `uploadBundle`. */
   supplementalTargets?: LeaderboardSyncTarget[];
   onFinished?: () => void;
   className?: string;
@@ -25,6 +28,7 @@ export interface LeaderboardAssessmentSyncBarProps {
  */
 const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   scope,
+  uploadBundle,
   supplementalTargets,
   onFinished,
   className,
@@ -37,6 +41,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAssessmentPage({
       scope,
+      uploadBundle,
       supplementalTargets,
       onFinished,
     });
@@ -46,7 +51,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 
   useEffect(() => {
     setTapHint(null);
-  }, [targetCount, gate, scope, supplementalTargets]);
+  }, [targetCount, gate, scope, uploadBundle, supplementalTargets]);
 
   const gateSheetCopy = useMemo(() => {
     if (gate === 'signed-out' || gate === 'anonymous') {
@@ -154,7 +159,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       ) : null}
 
       {showSyncFeedback && summary ? (
-        <LadderSyncSummaryStatus summary={summary} failures={failures} />
+        <LadderSyncSummaryStatus variant="assessment" summary={summary} failures={failures} />
       ) : null}
     </div>
   );

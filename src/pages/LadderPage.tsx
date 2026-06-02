@@ -105,6 +105,7 @@ export default function LadderPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState(false);
   const [previewUser, setPreviewUser] = useState<LadderUserPreview | null>(null);
+  const [previewEntryScoreBest, setPreviewEntryScoreBest] = useState<number | null>(null);
   const previewRequestIdRef = useRef(0);
 
   const bumpLadderRefresh = useCallback(() => {
@@ -300,10 +301,11 @@ export default function LadderPage() {
     setPreviewLoading(false);
     setPreviewError(false);
     setPreviewUser(null);
+    setPreviewEntryScoreBest(null);
   }, []);
 
   const handleOpenUserPreview = useCallback(
-    async (uid: string, anonymous: boolean) => {
+    async (uid: string, anonymous: boolean, entryScoreBest?: number) => {
       if (!uid || anonymous) return;
       const requestId = previewRequestIdRef.current + 1;
       previewRequestIdRef.current = requestId;
@@ -312,6 +314,9 @@ export default function LadderPage() {
       setPreviewLoading(true);
       setPreviewError(false);
       setPreviewUser(null);
+      setPreviewEntryScoreBest(
+        entryScoreBest != null && Number.isFinite(entryScoreBest) ? entryScoreBest : null
+      );
 
       const result = await getLadderUserPreview({ entitlement, uid });
       if (previewRequestIdRef.current !== requestId) return;
@@ -542,7 +547,7 @@ export default function LadderPage() {
                     type="button"
                     disabled={isAnonymousRow}
                     onClick={() => {
-                      void handleOpenUserPreview(row.uid, isAnonymousRow);
+                      void handleOpenUserPreview(row.uid, isAnonymousRow, row.scoreBest);
                     }}
                     className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass} disabled:cursor-not-allowed disabled:opacity-90`}
                   >
@@ -633,6 +638,8 @@ export default function LadderPage() {
         loading={previewLoading}
         error={previewError || !selectedUid}
         user={previewUser}
+        viewingShardId={shardId}
+        ladderEntryScoreBest={previewEntryScoreBest}
         onClose={closePreviewModal}
       />
       </main>

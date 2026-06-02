@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
@@ -12,6 +12,8 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
+import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { loadPhysicalProfile } from '../services/localStorageService';
 
 export interface CardioAssessmentPageProps {
   onBack?: () => void;
@@ -40,6 +42,19 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     submitToRadar,
   } = useCardioAssessmentPage();
   const scoreMeaningMetric = scoreMeaningMetricForCardioTab(activeTab);
+
+  const ladderUploadBundle = useMemo(
+    () =>
+      buildCardioAssessmentSupplementalTargets({
+        tab: activeTab,
+        distanceInput,
+        runMinutesInput,
+        runSecondsInput,
+        profile: loadPhysicalProfile(),
+        profileReady,
+      }),
+    [activeTab, distanceInput, runMinutesInput, runSecondsInput, profileReady]
+  );
   const reveal = useAssessmentRevealFlow({
     pool: 'cardio',
     metric: scoreMeaningMetric,
@@ -301,7 +316,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="cardio" />
+          <LeaderboardAssessmentSyncBar scope="cardio" uploadBundle={ladderUploadBundle} />
         </section>
       </div>
     </main>

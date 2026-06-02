@@ -4,13 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import HexRadarChart from '../radar/HexRadarChart';
 import type { LadderUserPreview } from '../../services/leaderboardPreviewService';
+import { isLadderOverallEntryDriftFromPreview } from '../../logic/core/ladderScoreCompare';
 import {
   buildSixAxisRadarData,
   calculateSixAxisOverall,
   clampScoreMapValue,
+  formatOverallResonanceScore,
   getWeakestRadarAxis,
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
+import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS } from '../../types/scoring';
 
 export interface LadderUserPreviewModalProps {
@@ -18,6 +21,10 @@ export interface LadderUserPreviewModalProps {
   loading: boolean;
   error: boolean;
   user: LadderUserPreview | null;
+  /** Active leaderboard shard — drift guard only applies on composite `ladderScore`. */
+  viewingShardId?: LeaderboardShardId;
+  /** Row `scoreBest` from the list tap; compared to preview six-axis average on overall board. */
+  ladderEntryScoreBest?: number | null;
   onClose: () => void;
 }
 
@@ -26,6 +33,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   loading,
   error,
   user,
+  viewingShardId,
+  ladderEntryScoreBest,
   onClose,
 }) => {
   const { t } = useTranslation();
@@ -54,6 +63,15 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
     if (!user || user.isAnonymousInLadder) return null;
     return calculateSixAxisOverall(user.radarScores ?? {});
   }, [user]);
+
+  /**
+   * Safety net: list row uses `leaderboardScore.scoreBest`; modal average is recomputed from
+   * `leaderboard_previews.radarScores`. After legacy partial syncs they can diverge until re-sync.
+   */
+  const showOverallDriftGuard = useMemo(() => {
+    if (viewingShardId !== 'ladderScore') return false;
+    return isLadderOverallEntryDriftFromPreview(ladderEntryScoreBest, overallScore);
+  }, [viewingShardId, ladderEntryScoreBest, overallScore]);
 
   if (!open || typeof document === 'undefined') return null;
 
@@ -173,11 +191,34 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                   />
                 </div>
 
+                {showOverallDriftGuard ? (
+                  <aside
+                    className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-3 text-sm leading-relaxed text-amber-100/90"
+                    role="note"
+                  >
+                    <p>
+                      {t('ladder.userPreview.driftWarning', {
+                        ns: 'common',
+                        listed: formatOverallResonanceScore(ladderEntryScoreBest),
+                        preview: formatOverallResonanceScore(overallScore),
+                      })}
+                    </p>
+                  </aside>
+                ) : null}
+
                 {overallScore != null ? (
                   <div className="text-center">
                     <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                       {t('ladder.userPreview.overallAverage', { ns: 'common' })}
                     </p>
+                    {showOverallDriftGuard &&
+                    ladderEntryScoreBest != null &&
+                    Number.isFinite(ladderEntryScoreBest) ? (
+                      <p className="mt-1 font-mono text-xs tabular-nums text-zinc-500">
+                        {t('ladder.userPreview.listedOverallScore', { ns: 'common' })}:{' '}
+                        {formatOverallResonanceScore(ladderEntryScoreBest)}
+                      </p>
+                    ) : null}
                     <p className="mt-2 font-mono text-3xl font-semibold tabular-nums text-accent-info">
                       {overallScore}
                     </p>

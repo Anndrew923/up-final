@@ -48,7 +48,9 @@
       "valueEmpty": "—",
       "radarHiddenAnonymous": "Pilot hides ladder identity — radar not shown.",
       "radarCompletion": "Axes with data: {{count}} / {{total}}",
-      "overallAverage": "Six-Axis Average"
+      "overallAverage": "Six-Axis Average",
+      "listedOverallScore": "Listed score",
+      "driftWarning": "Listed score ({{listed}}) does not match the public six-axis average ({{preview}}). Run Sync to Ladder again to refresh your overall entry."
     },
     "pagination": {
       "prev": "Previous",
@@ -124,14 +126,15 @@
       "avatarPortraitUpdated": "Score unchanged — portrait synced to ladder (including overall board)."
     },
     "assessmentSync": {
-      "hint": "Upload all eligible shards for this page in one run.",
+      "hint": "After you calculate, sync this page's shards, overall score, and public six-axis profile—no need to write to the dashboard first.",
       "infoButtonAria": "View page sync limits",
       "advancedTitle": "Page Sync Limits",
-      "advancedTip": "This page's shards only. Skipped when scores missing, ineligible, or rate-limited.",
+      "advancedTip": "Uploads this page's shards plus overall score and public six-axis preview in one run (does not count toward full-sync cooldown; no dashboard radar write required). Skipped when scores missing, ineligible, or rate-limited.",
       "noTargets": "No scores on this page ready to upload.",
-      "noTargetsTap": "Submit this score to the dashboard (radar) first, then sync to ladder.",
+      "noTargetsTap": "Calculate a valid score on this page first, then sync to ladder.",
       "button": "Sync to Ladder",
-      "busy": "Syncing…"
+      "busy": "Syncing…",
+      "successSummary": "Updated this page's shards, overall score, and public six-axis profile."
     },
     "divisions": {
       "ladderScore": {

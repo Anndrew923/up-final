@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { AssessmentLadderUploadBundle } from '../logic/core/assessmentLadderSupplemental';
+import { mergeMergedScoresForAssessmentUpload } from '../logic/core/assessmentLadderSupplemental';
 import {
   buildLeaderboardSyncTargets,
+  coupleAssessmentSyncTargetsWithOverall,
   mergeLeaderboardSyncTargetsWithSupplemental,
   pickLeaderboardSyncTargetsForAssessmentScope,
   type AssessmentLadderSyncScope,
@@ -43,7 +46,12 @@ function buildEntitlementSnapshot(): EntitlementState {
 
 export interface UseLeaderboardSyncAssessmentPageOptions {
   scope: AssessmentLadderSyncScope;
-  /** Page-only scores not yet reflected in `useMergedScoresFromLocalStores` (e.g. arm preview). */
+  /**
+   * Live page scores + six-axis overrides for preview/overall (preferred).
+   * Legacy `supplementalTargets` alone does not refresh `mergedForUpload`.
+   */
+  uploadBundle?: AssessmentLadderUploadBundle | null;
+  /** @deprecated Prefer `uploadBundle` — shard list only, no merged overlay. */
   supplementalTargets?: LeaderboardSyncTarget[];
   onFinished?: () => void;
 }
@@ -59,13 +67,30 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   }, [options.onFinished]);
 
   const merged = useMergedScoresFromLocalStores();
-  const overallScore = useMemo(() => calculateSixAxisOverall(merged), [merged]);
+
+  const effectiveBundle = useMemo((): AssessmentLadderUploadBundle | null => {
+    if (options.uploadBundle) return options.uploadBundle;
+    if (options.supplementalTargets?.length) {
+      return { supplemental: options.supplementalTargets };
+    }
+    return null;
+  }, [options.uploadBundle, options.supplementalTargets]);
+
+  const mergedForUpload = useMemo(
+    () => mergeMergedScoresForAssessmentUpload(merged, effectiveBundle),
+    [merged, effectiveBundle]
+  );
+
+  const overallScore = useMemo(
+    () => calculateSixAxisOverall(mergedForUpload),
+    [mergedForUpload]
+  );
 
   const targets = useMemo(() => {
     const profile = loadPhysicalProfile();
     const cardioInputs = loadCardioInputs();
     const all = buildLeaderboardSyncTargets({
-      mergedScores: merged,
+      mergedScores: mergedForUpload,
       overallScore,
       profile,
       cardioInputs,
@@ -74,8 +99,12 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       muscleInputs: loadMuscleInputs(),
     });
     const picked = pickLeaderboardSyncTargetsForAssessmentScope(all, options.scope);
-    return mergeLeaderboardSyncTargetsWithSupplemental(picked, options.supplementalTargets);
-  }, [merged, overallScore, options.scope, options.supplementalTargets]);
+    const withSupplemental = mergeLeaderboardSyncTargetsWithSupplemental(
+      picked,
+      effectiveBundle?.supplemental
+    );
+    return coupleAssessmentSyncTargetsWithOverall(withSupplemental, overallScore);
+  }, [mergedForUpload, overallScore, options.scope, effectiveBundle]);
 
   const targetsSignature = useMemo(
     () => targets.map((t) => `${t.metric}:${t.score}`).join('|'),
@@ -123,7 +152,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         displayName: identity.displayName,
         entitlement: snap,
         previewSnapshot: {
-          mergedScores: merged,
+          mergedScores: mergedForUpload,
           profile: ladderProfile,
           avatarUrl: identity.avatarUrl,
         },
@@ -147,7 +176,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature, merged]);
+  }, [targets, gate, targetsSignature, mergedForUpload]);
 
   return {
     syncPage,

@@ -9,6 +9,8 @@ import type {
 export interface LadderSyncSummaryStatusProps {
   summary: LeaderboardSyncRunSummary;
   failures?: LadderSyncShardFailure[];
+  /** Assessment page batch — clearer success copy when shards + overall were coupled. */
+  variant?: 'syncAll' | 'assessment';
   className?: string;
 }
 
@@ -19,6 +21,7 @@ export interface LadderSyncSummaryStatusProps {
 const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
   summary,
   failures = [],
+  variant = 'syncAll',
   className,
 }) => {
   const { t } = useTranslation('common');
@@ -49,17 +52,19 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
         </p>
       ) : summary.attempted > 0 ? (
         <p className={`text-sm ${tone}`} role="status">
-          {t('ladder.syncAll.summary', {
-            attempted: summary.attempted,
-            updated: summary.updated,
-            unchanged: summary.unchanged,
-            avatarPatched: summary.avatarPatched ?? 0,
-            rateLimited: summary.rateLimited,
-            proRequired: summary.proRequired,
-            invalidInput: summary.invalidInput,
-            internal: summary.internal,
-            errors: summary.errors,
-          })}
+          {variant === 'assessment' && summary.updated > 0
+            ? t('ladder.assessmentSync.successSummary')
+            : t('ladder.syncAll.summary', {
+                attempted: summary.attempted,
+                updated: summary.updated,
+                unchanged: summary.unchanged,
+                avatarPatched: summary.avatarPatched ?? 0,
+                rateLimited: summary.rateLimited,
+                proRequired: summary.proRequired,
+                invalidInput: summary.invalidInput,
+                internal: summary.internal,
+                errors: summary.errors,
+              })}
         </p>
       ) : failures.length > 0 ? (
         <p className={`text-sm ${tone}`} role="status">

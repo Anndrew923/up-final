@@ -12,6 +12,9 @@ export const LEADERBOARD_PREVIEWS_COLLECTION = "leaderboard_previews";
 export const LADDER_RATE_LIMITS_COLLECTION = "ladder_rate_limits";
 export const LEADERBOARD_PREVIEW_SCHEMA_VERSION = 1;
 
+/** Mirror `SCORE_AXIS_MAX` in `src/logic/core/scoring.ts` — preview radar clamp ceiling. */
+export const SCORE_AXIS_MAX = 200;
+
 /** Mirror `KNOWN_LEADERBOARD_SHARD_IDS` in `src/logic/core/ladderShards.ts`. */
 export const KNOWN_LEADERBOARD_SHARD_IDS = new Set([
   "ladderScore",

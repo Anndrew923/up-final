@@ -10,9 +10,7 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
-import { leaderboardShardForSixAxisMetric } from '../logic/core/assessmentLeaderboardShards';
-import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
-import { clampScoreMapValue } from '../logic/core/scoring';
+import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
 
@@ -54,16 +52,10 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     closeModal,
   } = reveal;
 
-  const gripLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
-    if (previewScore == null || !Number.isFinite(previewScore) || previewScore <= 0)
-      return undefined;
-    return [
-      {
-        metric: leaderboardShardForSixAxisMetric('gripStrength'),
-        score: clampScoreMapValue(previewScore),
-      },
-    ];
-  }, [previewScore]);
+  const ladderUploadBundle = useMemo(
+    () => buildGripAssessmentSupplementalTargets(previewScore),
+    [previewScore]
+  );
 
   const genderLabel = !profile
     ? ''
@@ -223,10 +215,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="gripStrength"
-            supplementalTargets={gripLadderSupplemental}
-          />
+          <LeaderboardAssessmentSyncBar scope="gripStrength" uploadBundle={ladderUploadBundle} />
         </section>
       </div>
     </main>

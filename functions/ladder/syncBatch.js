@@ -26,6 +26,7 @@ import {
   mapLadderShardSubmitError,
   recordLadderSyncFailure,
 } from "./shardSubmitErrors.js";
+import { coupleBatchTargetsWithOverall } from "./overallScore.js";
 
 /** @typedef {{ metric: string, reason: string, message?: string }} LadderSyncShardFailure */
 
@@ -169,9 +170,12 @@ export async function runLadderSyncBatch(request) {
   await assertLadderUploadAllowed(uid, request.auth.token);
 
   const data = request.data || {};
-  const targets = Array.isArray(data.targets) ? data.targets : [];
-  const fullSync = data.fullSync === true;
   const preview = data.preview;
+  let targets = Array.isArray(data.targets) ? data.targets : [];
+  if (preview?.mergedScores) {
+    targets = coupleBatchTargetsWithOverall(targets, preview.mergedScores);
+  }
+  const fullSync = data.fullSync === true;
   const failures = /** @type {LadderSyncShardFailure[]} */ ([]);
 
   if (targets.length === 0) {

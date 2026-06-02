@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
@@ -11,6 +11,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { buildMuscleAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
 export interface MuscleAssessmentPageProps {
   onBack?: () => void;
@@ -35,6 +36,16 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
     smmCeilingKg,
     scoreLocked,
   } = useMuscleAssessmentPage();
+
+  const ladderUploadBundle = useMemo(
+    () =>
+      buildMuscleAssessmentSupplementalTargets({
+        smmInput,
+        profile,
+        profileReady,
+      }),
+    [smmInput, profile, profileReady]
+  );
 
   const reveal = useAssessmentRevealFlow({
     pool: 'muscle',
@@ -234,7 +245,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="muscleMass" />
+          <LeaderboardAssessmentSyncBar scope="muscleMass" uploadBundle={ladderUploadBundle} />
         </section>
       </div>
     </main>

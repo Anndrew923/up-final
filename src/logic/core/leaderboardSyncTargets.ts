@@ -32,13 +32,22 @@ export interface LeaderboardSyncTarget {
   score: number;
 }
 
+/** Shared guard for ladder shard rows (sync-all, assessment supplemental, etc.). */
+export function pushLeaderboardSyncTargetIfPositive(
+  targets: LeaderboardSyncTarget[],
+  metric: LeaderboardShardId,
+  score: number | null | undefined
+): void {
+  if (score == null || !Number.isFinite(score) || score <= 0) return;
+  targets.push({ metric, score });
+}
+
 function pushIfPositive(
   targets: LeaderboardSyncTarget[],
   metric: LeaderboardShardId,
   score: number | undefined
 ): void {
-  if (score == null || !Number.isFinite(score) || score <= 0) return;
-  targets.push({ metric, score });
+  pushLeaderboardSyncTargetIfPositive(targets, metric, score);
 }
 
 /**
@@ -317,5 +326,26 @@ export function mergeLeaderboardSyncTargetsWithSupplemental(
   for (const t of supplemental) {
     if (t.score > 0 && Number.isFinite(t.score)) map.set(t.metric, t.score);
   }
+  return Array.from(map.entries()).map(([metric, score]) => ({ metric, score }));
+}
+
+/**
+ * Couples per-assessment shard uploads with the composite `ladderScore` row + full preview snapshot.
+ * WHY: Partial sync used to refresh `leaderboard_previews` without updating the overall leaderboard entry,
+ * so list `scoreBest` and modal six-axis average diverged — one batch must keep public totals aligned.
+ * Does not set `fullSync`; overall still uses its own per-shard hourly quota.
+ */
+export function coupleAssessmentSyncTargetsWithOverall(
+  scopedTargets: LeaderboardSyncTarget[],
+  overallScore: number
+): LeaderboardSyncTarget[] {
+  if (!Number.isFinite(overallScore) || overallScore <= 0) {
+    return scopedTargets;
+  }
+  const map = new Map<LeaderboardShardId, number>();
+  for (const t of scopedTargets) {
+    map.set(t.metric, t.score);
+  }
+  map.set(LEADERBOARD_SHARD_OVERALL, overallScore);
   return Array.from(map.entries()).map(([metric, score]) => ({ metric, score }));
 }

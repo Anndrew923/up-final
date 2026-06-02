@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
@@ -11,6 +12,7 @@ import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiSc
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
 export interface FfmiPageProps {
   onBack?: () => void;
@@ -54,6 +56,11 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning('bodyFat', previewScore ?? heroScore);
+
+  const ladderUploadBundle = useMemo(
+    () => buildFfmiAssessmentSupplementalTargets(breakdown),
+    [breakdown]
+  );
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -235,7 +242,10 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                   <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
                 ) : null}
 
-                <LeaderboardAssessmentSyncBar scope="bodyFat_ffmi" />
+                <LeaderboardAssessmentSyncBar
+                  scope="bodyFat_ffmi"
+                  uploadBundle={ladderUploadBundle}
+                />
               </div>
             ) : null}
           </section>

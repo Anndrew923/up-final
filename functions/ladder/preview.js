@@ -1,4 +1,4 @@
-import { SIX_AXIS_METRICS } from "../shared/constants.js";
+import { SCORE_AXIS_MAX, SIX_AXIS_METRICS } from "../shared/constants.js";
 
 /** Mirror `resolvePreviewRadarMetric` in client `leaderboardPreviewContract.ts`. */
 export function resolvePreviewRadarMetric(metric) {
@@ -23,7 +23,7 @@ export function resolvePreviewRadarMetric(metric) {
 
 function clampScore(value) {
   if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(100, value));
+  return Math.max(0, Math.min(SCORE_AXIS_MAX, value));
 }
 
 export function buildFullRadarScoresMap(mergedScores) {

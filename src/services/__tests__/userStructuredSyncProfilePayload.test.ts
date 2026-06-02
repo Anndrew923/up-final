@@ -5,7 +5,6 @@ import {
   ladderProfileForStructuredPush,
 } from '../userStructuredSyncService';
 import { loadProfile, saveProfile } from '../localStorageService';
-import { useScoreStore } from '../../stores/scoreStore';
 
 vi.mock('../localStorageService', () => ({
   loadProfile: vi.fn(),

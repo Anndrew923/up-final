@@ -12,8 +12,7 @@ import { ROUTES } from '../config/routes';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
-import { leaderboardShardForArmSize } from '../logic/core/assessmentLeaderboardShards';
-import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
+import { buildArmSizeAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { useArmSizeBreakthroughDashboardSync } from '../hooks/useBreakthroughDashboardSync';
 import { useScoreStore } from '../stores/scoreStore';
 
@@ -64,11 +63,14 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     navigate
   );
 
-  const armLadderSupplemental = useMemo((): LeaderboardSyncTarget[] | undefined => {
-    const score = submittedScore ?? persistedArmSizeScore;
-    if (score == null || !Number.isFinite(score) || score <= 0) return undefined;
-    return [{ metric: leaderboardShardForArmSize(), score }];
-  }, [submittedScore, persistedArmSizeScore]);
+  const ladderUploadBundle = useMemo(
+    () =>
+      buildArmSizeAssessmentSupplementalTargets({
+        previewScore,
+        submittedScore,
+      }),
+    [previewScore, submittedScore]
+  );
 
   const interpretationScore = previewScore ?? submittedScore ?? persistedArmSizeScore ?? null;
   const heroScore = displayScore ?? interpretationScore;
@@ -220,10 +222,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="armSize"
-            supplementalTargets={armLadderSupplemental}
-          />
+          <LeaderboardAssessmentSyncBar scope="armSize" uploadBundle={ladderUploadBundle} />
         </section>
       </div>
     </main>

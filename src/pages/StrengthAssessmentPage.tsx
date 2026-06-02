@@ -12,13 +12,12 @@ import PerformanceBreakthroughModal from '../components/assessment/PerformanceBr
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
-import { LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE } from '../logic/core/assessmentLeaderboardShards';
+import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import {
   shouldShowStrengthRepsAccuracyNudge,
   STRENGTH_ASSESSMENT_MAX_REPS,
   type StrengthSingleLiftError,
 } from '../logic/core/strengthAssessment';
-import type { LeaderboardSyncTarget } from '../logic/core/leaderboardSyncTargets';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
 export interface StrengthAssessmentPageProps {
@@ -85,12 +84,16 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       : t('home.profile.male');
 
   const singleErr = (code: StrengthSingleLiftError) => t(`strength.singleErrors.${code}`);
-  const strengthSupplementalTargets = useMemo<LeaderboardSyncTarget[] | undefined>(() => {
-    if (combinedScore == null || !Number.isFinite(combinedScore) || combinedScore <= 0) {
-      return undefined;
-    }
-    return [{ metric: LEADERBOARD_SHARD_STRENGTH_TOTAL_FIVE, score: combinedScore }];
-  }, [combinedScore]);
+  const ladderUploadBundle = useMemo(
+    () =>
+      buildStrengthAssessmentSupplementalTargets({
+        form,
+        profile,
+        profileReady,
+        combinedScore,
+      }),
+    [form, profile, profileReady, combinedScore]
+  );
   const weakestStrengthAxisKey = useMemo(() => {
     let weakest:
       | {
@@ -441,10 +444,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               </p>
             ) : null}
 
-            <LeaderboardAssessmentSyncBar
-              scope="strength"
-              supplementalTargets={strengthSupplementalTargets}
-            />
+            <LeaderboardAssessmentSyncBar scope="strength" uploadBundle={ladderUploadBundle} />
           </div>
         </section>
       </div>

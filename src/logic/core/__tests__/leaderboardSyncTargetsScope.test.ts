@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  coupleAssessmentSyncTargetsWithOverall,
   mergeLeaderboardSyncTargetsWithSupplemental,
   pickLeaderboardSyncTargetsForAssessmentScope,
   type LeaderboardSyncTarget,
@@ -61,5 +62,34 @@ describe('mergeLeaderboardSyncTargetsWithSupplemental', () => {
       [{ metric: 'armSize', score: 0 }]
     );
     expect(merged).toEqual([{ metric: 'armSize', score: 40 }]);
+  });
+});
+
+describe('coupleAssessmentSyncTargetsWithOverall', () => {
+  it('appends ladderScore when overall > 0', () => {
+    const scoped: LeaderboardSyncTarget[] = [{ metric: 'bodyFat_ffmi', score: 88 }];
+    const coupled = coupleAssessmentSyncTargetsWithOverall(scoped, 93.31);
+    expect(coupled).toEqual([
+      { metric: 'bodyFat_ffmi', score: 88 },
+      { metric: 'ladderScore', score: 93.31 },
+    ]);
+  });
+
+  it('dedupes when scoped list already includes ladderScore', () => {
+    const scoped: LeaderboardSyncTarget[] = [
+      { metric: 'ladderScore', score: 90 },
+      { metric: 'gripStrength', score: 98 },
+    ];
+    const coupled = coupleAssessmentSyncTargetsWithOverall(scoped, 93.31);
+    expect(coupled).toEqual([
+      { metric: 'ladderScore', score: 93.31 },
+      { metric: 'gripStrength', score: 98 },
+    ]);
+  });
+
+  it('returns scoped unchanged when overall is not positive', () => {
+    const scoped: LeaderboardSyncTarget[] = [{ metric: 'armSize', score: 40 }];
+    expect(coupleAssessmentSyncTargetsWithOverall(scoped, 0)).toEqual(scoped);
+    expect(coupleAssessmentSyncTargetsWithOverall(scoped, NaN)).toEqual(scoped);
   });
 });

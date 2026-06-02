@@ -48,7 +48,9 @@
       "valueEmpty": "—",
       "radarHiddenAnonymous": "此用戶在天梯選擇隱藏身分，不顯示雷達分數。",
       "radarCompletion": "有資料的軸：{{count}} / {{total}}",
-      "overallAverage": "六軸平均"
+      "overallAverage": "六軸平均",
+      "listedOverallScore": "榜單登記分",
+      "driftWarning": "榜單登記分（{{listed}}）與目前公開六軸平均（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以更新總戰力。"
     },
     "pagination": {
       "prev": "上一頁",
@@ -124,14 +126,15 @@
       "avatarPortraitUpdated": "分數未變，大頭照已同步至天梯（含總戰力榜）。"
     },
     "assessmentSync": {
-      "hint": "一次上傳本頁可用分片。",
+      "hint": "計算完成即可同步本頁分片、總戰力與公開六軸（無需先回主控台寫入雷達）。",
       "infoButtonAria": "查看本頁同步限制說明",
       "advancedTitle": "本頁同步限制說明",
-      "advancedTip": "僅上傳本頁可用分片。若沒有可用分數、未通過資格檢查或觸發分片限流，該次上傳會被略過或擋下。",
+      "advancedTip": "上傳本頁可用分片，並在同一趟同步總戰力與公開六軸（不計入全量冷卻；無需先回主控台寫入雷達）。若沒有可用分數、未通過資格檢查或觸發分片限流，該次上傳會被略過或擋下。",
       "noTargets": "尚無可上傳的本頁分數。",
-      "noTargetsTap": "請先將本分數提交至主控台（寫入雷達），再同步天梯。",
+      "noTargetsTap": "請先按「計算」產生有效分數，再同步至天梯。",
       "button": "同步至天梯",
-      "busy": "同步中…"
+      "busy": "同步中…",
+      "successSummary": "已更新本頁分片、總戰力與公開六軸資料。"
     },
     "divisions": {
       "ladderScore": {

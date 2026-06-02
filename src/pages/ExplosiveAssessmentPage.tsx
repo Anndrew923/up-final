@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
@@ -12,6 +12,7 @@ import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
 export interface ExplosiveAssessmentPageProps {
   onBack?: () => void;
@@ -48,6 +49,18 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     calculate,
     submitToRadar,
   } = useExplosiveAssessmentPage();
+
+  const ladderUploadBundle = useMemo(
+    () =>
+      buildExplosiveAssessmentSupplementalTargets({
+        verticalJumpInput,
+        standingLongJumpInput,
+        sprintInput,
+        profile,
+        profileReady,
+      }),
+    [verticalJumpInput, standingLongJumpInput, sprintInput, profile, profileReady]
+  );
 
   const reveal = useAssessmentRevealFlow({
     pool: 'explosive',
@@ -375,7 +388,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="explosivePower" />
+          <LeaderboardAssessmentSyncBar scope="explosivePower" uploadBundle={ladderUploadBundle} />
         </section>
       </div>
     </main>
