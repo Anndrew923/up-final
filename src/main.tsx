@@ -6,8 +6,12 @@ import ScrollToTop from './components/navigation/ScrollToTop';
 import { applyProductionViewport } from './lib/applyProductionViewport';
 import { logLadderEnvCheckInDev } from './lib/logLadderEnvCheck';
 import { tryInitFirebaseFromEnv } from './services/firebaseClient';
+import { bootstrapDocumentLocaleFromStorage } from './i18n/bootstrapDocumentLocale';
 import './i18n';
 import './styles.css';
+
+// WHY: Runs after module graph loads; i18n.init is async — reduces wrong manifest before first paint.
+bootstrapDocumentLocaleFromStorage();
 
 applyProductionViewport();
 

@@ -1,0 +1,16 @@
+{
+  "en": {
+    "manifestFile": "manifest.en.webmanifest",
+    "appleWebAppTitle": "UP",
+    "name": "Ultimate Physique",
+    "short_name": "UP",
+    "description": "Ultimate Physique"
+  },
+  "zh-Hant": {
+    "manifestFile": "manifest.zh-Hant.webmanifest",
+    "appleWebAppTitle": "最強肉體",
+    "name": "最強肉體",
+    "short_name": "最強肉體",
+    "description": "最強肉體"
+  }
+}

@@ -1,7 +1,7 @@
 /**
  * 從 assets/icon-1024.png 產生：
  * - Android mipmap / drawable-nodpi
- * - Web PWA（public PNG + manifest.webmanifest）
+ * - Web PWA（public PNG + manifest.en / manifest.zh-Hant）
  * 設計意圖：單一母檔，避免 Android 與「加到主畫面」圖示分叉。
  * 使用方式: npm run icons
  */
@@ -15,9 +15,10 @@ const ANDROID_RES = path.join(ROOT, 'android', 'app', 'src', 'main', 'res');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const SOURCE = path.join(ROOT, 'assets', 'icon-1024.png');
 
-const APP_NAME = 'Ultimate Physique';
-const APP_SHORT_NAME = 'UP';
 const THEME_COLOR = '#0A0A0A';
+
+/** Single source with `src/i18n/webInstallManifest.copy.json` (runtime + static manifests). */
+const MANIFEST_COPY = require(path.join(ROOT, 'src', 'i18n', 'webInstallManifest.copy.json'));
 
 // Adaptive Icon foreground 層為 108dp，對應像素
 const FOREGROUND_SIZES = {
@@ -108,39 +109,49 @@ async function generateWeb(buffer) {
     console.log('寫入 public/' + file + ' (' + size + 'px)');
   }
 
-  const manifest = {
-    name: APP_NAME,
-    short_name: APP_SHORT_NAME,
-    description: APP_NAME,
-    start_url: '/',
-    display: 'standalone',
-    background_color: THEME_COLOR,
-    theme_color: THEME_COLOR,
-    icons: [
-      {
-        src: '/icon-192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any',
-      },
-      {
-        src: '/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any',
-      },
-      {
-        src: '/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-    ],
-  };
+  const iconEntries = [
+    {
+      src: '/icon-192.png',
+      sizes: '192x192',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: '/icon-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: '/icon-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    },
+  ];
 
-  const manifestPath = path.join(PUBLIC_DIR, 'manifest.webmanifest');
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
-  console.log('寫入 public/manifest.webmanifest');
+  const legacyManifest = path.join(PUBLIC_DIR, 'manifest.webmanifest');
+  if (fs.existsSync(legacyManifest)) {
+    fs.unlinkSync(legacyManifest);
+    console.log('移除 public/manifest.webmanifest（已改為雙語系 manifest）');
+  }
+
+  for (const copy of Object.values(MANIFEST_COPY)) {
+    const fileName = copy.manifestFile;
+    const manifest = {
+      name: copy.name,
+      short_name: copy.short_name,
+      description: copy.description,
+      start_url: '/',
+      display: 'standalone',
+      background_color: THEME_COLOR,
+      theme_color: THEME_COLOR,
+      icons: iconEntries,
+    };
+    const manifestPath = path.join(PUBLIC_DIR, fileName);
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+    console.log('寫入 public/' + fileName);
+  }
 }
 
 async function generate() {

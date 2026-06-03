@@ -27,9 +27,3 @@ export function migrateLegacyI18nStorage(): void {
     /* private / quota */
   }
 }
-
-/** `<html lang>` for a11y + `htmlTag` detection consistency (BCP 47). */
-export function syncDocumentLang(lng: string): void {
-  if (typeof document === 'undefined') return;
-  document.documentElement.lang = toSupportedLng(lng);
-}

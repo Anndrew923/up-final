@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <!--
+      WHY: Default (en) launcher label for Capacitor shell. Web「加到主畫面」uses
+      manifest.zh-Hant.webmanifest / manifest.en.webmanifest + client sync — separate pipeline.
+      Future zh-TW native label: add res/values-zh-rTW/strings.xml; keep this file as fallback/en.
+    -->
     <string name="app_name">Ultimate Physique</string>
     <string name="title_activity_main">Ultimate Physique</string>
     <string name="package_name">com.ultimatephysique.app</string>

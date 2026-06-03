@@ -7,9 +7,9 @@ import { enCommon, zhHantCommon } from './i18n/locales/common';
 import {
   I18N_STORAGE_KEY,
   migrateLegacyI18nStorage,
-  syncDocumentLang,
   toSupportedLng,
 } from './i18n/language';
+import { applyLocaleToDocument } from './i18n/applyLocaleToDocument';
 
 export type { SupportedLng } from './i18n/language';
 export { I18N_STORAGE_KEY, toSupportedLng } from './i18n/language';
@@ -46,11 +46,11 @@ const i18nPromise = i18n
   });
 
 void i18nPromise.then(() => {
-  syncDocumentLang(i18n.resolvedLanguage ?? i18n.language);
+  applyLocaleToDocument(i18n.resolvedLanguage ?? i18n.language);
 });
 
 i18n.on('languageChanged', (lng) => {
-  syncDocumentLang(lng);
+  applyLocaleToDocument(lng);
 });
 
 /** Dev-only: re-merge locale JSON without Vite full-page reload (see `vite/i18nLocaleHmr.ts`). */
