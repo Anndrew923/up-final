@@ -13,3 +13,4 @@ setGlobalOptions({
 export { ladderSubmitShard } from "./ladder/submitShard.js";
 export { ladderSyncPreview } from "./ladder/syncPreviewCallable.js";
 export { ladderSyncBatch } from "./ladder/syncBatchCallable.js";
+export { ladderReportUser } from "./ladder/reportUserCallable.js";

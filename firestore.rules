@@ -72,11 +72,6 @@ service cloud.firestore {
         ])
         && request.resource.data.userId == resource.data.userId; // 確保不能修改 userId
 
-      // ✅ 新增：允許系統更新舉報計數相關字段（自動隱藏功能）
-      allow update: if signedIn()
-        && onlyMutate(['reportCount', 'nicknameHidden', 'avatarHidden', 'moderationStatus', 'moderationTime'])
-        && request.resource.data.userId == resource.data.userId; // 確保不能修改 userId
-
       // UP Final：雲端備份 users/{uid}/artifacts/{artifactId}（例如 up_cloud_sync_v1）
       match /artifacts/{artifactId} {
         allow read, write: if isOwner(userId);
@@ -150,6 +145,11 @@ service cloud.firestore {
 
     // Server-side ladder quotas (per-shard hourly + full-sync daily); Admin SDK only.
     match /ladder_rate_limits/{uid} {
+      allow read, write: if false;
+    }
+
+    // Ladder UGC reports — Callable `ladderReportUser` only (Admin SDK writes).
+    match /ladder_reports/{reportId} {
       allow read, write: if false;
     }
 

@@ -20,7 +20,7 @@ import {
 import { scoresEqualForLadderWrite } from "./scoreCompare.js";
 import {
   isValidShardId,
-  normalizeDisplayName,
+  tryNormalizeDisplayName,
   sanitizeAvatarUrl,
   sanitizeProfile,
   validateScore,
@@ -77,7 +77,17 @@ export async function runLadderSubmitShard(request) {
   const data = request.data || {};
   const metric = data.metric;
   const score = Number(data.score);
-  const displayName = normalizeDisplayName(data.displayName);
+  const nameResult = tryNormalizeDisplayName(data.displayName);
+  if (!nameResult.ok) {
+    return {
+      ok: false,
+      reason: nameResult.reason,
+      updated: false,
+      previousScore: null,
+      submittedScore: null,
+    };
+  }
+  const displayName = nameResult.displayName;
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const profile = sanitizeProfile(data.profile);
   const skipPreviewUpdate = data.skipPreviewUpdate === true;
@@ -265,7 +275,11 @@ export async function runLadderSyncPreview(request) {
   await assertLadderUploadAllowed(uid, request.auth.token);
 
   const data = request.data || {};
-  const displayName = normalizeDisplayName(data.displayName);
+  const previewNameResult = tryNormalizeDisplayName(data.displayName);
+  if (!previewNameResult.ok) {
+    return { ok: false, reason: previewNameResult.reason };
+  }
+  const displayName = previewNameResult.displayName;
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const profile = sanitizeProfile(data.profile);
   const mergedScores = data.mergedScores;

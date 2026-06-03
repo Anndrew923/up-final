@@ -1,6 +1,8 @@
 import {
   FULL_SYNC_COOLDOWN_MS,
   FULL_SYNC_MAX_PER_DAY,
+  LADDER_REPORT_ROLLING_MS,
+  LADDER_REPORTS_ROLLING_MAX,
   LEADERBOARD_UPLOADS_PER_HOUR,
   LADDER_RATE_LIMITS_COLLECTION,
   ONE_HOUR_MS,
@@ -21,8 +23,59 @@ function nextLocalDayStartIso(now) {
   return next.toISOString();
 }
 
-function emptyRateDoc() {
-  return { shards: {}, fullSync: { dayKey: dayKeyLocal(new Date()), countToday: 0, lastCompletedAt: null } };
+function emptyRateDoc(nowMs = Date.now()) {
+  return {
+    shards: {},
+    fullSync: { dayKey: dayKeyLocal(new Date()), countToday: 0, lastCompletedAt: null },
+    reportsRolling: { windowStartMs: nowMs, count: 0 },
+  };
+}
+
+function normalizeReportsRolling(reportsRolling, nowMs) {
+  if (!reportsRolling || typeof reportsRolling !== "object") {
+    return { windowStartMs: nowMs, count: 0 };
+  }
+  const windowStartMs = Number(reportsRolling.windowStartMs) || nowMs;
+  if (nowMs - windowStartMs >= LADDER_REPORT_ROLLING_MS) {
+    return { windowStartMs: nowMs, count: 0 };
+  }
+  return {
+    windowStartMs,
+    count: Math.min(
+      LADDER_REPORTS_ROLLING_MAX,
+      Math.max(0, Math.floor(Number(reportsRolling.count) || 0))
+    ),
+  };
+}
+
+function getReportsRollingBucket(rateDoc, nowMs) {
+  const rolling = normalizeReportsRolling(rateDoc.reportsRolling, nowMs);
+  rateDoc.reportsRolling = rolling;
+  return rolling;
+}
+
+/** Reporter-wide rolling 24h cap (distinct targets / new report windows only). */
+export function checkReporterReportsRollingCap(rateDoc, nowMs = Date.now()) {
+  const bucket = getReportsRollingBucket(rateDoc, nowMs);
+  const remaining = Math.max(0, LADDER_REPORTS_ROLLING_MAX - bucket.count);
+  const resetAt = new Date(bucket.windowStartMs + LADDER_REPORT_ROLLING_MS).toISOString();
+  return {
+    allowed: bucket.count < LADDER_REPORTS_ROLLING_MAX,
+    remaining,
+    resetAt,
+    limit: LADDER_REPORTS_ROLLING_MAX,
+  };
+}
+
+export function recordReporterReportRoll(rateDoc, nowMs = Date.now()) {
+  const bucket = getReportsRollingBucket(rateDoc, nowMs);
+  const nextCount = Math.min(LADDER_REPORTS_ROLLING_MAX, bucket.count + 1);
+  rateDoc.reportsRolling = { windowStartMs: bucket.windowStartMs, count: nextCount };
+  return {
+    count: nextCount,
+    remaining: Math.max(0, LADDER_REPORTS_ROLLING_MAX - nextCount),
+    resetAt: new Date(bucket.windowStartMs + LADDER_REPORT_ROLLING_MS).toISOString(),
+  };
 }
 
 function normalizeFullSync(fullSync, now) {
@@ -128,13 +181,15 @@ export function recordFullSyncSuccess(rateDoc, now) {
 export async function loadRateLimitDoc(uid, tx) {
   const ref = db.collection(LADDER_RATE_LIMITS_COLLECTION).doc(uid);
   const snap = tx ? await tx.get(ref) : await ref.get();
-  if (!snap.exists) return { ref, data: emptyRateDoc() };
+  const nowMs = Date.now();
+  if (!snap.exists) return { ref, data: emptyRateDoc(nowMs) };
   const raw = snap.data() || {};
   return {
     ref,
     data: {
       shards: raw.shards && typeof raw.shards === "object" ? { ...raw.shards } : {},
       fullSync: normalizeFullSync(raw.fullSync, new Date()),
+      reportsRolling: normalizeReportsRolling(raw.reportsRolling, nowMs),
     },
   };
 }

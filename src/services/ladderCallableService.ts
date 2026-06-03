@@ -64,6 +64,10 @@ let syncPreviewFn: HttpsCallable<
   { ok: boolean; reason?: string }
 > | null = null;
 let syncBatchFn: HttpsCallable<LadderSyncBatchPayload, LadderSyncBatchResponse> | null = null;
+let reportUserFn: HttpsCallable<
+  { targetUid: string; type: 'nickname' | 'avatar' | 'both' },
+  { ok: boolean; reportId?: string; reason?: string }
+> | null = null;
 
 function getSubmitShardCallable() {
   const functions = getFirebaseFunctions();
@@ -93,6 +97,30 @@ function getSyncBatchCallable() {
     syncBatchFn = httpsCallable(functions, 'ladderSyncBatch');
   }
   return syncBatchFn;
+}
+
+function getReportUserCallable() {
+  const functions = getFirebaseFunctions();
+  if (!functions) return null;
+  if (!reportUserFn) {
+    reportUserFn = httpsCallable(functions, 'ladderReportUser');
+  }
+  return reportUserFn;
+}
+
+export async function callLadderReportUser(params: {
+  targetUid: string;
+  type: 'nickname' | 'avatar' | 'both';
+}): Promise<{ ok: boolean; reportId?: string; reason?: string } | null> {
+  const callable = getReportUserCallable();
+  if (!callable) return null;
+  try {
+    const { data } = await callable(params);
+    return data ?? { ok: false, reason: 'unknown' };
+  } catch (err) {
+    logLadderCallableError('ladderReportUser', err);
+    throw err;
+  }
 }
 
 function normalizeBatchSummary(raw: LeaderboardSyncRunSummary | undefined): LeaderboardSyncRunSummary {

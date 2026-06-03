@@ -6,6 +6,10 @@ export const FULL_SYNC_COOLDOWN_MS = 90 * 60 * 1000;
 export const FULL_SYNC_MAX_PER_DAY = 3;
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 
+/** Rolling window for ladder report quota — mirror `REPORT_DEDUPE_MS` in reportUserCore.js */
+export const LADDER_REPORT_ROLLING_MS = 24 * 60 * 60 * 1000;
+export const LADDER_REPORTS_ROLLING_MAX = 10;
+
 export const LEADERBOARDS_COLLECTION = "leaderboards";
 export const ENTRIES_SUBCOLLECTION = "entries";
 export const LEADERBOARD_PREVIEWS_COLLECTION = "leaderboard_previews";

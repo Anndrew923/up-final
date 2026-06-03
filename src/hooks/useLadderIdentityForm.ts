@@ -1,5 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { validateLadderDisplayNameForSave } from '../logic/core/ladderDisplayNamePolicy';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
 import { compressImageFileToDataUrl, ImageCompressError } from '../lib/imageCompress';
 import {
@@ -102,11 +103,16 @@ export function useLadderIdentityForm() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setErrorKey(null);
-    const name = normalizeLadderDisplayName(displayName);
-    if (!name) {
-      setErrorKey('home.ladderIdentity.errorEmptyName');
+    const validation = validateLadderDisplayNameForSave(displayName, getDisplayNameMaxLength());
+    if (!validation.ok) {
+      setErrorKey(
+        validation.code === 'profanity'
+          ? 'home.ladderIdentity.errorProfanity'
+          : 'home.ladderIdentity.errorEmptyName'
+      );
       return;
     }
+    const name = validation.normalized;
 
     setSaving(true);
     try {

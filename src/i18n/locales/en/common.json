@@ -415,6 +415,7 @@
       "saving": "Saving…",
       "saved": "Arena identity saved.",
       "errorEmptyName": "Enter a display name.",
+      "errorProfanity": "This name violates arena rules. Choose a different display name.",
       "errorImage": "Could not process this image. Try another file or a smaller photo.",
       "errorImageTooLarge": "Image is still too large after compression. Try a smaller original file.",
       "errorSave": "Could not save. Please try again."

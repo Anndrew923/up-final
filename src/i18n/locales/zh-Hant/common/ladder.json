@@ -52,6 +52,25 @@
       "listedOverallScore": "榜單登記分",
       "driftWarning": "榜單登記分（{{listed}}）與目前公開六軸平均（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以更新總戰力。"
     },
+    "moderation": {
+      "block": "屏蔽",
+      "report": "檢舉",
+      "reportTitle": "檢舉戰場用戶",
+      "reportDescription": "請選擇檢舉類型。我們不會向對方透露你的身分。",
+      "reportTypeLegend": "檢舉類型",
+      "reportType": {
+        "nickname": "不當暱稱",
+        "avatar": "不當頭像",
+        "both": "暱稱與頭像"
+      },
+      "reportSubmit": "送出檢舉",
+      "reportSubmitting": "送出中…",
+      "reportSuccess": "已收到回報，戰場管理員將在 24 小時內進行審查。",
+      "reportDuplicate": "你已在 24 小時內檢舉過此內容，請等待審查結果。",
+      "reportDailyCap": "你 24 小時內的檢舉次數已達上限，請稍後再試。",
+      "reportTargetMissing": "此用戶尚無公開戰場資料，無法檢舉。",
+      "reportError": "檢舉送出失敗，請稍後再試。"
+    },
     "pagination": {
       "prev": "上一頁",
       "next": "下一頁",

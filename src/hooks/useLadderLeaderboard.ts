@@ -17,7 +17,9 @@ import type {
   LadderJobCategory,
   LadderWeightBucket,
 } from '../types/ladderProfile';
+import { filterBlockedLeaderboardRows } from '../logic/core/ladderBlockList';
 import { useAuthStore } from '../stores/authStore';
+import { useLadderBlockStore } from '../stores/ladderBlockStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
 export interface LadderLeaderboardState {
@@ -76,6 +78,7 @@ export function useLadderLeaderboard(
   const [myEntry, setMyEntry] = useState<LeaderboardEntry | null>(null);
   const [myRank, setMyRank] = useState<number | null>(null);
   const authUid = useAuthStore((state) => state.uid);
+  const blockedSet = useLadderBlockStore((state) => state.blockedSet);
   const refreshNonce = options?.refreshNonce ?? 0;
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 25);
@@ -105,7 +108,10 @@ export function useLadderLeaderboard(
     [filters]
   );
 
-  const items = useMemo(() => applyFilters(fetchedRows), [fetchedRows, applyFilters]);
+  const items = useMemo(() => {
+    const filtered = applyFilters(fetchedRows);
+    return filterBlockedLeaderboardRows(filtered, blockedSet);
+  }, [fetchedRows, applyFilters, blockedSet]);
 
   useEffect(() => {
     let cancelled = false;

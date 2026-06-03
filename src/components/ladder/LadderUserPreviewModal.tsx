@@ -1,7 +1,9 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
+import LadderReportSheet from './LadderReportSheet';
+import { useLadderBlockStore } from '../../stores/ladderBlockStore';
 import HexRadarChart from '../radar/HexRadarChart';
 import type { LadderUserPreview } from '../../services/leaderboardPreviewService';
 import { isLadderOverallEntryDriftFromPreview } from '../../logic/core/ladderScoreCompare';
@@ -21,11 +23,17 @@ export interface LadderUserPreviewModalProps {
   loading: boolean;
   error: boolean;
   user: LadderUserPreview | null;
+  /** Target row uid (required for block/report when not anonymous). */
+  targetUid?: string | null;
+  /** Signed-in viewer uid — hides moderation actions for self. */
+  viewerUid?: string | null;
   /** Active leaderboard shard — drift guard only applies on composite `ladderScore`. */
   viewingShardId?: LeaderboardShardId;
   /** Row `scoreBest` from the list tap; compared to preview six-axis average on overall board. */
   ladderEntryScoreBest?: number | null;
   onClose: () => void;
+  /** Called after a successful local block so the parent can refresh the list. */
+  onBlocked?: () => void;
 }
 
 const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
@@ -33,11 +41,30 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   loading,
   error,
   user,
+  targetUid,
+  viewerUid,
   viewingShardId,
   ladderEntryScoreBest,
   onClose,
+  onBlocked,
 }) => {
   const { t } = useTranslation();
+  const blockUid = useLadderBlockStore((s) => s.block);
+  const [reportSheetOpen, setReportSheetOpen] = useState(false);
+
+  const showModerationActions = useMemo(() => {
+    if (!targetUid || !viewerUid) return false;
+    if (targetUid === viewerUid) return false;
+    if (user?.isAnonymousInLadder) return false;
+    return true;
+  }, [targetUid, viewerUid, user?.isAnonymousInLadder]);
+
+  const handleBlock = () => {
+    if (!targetUid) return;
+    blockUid(targetUid);
+    onBlocked?.();
+    onClose();
+  };
 
   const dash = t('ladder.userPreview.valueEmpty', { ns: 'common' });
 
@@ -257,9 +284,41 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                 </ul>
               </div>
             )}
+
+            {showModerationActions ? (
+              <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-3">
+                <button
+                  type="button"
+                  className="ui-btn flex-1 border-zinc-600 text-xs text-zinc-300"
+                  onClick={() => setReportSheetOpen(true)}
+                >
+                  {t('ladder.moderation.report', { ns: 'common' })}
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn flex-1 border-zinc-600 text-xs text-zinc-300"
+                  onClick={handleBlock}
+                >
+                  {t('ladder.moderation.block', { ns: 'common' })}
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
       </section>
+
+      {targetUid ? (
+        <LadderReportSheet
+          open={reportSheetOpen}
+          targetUid={targetUid}
+          onClose={() => setReportSheetOpen(false)}
+          onSuccess={() => {
+            setReportSheetOpen(false);
+            onClose();
+          }}
+        />
+      ) : null}
+
     </div>,
     document.body
   );

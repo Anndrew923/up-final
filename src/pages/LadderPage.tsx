@@ -26,6 +26,7 @@ import {
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
+import { useLadderBlockStore } from '../stores/ladderBlockStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import {
   getLadderUserPreview,
@@ -108,9 +109,15 @@ export default function LadderPage() {
   const [previewEntryScoreBest, setPreviewEntryScoreBest] = useState<number | null>(null);
   const previewRequestIdRef = useRef(0);
 
+  const hydrateBlockedUids = useLadderBlockStore((s) => s.hydrate);
+
   const bumpLadderRefresh = useCallback(() => {
     setLadderRefreshNonce((n) => n + 1);
   }, []);
+
+  useEffect(() => {
+    hydrateBlockedUids();
+  }, [hydrateBlockedUids]);
 
   useEffect(() => {
     const onCacheInvalidated = () => bumpLadderRefresh();
@@ -638,9 +645,12 @@ export default function LadderPage() {
         loading={previewLoading}
         error={previewError || !selectedUid}
         user={previewUser}
+        targetUid={selectedUid}
+        viewerUid={authUid}
         viewingShardId={shardId}
         ladderEntryScoreBest={previewEntryScoreBest}
         onClose={closePreviewModal}
+        onBlocked={bumpLadderRefresh}
       />
       </main>
     </div>

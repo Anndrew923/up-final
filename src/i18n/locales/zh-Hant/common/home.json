@@ -104,6 +104,7 @@
       "saving": "儲存中…",
       "saved": "已儲存天梯身份。",
       "errorEmptyName": "請輸入顯示名稱。",
+      "errorProfanity": "此暱稱違反戰場守則，請更換後再儲存。",
       "errorImage": "無法處理此圖片。請換一張或改用較小的檔案。",
       "errorImageTooLarge": "壓縮後仍過大，請改用較小的原始照片。",
       "errorSave": "儲存失敗，請再試一次。"

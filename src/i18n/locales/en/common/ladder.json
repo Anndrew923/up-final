@@ -52,6 +52,25 @@
       "listedOverallScore": "Listed score",
       "driftWarning": "Listed score ({{listed}}) does not match the public six-axis average ({{preview}}). Run Sync to Ladder again to refresh your overall entry."
     },
+    "moderation": {
+      "block": "Block",
+      "report": "Report",
+      "reportTitle": "Report arena user",
+      "reportDescription": "Choose a report type. Your identity is not shared with the reported user.",
+      "reportTypeLegend": "Report type",
+      "reportType": {
+        "nickname": "Inappropriate nickname",
+        "avatar": "Inappropriate avatar",
+        "both": "Nickname and avatar"
+      },
+      "reportSubmit": "Submit report",
+      "reportSubmitting": "Submitting…",
+      "reportSuccess": "Report received. Arena moderators will review within 24 hours.",
+      "reportDuplicate": "You already reported this within 24 hours. Please wait for review.",
+      "reportDailyCap": "You reached the 24-hour report limit. Try again later.",
+      "reportTargetMissing": "This user has no public arena profile to report.",
+      "reportError": "Could not submit report. Try again later."
+    },
     "pagination": {
       "prev": "Previous",
       "next": "Next",

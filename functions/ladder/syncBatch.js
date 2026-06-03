@@ -12,7 +12,7 @@ import {
 } from "./submitShardCore.js";
 import {
   isValidShardId,
-  normalizeDisplayName,
+  tryNormalizeDisplayName,
   sanitizeAvatarUrl,
   sanitizeProfile,
   validateScore,
@@ -89,7 +89,7 @@ function applyShardResult(tally, failures, metric, result) {
  * Patches portrait on shards the user can see but did not upload this batch (e.g. `ladderScore`).
  * WHY: Assessment page sync may only target `bodyFat_ffmi` while the ladder UI shows the overall board.
  */
-async function propagateAvatarToExtraShards(uid, data, targets, tally, failures) {
+async function propagateAvatarToExtraShards(uid, data, displayName, targets, tally, failures) {
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   if (!avatarUrl) return;
 
@@ -137,7 +137,7 @@ async function propagateAvatarToExtraShards(uid, data, targets, tally, failures)
 
     try {
       const payload = buildEntryPayload({
-        displayName: normalizeDisplayName(data.displayName),
+        displayName,
         score,
         profile: sanitizeProfile(data.profile),
         avatarUrl,
@@ -170,6 +170,16 @@ export async function runLadderSyncBatch(request) {
   await assertLadderUploadAllowed(uid, request.auth.token);
 
   const data = request.data || {};
+  const nameResult = tryNormalizeDisplayName(data.displayName);
+  if (!nameResult.ok) {
+    return {
+      ok: false,
+      reason: nameResult.reason,
+      summary: createEmptySummary(),
+      failures: [{ metric: "displayName", reason: nameResult.reason }],
+    };
+  }
+  const batchDisplayName = nameResult.displayName;
   const preview = data.preview;
   let targets = Array.isArray(data.targets) ? data.targets : [];
   if (preview?.mergedScores) {
@@ -230,7 +240,7 @@ export async function runLadderSyncBatch(request) {
       data: {
         metric,
         score,
-        displayName: data.displayName,
+        displayName: batchDisplayName,
         avatarUrl: data.avatarUrl,
         profile: data.profile,
         skipPreviewUpdate: true,
@@ -255,7 +265,7 @@ export async function runLadderSyncBatch(request) {
     }
   }
 
-  await propagateAvatarToExtraShards(uid, data, targets, tally, failures);
+  await propagateAvatarToExtraShards(uid, data, batchDisplayName, targets, tally, failures);
 
   const shouldSyncPreview =
     preview?.mergedScores &&
@@ -267,7 +277,7 @@ export async function runLadderSyncBatch(request) {
       await runLadderSyncPreview({
         auth: request.auth,
         data: {
-          displayName: data.displayName,
+          displayName: batchDisplayName,
           avatarUrl: data.avatarUrl,
           profile: data.profile,
           mergedScores: preview.mergedScores,
