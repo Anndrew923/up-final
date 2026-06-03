@@ -14,9 +14,17 @@ export const LADDER_REPORTS_COLLECTION = "ladder_reports";
 export const REPORT_DEDUPE_MS = LADDER_REPORT_ROLLING_MS;
 
 const VALID_REPORT_TYPES = new Set(["nickname", "avatar", "both"]);
+export const LADDER_REPORT_TARGET_UID_MAX = 128;
 
 export function buildReportDocId(reporterUid, targetUid) {
   return `${reporterUid}_${targetUid}`;
+}
+
+export function isValidReportTargetUid(targetUid) {
+  if (!targetUid || typeof targetUid !== "string") return false;
+  if (targetUid.length > LADDER_REPORT_TARGET_UID_MAX) return false;
+  if (targetUid.includes("/")) return false;
+  return true;
 }
 
 export function validateReportPayload(data) {
@@ -24,6 +32,9 @@ export function validateReportPayload(data) {
   const type = typeof data?.type === "string" ? data.type.trim() : "";
   if (!targetUid) {
     return { ok: false, code: "invalid-argument", message: "targetUid required" };
+  }
+  if (!isValidReportTargetUid(targetUid)) {
+    return { ok: false, code: "invalid-argument", message: "invalid targetUid" };
   }
   if (!VALID_REPORT_TYPES.has(type)) {
     return { ok: false, code: "invalid-argument", message: "invalid report type" };

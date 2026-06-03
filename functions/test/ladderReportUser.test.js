@@ -9,10 +9,12 @@ import {
   recordReporterReportRoll,
 } from "../ladder/rateLimits.js";
 import {
+  LADDER_REPORT_TARGET_UID_MAX,
   REPORT_DEDUPE_MS,
   buildReportDocId,
   buildReportPayload,
   isReportAllowedWithinWindow,
+  isValidReportTargetUid,
   resolveReportWritePlan,
   validateReportPayload,
 } from "../ladder/reportUserCore.js";
@@ -36,6 +38,16 @@ describe("ladderReportUser core", () => {
     assert.equal(result.ok, true);
     assert.equal(result.targetUid, "target");
     assert.equal(result.type, "both");
+  });
+
+  it("rejects invalid targetUid shape", () => {
+    assert.equal(isValidReportTargetUid("a/b"), false);
+    assert.equal(isValidReportTargetUid("x".repeat(LADDER_REPORT_TARGET_UID_MAX + 1)), false);
+    assert.deepEqual(validateReportPayload({ targetUid: "bad/uid", type: "nickname" }), {
+      ok: false,
+      code: "invalid-argument",
+      message: "invalid targetUid",
+    });
   });
 
   it("builds report doc id without type", () => {

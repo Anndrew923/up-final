@@ -1,4 +1,5 @@
 import { isLadderAvatarDataUrl, isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
+import { validateLadderDisplayNameForSave } from '../logic/core/ladderDisplayNamePolicy';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
 import { parseIsoMs } from '../logic/core/structuredSyncReconcile';
 import { loadProfile, saveProfile, type LocalProfile } from './localStorageService';
@@ -60,10 +61,17 @@ export interface SaveLadderIdentityInput {
  * `uid` is preserved from an existing profile when present; otherwise `local`.
  */
 export function saveLadderIdentity(input: SaveLadderIdentityInput): void {
-  const displayName = normalizeLadderDisplayName(input.displayName);
-  if (!displayName) {
+  const validated = validateLadderDisplayNameForSave(
+    input.displayName,
+    getDisplayNameMaxLength()
+  );
+  if (!validated.ok) {
+    if (validated.code === 'profanity') {
+      throw new Error('ladder-identity-profanity');
+    }
     throw new Error('ladder-identity-empty-display-name');
   }
+  const displayName = validated.normalized;
 
   const prev = loadProfile();
   const uid = prev?.uid && prev.uid.length > 0 ? prev.uid : 'local';

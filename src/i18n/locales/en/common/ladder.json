@@ -66,7 +66,6 @@
       "reportSubmit": "Submit report",
       "reportSubmitting": "Submitting…",
       "reportSuccess": "Report received. Arena moderators will review within 24 hours.",
-      "reportDuplicate": "You already reported this within 24 hours. Please wait for review.",
       "reportDailyCap": "You reached the 24-hour report limit. Try again later.",
       "reportTargetMissing": "This user has no public arena profile to report.",
       "reportError": "Could not submit report. Try again later."

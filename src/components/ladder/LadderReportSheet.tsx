@@ -13,6 +13,8 @@ export interface LadderReportSheetProps {
 
 const REPORT_TYPES: LadderReportType[] = ['nickname', 'avatar', 'both'];
 
+type ReportFeedback = 'success' | 'daily-cap' | 'not-found' | 'error' | null;
+
 const LadderReportSheet: FC<LadderReportSheetProps> = ({
   open,
   targetUid,
@@ -23,9 +25,7 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
   const titleId = useId();
   const [selectedType, setSelectedType] = useState<LadderReportType>('nickname');
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<
-    'success' | 'duplicate' | 'daily-cap' | 'not-found' | 'error' | null
-  >(null);
+  const [feedback, setFeedback] = useState<ReportFeedback>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -52,6 +52,12 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, busy, onClose]);
 
+  const applyFailureFeedback = (reason: string) => {
+    if (reason === 'daily-cap') setFeedback('daily-cap');
+    else if (reason === 'not-found') setFeedback('not-found');
+    else setFeedback('error');
+  };
+
   const handleSubmit = async () => {
     if (!targetUid || busy) return;
     setBusy(true);
@@ -63,30 +69,11 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
         onSuccess();
         return;
       }
-      if (!result.ok && result.reason === 'duplicate') {
-        setFeedback('duplicate');
-        return;
-      }
-      if (!result.ok && result.reason === 'daily-cap') {
-        setFeedback('daily-cap');
-        return;
-      }
-      if (!result.ok && result.reason === 'not-found') {
-        setFeedback('not-found');
-        return;
-      }
-      setFeedback('error');
+      applyFailureFeedback(result.reason);
     } catch (err) {
       const mapped = mapLadderReportError(err);
-      if (!mapped.ok && mapped.reason === 'duplicate') {
-        setFeedback('duplicate');
-      } else if (!mapped.ok && mapped.reason === 'daily-cap') {
-        setFeedback('daily-cap');
-      } else if (!mapped.ok && mapped.reason === 'not-found') {
-        setFeedback('not-found');
-      } else {
-        setFeedback('error');
-      }
+      if (!mapped.ok) applyFailureFeedback(mapped.reason);
+      else setFeedback('error');
     } finally {
       setBusy(false);
     }
@@ -141,11 +128,6 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
         {feedback === 'success' ? (
           <p className="mt-4 text-sm text-emerald-300" role="status" aria-live="polite">
             {t('ladder.moderation.reportSuccess')}
-          </p>
-        ) : null}
-        {feedback === 'duplicate' ? (
-          <p className="mt-4 text-sm text-amber-200" role="status" aria-live="polite">
-            {t('ladder.moderation.reportDuplicate')}
           </p>
         ) : null}
         {feedback === 'daily-cap' ? (

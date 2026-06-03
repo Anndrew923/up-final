@@ -10,7 +10,6 @@ export type LadderReportResult =
       reason:
         | 'unauthenticated'
         | 'permission-denied'
-        | 'duplicate'
         | 'invalid'
         | 'unavailable'
         | 'not-found'
@@ -45,7 +44,6 @@ export function mapLadderReportError(err: unknown): LadderReportResult {
       : '';
   if (code.includes('unauthenticated')) return { ok: false, reason: 'unauthenticated' };
   if (code.includes('permission-denied')) return { ok: false, reason: 'permission-denied' };
-  if (code.includes('already-exists')) return { ok: false, reason: 'duplicate' };
   if (code.includes('resource-exhausted')) return { ok: false, reason: 'daily-cap' };
   if (code.includes('not-found')) return { ok: false, reason: 'not-found' };
   if (code.includes('invalid-argument')) return { ok: false, reason: 'invalid' };

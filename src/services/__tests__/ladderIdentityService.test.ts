@@ -6,15 +6,17 @@ import {
   normalizeLadderDisplayName,
   resolveLeaderboardAvatarUrlForCloud,
   sanitizeAvatarUrlForLeaderboard,
+  saveLadderIdentity,
 } from '../ladderIdentityService';
 
-const { loadProfile } = vi.hoisted(() => ({
+const { loadProfile, saveProfile } = vi.hoisted(() => ({
   loadProfile: vi.fn(),
+  saveProfile: vi.fn(),
 }));
 
 vi.mock('../localStorageService', () => ({
   loadProfile,
-  saveProfile: vi.fn(),
+  saveProfile,
 }));
 
 describe('sanitizeAvatarUrlForLeaderboard', () => {
@@ -45,6 +47,27 @@ describe('normalizeLadderDisplayName', () => {
     expect(normalizeLadderDisplayName('  abc  ')).toBe('abc');
     const long = 'a'.repeat(100);
     expect(normalizeLadderDisplayName(long).length).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('saveLadderIdentity', () => {
+  beforeEach(() => {
+    loadProfile.mockReturnValue({ uid: 'u1', displayName: 'Pilot', updatedAt: '' });
+    saveProfile.mockClear();
+  });
+
+  it('rejects profane display names at the service layer', () => {
+    expect(() => saveLadderIdentity({ displayName: 'shitlord' })).toThrow(
+      'ladder-identity-profanity'
+    );
+    expect(saveProfile).not.toHaveBeenCalled();
+  });
+
+  it('persists sanitized display names', () => {
+    saveLadderIdentity({ displayName: '  CleanName  ' });
+    expect(saveProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ displayName: 'CleanName' })
+    );
   });
 });
 
