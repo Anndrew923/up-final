@@ -1,6 +1,6 @@
 {
   "name": "up-final-functions",
-  "description": "Cloud Functions for Ultimate Physique (UP Final)",
+  "description": "Cloud Functions for Ultimate Physique",
   "type": "module",
   "engines": {
     "node": "20"

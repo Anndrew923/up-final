@@ -180,7 +180,7 @@
       }
     }
   },
-  "shellTitle": "UP Final P0 Shell",
+  "shellTitle": "Ultimate Physique",
   "shellSubtitle": "Core access and leaderboard guard check",
   "setCoreOwned": "Set Core Owned",
   "setFree": "Set Free",
@@ -273,14 +273,14 @@
   },
   "about": {
     "kicker": "Product profile",
-    "title": "About UP Final",
+    "title": "About Ultimate Physique",
     "subtitle": "A local-first fitness assessment app focused on clear scoring and long-term progress tracking.",
     "versionTitle": "Version",
     "versionBody": "Current app version: {{version}}",
     "missionTitle": "Mission",
     "missionBody": "We build practical fitness scoring tools that stay transparent, deterministic, and useful in everyday training decisions.",
     "disclaimerTitle": "Medical disclaimer",
-    "disclaimerBody": "UP Final is a fitness self-tracking product and does not provide medical diagnosis, treatment, or emergency guidance.",
+    "disclaimerBody": "Ultimate Physique is a fitness self-tracking product and does not provide medical diagnosis, treatment, or emergency guidance.",
     "contactTitle": "Contact",
     "contactBody": "For product questions or feedback, use the official support channel provided inside the app.",
     "openPrivacyPolicy": "Open privacy policy"
@@ -288,7 +288,7 @@
   "privacy": {
     "kicker": "Legal",
     "title": "Privacy policy",
-    "subtitle": "Read how UP Final handles profile, assessment, and cloud-sync related data.",
+    "subtitle": "Read how Ultimate Physique handles profile, assessment, and cloud-sync related data.",
     "openStandalone": "Open policy in a new tab",
     "currentLanguage": "Current policy language: {{locale}}",
     "openOtherLanguage": "Open {{locale}} version"

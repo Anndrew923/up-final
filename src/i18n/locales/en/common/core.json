@@ -558,5 +558,7 @@
   },
   "shellAvatarFallback": "Guest",
   "shellAvatarAria": "User avatar, initial {{initial}}",
-  "shellSettingsAria": "Open settings"
+  "shellSettingsAria": "Open settings",
+  "shellTitle": "Ultimate Physique",
+  "shellSubtitle": "Core access and leaderboard guard check"
 }
