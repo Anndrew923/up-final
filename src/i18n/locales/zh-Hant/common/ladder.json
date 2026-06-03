@@ -65,7 +65,7 @@
       },
       "reportSubmit": "送出檢舉",
       "reportSubmitting": "送出中…",
-      "reportSuccess": "已收到回報，戰場管理員將在 24 小時內進行審查。",
+      "reportSuccess": "已收到回報，戰場管理員將於合理時間內進行審查。",
       "reportDailyCap": "你 24 小時內的檢舉次數已達上限，請稍後再試。",
       "reportTargetMissing": "此用戶尚無公開戰場資料，無法檢舉。",
       "reportError": "檢舉送出失敗，請稍後再試。"
