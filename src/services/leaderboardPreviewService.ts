@@ -10,6 +10,8 @@ import type { LadderAgeBucket, LadderGender, LadderJobCategory } from '../types/
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 import { getFirestoreDb } from './firebaseClient';
 import { LEADERBOARD_PREVIEWS_COLLECTION } from './firestorePaths';
+import type { LeaderboardEntry } from './leaderboardCacheService';
+import { sanitizeAvatarUrlForLeaderboard } from './ladderIdentityService';
 
 export interface LadderUserPreview {
   uid: string;
@@ -132,6 +134,36 @@ function mapPreview(data: Record<string, unknown>, uid: string): LadderUserPrevi
     radarComplete,
     radarUpdatedAt,
     updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date().toISOString(),
+  };
+}
+
+/**
+ * Graceful degradation when `leaderboard_previews/{uid}` is missing but the list row exists.
+ * WHY: Batch uploads may lag preview sync; list entry is still authoritative for public summary fields.
+ */
+export function buildLadderUserPreviewFromEntry(entry: LeaderboardEntry): LadderUserPreview {
+  const isAnonymous = entry.isAnonymousInLadder === true;
+  const jobRaw = entry.jobCategory;
+  const resolvedJobCategory =
+    typeof jobRaw === 'string' && jobRaw.length > 0 ? (jobRaw as LadderJobCategory) : undefined;
+  return {
+    uid: entry.uid,
+    displayName: isAnonymous ? 'Anonymous' : entry.displayName?.trim() || entry.uid,
+    avatarUrl: isAnonymous
+      ? undefined
+      : sanitizeAvatarUrlForLeaderboard(entry.avatarUrl),
+    gender: entry.gender,
+    ageBucket: entry.ageBucket,
+    jobCategory: resolvedJobCategory,
+    countryCode: entry.countryCode,
+    city: entry.city,
+    district: entry.district,
+    isAnonymousInLadder: isAnonymous,
+    radarScores: {},
+    schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+    radarAxisCount: 0,
+    radarComplete: false,
+    updatedAt: entry.updatedAt,
   };
 }
 

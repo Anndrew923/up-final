@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LEADERBOARD_SHARD_OVERALL } from '../assessmentLeaderboardShards';
 import { createEmptyLeaderboardSyncRunSummary } from '../leaderboardSyncTargets';
 import {
+  batchSummaryWarrantsPreviewSync,
   collectLadderCacheMetricsToClear,
   inferServerPreviewSynced,
   shouldInvalidateLadderCacheAfterBatch,
@@ -34,15 +35,26 @@ describe('ladderBatchPostUploadPolicy', () => {
     expect(shouldInvalidateLadderCacheAfterBatch(avatar)).toBe(true);
   });
 
-  it('shouldRunClientPreviewFallback requires https avatar and a write signal', () => {
+  it('shouldRunClientPreviewFallback does not require https avatar', () => {
     const summary = createEmptyLeaderboardSyncRunSummary();
     summary.attempted = 1;
-    summary.avatarPatched = 1;
-    expect(shouldRunClientPreviewFallback(summary, true)).toBe(true);
-    expect(shouldRunClientPreviewFallback(summary, false)).toBe(false);
+    summary.unchanged = 1;
+    expect(shouldRunClientPreviewFallback(summary)).toBe(true);
+  });
 
-    summary.avatarPatched = 0;
-    expect(shouldRunClientPreviewFallback(summary, true)).toBe(false);
+  it('shouldRunClientPreviewFallback is true for unchanged-only batch', () => {
+    const summary = createEmptyLeaderboardSyncRunSummary();
+    summary.attempted = 4;
+    summary.unchanged = 4;
+    expect(batchSummaryWarrantsPreviewSync(summary)).toBe(true);
+    expect(shouldRunClientPreviewFallback(summary)).toBe(true);
+  });
+
+  it('shouldRunClientPreviewFallback is false when no shard outcomes', () => {
+    const summary = createEmptyLeaderboardSyncRunSummary();
+    summary.attempted = 2;
+    summary.rateLimited = 2;
+    expect(shouldRunClientPreviewFallback(summary)).toBe(false);
   });
 
   it('inferServerPreviewSynced allows client retry when preview shard failed', () => {
@@ -52,14 +64,12 @@ describe('ladderBatchPostUploadPolicy', () => {
     expect(
       inferServerPreviewSynced({
         summary,
-        hasHttpsAvatar: true,
         failures: [{ metric: 'preview' }],
       })
     ).toBe(false);
     expect(
       inferServerPreviewSynced({
         summary,
-        hasHttpsAvatar: true,
         failures: [],
       })
     ).toBe(true);

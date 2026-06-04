@@ -50,6 +50,8 @@
       "radarCompletion": "有資料的軸：{{count}} / {{total}}",
       "overallAverage": "六軸平均",
       "listedOverallScore": "榜單登記分",
+      "entryFallbackNotice": "完整檔案同步中，目前顯示榜單摘要。",
+      "entryFallbackRadarPending": "六軸雷達資料更新中…",
       "driftWarning": "榜單登記分（{{listed}}）與目前公開六軸平均（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以更新總戰力。"
     },
     "moderation": {

@@ -156,6 +156,19 @@ async function propagateAvatarToExtraShards(uid, data, displayName, targets, tal
 }
 
 /**
+ * WHY: Preview must stay in sync with batch profile/radar even without HTTPS avatar or unchanged scores.
+ * Avatar is optional on `leaderboard_previews/{uid}`.
+ * Keep in parity with client `batchSummaryWarrantsPreviewSync` in ladderBatchPostUploadPolicy.ts.
+ */
+export function shouldSyncBatchPreview(preview, tally) {
+  if (!preview?.mergedScores || typeof preview.mergedScores !== "object") {
+    return false;
+  }
+  if (tally.attempted <= 0) return false;
+  return tally.updated > 0 || tally.avatarPatched > 0 || tally.unchanged > 0;
+}
+
+/**
  * Sequential multi-shard upload in one Callable (server-enforced full-sync cap when requested).
  * Returns per-shard `failures` so clients never collapse unknown errors into one bucket.
  */
@@ -267,12 +280,7 @@ export async function runLadderSyncBatch(request) {
 
   await propagateAvatarToExtraShards(uid, data, batchDisplayName, targets, tally, failures);
 
-  const shouldSyncPreview =
-    preview?.mergedScores &&
-    sanitizeAvatarUrl(data.avatarUrl) &&
-    (tally.updated > 0 || tally.avatarPatched > 0);
-
-  if (shouldSyncPreview) {
+  if (shouldSyncBatchPreview(preview, tally)) {
     try {
       await runLadderSyncPreview({
         auth: request.auth,

@@ -29,19 +29,17 @@ export function shouldInvalidateLadderCacheAfterBatch(
   return summary.updated > 0 || (summary.avatarPatched ?? 0) > 0;
 }
 
-export function hasHttpsLeaderboardAvatar(avatarUrl?: string | null): boolean {
-  return Boolean(avatarUrl?.trim().startsWith('https://'));
+/** Mirrors server `shouldSyncBatchPreview` — avatar is optional for preview refresh. */
+export function batchSummaryWarrantsPreviewSync(summary: LeaderboardSyncRunSummary): boolean {
+  if (summary.attempted <= 0) return false;
+  return summary.updated > 0 || (summary.avatarPatched ?? 0) > 0 || summary.unchanged > 0;
 }
 
 /**
  * Client preview fallback after batch — mirrors server `ladderSyncBatch` preview gate.
  */
-export function shouldRunClientPreviewFallback(
-  summary: LeaderboardSyncRunSummary,
-  hasHttpsAvatar: boolean
-): boolean {
-  if (!hasHttpsAvatar || summary.attempted <= 0) return false;
-  return summary.updated > 0 || (summary.avatarPatched ?? 0) > 0;
+export function shouldRunClientPreviewFallback(summary: LeaderboardSyncRunSummary): boolean {
+  return batchSummaryWarrantsPreviewSync(summary);
 }
 
 /**
@@ -50,10 +48,9 @@ export function shouldRunClientPreviewFallback(
  */
 export function inferServerPreviewSynced(options: {
   summary: LeaderboardSyncRunSummary;
-  hasHttpsAvatar: boolean;
   failures: readonly { metric: string }[];
 }): boolean {
-  if (!shouldRunClientPreviewFallback(options.summary, options.hasHttpsAvatar)) {
+  if (!shouldRunClientPreviewFallback(options.summary)) {
     return false;
   }
   const previewFailed = options.failures.some((f) => f.metric === 'preview');

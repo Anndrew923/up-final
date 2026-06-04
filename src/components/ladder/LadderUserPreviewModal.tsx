@@ -23,6 +23,8 @@ export interface LadderUserPreviewModalProps {
   loading: boolean;
   error: boolean;
   user: LadderUserPreview | null;
+  /** List-row fallback when `leaderboard_previews/{uid}` is missing. */
+  entryFallback?: boolean;
   /** Target row uid (required for block/report when not anonymous). */
   targetUid?: string | null;
   /** Signed-in viewer uid — hides moderation actions for self. */
@@ -41,6 +43,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   loading,
   error,
   user,
+  entryFallback = false,
   targetUid,
   viewerUid,
   viewingShardId,
@@ -135,6 +138,11 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
           </p>
         ) : (
           <div className="space-y-4">
+            {entryFallback ? (
+              <p className="rounded-md border border-cyan-500/25 bg-cyan-500/10 px-3 py-2.5 text-xs leading-relaxed text-cyan-100/90">
+                {t('ladder.userPreview.entryFallbackNotice', { ns: 'common' })}
+              </p>
+            ) : null}
             <div className="flex items-center gap-3 rounded-md border border-zinc-800 bg-zinc-900/30 p-3">
               {user.avatarUrl ? (
                 <img
@@ -200,88 +208,108 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
               </p>
             ) : (
               <div className="space-y-4">
-                <p className="text-center text-xs text-zinc-500">
-                  {t('ladder.userPreview.radarCompletion', {
-                    ns: 'common',
-                    count: user.radarAxisCount ?? 0,
-                    total: SIX_AXIS_COUNT,
-                  })}
-                </p>
-
-                <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
-                  <HexRadarChart
-                    points={localizedRadarPoints}
-                    scaleMax={scaleMax}
-                    weakestKey={weakest?.key}
-                    className="mx-auto w-full max-w-[260px]"
-                    aria-label={t('ladder.userPreview.radarAria', { ns: 'common' })}
-                  />
-                </div>
-
-                {showOverallDriftGuard ? (
-                  <aside
-                    className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-3 text-sm leading-relaxed text-amber-100/90"
-                    role="note"
-                  >
-                    <p>
-                      {t('ladder.userPreview.driftWarning', {
+                {entryFallback ? (
+                  <>
+                    <p className="rounded-md border border-zinc-800 bg-zinc-900/30 px-3 py-4 text-center text-sm text-zinc-400">
+                      {t('ladder.userPreview.entryFallbackRadarPending', { ns: 'common' })}
+                    </p>
+                    {ladderEntryScoreBest != null && Number.isFinite(ladderEntryScoreBest) ? (
+                      <div className="text-center">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                          {t('ladder.userPreview.listedOverallScore', { ns: 'common' })}
+                        </p>
+                        <p className="mt-2 font-mono text-3xl font-semibold tabular-nums text-accent-info">
+                          {formatOverallResonanceScore(ladderEntryScoreBest)}
+                        </p>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-center text-xs text-zinc-500">
+                      {t('ladder.userPreview.radarCompletion', {
                         ns: 'common',
-                        listed: formatOverallResonanceScore(ladderEntryScoreBest),
-                        preview: formatOverallResonanceScore(overallScore),
+                        count: user.radarAxisCount ?? 0,
+                        total: SIX_AXIS_COUNT,
                       })}
                     </p>
-                  </aside>
-                ) : null}
 
-                {overallScore != null ? (
-                  <div className="text-center">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-                      {t('ladder.userPreview.overallAverage', { ns: 'common' })}
-                    </p>
-                    {showOverallDriftGuard &&
-                    ladderEntryScoreBest != null &&
-                    Number.isFinite(ladderEntryScoreBest) ? (
-                      <p className="mt-1 font-mono text-xs tabular-nums text-zinc-500">
-                        {t('ladder.userPreview.listedOverallScore', { ns: 'common' })}:{' '}
-                        {formatOverallResonanceScore(ladderEntryScoreBest)}
-                      </p>
-                    ) : null}
-                    <p className="mt-2 font-mono text-3xl font-semibold tabular-nums text-accent-info">
-                      {overallScore}
-                    </p>
-                  </div>
-                ) : null}
+                    <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
+                      <HexRadarChart
+                        points={localizedRadarPoints}
+                        scaleMax={scaleMax}
+                        weakestKey={weakest?.key}
+                        className="mx-auto w-full max-w-[260px]"
+                        aria-label={t('ladder.userPreview.radarAria', { ns: 'common' })}
+                      />
+                    </div>
 
-                <ul className="grid grid-cols-2 gap-1.5 text-[11px] sm:grid-cols-3">
-                  {SIX_AXIS_METRICS.map((key) => {
-                    const v = clampScoreMapValue(user.radarScores?.[key] ?? 0);
-                    const show = v > 0;
-                    return (
-                      <li
-                        key={key}
-                        className={`rounded-md border bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400 ${
-                          weakest?.key === key
-                            ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
-                            : 'border-zinc-800/70'
-                        }`}
+                    {showOverallDriftGuard ? (
+                      <aside
+                        className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-3 text-sm leading-relaxed text-amber-100/90"
+                        role="note"
                       >
-                        <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-zinc-500">
-                          {t(`home.radar.axisCard.${key}`, {
+                        <p>
+                          {t('ladder.userPreview.driftWarning', {
                             ns: 'common',
-                            defaultValue: t(`home.radar.axis.${key}`, { ns: 'common' }),
+                            listed: formatOverallResonanceScore(ladderEntryScoreBest),
+                            preview: formatOverallResonanceScore(overallScore),
                           })}
-                        </span>
-                        <span
-                          className={`mt-0.5 block font-mono tabular-nums ${
-                            show && v > 100 ? 'text-accent-info' : 'text-zinc-200'
-                          }`}
-                        >
-                          {show ? v : dash}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        </p>
+                      </aside>
+                    ) : null}
+
+                    {overallScore != null ? (
+                      <div className="text-center">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                          {t('ladder.userPreview.overallAverage', { ns: 'common' })}
+                        </p>
+                        {showOverallDriftGuard &&
+                        ladderEntryScoreBest != null &&
+                        Number.isFinite(ladderEntryScoreBest) ? (
+                          <p className="mt-1 font-mono text-xs tabular-nums text-zinc-500">
+                            {t('ladder.userPreview.listedOverallScore', { ns: 'common' })}:{' '}
+                            {formatOverallResonanceScore(ladderEntryScoreBest)}
+                          </p>
+                        ) : null}
+                        <p className="mt-2 font-mono text-3xl font-semibold tabular-nums text-accent-info">
+                          {overallScore}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <ul className="grid grid-cols-2 gap-1.5 text-[11px] sm:grid-cols-3">
+                      {SIX_AXIS_METRICS.map((key) => {
+                        const v = clampScoreMapValue(user.radarScores?.[key] ?? 0);
+                        const show = v > 0;
+                        return (
+                          <li
+                            key={key}
+                            className={`rounded-md border bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400 ${
+                              weakest?.key === key
+                                ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
+                                : 'border-zinc-800/70'
+                            }`}
+                          >
+                            <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+                              {t(`home.radar.axisCard.${key}`, {
+                                ns: 'common',
+                                defaultValue: t(`home.radar.axis.${key}`, { ns: 'common' }),
+                              })}
+                            </span>
+                            <span
+                              className={`mt-0.5 block font-mono tabular-nums ${
+                                show && v > 100 ? 'text-accent-info' : 'text-zinc-200'
+                              }`}
+                            >
+                              {show ? v : dash}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
               </div>
             )}
 

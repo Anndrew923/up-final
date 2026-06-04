@@ -29,10 +29,13 @@ import { useAuthStore } from '../stores/authStore';
 import { useLadderBlockStore } from '../stores/ladderBlockStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import {
+  buildLadderUserPreviewFromEntry,
   getLadderUserPreview,
   type LadderUserPreview,
 } from '../services/leaderboardPreviewService';
+import type { LeaderboardEntry } from '../services/leaderboardCacheService';
 import { LADDER_CACHE_INVALIDATED_EVENT } from '../services/ladderSyncPostBatch';
+import { sanitizeAvatarUrlForLeaderboard } from '../services/ladderIdentityService';
 import { useShallow } from 'zustand/react/shallow';
 import type { EntitlementState } from '../types/entitlement';
 
@@ -107,7 +110,9 @@ export default function LadderPage() {
   const [previewError, setPreviewError] = useState(false);
   const [previewUser, setPreviewUser] = useState<LadderUserPreview | null>(null);
   const [previewEntryScoreBest, setPreviewEntryScoreBest] = useState<number | null>(null);
+  const [previewEntryFallback, setPreviewEntryFallback] = useState(false);
   const previewRequestIdRef = useRef(0);
+  const [myRowInViewport, setMyRowInViewport] = useState(false);
 
   const hydrateBlockedUids = useLadderBlockStore((s) => s.hydrate);
 
@@ -211,6 +216,30 @@ export default function LadderPage() {
     pendingScrollUidRef.current = null;
   }, [items, loading]);
 
+  /**
+   * WHY: Rank may live on the current page but below the fold (e.g. #9 on page 1).
+   * IntersectionObserver drives the floating bar instead of "row exists in fetched items".
+   */
+  useEffect(() => {
+    if (!authUid || loading) {
+      setMyRowInViewport(false);
+      return;
+    }
+    const el = rowRefs.current.get(authUid);
+    if (!el) {
+      setMyRowInViewport(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setMyRowInViewport(entry.isIntersecting);
+      },
+      { root: null, threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [authUid, items, loading, currentPage]);
+
   const countryCodesInDataset = useMemo(() => {
     const next = new Set<LadderCountryCode>();
     for (const row of datasetItems) {
@@ -297,9 +326,15 @@ export default function LadderPage() {
   const jumpToMyRow = useCallback(() => {
     if (!authUid || myRank === null || myRank <= 0) return;
     const targetPage = Math.max(1, Math.ceil(myRank / pageSize));
+    if (targetPage === currentPage) {
+      requestAnimationFrame(() => {
+        rowRefs.current.get(authUid)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      return;
+    }
     pendingScrollUidRef.current = authUid;
     setCurrentPage(targetPage);
-  }, [authUid, myRank, pageSize]);
+  }, [authUid, myRank, pageSize, currentPage]);
 
   const closePreviewModal = useCallback(() => {
     previewRequestIdRef.current += 1;
@@ -309,10 +344,11 @@ export default function LadderPage() {
     setPreviewError(false);
     setPreviewUser(null);
     setPreviewEntryScoreBest(null);
+    setPreviewEntryFallback(false);
   }, []);
 
   const handleOpenUserPreview = useCallback(
-    async (uid: string, anonymous: boolean, entryScoreBest?: number) => {
+    async (uid: string, anonymous: boolean, entryScoreBest?: number, row?: LeaderboardEntry) => {
       if (!uid || anonymous) return;
       const requestId = previewRequestIdRef.current + 1;
       previewRequestIdRef.current = requestId;
@@ -320,6 +356,7 @@ export default function LadderPage() {
       setPreviewOpen(true);
       setPreviewLoading(true);
       setPreviewError(false);
+      setPreviewEntryFallback(false);
       setPreviewUser(null);
       setPreviewEntryScoreBest(
         entryScoreBest != null && Number.isFinite(entryScoreBest) ? entryScoreBest : null
@@ -328,6 +365,12 @@ export default function LadderPage() {
       const result = await getLadderUserPreview({ entitlement, uid });
       if (previewRequestIdRef.current !== requestId) return;
       if (!result.ok || !result.item) {
+        if (result.reason === 'not-found' && row) {
+          setPreviewUser(buildLadderUserPreviewFromEntry(row));
+          setPreviewEntryFallback(true);
+          setPreviewLoading(false);
+          return;
+        }
         setPreviewLoading(false);
         setPreviewError(true);
         return;
@@ -338,10 +381,18 @@ export default function LadderPage() {
     [entitlement]
   );
 
-  const userInVisibleItems = useMemo(() => {
-    if (!authUid) return false;
-    return items.some((row) => row.uid === authUid);
-  }, [authUid, items]);
+  const floatingAvatarUrl = useMemo(() => {
+    if (!myEntry || myEntry.isAnonymousInLadder === true) return undefined;
+    return sanitizeAvatarUrlForLeaderboard(myEntry.avatarUrl);
+  }, [myEntry]);
+
+  const floatingDisplayName = useMemo(() => {
+    if (!myEntry) return '';
+    if (myEntry.isAnonymousInLadder === true) {
+      return t('ladder.anonymousName', { ns: 'common' });
+    }
+    return myEntry.displayName?.trim() || authUid || '';
+  }, [myEntry, authUid, t]);
 
   const showFloatingRankBar =
     myRank !== null &&
@@ -349,7 +400,7 @@ export default function LadderPage() {
     myEntry !== null &&
     Number.isFinite(myEntry.scoreBest) &&
     myEntry.scoreBest > 0 &&
-    !userInVisibleItems;
+    !myRowInViewport;
 
   const canPrevPage = currentPage > 1;
   const canNextPage = datasetItems.length === pageSize;
@@ -554,7 +605,7 @@ export default function LadderPage() {
                     type="button"
                     disabled={isAnonymousRow}
                     onClick={() => {
-                      void handleOpenUserPreview(row.uid, isAnonymousRow, row.scoreBest);
+                      void handleOpenUserPreview(row.uid, isAnonymousRow, row.scoreBest, row);
                     }}
                     className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm transition-all duration-200 sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass} disabled:cursor-not-allowed disabled:opacity-90`}
                   >
@@ -631,11 +682,14 @@ export default function LadderPage() {
           </button>
         </footer>
       </section>
-      {showFloatingRankBar ? (
+      {showFloatingRankBar && myEntry ? (
         <LadderFloatingRankBar
           shardId={shardId}
           myRank={myRank}
           myScore={myEntry.scoreBest}
+          avatarUrl={floatingAvatarUrl}
+          displayName={floatingDisplayName}
+          isAnonymous={myEntry.isAnonymousInLadder === true}
           onJumpToMyRow={jumpToMyRow}
           formatScore={formatFloatingScore}
         />
@@ -643,8 +697,9 @@ export default function LadderPage() {
       <LadderUserPreviewModal
         open={previewOpen}
         loading={previewLoading}
-        error={previewError || !selectedUid}
+        error={previewError}
         user={previewUser}
+        entryFallback={previewEntryFallback}
         targetUid={selectedUid}
         viewerUid={authUid}
         viewingShardId={shardId}

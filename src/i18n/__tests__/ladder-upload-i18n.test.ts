@@ -48,4 +48,16 @@ describe('ladder upload i18n', () => {
     expect(dailyCap).not.toBe('ladder.syncAll.fullSyncDailyCap');
     expect(dailyCap.length).toBeGreaterThan(8);
   });
+
+  it('resolves user preview entry-fallback copy (not raw keys)', () => {
+    const notice = i18n.t('ladder.userPreview.entryFallbackNotice', { ns: 'common' });
+    expect(notice).not.toBe('ladder.userPreview.entryFallbackNotice');
+    expect(notice).toContain('同步');
+
+    const radarPending = i18n.t('ladder.userPreview.entryFallbackRadarPending', {
+      ns: 'common',
+    });
+    expect(radarPending).not.toBe('ladder.userPreview.entryFallbackRadarPending');
+    expect(radarPending.length).toBeGreaterThan(4);
+  });
 });

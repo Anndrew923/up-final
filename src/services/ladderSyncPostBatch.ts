@@ -1,7 +1,6 @@
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import {
   collectLadderCacheMetricsToClear,
-  hasHttpsLeaderboardAvatar,
   inferServerPreviewSynced,
   shouldInvalidateLadderCacheAfterBatch,
   shouldRunClientPreviewFallback,
@@ -57,19 +56,17 @@ export async function runLeaderboardBatchPostUpload(options: {
   }
   notifyLadderCacheInvalidated(metrics);
 
-  const hasHttpsAvatar = hasHttpsLeaderboardAvatar(options.resolvedAvatarUrl);
   const serverSyncedPreview =
     options.serverSyncedPreview ??
     inferServerPreviewSynced({
       summary: options.summary,
-      hasHttpsAvatar,
       failures: options.batchFailures ?? [],
     });
 
   if (
     serverSyncedPreview ||
     !options.previewSnapshot ||
-    !shouldRunClientPreviewFallback(options.summary, hasHttpsAvatar)
+    !shouldRunClientPreviewFallback(options.summary)
   ) {
     return;
   }
