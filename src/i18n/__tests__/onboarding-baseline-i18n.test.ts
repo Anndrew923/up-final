@@ -28,7 +28,8 @@ describe('onboarding baseline i18n', () => {
       expect(copy.protocolTitle).toContain('統一測功');
       expect(copy.protocolTitle).not.toContain('onboarding.baseline');
       expect(copy.features.strength.label).toContain('力量');
-      expect(copy.features.ffmi.desc).toContain('FFMI');
+      expect(copy.features.ffmi.label).toContain('FFMI');
+      expect(copy.features.ffmi.desc).toContain('無脂肪質量指數');
       expect(copy.authorityFooter).toContain('警告');
     });
 
