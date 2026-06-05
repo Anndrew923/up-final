@@ -19,7 +19,6 @@ import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
 import {
   purchaseProSubscription,
-  restorePurchasesFromDevice,
 } from '../services/subscriptionService';
 import { signInWithGoogleWeb } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
@@ -44,7 +43,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
   const [banner, setBanner] = useState<
-    'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
+    'idle' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
   >('idle');
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
@@ -125,34 +124,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     }
   };
 
-  const handleRestore = async () => {
-    setBanner('idle');
-    setBillingBusy(true);
-    try {
-      if (isBetaOpen && !isBackupFunnel) {
-        navigate(returnTo);
-        return;
-      }
-      const result = await restorePurchasesFromDevice();
-      if (!result.hadSnapshot) {
-        setBanner('restore-empty');
-        return;
-      }
-      setBanner(result.proActive ? 'restore-ok' : 'restore-empty');
-      if (result.proActive) {
-        navigate(returnTo);
-      }
-    } finally {
-      setBillingBusy(false);
-    }
-  };
-
   const subscribeDisabled =
     billingBusy ||
     authStatus === 'loading' ||
     (uiGate.kind === 'pro' && (!coreOwned || (subscriptionStatus === 'pro' && isPro)));
-
-  const showRestoreLink = !(isBetaOpen && !isBackupFunnel);
 
   const handleBack = () => {
     if (onBack) {
@@ -221,16 +196,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         {banner === 'core' ? (
           <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
             {t('coreRequired')}
-          </p>
-        ) : null}
-        {banner === 'restore-ok' ? (
-          <p className="rounded-xl border border-sky-500/35 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
-            {t('restoreSuccess')}
-          </p>
-        ) : null}
-        {banner === 'restore-empty' ? (
-          <p className="rounded-xl border border-zinc-700 bg-bg-card/90 px-4 py-3 text-sm text-zinc-300">
-            {t('restoreEmpty')}
           </p>
         ) : null}
         {banner === 'auth-ok' ? (
@@ -326,31 +291,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             ) : null}
             <span className="relative z-[1]">{primaryCtaLabel}</span>
           </button>
-
-          {showRestoreLink ? (
-            <button
-              type="button"
-              onClick={() => {
-                void handleRestore();
-              }}
-              disabled={billingBusy}
-              className="text-center text-xs font-medium text-zinc-500 transition hover:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {t('arena:restorePurchases')}
-            </button>
-          ) : (
-            <p className="text-center text-xs text-zinc-600">{t('arena:betaRestoreDisabled')}</p>
-          )}
-
-          {!onBack ? (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="text-center text-xs text-zinc-600 transition hover:text-zinc-400"
-            >
-              {t('arena:backToConsole')}
-            </button>
-          ) : null}
         </section>
       </div>
     </main>

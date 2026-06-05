@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
@@ -6,8 +6,11 @@ export interface SettingsPageProps {
   onBack?: () => void;
 }
 
+const RESTORE_TOAST_MS = 3500;
+
 const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const [restoreToastVisible, setRestoreToastVisible] = useState(false);
   const {
     authStatus,
     displayName,
@@ -19,6 +22,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     canSignIn,
     canSignOut,
     canDeleteAccount,
+    canRestorePurchases,
     goToAbout,
     goToContact,
     goToPrivacyPolicy,
@@ -28,8 +32,18 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     deleteAccount,
     signInGoogle,
     signOut,
+    restorePurchases,
   } = useSettingsPage();
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
+
+  useEffect(() => {
+    if (banner !== 'restore-ok') return;
+    setRestoreToastVisible(true);
+    const timer = window.setTimeout(() => {
+      setRestoreToastVisible(false);
+    }, RESTORE_TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [banner]);
 
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
@@ -142,6 +156,12 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           {banner === 'sign-out-fail' ? (
             <p className="text-sm text-rose-400">{t('settings.signOutFail')}</p>
           ) : null}
+          {banner === 'restore-empty' ? (
+            <p className="text-sm text-zinc-400">{t('settings.restorePurchasesEmpty')}</p>
+          ) : null}
+          {banner === 'restore-fail' ? (
+            <p className="text-sm text-rose-400">{t('settings.restorePurchasesFail')}</p>
+          ) : null}
           {banner === 'delete-success' ? (
             <p className="text-sm text-emerald-400">{t('settings.deleteSuccess')}</p>
           ) : null}
@@ -183,6 +203,22 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
             </button>
           </div>
 
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-xl border border-zinc-700/60 bg-zinc-950/40 px-4 py-3.5 text-left transition hover:border-zinc-500 hover:bg-zinc-900/60 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => void restorePurchases()}
+            disabled={!canRestorePurchases}
+          >
+            <span className="text-sm font-medium text-zinc-300">
+              {busyAction === 'restore-purchases'
+                ? t('settings.restorePurchasesBusy')
+                : t('settings.restorePurchases')}
+            </span>
+            <span className="text-xs text-zinc-500" aria-hidden>
+              →
+            </span>
+          </button>
+
           <div className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
               {t('settings.dangerZone')}
@@ -201,6 +237,16 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           </div>
         </section>
       </div>
+
+      {restoreToastVisible ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed inset-x-4 bottom-24 z-[1100] mx-auto max-w-md rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-center text-sm font-medium text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.2)] backdrop-blur-md sm:bottom-8"
+        >
+          {t('settings.restorePurchasesSuccess')}
+        </div>
+      ) : null}
     </main>
   );
 };

@@ -6,6 +6,7 @@ import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
+import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useAuthStore } from '../stores/authStore';
 
@@ -14,6 +15,9 @@ export type SettingsBanner =
   | 'sign-in-fail'
   | 'sign-out-ok'
   | 'sign-out-fail'
+  | 'restore-ok'
+  | 'restore-empty'
+  | 'restore-fail'
   | 'delete-success'
   | 'delete-requires-recent-login'
   | 'delete-reauth-fail'
@@ -21,17 +25,25 @@ export type SettingsBanner =
   | 'delete-auth-fail'
   | 'delete-not-allowed';
 
+export type SettingsBusyAction =
+  | 'none'
+  | 'sign-in'
+  | 'sign-out'
+  | 'restore-purchases'
+  | 'delete-account';
+
 export interface SettingsPageState {
   authStatus: 'loading' | 'signed-out' | 'signed-in';
   displayName: string;
   email: string | null;
   isAnonymous: boolean;
   locale: SupportedLng;
-  busyAction: 'none' | 'sign-in' | 'sign-out' | 'delete-account';
+  busyAction: SettingsBusyAction;
   banner: SettingsBanner;
   canSignIn: boolean;
   canSignOut: boolean;
   canDeleteAccount: boolean;
+  canRestorePurchases: boolean;
   goToAbout(): void;
   goToContact(): void;
   goToPrivacyPolicy(): void;
@@ -40,6 +52,7 @@ export interface SettingsPageState {
   toggleLocale(): void;
   signInGoogle(): Promise<void>;
   signOut(): Promise<void>;
+  restorePurchases(): Promise<void>;
   deleteAccount(): Promise<void>;
 }
 
@@ -51,9 +64,7 @@ export function useSettingsPage(): SettingsPageState {
   const displayName = useAuthStore((s) => s.displayName);
   const email = useAuthStore((s) => s.email);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const [busyAction, setBusyAction] = useState<'none' | 'sign-in' | 'sign-out' | 'delete-account'>(
-    'none'
-  );
+  const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
   const [banner, setBanner] = useState<SettingsBanner>('idle');
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
@@ -61,6 +72,7 @@ export function useSettingsPage(): SettingsPageState {
   const canSignIn = authStatus !== 'loading' && !isGoogleSignedIn && busyAction === 'none';
   const canSignOut = isGoogleSignedIn && busyAction === 'none';
   const canDeleteAccount = isGoogleSignedIn && busyAction === 'none';
+  const canRestorePurchases = authStatus !== 'loading' && busyAction === 'none';
 
   const state = useMemo<SettingsPageState>(
     () => ({
@@ -74,6 +86,7 @@ export function useSettingsPage(): SettingsPageState {
       canSignIn,
       canSignOut,
       canDeleteAccount,
+      canRestorePurchases,
       goToAbout() {
         navigate(ROUTES.about);
       },
@@ -126,6 +139,27 @@ export function useSettingsPage(): SettingsPageState {
           setBusyAction('none');
         }
       },
+      async restorePurchases() {
+        if (!canRestorePurchases) return;
+        setBanner('idle');
+        setBusyAction('restore-purchases');
+        try {
+          const result = await restorePurchasesFromDevice();
+          if (!result.hadSnapshot) {
+            setBanner('restore-empty');
+            return;
+          }
+          if (result.proActive) {
+            setBanner('restore-ok');
+            return;
+          }
+          setBanner('restore-empty');
+        } catch {
+          setBanner('restore-fail');
+        } finally {
+          setBusyAction('none');
+        }
+      },
       async deleteAccount() {
         if (!canDeleteAccount) {
           setBanner('delete-not-allowed');
@@ -174,6 +208,7 @@ export function useSettingsPage(): SettingsPageState {
       canSignIn,
       canSignOut,
       canDeleteAccount,
+      canRestorePurchases,
       t,
       navigate,
       resetBoot,
