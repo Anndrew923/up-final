@@ -1,6 +1,11 @@
 {
   "back": "返回",
   "cancel": "關閉",
+  "exitModalKicker": "系統 / 通電",
+  "exitModalTitle": "斷開通電協議？",
+  "exitModalMessage": "再按一次返回鍵，或點擊下方按鈕，系統載具將執行熄火並離開最強肉體。",
+  "stayInApp": "保持通電狀態",
+  "exitApp": "執行熄火離場",
   "gateSheet": {
     "secondary": "稍後再說",
     "auth": {

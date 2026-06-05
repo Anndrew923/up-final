@@ -4,6 +4,8 @@ import AppShell from './components/layout/AppShell';
 import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
+import ExitConfirmModal from './components/shell/ExitConfirmModal';
+import { useAndroidBackButton } from './hooks/useAndroidBackButton';
 import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
 import { useProStructuredUserSyncLifecycle } from './hooks/useProStructuredUserSyncLifecycle';
 import {
@@ -141,6 +143,7 @@ function PlateCalculatorRoute() {
 export default function App() {
   useAuthSessionBootstrap();
   useProStructuredUserSyncLifecycle();
+  const { exitModalOpen, closeExitModal } = useAndroidBackButton();
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const hasOnboarding = hasCompletedAuthOnboarding();
@@ -220,6 +223,7 @@ export default function App() {
           <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
         </Route>
       </Routes>
+      <ExitConfirmModal open={exitModalOpen} onClose={closeExitModal} />
     </>
   );
 }

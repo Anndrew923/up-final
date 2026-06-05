@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.3.1",
     "@capacitor/haptics": "^8.0.0",
     "@revenuecat/purchases-capacitor": "^13.0.1",

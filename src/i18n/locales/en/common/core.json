@@ -1,6 +1,11 @@
 {
   "back": "Back",
   "cancel": "Cancel",
+  "exitModalKicker": "SYSTEM / POWER",
+  "exitModalTitle": "TERMINATE CONNECTION?",
+  "exitModalMessage": "Press back again or click below to shutdown systems and exit Ultimate Physique.",
+  "stayInApp": "MAINTAIN POWER",
+  "exitApp": "SHUTDOWN & EXIT",
   "gateSheet": {
     "secondary": "Not now",
     "auth": {
