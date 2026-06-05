@@ -5,11 +5,18 @@ import LeaderboardGateSheet from './LeaderboardGateSheet';
 import { useTranslation } from 'react-i18next';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
+import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
+import { navigateFromUiGate } from '../../lib/uiGateNavigation';
+import { useUiGate } from '../../hooks/useUiGate';
 import {
   useLeaderboardUpload,
   resolveLeaderboardUploadGate,
 } from '../../hooks/useLeaderboardUpload';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
+import { useAuthStore } from '../../stores/authStore';
+import { useEntitlementStore } from '../../stores/entitlementStore';
+import { useShallow } from 'zustand/react/shallow';
+import { selectEntitlementState } from '../../stores/entitlementSelectors';
 
 export interface LeaderboardUploadBarProps {
   metric: LeaderboardShardId;
@@ -28,10 +35,19 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
   showSectionTitle = true,
 }) => {
   const { t, i18n } = useTranslation('common');
-  const navigate = useNavigate();
-  const gate = resolveLeaderboardUploadGate(score);
-  const { upload, busy, lastResult, goJoinArena, clearFeedback } = useLeaderboardUpload();
   const locale = i18n.resolvedLanguage ?? i18n.language;
+  const navigate = useNavigate();
+  const authStatus = useAuthStore((state) => state.status);
+  const isAnonymous = useAuthStore((state) => state.isAnonymous);
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const uiGate = useUiGate('ladder-upload');
+
+  const gate = useMemo(
+    () => resolveLeaderboardUploadGate(score, entitlement, authStatus, isAnonymous),
+    [score, entitlement, authStatus, isAnonymous]
+  );
+
+  const { upload, busy, lastResult, goJoinArena, clearFeedback } = useLeaderboardUpload();
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -80,25 +96,9 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
     return null;
   })();
 
-  const gateSheetCopy = useMemo(() => {
-    if (gate === 'signed-out' || gate === 'anonymous') {
-      return {
-        title: t('ladder.gateSheet.auth.title'),
-        body: t('ladder.gateSheet.auth.body'),
-        primary: t('ladder.gateSheet.auth.primary'),
-        nextRoute: ROUTES.authChoice,
-      };
-    }
-    if (gate === 'no-pro') {
-      return {
-        title: t('ladder.gateSheet.pro.title'),
-        body: t('ladder.gateSheet.pro.body'),
-        primary: t('ladder.gateSheet.pro.primary'),
-        nextRoute: ROUTES.joinArena,
-      };
-    }
-    return null;
-  }, [gate, t]);
+  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
+  const gateDescription =
+    gateSheetKind != null ? t(`ladder.gateSheet.${gateSheetKind}.body`) : '';
 
   return (
     <div className="space-y-2 border-t border-zinc-800/80 pt-4">
@@ -122,7 +122,7 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
           disabled={disabled}
           onClick={() => {
             if (gate !== 'ok') {
-              if (gateSheetCopy) setGateSheetOpen(true);
+              if (gateSheetKind) setGateSheetOpen(true);
               return;
             }
             if (score != null && Number.isFinite(score)) {
@@ -132,7 +132,7 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
         >
           {busy ? t('ladder.upload.uploading') : t('ladder.upload.button')}
         </button>
-        {gate === 'no-pro' ? (
+        {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
           </button>
@@ -155,21 +155,16 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
           {quotaSubline ? <p className="text-xs text-zinc-500">{quotaSubline}</p> : null}
         </div>
       ) : null}
-      {gateSheetCopy ? (
+      {gateSheetKind ? (
         <LeaderboardGateSheet
           open={gateSheetOpen}
-          title={gateSheetCopy.title}
-          description={gateSheetCopy.body}
-          primaryLabel={gateSheetCopy.primary}
-          secondaryLabel={t('ladder.gateSheet.secondary')}
+          kind={gateSheetKind}
+          description={gateDescription}
+          secondaryLabel={t('gateSheet.secondary')}
           onSecondary={() => setGateSheetOpen(false)}
           onPrimary={() => {
             setGateSheetOpen(false);
-            if (gateSheetCopy.nextRoute === ROUTES.joinArena) {
-              goJoinArena();
-              return;
-            }
-            navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
+            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
           }}
         />
       ) : null}

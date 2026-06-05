@@ -84,9 +84,8 @@
       "joinArena": "加入戰場（Pro）",
       "gate": {
         "no-score": "請先將分數寫入雷達（或完成評測），再由此上傳。",
-        "signed-out": "請先使用 Google 登入後再上傳分數。",
-        "anonymous": "請改以已連結的 Google 帳號登入（非僅訪客）後再上傳。",
-        "no-pro": "上傳至即時榜需訂閱 Pro。",
+        "auth": "請先使用 Google 登入後再上傳分數。",
+        "pro": "上傳至即時榜需訂閱 Pro。",
         "invalid-score": "目前分數尚無法上傳。"
       },
       "resultUpdated": "已上傳 — 雲端榜單分數已更新。",
@@ -101,16 +100,11 @@
       "resultError": "上傳失敗。請檢查網路或 Firebase 規則。"
     },
     "gateSheet": {
-      "secondary": "稍後再說",
       "auth": {
-        "title": "需要先登入",
-        "body": "請先用 Google 登入，再進行上傳與同步。",
-        "primary": "使用 Google 登入"
+        "body": "請先用 Google 登入，再進行上傳與同步。"
       },
       "pro": {
-        "title": "需要 Pro 權限",
-        "body": "此功能僅限 Pro。升級後可上傳分數並參與即時天梯。",
-        "primary": "升級 Pro"
+        "body": "此功能僅限 Pro。升級後可上傳分數並參與即時天梯。"
       }
     },
     "devWriteMode": {

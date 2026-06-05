@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hapticService } from '../services/hapticService';
-import { canUploadLeaderboard } from '../logic/core/entitlement';
+import {
+  resolveUiGate,
+  type AuthStatus,
+  type UiGateKind,
+} from '../logic/core/entitlement';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
@@ -10,40 +14,28 @@ import {
   submitLeaderboardScore,
   type SubmitLeaderboardResult,
 } from '../services/leaderboardService';
-import { useEntitlementStore } from '../stores/entitlementStore';
+import { useAuthStore } from '../stores/authStore';
+import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import type { EntitlementState } from '../types/entitlement';
-
-function buildEntitlementSnapshot(): EntitlementState {
-  const s = useEntitlementStore.getState();
-  return {
-    purchaseStatus: s.purchaseStatus,
-    subscriptionStatus: s.subscriptionStatus,
-    isPro: s.isPro,
-    proExpiresAt: s.proExpiresAt,
-    planId: s.planId,
-    lastCheckedAt: s.lastCheckedAt,
-  };
-}
 
 export type LeaderboardUploadGate =
   | 'ok'
   | 'no-score'
-  | 'signed-out'
-  | 'anonymous'
-  | 'no-pro'
-  | 'invalid-score';
+  | 'invalid-score'
+  | Exclude<UiGateKind, 'none'>;
 
 export function resolveLeaderboardUploadGate(
-  score: number | null | undefined
+  score: number | null | undefined,
+  ent: EntitlementState = readEntitlementSnapshot(),
+  authStatus: AuthStatus = useAuthStore.getState().status,
+  isAnonymous: boolean = useAuthStore.getState().isAnonymous
 ): LeaderboardUploadGate {
   if (score === null || score === undefined || !Number.isFinite(score) || score <= 0) {
     return 'no-score';
   }
-  const user = getCurrentFirebaseUser();
-  if (!user) return 'signed-out';
-  if (user.isAnonymous) return 'anonymous';
-  if (!canUploadLeaderboard(buildEntitlementSnapshot())) return 'no-pro';
-  return 'ok';
+  const uiGate = resolveUiGate('ladder-upload', ent, authStatus, isAnonymous);
+  if (uiGate.kind === 'none') return 'ok';
+  return uiGate.kind;
 }
 
 /**
@@ -65,7 +57,7 @@ export function useLeaderboardUpload() {
     setBusy(true);
     try {
       const result = await submitLeaderboardScore({
-        entitlement: buildEntitlementSnapshot(),
+        entitlement: readEntitlementSnapshot(),
         input: {
           uid: user.uid,
           metric,

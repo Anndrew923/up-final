@@ -1,6 +1,17 @@
 {
   "back": "返回",
   "cancel": "關閉",
+  "gateSheet": {
+    "secondary": "稍後再說",
+    "auth": {
+      "title": "需要先登入帳號",
+      "primary": "使用 Google 登入"
+    },
+    "pro": {
+      "title": "解鎖 PRO 權益",
+      "primary": "加入戰場（解鎖 PRO）"
+    }
+  },
   "scoreMeaning": {
     "axis": {
       "strength": {

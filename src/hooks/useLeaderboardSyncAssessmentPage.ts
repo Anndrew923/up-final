@@ -27,22 +27,10 @@ import {
   loadPowerInputs,
   loadStrengthInputs,
 } from '../services/localStorageService';
-import { useEntitlementStore } from '../stores/entitlementStore';
-import type { EntitlementState } from '../types/entitlement';
+import { useAuthStore } from '../stores/authStore';
+import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
-
-function buildEntitlementSnapshot(): EntitlementState {
-  const s = useEntitlementStore.getState();
-  return {
-    purchaseStatus: s.purchaseStatus,
-    subscriptionStatus: s.subscriptionStatus,
-    isPro: s.isPro,
-    proExpiresAt: s.proExpiresAt,
-    planId: s.planId,
-    lastCheckedAt: s.lastCheckedAt,
-  };
-}
 
 export interface UseLeaderboardSyncAssessmentPageOptions {
   scope: AssessmentLadderSyncScope;
@@ -111,11 +99,19 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     [targets]
   );
 
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+
   const gate = useMemo(() => {
     if (targets.length === 0) return 'no-score' as const;
     const maxScore = Math.max(...targets.map((t) => t.score));
-    return resolveLeaderboardUploadGate(maxScore);
-  }, [targets]);
+    return resolveLeaderboardUploadGate(
+      maxScore,
+      readEntitlementSnapshot(),
+      authStatus,
+      isAnonymous
+    );
+  }, [targets, authStatus, isAnonymous]);
 
   const [busy, setBusy] = useState(false);
   const [summaryState, setSummaryState] = useState<{
@@ -140,7 +136,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    const snap = buildEntitlementSnapshot();
+    const snap = readEntitlementSnapshot();
 
     setBusy(true);
     try {

@@ -25,24 +25,11 @@ import {
   loadStrengthInputs,
 } from '../services/localStorageService';
 import { useAuthStore } from '../stores/authStore';
-import { useEntitlementStore } from '../stores/entitlementStore';
-import type { EntitlementState } from '../types/entitlement';
+import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
 
 export type LeaderboardSyncAllSummary = LeaderboardSyncRunSummary;
-
-function buildEntitlementSnapshot(): EntitlementState {
-  const s = useEntitlementStore.getState();
-  return {
-    purchaseStatus: s.purchaseStatus,
-    subscriptionStatus: s.subscriptionStatus,
-    isPro: s.isPro,
-    proExpiresAt: s.proExpiresAt,
-    planId: s.planId,
-    lastCheckedAt: s.lastCheckedAt,
-  };
-}
 
 export interface UseLeaderboardSyncAllOptions {
   onFinished?: () => void;
@@ -81,11 +68,20 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     [targets]
   );
 
+  const uid = useAuthStore((s) => s.uid);
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+
   const gate = useMemo(() => {
     if (targets.length === 0) return 'no-score' as const;
     const maxScore = Math.max(...targets.map((t) => t.score));
-    return resolveLeaderboardUploadGate(maxScore);
-  }, [targets]);
+    return resolveLeaderboardUploadGate(
+      maxScore,
+      readEntitlementSnapshot(),
+      authStatus,
+      isAnonymous
+    );
+  }, [targets, authStatus, isAnonymous]);
 
   const [busy, setBusy] = useState(false);
   const [fullSyncBlock, setFullSyncBlock] = useState<FullSyncRateLimitCheck | null>(null);
@@ -106,9 +102,6 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
   const failures =
     summaryState?.signature === targetsSignature ? summaryState.failures : [];
-
-  const uid = useAuthStore((s) => s.uid);
-  const isAnonymous = useAuthStore((s) => s.isAnonymous);
 
   useEffect(() => {
     if (!uid || isAnonymous || gate !== 'ok') {
@@ -135,7 +128,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
       return;
     }
 
-    const snap = buildEntitlementSnapshot();
+    const snap = readEntitlementSnapshot();
 
     setBusy(true);
     try {

@@ -1,7 +1,7 @@
 import { ROUTES } from '../config/routes';
+import type { JoinArenaFrom } from '../types/uiGate';
 
-/** Query `from` values for contextual Join Arena copy and analytics. */
-export type JoinArenaFrom = 'ladder' | 'backup' | 'settings';
+export type { JoinArenaFrom } from '../types/uiGate';
 
 export function parseJoinArenaFrom(search: string): JoinArenaFrom | null {
   const raw = new URLSearchParams(search).get('from');

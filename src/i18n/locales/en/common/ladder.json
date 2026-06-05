@@ -84,9 +84,8 @@
       "joinArena": "Join Arena (Pro)",
       "gate": {
         "no-score": "Save score to radar first, then upload here.",
-        "signed-out": "Sign in with Google to upload scores.",
-        "anonymous": "Link Google account (not guest-only) to upload.",
-        "no-pro": "Pro subscription required for live ladder upload.",
+        "auth": "Sign in with Google to upload scores.",
+        "pro": "Pro subscription required for live ladder upload.",
         "invalid-score": "Score not ready to upload."
       },
       "resultUpdated": "Uploaded — ladder row updated.",
@@ -101,16 +100,11 @@
       "resultError": "Upload failed. Check connection or Firebase rules."
     },
     "gateSheet": {
-      "secondary": "Not Now",
       "auth": {
-        "title": "Sign In Required",
-        "body": "Google sign-in first, then upload and sync to ladder.",
-        "primary": "Sign in with Google"
+        "body": "Google sign-in first, then upload and sync to ladder."
       },
       "pro": {
-        "title": "Pro Required",
-        "body": "Pro-only feature. Upgrade to upload and join live ladder.",
-        "primary": "Upgrade to Pro"
+        "body": "Pro-only feature. Upgrade to upload and join live ladder."
       }
     },
     "devWriteMode": {

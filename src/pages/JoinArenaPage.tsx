@@ -8,10 +8,12 @@ import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { ROUTES } from '../config/routes';
 import { hasCoreAccess } from '../logic/core/entitlement';
+import { useUiGate } from '../hooks/useUiGate';
 import {
   joinArenaDescriptionKey,
   parseJoinArenaFrom,
 } from '../lib/joinArenaNavigation';
+import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
 import {
@@ -36,6 +38,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     [location.search]
   );
   const descriptionKey = joinArenaDescriptionKey(joinFrom);
+  const returnTo = joinFrom === 'backup' ? ROUTES.tools : ROUTES.ladder;
 
   const [banner, setBanner] = useState<
     'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
@@ -46,7 +49,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const isPro = useEntitlementStore((s) => s.isPro);
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
   const authStatus = useAuthStore((s) => s.status);
-  const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
 
   const entitlement = useEntitlementStore(
@@ -62,9 +64,9 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     )
   );
 
+  const uiGate = useUiGate('ladder-read');
   const coreOwned = hasCoreAccess(entitlement);
-  const isGoogleLinked = authStatus === 'signed-in' && !isAnonymous;
-  const paywallEnabled = MONETIZATION_CONFIG.leaderboardPaywallEnabled;
+  const isBetaOpen = !MONETIZATION_CONFIG.leaderboardPaywallEnabled;
   const ctaMotionOn = !usePrefersReducedMotion();
 
   const handleGoogleSignIn = async () => {
@@ -82,22 +84,21 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     }
   };
 
-  const handleSubscribe = async () => {
+  const handlePrimary = async () => {
     setBanner('idle');
+
+    if (uiGate.kind === 'auth') {
+      navigateFromUiGate(navigate, uiGate, returnTo);
+      return;
+    }
+
+    if (uiGate.kind === 'none') {
+      navigate(returnTo);
+      return;
+    }
+
     setBillingBusy(true);
     try {
-      if (!paywallEnabled) {
-        if (MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn && !isGoogleLinked) {
-          navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.ladder } });
-          return;
-        }
-        navigate(ROUTES.ladder);
-        return;
-      }
-      if (!isGoogleLinked) {
-        setBanner('auth-fail');
-        return;
-      }
       if (!coreOwned) {
         setBanner('core');
         return;
@@ -114,7 +115,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         }
         return;
       }
-      navigate(ROUTES.ladder);
+      navigate(returnTo);
     } finally {
       setBillingBusy(false);
     }
@@ -124,8 +125,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBanner('idle');
     setBillingBusy(true);
     try {
-      if (!paywallEnabled) {
-        navigate(ROUTES.ladder);
+      if (isBetaOpen) {
+        navigate(returnTo);
         return;
       }
       const result = await restorePurchasesFromDevice();
@@ -135,7 +136,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
       }
       setBanner(result.proActive ? 'restore-ok' : 'restore-empty');
       if (result.proActive) {
-        navigate(ROUTES.ladder);
+        navigate(returnTo);
       }
     } finally {
       setBillingBusy(false);
@@ -144,7 +145,19 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
 
   const subscribeDisabled =
     billingBusy ||
-    (paywallEnabled && (!coreOwned || !isGoogleLinked || (subscriptionStatus === 'pro' && isPro)));
+    authStatus === 'loading' ||
+    (uiGate.kind === 'pro' && (!coreOwned || (subscriptionStatus === 'pro' && isPro)));
+
+  const primaryCtaLabel = (() => {
+    if (billingBusy || authStatus === 'loading') return t('billingLoading');
+    if (uiGate.kind === 'auth') {
+      return isBetaOpen ? t('betaEnterLeaderboard') : t('googleLogin');
+    }
+    if (uiGate.kind === 'none') {
+      return isBetaOpen ? t('betaEnterLeaderboard') : t('enterLeaderboard');
+    }
+    return t('subscribeUnlockPro');
+  })();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-bg-base text-zinc-100">
@@ -202,8 +215,11 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('billingUnavailable')}
           </p>
         ) : null}
-        {!paywallEnabled ? (
-          <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+        {isBetaOpen ? (
+          <p
+            role="status"
+            className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
+          >
             {t('betaOpenAccess')}
           </p>
         ) : null}
@@ -216,29 +232,27 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('identityTitle')}
           </p>
           <p className="mt-2 text-sm text-zinc-300">
-            {!paywallEnabled
-              ? t('identityOptionalBeta')
-              : isGoogleLinked
-                ? t('signedInAs', { name: signedInDisplayName })
-                : t('identityRequired')}
+            {uiGate.kind === 'auth'
+              ? isBetaOpen
+                ? t('identityOptionalBeta')
+                : t('identityRequired')
+              : t('signedInAs', { name: signedInDisplayName })}
           </p>
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={!paywallEnabled || authBusy || isGoogleLinked}
+            disabled={authBusy || uiGate.kind !== 'auth'}
             className="mt-4 rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {!paywallEnabled
-              ? t('betaNoLoginNeeded')
+            {uiGate.kind !== 'auth'
+              ? t('googleLoginDone')
               : authBusy
                 ? t('googleLoginLoading')
-                : isGoogleLinked
-                  ? t('googleLoginDone')
-                  : t('googleLogin')}
+                : t('googleLogin')}
           </button>
         </section>
 
-        {paywallEnabled && !coreOwned ? (
+        {!isBetaOpen && !coreOwned && uiGate.kind === 'pro' ? (
           <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
             <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
             <Link
@@ -265,15 +279,15 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             onClick={() => {
               void handleRestore();
             }}
-            disabled={!paywallEnabled || billingBusy}
+            disabled={isBetaOpen || billingBusy}
             className="rounded-xl border border-accent-info/50 bg-accent-info/10 px-5 py-3 text-sm font-semibold text-accent-info transition hover:bg-accent-info/20"
           >
-            {paywallEnabled ? t('restorePurchases') : t('betaRestoreDisabled')}
+            {isBetaOpen ? t('betaRestoreDisabled') : t('restorePurchases')}
           </button>
           <button
             type="button"
             onClick={() => {
-              void handleSubscribe();
+              void handlePrimary();
             }}
             disabled={subscribeDisabled}
             className={`group relative min-w-[12rem] flex-1 overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
@@ -294,13 +308,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
                 />
               </>
             ) : null}
-            <span className="relative z-[1]">
-              {billingBusy
-                ? t('billingLoading')
-                : paywallEnabled
-                  ? t('subscribeUnlockPro')
-                  : t('betaEnterLeaderboard')}
-            </span>
+            <span className="relative z-[1]">{primaryCtaLabel}</span>
           </button>
         </div>
       </div>

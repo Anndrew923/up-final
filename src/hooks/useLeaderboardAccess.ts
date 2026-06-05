@@ -1,11 +1,14 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
-import { joinArenaPath } from '../lib/joinArenaNavigation';
+import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { MONETIZATION_CONFIG } from '../config/monetization';
-import { getEntitlementReasonCode } from '../logic/core/entitlement';
+import { resolveLeaderboardAccessReason } from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
+import { useShallow } from 'zustand/react/shallow';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
+import { useUiGate } from './useUiGate';
 
 export interface LeaderboardAccessResult {
   canEnter: boolean;
@@ -24,56 +27,26 @@ export interface LeaderboardAccessResult {
 export function useLeaderboardAccess(): LeaderboardAccessResult {
   const navigate = useNavigate();
   const authStatus = useAuthStore((state) => state.status);
-  const isAnonymous = useAuthStore((state) => state.isAnonymous);
-  const purchaseStatus = useEntitlementStore((state) => state.purchaseStatus);
-  const subscriptionStatus = useEntitlementStore((state) => state.subscriptionStatus);
-  const isPro = useEntitlementStore((state) => state.isPro);
-  const proExpiresAt = useEntitlementStore((state) => state.proExpiresAt);
-  const planId = useEntitlementStore((state) => state.planId);
-  const lastCheckedAt = useEntitlementStore((state) => state.lastCheckedAt);
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const uiGate = useUiGate('ladder-read');
 
-  const reason = useMemo(() => {
-    if (
-      MONETIZATION_CONFIG.leaderboardRequireGoogleSignIn &&
-      (authStatus !== 'signed-in' || isAnonymous)
-    ) {
-      return 'auth-required';
-    }
-    return getEntitlementReasonCode(
-      {
-        purchaseStatus,
-        subscriptionStatus,
-        isPro,
-        proExpiresAt,
-        planId,
-        lastCheckedAt,
-      },
-      'leaderboard-read'
-    );
-  }, [
-    authStatus,
-    isAnonymous,
-    purchaseStatus,
-    subscriptionStatus,
-    isPro,
-    proExpiresAt,
-    planId,
-    lastCheckedAt,
-  ]);
+  const reason = useMemo(
+    () => resolveLeaderboardAccessReason(uiGate, entitlement),
+    [uiGate, entitlement]
+  );
 
   const goToLeaderboard = useCallback(() => {
     navigate(ROUTES.ladder);
   }, [navigate]);
 
   const goToJoinArena = useCallback(() => {
-    navigate(joinArenaPath('ladder'));
-  }, [navigate]);
+    navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
+  }, [navigate, uiGate]);
 
   return {
-    canEnter: reason === 'ok' || reason === 'open-access',
+    canEnter: authStatus !== 'loading' && uiGate.kind === 'none',
     shouldShowJoinArena:
-      MONETIZATION_CONFIG.leaderboardPaywallEnabled &&
-      (reason === 'pro-required' || reason === 'pro-expired'),
+      uiGate.kind === 'pro' && MONETIZATION_CONFIG.leaderboardPaywallEnabled,
     reason,
     goToLeaderboard,
     goToJoinArena,

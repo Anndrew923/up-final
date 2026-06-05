@@ -1,12 +1,79 @@
+import type { UiGateJoinArenaFrom } from '../../types/uiGate';
 import type { EntitlementState } from '../../types/entitlement';
 import { MONETIZATION_CONFIG } from '../../config/monetization';
 
 type Feature = 'core' | 'leaderboard-read' | 'leaderboard-write';
 
+/** Auth session snapshot for UI gate decisions (mirrors auth store status). */
+export type AuthStatus = 'loading' | 'signed-out' | 'signed-in';
+
+export type GateFeature = 'ladder-read' | 'ladder-upload' | 'cloud-sync';
+
+export type UiGateKind = 'none' | 'auth' | 'pro';
+
+export interface UiGateResult {
+  kind: UiGateKind;
+  joinArenaFrom?: UiGateJoinArenaFrom;
+}
+
 function safeDate(input: string | null): Date | null {
   if (!input) return null;
   const parsed = new Date(input);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function isGoogleLinked(authStatus: AuthStatus, isAnonymous: boolean): boolean {
+  return authStatus === 'signed-in' && !isAnonymous;
+}
+
+function joinArenaFromForFeature(feature: GateFeature): UiGateJoinArenaFrom {
+  return feature === 'cloud-sync' ? 'backup' : 'ladder';
+}
+
+function requiresProForFeature(
+  feature: GateFeature,
+  ent: EntitlementState,
+  now: Date = new Date()
+): boolean {
+  if (feature === 'cloud-sync') {
+    return !hasProAccess(ent, now);
+  }
+  if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
+    return false;
+  }
+  return !hasCoreAccess(ent) || !hasProAccess(ent, now);
+}
+
+/**
+ * Single source of truth for auth vs Pro UI gates across ladder, upload, and cloud sync.
+ *
+ * Design intent (WHY): Beta ladder open-access and Pro-only cloud sync previously diverged
+ * in scattered checks — one decision tree keeps modal copy and navigation predictable.
+ * Route materialization stays in `uiGateNavigation` to keep logic/core framework-free.
+ */
+export function resolveUiGate(
+  feature: GateFeature,
+  ent: EntitlementState,
+  authStatus: AuthStatus,
+  isAnonymous: boolean,
+  now: Date = new Date()
+): UiGateResult {
+  if (authStatus === 'loading') {
+    return { kind: 'none' };
+  }
+
+  if (!isGoogleLinked(authStatus, isAnonymous)) {
+    return { kind: 'auth' };
+  }
+
+  if (!requiresProForFeature(feature, ent, now)) {
+    return { kind: 'none' };
+  }
+
+  return {
+    kind: 'pro',
+    joinArenaFrom: joinArenaFromForFeature(feature),
+  };
 }
 
 export function hasCoreAccess(ent: EntitlementState): boolean {
@@ -61,3 +128,16 @@ export function getEntitlementReasonCode(
   if (hasProAccess(ent, now)) return 'ok';
   return ent.subscriptionStatus === 'expired' ? 'pro-expired' : 'pro-required';
 }
+
+export function resolveLeaderboardAccessReason(
+  uiGate: UiGateResult,
+  ent: EntitlementState
+): 'ok' | 'open-access' | 'auth-required' | 'pro-required' | 'pro-expired' {
+  if (uiGate.kind === 'auth') return 'auth-required';
+  if (uiGate.kind === 'pro') {
+    return ent.subscriptionStatus === 'expired' ? 'pro-expired' : 'pro-required';
+  }
+  if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) return 'open-access';
+  return 'ok';
+}
+

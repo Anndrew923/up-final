@@ -1,6 +1,17 @@
 {
   "back": "Back",
   "cancel": "Cancel",
+  "gateSheet": {
+    "secondary": "Not now",
+    "auth": {
+      "title": "Sign in required",
+      "primary": "Sign in with Google"
+    },
+    "pro": {
+      "title": "Unlock PRO",
+      "primary": "Enter Arena (Unlock PRO)"
+    }
+  },
   "scoreMeaning": {
     "axis": {
       "strength": {

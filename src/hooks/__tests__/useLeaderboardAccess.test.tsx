@@ -124,6 +124,23 @@ describe('useLeaderboardAccess', () => {
     expect(result?.canEnter).toBe(false);
   });
 
+  it('defers ladder entry while auth is loading', () => {
+    mutableMonetizationConfig.leaderboardPaywallEnabled = false;
+    useAuthStore.setState({
+      status: 'loading',
+      uid: null,
+      isAnonymous: false,
+    });
+    setEntitlementState({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
+
+    const harness = renderHookHarness();
+    const result = harness.getCurrent();
+    harness.unmount();
+
+    expect(result?.canEnter).toBe(false);
+    expect(result?.reason).toBe('open-access');
+  });
+
   it('returns pro-required and join-arena prompt when paywall is enabled', () => {
     mutableMonetizationConfig.leaderboardPaywallEnabled = true;
     mutableMonetizationConfig.leaderboardRequireGoogleSignIn = true;

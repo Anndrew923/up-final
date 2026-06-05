@@ -5,51 +5,26 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import { VehicleSpecificationCodex } from '../components/tools/VehicleSpecificationCodex';
 import LeaderboardGateSheet from '../components/ladder/LeaderboardGateSheet';
 import { useVehicleCodexScores } from '../hooks/useVehicleCodexScores';
+import { useUiGate } from '../hooks/useUiGate';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
+import { gateSheetKindFromUiGate } from '../lib/uiGatePresentation';
+import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { ROUTES } from '../config/routes';
-import { hasProAccess } from '../logic/core/entitlement';
 import { backupLocalToCloud, restoreCloudToLocal } from '../services/cloudSyncService';
-import type { EntitlementState } from '../types/entitlement';
-import { useEntitlementStore } from '../stores/entitlementStore';
-import { useAuthStore } from '../stores/authStore';
-import { useShallow } from 'zustand/react/shallow';
 
 export default function ToolsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
-  const [syncGateType, setSyncGateType] = useState<'auth' | 'pro' | null>(null);
+  const [syncGateOpen, setSyncGateOpen] = useState(false);
   const [codexOpen, setCodexOpen] = useState(false);
   const codexScores = useVehicleCodexScores();
-
-  const entitlement = useEntitlementStore(
-    useShallow(
-      (s): EntitlementState => ({
-        purchaseStatus: s.purchaseStatus,
-        subscriptionStatus: s.subscriptionStatus,
-        isPro: s.isPro,
-        proExpiresAt: s.proExpiresAt,
-        planId: s.planId,
-        lastCheckedAt: s.lastCheckedAt,
-      })
-    )
-  );
-
-  const authStatus = useAuthStore((s) => s.status);
-  const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const proReady = hasProAccess(entitlement);
-  const loginReady = authStatus === 'signed-in' && !isAnonymous;
-
-  const resolveSyncGate = (): 'auth' | 'pro' | null => {
-    if (!loginReady) return 'auth';
-    if (!proReady) return 'pro';
-    return null;
-  };
+  const syncUiGate = useUiGate('cloud-sync');
+  const syncGateKind = gateSheetKindFromUiGate(syncUiGate);
 
   const handleBackup = async () => {
-    const gate = resolveSyncGate();
-    if (gate) {
-      setSyncGateType(gate);
+    if (syncUiGate.kind !== 'none') {
+      setSyncGateOpen(true);
       return;
     }
     setSyncMsg(null);
@@ -74,9 +49,8 @@ export default function ToolsPage() {
   };
 
   const handleRestore = async () => {
-    const gate = resolveSyncGate();
-    if (gate) {
-      setSyncGateType(gate);
+    if (syncUiGate.kind !== 'none') {
+      setSyncGateOpen(true);
       return;
     }
     setSyncMsg(null);
@@ -166,7 +140,7 @@ export default function ToolsPage() {
             {t('tools.syncTitle', { ns: 'common' })}
           </h2>
           <p className="mt-3 text-sm text-zinc-400">{t('tools.syncBody', { ns: 'common' })}</p>
-          {!proReady ? (
+          {syncUiGate.kind === 'pro' ? (
             <p className="mt-4 rounded-lg border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-amber-200/90">
               {t('tools.syncProOnly', { ns: 'common' })}
             </p>
@@ -184,38 +158,19 @@ export default function ToolsPage() {
           </div>
           {syncMsg ? <p className="mt-4 text-sm text-zinc-300">{syncMsg}</p> : null}
         </section>
-        <LeaderboardGateSheet
-          open={syncGateType !== null}
-          title={t(
-            syncGateType === 'auth'
-              ? 'tools.syncGateSheet.auth.title'
-              : 'tools.syncGateSheet.pro.title',
-            { ns: 'common' }
-          )}
-          description={t(
-            syncGateType === 'auth'
-              ? 'tools.syncGateSheet.auth.body'
-              : 'tools.syncGateSheet.pro.body',
-            { ns: 'common' }
-          )}
-          primaryLabel={t(
-            syncGateType === 'auth'
-              ? 'tools.syncGateSheet.auth.primary'
-              : 'tools.syncGateSheet.pro.primary',
-            { ns: 'common' }
-          )}
-          secondaryLabel={t('tools.syncGateSheet.secondary', { ns: 'common' })}
-          onSecondary={() => setSyncGateType(null)}
-          onPrimary={() => {
-            const gate = syncGateType;
-            setSyncGateType(null);
-            if (gate === 'auth') {
-              navigate(ROUTES.authChoice, { state: { returnTo: ROUTES.tools } });
-              return;
-            }
-            navigate(joinArenaPath('backup'));
-          }}
-        />
+        {syncGateKind ? (
+          <LeaderboardGateSheet
+            open={syncGateOpen}
+            kind={syncGateKind}
+            description={t(`tools.syncGateSheet.${syncGateKind}.body`, { ns: 'common' })}
+            secondaryLabel={t('gateSheet.secondary', { ns: 'common' })}
+            onSecondary={() => setSyncGateOpen(false)}
+            onPrimary={() => {
+              setSyncGateOpen(false);
+              navigateFromUiGate(navigate, syncUiGate, ROUTES.tools);
+            }}
+          />
+        ) : null}
       </div>
     </main>
   );

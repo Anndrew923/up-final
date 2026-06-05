@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
+import { navigateFromUiGate } from '../../lib/uiGateNavigation';
+import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
+import { useUiGate } from '../../hooks/useUiGate';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
@@ -30,6 +33,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const { t, i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
+  const uiGate = useUiGate('ladder-upload');
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | null>(null);
@@ -41,29 +45,11 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const fullSyncBlocked = Boolean(fullSyncBlock && !fullSyncBlock.allowed);
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
+  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
 
   useEffect(() => {
     setTapHint(null);
   }, [targetCount, gate, fullSyncBlocked]);
-  const gateSheetCopy = useMemo(() => {
-    if (gate === 'signed-out' || gate === 'anonymous') {
-      return {
-        title: t('ladder.gateSheet.auth.title'),
-        body: t('ladder.gateSheet.auth.body'),
-        primary: t('ladder.gateSheet.auth.primary'),
-        nextRoute: ROUTES.authChoice,
-      };
-    }
-    if (gate === 'no-pro') {
-      return {
-        title: t('ladder.gateSheet.pro.title'),
-        body: t('ladder.gateSheet.pro.body'),
-        primary: t('ladder.gateSheet.pro.primary'),
-        nextRoute: ROUTES.joinArena,
-      };
-    }
-    return null;
-  }, [gate, t]);
 
   const quotaModalBody = t('ladder.syncAll.advancedTip', { limit: LEADERBOARD_UPLOADS_PER_HOUR });
 
@@ -134,7 +120,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
               return;
             }
             if (gate !== 'ok') {
-              if (gateSheetCopy) setGateSheetOpen(true);
+              if (gateSheetKind) setGateSheetOpen(true);
               return;
             }
             clearFeedback();
@@ -143,7 +129,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         >
           {busy ? t('ladder.syncAll.busy') : t('ladder.syncAll.button')}
         </button>
-        {gate === 'no-pro' ? (
+        {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
           </button>
@@ -156,21 +142,16 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         body={quotaModalBody}
         variant="syncAll"
       />
-      {gateSheetCopy ? (
+      {gateSheetKind ? (
         <LeaderboardGateSheet
           open={gateSheetOpen}
-          title={gateSheetCopy.title}
-          description={gateSheetCopy.body}
-          primaryLabel={gateSheetCopy.primary}
-          secondaryLabel={t('ladder.gateSheet.secondary')}
+          kind={gateSheetKind}
+          description={t(`ladder.gateSheet.${gateSheetKind}.body`)}
+          secondaryLabel={t('gateSheet.secondary')}
           onSecondary={() => setGateSheetOpen(false)}
           onPrimary={() => {
             setGateSheetOpen(false);
-            if (gateSheetCopy.nextRoute === ROUTES.joinArena) {
-              goJoinArena();
-              return;
-            }
-            navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
+            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
           }}
         />
       ) : null}

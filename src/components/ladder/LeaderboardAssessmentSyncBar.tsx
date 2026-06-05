@@ -1,4 +1,4 @@
-import { type FC, useEffect, useMemo, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,9 @@ import type {
   AssessmentLadderSyncScope,
   LeaderboardSyncTarget,
 } from '../../logic/core/leaderboardSyncTargets';
+import { navigateFromUiGate } from '../../lib/uiGateNavigation';
+import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
+import { useUiGate } from '../../hooks/useUiGate';
 import { useLeaderboardSyncAssessmentPage } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
@@ -35,6 +38,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const uiGate = useUiGate('ladder-upload');
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
@@ -48,30 +52,11 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
+  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
 
   useEffect(() => {
     setTapHint(null);
   }, [targetCount, gate, scope, uploadBundle, supplementalTargets]);
-
-  const gateSheetCopy = useMemo(() => {
-    if (gate === 'signed-out' || gate === 'anonymous') {
-      return {
-        title: t('ladder.gateSheet.auth.title'),
-        body: t('ladder.gateSheet.auth.body'),
-        primary: t('ladder.gateSheet.auth.primary'),
-        nextRoute: ROUTES.authChoice,
-      };
-    }
-    if (gate === 'no-pro') {
-      return {
-        title: t('ladder.gateSheet.pro.title'),
-        body: t('ladder.gateSheet.pro.body'),
-        primary: t('ladder.gateSheet.pro.primary'),
-        nextRoute: ROUTES.joinArena,
-      };
-    }
-    return null;
-  }, [gate, t]);
 
   return (
     <div className={`relative space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
@@ -118,7 +103,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
               return;
             }
             if (gate !== 'ok') {
-              if (gateSheetCopy) setGateSheetOpen(true);
+              if (gateSheetKind) setGateSheetOpen(true);
               return;
             }
             clearFeedback();
@@ -127,7 +112,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         >
           {busy ? t('ladder.assessmentSync.busy') : t('ladder.assessmentSync.button')}
         </button>
-        {gate === 'no-pro' ? (
+        {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
           </button>
@@ -139,27 +124,22 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         title={t('ladder.assessmentSync.advancedTitle')}
         body={t('ladder.assessmentSync.advancedTip')}
       />
-      {gateSheetCopy ? (
+      {gateSheetKind ? (
         <LeaderboardGateSheet
           open={gateSheetOpen}
-          title={gateSheetCopy.title}
-          description={gateSheetCopy.body}
-          primaryLabel={gateSheetCopy.primary}
-          secondaryLabel={t('ladder.gateSheet.secondary')}
+          kind={gateSheetKind}
+          description={t(`ladder.gateSheet.${gateSheetKind}.body`)}
+          secondaryLabel={t('gateSheet.secondary')}
           onSecondary={() => setGateSheetOpen(false)}
           onPrimary={() => {
             setGateSheetOpen(false);
-            if (gateSheetCopy.nextRoute === ROUTES.joinArena) {
-              goJoinArena();
-              return;
-            }
-            navigate(gateSheetCopy.nextRoute, { state: { returnTo: ROUTES.ladder } });
+            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
           }}
         />
       ) : null}
 
       {showSyncFeedback && summary ? (
-        <LadderSyncSummaryStatus variant="assessment" summary={summary} failures={failures} />
+        <LadderSyncSummaryStatus summary={summary} failures={failures} />
       ) : null}
     </div>
   );
