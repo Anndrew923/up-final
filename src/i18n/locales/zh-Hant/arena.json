@@ -42,6 +42,8 @@
   "betaRestoreDisabled": "Beta 期間不提供恢復購買",
   "betaEnterLeaderboard": "登入並進入排行榜（Beta 期間免 PRO）",
   "enterLeaderboard": "進入排行榜",
+  "unlockProCloudSync": "解鎖 PRO 啟動雲端備份",
+  "returnToCloudSync": "返回雲端備份",
   "subscribeSuccess": "Pro 頻道開啟 — 前往天梯。",
   "coreRequired": "連結戰場前，請先解鎖 Core 買斷授權。",
   "featuresTitle": "戰場套件",

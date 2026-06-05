@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   joinArenaDescriptionKey,
+  joinArenaGateFeature,
   joinArenaPath,
   parseJoinArenaFrom,
 } from '../joinArenaNavigation';
@@ -20,5 +21,12 @@ describe('joinArenaNavigation', () => {
     expect(joinArenaDescriptionKey('backup')).toBe('joinDescriptionFromBackup');
     expect(joinArenaDescriptionKey('settings')).toBe('joinDescription');
     expect(joinArenaDescriptionKey(null)).toBe('joinDescription');
+  });
+
+  it('maps entry context to UI gate feature keys', () => {
+    expect(joinArenaGateFeature('backup')).toBe('cloud-sync');
+    expect(joinArenaGateFeature('ladder')).toBe('ladder-read');
+    expect(joinArenaGateFeature('settings')).toBe('ladder-read');
+    expect(joinArenaGateFeature(null)).toBe('ladder-read');
   });
 });

@@ -11,6 +11,7 @@ import { hasCoreAccess } from '../logic/core/entitlement';
 import { useUiGate } from '../hooks/useUiGate';
 import {
   joinArenaDescriptionKey,
+  joinArenaGateFeature,
   parseJoinArenaFrom,
 } from '../lib/joinArenaNavigation';
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
@@ -39,6 +40,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   );
   const descriptionKey = joinArenaDescriptionKey(joinFrom);
   const returnTo = joinFrom === 'backup' ? ROUTES.tools : ROUTES.ladder;
+  const isBackupFunnel = joinFrom === 'backup';
+  const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
   const [banner, setBanner] = useState<
     'idle' | 'restore-ok' | 'restore-empty' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
@@ -64,9 +67,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     )
   );
 
-  const uiGate = useUiGate('ladder-read');
+  const uiGate = useUiGate(gateFeature);
   const coreOwned = hasCoreAccess(entitlement);
   const isBetaOpen = !MONETIZATION_CONFIG.leaderboardPaywallEnabled;
+  const showLadderBetaBanner = isBetaOpen && !isBackupFunnel;
   const ctaMotionOn = !usePrefersReducedMotion();
 
   const handleGoogleSignIn = async () => {
@@ -125,7 +129,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     setBanner('idle');
     setBillingBusy(true);
     try {
-      if (isBetaOpen) {
+      if (isBetaOpen && !isBackupFunnel) {
         navigate(returnTo);
         return;
       }
@@ -151,12 +155,12 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const primaryCtaLabel = (() => {
     if (billingBusy || authStatus === 'loading') return t('billingLoading');
     if (uiGate.kind === 'auth') {
-      return isBetaOpen ? t('betaEnterLeaderboard') : t('googleLogin');
+      return isBackupFunnel ? t('googleLogin') : isBetaOpen ? t('betaEnterLeaderboard') : t('googleLogin');
     }
     if (uiGate.kind === 'none') {
-      return isBetaOpen ? t('betaEnterLeaderboard') : t('enterLeaderboard');
+      return isBackupFunnel ? t('returnToCloudSync') : isBetaOpen ? t('betaEnterLeaderboard') : t('enterLeaderboard');
     }
-    return t('subscribeUnlockPro');
+    return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
   })();
 
   return (
@@ -215,7 +219,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             {t('billingUnavailable')}
           </p>
         ) : null}
-        {isBetaOpen ? (
+        {showLadderBetaBanner ? (
           <p
             role="status"
             className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
@@ -233,9 +237,11 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           </p>
           <p className="mt-2 text-sm text-zinc-300">
             {uiGate.kind === 'auth'
-              ? isBetaOpen
-                ? t('identityOptionalBeta')
-                : t('identityRequired')
+              ? isBackupFunnel
+                ? t('identityRequired')
+                : isBetaOpen
+                  ? t('identityOptionalBeta')
+                  : t('identityRequired')
               : t('signedInAs', { name: signedInDisplayName })}
           </p>
           <button
@@ -252,7 +258,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           </button>
         </section>
 
-        {!isBetaOpen && !coreOwned && uiGate.kind === 'pro' ? (
+        {!coreOwned && uiGate.kind === 'pro' && (isBackupFunnel || !isBetaOpen) ? (
           <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
             <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
             <Link
@@ -279,10 +285,10 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             onClick={() => {
               void handleRestore();
             }}
-            disabled={isBetaOpen || billingBusy}
+            disabled={(isBetaOpen && !isBackupFunnel) || billingBusy}
             className="rounded-xl border border-accent-info/50 bg-accent-info/10 px-5 py-3 text-sm font-semibold text-accent-info transition hover:bg-accent-info/20"
           >
-            {isBetaOpen ? t('betaRestoreDisabled') : t('restorePurchases')}
+            {isBetaOpen && !isBackupFunnel ? t('betaRestoreDisabled') : t('restorePurchases')}
           </button>
           <button
             type="button"
