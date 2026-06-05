@@ -1,56 +1,56 @@
 {
   "onboarding": {
-    "overlayAria": "First power-on guidance",
-    "scrimDismissBlocked": "Complete power-on calibration to continue",
-    "next": "Continue",
-    "ignite": "IGNITE",
+    "overlayAria": "Core Boot Protocol",
+    "scrimDismissBlocked": "Initialization incomplete. Please execute baseline calibration.",
+    "next": "NEXT // 下一步",
+    "ignite": "IGNITE // 點火啟動",
     "phase1": {
       "kicker": "Phase 01 · System Wake",
-      "body": "Systems online. Chassis scan complete. Your body is a performance platform — factory set, unlimited tune potential. Welcome to Ultimate Physique."
+      "body": "System awoken. Factory chassis scan complete.\n\nThe body is your vehicle. The stock setup might be set, but pushing the threshold and squeezing out every single horsepower is our ultimate pursuit.\n\nWelcome to Ultimate Physique."
     },
     "profileInput": {
       "kicker": "Phase 01.5 · Spec Registration",
-      "body": "Log native chassis parameters (gender, age, height, weight) before unlocking the console. Precision input forges your powertrain ratios.",
-      "lockHint": "Save body specs to continue power-on sequence."
+      "body": "Before unlocking the console, the system requires your raw vehicle parameters.\n\nThis is the core gearing ratio for your entire performance. Accuracy is absolute.",
+      "lockHint": "Chassis parameters unwritten. Save telemetry to unlock boot sequence."
     },
     "baseline": {
       "protocolTitle": "🛠️ UNIFIED DYNO CALIBRATION PROTOCOL",
-      "protocolDesc": "No arbitrary scoring. Six axes below are computed by exercise-science engines; your inputs lock the chassis baseline for every later dyno run.",
-      "authorityFooter": "⚠️ WARNING: Zero cosmetic inflation. After power-on, calibration uses raw telemetry only.",
+      "protocolDesc": "Subjective ratings are denied. The following six-axis metrics are calculated by the underlying sports science engine, locking your baseline telemetry for all subsequent Dyno benchmarks.",
+      "authorityFooter": "⚠️ WARNING: This system does not flatter. Upon boot, these hard metrics will be committed directly to raw Dyno evaluation.",
       "features": {
         "strength": {
           "label": "CHASSIS / HP",
-          "desc": "DOTS-adjusted strength—negates bodyweight bonus, extracts structural output per kg."
+          "desc": "Employs DOTS coefficients to neutralize weight bias, extracting pure structural load efficiency."
         },
         "cardio": {
           "label": "STINT / THERMAL",
-          "desc": "Cooper 12-min and 5K dual-track benchmarks for aerobic norms and VO₂ estimates."
+          "desc": "Applies Cooper dual-track algorithms to accurately project aerobic standards and VO2 Max."
         },
         "skeletalMuscle": {
           "label": "EXTERIOR / CHSS",
-          "desc": "Skeletal muscle mass (SMM) vs sex/age norms—maps shell profile and load capacity."
+          "desc": "Maps Skeletal Muscle Mass (SMM) benchmarks to visualize chassis lines and structural integrity."
         },
         "ffmi": {
           "label": "DISPLACEMENT / P2W",
-          "desc": "Fat-Free Mass Index (FFMI) from profile + body fat—lean powerplant decoupled from fat/height bonuses."
+          "desc": "Calculates horsepower displacement via Fat-Free Mass Index, decoupling body fat and height advantages."
         },
         "explosive": {
           "label": "TORQUE / TRQ",
-          "desc": "Instantaneous power output matrix for neuromuscular burst and launch thrust."
+          "desc": "Monitors transient power output matrices to measure neuro-muscular launch drive and torque."
         },
         "grip": {
           "label": "GRIP / TRACTION",
-          "desc": "Hand neuromuscular drive norms—audits CNS-to-terminal force transfer and bite torque."
+          "desc": "Tests kinetic conduction from Central Nervous System (CNS) to extremities, defining terminal grip and control."
         }
       }
     },
     "phase2": {
       "kicker": "Phase 02 · Performance Overview",
-      "body": "Six-axis performance dashboard — full vehicle spec readout. Horsepower, torque, pilot compatibility. You set operating temperature."
+      "body": "Six-dimensional performance cluster initialized.\n\nThis panel reads your core output and synchronicity. Data never lies; the engine's thermal layer is yours to command."
     },
     "phase3": {
       "kicker": "Phase 03 · Horsepower Calibration",
-      "body": "Enter the dyno. Log limit data — unlock auras and tiers. Torque the bolts. Start first chassis calibration now."
+      "body": "Entering raw Chassis Dyno.\n\nCommit your threshold data to unlock dynamic halos and performance tiers. Tighten the bolts, engage your baseline calibration now!"
     }
   }
 }
