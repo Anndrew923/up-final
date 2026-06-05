@@ -1,14 +1,14 @@
 {
   "history": {
-    "kicker": "Local Archive",
-    "title": "Assessment History",
-    "subtitle": "Snapshots from Assessment — device-only, Core, no subscription.",
-    "empty": "No snapshots yet. Save one from Assessment.",
+    "kicker": "LOCAL LOG ARCHIVE",
+    "title": "Dyno Logs",
+    "subtitle": "Six-axis snapshots committed from the \"Dyno\" tab (Stored locally, core features require no subscription).",
+    "empty": "No snapshots found. Go to the \"Dyno\" tab to commit your first snapshot.",
     "colDate": "Saved At",
     "colOverall": "Overall",
     "colActions": "Actions",
     "delete": "Delete",
-    "deleteConfirm": "Delete this record? Cannot be undone.",
+    "deleteConfirm": "Are you sure you want to delete this snapshot? This action cannot be undone.",
     "valueEmpty": "—",
     "shortAxis": {
       "strength": "HP",

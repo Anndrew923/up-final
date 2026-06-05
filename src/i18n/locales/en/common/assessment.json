@@ -10,8 +10,8 @@
     "rawInputsHeading": "Core Six Inputs",
     "homeRadarHint": "Radar and performance index live on Home.",
     "viewHomeRadar": "Open Performance Dashboard",
-    "saveToHistory": "Save Snapshot to History",
-    "saveToHistoryDone": "Saved to local history.",
+    "saveToHistory": "Save Snapshot to Logs",
+    "saveToHistoryDone": "Saved to local logs.",
     "resetScores": "Reset Core Scores",
     "axis": {
       "strength": "Horsepower",

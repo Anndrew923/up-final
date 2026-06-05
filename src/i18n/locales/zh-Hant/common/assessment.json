@@ -10,8 +10,8 @@
     "rawInputsHeading": "六軸原始輸入",
     "homeRadarHint": "雷達與總分在首頁。",
     "viewHomeRadar": "前往首頁性能儀表",
-    "saveToHistory": "儲存快照到紀錄",
-    "saveToHistoryDone": "已寫入本機紀錄。",
+    "saveToHistory": "儲存快照到日誌",
+    "saveToHistoryDone": "已寫入本機日誌。",
     "resetScores": "重設六軸分數",
     "axis": {
       "strength": "馬力",
