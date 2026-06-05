@@ -17,13 +17,11 @@ import {
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
-import {
-  purchaseProSubscription,
-} from '../services/subscriptionService';
+import { purchaseProSubscription } from '../services/subscriptionService';
 import { signInWithGoogleWeb } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
-import type { EntitlementState } from '../types/entitlement';
 import { useEntitlementStore } from '../stores/entitlementStore';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
 
 export interface JoinArenaPageProps {
   onBack?: () => void;
@@ -53,18 +51,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const authStatus = useAuthStore((s) => s.status);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
 
-  const entitlement = useEntitlementStore(
-    useShallow(
-      (s): EntitlementState => ({
-        purchaseStatus: s.purchaseStatus,
-        subscriptionStatus: s.subscriptionStatus,
-        isPro: s.isPro,
-        proExpiresAt: s.proExpiresAt,
-        planId: s.planId,
-        lastCheckedAt: s.lastCheckedAt,
-      })
-    )
-  );
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
 
   const uiGate = useUiGate(gateFeature);
   const coreOwned = hasCoreAccess(entitlement);
@@ -138,22 +125,22 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   };
 
   const primaryCtaLabel = (() => {
-    if (billingBusy || authStatus === 'loading') return t('arena:billingLoading');
+    if (billingBusy || authStatus === 'loading') return t('billingLoading');
     if (uiGate.kind === 'auth') {
       return isBackupFunnel
-        ? t('arena:googleLogin')
+        ? t('googleLogin')
         : isBetaOpen
-          ? t('arena:betaEnterLeaderboard')
-          : t('arena:googleLogin');
+          ? t('betaEnterLeaderboard')
+          : t('googleLogin');
     }
     if (uiGate.kind === 'none') {
       return isBackupFunnel
-        ? t('arena:returnToCloudSync')
+        ? t('returnToCloudSync')
         : isBetaOpen
-          ? t('arena:betaEnterLeaderboard')
-          : t('arena:enterLeaderboard');
+          ? t('betaEnterLeaderboard')
+          : t('enterLeaderboard');
     }
-    return isBackupFunnel ? t('arena:unlockProCloudSync') : t('arena:subscribeUnlockPro');
+    return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
   })();
 
   return (
