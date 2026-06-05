@@ -39,16 +39,12 @@ const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const isExcludedByFilters = isFilterActive && !isMeInFilteredList;
+  const showFilteredSubline =
+    isFilterActive && isMeInFilteredList && myFilteredRank !== null && !isExcludedByFilters;
   const displayRank =
-    isFilterActive && isMeInFilteredList && myFilteredRank !== null ? myFilteredRank : myRank;
+    showFilteredSubline && myFilteredRank !== null ? myFilteredRank : myRank;
   const badge = isExcludedByFilters ? '' : rankBadgeFor(displayRank);
   const avatarInitial = displayName.trim().charAt(0).toUpperCase() || '?';
-
-  const rankLine = isExcludedByFilters
-    ? t('ladder.floatingRank.notRankedUnderFilters', { ns: 'common' })
-    : isFilterActive && isMeInFilteredList && myFilteredRank !== null
-      ? t('ladder.floatingRank.filteredRank', { ns: 'common', rank: myFilteredRank })
-      : t('ladder.floatingRank.globalRank', { ns: 'common', rank: myRank });
 
   const shellClass =
     'pointer-events-auto fixed inset-x-0 z-30 mx-auto w-full max-w-3xl px-3';
@@ -56,7 +52,7 @@ const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({
 
   const cardInner = (
     <div
-      className={`ui-card flex w-full items-center gap-3 border px-3 py-2.5 text-left backdrop-blur-md ${
+      className={`ui-card flex w-full items-center gap-3 border px-3 py-2 text-left backdrop-blur-md ${
         isExcludedByFilters
           ? 'border-zinc-600/50 bg-slate-900/90 shadow-none'
           : 'border-cyan-400/40 bg-slate-900/95 shadow-[0_0_24px_rgba(34,211,238,0.18)] transition hover:border-cyan-400/55 active:scale-[0.99]'
@@ -101,14 +97,7 @@ const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({
 
       <div className="min-w-0 flex-1">
         <p
-          className={`font-mono text-[10px] uppercase tracking-[0.2em] ${
-            isExcludedByFilters ? 'text-zinc-500' : 'text-cyan-400/80'
-          }`}
-        >
-          {t('ladder.floatingRank.kicker', { ns: 'common' })}
-        </p>
-        <p
-          className={`truncate text-sm font-semibold ${
+          className={`truncate text-sm font-semibold leading-tight ${
             isExcludedByFilters
               ? 'text-zinc-400'
               : `text-zinc-100 ${isAnonymous ? 'italic opacity-80' : ''}`
@@ -116,35 +105,38 @@ const LadderFloatingRankBar: FC<LadderFloatingRankBarProps> = ({
         >
           {displayName}
         </p>
-        <p
-          className={`truncate text-[10px] ${
-            isExcludedByFilters ? 'text-zinc-500 italic' : 'text-zinc-500'
-          }`}
-        >
-          {rankLine}
-        </p>
+        {showFilteredSubline && myFilteredRank !== null ? (
+          <p className="truncate text-[10px] text-cyan-400/75">
+            {t('ladder.floatingRank.filteredRankShort', { ns: 'common', rank: myFilteredRank })}
+          </p>
+        ) : null}
+        {isExcludedByFilters ? (
+          <p className="truncate text-[10px] italic text-zinc-500">
+            {t('ladder.floatingRank.notRankedUnderFilters', { ns: 'common' })}
+          </p>
+        ) : null}
       </div>
 
       <div className="shrink-0 text-right">
         <p
-          className={`font-mono text-base font-semibold tabular-nums ${
+          className={`font-mono text-base font-semibold tabular-nums leading-tight ${
             isExcludedByFilters ? 'text-zinc-400' : 'text-cyan-300'
           }`}
         >
           {formatScore(shardId, myScore)}
         </p>
-        {!isExcludedByFilters ? (
-          <p className="text-[10px] text-zinc-500">
-            {t('ladder.floatingRank.cta', { ns: 'common' })}
-          </p>
-        ) : null}
       </div>
     </div>
   );
 
   if (isExcludedByFilters) {
     return (
-      <div className={shellClass} style={shellStyle} aria-live="polite">
+      <div
+        className={shellClass}
+        style={shellStyle}
+        aria-live="polite"
+        aria-label={t('ladder.floatingRank.notRankedUnderFilters', { ns: 'common' })}
+      >
         {cardInner}
       </div>
     );

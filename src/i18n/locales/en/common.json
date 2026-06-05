@@ -481,9 +481,7 @@
       "subtitle": "Rows for the current zone and filters."
     },
     "floatingRank": {
-      "kicker": "My position",
-      "globalRank": "Global rank #{{rank}}",
-      "filteredRank": "Filtered rank #{{rank}}",
+      "filteredRankShort": "Filtered #{{rank}}",
       "notRankedUnderFilters": "Not ranked under current filters",
       "cta": "Tap to jump to my row"
     },

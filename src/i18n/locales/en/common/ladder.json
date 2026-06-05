@@ -33,9 +33,7 @@
       "title": "Leaderboard"
     },
     "floatingRank": {
-      "kicker": "My Position",
-      "globalRank": "Global Rank #{{rank}}",
-      "filteredRank": "Filtered Rank #{{rank}}",
+      "filteredRankShort": "Filtered #{{rank}}",
       "notRankedUnderFilters": "Not ranked under current filters",
       "cta": "Tap to Jump to My Row"
     },
