@@ -10,11 +10,10 @@ import type { RoutePath } from '../config/routes';
 export interface AssessmentLobbyCardModel {
   key: AssessmentLobbyCardKey;
   to: RoutePath;
-  kicker: string;
   title: string;
 }
 
-/** Lobby card copy for Assessment hub — kicker/title only; the card link is the sole affordance. */
+/** Lobby card copy for Assessment hub — title only; the card link is the sole affordance. */
 export function useAssessmentLobbyCards(): AssessmentLobbyCardModel[] {
   const { t } = useTranslation('common');
 
@@ -23,7 +22,6 @@ export function useAssessmentLobbyCards(): AssessmentLobbyCardModel[] {
       ASSESSMENT_LOBBY_CARD_KEYS.map((key) => ({
         key,
         to: ASSESSMENT_LOBBY_ROUTES[key],
-        kicker: t(`assessment.${key}.kicker`),
         title: t(`assessment.${key}.title`),
       })),
     [t]

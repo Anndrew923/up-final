@@ -6,6 +6,7 @@ import {
   type AssessmentLobbyCardKey,
 } from '../../config/assessmentLobby';
 import { cn } from '../../lib/cn';
+import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
 import type { RoutePath } from '../../config/routes';
 
 const MotionLink = motion.create(Link);
@@ -13,7 +14,6 @@ const MotionLink = motion.create(Link);
 export interface AssessmentLobbyCardProps {
   cardKey: AssessmentLobbyCardKey;
   to: RoutePath;
-  kicker: string;
   title: string;
   className?: string;
 }
@@ -29,20 +29,17 @@ function isModifiedPointerEvent(event: {
 
 /**
  * Presentational assessment lobby card (WHY): Whole card is the tap target—no faux CTA bar.
- * StatusBar + kicker + title carry dimension identity; navigation uses Framer tap isolation.
+ * StatusBar color + split title carry dimension identity; navigation uses Framer tap isolation.
  */
 export function AssessmentLobbyCard({
   cardKey,
   to,
-  kicker,
   title,
   className,
 }: AssessmentLobbyCardProps) {
   const navigate = useNavigate();
   const statusBarClass = ASSESSMENT_LOBBY_STATUS_BAR_CLASS[cardKey];
-  const match = title.match(/^(.+?)（(.+)）$/);
-  const titleMain = match?.[1] ?? title;
-  const titleSub = match?.[2];
+  const { main: titleMain, sub: titleSub } = splitAssessmentLobbyTitle(title);
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);
 
@@ -86,17 +83,12 @@ export function AssessmentLobbyCard({
         className={`absolute left-0 top-0 bottom-0 w-[3px] ${statusBarClass}`}
       />
 
-      <p className="truncate overflow-hidden whitespace-nowrap font-mono text-xs uppercase tracking-[0.15em] text-accent-primary transition-colors group-hover:text-accent-primary">
-        {kicker}
-      </p>
-      <div className="mt-0.5 leading-tight">
-        <h2 className="truncate overflow-hidden whitespace-nowrap text-xs font-semibold text-zinc-100 transition-colors group-hover:text-zinc-50 sm:text-sm">
+      <div className="leading-tight">
+        <h2 className="truncate text-xs font-semibold text-zinc-100 transition-colors group-hover:text-zinc-50 sm:text-sm">
           {titleMain}
         </h2>
         {titleSub ? (
-          <p className="truncate overflow-hidden whitespace-nowrap text-[11px] text-zinc-500">
-            {titleSub}
-          </p>
+          <p className="truncate text-[11px] text-zinc-500">{titleSub}</p>
         ) : null}
       </div>
     </MotionLink>

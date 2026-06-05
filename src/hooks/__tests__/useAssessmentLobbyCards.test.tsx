@@ -52,14 +52,13 @@ describe('useAssessmentLobbyCards', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  it('returns one model per lobby key with kicker and title', () => {
+  it('returns one model per lobby key with title', () => {
     const harness = renderHookHarness();
     const cards = harness.getCurrent();
 
     expect(cards).toHaveLength(ASSESSMENT_LOBBY_CARD_KEYS.length);
     for (const card of cards) {
       expect(card.to).toMatch(/^\//);
-      expect(card.kicker.length).toBeGreaterThan(0);
       expect(card.title.length).toBeGreaterThan(0);
     }
 

@@ -60,7 +60,6 @@ export default function AssessmentPage() {
             key={card.key}
             cardKey={card.key}
             to={card.to}
-            kicker={card.kicker}
             title={card.title}
             className={card.key === 'ffmi' ? 'col-span-2' : undefined}
           />

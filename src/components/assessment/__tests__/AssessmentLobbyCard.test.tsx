@@ -34,7 +34,6 @@ function renderCard(): { container: HTMLDivElement; unmount: () => void } {
               <AssessmentLobbyCard
                 cardKey="strength"
                 to={ROUTES.strength}
-                kicker="STRENGTH"
                 title="Strength test"
               />
             }
@@ -59,13 +58,12 @@ afterEach(() => {
 });
 
 describe('AssessmentLobbyCard', () => {
-  it('renders navigable link with kicker, title, and status bar', () => {
+  it('renders navigable link with title and status bar', () => {
     const { container, unmount } = renderCard();
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
     expect(link?.getAttribute('href')).toContain('strength');
     expect(link?.getAttribute('aria-label')).toBe('Strength test');
-    expect(container.textContent).toContain('STRENGTH');
     expect(container.textContent).toContain('Strength test');
     expect(container.querySelector('span[aria-hidden]')).not.toBeNull();
     unmount();
@@ -96,6 +94,38 @@ describe('AssessmentLobbyCard', () => {
     });
     expect(event.defaultPrevented).toBe(false);
     unmount();
+  });
+
+  it('splits localized title into main and subtitle tiers', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    act(() => {
+      root.render(
+        <MemoryRouter initialEntries={['/assessment']}>
+          <Routes>
+            <Route
+              path="/assessment"
+              element={
+                <AssessmentLobbyCard
+                  cardKey="strength"
+                  to={ROUTES.strength}
+                  title="五項力量（整車馬力 // HP）"
+                />
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      );
+    });
+    expect(container.textContent).toContain('五項力量');
+    expect(container.textContent).toContain('整車馬力 // HP');
+    expect(container.querySelector('h2')?.textContent).toBe('五項力量');
+    expect(container.querySelector('p.text-\\[11px\\]')?.textContent).toBe('整車馬力 // HP');
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
   });
 
   it('navigates on keyboard activation', () => {
