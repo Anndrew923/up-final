@@ -64,16 +64,18 @@ export default function AssessmentPage() {
         />
       ))}
 
-      <section className="ui-card space-y-4">
-        <h2 className="text-sm font-medium text-zinc-300">
+      <section className="ui-card space-y-3">
+        <h2 className="flex items-baseline gap-2 text-sm font-medium text-zinc-300">
           {t('assessment.rawInputsHeading')}
+          <span className="text-[10px] font-normal text-zinc-500">
+            · {t('assessment.homeRadarHint')}
+          </span>
         </h2>
-        <p className="text-xs text-zinc-500">{t('assessment.homeRadarHint')}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           {SIX_AXIS_METRICS.map((metric) => (
-            <label key={metric} className="flex flex-col gap-1 text-xs text-zinc-400">
-              <span className="font-medium text-zinc-300">
-                {t(`assessment.axis.${metric}`)}
+            <label key={metric} className="flex items-center gap-2 text-xs text-zinc-400">
+              <span className="w-10 shrink-0 text-xs font-medium text-zinc-400">
+                {t(`history.shortAxis.${metric}`, { ns: 'common' })}
               </span>
               <input
                 type="number"
@@ -82,14 +84,14 @@ export default function AssessmentPage() {
                 step={0.5}
                 value={scores[metric] ?? 0}
                 onChange={(e) => onAxisChange(metric, e.target.value)}
-                className="rounded-md border border-zinc-700 bg-bg-panel px-2 py-1.5 text-sm text-zinc-100 outline-none ring-accent-info focus:ring-1"
+                className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-bg-panel px-2 py-1 text-xs tabular-nums text-zinc-100 outline-none ring-accent-info focus:ring-1"
                 aria-label={t(`assessment.axis.${metric}`)}
               />
             </label>
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-4">
+        <div className="flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-2">
           <button
             type="button"
             className="ui-btn ui-btn-primary text-sm"
