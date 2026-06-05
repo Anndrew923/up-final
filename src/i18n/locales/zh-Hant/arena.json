@@ -22,7 +22,7 @@
   "proFeatureCloudSync": "無上限雲端護航 — 鋼鐵防禦你的訓練史，歷史數據永久封存安全槽。",
   "proFeatureArena": "進階上傳策略 — 鎖定你的最佳戰績，隨時校準巔峰輸出狀態。",
   "subscribeNow": "啟用 Pro 連結",
-  "restorePurchases": "恢復購買",
+  "restorePurchases": "已經是適格者？恢復購買",
   "restoreSuccess": "戰場權益已還原，準備重返天梯。",
   "restoreEmpty": "此裝置尚無可還原的 Pro 紀錄。",
   "identityTitle": "戰場身分",
@@ -50,5 +50,6 @@
   "disclaimer": "當前為測試基地通訊模式。正式上線將連線 App Store / Google Play 官方安全驗證，全面守護您的帳戶權益。",
   "coreGateBody": "須先解鎖 Core — 評測、雷達與歷史維持本機優先，無需戰場月費。",
   "coreGateCta": "回到主控台",
-  "subscribeBlocked": "已連結"
+  "subscribeBlocked": "已連結",
+  "backToConsole": "返回控制台"
 }

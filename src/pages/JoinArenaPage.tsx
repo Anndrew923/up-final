@@ -152,15 +152,33 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     authStatus === 'loading' ||
     (uiGate.kind === 'pro' && (!coreOwned || (subscriptionStatus === 'pro' && isPro)));
 
+  const showRestoreLink = !(isBetaOpen && !isBackupFunnel);
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    navigate(ROUTES.home);
+  };
+
   const primaryCtaLabel = (() => {
-    if (billingBusy || authStatus === 'loading') return t('billingLoading');
+    if (billingBusy || authStatus === 'loading') return t('arena:billingLoading');
     if (uiGate.kind === 'auth') {
-      return isBackupFunnel ? t('googleLogin') : isBetaOpen ? t('betaEnterLeaderboard') : t('googleLogin');
+      return isBackupFunnel
+        ? t('arena:googleLogin')
+        : isBetaOpen
+          ? t('arena:betaEnterLeaderboard')
+          : t('arena:googleLogin');
     }
     if (uiGate.kind === 'none') {
-      return isBackupFunnel ? t('returnToCloudSync') : isBetaOpen ? t('betaEnterLeaderboard') : t('enterLeaderboard');
+      return isBackupFunnel
+        ? t('arena:returnToCloudSync')
+        : isBetaOpen
+          ? t('arena:betaEnterLeaderboard')
+          : t('arena:enterLeaderboard');
     }
-    return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
+    return isBackupFunnel ? t('arena:unlockProCloudSync') : t('arena:subscribeUnlockPro');
   })();
 
   return (
@@ -173,6 +191,17 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
       <div className="pointer-events-none absolute -right-32 bottom-12 h-80 w-80 rounded-full bg-accent-info/10 blur-[110px]" />
 
       <div className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 pb-16 pt-1">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={handleBack}
+            aria-label={t('common:back')}
+            className="absolute left-0 top-0 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800/80 bg-zinc-950/70 text-lg text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
+          >
+            ←
+          </button>
+        ) : null}
+
         <header className="space-y-2.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-accent-info">
             {t('magitekKicker')}
@@ -270,33 +299,14 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           </section>
         ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          {onBack ? (
-            <button
-              type="button"
-              onClick={onBack}
-              className="rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900"
-            >
-              {t('common:back')}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => {
-              void handleRestore();
-            }}
-            disabled={(isBetaOpen && !isBackupFunnel) || billingBusy}
-            className="rounded-xl border border-accent-info/50 bg-accent-info/10 px-5 py-3 text-sm font-semibold text-accent-info transition hover:bg-accent-info/20"
-          >
-            {isBetaOpen && !isBackupFunnel ? t('betaRestoreDisabled') : t('restorePurchases')}
-          </button>
+        <section className="flex w-full flex-col items-stretch gap-3 pt-2">
           <button
             type="button"
             onClick={() => {
               void handlePrimary();
             }}
             disabled={subscribeDisabled}
-            className={`group relative min-w-[12rem] flex-1 overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
+            className={`group relative w-full overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
               subscribeDisabled ? 'bg-zinc-800 text-zinc-500' : ''
             }`}
           >
@@ -316,7 +326,32 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
             ) : null}
             <span className="relative z-[1]">{primaryCtaLabel}</span>
           </button>
-        </div>
+
+          {showRestoreLink ? (
+            <button
+              type="button"
+              onClick={() => {
+                void handleRestore();
+              }}
+              disabled={billingBusy}
+              className="text-center text-xs font-medium text-zinc-500 transition hover:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('arena:restorePurchases')}
+            </button>
+          ) : (
+            <p className="text-center text-xs text-zinc-600">{t('arena:betaRestoreDisabled')}</p>
+          )}
+
+          {!onBack ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="text-center text-xs text-zinc-600 transition hover:text-zinc-400"
+            >
+              {t('arena:backToConsole')}
+            </button>
+          ) : null}
+        </section>
       </div>
     </main>
   );

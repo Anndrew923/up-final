@@ -22,7 +22,7 @@
   "proFeatureCloudSync": "Cloud backup—your training history, always safe.",
   "proFeatureArena": "Smart uploads—post your best and stay on the board.",
   "subscribeNow": "Activate Pro Link",
-  "restorePurchases": "Restore Purchases",
+  "restorePurchases": "Already an Adept? Restore Purchase",
   "restoreSuccess": "Pro restored. Back to the ladder.",
   "restoreEmpty": "No Pro entitlement found. Check your store account.",
   "identityTitle": "Arena Identity",
@@ -50,5 +50,6 @@
   "disclaimer": "Beta mode. At launch, billing runs through App Store / Google Play.",
   "coreGateBody": "Unlock Core first—assessment, radar, and history stay local. No Arena fee.",
   "coreGateCta": "Return to Console",
-  "subscribeBlocked": "Already Linked"
+  "subscribeBlocked": "Already Linked",
+  "backToConsole": "Return to Console"
 }
