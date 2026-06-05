@@ -47,25 +47,28 @@ export default function AssessmentPage() {
   };
 
   return (
-    <main className="ui-shell max-w-4xl space-y-6">
+    <main className="ui-shell max-w-4xl space-y-4">
       <section className="space-y-1">
         <h1 className="max-w-[20rem] text-balance text-2xl font-bold tracking-tight text-zinc-100 sm:max-w-none sm:text-3xl">
           {t('assessment.title')}
         </h1>
       </section>
 
-      {lobbyCards.map((card) => (
-        <AssessmentLobbyCard
-          key={card.key}
-          cardKey={card.key}
-          to={card.to}
-          kicker={card.kicker}
-          title={card.title}
-        />
-      ))}
+      <section className="grid grid-cols-2 gap-3">
+        {lobbyCards.map((card) => (
+          <AssessmentLobbyCard
+            key={card.key}
+            cardKey={card.key}
+            to={card.to}
+            kicker={card.kicker}
+            title={card.title}
+            className={card.key === 'ffmi' ? 'col-span-2' : undefined}
+          />
+        ))}
+      </section>
 
       <section className="ui-card space-y-3">
-        <h2 className="flex items-baseline gap-2 text-sm font-medium text-zinc-300">
+        <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm font-medium text-zinc-300">
           {t('assessment.rawInputsHeading')}
           <span className="text-[10px] font-normal text-zinc-500">
             · {t('assessment.homeRadarHint')}
@@ -74,8 +77,11 @@ export default function AssessmentPage() {
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           {SIX_AXIS_METRICS.map((metric) => (
             <label key={metric} className="flex items-center gap-2 text-xs text-zinc-400">
-              <span className="w-10 shrink-0 text-xs font-medium text-zinc-400">
-                {t(`history.shortAxis.${metric}`, { ns: 'common' })}
+              <span
+                className="w-10 shrink-0 truncate text-xs font-medium text-zinc-400"
+                title={t(`assessment.axis.${metric}`)}
+              >
+                {t(`history.shortAxis.${metric}`)}
               </span>
               <input
                 type="number"
@@ -84,7 +90,7 @@ export default function AssessmentPage() {
                 step={0.5}
                 value={scores[metric] ?? 0}
                 onChange={(e) => onAxisChange(metric, e.target.value)}
-                className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-bg-panel px-2 py-1 text-xs tabular-nums text-zinc-100 outline-none ring-accent-info focus:ring-1"
+                className="min-h-9 min-w-0 flex-1 rounded-md border border-zinc-700 bg-bg-panel px-2 py-1 text-xs tabular-nums text-zinc-100 outline-none ring-accent-info focus:ring-1"
                 aria-label={t(`assessment.axis.${metric}`)}
               />
             </label>
