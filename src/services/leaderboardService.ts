@@ -56,9 +56,16 @@ import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
 import {
   clearLeaderboardCache,
   getCachedLeaderboard,
+  LEADERBOARD_CATALOG_CACHE_PAGE,
   setCachedLeaderboard,
   type LeaderboardEntry,
 } from './leaderboardCacheService';
+
+/**
+ * WHY: Filter-mode ranks/jumps need a client-side slice; cap keeps Firestore reads bounded.
+ * Users ranked beyond this window may show global rank but filtered rank/jump can be approximate.
+ */
+export const LEADERBOARD_CATALOG_MAX_ENTRIES = 500;
 
 /** Re-export for callers that only import from `leaderboardService`. */
 export type { LeaderboardShardId };
@@ -319,6 +326,24 @@ function withRank(entries: LeaderboardEntry[], offset = 0): LeaderboardEntry[] {
   return entries.map((item, index) => ({ ...item, rank: offset + index + 1 }));
 }
 
+async function fetchFirestoreLeaderboardCatalog(
+  db: Firestore,
+  metric: string
+): Promise<LeaderboardEntry[]> {
+  const base = entriesCollection(db, metric);
+  const q = query(
+    base,
+    orderBy('scoreBest', 'desc'),
+    limit(LEADERBOARD_CATALOG_MAX_ENTRIES)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return [];
+  return withRank(
+    snap.docs.map((x) => mapFirestoreDoc(x)),
+    0
+  );
+}
+
 async function fetchFirestoreLeaderboardPage(
   db: Firestore,
   metric: string,
@@ -411,6 +436,59 @@ export async function listLeaderboard(params: {
     page: params.page,
     pageSize,
   });
+}
+
+async function listLeaderboardCatalogMemory(params: {
+  metric: LeaderboardShardId;
+}): Promise<ListLeaderboardResult> {
+  const store = getMetricStore(params.metric);
+  const sorted = Array.from(store.values()).sort((a, b) => b.scoreBest - a.scoreBest);
+  const items = withRank(sorted.slice(0, LEADERBOARD_CATALOG_MAX_ENTRIES), 0);
+  setCachedLeaderboard({
+    metric: params.metric,
+    page: LEADERBOARD_CATALOG_CACHE_PAGE,
+    items,
+    cachedAt: new Date().toISOString(),
+  });
+  return { ok: true, items, fromCache: false };
+}
+
+export async function listLeaderboardCatalog(params: {
+  entitlement: EntitlementState;
+  metric: LeaderboardShardId;
+}): Promise<ListLeaderboardResult> {
+  if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) {
+    return { ok: false, reason: 'pro-required' };
+  }
+
+  const cached = getCachedLeaderboard({
+    metric: params.metric,
+    page: LEADERBOARD_CATALOG_CACHE_PAGE,
+  });
+  if (cached) {
+    return { ok: true, items: cached.items, fromCache: true };
+  }
+
+  const db = getFirestoreDb();
+  if (db) {
+    try {
+      const items = await fetchFirestoreLeaderboardCatalog(db, params.metric);
+      setCachedLeaderboard({
+        metric: params.metric,
+        page: LEADERBOARD_CATALOG_CACHE_PAGE,
+        items,
+        cachedAt: new Date().toISOString(),
+      });
+      return { ok: true, items, fromCache: false };
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] listLeaderboardCatalog Firestore error', err);
+      }
+      return { ok: false, reason: 'unknown' };
+    }
+  }
+
+  return listLeaderboardCatalogMemory({ metric: params.metric });
 }
 
 export async function getMyLeaderboardEntry(params: {

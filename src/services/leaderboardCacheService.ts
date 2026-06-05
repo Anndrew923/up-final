@@ -24,6 +24,9 @@ export interface LeaderboardCacheData {
 const DEFAULT_TTL_MS = 120000;
 const cache = new Map<string, LeaderboardCacheData>();
 
+/** Session cache page key for full-shard catalog reads (filter-mode client pagination). */
+export const LEADERBOARD_CATALOG_CACHE_PAGE = 0;
+
 function makeKey(metric: string, page: number): string {
   return `${metric}:${page}`;
 }

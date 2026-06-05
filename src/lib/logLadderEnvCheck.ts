@@ -12,7 +12,10 @@ import { isLadderCallableWritesEnabled } from '../config/ladderCallable';
 export function logLadderEnvCheckInDev(): void {
   if (!import.meta.env.DEV) return;
 
-  console.log('[ENV_CHECK] VITE_LADDER_CALLABLE_WRITES =', isLadderCallableWritesEnabled());
-  console.log('[ENV_CHECK] VITE_FIREBASE_USE_EMULATORS =', import.meta.env.VITE_FIREBASE_USE_EMULATORS);
-  console.log('[ENV_CHECK] raw VITE_LADDER_CALLABLE_WRITES =', import.meta.env.VITE_LADDER_CALLABLE_WRITES);
+  // WHY: `console.debug` stays available under Verbose but drops out of the default Console filter.
+  console.debug('[ENV_CHECK]', {
+    ladderCallableWrites: isLadderCallableWritesEnabled(),
+    firebaseUseEmulators: import.meta.env.VITE_FIREBASE_USE_EMULATORS,
+    rawLadderCallableWrites: import.meta.env.VITE_LADDER_CALLABLE_WRITES,
+  });
 }

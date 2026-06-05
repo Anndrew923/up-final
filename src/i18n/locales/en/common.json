@@ -483,6 +483,8 @@
     "floatingRank": {
       "kicker": "My position",
       "globalRank": "Global rank #{{rank}}",
+      "filteredRank": "Filtered rank #{{rank}}",
+      "notRankedUnderFilters": "Not ranked under current filters",
       "cta": "Tap to jump to my row"
     },
     "userPreview": {

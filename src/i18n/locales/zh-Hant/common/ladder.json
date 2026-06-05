@@ -35,6 +35,8 @@
     "floatingRank": {
       "kicker": "我的位置",
       "globalRank": "全榜名次 #{{rank}}",
+      "filteredRank": "子榜名次 #{{rank}}",
+      "notRankedUnderFilters": "當前篩選條件下未入榜",
       "cta": "點擊跳到我的那一列"
     },
     "userPreview": {

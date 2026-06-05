@@ -23,6 +23,12 @@ import {
   getProjectOptionsForDivision,
   type LeaderboardShardId,
 } from '../logic/core/ladderShards';
+import {
+  resolveLadderEffectiveRank,
+  resolveLadderJumpTargetPage,
+  resolveLeaderboardMaxPage,
+  shouldShowLadderFloatingRankBar,
+} from '../logic/core/ladderFilteredRank';
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
@@ -113,6 +119,8 @@ export default function LadderPage() {
   const [previewEntryFallback, setPreviewEntryFallback] = useState(false);
   const previewRequestIdRef = useRef(0);
   const [myRowInViewport, setMyRowInViewport] = useState(false);
+  /** WHY: IO uses the full window rect; at scrollY≈0 ranks 8–9 can sit behind BottomNav but still "intersect". */
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const hydrateBlockedUids = useLadderBlockStore((s) => s.hydrate);
 
@@ -191,15 +199,23 @@ export default function LadderPage() {
     [applied]
   );
 
-  const { items, datasetItems, loading, error, myEntry, myRank } = useLadderLeaderboard(
-    shardId,
-    initialFilters,
-    {
-      refreshNonce: ladderRefreshNonce,
-      page: currentPage,
-      pageSize,
-    }
-  );
+  const {
+    items,
+    datasetItems,
+    loading,
+    error,
+    myEntry,
+    myRank,
+    isFilterActive,
+    myFilteredRank,
+    isMeInFilteredList,
+    hasNextPage,
+    filteredRowCount,
+  } = useLadderLeaderboard(shardId, initialFilters, {
+    refreshNonce: ladderRefreshNonce,
+    page: currentPage,
+    pageSize,
+  });
 
   useEffect(() => {
     previousRankRef.current = null;
@@ -207,18 +223,48 @@ export default function LadderPage() {
 
   useEffect(() => {
     if (!pendingScrollUidRef.current || loading) return;
-    const target = rowRefs.current.get(pendingScrollUidRef.current);
-    if (!target) {
-      pendingScrollUidRef.current = null;
-      return;
-    }
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    pendingScrollUidRef.current = null;
+    const pendingUid = pendingScrollUidRef.current;
+    let attempts = 0;
+
+    const tryScroll = () => {
+      const target = rowRefs.current.get(pendingUid);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        pendingScrollUidRef.current = null;
+        return;
+      }
+      if (attempts >= 4) {
+        pendingScrollUidRef.current = null;
+        return;
+      }
+      attempts += 1;
+      requestAnimationFrame(tryScroll);
+    };
+
+    tryScroll();
   }, [items, loading]);
+
+  useEffect(() => {
+    if (!isFilterActive || loading) return;
+    const maxPage = resolveLeaderboardMaxPage(filteredRowCount, pageSize);
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage);
+    }
+  }, [isFilterActive, loading, filteredRowCount, currentPage, pageSize]);
+
+  useEffect(() => {
+    const AT_TOP_THRESHOLD_PX = 8;
+    const syncAtTop = () => {
+      setIsAtTop(window.scrollY <= AT_TOP_THRESHOLD_PX);
+    };
+    syncAtTop();
+    window.addEventListener('scroll', syncAtTop, { passive: true });
+    return () => window.removeEventListener('scroll', syncAtTop);
+  }, []);
 
   /**
    * WHY: Rank may live on the current page but below the fold (e.g. #9 on page 1).
-   * IntersectionObserver drives the floating bar instead of "row exists in fetched items".
+   * rootMargin shrinks the root so rows behind BottomNav + safe-area are not "visible".
    */
   useEffect(() => {
     if (!authUid || loading) {
@@ -234,11 +280,24 @@ export default function LadderPage() {
       ([entry]) => {
         setMyRowInViewport(entry.isIntersecting);
       },
-      { root: null, threshold: 0.2 }
+      {
+        root: null,
+        threshold: 0.2,
+        rootMargin: '0px 0px -100px 0px',
+      }
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, [authUid, items, loading, currentPage]);
+
+  const effectiveTopGuardRank = resolveLadderEffectiveRank({
+    isFilterActive,
+    isMeInFilteredList,
+    myFilteredRank,
+    myRank,
+  });
+  const forceFloatingBarAtTop =
+    isAtTop && effectiveTopGuardRank !== null && effectiveTopGuardRank > 8;
 
   const countryCodesInDataset = useMemo(() => {
     const next = new Set<LadderCountryCode>();
@@ -324,8 +383,17 @@ export default function LadderPage() {
   );
 
   const jumpToMyRow = useCallback(() => {
-    if (!authUid || myRank === null || myRank <= 0) return;
-    const targetPage = Math.max(1, Math.ceil(myRank / pageSize));
+    if (!authUid) return;
+
+    const jumpRank = resolveLadderEffectiveRank({
+      isFilterActive,
+      isMeInFilteredList,
+      myFilteredRank,
+      myRank,
+    });
+    if (jumpRank === null) return;
+
+    const targetPage = resolveLadderJumpTargetPage(jumpRank, pageSize);
     if (targetPage === currentPage) {
       requestAnimationFrame(() => {
         rowRefs.current.get(authUid)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -334,7 +402,15 @@ export default function LadderPage() {
     }
     pendingScrollUidRef.current = authUid;
     setCurrentPage(targetPage);
-  }, [authUid, myRank, pageSize, currentPage]);
+  }, [
+    authUid,
+    isFilterActive,
+    isMeInFilteredList,
+    myFilteredRank,
+    myRank,
+    pageSize,
+    currentPage,
+  ]);
 
   const closePreviewModal = useCallback(() => {
     previewRequestIdRef.current += 1;
@@ -394,16 +470,17 @@ export default function LadderPage() {
     return myEntry.displayName?.trim() || authUid || '';
   }, [myEntry, authUid, t]);
 
-  const showFloatingRankBar =
-    myRank !== null &&
-    myRank > 0 &&
-    myEntry !== null &&
-    Number.isFinite(myEntry.scoreBest) &&
-    myEntry.scoreBest > 0 &&
-    !myRowInViewport;
+  const showFloatingRankBar = shouldShowLadderFloatingRankBar({
+    myRank,
+    myEntry,
+    isFilterActive,
+    isMeInFilteredList,
+    forceFloatingBarAtTop,
+    myRowInViewport,
+  });
 
   const canPrevPage = currentPage > 1;
-  const canNextPage = datasetItems.length === pageSize;
+  const canNextPage = hasNextPage;
 
   if (!canEnter) {
     return (
@@ -682,7 +759,7 @@ export default function LadderPage() {
           </button>
         </footer>
       </section>
-      {showFloatingRankBar && myEntry ? (
+      {showFloatingRankBar && myEntry && myRank !== null ? (
         <LadderFloatingRankBar
           shardId={shardId}
           myRank={myRank}
@@ -690,6 +767,9 @@ export default function LadderPage() {
           avatarUrl={floatingAvatarUrl}
           displayName={floatingDisplayName}
           isAnonymous={myEntry.isAnonymousInLadder === true}
+          isFilterActive={isFilterActive}
+          myFilteredRank={myFilteredRank}
+          isMeInFilteredList={isMeInFilteredList}
           onJumpToMyRow={jumpToMyRow}
           formatScore={formatFloatingScore}
         />
