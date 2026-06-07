@@ -5,8 +5,8 @@
         "strength": "Strength",
         "explosivePower": "Explosive",
         "cardio": "Cardio",
-        "muscleMass": "Girth",
-        "bodyFat": "Body Fat",
+        "muscleMass": "Muscle Mass",
+        "bodyFat": "FFMI",
         "gripStrength": "Grip Str."
       }
     },

@@ -5,8 +5,8 @@
         "strength": "力量",
         "explosivePower": "爆發",
         "cardio": "心肺",
-        "muscleMass": "圍度",
-        "bodyFat": "體脂",
+        "muscleMass": "肌肉總量",
+        "bodyFat": "FFMI",
         "gripStrength": "握力"
       }
     },

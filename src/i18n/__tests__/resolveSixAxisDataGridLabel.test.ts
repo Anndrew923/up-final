@@ -12,8 +12,8 @@ const ZH_DUAL_TRACK_EXPECTED: Record<SixAxisMetric, string> = {
   strength: '馬力 · 力量',
   explosivePower: '扭矩 · 爆發',
   cardio: '續航 · 心肺',
-  muscleMass: '外觀 · 圍度',
-  bodyFat: '排量 · 體脂',
+  muscleMass: '外觀 · 肌肉總量',
+  bodyFat: '排量 · FFMI',
   gripStrength: '抓地 · 握力',
 };
 
@@ -21,8 +21,8 @@ const EN_DUAL_TRACK_EXPECTED: Record<SixAxisMetric, string> = {
   strength: 'HP · Strength',
   explosivePower: 'TRQ · Explosive',
   cardio: 'STINT · Cardio',
-  muscleMass: 'CHSS · Girth',
-  bodyFat: 'P2W · Body Fat',
+  muscleMass: 'CHSS · Muscle Mass',
+  bodyFat: 'P2W · FFMI',
   gripStrength: 'GRIP · Grip Str.',
 };
 

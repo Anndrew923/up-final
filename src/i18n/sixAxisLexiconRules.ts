@@ -34,17 +34,17 @@ export const SIX_AXIS_LEXICON_MAPPING_RULES: Record<SixAxisMetric, SixAxisLexico
     enOutputMustMatch: /Stint/i,
   },
   muscleMass: {
-    zhInputMustMatch: /圍度/,
-    zhInputMustNotMatch: /外觀|車體/,
+    zhInputMustMatch: /肌肉總量|肌肉/,
+    zhInputMustNotMatch: /外觀|車體|圍度/,
     zhOutputMustMatch: /車體外觀/,
-    enInputMustMatch: /Girth/i,
+    enInputMustMatch: /Muscle Mass/i,
     enOutputMustMatch: /Exterior/i,
   },
   bodyFat: {
-    zhInputMustMatch: /體脂/,
-    zhInputMustNotMatch: /排量|引擎/,
+    zhInputMustMatch: /FFMI/,
+    zhInputMustNotMatch: /排量|引擎|體脂/,
     zhOutputMustMatch: /引擎排量/,
-    enInputMustMatch: /Body Fat/i,
+    enInputMustMatch: /FFMI/i,
     enOutputMustMatch: /Displacement/i,
   },
   gripStrength: {
