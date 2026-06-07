@@ -19,7 +19,6 @@ export interface HexRadarChartProps {
   suppressEntryAnimation?: boolean;
   /** 0–1 opacity for center grid wash (ritual boot fade-in). */
   gridFadeOpacity?: number;
-  weakestKey?: string;
   className?: string;
   'aria-label'?: string;
 }
@@ -33,7 +32,6 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   ritualFill = 1,
   suppressEntryAnimation = false,
   gridFadeOpacity = 1,
-  weakestKey,
   className,
   'aria-label': ariaLabel,
 }) => {
@@ -328,24 +326,17 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
         />
         {axisNodes.map((node) => {
           const isOverclock = node.raw > overclockThreshold;
-          const isWeakest = weakestKey === node.key;
-          const reactor = isWeakest
+          const reactor = isOverclock
             ? {
-                core: RADAR_LASER_ALERT_PROFILE.node.alertCore,
-                ring: RADAR_LASER_ALERT_PROFILE.node.alertRing,
-                glow: RADAR_LASER_ALERT_PROFILE.node.alertGlow,
+                core: RADAR_LASER_ALERT_PROFILE.node.overclockCore,
+                ring: RADAR_LASER_ALERT_PROFILE.node.overclockRing,
+                glow: RADAR_LASER_ALERT_PROFILE.node.overclockGlow,
               }
-            : isOverclock
-              ? {
-                  core: RADAR_LASER_ALERT_PROFILE.node.overclockCore,
-                  ring: RADAR_LASER_ALERT_PROFILE.node.overclockRing,
-                  glow: RADAR_LASER_ALERT_PROFILE.node.overclockGlow,
-                }
-              : {
-                  core: RADAR_LASER_ALERT_PROFILE.node.defaultCore,
-                  ring: RADAR_LASER_ALERT_PROFILE.node.defaultRing,
-                  glow: RADAR_LASER_ALERT_PROFILE.node.defaultGlow,
-                };
+            : {
+                core: RADAR_LASER_ALERT_PROFILE.node.defaultCore,
+                ring: RADAR_LASER_ALERT_PROFILE.node.defaultRing,
+                glow: RADAR_LASER_ALERT_PROFILE.node.defaultGlow,
+              };
           return (
             <g key={`axis-${node.key}`}>
               <circle
@@ -374,15 +365,6 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
                   className="stroke-accent-info/80"
                   strokeWidth={node.overflowExtra === maxOverflow ? 1.8 : 1.2}
                   strokeLinecap="round"
-                />
-              ) : null}
-              {weakestKey === node.key ? (
-                <circle
-                  cx={node.xBase}
-                  cy={node.yBase}
-                  r={4.8}
-                  className="fill-none stroke-zinc-900/65"
-                  strokeWidth={0.8}
                 />
               ) : null}
               {node.overflowExtra > 0 ? (

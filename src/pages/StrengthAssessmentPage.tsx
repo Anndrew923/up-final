@@ -94,22 +94,6 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       }),
     [form, profile, profileReady, combinedScore]
   );
-  const weakestStrengthAxisKey = useMemo(() => {
-    let weakest:
-      | {
-          key: string;
-          value: number;
-        }
-      | undefined;
-
-    for (const point of strengthRadarPoints) {
-      if (!Number.isFinite(point.value) || point.value <= 0) continue;
-      if (!weakest || point.value < weakest.value) {
-        weakest = { key: point.key, value: point.value };
-      }
-    }
-    return weakest?.key;
-  }, [strengthRadarPoints]);
   const liveScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
   const interpretationScore = displayScore ?? liveScore;
   const heroScoreText =
@@ -322,7 +306,6 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                   <HexRadarChart
                     points={strengthRadarPoints}
                     scaleMax={100}
-                    weakestKey={weakestStrengthAxisKey}
                     className="mx-auto mt-2 w-full max-w-[240px] shrink-0"
                     aria-label={t('strength.radarAria')}
                   />

@@ -30,7 +30,6 @@ export const RADAR_CARD_V2 = {
     panel:
       'shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)]',
     overall: 'shadow-[inset_0_0_0_1px_rgba(56,189,248,0.08),inset_0_0_20px_rgba(59,130,246,0.08)]',
-    weakestInset: 'shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]',
   },
   font: {
     kickerPx: 10,
@@ -64,9 +63,6 @@ export const RADAR_LASER_ALERT_PROFILE = {
     defaultCore: '#fbbf24',
     defaultRing: 'rgba(251,191,36,0.58)',
     defaultGlow: 'rgba(251,191,36,0.72)',
-    alertCore: '#ef4444',
-    alertRing: 'rgba(239,68,68,0.55)',
-    alertGlow: 'rgba(239,68,68,0.9)',
     overclockCore: '#fbbf24',
     overclockRing: 'rgba(251,191,36,0.68)',
     overclockGlow: 'rgba(251,191,36,0.82)',

@@ -7,7 +7,7 @@ import HomeResonanceOverlay from './HomeResonanceOverlay';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
-import { formatOverallResonanceScore, getWeakestRadarAxis } from '../../logic/core/scoring';
+import { formatOverallResonanceScore } from '../../logic/core/scoring';
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
 import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
@@ -51,7 +51,6 @@ export const HomeRadarBoard: FC = () => {
     return m;
   }, [radarPoints]);
 
-  const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);
   const vehicleClassId = useMemo(() => resolveVehicleClass(radarPoints), [radarPoints]);
   const genderGroup = useMemo(() => {
     if (physicalProfile?.gender === 'female') {
@@ -124,7 +123,6 @@ export const HomeRadarBoard: FC = () => {
               <HexRadarChart
                 points={localizedRadarPoints}
                 scaleMax={scaleMax}
-                weakestKey={weakest?.key}
                 className="mx-auto aspect-square w-full max-w-[280px] shrink-0"
                 aria-label={t('home.radarAria', { ns: 'common' })}
               />
@@ -156,11 +154,7 @@ export const HomeRadarBoard: FC = () => {
                 {SIX_AXIS_METRICS.map((key) => (
                   <li
                     key={key}
-                    className={`rounded-md border bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400 ${
-                      weakest?.key === key
-                        ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
-                        : 'border-zinc-800/70'
-                    }`}
+                    className="rounded-md border border-zinc-800/70 bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400"
                   >
                     <SixAxisDataGridLabel metric={key} />
                     <span

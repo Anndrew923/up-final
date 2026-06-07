@@ -12,7 +12,6 @@ import {
   calculateSixAxisOverall,
   clampScoreMapValue,
   formatOverallResonanceScore,
-  getWeakestRadarAxis,
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
@@ -86,8 +85,6 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
       })),
     [i18n.resolvedLanguage, radarPoints, t]
   );
-
-  const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);
 
   const scaleMax = useMemo(() => radarDisplayScaleMax(radarPoints), [radarPoints]);
 
@@ -240,7 +237,6 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                       <HexRadarChart
                         points={localizedRadarPoints}
                         scaleMax={scaleMax}
-                        weakestKey={weakest?.key}
                         className="mx-auto w-full max-w-[260px]"
                         aria-label={t('ladder.userPreview.radarAria', { ns: 'common' })}
                       />
@@ -287,11 +283,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                         return (
                           <li
                             key={key}
-                            className={`rounded-md border bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400 ${
-                              weakest?.key === key
-                                ? 'border-amber-300/50 shadow-[inset_2px_0_0_rgba(252,211,77,0.8)]'
-                                : 'border-zinc-800/70'
-                            }`}
+                            className="rounded-md border border-zinc-800/70 bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400"
                           >
                             <SixAxisDataGridLabel metric={key} />
                             <span
