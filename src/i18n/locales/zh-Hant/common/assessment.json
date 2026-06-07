@@ -61,8 +61,10 @@
     "breakthrough": {
       "kicker": "單軸性能突破",
       "closeAria": "關閉突破主卡",
-      "dismiss": "確認",
+      "dismiss": "關閉",
       "syncBtn": "同步至主控台",
+      "syncToArena": "同步至天梯榜 // ARENA",
+      "syncToArenaBusy": "同步至天梯中…",
       "syncing": "數據灌注中",
       "peakReached": "已達巔峰序列",
       "milestoneRemaining": "距離下一階升級尚需 {{points}} 分",

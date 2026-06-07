@@ -11,7 +11,7 @@ import type {
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
 import { useUiGate } from '../../hooks/useUiGate';
-import { useLeaderboardSyncAssessmentPage } from '../../hooks/useLeaderboardSyncAssessmentPage';
+import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
 import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
@@ -22,7 +22,8 @@ export interface LeaderboardAssessmentSyncBarProps {
   uploadBundle?: AssessmentLadderUploadBundle | null;
   /** @deprecated Prefer `uploadBundle`. */
   supplementalTargets?: LeaderboardSyncTarget[];
-  onFinished?: () => void;
+  /** Shares ladder state with breakthrough modal — one hook instance per assessment page. */
+  syncController: AssessmentLadderSyncController;
   className?: string;
 }
 
@@ -33,7 +34,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   scope,
   uploadBundle,
   supplementalTargets,
-  onFinished,
+  syncController,
   className,
 }) => {
   const { t } = useTranslation('common');
@@ -43,12 +44,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
-    useLeaderboardSyncAssessmentPage({
-      scope,
-      uploadBundle,
-      supplementalTargets,
-      onFinished,
-    });
+    syncController;
 
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);

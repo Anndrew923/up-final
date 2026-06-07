@@ -10,6 +10,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -94,6 +95,12 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       }),
     [form, profile, profileReady, combinedScore]
   );
+
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'strength',
+    uploadBundle: ladderUploadBundle,
+  });
+
   const liveScore = combinedScore ?? combinedBreakdown?.averageRaw ?? null;
   const interpretationScore = displayScore ?? liveScore;
   const heroScoreText =
@@ -112,6 +119,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
         onSyncToDashboard={submitToRadar}
         syncDisabled={!profileReady}
         syncing={submitBusy}
+        arenaSync={ladderSync}
       />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
@@ -427,7 +435,11 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               </p>
             ) : null}
 
-            <LeaderboardAssessmentSyncBar scope="strength" uploadBundle={ladderUploadBundle} />
+            <LeaderboardAssessmentSyncBar
+              scope="strength"
+              uploadBundle={ladderUploadBundle}
+              syncController={ladderSync}
+            />
           </div>
         </section>
       </div>

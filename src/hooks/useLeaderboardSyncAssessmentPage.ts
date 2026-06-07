@@ -32,6 +32,12 @@ import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
 
+/** Shared ladder sync API for assessment page bar + breakthrough modal (single hook instance). */
+export type AssessmentLadderSyncController = Pick<
+  ReturnType<typeof useLeaderboardSyncAssessmentPage>,
+  'syncPage' | 'busy' | 'summary' | 'failures' | 'gate' | 'targetCount' | 'goJoinArena' | 'clearFeedback'
+>;
+
 export interface UseLeaderboardSyncAssessmentPageOptions {
   scope: AssessmentLadderSyncScope;
   /**

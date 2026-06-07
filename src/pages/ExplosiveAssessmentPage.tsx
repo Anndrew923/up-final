@@ -10,6 +10,7 @@ import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -62,6 +63,11 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     [verticalJumpInput, standingLongJumpInput, sprintInput, profile, profileReady]
   );
 
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'explosivePower',
+    uploadBundle: ladderUploadBundle,
+  });
+
   const reveal = useAssessmentRevealFlow({
     pool: 'explosive',
     metric: 'explosivePower',
@@ -105,6 +111,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
         syncDisabled={!profileReady}
+        arenaSync={ladderSync}
       />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
@@ -388,7 +395,11 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="explosivePower" uploadBundle={ladderUploadBundle} />
+          <LeaderboardAssessmentSyncBar
+            scope="explosivePower"
+            uploadBundle={ladderUploadBundle}
+            syncController={ladderSync}
+          />
         </section>
       </div>
     </main>

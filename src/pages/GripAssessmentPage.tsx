@@ -8,6 +8,7 @@ import PerformanceBreakthroughModal from '../components/assessment/PerformanceBr
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -57,6 +58,11 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     [previewScore]
   );
 
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'gripStrength',
+    uploadBundle: ladderUploadBundle,
+  });
+
   const genderLabel = !profile
     ? ''
     : profile.gender === 'female'
@@ -75,6 +81,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
         syncDisabled={!profileReady}
+        arenaSync={ladderSync}
       />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <AssessmentPageHeader
@@ -215,7 +222,11 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="gripStrength" uploadBundle={ladderUploadBundle} />
+          <LeaderboardAssessmentSyncBar
+            scope="gripStrength"
+            uploadBundle={ladderUploadBundle}
+            syncController={ladderSync}
+          />
         </section>
       </div>
     </main>

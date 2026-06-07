@@ -61,8 +61,10 @@
     "breakthrough": {
       "kicker": "Axis Breakthrough",
       "closeAria": "Close breakthrough card",
-      "dismiss": "Confirm",
+      "dismiss": "CLOSE",
       "syncBtn": "Sync to Dashboard",
+      "syncToArena": "SYNC TO ARENA // RANK",
+      "syncToArenaBusy": "Syncing to Arena…",
       "syncing": "Syncing…",
       "peakReached": "Peak Sequence Reached",
       "milestoneRemaining": "{{points}} pts until next tier",

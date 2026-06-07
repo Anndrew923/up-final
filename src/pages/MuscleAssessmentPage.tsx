@@ -9,6 +9,7 @@ import { ROUTES } from '../config/routes';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildMuscleAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -47,6 +48,11 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
     [smmInput, profile, profileReady]
   );
 
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'muscleMass',
+    uploadBundle: ladderUploadBundle,
+  });
+
   const reveal = useAssessmentRevealFlow({
     pool: 'muscle',
     metric: 'muscleMass',
@@ -84,6 +90,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
         syncDisabled={!profileReady || scoreLocked}
+        arenaSync={ladderSync}
       />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
@@ -245,7 +252,11 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="muscleMass" uploadBundle={ladderUploadBundle} />
+          <LeaderboardAssessmentSyncBar
+            scope="muscleMass"
+            uploadBundle={ladderUploadBundle}
+            syncController={ladderSync}
+          />
         </section>
       </div>
     </main>

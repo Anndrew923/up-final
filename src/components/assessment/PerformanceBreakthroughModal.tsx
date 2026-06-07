@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useId, useRef, useState, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
+import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
+import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
+import { navigateFromUiGate } from '../../lib/uiGateNavigation';
+import { useUiGate } from '../../hooks/useUiGate';
+import LeaderboardGateSheet from '../ladder/LeaderboardGateSheet';
+import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import { AURA_THEME } from './auraThemeTokens';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
@@ -15,6 +24,8 @@ export interface PerformanceBreakthroughModalProps {
   onSyncToDashboard?: () => void | Promise<void>;
   syncDisabled?: boolean;
   syncing?: boolean;
+  /** Route A coupled assessment ladder sync — shares one controller with page sync bar. */
+  arenaSync?: AssessmentLadderSyncController;
 }
 
 const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
@@ -24,30 +35,58 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   onSyncToDashboard,
   syncDisabled = false,
   syncing = false,
+  arenaSync,
 }) => {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
+  const uiGate = useUiGate('ladder-upload');
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [syncPending, setSyncPending] = useState(false);
+  const [gateSheetOpen, setGateSheetOpen] = useState(false);
   useFocusTrap(dialogRef, open);
 
-  const isSyncing = syncing || syncPending;
+  const isDashboardSyncing = syncing || syncPending;
+  const isArenaSyncing = arenaSync?.busy ?? false;
+  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
+  const showArenaSync = arenaSync != null;
+  const showDashboardSync = onSyncToDashboard != null;
+  const showArenaFeedback = shouldShowLadderSyncFeedback(
+    arenaSync?.summary ?? null,
+    arenaSync?.failures ?? []
+  );
 
-  const handleSync = useCallback(async () => {
-    if (!onSyncToDashboard || isSyncing || syncDisabled) return;
+  const handleDashboardSync = useCallback(async () => {
+    if (!onSyncToDashboard || isDashboardSyncing || syncDisabled) return;
     setSyncPending(true);
     try {
       await onSyncToDashboard();
     } finally {
       setSyncPending(false);
     }
-  }, [isSyncing, onSyncToDashboard, syncDisabled]);
+  }, [isDashboardSyncing, onSyncToDashboard, syncDisabled]);
+
+  const handleArenaSync = useCallback(() => {
+    if (!arenaSync || isArenaSyncing || isDashboardSyncing) return;
+    if (arenaSync.targetCount === 0) return;
+    if (arenaSync.gate !== 'ok') {
+      if (gateSheetKind) setGateSheetOpen(true);
+      return;
+    }
+    arenaSync.clearFeedback();
+    void arenaSync.syncPage();
+  }, [arenaSync, gateSheetKind, isArenaSyncing, isDashboardSyncing]);
 
   useEffect(() => {
     if (!open) {
-      const id = window.setTimeout(() => setSyncPending(false), 0);
+      const id = window.setTimeout(() => {
+        setSyncPending(false);
+        setGateSheetOpen(false);
+      }, 0);
       return () => window.clearTimeout(id);
     }
+    arenaSync?.clearFeedback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clear feedback only when modal opens
   }, [open]);
 
   useEffect(() => {
@@ -71,7 +110,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   if (!open || !payload || typeof document === 'undefined') return null;
 
   const theme = AURA_THEME[payload.auraKey];
-  const showSync = onSyncToDashboard != null;
+  const hasActions = showDashboardSync || showArenaSync;
 
   return createPortal(
     <div
@@ -122,38 +161,89 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             />
           </div>
 
-          <div
-            className={`mt-6 flex justify-center gap-2 ${showSync ? 'flex-col sm:flex-row' : ''}`}
-          >
-            {showSync ? (
-              <>
+          {hasActions ? (
+            <div className="mt-6 w-full">
+              {showDashboardSync ? (
                 <button
                   type="button"
-                  className="ui-btn ui-btn-primary min-w-[12rem] px-3 text-center text-xs leading-snug sm:min-w-[14rem]"
-                  disabled={syncDisabled || isSyncing}
-                  onClick={() => void handleSync()}
+                  className="w-full rounded-xl bg-amber-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-amber-400 disabled:pointer-events-none disabled:opacity-40"
+                  disabled={syncDisabled || isDashboardSyncing || isArenaSyncing}
+                  onClick={() => void handleDashboardSync()}
                 >
-                  {isSyncing
+                  {isDashboardSyncing
                     ? t('assessment.breakthrough.syncing')
                     : t('assessment.breakthrough.syncBtn')}
                 </button>
+              ) : null}
+
+              {showArenaSync ? (
                 <button
                   type="button"
-                  className="ui-btn min-w-[8rem]"
-                  disabled={isSyncing}
-                  onClick={onClose}
+                  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
+                  disabled={
+                    isArenaSyncing ||
+                    isDashboardSyncing ||
+                    arenaSync.targetCount === 0 ||
+                    arenaSync.gate === 'no-score' ||
+                    arenaSync.gate === 'invalid-score'
+                  }
+                  onClick={handleArenaSync}
                 >
-                  {t('assessment.breakthrough.dismiss')}
+                  {isArenaSyncing
+                    ? t('assessment.breakthrough.syncToArenaBusy')
+                    : t('assessment.breakthrough.syncToArena')}
                 </button>
-              </>
-            ) : (
-              <button type="button" className="ui-btn ui-btn-primary min-w-[8rem]" onClick={onClose}>
+              ) : null}
+
+              {showArenaFeedback && arenaSync?.summary ? (
+                <LadderSyncSummaryStatus
+                  className="mt-3"
+                  summary={arenaSync.summary}
+                  failures={arenaSync.failures}
+                  variant="assessment"
+                />
+              ) : null}
+
+              <button
+                type="button"
+                className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
+                disabled={isDashboardSyncing || isArenaSyncing}
+                onClick={onClose}
+              >
                 {t('assessment.breakthrough.dismiss')}
               </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="mt-6 w-full">
+              <button
+                type="button"
+                className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
+                onClick={onClose}
+              >
+                {t('assessment.breakthrough.dismiss')}
+              </button>
+            </div>
+          )}
         </AuraReactiveFrame>
       </div>
+
+      {gateSheetKind ? (
+        <LeaderboardGateSheet
+          open={gateSheetOpen}
+          kind={gateSheetKind}
+          description={t(`ladder.gateSheet.${gateSheetKind}.body`)}
+          secondaryLabel={t('gateSheet.secondary')}
+          onSecondary={() => setGateSheetOpen(false)}
+          onPrimary={() => {
+            setGateSheetOpen(false);
+            if (arenaSync?.gate === 'pro') {
+              arenaSync.goJoinArena();
+              return;
+            }
+            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
+          }}
+        />
+      ) : null}
     </div>,
     document.body
   );

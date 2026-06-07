@@ -11,6 +11,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { ROUTES } from '../config/routes';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildArmSizeAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { useArmSizeBreakthroughDashboardSync } from '../hooks/useBreakthroughDashboardSync';
@@ -72,6 +73,11 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     [previewScore, submittedScore]
   );
 
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'armSize',
+    uploadBundle: ladderUploadBundle,
+  });
+
   const interpretationScore = previewScore ?? submittedScore ?? persistedArmSizeScore ?? null;
   const heroScore = displayScore ?? interpretationScore;
   const scoreMeaning = useScoreMeaning('armSize', heroScore);
@@ -84,6 +90,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={syncBreakthroughToDashboard}
+        arenaSync={ladderSync}
       />
       <div className="ui-shell relative max-w-3xl space-y-8">
         <AssessmentPageHeader
@@ -222,7 +229,11 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar scope="armSize" uploadBundle={ladderUploadBundle} />
+          <LeaderboardAssessmentSyncBar
+            scope="armSize"
+            uploadBundle={ladderUploadBundle}
+            syncController={ladderSync}
+          />
         </section>
       </div>
     </main>

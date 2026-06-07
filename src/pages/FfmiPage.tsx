@@ -10,6 +10,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -62,6 +63,11 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
     [breakdown]
   );
 
+  const ladderSync = useLeaderboardSyncAssessmentPage({
+    scope: 'bodyFat_ffmi',
+    uploadBundle: ladderUploadBundle,
+  });
+
   return (
     <main className="relative min-h-[70vh] overflow-hidden text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="ffmi" />
@@ -71,6 +77,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
         syncDisabled={!breakdown?.allowsRadarSubmit}
+        arenaSync={ladderSync}
       />
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" aria-hidden>
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
@@ -245,6 +252,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                 <LeaderboardAssessmentSyncBar
                   scope="bodyFat_ffmi"
                   uploadBundle={ladderUploadBundle}
+                  syncController={ladderSync}
                 />
               </div>
             ) : null}
