@@ -58,8 +58,8 @@ export const ASSESSMENT_LOBBY_SIX_AXIS_MAP = {
 } as const satisfies Record<Exclude<AssessmentLobbyCardKey, 'armSize'>, SixAxisMetric>;
 
 /**
- * Per-dimension StatusBar glow (WHY): Warm–cool crossflow grid sourced from
- * `sharedAxisAccentTokens` — lobby hues match radar dominant palettes stroke-for-stroke.
+ * Per-dimension StatusBar glow (WHY): Rigid seven-hue grid from `sharedAxisAccentTokens` —
+ * lobby status bars and radar dominant stroke stay parity-locked.
  */
 export const ASSESSMENT_LOBBY_STATUS_BAR_CLASS: Record<AssessmentLobbyCardKey, string> = {
   strength: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.strength),

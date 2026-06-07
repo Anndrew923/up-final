@@ -100,6 +100,33 @@ const SIX_AXIS_ACCENT_RGB: Record<SixAxisMetric, AxisAccentRgb> = {
 export const ARM_SIZE_LOBBY_STATUS_BAR_CLASS =
   'bg-slate-400 shadow-[0_0_14px_rgba(148,163,184,0.6)]';
 
+/** RGB for armSize footer — kept separate from Core Six hue slots. */
+export const ARM_SIZE_ACCENT_RGB: AxisAccentRgb = { r: 148, g: 163, b: 184 };
+
+export function getSixAxisAccentRgb(metric: SixAxisMetric): AxisAccentRgb {
+  return SIX_AXIS_ACCENT_RGB[metric];
+}
+
+export interface DiagnosticScanAccentStyles {
+  beam: string;
+  grid: string;
+  bracket: string;
+  textColor: string;
+  glow: string;
+}
+
+/** Builds assessment scan-overlay classes from shared axis RGB (WHY: parity with lobby status bars). */
+export function buildDiagnosticScanAccentStyles(rgb: AxisAccentRgb): DiagnosticScanAccentStyles {
+  const { r, g, b } = rgb;
+  return {
+    beam: `from-transparent via-[rgba(${r},${g},${b},0.55)] to-transparent`,
+    grid: `bg-[linear-gradient(rgba(${r},${g},${b},0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(${r},${g},${b},0.14)_1px,transparent_1px)]`,
+    bracket: `border-[rgba(${r},${g},${b},0.7)] shadow-[0_0_18px_rgba(${r},${g},${b},0.35)]`,
+    textColor: `rgb(${r},${g},${b})`,
+    glow: `bg-[rgba(${r},${g},${b},0.1)]`,
+  };
+}
+
 export function getSixAxisLobbyStatusBarClass(metric: SixAxisMetric): string {
   return formatLobbyStatusBarClass(SIX_AXIS_ACCENT_TOKENS[metric]);
 }

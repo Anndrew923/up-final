@@ -1,5 +1,12 @@
 import { useEffect, type FC } from 'react';
 import { createPortal } from 'react-dom';
+import { ASSESSMENT_LOBBY_SIX_AXIS_MAP } from '../../config/assessmentLobby';
+import {
+  ARM_SIZE_ACCENT_RGB,
+  buildDiagnosticScanAccentStyles,
+  getSixAxisAccentRgb,
+  type DiagnosticScanAccentStyles,
+} from '../../config/sharedAxisAccentTokens';
 
 export type DiagnosticAccent =
   | 'strength'
@@ -18,60 +25,12 @@ export interface DiagnosticOverlayProps {
   ariaLabel: string;
 }
 
-const ACCENT_STYLES: Record<
-  DiagnosticAccent,
-  { beam: string; grid: string; bracket: string; text: string; glow: string }
-> = {
-  strength: {
-    beam: 'from-transparent via-accent-primary/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(255,140,0,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,140,0,0.14)_1px,transparent_1px)]',
-    bracket: 'border-accent-primary/70 shadow-[0_0_18px_rgba(255,140,0,0.35)]',
-    text: 'text-accent-primary',
-    glow: 'bg-accent-primary/10',
-  },
-  grip: {
-    beam: 'from-transparent via-accent-info/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(0,191,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(0,191,255,0.14)_1px,transparent_1px)]',
-    bracket: 'border-accent-info/70 shadow-[0_0_18px_rgba(0,191,255,0.35)]',
-    text: 'text-accent-info',
-    glow: 'bg-accent-info/10',
-  },
-  cardio: {
-    beam: 'from-transparent via-cyan-400/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(34,211,238,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.14)_1px,transparent_1px)]',
-    bracket: 'border-cyan-400/70 shadow-[0_0_18px_rgba(34,211,238,0.35)]',
-    text: 'text-cyan-300',
-    glow: 'bg-cyan-500/10',
-  },
-  muscle: {
-    beam: 'from-transparent via-orange-400/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(251,146,60,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(251,146,60,0.14)_1px,transparent_1px)]',
-    bracket: 'border-orange-400/70 shadow-[0_0_18px_rgba(251,146,60,0.35)]',
-    text: 'text-orange-300',
-    glow: 'bg-orange-500/10',
-  },
-  ffmi: {
-    beam: 'from-transparent via-violet-400/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(167,139,250,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(167,139,250,0.14)_1px,transparent_1px)]',
-    bracket: 'border-violet-400/70 shadow-[0_0_18px_rgba(139,92,246,0.35)]',
-    text: 'text-violet-300',
-    glow: 'bg-violet-500/10',
-  },
-  explosive: {
-    beam: 'from-transparent via-amber-400/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(251,191,36,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(251,191,36,0.14)_1px,transparent_1px)]',
-    bracket: 'border-amber-400/70 shadow-[0_0_18px_rgba(245,158,11,0.35)]',
-    text: 'text-amber-300',
-    glow: 'bg-amber-500/10',
-  },
-  armSize: {
-    beam: 'from-transparent via-zinc-400/55 to-transparent',
-    grid: 'bg-[linear-gradient(rgba(161,161,170,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(161,161,170,0.14)_1px,transparent_1px)]',
-    bracket: 'border-zinc-400/70 shadow-[0_0_18px_rgba(113,113,122,0.35)]',
-    text: 'text-zinc-300',
-    glow: 'bg-zinc-500/10',
-  },
-};
+function resolveDiagnosticAccentStyles(accent: DiagnosticAccent): DiagnosticScanAccentStyles {
+  if (accent === 'armSize') {
+    return buildDiagnosticScanAccentStyles(ARM_SIZE_ACCENT_RGB);
+  }
+  return buildDiagnosticScanAccentStyles(getSixAxisAccentRgb(ASSESSMENT_LOBBY_SIX_AXIS_MAP[accent]));
+}
 
 /**
  * Full-viewport diagnostic scan veil — transform/opacity only for compositor-friendly 60fps motion.
@@ -94,7 +53,7 @@ const DiagnosticOverlay: FC<DiagnosticOverlayProps> = ({
 
   if (!open || typeof document === 'undefined') return null;
 
-  const styles = ACCENT_STYLES[accent];
+  const styles = resolveDiagnosticAccentStyles(accent);
   const rotatingLine = statusLine.trim().length > 0 ? statusLine : scanningLabel;
 
   return createPortal(
@@ -148,7 +107,8 @@ const DiagnosticOverlay: FC<DiagnosticOverlayProps> = ({
         <p
           key={rotatingLine}
           aria-live="polite"
-          className={`mt-4 text-sm font-medium leading-relaxed motion-reduce:transition-none ${styles.text} transition-opacity duration-300 ease-out will-change-opacity`}
+          style={{ color: styles.textColor }}
+          className="mt-4 text-sm font-medium leading-relaxed motion-reduce:transition-none transition-opacity duration-300 ease-out will-change-opacity"
         >
           {rotatingLine}
         </p>
