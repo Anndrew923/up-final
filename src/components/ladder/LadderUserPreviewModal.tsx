@@ -16,7 +16,8 @@ import {
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
-import { SIX_AXIS_COUNT, SIX_AXIS_METRICS } from '../../types/scoring';
+import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 
 export interface LadderUserPreviewModalProps {
   open: boolean;
@@ -51,7 +52,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   onClose,
   onBlocked,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const blockUid = useLadderBlockStore((s) => s.block);
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
 
@@ -80,9 +81,9 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
     () =>
       radarPoints.map((point) => ({
         ...point,
-        label: t(`home.radar.axis.${point.key}`, { ns: 'common' }),
+        label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
       })),
-    [radarPoints, t]
+    [i18n.resolvedLanguage, radarPoints, t]
   );
 
   const weakest = useMemo(() => getWeakestRadarAxis(radarPoints), [radarPoints]);

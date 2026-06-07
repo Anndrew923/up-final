@@ -2,10 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import i18n from '../../i18n';
 import { enCommon, zhHantCommon } from '../locales/common';
 import {
+  ASSESSMENT_LOBBY_SIX_AXIS_CARD_KEYS,
   SIX_AXIS_LEXICON_MAPPING_RULES,
   SIX_AXIS_METRICS,
   SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS,
 } from '../sixAxisLexiconRules';
+import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
 import type { SixAxisMetric } from '../../types/scoring';
 
 type LocaleBundle = typeof zhHantCommon;
@@ -35,6 +37,24 @@ function readLexicon(
     output: { full: Record<SixAxisMetric, string>; chart: Record<SixAxisMetric, string> };
   };
   return variant === 'chart' ? axisLexicon.output.chart[metric] : axisLexicon.output.full[metric];
+}
+
+function readOutputCode(bundle: LocaleBundle, metric: SixAxisMetric): string {
+  return (bundle.axisLexicon as { output: { code: Record<SixAxisMetric, string> } }).output.code[
+    metric
+  ];
+}
+
+function readAssessmentLobbyTitle(bundle: LocaleBundle, cardKey: string): string {
+  const assessment = bundle.assessment as Record<string, { title: string }>;
+  return assessment[cardKey].title;
+}
+
+function extractLobbySubtitleCode(subtitle: string | undefined): string {
+  expect(subtitle, 'lobby card subtitle must use "// CODE" suffix').toBeTruthy();
+  const match = subtitle!.match(/\/\/\s*([A-Z0-9]+)\s*$/);
+  expect(match, `subtitle must end with // CODE, got: ${subtitle}`).not.toBeNull();
+  return match![1];
 }
 
 describe('six-axis lexicon dual-track mapping', () => {
@@ -142,5 +162,34 @@ describe('six-axis lexicon dual-track mapping', () => {
     expect(divisions.stats_vertical.label).toMatch(/爆發/);
     expect(divisions.stats_grip.label).toMatch(/握力/);
     expect(divisions.stats_bodyFat.label).toMatch(/FFMI/);
+  });
+
+  it.each(Object.entries(ASSESSMENT_LOBBY_SIX_AXIS_CARD_KEYS))(
+    'zh-Hant assessment lobby %s subtitle code mirrors axisLexicon.output.code',
+    (cardKey, metric) => {
+      const title = readAssessmentLobbyTitle(zhHantCommon, cardKey);
+      const { sub } = splitAssessmentLobbyTitle(title);
+      expect(extractLobbySubtitleCode(sub)).toBe(readOutputCode(zhHantCommon, metric));
+    }
+  );
+
+  it.each(Object.entries(ASSESSMENT_LOBBY_SIX_AXIS_CARD_KEYS))(
+    'en assessment lobby %s subtitle code mirrors axisLexicon.output.code',
+    (cardKey, metric) => {
+      const title = readAssessmentLobbyTitle(enCommon, cardKey);
+      const { sub } = splitAssessmentLobbyTitle(title);
+      expect(extractLobbySubtitleCode(sub)).toBe(readOutputCode(enCommon, metric));
+    }
+  );
+
+  it('assessment lobby codes reject legacy non-standard tokens (BOOST, AERO, TORQUE, RIMS)', () => {
+    for (const cardKey of Object.keys(ASSESSMENT_LOBBY_SIX_AXIS_CARD_KEYS)) {
+      const zhTitle = readAssessmentLobbyTitle(zhHantCommon, cardKey);
+      const enTitle = readAssessmentLobbyTitle(enCommon, cardKey);
+      for (const title of [zhTitle, enTitle]) {
+        const { sub } = splitAssessmentLobbyTitle(title);
+        expect(sub ?? '').not.toMatch(/\b(BOOST|AERO|TORQUE|RIMS)\b/);
+      }
+    }
   });
 });

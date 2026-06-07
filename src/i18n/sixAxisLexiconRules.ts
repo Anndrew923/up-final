@@ -62,4 +62,20 @@ export const SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS = [
   'ladder.metrics',
 ] as const;
 
+/** Chart vertex labels: runtime reads `home.radar.axisChart`; must stay parity-locked to `axisLexicon.output.chart`. */
+export const SIX_AXIS_OUTPUT_CHART_MIRROR_KEY = 'home.radar.axisChart' as const;
+
+/**
+ * Lobby cards wired to Core Six axes (WHY): Subtitle `// CODE` suffix must mirror
+ * `axisLexicon.output.code` — guarded in `sixAxisLexicon.test.ts`.
+ */
+export const ASSESSMENT_LOBBY_SIX_AXIS_CARD_KEYS = {
+  strength: 'strength',
+  explosive: 'explosivePower',
+  cardio: 'cardio',
+  muscle: 'muscleMass',
+  ffmi: 'bodyFat',
+  grip: 'gripStrength',
+} as const satisfies Record<string, SixAxisMetric>;
+
 export { SIX_AXIS_METRICS };

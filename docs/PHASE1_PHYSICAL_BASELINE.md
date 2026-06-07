@@ -30,7 +30,7 @@
 - **暱稱／displayName** 與 `LocalProfile` 合併、隨機暱稱（reference BasicInfo 延伸）。
 - **`CloudBackupPayload`** 纳入身體資料、Pro 備份還原擴充。
 - **Firebase Auth**、天梯／Firestore 行為變更。
-- **全站** `zh-Hant/common.json` 與 `en` **逐 key 對齊**（僅要求 Phase 1 触及的文案双语）。
+- **全站** legacy monolithic `common.json` 已移除；split locale 以 `src/i18n/locales/common.ts` 合併為準（Phase 1 僅要求 `home.profile` 等触及 key 双语）。
 - **TrainingProfile**：職業、國家縣市等（reference `TrainingProfileForm` 級）。
 
 ---
@@ -53,7 +53,7 @@
 | 儲存 | `src/services/localStorageService.ts`（`PHYSICAL_PROFILE_STORAGE_KEY` 等）                  |
 | Hook | `src/hooks/usePhysicalProfileForm.ts`                                                       |
 | UI   | `src/components/home/HomeProfileForm.tsx`、`src/pages/HomePage.tsx`                         |
-| i18n | `src/i18n/locales/en/common.json`、`src/i18n/locales/zh-Hant/common.json`（`home.profile`） |
+| i18n | `src/i18n/locales/en/common/home.json`、`src/i18n/locales/zh-Hant/common/home.json`（`home.profile`）；六軸 lexicon 見 `axisLexicon.json` |
 
 ---
 

@@ -23,27 +23,27 @@
     },
     "ffmi": {
       "kicker": "Calculated",
-      "title": "FFMI (Displacement Axis)"
+      "title": "FFMI (Displacement // P2W)"
     },
     "cardio": {
       "kicker": "Endurance",
-      "title": "Cardio Endurance (Core Boost)"
+      "title": "Cardio Endurance (Stint // STINT)"
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle Mass (Widebody Aero)"
+      "title": "Muscle Mass (Exterior // CHSS)"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Explosive Power (Instant Torque)"
+      "title": "Explosive Power (Torque // TRQ)"
     },
     "strength": {
       "kicker": "Strength",
-      "title": "Max Strength (Chassis HP)"
+      "title": "Max Strength (Horsepower // HP)"
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip Assessment (Mechanical Grip)"
+      "title": "Grip Assessment (Traction // GRIP)"
     },
     "armSize": {
       "kicker": "Circumference",

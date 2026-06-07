@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
-import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric } from '../../types/scoring';
+import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
 import { formatOverallResonanceScore, getWeakestRadarAxis } from '../../logic/core/scoring';
@@ -14,6 +14,7 @@ import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
 import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
 import type { PhysicalProfile } from '../../types/userProfile';
 import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
+import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 
 /**
@@ -36,7 +37,7 @@ export const HomeRadarBoard: FC = () => {
     () =>
       radarPoints.map((point) => ({
         ...point,
-        label: t(`home.radar.axisChart.${point.key}`),
+        label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
       })),
     [i18n.resolvedLanguage, radarPoints, t]
   );

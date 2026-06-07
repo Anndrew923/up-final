@@ -23,19 +23,19 @@
     },
     "ffmi": {
       "kicker": "換算",
-      "title": "FFMI（引擎排量軸）"
+      "title": "FFMI（引擎排量 // P2W）"
     },
     "cardio": {
       "kicker": "心肺",
-      "title": "心肺耐力（核心進氣壓值 // BOOST）"
+      "title": "心肺耐力（核心續航 // STINT）"
     },
     "muscle": {
       "kicker": "身體組成",
-      "title": "肌肉總量（競技打孔寬體 // AERO）"
+      "title": "肌肉總量（車體外觀 // CHSS）"
     },
     "explosive": {
       "kicker": "爆發",
-      "title": "爆發力（瞬態扭矩 // TORQUE）"
+      "title": "爆發力（瞬態扭矩 // TRQ）"
     },
     "strength": {
       "kicker": "力量",
