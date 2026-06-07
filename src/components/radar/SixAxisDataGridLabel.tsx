@@ -1,6 +1,10 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { resolveSixAxisDataGridLabelParts } from '../../i18n/resolveSixAxisDataGridLabel';
+import {
+  formatSixAxisDataGridTitle,
+  formatSixAxisDataGridVisibleLabel,
+  resolveSixAxisDataGridLabelParts,
+} from '../../i18n/resolveSixAxisDataGridLabel';
 import { cn } from '../../lib/cn';
 import type { SixAxisMetric } from '../../types/scoring';
 
@@ -9,10 +13,11 @@ export interface SixAxisDataGridLabelProps {
   className?: string;
 }
 
-/** Single-line chart · fitness // CODE bridge for core-six score grids. */
+/** Adaptive chart · fitness label — collapses when tracks match; CODE lives in title only. */
 export const SixAxisDataGridLabel: FC<SixAxisDataGridLabelProps> = ({ metric, className }) => {
   const { t } = useTranslation('common');
-  const { chart, inputShort, code } = resolveSixAxisDataGridLabelParts(t, metric);
+  const parts = resolveSixAxisDataGridLabelParts(t, metric);
+  const visibleLabel = formatSixAxisDataGridVisibleLabel(parts);
 
   return (
     <span
@@ -20,12 +25,9 @@ export const SixAxisDataGridLabel: FC<SixAxisDataGridLabelProps> = ({ metric, cl
         'block truncate text-[10px] font-medium tracking-tight text-zinc-400',
         className
       )}
-      title={`${chart} · ${inputShort} // ${code}`}
+      title={formatSixAxisDataGridTitle(parts)}
     >
-      {chart}
-      <span className="mx-1 text-zinc-600">·</span>
-      <span className="text-zinc-500">{inputShort}</span>
-      <span className="ml-1.5 text-[9px] font-mono uppercase text-zinc-600">// {code}</span>
+      {visibleLabel}
     </span>
   );
 };
