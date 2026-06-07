@@ -17,6 +17,7 @@ import enPrivacy from './en/common/privacy.json';
 import enContact from './en/common/contact.json';
 import enAuthChoice from './en/common/authChoice.json';
 import enOnboarding from './en/common/onboarding.json';
+import enAxisLexicon from './en/common/axisLexicon.json';
 import zhCore from './zh-Hant/common/core.json';
 import zhHome from './zh-Hant/common/home.json';
 import zhLadder from './zh-Hant/common/ladder.json';
@@ -36,6 +37,7 @@ import zhPrivacy from './zh-Hant/common/privacy.json';
 import zhContact from './zh-Hant/common/contact.json';
 import zhAuthChoice from './zh-Hant/common/authChoice.json';
 import zhOnboarding from './zh-Hant/common/onboarding.json';
+import zhAxisLexicon from './zh-Hant/common/axisLexicon.json';
 
 type CommonLocale = Record<string, unknown>;
 
@@ -82,6 +84,7 @@ export const enCommon = mergeCommonSections([
   { name: 'contact', content: enContact },
   { name: 'authChoice', content: enAuthChoice },
   { name: 'onboarding', content: enOnboarding },
+  { name: 'axisLexicon', content: enAxisLexicon },
 ]);
 
 export const zhHantCommon = mergeCommonSections([
@@ -104,4 +107,5 @@ export const zhHantCommon = mergeCommonSections([
   { name: 'contact', content: zhContact },
   { name: 'authChoice', content: zhAuthChoice },
   { name: 'onboarding', content: zhOnboarding },
+  { name: 'axisLexicon', content: zhAxisLexicon },
 ]);

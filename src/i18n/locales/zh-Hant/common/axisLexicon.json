@@ -1,0 +1,32 @@
+{
+  "axisLexicon": {
+    "input": {
+      "short": {
+        "strength": "力量",
+        "explosivePower": "爆發",
+        "cardio": "續航",
+        "muscleMass": "外觀",
+        "bodyFat": "排量",
+        "gripStrength": "抓地"
+      }
+    },
+    "output": {
+      "full": {
+        "strength": "馬力",
+        "explosivePower": "扭矩",
+        "cardio": "續航",
+        "muscleMass": "車體外觀",
+        "bodyFat": "引擎排量",
+        "gripStrength": "抓地"
+      },
+      "code": {
+        "strength": "HP",
+        "explosivePower": "TRQ",
+        "cardio": "STINT",
+        "muscleMass": "CHSS",
+        "bodyFat": "P2W",
+        "gripStrength": "GRIP"
+      }
+    }
+  }
+}

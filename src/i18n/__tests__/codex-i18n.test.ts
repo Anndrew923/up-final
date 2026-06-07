@@ -20,6 +20,6 @@ describe('codex i18n runtime', () => {
 
   it('t resolves tab and system labels', () => {
     expect(i18n.t('tools.codex.tabs.explosivePower', { ns: 'common' })).toBe('EXPLOSIVE');
-    expect(i18n.t('tools.codex.systems.explosivePower', { ns: 'common' })).toContain('馬力');
+    expect(i18n.t('tools.codex.systems.explosivePower', { ns: 'common' })).toContain('扭矩');
   });
 });

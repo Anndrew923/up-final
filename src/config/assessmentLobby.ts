@@ -1,17 +1,37 @@
+import type { SixAxisMetric } from '../types/scoring';
 import { ROUTES } from './routes';
 import type { RoutePath } from './routes';
 
 export const ASSESSMENT_LOBBY_CARD_KEYS = [
   'strength',
   'grip',
-  'armSize',
+  'ffmi',
   'explosive',
   'cardio',
   'muscle',
-  'ffmi',
+  'armSize',
 ] as const;
 
 export type AssessmentLobbyCardKey = (typeof ASSESSMENT_LOBBY_CARD_KEYS)[number];
+
+/** Lobby card that spans both columns at the bottom of the grid. */
+export const ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY =
+  'armSize' as const satisfies AssessmentLobbyCardKey;
+
+/**
+ * Raw-input grid order on Assessment (WHY): Matches the 2×3 lobby card positions for the six
+ * radar axes so operators read the same left-to-right / top-to-bottom map as the dyno cards.
+ * Excludes `armSize` (leaderboard-only, full-width lobby card). Do not reuse `SIX_AXIS_METRICS`
+ * here—that order drives radar vertices and history columns globally.
+ */
+export const ASSESSMENT_RAW_INPUT_GRID_ORDER = [
+  'strength',
+  'gripStrength',
+  'bodyFat',
+  'explosivePower',
+  'cardio',
+  'muscleMass',
+] as const satisfies readonly SixAxisMetric[];
 
 export const ASSESSMENT_LOBBY_ROUTES: Record<AssessmentLobbyCardKey, RoutePath> = {
   strength: ROUTES.strength,

@@ -1,0 +1,32 @@
+{
+  "axisLexicon": {
+    "input": {
+      "short": {
+        "strength": "Strength",
+        "explosivePower": "Explosive",
+        "cardio": "Cardio",
+        "muscleMass": "Appearance",
+        "bodyFat": "Disp.",
+        "gripStrength": "Grip"
+      }
+    },
+    "output": {
+      "full": {
+        "strength": "Horsepower",
+        "explosivePower": "Torque",
+        "cardio": "Stint",
+        "muscleMass": "Exterior",
+        "bodyFat": "Displacement",
+        "gripStrength": "Traction"
+      },
+      "code": {
+        "strength": "HP",
+        "explosivePower": "TRQ",
+        "cardio": "STINT",
+        "muscleMass": "CHSS",
+        "bodyFat": "P2W",
+        "gripStrength": "GRIP"
+      }
+    }
+  }
+}

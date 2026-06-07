@@ -138,7 +138,7 @@
       "systems": {
         "overall": "總合驅動性能",
         "strength": "底盤推拉剛性極限",
-        "explosivePower": "瞬時馬力與推力爆發",
+        "explosivePower": "瞬時扭矩與推力爆發",
         "gripStrength": "前軸咬合與抓地力",
         "cooper": "瞬態進氣與排溫管理",
         "fiveK": "巡航長時高熱效率",
