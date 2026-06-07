@@ -1,3 +1,4 @@
+import { SIX_AXIS_RADAR_PALETTES } from '../../config/sharedAxisAccentTokens';
 import type { SixAxisMetric } from '../../types/scoring';
 
 /**
@@ -88,54 +89,9 @@ const CYAN_DEFAULT_PALETTE: RadarPalette = {
   reactorRing: 'rgba(56,189,248,0.58)',
 };
 
-const RADAR_PALETTES: Record<SixAxisMetric, RadarPalette> = {
-  strength: {
-    auraStops: ['rgba(225,29,72,0.1)', 'rgba(225,29,72,0.22)', 'rgba(225,29,72,0.4)'],
-    stroke: '#e11d48',
-    glow: 'rgba(225,29,72,0.6)',
-    reactorCore: '#fb7185',
-    reactorRing: 'rgba(251,113,133,0.58)',
-  },
-  explosivePower: {
-    auraStops: ['rgba(245,158,11,0.1)', 'rgba(245,158,11,0.22)', 'rgba(245,158,11,0.4)'],
-    stroke: '#f59e0b',
-    glow: 'rgba(245,158,11,0.6)',
-    reactorCore: '#fbbf24',
-    reactorRing: 'rgba(251,191,36,0.58)',
-  },
-  cardio: {
-    auraStops: ['rgba(16,185,129,0.1)', 'rgba(16,185,129,0.22)', 'rgba(16,185,129,0.4)'],
-    stroke: '#10b981',
-    glow: 'rgba(16,185,129,0.6)',
-    reactorCore: '#2dd4bf',
-    reactorRing: 'rgba(45,212,191,0.58)',
-  },
-  muscleMass: {
-    auraStops: ['rgba(168,85,247,0.1)', 'rgba(168,85,247,0.22)', 'rgba(168,85,247,0.4)'],
-    stroke: '#a855f7',
-    glow: 'rgba(168,85,247,0.6)',
-    reactorCore: '#e879f9',
-    reactorRing: 'rgba(232,121,249,0.58)',
-  },
-  bodyFat: {
-    auraStops: ['rgba(100,116,139,0.1)', 'rgba(100,116,139,0.22)', 'rgba(100,116,139,0.4)'],
-    stroke: '#94a3b8',
-    glow: 'rgba(148,163,184,0.55)',
-    reactorCore: '#cbd5e1',
-    reactorRing: 'rgba(148,163,184,0.5)',
-  },
-  gripStrength: {
-    auraStops: ['rgba(99,102,241,0.1)', 'rgba(99,102,241,0.22)', 'rgba(99,102,241,0.4)'],
-    stroke: '#6366f1',
-    glow: 'rgba(99,102,241,0.6)',
-    reactorCore: '#818cf8',
-    reactorRing: 'rgba(129,140,248,0.58)',
-  },
-};
-
 export const getRadarPalette = (dominantKey: SixAxisMetric | null): RadarPalette => {
   if (!dominantKey) {
     return CYAN_DEFAULT_PALETTE;
   }
-  return RADAR_PALETTES[dominantKey] ?? CYAN_DEFAULT_PALETTE;
+  return SIX_AXIS_RADAR_PALETTES[dominantKey] ?? CYAN_DEFAULT_PALETTE;
 };

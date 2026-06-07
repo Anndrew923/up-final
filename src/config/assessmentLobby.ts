@@ -1,6 +1,10 @@
 import type { SixAxisMetric } from '../types/scoring';
 import { ROUTES } from './routes';
 import type { RoutePath } from './routes';
+import {
+  ARM_SIZE_LOBBY_STATUS_BAR_CLASS,
+  getSixAxisLobbyStatusBarClass,
+} from './sharedAxisAccentTokens';
 
 export const ASSESSMENT_LOBBY_CARD_KEYS = [
   'strength',
@@ -43,17 +47,26 @@ export const ASSESSMENT_LOBBY_ROUTES: Record<AssessmentLobbyCardKey, RoutePath> 
   ffmi: ROUTES.ffmi,
 };
 
+/** Lobby card key → Core Six metric (armSize excluded — leaderboard-only footer). */
+export const ASSESSMENT_LOBBY_SIX_AXIS_MAP = {
+  strength: 'strength',
+  grip: 'gripStrength',
+  ffmi: 'bodyFat',
+  explosive: 'explosivePower',
+  cardio: 'cardio',
+  muscle: 'muscleMass',
+} as const satisfies Record<Exclude<AssessmentLobbyCardKey, 'armSize'>, SixAxisMetric>;
+
 /**
- * Per-dimension StatusBar glow on lobby cards (WHY): One accent per assessment axis so the
- * lobby reads as a dense instrument panel—not a generic list. Colors are fixed here so UI
- * stays token-consistent and future cards only extend this map + `ASSESSMENT_LOBBY_CARD_KEYS`.
+ * Per-dimension StatusBar glow (WHY): Warm–cool crossflow grid sourced from
+ * `sharedAxisAccentTokens` — lobby hues match radar dominant palettes stroke-for-stroke.
  */
 export const ASSESSMENT_LOBBY_STATUS_BAR_CLASS: Record<AssessmentLobbyCardKey, string> = {
-  strength: 'bg-accent-primary shadow-[0_0_14px_rgba(255,140,0,0.7)]',
-  grip: 'bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.6)]',
-  armSize: 'bg-fuchsia-400 shadow-[0_0_14px_rgba(232,121,249,0.6)]',
-  explosive: 'bg-amber-300 shadow-[0_0_14px_rgba(252,211,77,0.65)]',
-  cardio: 'bg-accent-info shadow-[0_0_14px_rgba(0,191,255,0.65)]',
-  muscle: 'bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.6)]',
-  ffmi: 'bg-violet-400 shadow-[0_0_14px_rgba(167,139,250,0.6)]',
+  strength: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.strength),
+  grip: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.grip),
+  ffmi: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.ffmi),
+  explosive: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.explosive),
+  cardio: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.cardio),
+  muscle: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.muscle),
+  armSize: ARM_SIZE_LOBBY_STATUS_BAR_CLASS,
 };

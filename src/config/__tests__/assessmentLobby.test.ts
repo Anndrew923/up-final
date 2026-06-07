@@ -52,4 +52,11 @@ describe('assessmentLobby config', () => {
       expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS[key]?.length).toBeGreaterThan(0);
     }
   });
+
+  it('assigns unique status bar bg tokens across the warm–cool crossflow grid', () => {
+    const bgTokens = ASSESSMENT_LOBBY_CARD_KEYS.map((key) =>
+      ASSESSMENT_LOBBY_STATUS_BAR_CLASS[key].split(' ')[0]
+    );
+    expect(new Set(bgTokens).size).toBe(ASSESSMENT_LOBBY_CARD_KEYS.length);
+  });
 });
