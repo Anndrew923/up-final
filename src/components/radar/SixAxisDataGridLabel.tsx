@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   formatSixAxisDataGridTitle,
-  formatSixAxisDataGridVisibleLabel,
   resolveSixAxisDataGridLabelParts,
 } from '../../i18n/resolveSixAxisDataGridLabel';
 import { cn } from '../../lib/cn';
@@ -13,21 +12,28 @@ export interface SixAxisDataGridLabelProps {
   className?: string;
 }
 
-/** Adaptive chart · fitness label — collapses when tracks match; CODE lives in title only. */
+/** Rigid dual-track label — chart (highlight) · fitness (recessed); CODE lives in title only. */
 export const SixAxisDataGridLabel: FC<SixAxisDataGridLabelProps> = ({ metric, className }) => {
   const { t } = useTranslation('common');
   const parts = resolveSixAxisDataGridLabelParts(t, metric);
-  const visibleLabel = formatSixAxisDataGridVisibleLabel(parts);
 
   return (
     <span
       className={cn(
-        'block truncate text-[10px] font-medium tracking-tight text-zinc-400',
+        'flex min-w-0 items-baseline overflow-hidden truncate whitespace-nowrap',
         className
       )}
       title={formatSixAxisDataGridTitle(parts)}
     >
-      {visibleLabel}
+      <span className="shrink-0 text-[11px] font-semibold tracking-tight text-zinc-200">
+        {parts.chart}
+      </span>
+      <span aria-hidden className="mx-1 shrink-0 text-zinc-600">
+        ·
+      </span>
+      <span className="min-w-0 truncate text-[9.5px] font-normal tracking-wide text-zinc-500">
+        {parts.inputShort}
+      </span>
     </span>
   );
 };
