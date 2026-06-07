@@ -20,7 +20,7 @@ import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
  * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
  */
 export const HomeRadarBoard: FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const { radarPoints, overallScore, scaleMax, completionCount } = useCoreSixRadar();
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
     loadPhysicalProfile()
@@ -36,9 +36,9 @@ export const HomeRadarBoard: FC = () => {
     () =>
       radarPoints.map((point) => ({
         ...point,
-        label: t(`axisLexicon.output.chart.${point.key}`, { ns: 'common' }),
+        label: t(`home.radar.axisChart.${point.key}`),
       })),
-    [radarPoints, t]
+    [i18n.resolvedLanguage, radarPoints, t]
   );
 
   const valueByKey = useMemo(() => {

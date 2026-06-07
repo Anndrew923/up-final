@@ -109,6 +109,24 @@ describe('six-axis lexicon dual-track mapping', () => {
     }
   });
 
+  it.each(SIX_AXIS_METRICS)(
+    'home.radar.axisChart mirrors axisLexicon.output.chart for %s',
+    (metric) => {
+      expect(readNestedString(zhHantCommon, 'home.radar.axisChart', metric)).toBe(
+        readLexicon(zhHantCommon, 'output', 'chart', metric)
+      );
+      expect(readNestedString(enCommon, 'home.radar.axisChart', metric)).toBe(
+        readLexicon(enCommon, 'output', 'chart', metric)
+      );
+    }
+  );
+
+  it('i18n.t resolves home.radar.axisChart at runtime (no raw key leak)', () => {
+    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).toBe('馬力');
+    expect(i18n.t('home.radar.axisChart.bodyFat', { ns: 'common' })).toBe('排量');
+    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).not.toContain('axisChart');
+  });
+
   it('Codex explosivePower system copy uses torque semantics, not horsepower', () => {
     const systems = (zhHantCommon.tools as { codex: { systems: Record<string, string> } }).codex
       .systems;

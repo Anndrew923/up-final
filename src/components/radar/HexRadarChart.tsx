@@ -401,7 +401,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
                 y={node.yLabel}
                 textAnchor={node.textAnchor}
                 dominantBaseline={node.dominantBaseline}
-                className="fill-zinc-400 text-[7px] tracking-[0.18em] uppercase"
+                className="fill-zinc-400 text-[7px] tracking-[0.12em]"
                 fillOpacity={RADAR_CARD_V2.opacity.label}
               >
                 {node.label}
