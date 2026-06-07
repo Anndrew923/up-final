@@ -35,7 +35,7 @@
     },
     "explosive": {
       "kicker": "爆發",
-      "title": "爆發力（瞬態扭力 // TORQUE）"
+      "title": "爆發力（瞬態扭矩 // TORQUE）"
     },
     "strength": {
       "kicker": "力量",

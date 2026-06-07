@@ -22,7 +22,7 @@ function readNestedString(bundle: LocaleBundle, dottedKey: string, metric: SixAx
 function readLexicon(
   bundle: LocaleBundle,
   track: 'input' | 'output',
-  variant: 'short' | 'full',
+  variant: 'short' | 'full' | 'chart',
   metric: SixAxisMetric
 ): string {
   if (track === 'input') {
@@ -32,9 +32,9 @@ function readLexicon(
     return axisLexicon.input.short[metric];
   }
   const axisLexicon = bundle.axisLexicon as {
-    output: { full: Record<SixAxisMetric, string> };
+    output: { full: Record<SixAxisMetric, string>; chart: Record<SixAxisMetric, string> };
   };
-  return axisLexicon.output.full[metric];
+  return variant === 'chart' ? axisLexicon.output.chart[metric] : axisLexicon.output.full[metric];
 }
 
 describe('six-axis lexicon dual-track mapping', () => {
@@ -85,6 +85,29 @@ describe('six-axis lexicon dual-track mapping', () => {
       }
     }
   );
+
+  it('zh-Hant output.chart keeps compact radar vertex labels without polluting output.full', () => {
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).toBe('排量');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).toBe('外觀');
+    expect(readLexicon(zhHantCommon, 'output', 'full', 'bodyFat')).toBe('引擎排量');
+    expect(readLexicon(zhHantCommon, 'output', 'full', 'muscleMass')).toBe('車體外觀');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).not.toBe(
+      readLexicon(zhHantCommon, 'output', 'full', 'bodyFat')
+    );
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).not.toBe(
+      readLexicon(zhHantCommon, 'output', 'full', 'muscleMass')
+    );
+  });
+
+  it('en output.chart mirrors output.code for scan-friendly radar vertices', () => {
+    for (const metric of SIX_AXIS_METRICS) {
+      expect(readLexicon(enCommon, 'output', 'chart', metric)).toBe(
+        (enCommon.axisLexicon as { output: { code: Record<SixAxisMetric, string> } }).output.code[
+          metric
+        ]
+      );
+    }
+  });
 
   it('Codex explosivePower system copy uses torque semantics, not horsepower', () => {
     const systems = (zhHantCommon.tools as { codex: { systems: Record<string, string> } }).codex

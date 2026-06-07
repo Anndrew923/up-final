@@ -36,7 +36,7 @@ export const HomeRadarBoard: FC = () => {
     () =>
       radarPoints.map((point) => ({
         ...point,
-        label: t(`home.radar.axis.${point.key}`, { ns: 'common' }),
+        label: t(`axisLexicon.output.chart.${point.key}`, { ns: 'common' }),
       })),
     [radarPoints, t]
   );

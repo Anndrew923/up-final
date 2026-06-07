@@ -26,6 +26,14 @@
         "muscleMass": "CHSS",
         "bodyFat": "P2W",
         "gripStrength": "GRIP"
+      },
+      "chart": {
+        "strength": "HP",
+        "explosivePower": "TRQ",
+        "cardio": "STINT",
+        "muscleMass": "CHSS",
+        "bodyFat": "P2W",
+        "gripStrength": "GRIP"
       }
     }
   }

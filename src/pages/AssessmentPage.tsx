@@ -83,10 +83,10 @@ export default function AssessmentPage() {
           {ASSESSMENT_RAW_INPUT_GRID_ORDER.map((metric) => (
             <label key={metric} className="flex items-center gap-2 text-xs text-zinc-400">
               <span
-                className="w-10 shrink-0 truncate text-xs font-medium text-zinc-400"
+                className="w-14 shrink-0 truncate text-xs font-medium text-zinc-400"
                 title={t(`axisLexicon.output.full.${metric}`)}
               >
-                {t(`axisLexicon.input.short.${metric}`)}
+                {t(`axisLexicon.output.full.${metric}`)}
               </span>
               <input
                 type="number"
