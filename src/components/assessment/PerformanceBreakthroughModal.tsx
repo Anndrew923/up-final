@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
+import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
+import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
@@ -13,14 +15,6 @@ import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import { AURA_THEME } from './auraThemeTokens';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
-
-function waitForReactSettlement(): Promise<void> {
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve());
-    });
-  });
-}
 
 export interface PerformanceBreakthroughModalProps {
   open: boolean;
@@ -74,10 +68,10 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
   );
-  const arenaPipelineSucceeded =
-    dashboardPersistedInSession &&
-    arenaSync?.summary != null &&
-    arenaSync.summary.updated > 0;
+  const pipelineBanner = resolveBreakthroughArenaPipelineBanner(
+    dashboardPersistedInSession,
+    arenaSync?.summary
+  );
 
   const handleDashboardSync = useCallback(async () => {
     if (!onSyncToDashboard || isDashboardSyncing || isPipelineRunning) return;
@@ -107,7 +101,6 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
       const sync = arenaSyncRef.current;
       if (!sync) return;
-      sync.clearFeedback();
       await sync.syncPage();
     } finally {
       setPipelineBusy(false);
@@ -239,12 +232,16 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 </button>
               ) : null}
 
-              {dashboardPersistedInSession ? (
+              {pipelineBanner !== 'none' ? (
                 <p
-                  className={`mt-3 text-sm ${arenaPipelineSucceeded ? 'text-emerald-400/90' : 'text-emerald-400/90'}`}
+                  className={`mt-3 text-sm ${
+                    pipelineBanner === 'full-success'
+                      ? 'text-emerald-400/90'
+                      : 'text-amber-300/90'
+                  }`}
                   role="status"
                 >
-                  {arenaPipelineSucceeded
+                  {pipelineBanner === 'full-success'
                     ? t('assessment.breakthrough.dashboardAndArenaSuccess')
                     : t('assessment.breakthrough.dashboardPersistedOnly')}
                 </p>

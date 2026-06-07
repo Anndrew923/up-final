@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
@@ -92,6 +92,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const [submitBusy, setSubmitBusy] = useState(false);
   const [submitNotice, setSubmitNotice] = useState<StrengthSubmitNotice | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
+  const lastPersistedScoreRef = useRef<number | undefined>(undefined);
 
   const clearLiftComputed = useCallback((lift: StrengthLiftKey) => {
     setPerLiftResult((r) => {
@@ -271,10 +272,12 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     const result = tryComputeStrengthAssessmentScore(computeArgs);
     const ok = applyCombinedComputeResult(result, { persist: true });
     if (ok && result.ok) {
+      lastPersistedScoreRef.current = result.score;
       setSubmitDone(true);
       queueStructuredProfileAfterRadarSubmit();
       return true;
     }
+    lastPersistedScoreRef.current = undefined;
     if (!ok && !result.ok) {
       setSubmitNotice({ kind: 'error', error: result.error });
     }
@@ -292,14 +295,14 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
 
     const ok = await persistToDashboard();
     if (ok) {
-      const result = tryComputeStrengthAssessmentScore(computeArgs);
-      if (result.ok) {
-        setSubmitNotice({ kind: 'success', savedScore: result.score });
+      const savedScore = lastPersistedScoreRef.current;
+      if (savedScore != null && Number.isFinite(savedScore)) {
+        setSubmitNotice({ kind: 'success', savedScore });
       }
       navigateHomeWithResonance(navigate);
     }
     setSubmitBusy(false);
-  }, [computeArgs, navigate, persistToDashboard, submitBusy]);
+  }, [navigate, persistToDashboard, submitBusy]);
 
   return {
     profile,

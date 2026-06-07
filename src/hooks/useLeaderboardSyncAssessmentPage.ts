@@ -135,9 +135,23 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     navigate(joinArenaPath('ladder'));
   }, [navigate]);
 
+  const targetsRef = useRef(targets);
+  const mergedForUploadRef = useRef(mergedForUpload);
+  const targetsSignatureRef = useRef(targetsSignature);
+  const gateRef = useRef(gate);
+  targetsRef.current = targets;
+  mergedForUploadRef.current = mergedForUpload;
+  targetsSignatureRef.current = targetsSignature;
+  gateRef.current = gate;
+
   const syncPage = useCallback(async () => {
+    const activeTargets = targetsRef.current;
+    const activeMerged = mergedForUploadRef.current;
+    const activeSignature = targetsSignatureRef.current;
+    const activeGate = gateRef.current;
+
     setSummaryState(null);
-    if (targets.length === 0 || gate !== 'ok') return;
+    if (activeTargets.length === 0 || activeGate !== 'ok') return;
 
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
@@ -149,18 +163,18 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
       const batch = await runLeaderboardBatchUpload({
-        targets,
+        targets: activeTargets,
         uid: user.uid,
         displayName: identity.displayName,
         entitlement: snap,
         previewSnapshot: {
-          mergedScores: mergedForUpload,
+          mergedScores: activeMerged,
           profile: ladderProfile,
           avatarUrl: identity.avatarUrl,
         },
       });
       setSummaryState({
-        signature: targetsSignature,
+        signature: activeSignature,
         summary: batch.summary,
         failures: batch.failures,
       });
@@ -178,7 +192,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature, mergedForUpload]);
+  }, []);
 
   return {
     syncPage,

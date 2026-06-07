@@ -61,7 +61,6 @@
     "breakthrough": {
       "kicker": "Axis Breakthrough",
       "closeAria": "Close breakthrough card",
-      "dismiss": "CLOSE",
       "confirmDismiss": "CONFIRM",
       "syncBtn": "Sync to Dashboard",
       "syncDashboardThenArena": "SYNC DASHBOARD + ARENA",
