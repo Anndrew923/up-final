@@ -23,15 +23,12 @@ export function resolveSixAxisDataGridLabelParts(
   };
 }
 
-/** Visible grid label — dual-track only when chart and fitness short differ (WHY: avoids 續航 · 續航). */
+/** Visible grid label — rigid dual-track (WHY): 2×3 data grid stays symmetric; locale keeps chart ≠ input.short. */
 export function formatSixAxisDataGridVisibleLabel(parts: SixAxisDataGridLabelParts): string {
-  if (parts.chart !== parts.inputShort) {
-    return `${parts.chart} · ${parts.inputShort}`;
-  }
-  return parts.chart;
+  return `${parts.chart} · ${parts.inputShort}`;
 }
 
-/** Hover spec sheet — full chart · fitness // CODE for power users. */
+/** Hover spec sheet — mirrors visible collapse, then appends // CODE for power users. */
 export function formatSixAxisDataGridTitle(parts: SixAxisDataGridLabelParts): string {
-  return `${parts.chart} · ${parts.inputShort} // ${parts.code}`;
+  return `${formatSixAxisDataGridVisibleLabel(parts)} // ${parts.code}`;
 }

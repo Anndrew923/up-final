@@ -4,10 +4,10 @@
       "short": {
         "strength": "力量",
         "explosivePower": "爆發",
-        "cardio": "續航",
-        "muscleMass": "外觀",
-        "bodyFat": "排量",
-        "gripStrength": "抓地"
+        "cardio": "心肺",
+        "muscleMass": "圍度",
+        "bodyFat": "體脂",
+        "gripStrength": "握力"
       }
     },
     "output": {

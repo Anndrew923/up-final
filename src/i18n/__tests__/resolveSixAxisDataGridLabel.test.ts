@@ -8,16 +8,34 @@ import {
 import { resolveSixAxisChartLabel } from '../resolveSixAxisChartLabel';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 
-const ZH_COLLAPSED_METRICS = [
-  'cardio',
-  'bodyFat',
-  'muscleMass',
-  'gripStrength',
-] as const satisfies readonly SixAxisMetric[];
+const ZH_DUAL_TRACK_EXPECTED: Record<SixAxisMetric, string> = {
+  strength: '馬力 · 力量',
+  explosivePower: '扭矩 · 爆發',
+  cardio: '續航 · 心肺',
+  muscleMass: '外觀 · 圍度',
+  bodyFat: '排量 · 體脂',
+  gripStrength: '抓地 · 握力',
+};
 
-const ZH_DUAL_TRACK_METRICS = ['strength', 'explosivePower'] as const satisfies readonly SixAxisMetric[];
+const EN_DUAL_TRACK_EXPECTED: Record<SixAxisMetric, string> = {
+  strength: 'HP · Strength',
+  explosivePower: 'TRQ · Explosive',
+  cardio: 'STINT · Cardio',
+  muscleMass: 'CHSS · Girth',
+  bodyFat: 'P2W · Body Fat',
+  gripStrength: 'GRIP · Grip Str.',
+};
 
-describe('resolveSixAxisDataGridLabelParts', () => {
+function assertNoDuplicateTrack(visible: string, chart: string, inputShort: string): void {
+  expect(chart).not.toBe(inputShort);
+  expect(visible).toBe(`${chart} · ${inputShort}`);
+  const [left, right] = visible.split(' · ');
+  expect(left).toBe(chart);
+  expect(right).toBe(inputShort);
+  expect(left).not.toBe(right);
+}
+
+describe('resolveSixAxisDataGridLabelParts (zh-Hant)', () => {
   beforeAll(async () => {
     await i18n.changeLanguage('zh-Hant');
   });
@@ -34,42 +52,45 @@ describe('resolveSixAxisDataGridLabelParts', () => {
     expect(parts.code.length).toBeGreaterThan(0);
   });
 
-  it.each(ZH_DUAL_TRACK_METRICS)('zh-Hant %s visible label shows chart · fitness bridge', (metric) => {
+  it.each(SIX_AXIS_METRICS)('zh-Hant %s renders rigid dual-track visible label', (metric) => {
     const t = i18n.getFixedT('zh-Hant', 'common');
     const parts = resolveSixAxisDataGridLabelParts(t, metric);
     const visible = formatSixAxisDataGridVisibleLabel(parts);
 
-    expect(parts.chart).not.toBe(parts.inputShort);
-    expect(visible).toBe(`${parts.chart} · ${parts.inputShort}`);
-    expect(visible).not.toMatch(new RegExp(`${parts.chart}\\s*·\\s*${parts.chart}`));
+    assertNoDuplicateTrack(visible, parts.chart, parts.inputShort);
+    expect(visible).toBe(ZH_DUAL_TRACK_EXPECTED[metric]);
   });
 
-  it.each(ZH_COLLAPSED_METRICS)(
-    'zh-Hant %s collapses to chart-only visible label (no duplicate 詞 · 詞)',
-    (metric) => {
-      const t = i18n.getFixedT('zh-Hant', 'common');
-      const parts = resolveSixAxisDataGridLabelParts(t, metric);
-      const visible = formatSixAxisDataGridVisibleLabel(parts);
-
-      expect(parts.chart).toBe(parts.inputShort);
-      expect(visible).toBe(parts.chart);
-      expect(visible).not.toContain(' · ');
-      expect(visible).not.toMatch(/(.+)\s·\s\1/);
-    }
-  );
-
-  it('zh-Hant strength visible is 馬力 · 力量; title retains // HP', () => {
+  it.each(SIX_AXIS_METRICS)('zh-Hant %s title mirrors visible label plus // code', (metric) => {
     const t = i18n.getFixedT('zh-Hant', 'common');
-    const parts = resolveSixAxisDataGridLabelParts(t, 'strength');
-    expect(formatSixAxisDataGridVisibleLabel(parts)).toBe('馬力 · 力量');
-    expect(formatSixAxisDataGridTitle(parts)).toBe('馬力 · 力量 // HP');
+    const parts = resolveSixAxisDataGridLabelParts(t, metric);
+    const visible = formatSixAxisDataGridVisibleLabel(parts);
+
+    expect(formatSixAxisDataGridTitle(parts)).toBe(`${visible} // ${parts.code}`);
+    const [left, right] = visible.split(' · ');
+    expect(left).not.toBe(right);
+  });
+});
+
+describe('resolveSixAxisDataGridLabelParts (en)', () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage('en');
   });
 
-  it('zh-Hant cardio visible is 續航 only (never 續航 · 續航)', () => {
-    const t = i18n.getFixedT('zh-Hant', 'common');
-    const parts = resolveSixAxisDataGridLabelParts(t, 'cardio');
-    expect(formatSixAxisDataGridVisibleLabel(parts)).toBe('續航');
-    expect(formatSixAxisDataGridVisibleLabel(parts)).not.toBe('續航 · 續航');
-    expect(formatSixAxisDataGridTitle(parts)).toBe('續航 · 續航 // STINT');
+  it.each(SIX_AXIS_METRICS)('en %s renders rigid dual-track visible label', (metric) => {
+    const t = i18n.getFixedT('en', 'common');
+    const parts = resolveSixAxisDataGridLabelParts(t, metric);
+    const visible = formatSixAxisDataGridVisibleLabel(parts);
+
+    assertNoDuplicateTrack(visible, parts.chart, parts.inputShort);
+    expect(visible).toBe(EN_DUAL_TRACK_EXPECTED[metric]);
+  });
+
+  it.each(SIX_AXIS_METRICS)('en %s title mirrors visible label plus // code', (metric) => {
+    const t = i18n.getFixedT('en', 'common');
+    const parts = resolveSixAxisDataGridLabelParts(t, metric);
+    const visible = formatSixAxisDataGridVisibleLabel(parts);
+
+    expect(formatSixAxisDataGridTitle(parts)).toBe(`${visible} // ${parts.code}`);
   });
 });

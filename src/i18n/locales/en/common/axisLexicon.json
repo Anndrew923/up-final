@@ -5,9 +5,9 @@
         "strength": "Strength",
         "explosivePower": "Explosive",
         "cardio": "Cardio",
-        "muscleMass": "Appearance",
-        "bodyFat": "Disp.",
-        "gripStrength": "Grip"
+        "muscleMass": "Girth",
+        "bodyFat": "Body Fat",
+        "gripStrength": "Grip Str."
       }
     },
     "output": {

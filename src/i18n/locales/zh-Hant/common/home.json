@@ -237,14 +237,6 @@
         "bodyFat": "引擎排量",
         "gripStrength": "抓地"
       },
-      "axisCard": {
-        "strength": "HP",
-        "explosivePower": "TRQ",
-        "cardio": "STINT",
-        "muscleMass": "CHSS",
-        "bodyFat": "P2W",
-        "gripStrength": "GRIP"
-      },
       "axisChart": {
         "strength": "馬力",
         "explosivePower": "扭矩",

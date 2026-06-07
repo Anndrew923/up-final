@@ -5,7 +5,6 @@ import type { IdentityLiveSpecRow } from './IdentityLiveSpecList';
 
 export interface RadarPointForLiveSpec {
   key: string;
-  label: string;
   value: number;
 }
 
@@ -21,7 +20,6 @@ export function buildIdentityLiveSpecRows(
     const { title } = translateScoreBandMeaning(t, metric, value);
     return {
       metric,
-      label: point?.label ?? t(`home.radar.axis.${metric}`),
       bandTitle: title,
     };
   });

@@ -237,14 +237,6 @@
         "bodyFat": "Displacement",
         "gripStrength": "Traction"
       },
-      "axisCard": {
-        "strength": "HP",
-        "explosivePower": "TRQ",
-        "cardio": "STINT",
-        "muscleMass": "CHSS",
-        "bodyFat": "P2W",
-        "gripStrength": "GRIP"
-      },
       "axisChart": {
         "strength": "HP",
         "explosivePower": "TRQ",

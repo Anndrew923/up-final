@@ -4,7 +4,6 @@ import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 
 export interface IdentityLiveSpecRow {
   metric: SixAxisMetric;
-  label: string;
   bandTitle: string;
 }
 

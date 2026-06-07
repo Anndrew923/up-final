@@ -209,6 +209,7 @@ describe('six-axis lexicon dual-track mapping', () => {
         expect(parts.chart).toBe(readLexicon(bundle, 'output', 'chart', metric));
         expect(parts.inputShort).toBe(readLexicon(bundle, 'input', 'short', metric));
         expect(parts.code).toBe(readOutputCode(bundle, metric));
+        expect(parts.chart).not.toBe(parts.inputShort);
       }
     }
   );
