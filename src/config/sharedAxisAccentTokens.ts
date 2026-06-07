@@ -127,6 +127,30 @@ export function buildDiagnosticScanAccentStyles(rgb: AxisAccentRgb): DiagnosticS
   };
 }
 
+export interface LobbyCardAuraSurfaceStyle {
+  backgroundImage: string;
+  borderColor: string;
+  '--lobby-border-hover': string;
+  '--lobby-glow-hover': string;
+}
+
+/**
+ * Per-card aurora shell (WHY): StatusBar alone felt thin; gradient + neon border carry axis hue
+ * across the full tap target without hurting zinc title contrast on `#111111` card base.
+ */
+export function buildLobbyCardAuraSurfaceStyle(rgb: AxisAccentRgb): LobbyCardAuraSurfaceStyle {
+  const { r, g, b } = rgb;
+  return {
+    backgroundImage: [
+      `linear-gradient(to bottom right, rgba(${r},${g},${b},0.14) 0%, transparent 55%)`,
+      'linear-gradient(to bottom right, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.9) 100%)',
+    ].join(', '),
+    borderColor: `rgba(${r},${g},${b},0.2)`,
+    '--lobby-border-hover': `rgba(${r},${g},${b},0.5)`,
+    '--lobby-glow-hover': `rgba(${r},${g},${b},0.32)`,
+  };
+}
+
 export function getSixAxisLobbyStatusBarClass(metric: SixAxisMetric): string {
   return formatLobbyStatusBarClass(SIX_AXIS_ACCENT_TOKENS[metric]);
 }

@@ -1,10 +1,12 @@
-import { useCallback, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useMemo, type CSSProperties, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ASSESSMENT_LOBBY_STATUS_BAR_CLASS,
+  resolveAssessmentLobbyAccentRgb,
   type AssessmentLobbyCardKey,
 } from '../../config/assessmentLobby';
+import { buildLobbyCardAuraSurfaceStyle } from '../../config/sharedAxisAccentTokens';
 import { cn } from '../../lib/cn';
 import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
 import type { RoutePath } from '../../config/routes';
@@ -29,7 +31,7 @@ function isModifiedPointerEvent(event: {
 
 /**
  * Presentational assessment lobby card (WHY): Whole card is the tap target—no faux CTA bar.
- * StatusBar color + split title carry dimension identity; navigation uses Framer tap isolation.
+ * Axis aurora gradient + neon border + status bar share one RGB source from sharedAxisAccentTokens.
  */
 export function AssessmentLobbyCard({
   cardKey,
@@ -39,6 +41,10 @@ export function AssessmentLobbyCard({
 }: AssessmentLobbyCardProps) {
   const navigate = useNavigate();
   const statusBarClass = ASSESSMENT_LOBBY_STATUS_BAR_CLASS[cardKey];
+  const surfaceStyle = useMemo(
+    (): CSSProperties => buildLobbyCardAuraSurfaceStyle(resolveAssessmentLobbyAccentRgb(cardKey)),
+    [cardKey]
+  );
   const { main: titleMain, sub: titleSub } = splitAssessmentLobbyTitle(title);
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);
@@ -69,26 +75,37 @@ export function AssessmentLobbyCard({
     <MotionLink
       to={to}
       aria-label={title}
+      style={surfaceStyle}
       whileTap={{ scale: 0.99 }}
       onClick={handleClick}
       onTap={handleTap}
       onKeyDown={handleKeyDown}
       className={cn(
-        'group relative block touch-manipulation overflow-hidden rounded-2xl border border-accent-primary/25 bg-bg-card/95 p-3 pl-4 shadow-panel backdrop-blur transition-colors duration-200 hover:border-accent-primary/40',
+        'group relative block touch-manipulation overflow-hidden rounded-2xl border p-3 pl-4',
+        'backdrop-blur-sm shadow-panel',
+        'transition-all duration-300',
+        'hover:border-[color:var(--lobby-border-hover)]',
+        'hover:shadow-[0_0_24px_var(--lobby-glow-hover),0_10px_30px_rgba(0,0,0,0.35)]',
         className
       )}
     >
       <span
         aria-hidden
-        className={`absolute left-0 top-0 bottom-0 w-[3px] ${statusBarClass}`}
+        className={cn(
+          'absolute left-0 top-0 bottom-0 w-[3px] transition-shadow duration-300',
+          'group-hover:shadow-[0_0_18px_var(--lobby-glow-hover)]',
+          statusBarClass
+        )}
       />
 
-      <div className="leading-tight">
+      <div className="relative leading-tight">
         <h2 className="truncate text-xs font-semibold text-zinc-100 transition-colors group-hover:text-zinc-50 sm:text-sm">
           {titleMain}
         </h2>
         {titleSub ? (
-          <p className="truncate text-[11px] text-zinc-500">{titleSub}</p>
+          <p className="truncate text-[11px] text-zinc-500 transition-colors group-hover:text-zinc-400">
+            {titleSub}
+          </p>
         ) : null}
       </div>
     </MotionLink>

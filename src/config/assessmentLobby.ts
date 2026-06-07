@@ -2,8 +2,11 @@ import type { SixAxisMetric } from '../types/scoring';
 import { ROUTES } from './routes';
 import type { RoutePath } from './routes';
 import {
+  ARM_SIZE_ACCENT_RGB,
   ARM_SIZE_LOBBY_STATUS_BAR_CLASS,
+  getSixAxisAccentRgb,
   getSixAxisLobbyStatusBarClass,
+  type AxisAccentRgb,
 } from './sharedAxisAccentTokens';
 
 export const ASSESSMENT_LOBBY_CARD_KEYS = [
@@ -70,3 +73,12 @@ export const ASSESSMENT_LOBBY_STATUS_BAR_CLASS: Record<AssessmentLobbyCardKey, s
   muscle: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.muscle),
   armSize: ARM_SIZE_LOBBY_STATUS_BAR_CLASS,
 };
+
+export function resolveAssessmentLobbyAccentRgb(
+  cardKey: AssessmentLobbyCardKey
+): AxisAccentRgb {
+  if (cardKey === 'armSize') {
+    return ARM_SIZE_ACCENT_RGB;
+  }
+  return getSixAxisAccentRgb(ASSESSMENT_LOBBY_SIX_AXIS_MAP[cardKey]);
+}

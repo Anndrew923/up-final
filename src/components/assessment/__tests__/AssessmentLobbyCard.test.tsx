@@ -69,6 +69,15 @@ describe('AssessmentLobbyCard', () => {
     unmount();
   });
 
+  it('applies per-axis aurora gradient and neon border from shared tokens', () => {
+    const { container, unmount } = renderCard();
+    const link = container.querySelector('a') as HTMLAnchorElement;
+    expect(link.style.backgroundImage).toContain('linear-gradient');
+    expect(link.style.borderColor).toMatch(/^rgba?\(/);
+    expect(link.style.getPropertyValue('--lobby-border-hover')).toMatch(/^rgba?\(/);
+    unmount();
+  });
+
   it('prevents native click for plain left-button taps', () => {
     const { container, unmount } = renderCard();
     const link = container.querySelector('a') as HTMLAnchorElement;
