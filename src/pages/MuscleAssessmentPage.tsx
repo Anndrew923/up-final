@@ -252,11 +252,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="muscleMass"
-            uploadBundle={ladderUploadBundle}
-            syncController={ladderSync}
-          />
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </section>
       </div>
     </main>

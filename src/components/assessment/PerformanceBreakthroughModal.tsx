@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
-import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
-import { navigateFromUiGate } from '../../lib/uiGateNavigation';
-import { useUiGate } from '../../hooks/useUiGate';
-import LeaderboardGateSheet from '../ladder/LeaderboardGateSheet';
+import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
+import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import { AURA_THEME } from './auraThemeTokens';
 import AuraReactiveFrame from './AuraReactiveFrame';
@@ -38,17 +35,21 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   arenaSync,
 }) => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
-  const uiGate = useUiGate('ladder-upload');
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [syncPending, setSyncPending] = useState(false);
-  const [gateSheetOpen, setGateSheetOpen] = useState(false);
+  const {
+    gateSheetOpen,
+    gateSheetKind,
+    tryOpenGateSheet,
+    closeGateSheet,
+    confirmGateSheet,
+    resetGateSheet,
+  } = useLadderUploadGateSheet(ROUTES.ladder);
   useFocusTrap(dialogRef, open);
 
   const isDashboardSyncing = syncing || syncPending;
   const isArenaSyncing = arenaSync?.busy ?? false;
-  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
   const showArenaSync = arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
   const showArenaFeedback = shouldShowLadderSyncFeedback(
@@ -69,25 +70,20 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const handleArenaSync = useCallback(() => {
     if (!arenaSync || isArenaSyncing || isDashboardSyncing) return;
     if (arenaSync.targetCount === 0) return;
-    if (arenaSync.gate !== 'ok') {
-      if (gateSheetKind) setGateSheetOpen(true);
-      return;
-    }
+    if (tryOpenGateSheet(arenaSync.gate)) return;
     arenaSync.clearFeedback();
     void arenaSync.syncPage();
-  }, [arenaSync, gateSheetKind, isArenaSyncing, isDashboardSyncing]);
+  }, [arenaSync, tryOpenGateSheet, isArenaSyncing, isDashboardSyncing]);
 
   useEffect(() => {
     if (!open) {
       const id = window.setTimeout(() => {
         setSyncPending(false);
-        setGateSheetOpen(false);
+        resetGateSheet();
       }, 0);
       return () => window.clearTimeout(id);
     }
-    arenaSync?.clearFeedback();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- clear feedback only when modal opens
-  }, [open]);
+  }, [open, resetGateSheet]);
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') return;
@@ -227,23 +223,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         </AuraReactiveFrame>
       </div>
 
-      {gateSheetKind ? (
-        <LeaderboardGateSheet
-          open={gateSheetOpen}
-          kind={gateSheetKind}
-          description={t(`ladder.gateSheet.${gateSheetKind}.body`)}
-          secondaryLabel={t('gateSheet.secondary')}
-          onSecondary={() => setGateSheetOpen(false)}
-          onPrimary={() => {
-            setGateSheetOpen(false);
-            if (arenaSync?.gate === 'pro') {
-              arenaSync.goJoinArena();
-              return;
-            }
-            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
-          }}
-        />
-      ) : null}
+      <LadderUploadGateSheetPortal
+        gateSheetKind={gateSheetKind}
+        open={gateSheetOpen}
+        onClose={closeGateSheet}
+        onConfirm={confirmGateSheet}
+      />
     </div>,
     document.body
   );

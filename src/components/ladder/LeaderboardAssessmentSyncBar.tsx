@@ -1,27 +1,15 @@
 import { type FC, useEffect, useState } from 'react';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../config/routes';
-import type { AssessmentLadderUploadBundle } from '../../logic/core/assessmentLadderSupplemental';
-import type {
-  AssessmentLadderSyncScope,
-  LeaderboardSyncTarget,
-} from '../../logic/core/leaderboardSyncTargets';
-import { navigateFromUiGate } from '../../lib/uiGateNavigation';
-import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
-import { useUiGate } from '../../hooks/useUiGate';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
-import LeaderboardGateSheet from './LeaderboardGateSheet';
+import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
+import { ROUTES } from '../../config/routes';
+import LadderUploadGateSheetPortal from './LadderUploadGateSheetPortal';
 import LadderInfoSheet from './LadderInfoSheet';
 import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
 export interface LeaderboardAssessmentSyncBarProps {
-  scope: AssessmentLadderSyncScope;
-  uploadBundle?: AssessmentLadderUploadBundle | null;
-  /** @deprecated Prefer `uploadBundle`. */
-  supplementalTargets?: LeaderboardSyncTarget[];
   /** Shares ladder state with breakthrough modal — one hook instance per assessment page. */
   syncController: AssessmentLadderSyncController;
   className?: string;
@@ -31,28 +19,22 @@ export interface LeaderboardAssessmentSyncBarProps {
  * Single control that uploads every ladder shard owned by the current assessment page.
  */
 const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
-  scope,
-  uploadBundle,
-  supplementalTargets,
   syncController,
   className,
 }) => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
-  const uiGate = useUiGate('ladder-upload');
+  const gateSheet = useLadderUploadGateSheet(ROUTES.ladder);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
     syncController;
 
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
-  const gateSheetKind = gateSheetKindFromUiGate(uiGate);
 
   useEffect(() => {
     setTapHint(null);
-  }, [targetCount, gate, scope, uploadBundle, supplementalTargets]);
+  }, [targetCount, gate]);
 
   return (
     <div className={`relative space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
@@ -98,10 +80,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
               setTapHint('no-targets');
               return;
             }
-            if (gate !== 'ok') {
-              if (gateSheetKind) setGateSheetOpen(true);
-              return;
-            }
+            if (gateSheet.tryOpenGateSheet(gate)) return;
             clearFeedback();
             void syncPage();
           }}
@@ -120,22 +99,16 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         title={t('ladder.assessmentSync.advancedTitle')}
         body={t('ladder.assessmentSync.advancedTip')}
       />
-      {gateSheetKind ? (
-        <LeaderboardGateSheet
-          open={gateSheetOpen}
-          kind={gateSheetKind}
-          description={t(`ladder.gateSheet.${gateSheetKind}.body`)}
-          secondaryLabel={t('gateSheet.secondary')}
-          onSecondary={() => setGateSheetOpen(false)}
-          onPrimary={() => {
-            setGateSheetOpen(false);
-            navigateFromUiGate(navigate, uiGate, ROUTES.ladder);
-          }}
-        />
-      ) : null}
+
+      <LadderUploadGateSheetPortal
+        gateSheetKind={gateSheet.gateSheetKind}
+        open={gateSheet.gateSheetOpen}
+        onClose={gateSheet.closeGateSheet}
+        onConfirm={gateSheet.confirmGateSheet}
+      />
 
       {showSyncFeedback && summary ? (
-        <LadderSyncSummaryStatus summary={summary} failures={failures} />
+        <LadderSyncSummaryStatus summary={summary} failures={failures} variant="assessment" />
       ) : null}
     </div>
   );

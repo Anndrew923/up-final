@@ -435,11 +435,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
               </p>
             ) : null}
 
-            <LeaderboardAssessmentSyncBar
-              scope="strength"
-              uploadBundle={ladderUploadBundle}
-              syncController={ladderSync}
-            />
+            <LeaderboardAssessmentSyncBar syncController={ladderSync} />
           </div>
         </section>
       </div>

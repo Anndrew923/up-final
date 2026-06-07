@@ -324,11 +324,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="cardio"
-            uploadBundle={ladderUploadBundle}
-            syncController={ladderSync}
-          />
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </section>
       </div>
     </main>

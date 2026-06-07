@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hapticService } from '../services/hapticService';
+import type { AuthStatus } from '../logic/core/entitlement';
 import {
-  resolveUiGate,
-  type AuthStatus,
-  type UiGateKind,
-} from '../logic/core/entitlement';
+  resolveLeaderboardUploadGate as evaluateLeaderboardUploadGate,
+  type LeaderboardUploadGate,
+} from '../logic/core/ladderUploadGate';
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
@@ -18,24 +18,16 @@ import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import type { EntitlementState } from '../types/entitlement';
 
-export type LeaderboardUploadGate =
-  | 'ok'
-  | 'no-score'
-  | 'invalid-score'
-  | Exclude<UiGateKind, 'none'>;
+export type { LeaderboardUploadGate } from '../logic/core/ladderUploadGate';
 
+/** Store-aware facade over pure `logic/core/ladderUploadGate` (default entitlement/auth snapshot). */
 export function resolveLeaderboardUploadGate(
   score: number | null | undefined,
   ent: EntitlementState = readEntitlementSnapshot(),
   authStatus: AuthStatus = useAuthStore.getState().status,
   isAnonymous: boolean = useAuthStore.getState().isAnonymous
 ): LeaderboardUploadGate {
-  if (score === null || score === undefined || !Number.isFinite(score) || score <= 0) {
-    return 'no-score';
-  }
-  const uiGate = resolveUiGate('ladder-upload', ent, authStatus, isAnonymous);
-  if (uiGate.kind === 'none') return 'ok';
-  return uiGate.kind;
+  return evaluateLeaderboardUploadGate(score, ent, authStatus, isAnonymous);
 }
 
 /**

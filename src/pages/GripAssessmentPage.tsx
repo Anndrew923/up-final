@@ -222,11 +222,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="gripStrength"
-            uploadBundle={ladderUploadBundle}
-            syncController={ladderSync}
-          />
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </section>
       </div>
     </main>

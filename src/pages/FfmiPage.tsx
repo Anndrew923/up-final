@@ -249,11 +249,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                   <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
                 ) : null}
 
-                <LeaderboardAssessmentSyncBar
-                  scope="bodyFat_ffmi"
-                  uploadBundle={ladderUploadBundle}
-                  syncController={ladderSync}
-                />
+                <LeaderboardAssessmentSyncBar syncController={ladderSync} />
               </div>
             ) : null}
           </section>

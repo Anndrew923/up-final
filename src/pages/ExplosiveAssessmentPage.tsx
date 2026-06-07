@@ -395,11 +395,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="explosivePower"
-            uploadBundle={ladderUploadBundle}
-            syncController={ladderSync}
-          />
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </section>
       </div>
     </main>

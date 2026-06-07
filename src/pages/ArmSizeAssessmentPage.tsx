@@ -229,11 +229,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
             </p>
           ) : null}
 
-          <LeaderboardAssessmentSyncBar
-            scope="armSize"
-            uploadBundle={ladderUploadBundle}
-            syncController={ladderSync}
-          />
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </section>
       </div>
     </main>
