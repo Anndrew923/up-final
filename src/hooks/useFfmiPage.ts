@@ -43,6 +43,7 @@ export interface UseFfmiPageResult {
   submitDone: boolean;
   errorKey: FfmiPageErrorKey | null;
   calculate: () => void;
+  persistToDashboard: () => boolean;
   submitToRadar: () => void;
   clearError: () => void;
   goHome: () => void;
@@ -136,21 +137,26 @@ export function useFfmiPage(): UseFfmiPageResult {
     setSubmitDone(false);
   }, [bodyFatInput, profile, profileReady]);
 
-  const submitToRadar = useCallback(() => {
+  const persistToDashboard = useCallback((): boolean => {
     setErrorKey(null);
     if (!breakdown) {
       setErrorKey('need-calculate');
-      return;
+      return false;
     }
     if (!breakdown.allowsRadarSubmit) {
       setErrorKey('world-record-lock');
-      return;
+      return false;
     }
     setScore('bodyFat', breakdown.submittedScore);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    return true;
+  }, [breakdown, setScore]);
+
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
     navigateHomeWithResonance(navigate);
-  }, [breakdown, navigate, setScore]);
+  }, [navigate, persistToDashboard]);
 
   const goHome = useCallback(() => {
     navigate(ROUTES.home);
@@ -167,6 +173,7 @@ export function useFfmiPage(): UseFfmiPageResult {
     submitDone,
     errorKey,
     calculate,
+    persistToDashboard,
     submitToRadar,
     clearError,
     goHome,

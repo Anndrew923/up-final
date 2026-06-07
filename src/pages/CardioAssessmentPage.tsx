@@ -40,6 +40,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   } = useCardioAssessmentPage();
   const scoreMeaningMetric = scoreMeaningMetricForCardioTab(activeTab);
@@ -92,6 +93,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
       />

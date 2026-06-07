@@ -41,6 +41,7 @@ export interface UseMuscleAssessmentPageResult {
   errorKey: MusclePageErrorKey;
   clearError: () => void;
   calculate: () => void;
+  persistToDashboard: () => boolean;
   submitToRadar: () => void;
   smmCeilingKg: number | null;
   scoreLocked: boolean;
@@ -105,7 +106,7 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
     setPreviewBreakdown(result.breakdown);
   }, [profile, profileReady, smmInput]);
 
-  const submitToRadar = useCallback(() => {
+  const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
 
@@ -117,13 +118,13 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
 
     if (!result.ok) {
       setErrorKey(result.error);
-      return;
+      return false;
     }
 
     const smmNum = parseSmmKg(smmInput);
     if (smmNum === null) {
       setErrorKey('invalid-smm');
-      return;
+      return false;
     }
 
     saveMuscleInputs({
@@ -132,8 +133,13 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
     setStoreScore('muscleMass', result.score);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    return true;
+  }, [profile, profileReady, setStoreScore, smmInput]);
+
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
     navigateHomeWithResonance(navigate);
-  }, [navigate, profile, profileReady, setStoreScore, smmInput]);
+  }, [navigate, persistToDashboard]);
 
   return {
     profileReady,
@@ -146,6 +152,7 @@ export function useMuscleAssessmentPage(): UseMuscleAssessmentPageResult {
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
     smmCeilingKg,
     scoreLocked,

@@ -32,6 +32,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
     submitDone,
     errorKey,
     calculate,
+    persistToDashboard,
     submitToRadar,
     goHome,
   } = useFfmiPage();
@@ -76,6 +77,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!breakdown?.allowsRadarSubmit}
         arenaSync={ladderSync}
       />

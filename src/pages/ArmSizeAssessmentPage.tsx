@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
@@ -14,7 +14,6 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildArmSizeAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
-import { useArmSizeBreakthroughDashboardSync } from '../hooks/useBreakthroughDashboardSync';
 import { useScoreStore } from '../stores/scoreStore';
 
 export interface ArmSizeAssessmentPageProps {
@@ -23,7 +22,6 @@ export interface ArmSizeAssessmentPageProps {
 
 const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
   const [referenceOpen, setReferenceOpen] = useState(false);
   const persistedArmSizeScore = useScoreStore((s) => s.scores.armSize);
   const {
@@ -38,7 +36,8 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     submitDone,
     clearError,
     calculate,
-    saveForLeaderboard,
+    persistToDashboard,
+    submitToRadar,
   } = useArmSizeAssessmentPage();
 
   const reveal = useAssessmentRevealFlow({
@@ -58,11 +57,6 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
     modalPayload,
     closeModal,
   } = reveal;
-
-  const syncBreakthroughToDashboard = useArmSizeBreakthroughDashboardSync(
-    saveForLeaderboard,
-    navigate
-  );
 
   const ladderUploadBundle = useMemo(
     () =>
@@ -89,7 +83,8 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         open={modalOpen}
         payload={modalPayload}
         onClose={closeModal}
-        onSyncToDashboard={syncBreakthroughToDashboard}
+        onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         arenaSync={ladderSync}
       />
       <div className="ui-shell relative max-w-3xl space-y-8">
@@ -214,7 +209,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
               type="button"
               className="ui-btn"
               disabled={revealBlocking}
-              onClick={saveForLeaderboard}
+              onClick={persistToDashboard}
             >
               {t('armSize.saveLeaderboard')}
             </button>

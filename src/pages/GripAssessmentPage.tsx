@@ -33,6 +33,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
     submitDone,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   } = useGripAssessmentPage();
   const reveal = useAssessmentRevealFlow({
@@ -80,6 +81,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
       />

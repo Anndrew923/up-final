@@ -14,14 +14,25 @@ import { AURA_THEME } from './auraThemeTokens';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 
+function waitForReactSettlement(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
 export interface PerformanceBreakthroughModalProps {
   open: boolean;
   payload: PerformanceBreakthroughPayload | null;
   onClose: () => void;
+  /** Button 1: persist + navigate home. */
   onSyncToDashboard?: () => void | Promise<void>;
+  /** Button 2 step 1: persist only — no navigation. */
+  onPersistToDashboard?: () => boolean | Promise<boolean>;
   syncDisabled?: boolean;
   syncing?: boolean;
-  /** Route A coupled assessment ladder sync — shares one controller with page sync bar. */
+  /** Button 2 step 2: Route A coupled ladder sync (shares controller with page sync bar). */
   arenaSync?: AssessmentLadderSyncController;
 }
 
@@ -30,6 +41,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   payload,
   onClose,
   onSyncToDashboard,
+  onPersistToDashboard,
   syncDisabled = false,
   syncing = false,
   arenaSync,
@@ -37,7 +49,11 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const { t } = useTranslation('common');
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const arenaSyncRef = useRef(arenaSync);
+  arenaSyncRef.current = arenaSync;
   const [syncPending, setSyncPending] = useState(false);
+  const [pipelineBusy, setPipelineBusy] = useState(false);
+  const [dashboardPersistedInSession, setDashboardPersistedInSession] = useState(false);
   const {
     gateSheetOpen,
     gateSheetKind,
@@ -50,35 +66,66 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
   const isDashboardSyncing = syncing || syncPending;
   const isArenaSyncing = arenaSync?.busy ?? false;
-  const showArenaSync = arenaSync != null;
+  const isPipelineRunning = pipelineBusy || isArenaSyncing;
+  const showDashboardThenArena =
+    onPersistToDashboard != null && arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
   );
+  const arenaPipelineSucceeded =
+    dashboardPersistedInSession &&
+    arenaSync?.summary != null &&
+    arenaSync.summary.updated > 0;
 
   const handleDashboardSync = useCallback(async () => {
-    if (!onSyncToDashboard || isDashboardSyncing || syncDisabled) return;
+    if (!onSyncToDashboard || isDashboardSyncing || isPipelineRunning) return;
     setSyncPending(true);
     try {
       await onSyncToDashboard();
     } finally {
       setSyncPending(false);
     }
-  }, [isDashboardSyncing, onSyncToDashboard, syncDisabled]);
+  }, [isDashboardSyncing, isPipelineRunning, onSyncToDashboard]);
 
-  const handleArenaSync = useCallback(() => {
-    if (!arenaSync || isArenaSyncing || isDashboardSyncing) return;
+  const handleDashboardThenArena = useCallback(async () => {
+    if (!onPersistToDashboard || !arenaSync || isDashboardSyncing || isPipelineRunning) return;
     if (arenaSync.targetCount === 0) return;
     if (tryOpenGateSheet(arenaSync.gate)) return;
+
+    setPipelineBusy(true);
+    setDashboardPersistedInSession(false);
     arenaSync.clearFeedback();
-    void arenaSync.syncPage();
-  }, [arenaSync, tryOpenGateSheet, isArenaSyncing, isDashboardSyncing]);
+
+    try {
+      const persisted = await Promise.resolve(onPersistToDashboard());
+      if (!persisted) return;
+
+      setDashboardPersistedInSession(true);
+      await waitForReactSettlement();
+
+      const sync = arenaSyncRef.current;
+      if (!sync) return;
+      sync.clearFeedback();
+      await sync.syncPage();
+    } finally {
+      setPipelineBusy(false);
+    }
+  }, [
+    arenaSync,
+    isDashboardSyncing,
+    isPipelineRunning,
+    onPersistToDashboard,
+    tryOpenGateSheet,
+  ]);
 
   useEffect(() => {
     if (!open) {
       const id = window.setTimeout(() => {
         setSyncPending(false);
+        setPipelineBusy(false);
+        setDashboardPersistedInSession(false);
         resetGateSheet();
       }, 0);
       return () => window.clearTimeout(id);
@@ -106,7 +153,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   if (!open || !payload || typeof document === 'undefined') return null;
 
   const theme = AURA_THEME[payload.auraKey];
-  const hasActions = showDashboardSync || showArenaSync;
+  const hasActions = showDashboardSync || showDashboardThenArena;
+  const actionsBusy = isDashboardSyncing || isPipelineRunning;
 
   return createPortal(
     <div
@@ -163,7 +211,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 <button
                   type="button"
                   className="w-full rounded-xl bg-amber-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-amber-400 disabled:pointer-events-none disabled:opacity-40"
-                  disabled={syncDisabled || isDashboardSyncing || isArenaSyncing}
+                  disabled={syncDisabled || actionsBusy}
                   onClick={() => void handleDashboardSync()}
                 >
                   {isDashboardSyncing
@@ -172,23 +220,34 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 </button>
               ) : null}
 
-              {showArenaSync ? (
+              {showDashboardThenArena ? (
                 <button
                   type="button"
-                  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
+                  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
                   disabled={
-                    isArenaSyncing ||
-                    isDashboardSyncing ||
+                    syncDisabled ||
+                    actionsBusy ||
                     arenaSync.targetCount === 0 ||
                     arenaSync.gate === 'no-score' ||
                     arenaSync.gate === 'invalid-score'
                   }
-                  onClick={handleArenaSync}
+                  onClick={() => void handleDashboardThenArena()}
                 >
-                  {isArenaSyncing
-                    ? t('assessment.breakthrough.syncToArenaBusy')
-                    : t('assessment.breakthrough.syncToArena')}
+                  {isPipelineRunning
+                    ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
+                    : t('assessment.breakthrough.syncDashboardThenArena')}
                 </button>
+              ) : null}
+
+              {dashboardPersistedInSession ? (
+                <p
+                  className={`mt-3 text-sm ${arenaPipelineSucceeded ? 'text-emerald-400/90' : 'text-emerald-400/90'}`}
+                  role="status"
+                >
+                  {arenaPipelineSucceeded
+                    ? t('assessment.breakthrough.dashboardAndArenaSuccess')
+                    : t('assessment.breakthrough.dashboardPersistedOnly')}
+                </p>
               ) : null}
 
               {showArenaFeedback && arenaSync?.summary ? (
@@ -203,10 +262,10 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
               <button
                 type="button"
                 className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
-                disabled={isDashboardSyncing || isArenaSyncing}
+                disabled={actionsBusy}
                 onClick={onClose}
               >
-                {t('assessment.breakthrough.dismiss')}
+                {t('assessment.breakthrough.confirmDismiss')}
               </button>
             </div>
           ) : (
@@ -216,7 +275,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
                 onClick={onClose}
               >
-                {t('assessment.breakthrough.dismiss')}
+                {t('assessment.breakthrough.confirmDismiss')}
               </button>
             </div>
           )}

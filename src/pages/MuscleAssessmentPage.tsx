@@ -33,6 +33,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
     smmCeilingKg,
     scoreLocked,
@@ -89,6 +90,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady || scoreLocked}
         arenaSync={ladderSync}
       />

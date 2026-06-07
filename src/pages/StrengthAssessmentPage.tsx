@@ -58,6 +58,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
     submitBusy,
     submitNotice,
     submitDone,
+    persistToDashboard,
     submitToRadar,
   } = useStrengthAssessmentPage();
   const reveal = useAssessmentRevealFlow({
@@ -117,6 +118,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         syncing={submitBusy}
         arenaSync={ladderSync}

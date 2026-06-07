@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import {
   ARM_SIZE_BODY_FAT_MAX_PCT,
   ARM_SIZE_BODY_FAT_MIN_PCT,
@@ -27,7 +29,8 @@ export interface UseArmSizeAssessmentPageResult {
   submitDone: boolean;
   clearError: () => void;
   calculate: () => void;
-  saveForLeaderboard: () => boolean;
+  persistToDashboard: () => boolean;
+  submitToRadar: () => void;
 }
 
 function parsePositiveNumber(raw: string): number | null {
@@ -37,6 +40,7 @@ function parsePositiveNumber(raw: string): number | null {
 }
 
 export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
+  const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
   const [armCircumferenceInput, setArmCircumferenceInput] = useState(() => {
     const saved = loadArmSizeInputs()?.armCircumferenceCm;
@@ -109,7 +113,7 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
     setLimitedByAxisCap(result.limitedByAxisCap);
   }, [armCircumferenceInput, bodyFatInput]);
 
-  const saveForLeaderboard = useCallback((): boolean => {
+  const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
     const armCm = parsePositiveNumber(armCircumferenceInput);
@@ -145,6 +149,11 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
     return true;
   }, [armCircumferenceInput, bodyFatInput, setStoreScore]);
 
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
+    navigateHomeWithResonance(navigate);
+  }, [navigate, persistToDashboard]);
+
   return {
     armCircumferenceInput,
     setArmCircumferenceInput,
@@ -157,6 +166,7 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
     submitDone,
     clearError,
     calculate,
-    saveForLeaderboard,
+    persistToDashboard,
+    submitToRadar,
   };
 }

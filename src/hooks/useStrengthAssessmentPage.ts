@@ -62,6 +62,7 @@ export interface UseStrengthAssessmentPageResult {
   submitBusy: boolean;
   submitNotice: StrengthSubmitNotice | null;
   submitDone: boolean;
+  persistToDashboard: () => Promise<boolean>;
   submitToRadar: () => Promise<void>;
 }
 
@@ -264,29 +265,41 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     applyCombinedComputeResult(tryComputeStrengthAssessmentScore(computeArgs), { persist: false });
   }, [computeArgs, applyCombinedComputeResult]);
 
+  const persistToDashboard = useCallback(async (): Promise<boolean> => {
+    setSubmitNotice(null);
+    setSubmitDone(false);
+    const result = tryComputeStrengthAssessmentScore(computeArgs);
+    const ok = applyCombinedComputeResult(result, { persist: true });
+    if (ok && result.ok) {
+      setSubmitDone(true);
+      queueStructuredProfileAfterRadarSubmit();
+      return true;
+    }
+    if (!ok && !result.ok) {
+      setSubmitNotice({ kind: 'error', error: result.error });
+    }
+    return false;
+  }, [applyCombinedComputeResult, computeArgs]);
+
   const submitToRadar = useCallback(async () => {
     if (submitBusy) return;
     setSubmitBusy(true);
     setSubmitNotice(null);
-    setSubmitDone(false);
 
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, 420);
     });
 
-    const result = tryComputeStrengthAssessmentScore(computeArgs);
-    const ok = applyCombinedComputeResult(result, { persist: true });
-    if (ok && result.ok) {
-      setSubmitDone(true);
-      setSubmitNotice({ kind: 'success', savedScore: result.score });
-      queueStructuredProfileAfterRadarSubmit();
+    const ok = await persistToDashboard();
+    if (ok) {
+      const result = tryComputeStrengthAssessmentScore(computeArgs);
+      if (result.ok) {
+        setSubmitNotice({ kind: 'success', savedScore: result.score });
+      }
       navigateHomeWithResonance(navigate);
     }
-    if (!ok && !result.ok) {
-      setSubmitNotice({ kind: 'error', error: result.error });
-    }
     setSubmitBusy(false);
-  }, [applyCombinedComputeResult, computeArgs, navigate, submitBusy]);
+  }, [computeArgs, navigate, persistToDashboard, submitBusy]);
 
   return {
     profile,
@@ -305,6 +318,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     submitBusy,
     submitNotice,
     submitDone,
+    persistToDashboard,
     submitToRadar,
   };
 }

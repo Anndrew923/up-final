@@ -45,6 +45,7 @@ export interface UseCardioAssessmentPageResult {
   errorKey: CardioPageErrorKey;
   clearError: () => void;
   calculate: () => void;
+  persistToDashboard: () => boolean;
   submitToRadar: () => void;
 }
 
@@ -134,7 +135,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     setPreviewScore(result.score);
   }, [activeTab, distanceInput, profile, profileReady, runMinutesInput, runSecondsInput]);
 
-  const submitToRadar = useCallback(() => {
+  const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
 
@@ -149,7 +150,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
 
     if (!result.ok) {
       setErrorKey(result.error);
-      return;
+      return false;
     }
 
     const scoreToSave = clampScoreMapValue(result.score);
@@ -159,7 +160,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       const d = parseCooperDistanceMeters(distanceInput);
       if (d === null) {
         setErrorKey('invalid-cooper-distance');
-        return;
+        return false;
       }
       const maxM = getCooperMaxDistanceMetersForGender(profile!.gender);
       const savedDistance = Math.min(d, maxM);
@@ -170,14 +171,13 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       setStoreScore('cardio', scoreToSave);
       setSubmitDone(true);
       queueStructuredProfileAfterRadarSubmit();
-      navigateHomeWithResonance(navigate);
-      return;
+      return true;
     }
 
     const split = parse5KmFieldSplit(runMinutesInput, runSecondsInput);
     if (!split) {
       setErrorKey('invalid-5km-time');
-      return;
+      return false;
     }
     const paceInSeconds = Math.round(split.totalSeconds / 5);
     saveCardioInputs({
@@ -192,17 +192,13 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     setStoreScore('cardio', scoreToSave);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    return true;
+  }, [activeTab, distanceInput, profile, profileReady, runMinutesInput, runSecondsInput, setStoreScore]);
+
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
     navigateHomeWithResonance(navigate);
-  }, [
-    activeTab,
-    distanceInput,
-    navigate,
-    profile,
-    profileReady,
-    runMinutesInput,
-    runSecondsInput,
-    setStoreScore,
-  ]);
+  }, [navigate, persistToDashboard]);
 
   return {
     profileReady,
@@ -225,6 +221,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   };
 }

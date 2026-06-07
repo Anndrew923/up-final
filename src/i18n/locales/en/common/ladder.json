@@ -140,10 +140,10 @@
       "avatarPortraitUpdated": "Score unchanged — portrait synced to ladder (including overall board)."
     },
     "assessmentSync": {
-      "hint": "After you calculate, sync this page's shards, overall score, and public six-axis profile—no need to write to the dashboard first.",
+      "hint": "After you calculate, sync this page's shards, overall score, and public six-axis profile. Write to the dashboard first via the breakthrough modal for a full local + Arena loop.",
       "infoButtonAria": "View page sync limits",
       "advancedTitle": "Page Sync Limits",
-      "advancedTip": "Uploads this page's shards plus overall score and public six-axis preview in one run (does not count toward full-sync cooldown; no dashboard radar write required). Skipped when scores missing, ineligible, or rate-limited.",
+      "advancedTip": "Uploads this page's shards plus overall score and public six-axis preview in one run (does not count toward full-sync cooldown). Prefer the breakthrough modal's dashboard-then-Arena action if the dashboard is not updated yet. Skipped when scores missing, ineligible, or rate-limited.",
       "noTargets": "No scores on this page ready to upload.",
       "noTargetsTap": "Calculate a valid score on this page first, then sync to ladder.",
       "button": "Sync to Ladder",

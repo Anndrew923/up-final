@@ -50,6 +50,7 @@ export interface UseExplosiveAssessmentPageResult {
   errorKey: ExplosivePageErrorKey;
   clearError: () => void;
   calculate: () => void;
+  persistToDashboard: () => boolean;
   submitToRadar: () => void;
 }
 
@@ -177,7 +178,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     applySuccessfulExplosivePreview,
   ]);
 
-  const submitToRadar = useCallback(() => {
+  const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
     const result = tryComputeExplosiveAssessmentScore({
@@ -192,7 +193,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       setPreviewScore(null);
       setPreviewBreakdown(null);
       setCapNoticeInterpolation(null);
-      return;
+      return false;
     }
 
     const prev = mergePersisted();
@@ -204,10 +205,9 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     applySuccessfulExplosivePreview(result);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
-    navigateHomeWithResonance(navigate);
+    return true;
   }, [
     applySuccessfulExplosivePreview,
-    navigate,
     profile,
     profileReady,
     setStoreScore,
@@ -215,6 +215,11 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     standingLongJumpInput,
     verticalJumpInput,
   ]);
+
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
+    navigateHomeWithResonance(navigate);
+  }, [navigate, persistToDashboard]);
 
   return {
     profile,
@@ -233,6 +238,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   };
 }

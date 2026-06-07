@@ -48,6 +48,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     errorKey,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   } = useExplosiveAssessmentPage();
 
@@ -110,6 +111,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
         payload={modalPayload}
         onClose={closeModal}
         onSyncToDashboard={submitToRadar}
+        onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
       />

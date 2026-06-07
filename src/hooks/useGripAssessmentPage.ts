@@ -31,6 +31,7 @@ export interface UseGripAssessmentPageResult {
   submitDone: boolean;
   clearError: () => void;
   calculate: () => void;
+  persistToDashboard: () => boolean;
   submitToRadar: () => void;
 }
 
@@ -91,17 +92,17 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
   }, [peakKgInput, profile, profileReady]);
 
-  const submitToRadar = useCallback(() => {
+  const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
     if (!profileReady || !profile) {
       setErrorKey('missing-profile');
-      return;
+      return false;
     }
     const peakKg = parsePeakKg(peakKgInput);
     if (peakKg === null) {
       setErrorKey('invalid-peak');
-      return;
+      return false;
     }
     const capped = applyGripPeakCap(peakKg);
     const score = calculateGripStrengthScore(peakKg, profile.gender);
@@ -111,8 +112,13 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
+    return true;
+  }, [peakKgInput, profile, profileReady, setStoreScore]);
+
+  const submitToRadar = useCallback(() => {
+    if (!persistToDashboard()) return;
     navigateHomeWithResonance(navigate);
-  }, [navigate, peakKgInput, profile, profileReady, setStoreScore]);
+  }, [navigate, persistToDashboard]);
 
   return {
     profile,
@@ -125,6 +131,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     submitDone,
     clearError,
     calculate,
+    persistToDashboard,
     submitToRadar,
   };
 }
