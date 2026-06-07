@@ -17,6 +17,7 @@ import {
 } from '../../logic/core/scoring';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 
 export interface LadderUserPreviewModalProps {
@@ -292,12 +293,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                                 : 'border-zinc-800/70'
                             }`}
                           >
-                            <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-zinc-500">
-                              {t(`home.radar.axisCard.${key}`, {
-                                ns: 'common',
-                                defaultValue: t(`home.radar.axis.${key}`, { ns: 'common' }),
-                              })}
-                            </span>
+                            <SixAxisDataGridLabel metric={key} />
                             <span
                               className={`mt-0.5 block font-mono tabular-nums ${
                                 show && v > 100 ? 'text-accent-info' : 'text-zinc-200'

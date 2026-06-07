@@ -1,16 +1,6 @@
 import type { FC } from 'react';
 import type { SixAxisMetric } from '../../types/scoring';
-
-/** OBD-style axis tokens for the identity live-spec readout (presentation-only). */
-/** Telemetry tokens — must match `home.radar.axisCard` i18n keys. */
-const AXIS_SHORT_CODES: Record<SixAxisMetric, string> = {
-  strength: 'HP',
-  explosivePower: 'TRQ',
-  cardio: 'STINT',
-  muscleMass: 'CHSS',
-  bodyFat: 'P2W',
-  gripStrength: 'GRIP',
-};
+import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 
 export interface IdentityLiveSpecRow {
   metric: SixAxisMetric;
@@ -75,13 +65,11 @@ const IdentityLiveSpecList: FC<IdentityLiveSpecListProps> = ({
       <ul aria-labelledby={kickerId} className={styles.list}>
         {rows.map((row) => (
           <li key={row.metric} className="flex items-start justify-between gap-3 text-xs">
-            <span className="flex shrink-0 items-center gap-1.5 text-zinc-400">
-              <span className={`inline-block h-1 w-1 rounded-full ${styles.rowDot}`} />
-              <span>
-                {row.label} ({AXIS_SHORT_CODES[row.metric]})
-              </span>
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-zinc-400">
+              <span className={`inline-block h-1 w-1 shrink-0 rounded-full ${styles.rowDot}`} />
+              <SixAxisDataGridLabel metric={row.metric} className="text-left" />
             </span>
-            <span className="text-right font-medium text-zinc-200">{row.bandTitle}</span>
+            <span className="shrink-0 text-right font-medium text-zinc-200">{row.bandTitle}</span>
           </li>
         ))}
       </ul>

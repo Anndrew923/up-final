@@ -8,6 +8,7 @@ import {
   SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS,
 } from '../sixAxisLexiconRules';
 import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
+import { resolveSixAxisDataGridLabelParts } from '../resolveSixAxisDataGridLabel';
 import type { SixAxisMetric } from '../../types/scoring';
 
 type LocaleBundle = typeof zhHantCommon;
@@ -192,4 +193,23 @@ describe('six-axis lexicon dual-track mapping', () => {
       }
     }
   });
+
+  it.each(SIX_AXIS_METRICS)(
+    'home data grid label parts mirror axisLexicon chart, input.short, and code for %s',
+    (metric) => {
+      const tZh = i18n.getFixedT('zh-Hant', 'common');
+      const tEn = i18n.getFixedT('en', 'common');
+
+      for (const [bundle, t] of [
+        [zhHantCommon, tZh],
+        [enCommon, tEn],
+      ] as const) {
+        const parts = resolveSixAxisDataGridLabelParts(t, metric);
+        expect(parts.chart).toBe(readNestedString(bundle, 'home.radar.axisChart', metric));
+        expect(parts.chart).toBe(readLexicon(bundle, 'output', 'chart', metric));
+        expect(parts.inputShort).toBe(readLexicon(bundle, 'input', 'short', metric));
+        expect(parts.code).toBe(readOutputCode(bundle, metric));
+      }
+    }
+  );
 });

@@ -15,6 +15,7 @@ import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/lo
 import type { PhysicalProfile } from '../../types/userProfile';
 import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 
 /**
@@ -161,12 +162,7 @@ export const HomeRadarBoard: FC = () => {
                         : 'border-zinc-800/70'
                     }`}
                   >
-                    <span className="block truncate text-[10px] uppercase tracking-[0.14em] text-zinc-500">
-                      {t(`home.radar.axisCard.${key}`, {
-                        ns: 'common',
-                        defaultValue: t(`home.radar.axis.${key}`, { ns: 'common' }),
-                      })}
-                    </span>
+                    <SixAxisDataGridLabel metric={key} />
                     <span
                       title={t(`${getAxisMeaningI18nPrefix(key)}.desc`, { ns: 'common' })}
                       className={`mt-0.5 block font-mono tabular-nums ${
