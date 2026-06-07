@@ -28,10 +28,10 @@ describe('sharedAxisAccentTokens', () => {
     expect(new Set(bgClasses).size).toBe(SIX_AXIS_METRICS.length);
   });
 
-  it('armSize lobby uses tactical slate, not muscleMass purple', () => {
+  it('armSize lobby uses tactical slate, not muscleMass fuchsia', () => {
     expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS.armSize).toContain('bg-slate-400');
-    expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS.armSize).not.toContain('purple');
-    expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS.muscle).toContain('bg-purple-500');
+    expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS.armSize).not.toContain('fuchsia');
+    expect(ASSESSMENT_LOBBY_STATUS_BAR_CLASS.muscle).toContain('bg-fuchsia-500');
   });
 
   it.each(Object.entries(ASSESSMENT_LOBBY_SIX_AXIS_MAP))(

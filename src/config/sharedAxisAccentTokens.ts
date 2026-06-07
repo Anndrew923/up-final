@@ -3,7 +3,7 @@ import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 /**
  * Single source of truth for Core Six axis accent colors (WHY): Lobby status bars and radar
  * dominant palettes must share identical hue identity so dyno cards and Home radar read as one
- * instrument cluster — prevents purple/blue collisions and legacy drift between surfaces.
+ * instrument cluster — seven rigid hue slots, max perceptual separation on dark UI.
  */
 export interface AxisAccentRgb {
   r: number;
@@ -44,7 +44,10 @@ function buildRadarPalette(token: AxisAccentToken, rgb: AxisAccentRgb): AxisRada
   };
 }
 
-/** Warm–cool crossflow grid: amber → indigo → teal (left), emerald → rose → purple (right). */
+/**
+ * Rigid seven-hue grid (2×3 + slate footer):
+ * L: amber → sky → teal | R: lime → red → fuchsia | base: slate (armSize).
+ */
 export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
   strength: {
     lobbyBgClass: 'bg-amber-500',
@@ -53,22 +56,22 @@ export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
     reactorCore: '#fbbf24',
   },
   gripStrength: {
-    lobbyBgClass: 'bg-emerald-400',
-    lobbyGlowRgba: 'rgba(52,211,153,0.6)',
-    stroke: '#34d399',
-    reactorCore: '#6ee7b7',
+    lobbyBgClass: 'bg-lime-400',
+    lobbyGlowRgba: 'rgba(163,230,53,0.6)',
+    stroke: '#a3e635',
+    reactorCore: '#bef264',
   },
   bodyFat: {
-    lobbyBgClass: 'bg-indigo-500',
-    lobbyGlowRgba: 'rgba(99,102,241,0.6)',
-    stroke: '#6366f1',
-    reactorCore: '#818cf8',
+    lobbyBgClass: 'bg-sky-400',
+    lobbyGlowRgba: 'rgba(56,189,248,0.6)',
+    stroke: '#38bdf8',
+    reactorCore: '#7dd3fc',
   },
   explosivePower: {
-    lobbyBgClass: 'bg-rose-500',
-    lobbyGlowRgba: 'rgba(244,63,94,0.6)',
-    stroke: '#f43f5e',
-    reactorCore: '#fb7185',
+    lobbyBgClass: 'bg-red-500',
+    lobbyGlowRgba: 'rgba(239,68,68,0.6)',
+    stroke: '#ef4444',
+    reactorCore: '#f87171',
   },
   cardio: {
     lobbyBgClass: 'bg-teal-400',
@@ -77,23 +80,23 @@ export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
     reactorCore: '#5eead4',
   },
   muscleMass: {
-    lobbyBgClass: 'bg-purple-500',
-    lobbyGlowRgba: 'rgba(168,85,247,0.6)',
-    stroke: '#a855f7',
-    reactorCore: '#c084fc',
+    lobbyBgClass: 'bg-fuchsia-500',
+    lobbyGlowRgba: 'rgba(217,70,239,0.6)',
+    stroke: '#d946ef',
+    reactorCore: '#e879f9',
   },
 };
 
 const SIX_AXIS_ACCENT_RGB: Record<SixAxisMetric, AxisAccentRgb> = {
   strength: { r: 245, g: 158, b: 11 },
-  gripStrength: { r: 52, g: 211, b: 153 },
-  bodyFat: { r: 99, g: 102, b: 241 },
-  explosivePower: { r: 244, g: 63, b: 94 },
+  gripStrength: { r: 163, g: 230, b: 53 },
+  bodyFat: { r: 56, g: 189, b: 248 },
+  explosivePower: { r: 239, g: 68, b: 68 },
   cardio: { r: 45, g: 212, b: 191 },
-  muscleMass: { r: 168, g: 85, b: 247 },
+  muscleMass: { r: 217, g: 70, b: 239 },
 };
 
-/** Non–six-axis lobby footer — tactical slate so armSize never collides with muscleMass purple. */
+/** Non–six-axis lobby footer — tactical slate so armSize never collides with Core Six hues. */
 export const ARM_SIZE_LOBBY_STATUS_BAR_CLASS =
   'bg-slate-400 shadow-[0_0_14px_rgba(148,163,184,0.6)]';
 
