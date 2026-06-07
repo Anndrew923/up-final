@@ -44,7 +44,7 @@ function buildRadarPalette(token: AxisAccentToken, rgb: AxisAccentRgb): AxisRada
   };
 }
 
-/** Warm–cool crossflow grid: amber → fuchsia → teal (left), emerald → yellow → purple (right). */
+/** Warm–cool crossflow grid: amber → indigo → teal (left), emerald → rose → purple (right). */
 export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
   strength: {
     lobbyBgClass: 'bg-amber-500',
@@ -59,16 +59,16 @@ export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
     reactorCore: '#6ee7b7',
   },
   bodyFat: {
-    lobbyBgClass: 'bg-fuchsia-500',
-    lobbyGlowRgba: 'rgba(217,70,239,0.6)',
-    stroke: '#d946ef',
-    reactorCore: '#e879f9',
+    lobbyBgClass: 'bg-indigo-500',
+    lobbyGlowRgba: 'rgba(99,102,241,0.6)',
+    stroke: '#6366f1',
+    reactorCore: '#818cf8',
   },
   explosivePower: {
-    lobbyBgClass: 'bg-yellow-400',
-    lobbyGlowRgba: 'rgba(250,204,21,0.6)',
-    stroke: '#facc15',
-    reactorCore: '#fde047',
+    lobbyBgClass: 'bg-rose-500',
+    lobbyGlowRgba: 'rgba(244,63,94,0.6)',
+    stroke: '#f43f5e',
+    reactorCore: '#fb7185',
   },
   cardio: {
     lobbyBgClass: 'bg-teal-400',
@@ -87,8 +87,8 @@ export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
 const SIX_AXIS_ACCENT_RGB: Record<SixAxisMetric, AxisAccentRgb> = {
   strength: { r: 245, g: 158, b: 11 },
   gripStrength: { r: 52, g: 211, b: 153 },
-  bodyFat: { r: 217, g: 70, b: 239 },
-  explosivePower: { r: 250, g: 204, b: 21 },
+  bodyFat: { r: 99, g: 102, b: 241 },
+  explosivePower: { r: 244, g: 63, b: 94 },
   cardio: { r: 45, g: 212, b: 191 },
   muscleMass: { r: 168, g: 85, b: 247 },
 };
