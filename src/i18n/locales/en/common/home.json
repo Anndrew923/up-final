@@ -226,8 +226,6 @@
       }
     },
     "overallFormula": "Sum of six core scores ÷ 6 (arm circumference excluded).",
-    "radarWeakestHint": "Current bottleneck: {{axis}} ({{score}}). Prioritize this axis next.",
-    "radarOverclockHint": "Overclock axis: {{axis}} +{{score}}",
     "radar": {
       "axis": {
         "strength": "Horsepower",

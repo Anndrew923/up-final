@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { enCommon, zhHantCommon } from './locales/common';
 
 /** Keeps `common` in zh-Hant aligned with `en` — avoids silent English fallback for new keys. */
-const ALLOWED_EMPTY_ZH_PATHS = new Set<string>([
-  'common.home.overallFormula',
-  'common.home.radarWeakestHint',
-  'common.home.radarOverclockHint',
-]);
+const ALLOWED_EMPTY_ZH_PATHS = new Set<string>(['common.home.overallFormula']);
 
 function assertZhMirrorsEnShape(enVal: unknown, zhVal: unknown, path: string): void {
   if (typeof enVal === 'string') {

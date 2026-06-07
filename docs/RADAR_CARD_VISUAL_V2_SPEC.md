@@ -6,7 +6,7 @@ Upgrade Home radar card polish for screenshot sharing while preserving readabili
 
 - fixed 0-100 base radar scale
 - overclock burst for values > 100
-- clear weakest-axis cue
+- symmetric dual-track data grid labels (no weakest-axis chrome)
 - low-risk, low-noise dark sci-fi finish
 
 ## Visual Tokens
@@ -31,15 +31,11 @@ Upgrade Home radar card polish for screenshot sharing while preserving readabili
 - Overall block shadow:
   - `inset 0 0 0 1px rgba(56,189,248,0.08)`
   - `inset 0 0 20px rgba(59,130,246,0.08)`
-- Weakest card marker:
-  - `inset 2px 0 0 rgba(252,211,77,0.8)`
 
 ### Typography
 
 - Kicker: `10px`
 - Axis label: `7px`
-- Weakest hint: `11px`
-- Overclock hint: `10px`
 
 ### Motion
 
@@ -77,5 +73,5 @@ Applied as token-only tweaks (no logic changes):
 
 - Do not reduce axis label legibility under small viewport
 - Do not let visual effects distort score interpretation
-- Keep overclock and weakest cues independent and visible
+- Keep overclock burst cues on polygon/overflow only (no weakest-axis styling)
 - Keep all user-facing copy under i18n keys

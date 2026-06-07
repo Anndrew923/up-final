@@ -415,19 +415,6 @@ export function radarOverflowExtraRadius(
   return round2(maxExtraRadius * Math.sqrt(ratio));
 }
 
-export function getWeakestRadarAxis<T extends { key: string; value: number }>(
-  points: ReadonlyArray<T>
-): T | null {
-  if (points.length === 0) return null;
-  let weakest = points[0];
-  for (const point of points.slice(1)) {
-    if ((Number(point.value) || 0) < (Number(weakest.value) || 0)) {
-      weakest = point;
-    }
-  }
-  return weakest;
-}
-
 export function calculateOverallScore(scores: ScoreMap): number {
   return calculateSixAxisOverall(scores);
 }

@@ -9,7 +9,6 @@ import {
   radarDisplayScaleMax,
   radarOverflowExtraRadius,
   countCoreSixFilled,
-  getWeakestRadarAxis,
 } from '../scoring';
 
 describe('core six dimensions (linear)', () => {
@@ -79,16 +78,6 @@ describe('core six dimensions (linear)', () => {
     expect(radarOverflowExtraRadius(100)).toBe(0);
     expect(radarOverflowExtraRadius(101)).toBeCloseTo(2.4, 1);
     expect(radarOverflowExtraRadius(200)).toBe(24);
-  });
-
-  it('getWeakestRadarAxis returns the minimum value point', () => {
-    const weakest = getWeakestRadarAxis([
-      { key: 'strength', value: 80 },
-      { key: 'cardio', value: 65 },
-      { key: 'gripStrength', value: 91 },
-    ]);
-    expect(weakest?.key).toBe('cardio');
-    expect(getWeakestRadarAxis([])).toBeNull();
   });
 
   it('countCoreSixFilled', () => {
