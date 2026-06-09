@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
 import { useAssessmentLobbyCards } from '../hooks/useAssessmentLobbyCards';
@@ -16,6 +16,9 @@ import {
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
+import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
+
+const PDK_AXIS_DEBOUNCE_MS = 120;
 
 function parseInput(raw: string): number {
   const n = Number(raw);
@@ -34,11 +37,32 @@ export default function AssessmentPage() {
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
 
   const lobbyCards = useAssessmentLobbyCards();
+  const { triggerPdkShift } = useDopamineFeedback();
+  const pdkDebounceRef = useRef<number | null>(null);
 
-  const onAxisChange = (metric: SixAxisMetric, value: string) => {
-    setJustSaved(false);
-    setScore(metric, parseInput(value));
-  };
+  const onAxisChange = useCallback(
+    (metric: SixAxisMetric, value: string) => {
+      setJustSaved(false);
+      setScore(metric, parseInput(value));
+      if (pdkDebounceRef.current !== null) {
+        window.clearTimeout(pdkDebounceRef.current);
+      }
+      pdkDebounceRef.current = window.setTimeout(() => {
+        pdkDebounceRef.current = null;
+        triggerPdkShift();
+      }, PDK_AXIS_DEBOUNCE_MS);
+    },
+    [setScore, triggerPdkShift]
+  );
+
+  useEffect(
+    () => () => {
+      if (pdkDebounceRef.current !== null) {
+        window.clearTimeout(pdkDebounceRef.current);
+      }
+    },
+    []
+  );
 
   const saveSnapshotToHistory = () => {
     addHistoryRecord({

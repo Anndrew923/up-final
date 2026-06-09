@@ -6,6 +6,7 @@ import ScrollToTop from './components/navigation/ScrollToTop';
 import { applyProductionViewport } from './lib/applyProductionViewport';
 import { logLadderEnvCheckInDev } from './lib/logLadderEnvCheck';
 import { tryInitFirebaseFromEnv } from './services/firebaseClient';
+import { soundService } from './services/soundService';
 import { bootstrapDocumentLocaleFromStorage } from './i18n/bootstrapDocumentLocale';
 import './i18n';
 import './styles.css';
@@ -19,6 +20,8 @@ tryInitFirebaseFromEnv();
 
 // WHY: Vite reads `.env` only at dev-server boot — log resolved ladder write path before any sync UI.
 logLadderEnvCheckInDev();
+
+void soundService.bootstrap();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

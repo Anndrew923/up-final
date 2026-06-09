@@ -4,6 +4,7 @@ import BootSequenceOverlay from '../onboarding/BootSequenceOverlay';
 import BottomNav from '../navigation/BottomNav';
 import { ROUTES, isCompactShellRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
+import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import HudProfileControls from './HudProfileControls';
 
@@ -21,6 +22,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const location = useLocation();
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();
+  useNavSensoryFeedback();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
 

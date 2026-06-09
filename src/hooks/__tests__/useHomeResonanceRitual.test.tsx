@@ -53,6 +53,9 @@ vi.mock('../useDopamineFeedback', () => ({
   useDopamineFeedback: () => ({
     triggerImpact: vi.fn(),
     triggerRankUpCombo: vi.fn(),
+    triggerBootHum: vi.fn(),
+    triggerChargeRitual: vi.fn(),
+    stopChargeRitual: vi.fn(),
   }),
 }));
 

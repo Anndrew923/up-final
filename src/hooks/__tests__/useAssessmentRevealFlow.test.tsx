@@ -8,11 +8,16 @@ import {
 } from '../useAssessmentRevealFlow';
 
 const triggerImpact = vi.fn();
+const triggerBreakthroughCelebration = vi.fn();
 const animateTo = vi.fn().mockResolvedValue(undefined);
 const cancelAnimation = vi.fn();
 
 vi.mock('../useDopamineFeedback', () => ({
-  useDopamineFeedback: () => ({ triggerImpact, triggerRankUpCombo: vi.fn() }),
+  useDopamineFeedback: () => ({
+    triggerImpact,
+    triggerBreakthroughCelebration,
+    triggerRankUpCombo: vi.fn(),
+  }),
 }));
 
 vi.mock('../useAnimatedScore', () => ({
@@ -104,6 +109,7 @@ function mountRevealHarness(options: { hasError?: () => boolean; compute?: () =>
 describe('useAssessmentRevealFlow', () => {
   beforeEach(() => {
     triggerImpact.mockReset();
+    triggerBreakthroughCelebration.mockReset();
     animateTo.mockClear();
     cancelAnimation.mockClear();
     vi.stubGlobal(
@@ -131,7 +137,7 @@ describe('useAssessmentRevealFlow', () => {
     expect(api.modalOpen).toBe(true);
     expect(api.modalPayload?.score).toBe(92);
     expect(triggerImpact).toHaveBeenCalledWith('medium');
-    expect(triggerImpact).toHaveBeenCalledWith('heavy');
+    expect(triggerBreakthroughCelebration).toHaveBeenCalledTimes(1);
     unmount();
   });
 

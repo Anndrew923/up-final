@@ -115,7 +115,8 @@ export function useHomeResonanceRitual({
 }: UseHomeResonanceRitualInput): UseHomeResonanceRitualResult {
   const { t } = useTranslation('common');
   const location = useLocation();
-  const { triggerImpact } = useDopamineFeedback();
+  const { triggerImpact, triggerBootHum, triggerChargeRitual, stopChargeRitual } =
+    useDopamineFeedback();
   const {
     displayValue,
     animateTo,
@@ -173,6 +174,7 @@ export function useHomeResonanceRitual({
   }, [genderGroup, overallScore, radarPoints, t, vehicleClassId]);
 
   const closeRitual = useCallback(() => {
+    stopChargeRitual();
     invalidateRun();
     cancelScoreAnim();
     cancelTypewriter();
@@ -185,7 +187,15 @@ export function useHomeResonanceRitual({
     setInstant(null);
     setBlocking(false);
     pendingAckRef.current = false;
-  }, [cancelScoreAnim, cancelTypewriter, invalidateRun, resetTypewriter, setBlocking, setInstant]);
+  }, [
+    cancelScoreAnim,
+    cancelTypewriter,
+    invalidateRun,
+    resetTypewriter,
+    setBlocking,
+    setInstant,
+    stopChargeRitual,
+  ]);
 
   const closeRitualRef = useRef(closeRitual);
   closeRitualRef.current = closeRitual;
@@ -207,6 +217,7 @@ export function useHomeResonanceRitual({
     resetTypewriter();
 
     const reduced = prefersReducedMotion();
+    triggerBootHum();
 
     try {
       if (reduced) {
@@ -222,6 +233,7 @@ export function useHomeResonanceRitual({
         await playTypewriter(nextSnapshot.gradeLine);
         if (exitIfCancelled()) return;
         setPhase('report');
+        stopChargeRitual();
         acknowledgePendingResonanceIfNeeded(pendingAckRef);
         return;
       }
@@ -232,8 +244,10 @@ export function useHomeResonanceRitual({
       if (exitIfCancelled()) return;
 
       setPhase('charge');
+      triggerChargeRitual(FILL_DURATION_MS);
       await animateRitualFill(setRitualFill, FILL_DURATION_MS, isActive, fillRafRef);
       if (exitIfCancelled()) return;
+      stopChargeRitual();
 
       triggerImpact('light');
       setPhase('count');
@@ -250,6 +264,7 @@ export function useHomeResonanceRitual({
       await playTypewriter(nextSnapshot.gradeLine);
       if (exitIfCancelled()) return;
       setPhase('report');
+      stopChargeRitual();
       acknowledgePendingResonanceIfNeeded(pendingAckRef);
     } catch {
       if (runIdRef.current === runId) {
@@ -265,6 +280,9 @@ export function useHomeResonanceRitual({
     resetTypewriter,
     setBlocking,
     setInstant,
+    triggerBootHum,
+    triggerChargeRitual,
+    stopChargeRitual,
     triggerImpact,
   ]);
 

@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { prefersReducedMotion } from '../lib/motionPreference';
 import { useDopamineFeedback } from './useDopamineFeedback';
 
 export const CEREMONY_MS_MIN = 1200;
 export const CEREMONY_MS_MAX = 1500;
 export const MESSAGE_TICK_MS = 380;
 const HAPTIC_LIGHT_MS = 0;
-const HAPTIC_MEDIUM_MS = 450;
-const HAPTIC_HEAVY_MS = 1100;
 const REDUCED_MOTION_MS = 400;
 
 export type CeremonyPool =
@@ -19,12 +18,8 @@ export type CeremonyPool =
   | 'explosive'
   | 'armSize';
 
-export type CeremonyHapticProfile = 'scan-only' | 'full';
-
 export interface UseAssessmentCeremonyOptions {
   pool: CeremonyPool;
-  /** scan-only: light at 0ms only — reveal flow owns medium/heavy. */
-  hapticProfile?: CeremonyHapticProfile;
 }
 
 export interface UseAssessmentCeremonyResult {
@@ -38,11 +33,6 @@ export interface UseAssessmentCeremonyResult {
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function pickNextMessage(pool: string[], exclude: string | null): string {
@@ -66,12 +56,9 @@ function readMessagePool(raw: unknown): string[] {
  * Orchestrates pre-calculate diagnostic ceremony: timed copy rotation + haptics, then runs compute.
  * Design intent: keep assessment page hooks pure — ceremony is UX-only and lives at page layer.
  */
-export function useAssessmentCeremony({
-  pool,
-  hapticProfile = 'scan-only',
-}: UseAssessmentCeremonyOptions): UseAssessmentCeremonyResult {
+export function useAssessmentCeremony({ pool }: UseAssessmentCeremonyOptions): UseAssessmentCeremonyResult {
   const { t } = useTranslation('common');
-  const { triggerImpact } = useDopamineFeedback();
+  const { triggerChargeRitual, stopChargeRitual } = useDopamineFeedback();
   const [isActive, setIsActive] = useState(false);
   const [statusLine, setStatusLine] = useState('');
 
@@ -106,11 +93,12 @@ export function useAssessmentCeremony({
   }, []);
 
   const settleCeremony = useCallback(() => {
+    stopChargeRitual();
     resetCeremonyUi();
     const settle = settleRef.current;
     settleRef.current = null;
     settle?.();
-  }, [resetCeremonyUi]);
+  }, [resetCeremonyUi, stopChargeRitual]);
 
   const cancel = useCallback(() => {
     clearTimers();
@@ -144,19 +132,8 @@ export function useAssessmentCeremony({
 
         scheduleTimeout(HAPTIC_LIGHT_MS, () => {
           if (!activeRef.current) return;
-          triggerImpact('light');
+          triggerChargeRitual(durationMs);
         });
-
-        if (!reducedMotion && hapticProfile === 'full') {
-          scheduleTimeout(HAPTIC_MEDIUM_MS, () => {
-            if (!activeRef.current) return;
-            triggerImpact('medium');
-          });
-          scheduleTimeout(HAPTIC_HEAVY_MS, () => {
-            if (!activeRef.current) return;
-            triggerImpact('heavy');
-          });
-        }
 
         let lastMessage = initialMessage;
         if (!reducedMotion && messages.length > 1) {
@@ -175,6 +152,7 @@ export function useAssessmentCeremony({
           try {
             run();
           } catch (error) {
+            stopChargeRitual();
             resetCeremonyUi();
             settleRef.current = null;
             reject(error);
@@ -187,12 +165,12 @@ export function useAssessmentCeremony({
     [
       clearTimers,
       getMessagePool,
-      hapticProfile,
       resetCeremonyUi,
       scanningLabel,
       scheduleTimeout,
       settleCeremony,
-      triggerImpact,
+      stopChargeRitual,
+      triggerChargeRitual,
     ]
   );
 

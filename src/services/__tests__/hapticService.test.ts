@@ -8,8 +8,12 @@ vi.mock('@capacitor/core', () => ({
   Capacitor: { isNativePlatform: () => isNativePlatform() },
 }));
 
+const selectionStart = vi.fn().mockResolvedValue(undefined);
+const selectionChanged = vi.fn().mockResolvedValue(undefined);
+const selectionEnd = vi.fn().mockResolvedValue(undefined);
+
 vi.mock('@capacitor/haptics', () => ({
-  Haptics: { impact, notification },
+  Haptics: { impact, notification, selectionStart, selectionChanged, selectionEnd },
   ImpactStyle: { Light: 'LIGHT', Medium: 'MEDIUM', Heavy: 'HEAVY' },
   NotificationType: { Success: 'SUCCESS', Warning: 'WARNING', Error: 'ERROR' },
 }));
@@ -19,10 +23,12 @@ vi.mock('../../lib/motionPreference', () => ({
 }));
 
 describe('hapticService', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     isNativePlatform.mockReturnValue(false);
     vi.stubGlobal('navigator', { vibrate: vi.fn() });
+    const motion = await import('../../lib/motionPreference');
+    vi.mocked(motion.prefersReducedMotion).mockReturnValue(false);
   });
 
   it('uses web vibrate fallback on non-native platforms', async () => {
@@ -63,5 +69,27 @@ describe('hapticService', () => {
     expect(navigator.vibrate).not.toHaveBeenCalled();
   });
 
+  it('runs selection haptics for continuous soft on native', async () => {
+    vi.useFakeTimers();
+    isNativePlatform.mockReturnValue(true);
+    vi.resetModules();
+    const { hapticService } = await import('../hapticService');
+    hapticService.triggerContinuousSoft(200);
+    await Promise.resolve();
+    expect(selectionStart).toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(selectionEnd).toHaveBeenCalled();
+    vi.useRealTimers();
+  });
 
+  it('stopContinuousSoft ends native selection session', async () => {
+    isNativePlatform.mockReturnValue(true);
+    vi.resetModules();
+    const { hapticService } = await import('../hapticService');
+    hapticService.triggerContinuousSoft(5000);
+    await Promise.resolve();
+    expect(selectionStart).toHaveBeenCalled();
+    hapticService.stopContinuousSoft();
+    expect(selectionEnd).toHaveBeenCalled();
+  });
 });

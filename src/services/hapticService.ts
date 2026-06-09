@@ -62,6 +62,45 @@ function waitMs(ms: number): Promise<void> {
   });
 }
 
+const CONTINUOUS_SOFT_INTERVAL_MS = 80;
+let continuousSoftTimer: ReturnType<typeof setInterval> | null = null;
+let continuousSoftEndTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearContinuousSoftTimers(): void {
+  if (continuousSoftTimer !== null) {
+    clearInterval(continuousSoftTimer);
+    continuousSoftTimer = null;
+  }
+  if (continuousSoftEndTimer !== null) {
+    clearTimeout(continuousSoftEndTimer);
+    continuousSoftEndTimer = null;
+  }
+}
+
+async function runContinuousSoftNative(durationMs: number): Promise<void> {
+  await Haptics.selectionStart();
+  continuousSoftTimer = setInterval(() => {
+    void Haptics.selectionChanged();
+  }, CONTINUOUS_SOFT_INTERVAL_MS);
+  continuousSoftEndTimer = setTimeout(() => {
+    clearContinuousSoftTimers();
+    void Haptics.selectionEnd();
+  }, durationMs);
+}
+
+function runContinuousSoftWeb(durationMs: number): void {
+  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+  const pulse = 12;
+  const gap = CONTINUOUS_SOFT_INTERVAL_MS - pulse;
+  const pattern: number[] = [];
+  const count = Math.max(1, Math.ceil(durationMs / CONTINUOUS_SOFT_INTERVAL_MS));
+  for (let i = 0; i < count; i += 1) {
+    pattern.push(pulse);
+    if (i < count - 1) pattern.push(Math.max(0, gap));
+  }
+  navigator.vibrate(pattern);
+}
+
 export const hapticService = {
   async trigger(preset: HapticPreset): Promise<void> {
     if (prefersReducedMotion()) return;
@@ -112,5 +151,34 @@ export const hapticService = {
     await this.trigger('milestone');
     await waitMs(150);
     await this.trigger('success');
+  },
+
+  /** Charge ceremony — soft selection haptics for the full duration. */
+  triggerContinuousSoft(durationMs: number): void {
+    if (prefersReducedMotion() || durationMs <= 0) return;
+    this.stopContinuousSoft();
+
+    if (Capacitor.isNativePlatform()) {
+      void runContinuousSoftNative(durationMs).catch(() => runContinuousSoftWeb(durationMs));
+      return;
+    }
+    runContinuousSoftWeb(durationMs);
+  },
+
+  stopContinuousSoft(): void {
+    clearContinuousSoftTimers();
+    if (Capacitor.isNativePlatform()) {
+      void Haptics.selectionEnd().catch(() => undefined);
+    }
+  },
+
+  /** Breakthrough / rank climax — three-beat success burst. */
+  async triggerSuccessBurst(): Promise<void> {
+    if (prefersReducedMotion()) return;
+    await this.trigger('milestone');
+    await waitMs(120);
+    await this.trigger('success');
+    await waitMs(160);
+    await this.trigger('climax');
   },
 };

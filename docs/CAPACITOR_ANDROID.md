@@ -49,6 +49,15 @@
 - 系統「減少動態效果」開啟時，觸覺會自動略過（與評測儀式一致）。
 - **商業化切片**：Google 登入成功（`firebaseClient`）、Pro 訂閱成功（`subscriptionService`）、天梯上傳（`useLeaderboardUpload` 等）均在服務／Hook I/O 回調觸發，不在 UI 元件散寫。
 
+### 2.4 音效管線（`@capacitor-community/native-audio` + HTML5 Fallback）
+
+- 資產目錄：**`public/sounds/`**（`pdk_shift`、`charge_up`、`breakthrough`、`boot_hum`），Vite 打包後為 `/sounds/*.mp3`。
+- Web 層統一由 **`src/services/soundService.ts`** 驅動：`bootstrap()` 預載常駐；原生殼以 `NativeAudio.preload({ isUrl: true })` 快取 AudioBuffer，瀏覽器降級為預載 `HTMLAudioElement`。
+- 與觸覺雙軌對齊：**`useDopamineFeedback`** 封裝 `triggerPdkShift`、`triggerChargeRitual`、`triggerBreakthroughCelebration`、`triggerBootHum`；元件內禁止 `new Audio()`。
+- 守門：`prefersReducedMotion()` + Settings 全域音效開關（`sensoryPreferences.ts` / `localStorage` key `up.soundEnabled`）。
+- 掛接點：底部 Tab（`useNavSensoryFeedback`）、評測 raw input、評測掃描儀式、首頁共振儀式、突破彈窗。
+- `cap sync` 後 Gradle 會納入 `:capacitor-community-native-audio`（與 `@capacitor/haptics` 並列）。
+
 ---
 
 ## 3. Android SDK 路徑（`local.properties`）

@@ -47,6 +47,7 @@ export default defineConfig({
           if (
             id.includes('@revenuecat') ||
             id.includes('@capacitor') ||
+            id.includes('@capacitor-community') ||
             id.includes('@capacitor-firebase')
           ) {
             return 'vendor-native';

@@ -64,8 +64,8 @@ export function useAssessmentRevealFlow({
   compute,
 }: UseAssessmentRevealFlowOptions): UseAssessmentRevealFlowResult {
   const { t } = useTranslation('common');
-  const { triggerImpact } = useDopamineFeedback();
-  const ceremony = useAssessmentCeremony({ pool, hapticProfile: 'scan-only' });
+  const { triggerImpact, triggerBreakthroughCelebration } = useDopamineFeedback();
+  const ceremony = useAssessmentCeremony({ pool });
   const { displayValue, animateTo, cancel: cancelAnimation } = useAnimatedScore();
 
   const [phase, setPhase] = useState<RevealFlowPhase>('idle');
@@ -135,14 +135,24 @@ export function useAssessmentRevealFlow({
       setModalPayload(payload);
       setModalOpen(true);
       setPhase('modal');
-      triggerImpact('heavy');
+      triggerBreakthroughCelebration();
     } catch {
       setPhase('idle');
       busyRef.current = false;
       cancelAnimation();
       ceremony.cancel();
     }
-  }, [animateTo, cancelAnimation, ceremony, compute, metric, scoreDecimals, t, triggerImpact]);
+  }, [
+    animateTo,
+    cancelAnimation,
+    ceremony,
+    compute,
+    metric,
+    scoreDecimals,
+    t,
+    triggerImpact,
+    triggerBreakthroughCelebration,
+  ]);
 
   return {
     ceremony,

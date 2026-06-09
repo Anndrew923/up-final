@@ -8,10 +8,15 @@ import {
   type UseAssessmentCeremonyResult,
 } from '../useAssessmentCeremony';
 
-const triggerImpact = vi.fn();
+const triggerChargeRitual = vi.fn();
+const stopChargeRitual = vi.fn();
 
 vi.mock('../useDopamineFeedback', () => ({
-  useDopamineFeedback: () => ({ triggerImpact, triggerRankUpCombo: vi.fn() }),
+  useDopamineFeedback: () => ({
+    triggerChargeRitual,
+    stopChargeRitual,
+    triggerRankUpCombo: vi.fn(),
+  }),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -63,7 +68,8 @@ function renderHookHarness(): {
 describe('useAssessmentCeremony', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    triggerImpact.mockReset();
+    triggerChargeRitual.mockReset();
+    stopChargeRitual.mockReset();
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -97,7 +103,7 @@ describe('useAssessmentCeremony', () => {
     act(() => {
       vi.advanceTimersByTime(0);
     });
-    expect(triggerImpact).toHaveBeenCalledWith('light');
+    expect(triggerChargeRitual).toHaveBeenCalledWith(1350);
 
     act(() => {
       vi.advanceTimersByTime(CEREMONY_MS_MAX);
@@ -109,8 +115,8 @@ describe('useAssessmentCeremony', () => {
 
     expect(run).toHaveBeenCalledTimes(1);
     expect(harness.getCurrent()!.isActive).toBe(false);
-    expect(triggerImpact).toHaveBeenCalledTimes(1);
-    expect(triggerImpact).toHaveBeenCalledWith('light');
+    expect(triggerChargeRitual).toHaveBeenCalledTimes(1);
+    expect(stopChargeRitual).toHaveBeenCalled();
 
     harness.unmount();
   });
@@ -160,8 +166,8 @@ describe('useAssessmentCeremony', () => {
     });
 
     expect(run).toHaveBeenCalledTimes(1);
-    expect(triggerImpact).toHaveBeenCalledTimes(1);
-    expect(triggerImpact).toHaveBeenCalledWith('light');
+    expect(triggerChargeRitual).toHaveBeenCalledTimes(1);
+    expect(triggerChargeRitual).toHaveBeenCalledWith(400);
 
     harness.unmount();
   });
@@ -185,6 +191,7 @@ describe('useAssessmentCeremony', () => {
 
     expect(run).not.toHaveBeenCalled();
     expect(harness.getCurrent()!.isActive).toBe(false);
+    expect(stopChargeRitual).toHaveBeenCalled();
     harness.unmount();
   });
 
@@ -208,6 +215,7 @@ describe('useAssessmentCeremony', () => {
     });
 
     expect(harness.getCurrent()!.isActive).toBe(false);
+    expect(stopChargeRitual).toHaveBeenCalled();
     harness.unmount();
   });
 });

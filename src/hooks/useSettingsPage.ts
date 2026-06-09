@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
@@ -9,6 +9,9 @@ import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useAuthStore } from '../stores/authStore';
+import { hapticService } from '../services/hapticService';
+import { sensoryPreferences } from '../services/sensoryPreferences';
+import { soundService } from '../services/soundService';
 
 export type SettingsBanner =
   | 'idle'
@@ -38,6 +41,7 @@ export interface SettingsPageState {
   email: string | null;
   isAnonymous: boolean;
   locale: SupportedLng;
+  soundEnabled: boolean;
   busyAction: SettingsBusyAction;
   banner: SettingsBanner;
   canSignIn: boolean;
@@ -50,6 +54,7 @@ export interface SettingsPageState {
   goToJoinArena(): void;
   reCalibrateBoot(): void;
   toggleLocale(): void;
+  toggleSound(): void;
   signInGoogle(): Promise<void>;
   signOut(): Promise<void>;
   restorePurchases(): Promise<void>;
@@ -66,7 +71,18 @@ export function useSettingsPage(): SettingsPageState {
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
   const [banner, setBanner] = useState<SettingsBanner>('idle');
+  const [soundEnabled, setSoundEnabled] = useState(() => sensoryPreferences.isSoundEnabled());
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
+
+  const toggleSound = useCallback(() => {
+    const next = !sensoryPreferences.isSoundEnabled();
+    sensoryPreferences.setSoundEnabled(next);
+    setSoundEnabled(next);
+    if (!next) {
+      soundService.stopAll();
+      hapticService.stopContinuousSoft();
+    }
+  }, []);
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
 
   const canSignIn = authStatus !== 'loading' && !isGoogleSignedIn && busyAction === 'none';
@@ -81,6 +97,7 @@ export function useSettingsPage(): SettingsPageState {
       email,
       isAnonymous,
       locale,
+      soundEnabled,
       busyAction,
       banner,
       canSignIn,
@@ -107,6 +124,7 @@ export function useSettingsPage(): SettingsPageState {
         const next: SupportedLng = locale === 'zh-Hant' ? 'en' : 'zh-Hant';
         void i18n.changeLanguage(next);
       },
+      toggleSound,
       async signInGoogle() {
         if (!canSignIn) return;
         setBanner('idle');
@@ -203,12 +221,14 @@ export function useSettingsPage(): SettingsPageState {
       email,
       isAnonymous,
       locale,
+      soundEnabled,
       busyAction,
       banner,
       canSignIn,
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
+      toggleSound,
       t,
       navigate,
       resetBoot,

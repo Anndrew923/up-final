@@ -17,6 +17,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     email,
     isAnonymous,
     locale,
+    soundEnabled,
     busyAction,
     banner,
     canSignIn,
@@ -29,6 +30,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     goToJoinArena,
     reCalibrateBoot,
     toggleLocale,
+    toggleSound,
     deleteAccount,
     signInGoogle,
     signOut,
@@ -82,6 +84,21 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
               onClick={toggleLocale}
             >
               {t('settings.languageToggle')}
+            </button>
+          </div>
+        </section>
+
+        <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            {t('settings.soundSection')}
+          </h2>
+          <p className="text-sm text-zinc-400">{t('settings.soundHint')}</p>
+          <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-4">
+            <span className="rounded-full border border-zinc-700 bg-bg-panel/70 px-3 py-1 text-xs text-zinc-300">
+              {soundEnabled ? t('settings.soundOn') : t('settings.soundOff')}
+            </span>
+            <button type="button" className="ui-btn" onClick={toggleSound}>
+              {t('settings.soundToggle')}
             </button>
           </div>
         </section>
