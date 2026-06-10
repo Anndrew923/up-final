@@ -31,18 +31,15 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
   const location = useLocation();
-  const joinFrom = useMemo(
-    () => parseJoinArenaFrom(location.search),
-    [location.search]
-  );
+  const joinFrom = useMemo(() => parseJoinArenaFrom(location.search), [location.search]);
   const descriptionKey = joinArenaDescriptionKey(joinFrom);
   const returnTo = joinFrom === 'backup' ? ROUTES.tools : ROUTES.ladder;
   const isBackupFunnel = joinFrom === 'backup';
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
-  const [banner, setBanner] = useState<
-    'idle' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'
-  >('idle');
+  const [banner, setBanner] = useState<'idle' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'>(
+    'idle'
+  );
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
 
@@ -144,142 +141,139 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   })();
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-bg-base text-zinc-100">
-      <div
-        className="ui-magitek-grid pointer-events-none absolute inset-0 opacity-[0.07]"
-        aria-hidden
-      />
-      <div className="pointer-events-none absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
-      <div className="pointer-events-none absolute -right-32 bottom-12 h-80 w-80 rounded-full bg-accent-info/10 blur-[110px]" />
-
-      <div className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 pb-16 pt-1">
-        {onBack ? (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label={t('common:back')}
-            className="absolute left-0 top-0 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800/80 bg-zinc-950/70 text-lg text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
-          >
-            ←
-          </button>
-        ) : null}
-
-        <header className="space-y-2.5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-accent-info">
-            {t('magitekKicker')}
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-accent-primary/50 bg-accent-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-accent-primary">
-              {t('proBadge')}
-            </span>
-            {isPro ? <span className="text-xs text-emerald-400">{t('activeProBadge')}</span> : null}
-          </div>
-          <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
-            {t('joinTitle')}
-          </h1>
-          <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
-        </header>
-
-        {banner === 'core' ? (
-          <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-            {t('coreRequired')}
-          </p>
-        ) : null}
-        {banner === 'auth-ok' ? (
-          <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-            {t('googleLoginSuccess', { name: signedInDisplayName })}
-          </p>
-        ) : null}
-        {banner === 'auth-fail' ? (
-          <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-            {t('googleLoginFail')}
-          </p>
-        ) : null}
-        {banner === 'billing-fail' ? (
-          <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-            {t('billingUnavailable')}
-          </p>
-        ) : null}
-        {showLadderBetaBanner ? (
-          <p
-            role="status"
-            className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
-          >
-            {t('betaOpenAccess')}
-          </p>
-        ) : null}
-
-        <JoinArenaComparisonTable />
-        <JoinArenaProFeatures />
-
-        <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            {t('identityTitle')}
-          </p>
-          <p className="mt-2 text-sm text-zinc-300">
-            {uiGate.kind === 'auth'
-              ? isBackupFunnel
-                ? t('identityRequired')
-                : isBetaOpen
-                  ? t('identityOptionalBeta')
-                  : t('identityRequired')
-              : t('signedInAs', { name: signedInDisplayName })}
-          </p>
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={authBusy || uiGate.kind !== 'auth'}
-            className="mt-4 rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {uiGate.kind !== 'auth'
-              ? t('googleLoginDone')
-              : authBusy
-                ? t('googleLoginLoading')
-                : t('googleLogin')}
-          </button>
-        </section>
-
-        {!coreOwned && uiGate.kind === 'pro' && (isBackupFunnel || !isBetaOpen) ? (
-          <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
-            <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
-            <Link
-              to={ROUTES.home}
-              className="mt-4 inline-flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white"
-            >
-              {t('coreGateCta')}
-            </Link>
-          </section>
-        ) : null}
-
-        <section className="flex w-full flex-col items-stretch gap-3 pt-2">
-          <button
-            type="button"
-            onClick={() => {
-              void handlePrimary();
-            }}
-            disabled={subscribeDisabled}
-            className={`group relative w-full overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
-              subscribeDisabled ? 'bg-zinc-800 text-zinc-500' : ''
-            }`}
-          >
-            {!subscribeDisabled ? (
-              <>
-                <span
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-primary via-amber-300 to-orange-500 bg-[length:200%_200%] ${
-                    ctaMotionOn ? 'animate-arena-cta-shimmer' : ''
-                  }`}
-                  aria-hidden
-                />
-                <span
-                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_45%)] opacity-60"
-                  aria-hidden
-                />
-              </>
-            ) : null}
-            <span className="relative z-[1]">{primaryCtaLabel}</span>
-          </button>
-        </section>
+    <main className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 bg-bg-base pb-16 pt-1 text-zinc-100">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+        <div className="ui-magitek-grid absolute inset-0 opacity-[0.07]" />
+        <div className="absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
+        <div className="absolute -right-32 bottom-12 h-80 w-80 rounded-full bg-accent-info/10 blur-[110px]" />
       </div>
+
+      {onBack ? (
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label={t('common:back')}
+          className="absolute left-0 top-0 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800/80 bg-zinc-950/70 text-lg text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
+        >
+          ←
+        </button>
+      ) : null}
+
+      <header className="space-y-2.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-accent-info">
+          {t('magitekKicker')}
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="rounded-full border border-accent-primary/50 bg-accent-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-accent-primary">
+            {t('proBadge')}
+          </span>
+          {isPro ? <span className="text-xs text-emerald-400">{t('activeProBadge')}</span> : null}
+        </div>
+        <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
+          {t('joinTitle')}
+        </h1>
+        <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
+      </header>
+
+      {banner === 'core' ? (
+        <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          {t('coreRequired')}
+        </p>
+      ) : null}
+      {banner === 'auth-ok' ? (
+        <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {t('googleLoginSuccess', { name: signedInDisplayName })}
+        </p>
+      ) : null}
+      {banner === 'auth-fail' ? (
+        <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {t('googleLoginFail')}
+        </p>
+      ) : null}
+      {banner === 'billing-fail' ? (
+        <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {t('billingUnavailable')}
+        </p>
+      ) : null}
+      {showLadderBetaBanner ? (
+        <p
+          role="status"
+          className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
+        >
+          {t('betaOpenAccess')}
+        </p>
+      ) : null}
+
+      <JoinArenaComparisonTable />
+      <JoinArenaProFeatures />
+
+      <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          {t('identityTitle')}
+        </p>
+        <p className="mt-2 text-sm text-zinc-300">
+          {uiGate.kind === 'auth'
+            ? isBackupFunnel
+              ? t('identityRequired')
+              : isBetaOpen
+                ? t('identityOptionalBeta')
+                : t('identityRequired')
+            : t('signedInAs', { name: signedInDisplayName })}
+        </p>
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={authBusy || uiGate.kind !== 'auth'}
+          className="mt-4 rounded-xl border border-zinc-700 bg-zinc-950/80 px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {uiGate.kind !== 'auth'
+            ? t('googleLoginDone')
+            : authBusy
+              ? t('googleLoginLoading')
+              : t('googleLogin')}
+        </button>
+      </section>
+
+      {!coreOwned && uiGate.kind === 'pro' && (isBackupFunnel || !isBetaOpen) ? (
+        <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
+          <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
+          <Link
+            to={ROUTES.home}
+            className="mt-4 inline-flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white"
+          >
+            {t('coreGateCta')}
+          </Link>
+        </section>
+      ) : null}
+
+      <section className="flex w-full flex-col items-stretch gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => {
+            void handlePrimary();
+          }}
+          disabled={subscribeDisabled}
+          className={`group relative w-full overflow-hidden rounded-xl border border-accent-primary/80 px-6 py-3.5 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,140,0,0.4)] transition hover:shadow-[0_0_36px_rgba(255,140,0,0.55)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
+            subscribeDisabled ? 'bg-zinc-800 text-zinc-500' : ''
+          }`}
+        >
+          {!subscribeDisabled ? (
+            <>
+              <span
+                className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-primary via-amber-300 to-orange-500 bg-[length:200%_200%] ${
+                  ctaMotionOn ? 'animate-arena-cta-shimmer' : ''
+                }`}
+                aria-hidden
+              />
+              <span
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_45%)] opacity-60"
+                aria-hidden
+              />
+            </>
+          ) : null}
+          <span className="relative z-[1]">{primaryCtaLabel}</span>
+        </button>
+      </section>
     </main>
   );
 };

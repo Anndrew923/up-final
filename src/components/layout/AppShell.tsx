@@ -36,12 +36,12 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       />
 
       {/*
-        Scroll top inset: `pt-shell-top` (default) or `pt-shell-top-compact` on ladder / join-arena.
-        See `spacing.shell-top-compact` in tailwind.config.
+        Single scroll outlet — block flow only (no flex-col) to avoid nested flex + overflow-hidden traps.
+        Top inset: `pt-shell-top` (default) or `pt-shell-top-compact` on ladder / join-arena.
       */}
       <div
         id={SHELL_SCROLL_ID}
-        className={`relative z-[1] flex h-[100dvh] flex-1 flex-col overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
       >
         {children ?? <Outlet />}
       </div>
