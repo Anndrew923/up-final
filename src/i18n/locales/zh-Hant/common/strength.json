@@ -2,7 +2,7 @@
   "strength": {
     "kicker": "力量",
     "title": "力量評測",
-    "subtitle": "五項主項力量評測；填重量與次數即可計算，合併結果可寫入雷達力量軸。",
+    "subtitle": "填入重量與次數，合併寫入力量軸。",
     "weightLabel": "重量（kg）",
     "weightPlaceholder": "例如 100",
     "weightAria": "{{lift}} — 重量（kg）",
@@ -16,7 +16,6 @@
     "singleOneRmValue": "{{value}} 公斤",
     "singleScoreLabel": "單項分數",
     "combinedSectionTitle": "全部完成列（雷達力量軸）",
-    "combinedHint": "只平均「重量與次數皆已填」的列；未填的列不納入。不得只填一欄 — 請兩欄都填或都留空。",
     "calculateCombined": "合併計算（雷達預覽）",
     "capWeightNotice": "「{{lift}}」輸入 {{input}} kg 已超過本動作模型上限 {{max}} kg；分數與儲存重量改以上限計算（比照菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
     "combinedDetailsTitle": "計算細節",
@@ -48,6 +47,7 @@
       "intro": "每個完成的項目會先以 Brzycki 估計 1RM，再換算為 DOTS 系分數，並以年齡係數（McCulloch）修正，最後對照該動作內建錨點總量正規化 — 與參考體能專案一致。",
       "reps": "請輸入 1–10 次，以維持次最大估計之穩定度；重量請填該組實際完成重量。",
       "repsAccuracy": "在合法範圍內，次數愈低，Brzycki 外插通常愈可信；高次數組的估計 1RM 可能較樂觀，與主觀「更重才算更強」的直覺偶有不一致。",
+      "combinedRule": "只平均「重量與次數皆已填」的列；未填的列不納入。不得只填一欄 — 請兩欄都填或都留空。",
       "tip": "建議充分熱身，並固定動作幅度與深度以便長期對照。本畫面不提供競賽認證用途。"
     },
     "lifts": {
@@ -59,8 +59,8 @@
     },
     "errors": {
       "missing-profile": "請先在首頁填寫完整身體資料，再計算力量分數。",
-      "no-inputs": "請至少完成一項：同時填寫重量與次數。",
-      "pair-incomplete": "每一項請同時填重量與次數，或兩者皆留空。",
+      "no-inputs": "合併計算需至少一列「重量與次數皆已填」。請完成至少一項，或兩欄都留空以跳過。",
+      "pair-incomplete": "合併只納入兩欄皆已填的列。每一項請同時填重量與次數，或兩欄都留空 — 不可只填一欄。",
       "invalid-weight": "已完成項目的重量須為大於 0 的數字（kg）。",
       "invalid-reps": "已完成項目的次數格式不正確。",
       "reps-out-of-range": "次數須介於 1 與 10 之間。"
@@ -68,7 +68,7 @@
     "singleErrors": {
       "missing-profile": "請先在首頁填寫完整身體資料。",
       "empty-row": "請先填寫此項重量與次數，再按計算。",
-      "pair-incomplete": "此項請同時填重量與次數，或兩欄皆留空。",
+      "pair-incomplete": "請同時填重量與次數，或兩欄都留空 — 不可只填一欄。",
       "invalid-weight": "此項重量須為大於 0 的數字（kg）。",
       "invalid-reps": "此項次數格式不正確。",
       "reps-out-of-range": "此項次數須介於 1 與 10。"

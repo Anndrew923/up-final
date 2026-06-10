@@ -2,7 +2,7 @@
   "explosive": {
     "kicker": "爆發",
     "title": "爆發力評測",
-    "subtitle": "垂直跳、立定跳遠、短跑三項擇一或多項輸入，系統會輸出爆發力軸分數。",
+    "subtitle": "擇一或多項填入，合併寫入爆發軸。",
     "verticalJumpLabel": "垂直跳（cm）",
     "verticalJumpPlaceholder": "例如 55",
     "standingLongJumpLabel": "立定跳遠（cm）",

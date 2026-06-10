@@ -2,7 +2,7 @@
   "armSize": {
     "kicker": "圍度",
     "title": "臂圍評測",
-    "subtitle": "輸入上臂圍與體脂率即可計算臂圍分數（僅用於臂圍排行榜）。",
+    "subtitle": "填入臂圍與體脂，寫入臂圍榜。",
     "armLabel": "上臂圍（cm）",
     "armPlaceholder": "例如 42",
     "bodyFatLabel": "體脂率（%）",

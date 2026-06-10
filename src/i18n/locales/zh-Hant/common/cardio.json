@@ -2,7 +2,7 @@
   "cardio": {
     "kicker": "心肺耐力",
     "title": "心肺評測",
-    "subtitle": "可用 Cooper 12 分鐘距離或 5 公里時間計算心肺分數。",
+    "subtitle": "選擇測驗方式，計算後寫入心肺軸。",
     "tabCooper": "Cooper（12 分）",
     "tab5km": "5 公里",
     "tabsAria": "心肺測驗方式",

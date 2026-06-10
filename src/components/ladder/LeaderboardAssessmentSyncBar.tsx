@@ -45,7 +45,6 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
       <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
         {t('ladder.upload.sectionTitle')}
       </p>
-      <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.assessmentSync.hint')}</p>
 
       {targetCount === 0 ? (
         <p className="text-xs leading-relaxed text-zinc-500">

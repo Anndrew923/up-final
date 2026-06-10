@@ -7,6 +7,8 @@
     "versionBody": "目前 App 版本：{{version}}",
     "missionTitle": "我們的目標",
     "missionBody": "我們打造實用、可解釋、可重現的體能計分工具，幫助你在日常訓練中做出更穩健的判斷。",
+    "localDataTitle": "本機資料與權限",
+    "localDataBody": "測功日誌與詳細評測紀錄僅存於本裝置。核心本機功能（評測、雷達、日誌、工具）無需訂閱即可完整使用。",
     "disclaimerTitle": "非醫療聲明",
     "disclaimerBody": "最強肉體為健身自我追蹤工具，不提供醫療診斷、治療建議或緊急醫療指示。",
     "contactTitle": "聯絡方式",

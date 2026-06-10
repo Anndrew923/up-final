@@ -2,7 +2,7 @@
   "ffmi": {
     "kicker": "Body Composition",
     "title": "FFMI Assessment",
-    "subtitle": "Calculate FFMI and displacement radar score from profile + body fat.",
+    "subtitle": "Enter body fat %. Save to displacement axis.",
     "bodyFatLabel": "Body Fat Percentage",
     "bodyFatPlaceholder": "e.g. 15",
     "bodyFatUnit": "%",

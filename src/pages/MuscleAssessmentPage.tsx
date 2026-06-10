@@ -128,10 +128,6 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         </p>
       ) : null}
 
-      {profileReady && smmCeilingKg != null ? (
-        <p className="text-xs text-zinc-500">{t('muscle.smmCeilingLine', { max: smmCeilingKg })}</p>
-      ) : null}
-
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <DisclosurePanel
           instanceId="muscle-standards-info"
@@ -142,6 +138,9 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
           toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
         >
           <p>{t('muscle.smmHint')}</p>
+          {smmCeilingKg != null ? (
+            <p>{t('muscle.smmCeilingLine', { max: smmCeilingKg })}</p>
+          ) : null}
           <p>{t('muscle.standardsInfo.p1')}</p>
           <p>{t('muscle.standardsInfo.p2')}</p>
           <p>{t('muscle.standardsInfo.p3')}</p>

@@ -2,27 +2,22 @@
   "settings": {
     "kicker": "Control Hub",
     "title": "Settings",
-    "subtitle": "Manage account identity and Arena access.",
     "languageSection": "Language",
-    "languageHint": "Choose interface language.",
     "languageCurrent": "Current: {{locale}}",
     "languageToggle": "Switch EN / 繁中",
     "soundSection": "Sound",
-    "soundHint": "Toggle dashboard and ritual sound effects. Haptics remain when supported.",
     "soundOn": "On",
     "soundOff": "Off",
     "soundToggle": "Toggle sound",
     "infoSection": "About & Legal",
-    "infoHint": "Product background and privacy policy.",
     "openAbout": "About",
     "openPrivacyPolicy": "Privacy Policy",
     "system": {
       "reCalibrate": "Run Full Vehicle Power-On Calibration",
       "reCalibrateKicker": "RE-CALIBRATION",
-      "reCalibrateHint": "Reset first-run tour and return to Home."
+      "reCalibrateConfirm": "Run full vehicle power-on calibration again? This resets the first-run tour and returns to Home."
     },
     "supportSection": "Support",
-    "supportHint": "Questions or feedback? Contact official support.",
     "contactUs": "Contact Us",
     "accountSection": "Account",
     "loadingAuth": "Checking sign-in status...",

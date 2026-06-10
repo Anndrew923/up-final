@@ -2,27 +2,22 @@
   "settings": {
     "kicker": "控制中心",
     "title": "設定",
-    "subtitle": "集中管理帳號身分與戰場權限。",
     "languageSection": "語言",
-    "languageHint": "選擇 App 介面顯示語言。",
     "languageCurrent": "目前：{{locale}}",
     "languageToggle": "切換 EN / 繁中",
     "soundSection": "音效",
-    "soundHint": "控制儀表與儀式回饋音效。關閉後仍保留觸覺震動（若裝置支援）。",
     "soundOn": "已開啟",
     "soundOff": "已關閉",
     "soundToggle": "切換音效",
     "infoSection": "關於與條款",
-    "infoHint": "查看產品背景與隱私權政策。",
     "openAbout": "關於我",
     "openPrivacyPolicy": "隱私權政策",
     "system": {
       "reCalibrate": "重新執行全車通電校準",
       "reCalibrateKicker": "RE-CALIBRATION",
-      "reCalibrateHint": "重置首次通電聚光燈引導，並立即返回首頁重新啟動。"
+      "reCalibrateConfirm": "確定要重新執行全車通電校準嗎？將重置首次通電聚光燈引導，並立即返回首頁重新啟動。"
     },
     "supportSection": "官方支援",
-    "supportHint": "若你有帳號、隱私或產品使用問題，請聯繫官方支援管道。",
     "contactUs": "聯絡我們",
     "accountSection": "帳號",
     "loadingAuth": "正在確認登入狀態...",

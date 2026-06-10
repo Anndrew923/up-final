@@ -2,8 +2,7 @@
   "history": {
     "kicker": "LOCAL LOG ARCHIVE",
     "title": "Dyno Logs",
-    "subtitle": "Six-axis snapshots committed from the \"Dyno\" tab (Stored locally, core features require no subscription).",
-    "empty": "No snapshots found. Go to the \"Dyno\" tab to commit your first snapshot.",
+    "empty": "No six-axis snapshots yet. Open the Dyno tab, run an assessment, and save your first snapshot.",
     "colDate": "Saved At",
     "colOverall": "Overall",
     "colActions": "Actions",

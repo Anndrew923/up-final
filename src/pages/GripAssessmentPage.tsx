@@ -105,9 +105,13 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       ) : null}
 
       {profileReady && profile ? (
-        <p className="text-xs text-zinc-500">
-          <span className="mr-3">{t('grip.metaGender', { value: genderLabel })}</span>
-          <span>{t('grip.metaWeight', { value: profile.weightKg })}</span>
+        <p className="text-xs">
+          <span
+            className="inline-flex rounded-full border border-zinc-700/80 bg-zinc-900/60 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-zinc-400"
+            aria-label={t('grip.metaGender', { value: genderLabel })}
+          >
+            {genderLabel}
+          </span>
         </p>
       ) : null}
 

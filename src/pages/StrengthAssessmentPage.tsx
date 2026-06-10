@@ -170,6 +170,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
           <p>{t('strength.howToInfo.reps')}</p>
           <p>{t('strength.howToInfo.repsAccuracy')}</p>
           <p>{t('strength.fieldsHint')}</p>
+          <p>{t('strength.howToInfo.combinedRule')}</p>
           <p className="text-zinc-500">{t('strength.howToInfo.tip')}</p>
         </DisclosurePanel>
 
@@ -298,7 +299,6 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
           <h2 className="text-sm font-semibold tracking-tight text-zinc-200">
             {t('strength.combinedSectionTitle')}
           </h2>
-          <p className="text-xs leading-relaxed text-zinc-500">{t('strength.combinedHint')}</p>
 
           {combinedError ? (
             <p className="text-sm text-red-400" role="alert">

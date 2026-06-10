@@ -37,6 +37,13 @@ const AboutPage: FC<AboutPageProps> = ({ onBack }) => {
 
       <section className="space-y-3 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-zinc-400">
+          {t('about.localDataTitle')}
+        </h2>
+        <p className="text-sm leading-relaxed text-zinc-300">{t('about.localDataBody')}</p>
+      </section>
+
+      <section className="space-y-3 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-zinc-400">
           {t('about.versionTitle')}
         </h2>
         <p className="text-sm leading-relaxed text-zinc-300">

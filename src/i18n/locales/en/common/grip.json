@@ -2,7 +2,7 @@
   "grip": {
     "kicker": "Grip",
     "title": "Grip Strength Assessment",
-    "subtitle": "Enter peak grip (kg). Calculates traction-axis score.",
+    "subtitle": "Enter peak grip. Save to traction axis.",
     "peakLabel": "Peak Grip (kg)",
     "peakPlaceholder": "e.g. 65",
     "referenceInfo": {
@@ -54,7 +54,6 @@
     "profileIncompleteHint": "Complete Home profile (sex, age, height, weight) for grip conversion.",
     "ctaProfile": "Open Home Profile",
     "metaGender": "Sex: {{value}}",
-    "metaWeight": "Weight: {{value}} kg",
     "errors": {
       "missing-profile": "Complete physical profile on Home first.",
       "invalid-peak": "Enter positive peak grip value in kg."

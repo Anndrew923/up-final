@@ -18,6 +18,7 @@ export default function ToolsPage() {
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [syncGateOpen, setSyncGateOpen] = useState(false);
   const [codexOpen, setCodexOpen] = useState(false);
+  const [syncInfoOpen, setSyncInfoOpen] = useState(false);
   const codexScores = useVehicleCodexScores();
   const syncUiGate = useUiGate('cloud-sync');
   const syncGateKind = gateSheetKindFromUiGate(syncUiGate);
@@ -138,12 +139,29 @@ export default function ToolsPage() {
         <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-accent-primary">
           {t('tools.syncTitle', { ns: 'common' })}
         </h2>
-        <p className="mt-3 text-sm text-zinc-400">{t('tools.syncBody', { ns: 'common' })}</p>
-        {syncUiGate.kind === 'pro' ? (
-          <p className="mt-4 rounded-lg border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-amber-200/90">
-            {t('tools.syncProOnly', { ns: 'common' })}
-          </p>
-        ) : null}
+        <div className="mt-4">
+          <DisclosurePanel
+            instanceId="tools-cloud-sync-info"
+            expanded={syncInfoOpen}
+            onToggle={() => setSyncInfoOpen((open) => !open)}
+            title={t('tools.syncInfo.panelTitle', { ns: 'common' })}
+            toggleExpandLabel={t('tools.syncInfo.toggleExpand', { ns: 'common' })}
+            toggleCollapseLabel={t('tools.syncInfo.toggleCollapse', { ns: 'common' })}
+            panelBodyClassName="space-y-3 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400"
+          >
+            <p>{t('tools.syncInfo.intro', { ns: 'common' })}</p>
+            <p className="font-medium text-zinc-300">{t('tools.syncInfo.scopeIntro', { ns: 'common' })}</p>
+            <ul className="list-inside list-disc space-y-1">
+              <li>{t('tools.syncInfo.scopeScores', { ns: 'common' })}</li>
+              <li>{t('tools.syncInfo.scopeInputs', { ns: 'common' })}</li>
+              <li>{t('tools.syncInfo.scopeProfile', { ns: 'common' })}</li>
+              <li>{t('tools.syncInfo.scopeHistory', { ns: 'common' })}</li>
+            </ul>
+            <p>{t('tools.syncInfo.backupNote', { ns: 'common' })}</p>
+            <p className="text-amber-200/80">{t('tools.syncInfo.restoreWarning', { ns: 'common' })}</p>
+            <p className="text-zinc-500">{t('tools.syncInfo.requirements', { ns: 'common' })}</p>
+          </DisclosurePanel>
+        </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" className="ui-btn ui-btn-primary" onClick={handleBackup}>
             {t('tools.syncBackup', { ns: 'common' })}

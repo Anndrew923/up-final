@@ -2,7 +2,7 @@
   "armSize": {
     "kicker": "Circumference",
     "title": "Arm Size Assessment",
-    "subtitle": "Enter arm circumference and body fat. Leaderboard score only — not six-axis radar.",
+    "subtitle": "Enter arm size and body fat. Upload to arm leaderboard.",
     "armLabel": "Upper-Arm Circumference (cm)",
     "armPlaceholder": "e.g. 42",
     "bodyFatLabel": "Body-Fat Percentage (%)",

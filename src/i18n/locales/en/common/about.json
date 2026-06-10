@@ -7,6 +7,8 @@
     "versionBody": "Current app version: {{version}}",
     "missionTitle": "Mission",
     "missionBody": "Transparent, deterministic fitness scoring for everyday training decisions.",
+    "localDataTitle": "Local Data & Access",
+    "localDataBody": "Dyno logs and detailed assessment records stay on this device only. Core local features (assessments, radar, logs, tools) work fully without a subscription.",
     "disclaimerTitle": "Medical Disclaimer",
     "disclaimerBody": "Fitness self-tracking only — not medical diagnosis, treatment, or emergency guidance.",
     "contactTitle": "Contact",

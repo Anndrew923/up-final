@@ -113,7 +113,6 @@
     },
     "syncAll": {
       "sectionTitle": "Arena Upload",
-      "hint": "Upload overall and every eligible shard from your radar and assessments.",
       "infoButtonAria": "View upload limit details",
       "advancedTitle": "Upload Limits",
       "advancedTip": "Sync uploads every eligible shard in sequence with these limits:\n\n- Up to {{limit}} counted writes per shard per hour (rolling 60 minutes).\n- When the score matches the cloud value, no write occurs and no quota is used.\n- When the score changes (higher or lower), the row is updated and 1 write is counted.\n- Full sync itself has cooldown: roughly once every 90 minutes, up to 3 times per day.\n- Shards with incomplete tests, no radar value, or Non‑Pro access are skipped or blocked.",
@@ -140,7 +139,6 @@
       "avatarPortraitUpdated": "Score unchanged — portrait synced to ladder (including overall board)."
     },
     "assessmentSync": {
-      "hint": "After you calculate, sync this page's shards, overall score, and public six-axis profile. Write to the dashboard first via the breakthrough modal for a full local + Arena loop.",
       "infoButtonAria": "View page sync limits",
       "advancedTitle": "Page Sync Limits",
       "advancedTip": "Uploads this page's shards plus overall score and public six-axis preview in one run (does not count toward full-sync cooldown). Prefer the breakthrough modal's dashboard-then-Arena action if the dashboard is not updated yet. Skipped when scores missing, ineligible, or rate-limited.",

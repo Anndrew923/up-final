@@ -2,7 +2,7 @@
   "explosive": {
     "kicker": "Power",
     "title": "Explosive Power Assessment",
-    "subtitle": "Enter vertical jump, standing long jump, or sprint. One metric minimum.",
+    "subtitle": "Enter one or more metrics. Merge into explosive axis.",
     "verticalJumpLabel": "Vertical Jump (cm)",
     "verticalJumpPlaceholder": "e.g. 55",
     "standingLongJumpLabel": "Standing Long Jump (cm)",

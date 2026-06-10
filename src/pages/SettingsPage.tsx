@@ -56,7 +56,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
             {t('settings.kicker')}
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
-          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('settings.subtitle')}</p>
         </div>
         {onBack ? (
           <button type="button" className="ui-btn shrink-0" onClick={onBack}>
@@ -69,7 +68,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
           {t('settings.languageSection')}
         </h2>
-        <p className="text-sm text-zinc-400">{t('settings.languageHint')}</p>
         <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-4">
           <span className="rounded-full border border-zinc-700 bg-bg-panel/70 px-3 py-1 text-xs text-zinc-300">
             {t('settings.languageCurrent', { locale: locale === 'zh-Hant' ? '繁中' : 'English' })}
@@ -89,7 +87,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
             {t('settings.soundSection')}
           </h2>
-          <p className="text-sm text-zinc-400">{t('settings.soundHint')}</p>
           <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-4">
             <span className="rounded-full border border-zinc-700 bg-bg-panel/70 px-3 py-1 text-xs text-zinc-300">
               {soundEnabled ? t('settings.soundOn') : t('settings.soundOff')}
@@ -105,7 +102,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
           {t('settings.infoSection')}
         </h2>
-        <p className="text-sm text-zinc-400">{t('settings.infoHint')}</p>
         <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
           <button type="button" className="ui-btn" onClick={goToAbout}>
             {t('settings.openAbout')}
@@ -128,7 +124,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/80">
             {t('settings.system.reCalibrateKicker')}
           </span>
-          <span className="mt-1 text-xs text-zinc-500">{t('settings.system.reCalibrateHint')}</span>
         </button>
       </section>
 
@@ -136,7 +131,6 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
           {t('settings.supportSection')}
         </h2>
-        <p className="text-sm text-zinc-400">{t('settings.supportHint')}</p>
         <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
           <button type="button" className="ui-btn" onClick={goToContact}>
             {t('settings.contactUs')}

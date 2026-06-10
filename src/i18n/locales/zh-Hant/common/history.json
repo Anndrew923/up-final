@@ -2,8 +2,7 @@
   "history": {
     "kicker": "本機日誌庫",
     "title": "測功日誌 // DYNO LOGS",
-    "subtitle": "從「測功」分頁儲存的六軸快照（僅存於本裝置，核心功能無需訂閱）。",
-    "empty": "尚無快照。請到「測功」分頁儲存一筆。",
+    "empty": "尚無六軸快照。前往「測功」分頁完成評測並儲存第一筆。",
     "colDate": "儲存時間",
     "colOverall": "總分",
     "colActions": "操作",

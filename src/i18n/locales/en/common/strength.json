@@ -2,7 +2,7 @@
   "strength": {
     "kicker": "Strength",
     "title": "Strength Assessment",
-    "subtitle": "Five-lift assessment with per-lift scores and combined radar-axis score.",
+    "subtitle": "Enter weight and reps. Merge into strength axis.",
     "weightLabel": "Weight (kg)",
     "weightPlaceholder": "e.g. 100",
     "weightAria": "{{lift}} — weight in kg",
@@ -16,7 +16,6 @@
     "singleOneRmValue": "{{value}} kg",
     "singleScoreLabel": "Lift Score",
     "combinedSectionTitle": "All Completed Lifts (Radar Axis)",
-    "combinedHint": "Averages rows with both weight and reps. Clear both fields or fill both — no half rows.",
     "calculateCombined": "Calculate Combined Score",
     "capWeightNotice": "{{lift}}: entered {{input}} kg exceeds model ceiling ({{max}} kg). Scoring and storage use {{max}} kg.",
     "combinedDetailsTitle": "Calculation Details",
@@ -47,6 +46,7 @@
       "intro": "Each lift converts to estimated 1RM (Brzycki), then DOTS-style score with age adjustment (McCulloch) against built-in anchor totals.",
       "reps": "Use 1–10 reps for reliable 1RM estimates. Enter the weight you actually lifted.",
       "repsAccuracy": "Lower reps are more trustworthy for Brzycki extrapolation; high-rep sets can inflate estimated 1RM.",
+      "combinedRule": "Combined score averages rows with both weight and reps filled. Unfilled rows are excluded. Fill both fields or leave both empty — no half rows.",
       "tip": "Use consistent depth and range of motion. Not a competition verification tool."
     },
     "lifts": {
@@ -58,8 +58,8 @@
     },
     "errors": {
       "missing-profile": "Complete physical profile on Home before calculating strength.",
-      "no-inputs": "Enter at least one lift with both weight and reps.",
-      "pair-incomplete": "Enter both weight and reps, or leave both empty per lift.",
+      "no-inputs": "Combined score needs at least one row with both weight and reps. Complete one lift or leave both fields empty to skip.",
+      "pair-incomplete": "Combined score only includes rows with both fields filled. Enter weight and reps together, or clear both — no half rows.",
       "invalid-weight": "Enter positive weight (kg) for each completed lift.",
       "invalid-reps": "Enter valid rep count for each completed lift.",
       "reps-out-of-range": "Reps must be 1–10 for each completed lift."
@@ -67,7 +67,7 @@
     "singleErrors": {
       "missing-profile": "Complete physical profile on Home first.",
       "empty-row": "Enter weight and reps for this lift, then calculate.",
-      "pair-incomplete": "Enter both weight and reps, or clear both fields.",
+      "pair-incomplete": "Enter both weight and reps, or clear both fields — no half rows.",
       "invalid-weight": "Enter positive weight (kg) for this lift.",
       "invalid-reps": "Enter valid rep count for this lift.",
       "reps-out-of-range": "Reps must be 1–10 for this lift."

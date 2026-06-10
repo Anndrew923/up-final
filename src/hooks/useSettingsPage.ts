@@ -120,6 +120,7 @@ export function useSettingsPage(): SettingsPageState {
         navigate(joinArenaPath('settings'));
       },
       reCalibrateBoot() {
+        if (!window.confirm(t('settings.system.reCalibrateConfirm'))) return;
         resetBoot();
         navigate(ROUTES.home, { replace: true });
       },

@@ -2,7 +2,7 @@
   "ffmi": {
     "kicker": "身體組成",
     "title": "FFMI 評測",
-    "subtitle": "以身體資料 + 體脂％計算 FFMI 與雷達引擎排量軸分數。",
+    "subtitle": "輸入體脂％，計算後寫入排量軸。",
     "bodyFatLabel": "體脂率",
     "bodyFatPlaceholder": "例如 15",
     "bodyFatUnit": "%",

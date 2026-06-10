@@ -2,7 +2,7 @@
   "grip": {
     "kicker": "握力",
     "title": "握力評測",
-    "subtitle": "輸入握力峰值（kg）後即可計算握力軸分數。",
+    "subtitle": "填入峰值握力，寫入握力軸。",
     "peakLabel": "峰值握力（kg）",
     "peakPlaceholder": "例如 65",
     "referenceInfo": {
@@ -54,7 +54,6 @@
     "profileIncompleteHint": "握力換算需要首頁身體資料齊全（至少性別、年齡、身高、體重）。",
     "ctaProfile": "前往首頁填寫身體資料",
     "metaGender": "性別：{{value}}",
-    "metaWeight": "體重：{{value}} kg",
     "errors": {
       "missing-profile": "請先在首頁填寫完整身體資料。",
       "invalid-peak": "請輸入大於 0 的握力峰值（kg）。"

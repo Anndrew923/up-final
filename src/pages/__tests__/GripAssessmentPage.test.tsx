@@ -125,6 +125,39 @@ describe('GripAssessmentPage performance spec', () => {
     expect(text).toContain('Pantheon Compression');
     expect(text).toContain('Model ceiling reached.');
     expect(text).not.toContain('Next Milestone:');
+    expect(text).not.toContain('grip.metaWeight');
+    expect(text).not.toContain('80');
+
+    unmount();
+  });
+
+  it('shows gender scoring baseline badge only (no weight meta)', () => {
+    mockUseGripAssessmentPage.mockReturnValue({
+      profile: { gender: 'male', weightKg: 92.8 },
+      profileReady: true,
+      peakKgInput: '',
+      setPeakKgInput: vi.fn(),
+      previewScore: null,
+      capNotice: null,
+      errorKey: null,
+      submitDone: false,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: null,
+      summary: null,
+      nextMilestone: null,
+      remainingPoints: null,
+    });
+
+    const { container, unmount } = renderPage();
+    const badge = container.querySelector('[aria-label]');
+
+    expect(badge?.textContent).toBe('Male');
+    expect(container.textContent).not.toContain('grip.metaWeight');
+    expect(container.textContent).not.toContain('92.8');
 
     unmount();
   });

@@ -2,7 +2,7 @@
   "muscle": {
     "kicker": "Body Composition",
     "title": "Muscle Mass Assessment",
-    "subtitle": "Enter skeletal muscle mass (SMM). Calculates exterior-axis score.",
+    "subtitle": "Enter SMM. Save to exterior axis.",
     "smmLabel": "Skeletal Muscle Mass (SMM, kg)",
     "smmPlaceholder": "e.g. 32.5",
     "smmHint": "Uses weight, age, and sex from Home. Norm tables ~10–80; profile starts 13, max 80.",

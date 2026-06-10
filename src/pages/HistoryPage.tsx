@@ -30,7 +30,6 @@ export default function HistoryPage() {
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">
             {t('history.title', { ns: 'common' })}
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">{t('history.subtitle', { ns: 'common' })}</p>
         </div>
 
         <div className="overflow-x-auto px-3 py-4 md:px-6">

@@ -2,7 +2,7 @@
   "cardio": {
     "kicker": "Endurance",
     "title": "Cardio Assessment",
-    "subtitle": "Cooper 12-minute distance or 5 km time. Calculates stint-axis score.",
+    "subtitle": "Pick a test mode. Save to stint axis.",
     "tabCooper": "Cooper (12 min)",
     "tab5km": "5 km",
     "tabsAria": "Cardio test type",
