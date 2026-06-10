@@ -6,6 +6,7 @@ import { ROUTES, isCompactShellRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
+import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 import HudProfileControls from './HudProfileControls';
 
 export interface AppShellProps {
@@ -27,7 +28,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col bg-bg-base text-zinc-100">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">
       <div
         id="layer-shell-bg"
         className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-zinc-950 via-bg-base to-black"
@@ -39,15 +40,15 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         See `spacing.shell-top-compact` in tailwind.config.
       */}
       <div
-        id="layer-shell-scroll"
-        className={`relative z-[1] flex min-h-[100dvh] flex-1 flex-col pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        id={SHELL_SCROLL_ID}
+        className={`relative z-[1] flex h-[100dvh] flex-1 flex-col overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
       >
         {children ?? <Outlet />}
       </div>
 
       <div
         id="layer-shell-frame"
-        className={`pointer-events-none fixed inset-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
+        className={`pointer-events-none fixed inset-x-0 top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
       >
         {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
         <div

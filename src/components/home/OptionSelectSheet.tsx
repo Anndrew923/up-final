@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 
 export interface OptionSelectItem<T extends string> {
   value: T;
@@ -32,14 +33,7 @@ export default function OptionSelectSheet<T extends string>({
   const titleId = useId();
   const selectedLabel = options.find((x) => x.value === value)?.label ?? placeholder;
 
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

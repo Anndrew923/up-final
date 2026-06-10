@@ -1,6 +1,7 @@
 import { type FC, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 
 export interface LadderInfoSheetDetailRow {
   label: string;
@@ -67,14 +68,7 @@ const LadderInfoSheet: FC<LadderInfoSheetProps> = ({
   const hasDetailRows = detailRows != null && detailRows.length > 0;
   const describedBy = hasDetailRows ? `${bodyId} ${detailsId}` : bodyId;
 
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

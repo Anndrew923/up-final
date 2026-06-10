@@ -1,11 +1,8 @@
 import { type FC, useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 
-const SHELL_SCROLL_ID = 'layer-shell-scroll';
-
-/**
- * Scrolls the document (and shell scroll layer if present) to top on route change.
- */
+/** Resets `#layer-shell-scroll` (and legacy window scroll) on route change. */
 export const ScrollToTop: FC = () => {
   const { pathname } = useLocation();
 
@@ -16,11 +13,12 @@ export const ScrollToTop: FC = () => {
   }, []);
 
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
     const shell = document.getElementById(SHELL_SCROLL_ID);
     if (shell) {
       shell.scrollTop = 0;
+      return;
     }
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   return null;

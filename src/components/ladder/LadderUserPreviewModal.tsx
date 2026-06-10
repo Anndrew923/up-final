@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import LadderReportSheet from './LadderReportSheet';
@@ -55,6 +56,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   const { t, i18n } = useTranslation('common');
   const blockUid = useLadderBlockStore((s) => s.block);
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
+
+  useShellScrollLock(open);
 
   const showModerationActions = useMemo(() => {
     if (!targetUid || !viewerUid) return false;

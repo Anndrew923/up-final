@@ -20,6 +20,12 @@ const THEME_COLOR = '#0A0A0A';
 /** Single source with `src/i18n/webInstallManifest.copy.json` (runtime + static manifests). */
 const MANIFEST_COPY = require(path.join(ROOT, 'src', 'i18n', 'webInstallManifest.copy.json'));
 
+/**
+ * Adaptive Icon safe zone: logo + outer ring must fit inside ~72dp of 108dp canvas.
+ * WHY: Full-bleed foreground gets clipped by launcher masks (circle / squircle).
+ */
+const SAFE_SCALE = 0.72;
+
 // Adaptive Icon foreground 層為 108dp，對應像素
 const FOREGROUND_SIZES = {
   'mipmap-mdpi': 108,
@@ -51,6 +57,23 @@ async function ensureDir(dir) {
   }
 }
 
+async function writeAdaptiveForeground(buffer, size, outPath) {
+  const fgSize = Math.round(size * SAFE_SCALE);
+  const pad = Math.round((size - fgSize) / 2);
+
+  await sharp(buffer)
+    .resize(fgSize, fgSize)
+    .extend({
+      top: pad,
+      bottom: pad,
+      left: pad,
+      right: pad,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toFile(outPath);
+}
+
 async function loadMasterBuffer() {
   if (!fs.existsSync(SOURCE)) {
     console.error('找不到來源圖檔: ' + SOURCE);
@@ -74,11 +97,11 @@ async function generateAndroid(buffer) {
   for (const [folder, size] of Object.entries(FOREGROUND_SIZES)) {
     const outDir = path.join(ANDROID_RES, folder);
     await ensureDir(outDir);
-    await sharp(buffer)
-      .resize(size, size)
-      .png()
-      .toFile(path.join(outDir, 'ic_launcher_foreground.png'));
-    console.log('寫入 ' + folder + '/ic_launcher_foreground.png (' + size + 'px)');
+    const outPath = path.join(outDir, 'ic_launcher_foreground.png');
+    await writeAdaptiveForeground(buffer, size, outPath);
+    console.log(
+      '寫入 ' + folder + '/ic_launcher_foreground.png (' + size + 'px, safe ' + SAFE_SCALE + ')',
+    );
   }
 
   for (const [folder, size] of Object.entries(LAUNCHER_SIZES)) {
@@ -93,11 +116,9 @@ async function generateAndroid(buffer) {
 
   const drawableNodpi = path.join(ANDROID_RES, 'drawable-nodpi');
   await ensureDir(drawableNodpi);
-  await sharp(buffer)
-    .resize(432, 432)
-    .png()
-    .toFile(path.join(drawableNodpi, 'ic_launcher_foreground.png'));
-  console.log('寫入 drawable-nodpi/ic_launcher_foreground.png (432px)');
+  const nodpiPath = path.join(drawableNodpi, 'ic_launcher_foreground.png');
+  await writeAdaptiveForeground(buffer, 432, nodpiPath);
+  console.log('寫入 drawable-nodpi/ic_launcher_foreground.png (432px, safe ' + SAFE_SCALE + ')');
 }
 
 async function generateWeb(buffer) {

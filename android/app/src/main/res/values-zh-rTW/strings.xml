@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- WHY: zh-TW launcher short brand; matches manifest.zh-Hant short_name / PWA「加到主畫面」 -->
+    <string name="app_name">最強肉體</string>
+    <string name="title_activity_main">最強肉體</string>
+</resources>

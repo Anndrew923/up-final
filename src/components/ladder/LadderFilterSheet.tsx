@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import OptionSelectSheet from '../home/OptionSelectSheet';
 import { LADDER_DIVISION_IDS } from '../../logic/core/ladderShards';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import type { LadderFilterSheetProps } from '../../types/ladderFilters';
 
 function LadderFilterSheetComponent({
@@ -40,14 +41,7 @@ function LadderFilterSheetComponent({
   const { t } = useTranslation('common');
   const titleId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

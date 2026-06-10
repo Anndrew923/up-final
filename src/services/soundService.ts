@@ -89,25 +89,12 @@ function stopWeb(cue: SoundCue): void {
 }
 
 export const soundService = {
-  /** Idempotent preload — safe under React StrictMode double mount. */
+  /** Idempotent bootstrap — tactical silence: no preload; safe under StrictMode double mount. */
   bootstrap(): Promise<void> {
     if (bootstrapPromise) return bootstrapPromise;
 
-    bootstrapPromise = (async () => {
-      if (typeof window === 'undefined') return;
-
-      for (const cue of SOUND_CUES) {
-        if (Capacitor.isNativePlatform()) {
-          try {
-            await preloadNative(cue);
-          } catch {
-            preloadWeb(cue);
-          }
-        } else {
-          preloadWeb(cue);
-        }
-      }
-    })();
+    // Tactical silence (2026-06-09): skip native/web preload — preserves singleton + idempotency only.
+    bootstrapPromise = Promise.resolve();
 
     return bootstrapPromise;
   },

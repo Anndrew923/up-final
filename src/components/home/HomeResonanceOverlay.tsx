@@ -10,6 +10,7 @@ import {
   resolveHomeResonancePhase,
   resolveHomeSectionString,
 } from '../../i18n/resolveHomeBundleCopy';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import HomeDiagnosticsReportPanel from './HomeDiagnosticsReportPanel';
 
 export interface HomeResonanceOverlayProps {
@@ -46,14 +47,7 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
   const bootScoreLabel = resolveHomeSectionString(t, 'resonance', 'bootScore');
   const gradeKickerLabel = resolveHomeSectionString(t, 'overallGrade', 'kicker');
 
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!--
-      WHY: Default (en) launcher label for Capacitor shell. Web「加到主畫面」uses
-      manifest.zh-Hant.webmanifest / manifest.en.webmanifest + client sync — separate pipeline.
-      Future zh-TW native label: add res/values-zh-rTW/strings.xml; keep this file as fallback/en.
+      WHY: Launcher label must stay short — OEM home screens truncate long names.
+      Aligns with PWA manifest.en short_name. Full brand name lives in Play Store + in-app copy.
+      zh-TW launcher: res/values-zh-rTW/strings.xml
     -->
-    <string name="app_name">Ultimate Physique</string>
-    <string name="title_activity_main">Ultimate Physique</string>
+    <string name="app_name">UP</string>
+    <string name="title_activity_main">UP</string>
     <string name="package_name">com.ultimatephysique.app</string>
     <string name="custom_url_scheme">com.ultimatephysique.app</string>
 </resources>

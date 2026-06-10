@@ -1,17 +1,15 @@
-import { I18N_STORAGE_KEY, toSupportedLng } from './language';
+import { resolvePreInitLocale } from './language';
 import { syncDocumentLocale } from './webInstallBranding';
 import manifestCopy from './webInstallManifest.copy.json';
 
 /**
- * WHY: i18n.init is async; read persisted locale before React paint to reduce wrong manifest/title flash.
+ * WHY: i18n.init is async; align title/manifest with detection.order before first paint.
  * Full copy still reconciled on `languageChanged` via `applyLocaleToDocument` in `i18n.ts`.
  */
 export function bootstrapDocumentLocaleFromStorage(): void {
   if (typeof window === 'undefined') return;
   try {
-    const raw = window.localStorage.getItem(I18N_STORAGE_KEY);
-    if (raw == null || raw === '') return;
-    const lng = toSupportedLng(raw);
+    const lng = resolvePreInitLocale();
     syncDocumentLocale(lng);
     document.title = manifestCopy[lng].name;
   } catch {

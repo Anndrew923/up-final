@@ -7,13 +7,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.ultimatephysique.fitness2025',
   /**
-   * WHY: Capacitor `appName` is a single static string used at native sync time (launcher label on
-   * default `res/values/strings.xml`). Web PWA uses locale manifests + `syncWebInstallBranding`;
-   * that does NOT change the installed APK name. For Play Store zh-TW launcher text, add
-   * `android/app/src/main/res/values-zh-rTW/strings.xml` with `app_name` / `title_activity_main`
-   * — do not assume changing only the web manifest updates native Android branding.
+   * WHY: Capacitor `appName` syncs to default `res/values/strings.xml` on `cap sync`.
+   * Keep this as the short launcher brand (`UP`), not the full Play Store title.
+   * zh-TW launcher label: `android/app/src/main/res/values-zh-rTW/strings.xml` (最強肉體).
    */
-  appName: 'Ultimate Physique',
+  appName: 'UP',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

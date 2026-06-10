@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { resolvePerformanceAura } from '../../logic/core/performanceAura';
 import type { PlateDisplayPick } from '../../types/trainingToolsDisplay';
 import { AURA_THEME, auraNeonCssVars } from '../assessment/auraThemeTokens';
@@ -212,14 +213,7 @@ const ToolResultModal: FC<ToolResultModalProps> = (props) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, open);
 
-  useEffect(() => {
-    if (!open || typeof document === 'undefined') return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

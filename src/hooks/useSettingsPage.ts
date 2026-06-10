@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
+import { markUserLocaleOverride } from '../i18n/language';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useAuthStore } from '../stores/authStore';
-import { hapticService } from '../services/hapticService';
+import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { sensoryPreferences } from '../services/sensoryPreferences';
 import { soundService } from '../services/soundService';
 
@@ -42,6 +43,8 @@ export interface SettingsPageState {
   isAnonymous: boolean;
   locale: SupportedLng;
   soundEnabled: boolean;
+  /** False while `SOUND_PIPELINE_TACTICALLY_SILENCED` — hides misleading sound toggle. */
+  soundSettingsVisible: boolean;
   busyAction: SettingsBusyAction;
   banner: SettingsBanner;
   canSignIn: boolean;
@@ -80,7 +83,6 @@ export function useSettingsPage(): SettingsPageState {
     setSoundEnabled(next);
     if (!next) {
       soundService.stopAll();
-      hapticService.stopContinuousSoft();
     }
   }, []);
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
@@ -98,6 +100,7 @@ export function useSettingsPage(): SettingsPageState {
       isAnonymous,
       locale,
       soundEnabled,
+      soundSettingsVisible: !SOUND_PIPELINE_TACTICALLY_SILENCED,
       busyAction,
       banner,
       canSignIn,
@@ -122,6 +125,7 @@ export function useSettingsPage(): SettingsPageState {
       },
       toggleLocale() {
         const next: SupportedLng = locale === 'zh-Hant' ? 'en' : 'zh-Hant';
+        markUserLocaleOverride(next);
         void i18n.changeLanguage(next);
       },
       toggleSound,

@@ -9,6 +9,7 @@ import {
   migrateLegacyI18nStorage,
   toSupportedLng,
 } from './i18n/language';
+import { userOverrideDetector } from './i18n/userOverrideDetector';
 import { applyLocaleToDocument } from './i18n/applyLocaleToDocument';
 
 export type { SupportedLng } from './i18n/language';
@@ -16,8 +17,11 @@ export { I18N_STORAGE_KEY, toSupportedLng } from './i18n/language';
 
 migrateLegacyI18nStorage();
 
+const languageDetector = new LanguageDetector();
+languageDetector.addDetector(userOverrideDetector);
+
 const i18nPromise = i18n
-  .use(LanguageDetector)
+  .use(languageDetector)
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
@@ -38,7 +42,8 @@ const i18nPromise = i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      // WHY: userOverride only when Settings toggled; else navigator beats stale localStorage en drift.
+      order: ['userOverride', 'navigator', 'localStorage', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: I18N_STORAGE_KEY,
       convertDetectedLanguage: (lng) => toSupportedLng(lng),

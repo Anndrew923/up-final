@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- WHY: Generic zh launcher — matches manifest.zh-Hant / PWA「加到主畫面」 -->
+    <string name="app_name">最強肉體</string>
+    <string name="title_activity_main">最強肉體</string>
+</resources>

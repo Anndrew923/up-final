@@ -1,5 +1,6 @@
-import { useEffect, type FC } from 'react';
+import { type FC } from 'react';
 import { createPortal } from 'react-dom';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { ASSESSMENT_LOBBY_SIX_AXIS_MAP } from '../../config/assessmentLobby';
 import {
   ARM_SIZE_ACCENT_RGB,
@@ -42,14 +43,7 @@ const DiagnosticOverlay: FC<DiagnosticOverlayProps> = ({
   accent,
   ariaLabel,
 }) => {
-  useEffect(() => {
-    if (!open || typeof document === 'undefined') return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   if (!open || typeof document === 'undefined') return null;
 

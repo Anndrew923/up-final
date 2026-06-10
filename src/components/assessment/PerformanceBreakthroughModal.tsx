@@ -8,6 +8,7 @@ import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakth
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
 import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
@@ -125,14 +126,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     }
   }, [open, resetGateSheet]);
 
-  useEffect(() => {
-    if (!open || typeof document === 'undefined') return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

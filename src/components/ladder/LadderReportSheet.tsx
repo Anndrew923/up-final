@@ -2,6 +2,7 @@ import { type FC, useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import type { LadderReportType } from '../../services/ladderReportService';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { mapLadderReportError, submitLadderReport } from '../../services/ladderReportService';
 
 export interface LadderReportSheetProps {
@@ -34,14 +35,7 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
     setBusy(false);
   }, [open, targetUid]);
 
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 
 export type GenderValue = '' | 'male' | 'female';
 
@@ -20,14 +21,7 @@ export default function GenderSelectSheet({
   const [open, setOpen] = useState(false);
   const titleId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
+  useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

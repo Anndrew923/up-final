@@ -1,8 +1,9 @@
-import { useEffect, type FC } from 'react';
+import { type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useBootSequenceRitual } from '../../hooks/useBootSequenceRitual';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import BootProfileBaselineForm from './BootProfileBaselineForm';
 
 export interface BootSequenceOverlayProps {
@@ -27,14 +28,7 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
     onProfileSaved,
   } = useBootSequenceRitual({ active, onComplete });
 
-  useEffect(() => {
-    if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [active]);
+  useShellScrollLock(active);
 
   if (!active) return null;
 

@@ -53,22 +53,25 @@ describe('soundService', () => {
     __resetSoundServiceForTests();
   });
 
-  it('bootstrap preloads all cues on web', async () => {
+  it('bootstrap is a no-op preload (tactical silence) but stays idempotent', async () => {
     const { soundService } = await import('../soundService');
-    await soundService.bootstrap();
-    await soundService.bootstrap();
-    expect(Audio).toHaveBeenCalledTimes(4);
+    const first = soundService.bootstrap();
+    const second = soundService.bootstrap();
+    await first;
+    await second;
+    expect(first).toBe(second);
+    expect(Audio).not.toHaveBeenCalled();
+    expect(preload).not.toHaveBeenCalled();
   });
 
-  it('play clones web audio node', async () => {
+  it('play does not clone web audio while pipeline is silenced', async () => {
     const { soundService } = await import('../soundService');
     await soundService.bootstrap();
     soundService.play('pdk_shift');
-    const entry = vi.mocked(Audio).mock.results[0]?.value as { cloneNode: ReturnType<typeof vi.fn> };
-    expect(entry.cloneNode).toHaveBeenCalled();
+    expect(Audio).not.toHaveBeenCalled();
   });
 
-  it('stopAll pauses active loop cues', async () => {
+  it('stopAll is safe when no cues were started', async () => {
     const pauseSpy = vi.fn();
     vi.stubGlobal(
       'Audio',
@@ -92,17 +95,16 @@ describe('soundService', () => {
     await soundService.bootstrap();
     soundService.playLoop('boot_hum');
     soundService.stopAll();
-    expect(pauseSpy).toHaveBeenCalled();
+    expect(pauseSpy).not.toHaveBeenCalled();
   });
 
-  it('skips play when sound disabled', async () => {
-    isSoundEnabled.mockReturnValue(false);
+  it('play stays no-op regardless of user sound preference', async () => {
+    isSoundEnabled.mockReturnValue(true);
     const { soundService, __resetSoundServiceForTests } = await import('../soundService');
     __resetSoundServiceForTests();
     await soundService.bootstrap();
-    const callsAfterBootstrap = vi.mocked(Audio).mock.calls.length;
     soundService.play('breakthrough');
-    expect(vi.mocked(Audio).mock.calls.length).toBe(callsAfterBootstrap);
+    expect(Audio).not.toHaveBeenCalled();
     isSoundEnabled.mockReturnValue(true);
   });
 });

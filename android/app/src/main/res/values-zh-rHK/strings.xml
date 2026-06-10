@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- WHY: zh-HK launcher — same short brand as zh-TW / generic zh -->
+    <string name="app_name">最強肉體</string>
+    <string name="title_activity_main">最強肉體</string>
+</resources>
