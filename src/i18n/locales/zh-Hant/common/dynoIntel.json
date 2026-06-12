@@ -1,0 +1,72 @@
+{
+  "dynoIntel": {
+    "triggerAria": "開啟 DYNO INTEL 智庫艙",
+    "sheetTitle": "DYNO INTEL",
+    "quotaLabel": "今日通電額度 {{remaining}}/{{limit}}",
+    "close": "關閉",
+    "send": "發送",
+    "inputPlaceholder": "輸入診斷問題…",
+    "loading": "遙測解碼中…",
+    "actionKicker": "修煉指針",
+    "console": {
+      "home": "CONSOLE: HOME",
+      "lobby": "CONSOLE: LOBBY",
+      "arena": "CONSOLE: ARENA",
+      "history": "CONSOLE: HISTORY",
+      "tools": "CONSOLE: TOOLS",
+      "strength": "CONSOLE: STRENGTH",
+      "grip": "CONSOLE: GRIP",
+      "ffmi": "CONSOLE: FFMI",
+      "explosive": "CONSOLE: EXPLOSIVE",
+      "cardio": "CONSOLE: CARDIO",
+      "muscle": "CONSOLE: MUSCLE",
+      "armSize": "CONSOLE: ARM",
+      "generic": "CONSOLE: DYNO"
+    },
+    "modes": {
+      "singleAxis": "單軸解讀",
+      "crossAxis": "跨軸診斷",
+      "weightSimulation": "體重模擬"
+    },
+    "chips": {
+      "axisBrief": "這軸什麼水準？",
+      "weakestLink": "哪裡最拉？",
+      "momentum": "跟上一筆比？",
+      "weightSim": "減到 {{kg}}kg 呢？"
+    },
+    "questions": {
+      "axisBrief": "用超跑車況語彙，解讀我目前聚焦軸線的分數與 tier。",
+      "weakestLink": "指出六軸最弱的一條，並給一個實體修煉指針。",
+      "momentum": "對照歷史動能 delta，告訴我是進氣提升還是積碳衰退。",
+      "weightSim": "依 weightSimulation 預算，推演減重後力量軸的 P2W 變化。"
+    },
+    "gate": {
+      "authDescription": "DYNO INTEL 需要 Google 登入後才能通電遙測。",
+      "coreDescription": "解鎖 Core 買斷後，每日可體驗 2 次單軸 AI 解讀。",
+      "proDescription": "跨軸綜合診斷與體重模擬為 Pro 專屬 — 加入戰場解鎖 DYNO INTEL 全頻道。",
+      "quotaDescription": "今日通電額度已耗盡。明日再來，或升級 Pro 取得 30 次/日。"
+    },
+    "paywall": {
+      "badge": "行車電腦完整性錯誤",
+      "title": {
+        "pro-required": "跨軸遙測通道已熔斷",
+        "quota-exhausted": "今日通電額度已耗盡"
+      },
+      "body": {
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：行車電腦已熔斷其餘綜合診斷。檢測到駕駛者的 {{axis}} 軸線處於 {{score}} 分漏水怠速，全車底盤剛性陷入失衡風險。一杯便利商店咖啡的代價，點火解鎖全球天梯、無感雲端備份與 DYNO 智慧分析官全車完整剛性。",
+        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 2 次單軸解讀已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 跨軸診斷與每日 30 次通電為 Pro 專屬。點火 Pro，恢復全車遙測剛性。"
+      },
+      "cta": "點火 Pro Pass",
+      "dismiss": "返回控制台",
+      "busy": "金流授權中…",
+      "billingFail": "金流連線失敗 — 請重試或至設定還原購買。",
+      "blindSpotScore": "未測",
+      "unknownAxis": "未知軸線"
+    },
+    "error": {
+      "network": "遙測鏈路中斷 — 稍後再試。",
+      "weightProfileMissing": "請先在首頁完成身體資料，才能啟動體重模擬。",
+      "quotaExhaustedPro": "今日通電額度已滿（30 次/日）— 請待重置後再試。"
+    }
+  }
+}

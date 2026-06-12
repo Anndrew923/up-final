@@ -1,21 +1,5 @@
 import { db } from "./admin.js";
-
-function safeDate(input) {
-  if (!input) return null;
-  const parsed = new Date(input);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function hasProFromUserDoc(data, now = new Date()) {
-  const purchaseStatus = data?.purchaseStatus ?? data?.purchase_status;
-  const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status;
-  if (purchaseStatus !== "owned") return false;
-  if (subscriptionStatus === "pro") return true;
-  if (subscriptionStatus !== "grace") return false;
-  const expiresAt = safeDate(data?.proExpiresAt ?? data?.pro_expires_at);
-  if (!expiresAt) return false;
-  return expiresAt.getTime() >= now.getTime();
-}
+import { hasProFromUserDoc } from "./userEntitlement.js";
 
 /**
  * Server Pro gate — mirrors `hasProAccess` + `canUploadLeaderboard` when paywall is on.

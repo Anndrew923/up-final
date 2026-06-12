@@ -11,6 +11,7 @@ import {
   restoreRevenueCatPurchases,
   type RevenueCatEntitlementSnapshot,
 } from './revenueCatService';
+import { syncProEntitlementToServer } from './subscriptionSyncService';
 
 export type PurchaseProResult =
   | { ok: true }
@@ -21,13 +22,34 @@ export type PurchaseProResult =
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-function applySimulatedProSnapshot(): void {
-  const snapshot: RevenueCatEntitlementSnapshot = {
+function buildSimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
+  return {
     active: true,
     productIdentifier: 'pro_monthly_099',
     expiresDate: new Date(Date.now() + THIRTY_DAYS_MS).toISOString(),
   };
+}
+
+function applySimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
+  const snapshot = buildSimulatedProSnapshot();
   useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+  return snapshot;
+}
+
+function rollbackLocalProSubscription(): void {
+  useEntitlementStore.getState().applyRevenueCatEntitlement({
+    active: false,
+    productIdentifier: null,
+    expiresDate: null,
+  });
+}
+
+async function activateProOnServer(
+  source: 'revenuecat' | 'client-simulation',
+  snapshot: RevenueCatEntitlementSnapshot | null
+): Promise<boolean> {
+  const sync = await syncProEntitlementToServer({ source, snapshot });
+  return sync.ok;
 }
 
 /**
@@ -49,7 +71,12 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
   }
 
   if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
-    applySimulatedProSnapshot();
+    const snapshot = applySimulatedProSnapshot();
+    const synced = await activateProOnServer('client-simulation', snapshot);
+    if (!synced) {
+      rollbackLocalProSubscription();
+      return { ok: false, reason: 'failed' };
+    }
     void hapticService.triggerProPurchaseCelebration();
     return { ok: true };
   }
@@ -64,9 +91,15 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     if (!snapshot.active) {
       return { ok: false, reason: 'failed' };
     }
+    const synced = await activateProOnServer('revenuecat', snapshot);
+    if (!synced) {
+      rollbackLocalProSubscription();
+      return { ok: false, reason: 'failed' };
+    }
     void hapticService.triggerProPurchaseCelebration();
     return { ok: true };
   } catch {
+    rollbackLocalProSubscription();
     return { ok: false, reason: 'failed' };
   }
 }
@@ -90,6 +123,9 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
         return { restored: false, hadSnapshot: false, proActive: false };
       }
       useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+      if (snapshot.active) {
+        await activateProOnServer('revenuecat', snapshot);
+      }
       return {
         restored: true,
         hadSnapshot: true,

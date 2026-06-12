@@ -14,9 +14,14 @@ vi.mock('../../hooks/useSettingsPage', () => ({
   useSettingsPage: () => mockUseSettingsPage(),
 }));
 
+const RE_CALIBRATE_LABELS: Record<string, string> = {
+  'settings.system.reCalibrate': '重新通電',
+  'settings.system.reCalibrateKicker': 'RE-CALIBRATION',
+};
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string) => RE_CALIBRATE_LABELS[key] ?? key,
   }),
 }));
 
@@ -86,6 +91,48 @@ describe('SettingsPage section hints', () => {
     expect(text).not.toContain('settings.system.reCalibrateHint');
     expect(text).toContain('settings.languageSection');
     expect(text).toContain('settings.infoSection');
+
+    unmount();
+  });
+});
+
+describe('SettingsPage re-calibrate control', () => {
+  afterEach(() => {
+    mockUseSettingsPage.mockReset();
+    document.body.innerHTML = '';
+  });
+
+  it('renders ui-btn affordance with aria-hidden arrow and invokes handler', () => {
+    const reCalibrateBoot = vi.fn();
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      reCalibrateBoot,
+    });
+
+    const { container, unmount } = renderPage();
+    const calibrateBtn = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('重新通電')
+    );
+
+    expect(calibrateBtn).toBeDefined();
+    expect(calibrateBtn?.className).toContain('ui-btn');
+    expect(calibrateBtn?.className).toContain('w-full');
+    expect(calibrateBtn?.className).toContain('items-center');
+    expect(calibrateBtn?.className).toContain('justify-between');
+    expect(calibrateBtn?.className).toContain('border-accent-primary/40');
+    expect(calibrateBtn?.textContent).toContain('重新通電');
+    expect(calibrateBtn?.textContent).toContain('RE-CALIBRATION');
+
+    const labelRow = calibrateBtn?.querySelector('.flex.items-center.gap-2');
+    expect(labelRow?.childElementCount).toBe(2);
+
+    const arrow = calibrateBtn?.querySelector('[aria-hidden="true"]');
+    expect(arrow?.textContent).toBe('→');
+
+    act(() => {
+      calibrateBtn?.click();
+    });
+    expect(reCalibrateBoot).toHaveBeenCalledTimes(1);
 
     unmount();
   });

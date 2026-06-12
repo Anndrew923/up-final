@@ -2,7 +2,7 @@
 export const JOIN_ARENA_PRO_FEATURE_KEYS = [
   'proFeatureLeaderboard',
   'proFeatureCloudSync',
-  'proFeatureArena',
+  'proFeatureDynoIntel',
 ] as const;
 
 export type JoinArenaProFeatureKey = (typeof JOIN_ARENA_PRO_FEATURE_KEYS)[number];

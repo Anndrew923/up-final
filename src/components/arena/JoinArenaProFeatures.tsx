@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { JoinArenaProFeatureKey } from './joinArenaFeatureKeys';
 
-type FeatureVariant = 'leaderboard' | 'cloud' | 'telemetry';
+type FeatureVariant = 'leaderboard' | 'cloud' | 'dyno-intel';
 
 interface FeatureRowProps {
   variant: FeatureVariant;
@@ -14,20 +14,20 @@ interface FeatureRowProps {
 const iconAnimation: Record<FeatureVariant, string> = {
   leaderboard: 'animate-arena-radar-sweep',
   cloud: 'animate-arena-cloud-breathe',
-  telemetry: 'animate-arena-telemetry-pulse',
+  'dyno-intel': 'animate-arena-telemetry-pulse',
 };
 
 const haloClass: Record<FeatureVariant, string> = {
   leaderboard:
     'border-accent-primary/40 bg-accent-primary/15 shadow-[0_0_14px_rgba(255,140,0,0.45)]',
   cloud: 'border-accent-info/40 bg-accent-info/15 shadow-[0_0_14px_rgba(0,191,255,0.4)]',
-  telemetry: 'border-violet-400/40 bg-violet-500/15 shadow-[0_0_12px_rgba(139,92,246,0.4)]',
+  'dyno-intel': 'border-violet-400/40 bg-violet-500/15 shadow-[0_0_12px_rgba(139,92,246,0.4)]',
 };
 
 const dotClass: Record<FeatureVariant, string> = {
   leaderboard: 'bg-accent-primary',
   cloud: 'bg-accent-info',
-  telemetry: 'bg-violet-400',
+  'dyno-intel': 'bg-violet-400',
 };
 
 const FeatureRow: FC<FeatureRowProps> = ({ variant, labelKey, motionOn }) => {
@@ -71,7 +71,7 @@ const JoinArenaProFeatures: FC = () => {
         <ul className="space-y-4">
           <FeatureRow variant="leaderboard" labelKey="proFeatureLeaderboard" motionOn={motionOn} />
           <FeatureRow variant="cloud" labelKey="proFeatureCloudSync" motionOn={motionOn} />
-          <FeatureRow variant="telemetry" labelKey="proFeatureArena" motionOn={motionOn} />
+          <FeatureRow variant="dyno-intel" labelKey="proFeatureDynoIntel" motionOn={motionOn} />
         </ul>
         <p className="border-t border-zinc-800/80 pt-4 text-[11px] leading-snug text-pretty text-zinc-500 sm:text-xs">
           {t('disclaimer')}

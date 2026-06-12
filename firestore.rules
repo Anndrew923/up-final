@@ -148,6 +148,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // DYNO INTEL — Gemini response cache; Admin SDK only (24h TTL).
+    match /dyno_intel_cache/{hash} {
+      allow read, write: if false;
+    }
+
+    // DYNO INTEL — daily quota counters; doc id is uid (dayKey lives inside the doc).
+    match /dyno_intel_rate_limits/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // Ladder UGC reports — Callable `ladderReportUser` only (Admin SDK writes).
     match /ladder_reports/{reportId} {
       allow read, write: if false;

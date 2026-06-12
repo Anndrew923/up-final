@@ -6,51 +6,53 @@
     "ignite": "IGNITE // 點火啟動",
     "phase1": {
       "kicker": "Phase 01 · System Wake",
-      "body": "System awoken. Factory chassis scan complete.\n\nThe body is your vehicle. The stock setup might be set, but pushing the threshold and squeezing out every single horsepower is our ultimate pursuit.\n\nWelcome to Ultimate Physique."
+      "body": "System wake complete. Chassis standby—ready to squeeze out your max horsepower."
     },
     "profileInput": {
       "kicker": "Phase 01.5 · Spec Registration",
-      "body": "Before unlocking the console, the system requires your raw vehicle parameters.\n\nThis is the core gearing ratio for your entire performance. Accuracy is absolute.",
+      "body": "Enter sex, age, height, and weight to lock your six-axis baseline.",
       "lockHint": "Chassis parameters unwritten. Save telemetry to unlock boot sequence."
     },
     "baseline": {
-      "protocolTitle": "🛠️ UNIFIED DYNO CALIBRATION PROTOCOL",
-      "protocolDesc": "Subjective ratings are denied. The following six-axis metrics are calculated by the underlying sports science engine, locking your baseline telemetry for all subsequent Dyno benchmarks.",
-      "authorityFooter": "⚠️ WARNING: This system does not flatter. Upon boot, these hard metrics will be committed directly to raw Dyno evaluation.",
+      "protocolTitle": "6-Axis Dyno Protocol",
+      "protocolDesc": "Six axes from the sports-science engine; parameters lock all later benchmarks.",
+      "protocolExpand": "Expand protocol details",
+      "protocolCollapse": "Collapse protocol details",
+      "authorityFooter": "⚠️ Scores benchmark live data—straight to raw Dyno on boot.",
       "features": {
         "strength": {
-          "label": "CHASSIS / HP",
-          "desc": "Employs DOTS coefficients to neutralize weight bias, extracting pure structural load efficiency."
+          "label": "STRENGTH / MAX HP",
+          "desc": "DOTS neutralizes weight bias; pure structural output."
         },
         "cardio": {
-          "label": "STINT / THERMAL",
-          "desc": "Applies Cooper dual-track algorithms to accurately project aerobic standards and VO2 Max."
+          "label": "CARDIO / ENDURANCE",
+          "desc": "Cooper dual-track aerobic and VO2 Max projection."
         },
         "skeletalMuscle": {
           "label": "EXTERIOR / CHSS",
-          "desc": "Maps Skeletal Muscle Mass (SMM) benchmarks to visualize chassis lines and structural integrity."
+          "desc": "SMM benchmarks map chassis lines and structure."
         },
         "ffmi": {
           "label": "DISPLACEMENT / P2W",
-          "desc": "Calculates horsepower displacement via Fat-Free Mass Index, decoupling body fat and height advantages."
+          "desc": "Fat-free mass index decouples height and body-fat bias."
         },
         "explosive": {
           "label": "TORQUE / TRQ",
-          "desc": "Monitors transient power output matrices to measure neuro-muscular launch drive and torque."
+          "desc": "Transient burst power; launch torque readout."
         },
         "grip": {
-          "label": "GRIP / TRACTION",
-          "desc": "Tests kinetic conduction from Central Nervous System (CNS) to extremities, defining terminal grip and control."
+          "label": "GRIP / TIRE GRIP",
+          "desc": "CNS-to-extremity conduction; grip and control output."
         }
       }
     },
     "phase2": {
       "kicker": "Phase 02 · Performance Overview",
-      "body": "Six-dimensional performance cluster initialized.\n\nThis panel reads your core output and synchronicity. Data never lies; the engine's thermal layer is yours to command."
+      "body": "Six-axis cluster ready—your output, your rules."
     },
     "phase3": {
-      "kicker": "Phase 03 · Horsepower Calibration",
-      "body": "Entering raw Chassis Dyno.\n\nCommit your threshold data to unlock dynamic halos and performance tiers. Tighten the bolts, engage your baseline calibration now!"
+      "kicker": "Phase 03 · Full-Vehicle Calibration",
+      "body": "Enter the Dyno—commit threshold data and start baseline calibration."
     }
   }
 }

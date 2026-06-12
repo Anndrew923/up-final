@@ -13,7 +13,7 @@
     "openAbout": "關於我",
     "openPrivacyPolicy": "隱私權政策",
     "system": {
-      "reCalibrate": "重新執行全車通電校準",
+      "reCalibrate": "重新通電",
       "reCalibrateKicker": "RE-CALIBRATION",
       "reCalibrateConfirm": "確定要重新執行全車通電校準嗎？將重置首次通電聚光燈引導，並立即返回首頁重新啟動。"
     },

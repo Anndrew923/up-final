@@ -60,3 +60,14 @@ export const CALLABLE_OPTS = {
   memory: "512MiB",
   timeoutSeconds: 120,
 };
+
+/** DYNO INTEL — keep in sync with product quotas. */
+export const DYNO_INTEL_TRIAL_PER_DAY = 2;
+export const DYNO_INTEL_PRO_PER_DAY = 30;
+export const DYNO_INTEL_RATE_LIMITS_COLLECTION = "dyno_intel_rate_limits";
+export const DYNO_INTEL_CACHE_COLLECTION = "dyno_intel_cache";
+export const DYNO_INTEL_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+export const DYNO_INTEL_CONTEXT_SCHEMA_VERSION = 1;
+/** Override via Functions env when Gemini 3.5 Flash GA in your project region. */
+export const DYNO_INTEL_GEMINI_MODEL =
+  process.env.GEMINI_MODEL_ID || "gemini-2.5-flash";

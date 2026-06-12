@@ -18,6 +18,7 @@ import enContact from './en/common/contact.json';
 import enAuthChoice from './en/common/authChoice.json';
 import enOnboarding from './en/common/onboarding.json';
 import enAxisLexicon from './en/common/axisLexicon.json';
+import enDynoIntel from './en/common/dynoIntel.json';
 import zhCore from './zh-Hant/common/core.json';
 import zhHome from './zh-Hant/common/home.json';
 import zhLadder from './zh-Hant/common/ladder.json';
@@ -38,6 +39,7 @@ import zhContact from './zh-Hant/common/contact.json';
 import zhAuthChoice from './zh-Hant/common/authChoice.json';
 import zhOnboarding from './zh-Hant/common/onboarding.json';
 import zhAxisLexicon from './zh-Hant/common/axisLexicon.json';
+import zhDynoIntel from './zh-Hant/common/dynoIntel.json';
 
 type CommonLocale = Record<string, unknown>;
 
@@ -85,6 +87,7 @@ export const enCommon = mergeCommonSections([
   { name: 'authChoice', content: enAuthChoice },
   { name: 'onboarding', content: enOnboarding },
   { name: 'axisLexicon', content: enAxisLexicon },
+  { name: 'dynoIntel', content: enDynoIntel },
 ]);
 
 export const zhHantCommon = mergeCommonSections([
@@ -108,4 +111,5 @@ export const zhHantCommon = mergeCommonSections([
   { name: 'authChoice', content: zhAuthChoice },
   { name: 'onboarding', content: zhOnboarding },
   { name: 'axisLexicon', content: zhAxisLexicon },
+  { name: 'dynoIntel', content: zhDynoIntel },
 ]);

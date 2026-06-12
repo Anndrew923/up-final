@@ -7,6 +7,7 @@ import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
+import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
 import HudProfileControls from './HudProfileControls';
 
 export interface AppShellProps {
@@ -59,6 +60,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       </div>
 
       <BottomNav />
+
+      <DynoIntelConsole />
 
       <BootSequenceOverlay active={bootActive} onComplete={completeBoot} />
     </div>

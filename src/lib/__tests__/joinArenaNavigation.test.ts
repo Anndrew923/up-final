@@ -25,6 +25,7 @@ describe('joinArenaNavigation', () => {
 
   it('maps entry context to UI gate feature keys', () => {
     expect(joinArenaGateFeature('backup')).toBe('cloud-sync');
+    expect(joinArenaGateFeature('dyno-intel')).toBe('dyno-intel-full');
     expect(joinArenaGateFeature('ladder')).toBe('ladder-read');
     expect(joinArenaGateFeature('settings')).toBe('ladder-read');
     expect(joinArenaGateFeature(null)).toBe('ladder-read');

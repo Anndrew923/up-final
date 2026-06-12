@@ -26,7 +26,7 @@ describe('UnifiedDynoProtocolPanel', () => {
     container = null;
   });
 
-  it('renders resolved zh-Hant protocol copy (not raw i18n keys)', async () => {
+  it('renders collapsed protocol title with resolved copy (not raw i18n keys)', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -36,9 +36,36 @@ describe('UnifiedDynoProtocolPanel', () => {
     });
 
     const text = container.textContent ?? '';
-    expect(text).toContain('統一測功');
-    expect(text).toContain('力量');
+    expect(text).toContain('六軸測功');
+    expect(text).toContain('運動科學引擎');
     expect(text).not.toContain('onboarding.baseline.protocolTitle');
     expect(text).not.toContain('onboarding.baseline.features');
+
+    const detailPanel = document.getElementById('onboarding-dyno-protocol-panel');
+    expect(detailPanel).not.toBeNull();
+    expect(detailPanel?.hasAttribute('hidden')).toBe(true);
+    expect(text).toContain('力量');
+  });
+
+  it('expands to reveal axis details and authority footer', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    await act(async () => {
+      root!.render(<UnifiedDynoProtocolPanel />);
+    });
+
+    const toggle = document.getElementById('onboarding-dyno-protocol-toggle');
+    expect(toggle).not.toBeNull();
+
+    await act(async () => {
+      toggle?.click();
+    });
+
+    const detailPanel = document.getElementById('onboarding-dyno-protocol-panel');
+    expect(detailPanel?.hasAttribute('hidden')).toBe(false);
+    expect(container.textContent).toContain('DOTS 對沖體重');
+    expect(container.textContent).toContain('實時數據');
   });
 });

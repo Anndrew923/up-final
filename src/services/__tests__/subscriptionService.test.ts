@@ -7,7 +7,18 @@ const triggerProPurchaseCelebration = vi.fn().mockResolvedValue(undefined);
 vi.mock('../hapticService', () => ({
   hapticService: {
     triggerProPurchaseCelebration,
+    triggerProPurchaseIntent: vi.fn().mockResolvedValue(undefined),
   },
+}));
+
+const syncProEntitlementToServer = vi.fn().mockResolvedValue({
+  ok: true,
+  proExpiresAt: null,
+  planId: 'pro_monthly',
+});
+
+vi.mock('../subscriptionSyncService', () => ({
+  syncProEntitlementToServer,
 }));
 
 vi.mock('../../lib/safeLocalStorage', () => ({
@@ -30,6 +41,12 @@ describe('subscription service', () => {
   beforeEach(() => {
     memory.clear();
     triggerProPurchaseCelebration.mockClear();
+    syncProEntitlementToServer.mockReset();
+    syncProEntitlementToServer.mockResolvedValue({
+      ok: true,
+      proExpiresAt: null,
+      planId: 'pro_monthly',
+    });
   });
 
   afterEach(() => {
@@ -101,6 +118,31 @@ describe('subscription service', () => {
     const persisted = loadPersistedEntitlement('tester');
     expect(persisted?.isPro).toBe(true);
     expect(persisted?.subscriptionStatus).toBe('pro');
+  });
+
+  it('rolls back local pro when server sync fails after simulation purchase', async () => {
+    useEntitlementStore.getState().hydrateEntitlement({
+      purchaseStatus: 'owned',
+      subscriptionStatus: 'free',
+      planId: 'core_lifetime_099',
+      proExpiresAt: null,
+    });
+    useAuthStore.setState({
+      status: 'signed-in',
+      uid: 'tester',
+      displayName: 'Tester',
+      email: 'tester@example.com',
+      firebaseDisplayName: 'Tester',
+      photoURL: null,
+      isAnonymous: false,
+    });
+    useEntitlementStore.getState().bindEntitlementSession('tester');
+    syncProEntitlementToServer.mockResolvedValueOnce({ ok: false, reason: 'simulation-denied' });
+
+    const result = await purchaseProSubscription();
+    expect(result.ok).toBe(false);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+    expect(useEntitlementStore.getState().isPro).toBe(false);
   });
 
   it('returns empty restore result when no provider and no snapshot', async () => {

@@ -7,9 +7,14 @@ type Feature = 'core' | 'leaderboard-read' | 'leaderboard-write';
 /** Auth session snapshot for UI gate decisions (mirrors auth store status). */
 export type AuthStatus = 'loading' | 'signed-out' | 'signed-in';
 
-export type GateFeature = 'ladder-read' | 'ladder-upload' | 'cloud-sync';
+export type GateFeature =
+  | 'ladder-read'
+  | 'ladder-upload'
+  | 'cloud-sync'
+  | 'dyno-intel-trial'
+  | 'dyno-intel-full';
 
-export type UiGateKind = 'none' | 'auth' | 'pro';
+export type UiGateKind = 'none' | 'auth' | 'pro' | 'core';
 
 export interface UiGateResult {
   kind: UiGateKind;
@@ -22,12 +27,14 @@ function safeDate(input: string | null): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function isGoogleLinked(authStatus: AuthStatus, isAnonymous: boolean): boolean {
+export function isGoogleLinkedAuth(authStatus: AuthStatus, isAnonymous: boolean): boolean {
   return authStatus === 'signed-in' && !isAnonymous;
 }
 
 function joinArenaFromForFeature(feature: GateFeature): UiGateJoinArenaFrom {
-  return feature === 'cloud-sync' ? 'backup' : 'ladder';
+  if (feature === 'cloud-sync') return 'backup';
+  if (feature === 'dyno-intel-trial' || feature === 'dyno-intel-full') return 'dyno-intel';
+  return 'ladder';
 }
 
 function requiresProForFeature(
@@ -37,6 +44,12 @@ function requiresProForFeature(
 ): boolean {
   if (feature === 'cloud-sync') {
     return !hasProAccess(ent, now);
+  }
+  if (feature === 'dyno-intel-full') {
+    return !hasProAccess(ent, now);
+  }
+  if (feature === 'dyno-intel-trial') {
+    return false;
   }
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
     return false;
@@ -62,8 +75,12 @@ export function resolveUiGate(
     return { kind: 'none' };
   }
 
-  if (!isGoogleLinked(authStatus, isAnonymous)) {
+  if (!isGoogleLinkedAuth(authStatus, isAnonymous)) {
     return { kind: 'auth' };
+  }
+
+  if (feature === 'dyno-intel-trial' && !hasCoreAccess(ent) && !hasProAccess(ent, now)) {
+    return { kind: 'core' };
   }
 
   if (!requiresProForFeature(feature, ent, now)) {

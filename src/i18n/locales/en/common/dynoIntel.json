@@ -1,0 +1,72 @@
+{
+  "dynoIntel": {
+    "triggerAria": "Open DYNO INTEL console",
+    "sheetTitle": "DYNO INTEL",
+    "quotaLabel": "Daily uplink {{remaining}}/{{limit}}",
+    "close": "Close",
+    "send": "Send",
+    "inputPlaceholder": "Ask a diagnostic question…",
+    "loading": "Decoding telemetry…",
+    "actionKicker": "Action directive",
+    "console": {
+      "home": "CONSOLE: HOME",
+      "lobby": "CONSOLE: LOBBY",
+      "arena": "CONSOLE: ARENA",
+      "history": "CONSOLE: HISTORY",
+      "tools": "CONSOLE: TOOLS",
+      "strength": "CONSOLE: STRENGTH",
+      "grip": "CONSOLE: GRIP",
+      "ffmi": "CONSOLE: FFMI",
+      "explosive": "CONSOLE: EXPLOSIVE",
+      "cardio": "CONSOLE: CARDIO",
+      "muscle": "CONSOLE: MUSCLE",
+      "armSize": "CONSOLE: ARM",
+      "generic": "CONSOLE: DYNO"
+    },
+    "modes": {
+      "singleAxis": "Single axis",
+      "crossAxis": "Cross-axis",
+      "weightSimulation": "Weight sim"
+    },
+    "chips": {
+      "axisBrief": "This axis level?",
+      "weakestLink": "Weakest link?",
+      "momentum": "Vs last log?",
+      "weightSim": "At {{kg}} kg?"
+    },
+    "questions": {
+      "axisBrief": "Explain my focused axis score and tier using vehicle metaphors.",
+      "weakestLink": "Identify my weakest six-axis link and one concrete training directive.",
+      "momentum": "Compare momentum deltas — intake gain or carbon buildup?",
+      "weightSim": "Using weightSimulation, project strength P2W at the target weight."
+    },
+    "gate": {
+      "authDescription": "Sign in with Google to power on DYNO INTEL.",
+      "coreDescription": "Own Core for 2 daily single-axis AI briefings.",
+      "proDescription": "Cross-axis diagnostics and weight simulation are Pro — join the arena.",
+      "quotaDescription": "Daily uplink exhausted. Try again tomorrow or upgrade to Pro for 30/day."
+    },
+    "paywall": {
+      "badge": "Console integrity error",
+      "title": {
+        "pro-required": "Cross-axis uplink locked",
+        "quota-exhausted": "Daily uplink exhausted"
+      },
+      "body": {
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: The ECU has tripped remaining cross-axis diagnostics. Driver {{axis}} axis is idling at {{score}} pts with a leak — chassis balance at risk. For the price of a convenience-store coffee, ignite Pro: global ladder, silent cloud backup, and full DYNO INTEL rigidity.",
+        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's 2 single-axis briefings are spent. Your {{axis}} axis still idles at {{score}} pts — cross-axis diagnostics and 30 daily uplinks are Pro-only. Ignite Pro to restore full chassis telemetry."
+      },
+      "cta": "Ignite Pro Pass",
+      "dismiss": "Return to console",
+      "busy": "Authorizing payment…",
+      "billingFail": "Billing link failed — try again or restore purchases in Settings.",
+      "blindSpotScore": "unscored",
+      "unknownAxis": "unknown axis"
+    },
+    "error": {
+      "network": "Telemetry link lost — try again shortly.",
+      "weightProfileMissing": "Complete your body profile on Home before running weight simulation.",
+      "quotaExhaustedPro": "Daily uplink cap reached (30/day) — return after reset."
+    }
+  }
+}

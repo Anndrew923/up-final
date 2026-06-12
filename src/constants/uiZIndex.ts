@@ -1,4 +1,6 @@
 export const Z_INDEX_CLASS = {
+  dynoIntelTrigger: 'z-[55]',
+  dynoIntelSheet: 'z-[220]',
   performanceBreakthroughModal: 'z-[240]',
   toolResultModal: 'z-[240]',
   ladderFilterSheet: 'z-[230]',

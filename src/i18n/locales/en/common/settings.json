@@ -13,7 +13,7 @@
     "openAbout": "About",
     "openPrivacyPolicy": "Privacy Policy",
     "system": {
-      "reCalibrate": "Run Full Vehicle Power-On Calibration",
+      "reCalibrate": "Reset Boot",
       "reCalibrateKicker": "RE-CALIBRATION",
       "reCalibrateConfirm": "Run full vehicle power-on calibration again? This resets the first-run tour and returns to Home."
     },

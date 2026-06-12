@@ -112,20 +112,23 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-accent-primary/25 bg-bg-panel/40 p-5 shadow-panel backdrop-blur-md">
-        <button
-          type="button"
-          className="flex w-full flex-col gap-1 rounded-xl border border-zinc-700/60 bg-zinc-950/50 px-4 py-4 text-left transition-colors hover:border-accent-primary/40 hover:bg-accent-primary/5"
-          onClick={reCalibrateBoot}
-        >
+      <button
+        type="button"
+        className="ui-btn flex w-full items-center justify-between border-accent-primary/40 bg-zinc-950/50 px-4 py-4 text-accent-primary transition-colors hover:bg-accent-primary/5 active:scale-[0.98]"
+        onClick={reCalibrateBoot}
+      >
+        <span className="flex items-center gap-2">
           <span className="text-sm font-semibold text-zinc-100">
             {t('settings.system.reCalibrate')}
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-accent-primary/80">
+          <span className="rounded-full border border-accent-primary/30 bg-accent-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-accent-primary/90">
             {t('settings.system.reCalibrateKicker')}
           </span>
-        </button>
-      </section>
+        </span>
+        <span className="shrink-0 text-xs text-zinc-500" aria-hidden>
+          →
+        </span>
+      </button>
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
