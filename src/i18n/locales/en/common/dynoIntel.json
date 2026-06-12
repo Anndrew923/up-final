@@ -1,6 +1,12 @@
 {
   "dynoIntel": {
     "triggerAria": "Open DYNO INTEL console",
+    "triggerBadge": "DI",
+    "triggerTicker": {
+      "online": "INTEL: ONLINE",
+      "scanning": "SCANNING...",
+      "coreMax": "CORE_MAX"
+    },
     "sheetTitle": "DYNO INTEL",
     "quotaLabel": "Daily uplink {{remaining}}/{{limit}}",
     "close": "Close",
