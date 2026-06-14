@@ -1,7 +1,22 @@
 import { db } from "./admin.js";
 import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
 
+function isDynoIntelEntitlementBypassActive() {
+  return (
+    process.env.DYNO_INTEL_DEV_BYPASS === "true" ||
+    process.env.DYNO_INTEL_BETA_FREE === "true"
+  );
+}
+
+/**
+ * Resolves Core / Pro for Callable gates.
+ * WHY: Client bypass flags must mirror these env vars or cross-axis calls still return pro-required.
+ */
 export async function resolveDynoIntelEntitlement(uid, authToken, now = new Date()) {
+  if (isDynoIntelEntitlementBypassActive()) {
+    return { isPro: true, hasCore: true };
+  }
+
   if (authToken?.pro === true) {
     return { isPro: true, hasCore: true };
   }

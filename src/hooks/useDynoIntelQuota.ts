@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DYNO_INTEL_PRO_DAILY, DYNO_INTEL_TRIAL_DAILY } from '../config/dynoIntel';
-import { hasProAccess } from '../logic/core/entitlement';
+import { canUseDynoIntelFull } from '../logic/core/dynoIntelGates';
+import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { selectEntitlementState } from '../stores/entitlementSelectors';
 
@@ -18,7 +19,9 @@ export interface DynoIntelQuotaState {
  */
 export function useDynoIntelQuota(): DynoIntelQuotaState {
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
-  const isPro = hasProAccess(entitlement);
+  const authStatus = useAuthStore((s) => s.status);
+  const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const isPro = canUseDynoIntelFull(entitlement, authStatus, isAnonymous);
   const defaultLimit = isPro ? DYNO_INTEL_PRO_DAILY : DYNO_INTEL_TRIAL_DAILY;
 
   const [remaining, setRemaining] = useState(defaultLimit);

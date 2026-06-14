@@ -1,3 +1,4 @@
+import { isDynoIntelProBypassActive } from '../../config/dynoIntelAccess';
 import type { EntitlementState } from '../../types/entitlement';
 import type { UiGateJoinArenaFrom } from '../../types/uiGate';
 import {
@@ -8,6 +9,10 @@ import {
   resolveUiGate,
 } from './entitlement';
 import type { DynoIntelMode } from './dynoIntelTypes';
+
+function hasDynoIntelBypassAccess(authStatus: AuthStatus, isAnonymous: boolean): boolean {
+  return isDynoIntelProBypassActive() && isGoogleLinkedAuth(authStatus, isAnonymous);
+}
 
 export type DynoIntelBlockReason = 'auth' | 'core-required' | 'pro-required';
 
@@ -45,6 +50,10 @@ export function resolveDynoIntelAccess(
 ): DynoIntelAccessResult {
   if (authStatus === 'loading') {
     return { allowed: false };
+  }
+
+  if (hasDynoIntelBypassAccess(authStatus, isAnonymous)) {
+    return { allowed: true };
   }
 
   const feature = gateFeatureForMode(mode);
@@ -94,6 +103,7 @@ export function canUseDynoIntelFull(
   now: Date = new Date()
 ): boolean {
   if (!isGoogleLinkedAuth(authStatus, isAnonymous)) return false;
+  if (isDynoIntelProBypassActive()) return true;
   return hasProAccess(ent, now);
 }
 

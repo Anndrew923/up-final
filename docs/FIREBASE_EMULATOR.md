@@ -48,6 +48,7 @@
 - **P2 天梯寫入**：Rules 禁止客戶端直寫榜單；本地也應設 `VITE_LADDER_CALLABLE_WRITES=true`，讓上傳走本機 `ladderSubmitShard`。
 - Emulator **不會**自動同步 RevenueCat / 正式 `users` 文件；Pro 驗證在 `LEADERBOARD_PAYWALL_ENABLED` 未開時與線上一樣不擋。
 - 若要測「已部署線上行為」，關閉 `VITE_FIREBASE_USE_EMULATORS`，並確認已執行過 `npm run firebase:deploy:ladder-p2`。
+- **DYNO INTEL 本地通電**（跨軸 + Gemini）：見 [DYNO_INTEL_LOCAL.md](./DYNO_INTEL_LOCAL.md)，一鍵指令 `npm run dev:dyno`。
 - 資料可匯出／匯入：`firebase emulators:export ./emulator-data`（團隊共用時勿提交敏感資料）。
 
 ## 與剛完成的 deploy 的關係

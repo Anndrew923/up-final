@@ -30,12 +30,41 @@ export interface DynoAxisGap {
   assessmentRoute: RoutePath;
 }
 
+/** Resolved scoreMeaning band copy — official card title/summary for progressive disclosure. */
+export interface DynoAxisCardCopy {
+  title: string;
+  summary: string;
+}
+
+/** Supplemental telemetry outside the six-axis radar constitution. */
+export type DynoSupplementalMetricId = 'armSize' | 'cooper' | '5km';
+
+export interface DynoSupplementalMetricSnapshot {
+  metric: DynoSupplementalMetricId;
+  score: number;
+  tierBandId: string;
+  meaningI18nPrefix: string;
+  /** Optional enriched copy from scoreMeaning i18n — set client-side before Callable. */
+  cardCopy?: DynoAxisCardCopy | null;
+}
+
+/** Official App scoring methodology slice — sourced from assessment page i18n. */
+export type DynoScoringMethodologyMetricId = SixAxisMetric | DynoSupplementalMetricId;
+
+export interface DynoScoringMethodologyBrief {
+  metric: DynoScoringMethodologyMetricId;
+  title: string;
+  body: string;
+}
+
 export interface DynoAxisSnapshot {
   axis: SixAxisMetric;
   score: number | null;
   tierBandId: string | null;
   meaningI18nPrefix: string | null;
   weightInvariant: boolean;
+  /** Optional enriched copy from scoreMeaning i18n — set client-side before Callable. */
+  cardCopy?: DynoAxisCardCopy | null;
 }
 
 export interface DynoAxisDelta {
@@ -62,6 +91,12 @@ export interface DynoIntelContextV1 {
   locale: 'zh-Hant' | 'en';
   mode: DynoIntelMode;
   focusAxis: SixAxisMetric | null;
+  /** Bridges UI surface names (e.g. FFMI) to axes[].telemetry keys for the model. */
+  focusAxisLexicon?: {
+    axis: SixAxisMetric;
+    telemetryKey: SixAxisMetric;
+    surfaceLabel: string;
+  } | null;
   overallScore: number | null;
   axes: DynoAxisSnapshot[];
   gaps: DynoAxisGap[];
@@ -80,6 +115,16 @@ export interface DynoIntelContextV1 {
   vehicleClassId: VehicleClassId | null;
   /** Pre-computed hint for off-topic redirect and model grounding. */
   weakestAxis: SixAxisMetric | null;
+  /** Arm-size + cardio sub-test telemetry — does not alter six-axis radar math. */
+  supplementalMetrics: DynoSupplementalMetricSnapshot[];
+  /** Page focus for supplemental decode (armSize page, Cooper tab, 5km tab). */
+  focusSupplemental: DynoSupplementalMetricId | null;
+  /** Product scoring methodology — client resolves from assessment i18n before Callable. */
+  scoringMethodologyBriefs: DynoScoringMethodologyBrief[];
+  /** Locale-resolved nudge — invite users to assessment pages for fuller copy. */
+  assessmentDeepDiveNudge: string;
+  /** Beat-3 data-anchored emotional closing — selected client-side from telemetry. */
+  replyClosingCue: string;
   generatedAt: string;
 }
 
@@ -89,6 +134,7 @@ export interface BuildDynoIntelContextInput {
   locale: 'zh-Hant' | 'en';
   mode: DynoIntelMode;
   focusAxis?: SixAxisMetric | null;
+  focusSupplemental?: DynoSupplementalMetricId | null;
   targetWeightKg?: number;
   now?: Date;
 }

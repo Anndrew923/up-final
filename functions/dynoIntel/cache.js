@@ -23,7 +23,19 @@ export async function loadDynoIntelCache(hash, nowMs = Date.now()) {
   return data.payload ?? null;
 }
 
+/**
+ * WHY: Off-topic replies are boundary-only — caching them wastes Firestore and preserves stale bad patterns.
+ */
+export function shouldPersistDynoIntelCache(reply) {
+  if (!reply || typeof reply !== "object") return false;
+  return reply.is_off_topic !== true;
+}
+
 export async function saveDynoIntelCache(hash, payload, promptTemplateId, now = new Date()) {
+  if (!shouldPersistDynoIntelCache(payload)) {
+    return false;
+  }
+
   const expiresAt = new Date(now.getTime() + DYNO_INTEL_CACHE_TTL_MS).toISOString();
   await db.collection(DYNO_INTEL_CACHE_COLLECTION).doc(hash).set({
     payload,
@@ -31,4 +43,5 @@ export async function saveDynoIntelCache(hash, payload, promptTemplateId, now = 
     createdAt: now.toISOString(),
     expiresAt,
   });
+  return true;
 }

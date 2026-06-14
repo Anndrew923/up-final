@@ -94,7 +94,16 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
 
   const cacheHash = buildDynoIntelCacheHash({
     mergedScores: context.axes,
+    supplementalMetrics: context.supplementalMetrics ?? [],
+    scoringMethodologyBriefs: context.scoringMethodologyBriefs ?? [],
+    assessmentDeepDiveNudge: context.assessmentDeepDiveNudge ?? null,
+    replyClosingCue: context.replyClosingCue ?? null,
+    focusSupplemental: context.focusSupplemental ?? null,
     deltas: context.momentum?.deltas ?? [],
+    mode: context.mode,
+    focusAxis: context.focusAxis ?? null,
+    locale: context.locale,
+    weightSimulationTargetKg: context.weightSimulation?.targetWeightKg ?? null,
     promptTemplateId,
     userQuestion,
   });
@@ -142,6 +151,12 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
   } catch (err) {
     if (err?.code === "failed-precondition") {
       throw new HttpsError("failed-precondition", "Gemini API is not configured");
+    }
+    if (String(err?.message ?? "").includes("gemini-http-429")) {
+      throw new HttpsError("resource-exhausted", "Gemini API quota exhausted");
+    }
+    if (String(err?.message ?? "").includes("gemini-invalid-json")) {
+      throw new HttpsError("internal", "DYNO_INTEL_INFERENCE_MALFORMED");
     }
     console.error("[dynoIntelChat] gemini failure", err?.message, err?.detail ?? "");
     throw new HttpsError("internal", "DYNO INTEL inference failed");

@@ -4,15 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { ROUTES } from '../../config/routes';
 import { buildDynoIntelContext } from '../../logic/core/buildDynoIntelContext';
+import { enrichDynoIntelContextCardCopy } from '../../logic/core/enrichDynoIntelContextCardCopy';
 import { resolveDynoPaywallWeakestBrief } from '../../logic/core/dynoIntelPaywallBrief';
 import { useDynoIntelChat } from '../../hooks/useDynoIntelChat';
 import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
-import {
-  canUseDynoIntelFull,
-  resolveDynoIntelSheetEntry,
-} from '../../logic/core/dynoIntelGates';
+import { resolveDynoIntelSheetEntry } from '../../logic/core/dynoIntelGates';
 import { resolveWeightSimulationTargetKg } from '../../logic/core/dynoIntelWeightSim';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
@@ -24,10 +22,7 @@ import { selectEntitlementState } from '../../stores/entitlementSelectors';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import LeaderboardGateSheet from '../ladder/LeaderboardGateSheet';
 import DynoActiveTrigger from './DynoActiveTrigger';
-import DynoIntelBottomSheet, {
-  type DynoIntelChipView,
-  type DynoIntelSheetView,
-} from './DynoIntelBottomSheet';
+import DynoIntelBottomSheet, { type DynoIntelSheetView } from './DynoIntelBottomSheet';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import { useDynoIntelContextBuilder } from '../../hooks/useDynoIntelContextBuilder';
 
@@ -67,16 +62,19 @@ const DynoIntelConsole = () => {
         effectiveMode === 'weight-simulation'
           ? resolveWeightSimulationTargetKg(snapshot.profile)
           : undefined;
-      return buildDynoIntelContext({
+      const context = buildDynoIntelContext({
         radarInput: snapshot,
         historyRecords: snapshot.historyRecords,
         locale,
         mode: effectiveMode,
         focusAxis,
+        focusSupplemental: route.focusSupplemental,
         targetWeightKg,
       });
+
+      return enrichDynoIntelContextCardCopy(context, t);
     },
-    [buildRadarInput, i18n.language, route.focusAxis]
+    [buildRadarInput, i18n.language, route.focusAxis, route.focusSupplemental, t]
   );
 
   const paywallContext = useMemo(
@@ -133,89 +131,6 @@ const DynoIntelConsole = () => {
 
   const consoleLabel = t(`dynoIntel.console.${route.consoleLabelKey}`);
 
-  const weightSimTargetKg = useMemo(
-    () => resolveWeightSimulationTargetKg(buildRadarInput().profile),
-    [buildRadarInput]
-  );
-
-  const requestPaywallForPro = useCallback(() => {
-    openPaywall('pro-required');
-  }, [openPaywall]);
-
-  const chips = useMemo((): DynoIntelChipView[] => {
-    const proFull = canUseDynoIntelFull(entitlement, authStatus, isAnonymous);
-    const send = chat.sendQuestion;
-    const weightSimLabel =
-      weightSimTargetKg != null
-        ? t('dynoIntel.chips.weightSim', { kg: weightSimTargetKg })
-        : t('dynoIntel.chips.weightSim', { kg: '—' });
-    return [
-      {
-        id: 'axis-brief',
-        label: t('dynoIntel.chips.axisBrief'),
-        mode: 'single-axis',
-        locked: false,
-        onSelect: () => {
-          void send(t('dynoIntel.questions.axisBrief'), undefined, 'single-axis');
-        },
-      },
-      {
-        id: 'weakest',
-        label: t('dynoIntel.chips.weakestLink'),
-        mode: 'cross-axis',
-        locked: !proFull,
-        onSelect: () => {
-          if (!proFull) {
-            requestPaywallForPro();
-            return;
-          }
-          void send(t('dynoIntel.questions.weakestLink'), 'system_v1', 'cross-axis');
-        },
-      },
-      {
-        id: 'momentum',
-        label: t('dynoIntel.chips.momentum'),
-        mode: 'cross-axis',
-        locked: !proFull,
-        onSelect: () => {
-          if (!proFull) {
-            requestPaywallForPro();
-            return;
-          }
-          void send(t('dynoIntel.questions.momentum'), undefined, 'cross-axis');
-        },
-      },
-      {
-        id: 'weight-sim',
-        label: weightSimLabel,
-        mode: 'weight-simulation',
-        locked: !proFull,
-        onSelect: () => {
-          if (!proFull) {
-            requestPaywallForPro();
-            return;
-          }
-          const target = resolveWeightSimulationTargetKg(buildRadarInput().profile);
-          if (target == null) {
-            chat.showError('dynoIntel.error.weightProfileMissing');
-            return;
-          }
-          void send(t('dynoIntel.questions.weightSim'), undefined, 'weight-simulation');
-        },
-      },
-    ];
-  }, [
-    authStatus,
-    buildRadarInput,
-    chat.sendQuestion,
-    chat.showError,
-    entitlement,
-    isAnonymous,
-    requestPaywallForPro,
-    t,
-    weightSimTargetKg,
-  ]);
-
   const openSheetWithGate = useCallback(() => {
     const entry = resolveDynoIntelSheetEntry(
       route.suggestedMode,
@@ -251,18 +166,6 @@ const DynoIntelConsole = () => {
     sheet,
   ]);
 
-  const handleModeChange = useCallback(
-    (next: DynoIntelMode) => {
-      if (next !== 'single-axis' && !canUseDynoIntelFull(entitlement, authStatus, isAnonymous)) {
-        openPaywall('pro-required');
-        return;
-      }
-      setMode(next);
-      chat.clearChat();
-    },
-    [authStatus, chat, entitlement, isAnonymous, openPaywall]
-  );
-
   const handleSheetClose = useCallback(() => {
     sheet.closeSheet();
     setSheetView('chat');
@@ -292,6 +195,13 @@ const DynoIntelConsole = () => {
     }
   }, [chat]);
 
+  const handleSubmitQuestion = useCallback(
+    (question: string) => {
+      void chat.sendQuestion(question, undefined, mode);
+    },
+    [chat.sendQuestion, mode]
+  );
+
   const hideTrigger = isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname);
 
   return (
@@ -316,15 +226,10 @@ const DynoIntelConsole = () => {
         consoleLabel={consoleLabel}
         remaining={quota.remaining}
         limit={quota.limit}
-        mode={mode}
-        onModeChange={handleModeChange}
-        entitlement={entitlement}
         commentary={chat.visibleText}
-        actionDirective={chat.actionDirective}
         status={chat.status}
         errorMessage={chat.errorMessageKey ? t(chat.errorMessageKey) : null}
-        chips={chips}
-        onSubmitQuestion={(question) => void chat.sendQuestion(question, undefined, mode)}
+        onSubmitQuestion={handleSubmitQuestion}
       />
       <LeaderboardGateSheet
         open={authGateOpen}

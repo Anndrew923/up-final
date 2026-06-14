@@ -12,8 +12,10 @@ import {
 import { clampScoreMapValue } from '../logic/core/scoring';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
+  loadCardioActiveTab,
   loadCardioInputs,
   loadPhysicalProfile,
+  saveCardioActiveTab,
   saveCardioInputs,
   subscribePhysicalProfile,
 } from '../services/localStorageService';
@@ -69,7 +71,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
   const setStoreScore = useScoreStore((s) => s.setScore);
 
   const [profile, setProfile] = useState(loadPhysicalProfile);
-  const [activeTab, setActiveTabState] = useState<CardioTab>('cooper');
+  const [activeTab, setActiveTabState] = useState<CardioTab>(() => loadCardioActiveTab());
 
   const [form, setForm] = useState(() => readInitialCardioForm());
   const distanceInput = form.distance;
@@ -107,6 +109,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
 
   const setActiveTab = useCallback((tab: CardioTab) => {
     setActiveTabState(tab);
+    saveCardioActiveTab(tab);
     setPreviewScore(null);
     setErrorKey(null);
     setSubmitDone(false);

@@ -21,6 +21,8 @@ import { getAxisMeaningI18nPrefix, resolveScoreBand } from './scoreMeaningCatalo
 import { buildSixAxisRadarData, calculateSixAxisOverall } from './scoring';
 import { resolveStrengthScoreFromInputs } from './strengthAssessment';
 import { resolveVehicleClass } from './vehicleResolver';
+import { buildFocusAxisLexicon } from './dynoIntelAxisLexicon';
+import { buildDynoIntelSupplementalMetrics } from './buildDynoIntelSupplementalMetrics';
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
@@ -200,6 +202,7 @@ export function buildDynoIntelContext(input: BuildDynoIntelContextInput): DynoIn
     locale: input.locale,
     mode: input.mode,
     focusAxis: input.focusAxis ?? null,
+    focusAxisLexicon: buildFocusAxisLexicon(input.focusAxis, input.locale),
     overallScore,
     axes,
     gaps,
@@ -208,6 +211,11 @@ export function buildDynoIntelContext(input: BuildDynoIntelContextInput): DynoIn
     profile: deIdentifiedProfile,
     vehicleClassId,
     weakestAxis: resolveWeakestAxis(mergedScores, gaps),
+    supplementalMetrics: buildDynoIntelSupplementalMetrics(input.radarInput),
+    focusSupplemental: input.focusSupplemental ?? null,
+    scoringMethodologyBriefs: [],
+    assessmentDeepDiveNudge: '',
+    replyClosingCue: '',
     generatedAt: now.toISOString(),
   };
 }

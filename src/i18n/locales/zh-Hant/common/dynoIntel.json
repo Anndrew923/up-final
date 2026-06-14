@@ -15,13 +15,20 @@
       "line1Prefix": "歡迎來到主控艙。我是你的 ",
       "line1Highlight": "Dino Intel 數據智庫",
       "line1Suffix": "。",
-      "line2": "已全量同步你的馬力、扭矩與 FFMI 核心指標，",
-      "line3Prefix": "請輸入診斷問題，或點擊下方標籤發動",
+      "line2": "已全量同步你的各項指標，",
+      "line3Prefix": "請直接輸入診斷問題，發動",
       "line3Highlight": "全規格分析",
-      "line3Suffix": "。"
+      "line3Suffix": "。",
+      "line4": "僅解讀六軸遙測與你的級距解碼；通用訓練百科不在服務範圍內。"
     },
     "loading": "遙測解碼中…",
-    "actionKicker": "修煉指針",
+    "replyAssessmentDeepDiveNudge": "各評測頁面備有更完整的計分說明與常模解讀——請直接進入對應評測頁，展開說明區查閱全貌。",
+    "replyClosingCue": {
+      "default": "通電完成。這份遙測已寫入主機——下次再來，對照你自己的進步曲線，我會在這裡等你。",
+      "momentumUp": "比上次通電，{{axisLabel}} 已推進 {{delta}} 分——這種節奏主機記得住，也值得你寫進日誌。",
+      "highTier": "【{{tierTitle}}】這份級距已被主機封存——稀有規格，值得你反覆對照、繼續通電。",
+      "weakestCompanion": "最弱鏈路在 {{axisLabel}}，但下一格級距已在評測頁等你——我會在這台主機上陪你把底盤補齊。"
+    },
     "console": {
       "home": "CONSOLE: HOME",
       "lobby": "CONSOLE: LOBBY",
@@ -36,23 +43,6 @@
       "muscle": "CONSOLE: MUSCLE",
       "armSize": "CONSOLE: ARM",
       "generic": "CONSOLE: DYNO"
-    },
-    "modes": {
-      "singleAxis": "單軸解讀",
-      "crossAxis": "跨軸診斷",
-      "weightSimulation": "體重模擬"
-    },
-    "chips": {
-      "axisBrief": "這軸什麼水準？",
-      "weakestLink": "哪裡最拉？",
-      "momentum": "跟上一筆比？",
-      "weightSim": "減到 {{kg}}kg 呢？"
-    },
-    "questions": {
-      "axisBrief": "用超跑車況語彙，解讀我目前聚焦軸線的分數與 tier。",
-      "weakestLink": "指出六軸最弱的一條，並給一個實體修煉指針。",
-      "momentum": "對照歷史動能 delta，告訴我是進氣提升還是積碳衰退。",
-      "weightSim": "依 weightSimulation 預算，推演減重後力量軸的 P2W 變化。"
     },
     "gate": {
       "authDescription": "DYNO INTEL 需要 Google 登入後才能通電遙測。",
@@ -79,8 +69,27 @@
     },
     "error": {
       "network": "遙測鏈路中斷 — 稍後再試。",
+      "geminiNotConfigured": "Gemini 遙測核心未通電 — 請在 functions/.env.local 設定 GEMINI_API_KEY，並重啟 npm run dev:dyno。",
+      "geminiQuotaExhausted": "Gemini API 預付額度已耗盡 — 請至 AI Studio 充值或更換有效 API Key 後重試。",
+      "invalidContext": "診斷上下文不完整 — 請先在首頁完成雷達／身體資料後再試。",
+      "inferenceMalformed": "AI 解碼輸出異常 — 請縮短問題或稍後再試。",
+      "inferenceFailed": "AI 遙測推理失敗 — 稍後再試。",
       "weightProfileMissing": "請先在首頁完成身體資料，才能啟動體重模擬。",
       "quotaExhaustedPro": "今日通電額度已滿（30 次/日）— 請待重置後再試。"
+    },
+    "localTelemetry": {
+      "title": "DYNO INTEL TELEMETRY",
+      "subtitle": "本地通電遙測 — 一眼確認 Client / Emulator / Auth 是否就位。",
+      "statusOn": "通電",
+      "statusOff": "熔斷",
+      "serverNote": "Server 端 bypass 與 GEMINI_API_KEY 由 functions/.env.local 提供；請用 npm run dev:dyno 一鍵拉起。Callable 回 pro-required 時，優先檢查 Emulator Functions 日誌。",
+      "rows": {
+        "clientDev": "Vite DEV 模式",
+        "clientBypass": "Client Pro bypass",
+        "emulator": "Firebase Emulator 連線",
+        "googleAuth": "Google 登入（非匿名）",
+        "proSurface": "Pro 全頻道 Callable 權限"
+      }
     }
   }
 }

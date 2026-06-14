@@ -13,7 +13,26 @@ describe('resolveDynoRouteContext', () => {
     const ctx = resolveDynoRouteContext(ROUTES.strength);
     expect(ctx.consoleLabelKey).toBe('strength');
     expect(ctx.focusAxis).toBe('strength');
+    expect(ctx.focusSupplemental).toBeNull();
     expect(ctx.suggestedMode).toBe('single-axis');
+  });
+
+  it('maps arm-size page to supplemental armSize focus without six-axis focus', () => {
+    const ctx = resolveDynoRouteContext(ROUTES.armSize);
+    expect(ctx.consoleLabelKey).toBe('armSize');
+    expect(ctx.focusAxis).toBeNull();
+    expect(ctx.focusSupplemental).toBe('armSize');
+  });
+
+  it('maps cardio page to cooper supplemental by default', () => {
+    const ctx = resolveDynoRouteContext(ROUTES.cardio);
+    expect(ctx.focusAxis).toBe('cardio');
+    expect(ctx.focusSupplemental).toBe('cooper');
+  });
+
+  it('maps cardio page to 5km supplemental when tab persisted', () => {
+    const ctx = resolveDynoRouteContext(ROUTES.cardio, { cardioActiveTab: '5km' });
+    expect(ctx.focusSupplemental).toBe('5km');
   });
 
   it('maps home to cross-axis console', () => {

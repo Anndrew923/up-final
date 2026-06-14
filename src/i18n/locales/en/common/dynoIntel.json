@@ -16,12 +16,19 @@
       "line1Highlight": "Dino Intel data core",
       "line1Suffix": ".",
       "line2": "Horsepower, torque, and FFMI core metrics are fully synced.",
-      "line3Prefix": "Enter a diagnostic question, or tap a tag below to run a ",
+      "line3Prefix": "Enter a diagnostic question to run a ",
       "line3Highlight": "full-spec analysis",
-      "line3Suffix": "."
+      "line3Suffix": ".",
+      "line4": "Six-axis telemetry and your tier decode only — general training encyclopedia is out of scope."
     },
     "loading": "Decoding telemetry…",
-    "actionKicker": "Action directive",
+    "replyAssessmentDeepDiveNudge": "Each assessment page includes fuller scoring notes and norm context — open that page and expand the info section for the complete picture.",
+    "replyClosingCue": {
+      "default": "Uplink complete. This telemetry is logged on the host — come back and track your own progress curve; I'll be here.",
+      "momentumUp": "Since your last uplink, {{axisLabel}} moved up {{delta}} points — the host remembers that rhythm; log it.",
+      "highTier": "[{{tierTitle}}] tier locked on the host — rare spec worth revisiting on every uplink.",
+      "weakestCompanion": "Weakest link: {{axisLabel}} — the next tier waits on the assessment page; I'll stay on this host while you fill the gap."
+    },
     "console": {
       "home": "CONSOLE: HOME",
       "lobby": "CONSOLE: LOBBY",
@@ -36,23 +43,6 @@
       "muscle": "CONSOLE: MUSCLE",
       "armSize": "CONSOLE: ARM",
       "generic": "CONSOLE: DYNO"
-    },
-    "modes": {
-      "singleAxis": "Single axis",
-      "crossAxis": "Cross-axis",
-      "weightSimulation": "Weight sim"
-    },
-    "chips": {
-      "axisBrief": "This axis level?",
-      "weakestLink": "Weakest link?",
-      "momentum": "Vs last log?",
-      "weightSim": "At {{kg}} kg?"
-    },
-    "questions": {
-      "axisBrief": "Explain my focused axis score and tier using vehicle metaphors.",
-      "weakestLink": "Identify my weakest six-axis link and one concrete training directive.",
-      "momentum": "Compare momentum deltas — intake gain or carbon buildup?",
-      "weightSim": "Using weightSimulation, project strength P2W at the target weight."
     },
     "gate": {
       "authDescription": "Sign in with Google to power on DYNO INTEL.",
@@ -79,8 +69,27 @@
     },
     "error": {
       "network": "Telemetry link lost — try again shortly.",
+      "geminiNotConfigured": "Gemini uplink offline — set GEMINI_API_KEY in functions/.env.local and restart npm run dev:dyno.",
+      "geminiQuotaExhausted": "Gemini API prepay credits depleted — top up in AI Studio or switch to a valid API key.",
+      "invalidContext": "Diagnostic context incomplete — complete Home radar/body data first.",
+      "inferenceMalformed": "AI decode output malformed — shorten your question or retry shortly.",
+      "inferenceFailed": "AI telemetry inference failed — try again shortly.",
       "weightProfileMissing": "Complete your body profile on Home before running weight simulation.",
       "quotaExhaustedPro": "Daily uplink cap reached (30/day) — return after reset."
+    },
+    "localTelemetry": {
+      "title": "DYNO INTEL TELEMETRY",
+      "subtitle": "Local uplink telemetry — scannable Client / Emulator / Auth readiness.",
+      "statusOn": "Online",
+      "statusOff": "Tripped",
+      "serverNote": "Server bypass and GEMINI_API_KEY live in functions/.env.local; launch with npm run dev:dyno. If Callable still returns pro-required, check Emulator Functions logs first.",
+      "rows": {
+        "clientDev": "Vite DEV mode",
+        "clientBypass": "Client Pro bypass",
+        "emulator": "Firebase emulator link",
+        "googleAuth": "Google sign-in (non-anonymous)",
+        "proSurface": "Pro full-channel Callable access"
+      }
     }
   }
 }

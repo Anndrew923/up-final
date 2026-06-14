@@ -1,8 +1,15 @@
 import { ASSESSMENT_LOBBY_SIX_AXIS_MAP } from '../../config/assessmentLobby';
 import { DYNO_INTEL_AXIS_ASSESSMENT_ROUTE } from '../../config/dynoIntelAxisRoutes';
 import { ROUTES, type RoutePath } from '../../config/routes';
+import type { CardioAssessmentTab } from './cardioScoring';
+import type { DynoSupplementalMetricId } from './dynoIntelTypes';
 import type { SixAxisMetric } from '../../types/scoring';
 import type { DynoIntelMode } from './dynoIntelTypes';
+
+export interface ResolveDynoRouteContextOptions {
+  /** Persisted Cooper / 5km tab when pathname is cardio assessment. */
+  cardioActiveTab?: CardioAssessmentTab;
+}
 
 export type DynoConsoleLabelKey =
   | 'home'
@@ -22,6 +29,7 @@ export type DynoConsoleLabelKey =
 export interface DynoRouteContext {
   consoleLabelKey: DynoConsoleLabelKey;
   focusAxis: SixAxisMetric | null;
+  focusSupplemental: DynoSupplementalMetricId | null;
   /** Default diagnostic mode for this surface — Pro users may upgrade to cross-axis in UI. */
   suggestedMode: DynoIntelMode;
 }
@@ -59,28 +67,83 @@ function lobbyCardKeyForPath(pathname: string): DynoConsoleLabelKey | null {
  * Maps current pathname to DYNO INTEL console label + focus axis.
  * WHY: Pure logic keeps `useDynoRouteContext` presentational and testable.
  */
-export function resolveDynoRouteContext(pathname: string): DynoRouteContext {
+export function resolveDynoRouteContext(
+  pathname: string,
+  options?: ResolveDynoRouteContextOptions
+): DynoRouteContext {
   if (pathname === ROUTES.assessment) {
-    return { consoleLabelKey: 'lobby', focusAxis: null, suggestedMode: 'cross-axis' };
+    return {
+      consoleLabelKey: 'lobby',
+      focusAxis: null,
+      focusSupplemental: null,
+      suggestedMode: 'cross-axis',
+    };
   }
   if (pathname === ROUTES.home) {
-    return { consoleLabelKey: 'home', focusAxis: null, suggestedMode: 'cross-axis' };
+    return {
+      consoleLabelKey: 'home',
+      focusAxis: null,
+      focusSupplemental: null,
+      suggestedMode: 'cross-axis',
+    };
   }
   if (pathname === ROUTES.ladder || pathname.startsWith(`${ROUTES.ladder}/`)) {
-    return { consoleLabelKey: 'arena', focusAxis: null, suggestedMode: 'cross-axis' };
+    return {
+      consoleLabelKey: 'arena',
+      focusAxis: null,
+      focusSupplemental: null,
+      suggestedMode: 'cross-axis',
+    };
   }
   if (pathname === ROUTES.history) {
-    return { consoleLabelKey: 'history', focusAxis: null, suggestedMode: 'cross-axis' };
+    return {
+      consoleLabelKey: 'history',
+      focusAxis: null,
+      focusSupplemental: null,
+      suggestedMode: 'cross-axis',
+    };
   }
   if (pathname === ROUTES.tools || pathname.startsWith('/training-tools')) {
-    return { consoleLabelKey: 'tools', focusAxis: null, suggestedMode: 'single-axis' };
+    return {
+      consoleLabelKey: 'tools',
+      focusAxis: null,
+      focusSupplemental: null,
+      suggestedMode: 'single-axis',
+    };
+  }
+  if (pathname === ROUTES.armSize) {
+    return {
+      consoleLabelKey: 'armSize',
+      focusAxis: null,
+      focusSupplemental: 'armSize',
+      suggestedMode: 'single-axis',
+    };
+  }
+  if (pathname === ROUTES.cardio) {
+    const tab = options?.cardioActiveTab ?? 'cooper';
+    return {
+      consoleLabelKey: 'cardio',
+      focusAxis: 'cardio',
+      focusSupplemental: tab,
+      suggestedMode: 'single-axis',
+    };
   }
 
   const focusAxis = routeToFocusAxis(pathname);
   if (focusAxis) {
     const consoleLabelKey = lobbyCardKeyForPath(pathname) ?? 'generic';
-    return { consoleLabelKey, focusAxis, suggestedMode: 'single-axis' };
+    return {
+      consoleLabelKey,
+      focusAxis,
+      focusSupplemental: null,
+      suggestedMode: 'single-axis',
+    };
   }
 
-  return { consoleLabelKey: 'generic', focusAxis: null, suggestedMode: 'single-axis' };
+  return {
+    consoleLabelKey: 'generic',
+    focusAxis: null,
+    focusSupplemental: null,
+    suggestedMode: 'single-axis',
+  };
 }

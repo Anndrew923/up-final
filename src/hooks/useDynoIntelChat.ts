@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID } from '../config/dynoIntel';
-import { hasProAccess } from '../logic/core/entitlement';
-import { resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
+import { canUseDynoIntelFull, resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
 import type { DynoIntelChatResponseV1, DynoIntelContextV1, DynoIntelMode } from '../logic/core/dynoIntelTypes';
 import { requestDynoIntelChat } from '../services/dynoIntelService';
 import { useAuthStore } from '../stores/authStore';
@@ -30,7 +29,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
 
   const { visibleText, play, reset, cancel } = useTypewriterText({ charIntervalMs: 18 });
   const [status, setStatus] = useState<DynoIntelChatStatus>('idle');
-  const [actionDirective, setActionDirective] = useState('');
   const [errorMessageKey, setErrorMessageKey] = useState<string | null>(null);
   const [lastReply, setLastReply] = useState<DynoIntelChatResponseV1 | null>(null);
 
@@ -62,7 +60,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       }
 
       if (input.quota.remaining <= 0) {
-        if (hasProAccess(entitlement)) {
+        if (canUseDynoIntelFull(entitlement, authStatus, isAnonymous)) {
           setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
           setStatus('error');
           return;
@@ -95,7 +93,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
                 resetAt: result.resetAt,
               });
             }
-            if (hasProAccess(entitlement)) {
+            if (canUseDynoIntelFull(entitlement, authStatus, isAnonymous)) {
               setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
               setStatus('error');
             } else {
@@ -125,12 +123,17 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         });
 
         setLastReply(result.reply);
-        setActionDirective(result.reply.action_directive);
         setStatus('typing');
         await play(result.reply.commentary);
         setStatus('idle');
-      } catch {
-        setErrorMessageKey('dynoIntel.error.network');
+      } catch (error) {
+        const mappedKey =
+          error instanceof Error &&
+          error.name === 'DynoIntelCallableError' &&
+          error.message.startsWith('dynoIntel.')
+            ? error.message
+            : null;
+        setErrorMessageKey(mappedKey ?? 'dynoIntel.error.network');
         setStatus('error');
       }
     },
@@ -140,7 +143,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const clearChat = useCallback(() => {
     cancel();
     reset();
-    setActionDirective('');
     setErrorMessageKey(null);
     setLastReply(null);
     setStatus('idle');
@@ -150,7 +152,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
     (messageKey: string) => {
       cancel();
       reset();
-      setActionDirective('');
       setLastReply(null);
       setErrorMessageKey(messageKey);
       setStatus('error');
@@ -161,7 +162,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   return {
     status,
     visibleText,
-    actionDirective,
     errorMessageKey,
     lastReply,
     sendQuestion,

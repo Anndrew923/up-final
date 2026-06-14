@@ -1,5 +1,6 @@
 import type { ScoreMap } from '../types/scoring';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
+import type { CardioAssessmentTab } from '../logic/core/cardioScoring';
 import type { MuscleInputsPersisted } from '../types/muscleInputs';
 import type { PowerInputsPersisted } from '../types/powerInputs';
 import type { StrengthInputsPersisted } from '../types/strengthInputs';
@@ -15,6 +16,7 @@ const STORAGE_KEYS = {
   physicalProfile: 'up.physicalProfile',
   ffmiDraft: 'up.ffmiDraft',
   cardioInputs: 'up.cardioInputs',
+  cardioActiveTab: 'up.cardioActiveTab',
   muscleInputs: 'up.muscleInputs',
   powerInputs: 'up.powerInputs',
   strengthInputs: 'up.strengthInputs',
@@ -35,6 +37,11 @@ export const LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT = 'up-final-physical-profile-c
 
 export const CARDIO_INPUTS_STORAGE_KEY = STORAGE_KEYS.cardioInputs;
 export const LOCAL_CARDIO_INPUTS_CHANGED_EVENT = 'up-final-cardio-inputs-changed';
+
+export const CARDIO_ACTIVE_TAB_STORAGE_KEY = STORAGE_KEYS.cardioActiveTab;
+export const LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT = 'up-final-cardio-active-tab-changed';
+
+export type PersistedCardioActiveTab = CardioAssessmentTab;
 
 export const MUSCLE_INPUTS_STORAGE_KEY = STORAGE_KEYS.muscleInputs;
 export const LOCAL_MUSCLE_INPUTS_CHANGED_EVENT = 'up-final-muscle-inputs-changed';
@@ -167,6 +174,27 @@ export function subscribeCardioInputs(onChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
   window.addEventListener(LOCAL_CARDIO_INPUTS_CHANGED_EVENT, onChange);
   return () => window.removeEventListener(LOCAL_CARDIO_INPUTS_CHANGED_EVENT, onChange);
+}
+
+function notifyCardioActiveTabObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT));
+}
+
+export function saveCardioActiveTab(tab: PersistedCardioActiveTab): void {
+  safeSetItem(STORAGE_KEYS.cardioActiveTab, tab);
+  notifyCardioActiveTabObservers();
+}
+
+export function loadCardioActiveTab(): PersistedCardioActiveTab {
+  const raw = safeGetItem(STORAGE_KEYS.cardioActiveTab);
+  return raw === '5km' ? '5km' : 'cooper';
+}
+
+export function subscribeCardioActiveTab(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT, onChange);
 }
 
 export function saveMuscleInputs(inputs: MuscleInputsPersisted): void {

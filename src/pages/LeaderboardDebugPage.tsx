@@ -13,6 +13,7 @@ import { clearLeaderboardCache, getCachedLeaderboard } from '../services/leaderb
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { loadPhysicalProfile } from '../services/localStorageService';
 import { useEntitlementStore } from '../stores/entitlementStore';
+import DynoIntelLocalTelemetryPanel from '../components/dynoIntel/DynoIntelLocalTelemetryPanel';
 
 type DebugMetric = LeaderboardShardId;
 
@@ -294,6 +295,8 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
           </div>
         </div>
       </section>
+
+      <DynoIntelLocalTelemetryPanel />
 
       <section className="ui-card">
         <h2 className="mb-2 ui-section-title">{t('debugLogs', { ns: 'common' })}</h2>

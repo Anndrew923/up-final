@@ -1,4 +1,4 @@
-import { type FC, FormEvent, useEffect, useId, useState } from 'react';
+import { type FC, FormEvent, useEffect, useId, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
@@ -6,28 +6,19 @@ import type { DynoIntelChatStatus } from '../../hooks/useDynoIntelChat';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import {
   DYNO_INTEL_SHEET_PANEL_TRANSITION,
+  DYNO_INTEL_SHEET_PANEL_HEIGHT_CLASS,
   DYNO_INTEL_SHEET_SCRIM_TRANSITION,
   DYNO_INTEL_SHEET_SLIDE_MS,
   dynoIntelSheetPanelVisible,
   dynoIntelSheetScrimVisible,
 } from '../../lib/dynoIntelTriggerMotion';
 import { cn } from '../../lib/cn';
+import { splitDynoIntelCommentaryParagraphs } from '../../logic/core/dynoIntelCommentaryFormat';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
-import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
-import { hasProAccess } from '../../logic/core/entitlement';
-import type { EntitlementState } from '../../types/entitlement';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import DynoIntelPaywallView from './DynoIntelPaywallView';
 
 export type DynoIntelSheetView = 'chat' | 'paywall';
-
-export interface DynoIntelChipView {
-  id: string;
-  label: string;
-  mode: DynoIntelMode;
-  onSelect: () => void;
-  locked?: boolean;
-}
 
 export interface DynoIntelBottomSheetProps {
   open: boolean;
@@ -43,14 +34,9 @@ export interface DynoIntelBottomSheetProps {
   consoleLabel: string;
   remaining: number;
   limit: number;
-  mode: DynoIntelMode;
-  onModeChange: (mode: DynoIntelMode) => void;
-  entitlement: EntitlementState;
   commentary: string;
-  actionDirective: string;
   status: DynoIntelChatStatus;
   errorMessage: string | null;
-  chips: DynoIntelChipView[];
   onSubmitQuestion: (question: string) => void;
 }
 
@@ -68,23 +54,21 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   consoleLabel,
   remaining,
   limit,
-  mode,
-  onModeChange,
-  entitlement,
   commentary,
-  actionDirective,
   status,
   errorMessage,
-  chips,
   onSubmitQuestion,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
   const [draft, setDraft] = useState('');
-  const isPro = hasProAccess(entitlement);
   const reducedMotion = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
+  const commentaryParagraphs = useMemo(
+    () => splitDynoIntelCommentaryParagraphs(commentary),
+    [commentary]
+  );
 
   useShellScrollLock(mounted);
 
@@ -164,7 +148,8 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          'relative z-10 flex h-[min(72dvh,640px)] max-h-[min(80dvh,calc(100dvh-env(safe-area-inset-top)-2rem))] w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
+          'relative z-10 flex w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
+          DYNO_INTEL_SHEET_PANEL_HEIGHT_CLASS,
           DYNO_INTEL_SHEET_PANEL_TRANSITION,
           dynoIntelSheetPanelVisible(visible),
         )}
@@ -186,27 +171,6 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
               </p>
             ) : null}
           </div>
-
-          {view === 'chat' && isPro ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(['single-axis', 'cross-axis', 'weight-simulation'] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => onModeChange(value)}
-                  className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${
-                    mode === value
-                      ? 'border-cyan-400/60 bg-cyan-950/50 text-cyan-100'
-                      : 'border-zinc-700 text-zinc-400'
-                  }`}
-                >
-                  {t(
-                    `dynoIntel.modes.${value === 'single-axis' ? 'singleAxis' : value === 'cross-axis' ? 'crossAxis' : 'weightSimulation'}`
-                  )}
-                </button>
-              ))}
-            </div>
-          ) : null}
         </header>
 
         {view === 'paywall' ? (
@@ -226,10 +190,14 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                 <p className="text-sm text-zinc-400">{t('dynoIntel.loading')}</p>
               ) : null}
               {errorMessage ? <p className="text-sm text-red-300">{errorMessage}</p> : null}
-              {commentary ? (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-100">
-                  {commentary}
-                </p>
+              {commentaryParagraphs.length > 0 ? (
+                <div className="space-y-3 text-sm leading-7 text-zinc-100">
+                  {commentaryParagraphs.map((paragraph, index) => (
+                    <p key={index} className={index > 0 ? 'mt-3' : undefined}>
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               ) : (
                 !errorMessage &&
                 status !== 'loading' && (
@@ -249,37 +217,13 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                       </span>
                       {t('dynoIntel.welcomeIntroduction.line3Suffix')}
                     </p>
+                    <p className="mt-1 text-zinc-500">{t('dynoIntel.welcomeIntroduction.line4')}</p>
                   </div>
                 )
               )}
-              {actionDirective ? (
-                <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-950/20 px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/90">
-                    {t('dynoIntel.actionKicker')}
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-200">{actionDirective}</p>
-                </div>
-              ) : null}
             </div>
 
             <footer className="shrink-0 border-t border-zinc-800/80 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                {chips.map((chip) => (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    disabled={status === 'loading' || status === 'typing'}
-                    onClick={chip.onSelect}
-                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${
-                      chip.locked
-                        ? 'border-zinc-700/80 bg-zinc-950/60 text-zinc-500 hover:border-cyan-500/30'
-                        : 'border-zinc-600 bg-zinc-900/80 text-zinc-200 hover:border-cyan-500/40'
-                    }`}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <input
                   value={draft}

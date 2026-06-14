@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EntitlementState } from '../../../types/entitlement';
 import {
   canUseDynoIntelFull,
@@ -6,6 +6,14 @@ import {
   resolveDynoIntelAccess,
   resolveDynoIntelSheetEntry,
 } from '../dynoIntelGates';
+
+const { mockIsDynoIntelProBypassActive } = vi.hoisted(() => ({
+  mockIsDynoIntelProBypassActive: vi.fn(() => false),
+}));
+
+vi.mock('../../../config/dynoIntelAccess', () => ({
+  isDynoIntelProBypassActive: mockIsDynoIntelProBypassActive,
+}));
 
 function buildEntitlement(overrides: Partial<EntitlementState> = {}): EntitlementState {
   return {
@@ -20,6 +28,10 @@ function buildEntitlement(overrides: Partial<EntitlementState> = {}): Entitlemen
 }
 
 describe('dynoIntelGates', () => {
+  beforeEach(() => {
+    mockIsDynoIntelProBypassActive.mockReturnValue(false);
+  });
+
   it('blocks anonymous users with auth gate', () => {
     const access = resolveDynoIntelAccess('single-axis', buildEntitlement(), 'signed-in', true);
     expect(access.allowed).toBe(false);
@@ -71,5 +83,43 @@ describe('dynoIntelGates', () => {
     const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
     expect(entry.openMode).toBe('cross-axis');
     expect(entry.access.allowed).toBe(true);
+  });
+
+  describe('pro bypass (dev/beta)', () => {
+    it('allows cross-axis for signed-in users when bypass is active', () => {
+      mockIsDynoIntelProBypassActive.mockReturnValue(true);
+      const ent = buildEntitlement({ purchaseStatus: 'none', subscriptionStatus: 'free' });
+      const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
+      expect(access.allowed).toBe(true);
+      expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
+    });
+
+    it('opens cross-axis sheet entry when bypass is active without pro subscription', () => {
+      mockIsDynoIntelProBypassActive.mockReturnValue(true);
+      const ent = buildEntitlement({ subscriptionStatus: 'free' });
+      const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
+      expect(entry.openMode).toBe('cross-axis');
+      expect(entry.access.allowed).toBe(true);
+    });
+
+    it('still blocks anonymous users when bypass is active', () => {
+      mockIsDynoIntelProBypassActive.mockReturnValue(true);
+      const access = resolveDynoIntelAccess('cross-axis', buildEntitlement(), 'signed-in', true);
+      expect(access.allowed).toBe(false);
+      expect(access.blockReason).toBe('auth');
+      expect(canUseDynoIntelFull(buildEntitlement(), 'signed-in', true)).toBe(false);
+    });
+
+    it('keeps production paywall when bypass is inactive', () => {
+      mockIsDynoIntelProBypassActive.mockReturnValue(false);
+      const access = resolveDynoIntelAccess(
+        'cross-axis',
+        buildEntitlement({ subscriptionStatus: 'free' }),
+        'signed-in',
+        false
+      );
+      expect(access.allowed).toBe(false);
+      expect(access.blockReason).toBe('pro-required');
+    });
   });
 });

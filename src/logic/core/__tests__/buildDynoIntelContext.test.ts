@@ -49,6 +49,8 @@ describe('buildDynoIntelContext', () => {
     });
     expect(ctx.profile).not.toHaveProperty('displayName');
     expect(ctx.profile).not.toHaveProperty('city');
+    expect(ctx.supplementalMetrics).toEqual([]);
+    expect(ctx.focusSupplemental).toBeNull();
   });
 
   it('computes momentum deltas from the two newest history records', () => {
@@ -154,6 +156,30 @@ describe('buildDynoIntelContext', () => {
     expect(strengthAxis?.tierBandId).toBeTruthy();
     expect(strengthAxis?.meaningI18nPrefix).toBe('scoreMeaning.axis.strength');
     expect(ctx.focusAxis).toBe('strength');
+  });
+
+  it('attaches focusAxisLexicon for FFMI page focus', () => {
+    const ctx = buildDynoIntelContext({
+      radarInput: {
+        scores: { bodyFat: 96 },
+        profile: baseProfile,
+        cardioInputs: null,
+        muscleInputs: null,
+        powerInputs: null,
+        strengthInputs: null,
+        gripInputs: null,
+      },
+      historyRecords: [],
+      locale: 'zh-Hant',
+      mode: 'single-axis',
+      focusAxis: 'bodyFat',
+    });
+
+    expect(ctx.focusAxisLexicon).toEqual({
+      axis: 'bodyFat',
+      telemetryKey: 'bodyFat',
+      surfaceLabel: 'FFMI / 引擎排量 (bodyFat 軸分數)',
+    });
   });
 });
 

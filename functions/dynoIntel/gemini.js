@@ -16,25 +16,53 @@ const RESPONSE_SCHEMA = {
   required: ["commentary", "action_directive", "is_off_topic", "detected_weakest_axis"],
 };
 
-let cachedSystemPrompt = null;
+let cachedSystemPromptZh = null;
+let cachedSystemPromptEn = null;
 
-function loadSystemPrompt(promptTemplateId = "system_v1") {
-  if (cachedSystemPrompt && promptTemplateId === "system_v1") {
-    return cachedSystemPrompt;
+/**
+ * WHY: Locale-specific prompt files — avoids single mega-prompt with mixed-language instructions.
+ */
+export function resolveDynoIntelPromptFile(promptTemplateId = "system_v1", locale = "zh-Hant") {
+  if (promptTemplateId !== "system_v1") return promptTemplateId;
+  return locale === "en" ? "system_v1_en" : "system_v1";
+}
+
+function loadSystemPrompt(promptTemplateId = "system_v1", locale = "zh-Hant") {
+  const fileId = resolveDynoIntelPromptFile(promptTemplateId, locale);
+  if (fileId === "system_v1" && cachedSystemPromptZh) {
+    return cachedSystemPromptZh;
   }
-  const filePath = join(__dirname, "prompts", `${promptTemplateId}.txt`);
+  if (fileId === "system_v1_en" && cachedSystemPromptEn) {
+    return cachedSystemPromptEn;
+  }
+  const filePath = join(__dirname, "prompts", `${fileId}.txt`);
   let text;
   try {
     text = readFileSync(filePath, "utf8");
   } catch {
-    const err = new Error(`prompt-not-found:${promptTemplateId}`);
+    const err = new Error(`prompt-not-found:${fileId}`);
     err.code = "failed-precondition";
     throw err;
   }
-  if (promptTemplateId === "system_v1") {
-    cachedSystemPrompt = text;
+  if (fileId === "system_v1") {
+    cachedSystemPromptZh = text;
+  } else if (fileId === "system_v1_en") {
+    cachedSystemPromptEn = text;
   }
   return text;
+}
+
+function resolveReplyLocale(context) {
+  return context?.locale === "en" ? "en" : "zh-Hant";
+}
+
+/** WHY: Sanitizers must not flatten model `\n\n` paragraph breaks mandated by READABILITY. */
+function preserveParagraphBreaks(text) {
+  return String(text ?? "")
+    .split(/\n\n+/)
+    .map((paragraph) => paragraph.replace(/[^\S\n]+/g, " ").trim())
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 function requireGeminiApiKey() {
@@ -48,17 +76,190 @@ function requireGeminiApiKey() {
 }
 
 /**
- * Calls Gemini with structured JSON output.
- * Design intent (WHY): API key stays server-side; client only sends de-identified context.
+ * Gemini occasionally wraps JSON in fences or prefixes prose despite responseSchema.
+ * Design intent (WHY): avoid surfacing intermittent parse flakes as user-facing 500s.
  */
-export async function runGeminiDynoIntel({
-  context,
-  userQuestion,
-  promptTemplateId = "system_v1",
-}) {
-  const apiKey = requireGeminiApiKey();
-  const systemInstruction = loadSystemPrompt(promptTemplateId);
-  const model = DYNO_INTEL_GEMINI_MODEL;
+export function salvagePartialGeminiReply(text, locale = "zh-Hant") {
+  const trimmed = String(text ?? "").trim();
+  if (!trimmed.startsWith("{")) return null;
+
+  const commentaryMatch =
+    trimmed.match(/"commentary"\s*:\s*"((?:[^"\\]|\\.)*)"/) ??
+    trimmed.match(/"commentary"\s*:\s*"([\s\S]+)/);
+  if (!commentaryMatch?.[1]) return null;
+
+  const actionMatch = trimmed.match(/"action_directive"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const axisMatch = trimmed.match(/"detected_weakest_axis"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  const offTopicMatch = trimmed.match(/"is_off_topic"\s*:\s*(true|false)/);
+
+  return normalizeGeminiReply(
+    {
+      commentary: unescapeJsonString(commentaryMatch[1]),
+      action_directive: actionMatch?.[1] ? unescapeJsonString(actionMatch[1]) : "",
+      is_off_topic: offTopicMatch?.[1] === "true",
+      detected_weakest_axis: axisMatch?.[1] ? unescapeJsonString(axisMatch[1]) : "",
+    },
+    locale
+  );
+}
+
+function unescapeJsonString(value) {
+  return String(value)
+    .replace(/\\n/g, "\n")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\");
+}
+
+export function parseGeminiStructuredJson(text) {
+  const trimmed = String(text ?? "").trim();
+  if (!trimmed) return null;
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fenced?.[1]) {
+      try {
+        return JSON.parse(fenced[1].trim());
+      } catch {
+        /* fall through */
+      }
+    }
+
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(trimmed.slice(start, end + 1));
+      } catch {
+        /* fall through */
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractGeminiTextPayload(json) {
+  const parts = json?.candidates?.[0]?.content?.parts ?? [];
+  const combined = parts
+    .map((part) => part?.text)
+    .filter((value) => typeof value === "string" && value.length > 0)
+    .join("");
+  return combined || null;
+}
+
+function normalizeGeminiReply(parsed, locale = "zh-Hant") {
+  const base = {
+    commentary: String(parsed.commentary ?? ""),
+    action_directive: String(parsed.action_directive ?? ""),
+    is_off_topic: Boolean(parsed.is_off_topic),
+    detected_weakest_axis: String(parsed.detected_weakest_axis ?? ""),
+  };
+  return finalizeDynoIntelReply(base, locale);
+}
+
+/** WHY: Model may leak internal persona names despite prompt blacklist — strip before client render. */
+const PERSONA_LEAKAGE_PATTERNS = [
+  /Bruno/gi,
+  /Bruce/gi,
+  /布魯斯/g,
+  /叔叔/g,
+  /大肚魚/g,
+  /總監/g,
+  /\bPrompt\b/gi,
+  /開發者/g,
+];
+
+export function stripPersonaLeakage(text) {
+  let result = String(text ?? "");
+  for (const pattern of PERSONA_LEAKAGE_PATTERNS) {
+    result = result.replace(pattern, "");
+  }
+  return preserveParagraphBreaks(
+    result.replace(/^[：:,\s]+|[：:,\s]+$/g, "").trim()
+  );
+}
+
+/** WHY: Prompt uses internal JSON keys — replace with locale-aware product language. */
+const TECHNICAL_LEAKAGE_REPLACEMENTS_ZH = [
+  [/cardCopy/gi, "級距解碼"],
+  [/cardcopy/gi, "級距解碼"],
+  [/tierBandId/gi, "級距"],
+  [/telemetryKey/gi, "遙測軸"],
+  [/weakestAxis/gi, "最弱軸線"],
+  [/assessmentRoute/gi, "測驗頁"],
+  [/focusAxisLexicon/gi, "聚焦軸"],
+  [/weightSimulation/gi, "體重模擬"],
+  [/\bJSON\b/gi, "遙測數據"],
+  [/\bschema\b/gi, "規格"],
+  [/scoreMeaning/gi, "級距解碼"],
+  [/supplementalMetrics/gi, "補充遙測"],
+  [/focusSupplemental/gi, "補充聚焦"],
+  [/scoringMethodologyBriefs/gi, "給分標準說明"],
+  [/assessmentDeepDiveNudge/gi, "評測頁深度說明"],
+  [/replyClosingCue/gi, "通電收束"],
+  [/資料鏈路/g, "服務範圍"],
+];
+
+const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
+  [/cardCopy/gi, "tier decode"],
+  [/cardcopy/gi, "tier decode"],
+  [/tierBandId/gi, "tier"],
+  [/telemetryKey/gi, "telemetry axis"],
+  [/weakestAxis/gi, "weakest axis"],
+  [/assessmentRoute/gi, "assessment page"],
+  [/focusAxisLexicon/gi, "focus axis"],
+  [/weightSimulation/gi, "weight simulation"],
+  [/\bJSON\b/gi, "telemetry data"],
+  [/\bschema\b/gi, "spec"],
+  [/scoreMeaning/gi, "tier decode"],
+  [/supplementalMetrics/gi, "supplemental telemetry"],
+  [/focusSupplemental/gi, "supplemental focus"],
+  [/scoringMethodologyBriefs/gi, "scoring methodology briefs"],
+  [/assessmentDeepDiveNudge/gi, "assessment page deep dive"],
+  [/replyClosingCue/gi, "uplink close cue"],
+];
+
+export function stripTechnicalLeakage(text, locale = "zh-Hant") {
+  const replacements =
+    locale === "en" ? TECHNICAL_LEAKAGE_REPLACEMENTS_EN : TECHNICAL_LEAKAGE_REPLACEMENTS_ZH;
+  let result = String(text ?? "");
+  for (const [pattern, replacement] of replacements) {
+    result = result.replace(pattern, replacement);
+  }
+  return preserveParagraphBreaks(result);
+}
+
+function sanitizeUserFacingText(text, locale = "zh-Hant") {
+  return stripTechnicalLeakage(stripPersonaLeakage(text), locale);
+}
+
+/** WHY: action_directive is retired from product UI — always empty before client/cache. */
+function enforceEmptyActionDirective(reply) {
+  if (!reply || typeof reply !== "object") return reply;
+  return { ...reply, action_directive: "" };
+}
+
+/** WHY: Off-topic contract requires empty action_directive — enforce even if model disobeys. */
+export function enforceOffTopicContract(reply) {
+  if (!reply?.is_off_topic) return enforceEmptyActionDirective(reply);
+  return enforceEmptyActionDirective({
+    ...reply,
+    action_directive: "",
+  });
+}
+
+export function finalizeDynoIntelReply(reply, locale = "zh-Hant") {
+  const sanitized = {
+    ...reply,
+    commentary: sanitizeUserFacingText(reply.commentary, locale),
+    action_directive: "",
+  };
+  return enforceOffTopicContract(sanitized);
+}
+
+async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, userQuestion, promptTemplateId }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const body = {
@@ -81,7 +282,7 @@ export async function runGeminiDynoIntel({
     ],
     generationConfig: {
       temperature: 0.55,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 4096,
       responseMimeType: "application/json",
       responseSchema: RESPONSE_SCHEMA,
     },
@@ -102,9 +303,7 @@ export async function runGeminiDynoIntel({
   }
 
   const json = await response.json();
-  const text =
-    json?.candidates?.[0]?.content?.parts?.[0]?.text ??
-    json?.candidates?.[0]?.content?.parts?.find((p) => p.text)?.text;
+  const text = extractGeminiTextPayload(json);
 
   if (!text) {
     const err = new Error("gemini-empty-response");
@@ -112,19 +311,49 @@ export async function runGeminiDynoIntel({
     throw err;
   }
 
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
+  const replyLocale = resolveReplyLocale(context);
+  const parsed = parseGeminiStructuredJson(text);
+  if (!parsed) {
+    const salvaged = salvagePartialGeminiReply(text, replyLocale);
+    if (salvaged) return salvaged;
     const err = new Error("gemini-invalid-json");
     err.code = "internal";
+    err.detail = text.slice(0, 500);
     throw err;
   }
 
-  return {
-    commentary: String(parsed.commentary ?? ""),
-    action_directive: String(parsed.action_directive ?? ""),
-    is_off_topic: Boolean(parsed.is_off_topic),
-    detected_weakest_axis: String(parsed.detected_weakest_axis ?? ""),
-  };
+  return normalizeGeminiReply(parsed, replyLocale);
+}
+
+/**
+ * Calls Gemini with structured JSON output.
+ * Design intent (WHY): API key stays server-side; client only sends de-identified context.
+ */
+export async function runGeminiDynoIntel({
+  context,
+  userQuestion,
+  promptTemplateId = "system_v1",
+}) {
+  const apiKey = requireGeminiApiKey();
+  const replyLocale = resolveReplyLocale(context);
+  const systemInstruction = loadSystemPrompt(promptTemplateId, replyLocale);
+  const model = DYNO_INTEL_GEMINI_MODEL;
+  const payload = { apiKey, model, systemInstruction, context, userQuestion, promptTemplateId };
+
+  const MAX_ATTEMPTS = 2;
+  let lastError;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      return await invokeGeminiOnce(payload);
+    } catch (err) {
+      lastError = err;
+      const retryable = ["gemini-invalid-json", "gemini-empty-response"].includes(err?.message);
+      if (!retryable || attempt === MAX_ATTEMPTS) {
+        throw err;
+      }
+    }
+  }
+
+  throw lastError;
 }
