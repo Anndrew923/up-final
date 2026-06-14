@@ -1,33 +1,25 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { NAV_ITEMS } from '../config/nav.config';
+import { useTabRouteTransitionStore } from '../stores/tabRouteTransitionStore';
 import { hapticService } from '../services/hapticService';
-import { soundService } from '../services/soundService';
-
-const NAV_PATHS = new Set(NAV_ITEMS.map((item) => item.path));
-
-function firePdkShift(): void {
-  soundService.play('pdk_shift');
-  void hapticService.trigger('ack');
-}
 
 /**
- * Fires PDK shift feedback when the user switches bottom-tab routes.
- * WHY: Keeps BottomNav presentational — sensory I/O lives in a dedicated hook.
+ * Fires PDK Ack when the central tab crossfade clock completes (150ms settle phase).
+ * Tick is handled on BottomNav press — WHY: 0ms卡榫 must align with finger down, not pathname.
  */
 export function useNavSensoryFeedback(): void {
-  const { pathname } = useLocation();
-  const previousPathRef = useRef<string | null>(null);
+  const phase = useTabRouteTransitionStore((state) => state.phase);
+  const generation = useTabRouteTransitionStore((state) => state.generation);
+  const lastAckGenerationRef = useRef(0);
 
   useEffect(() => {
-    if (!NAV_PATHS.has(pathname)) {
-      previousPathRef.current = pathname;
-      return;
-    }
+    if (phase !== 'settle') return;
+    if (generation === lastAckGenerationRef.current) return;
+    lastAckGenerationRef.current = generation;
+    void hapticService.triggerNavTabSensory('ack');
+  }, [generation, phase]);
+}
 
-    if (previousPathRef.current !== null && previousPathRef.current !== pathname) {
-      firePdkShift();
-    }
-    previousPathRef.current = pathname;
-  }, [pathname]);
+/** 0ms tick — call from BottomNav when navigating to a different tab route. */
+export function triggerNavTabTick(): void {
+  void hapticService.triggerNavTabSensory('tick');
 }

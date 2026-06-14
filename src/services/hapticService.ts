@@ -6,7 +6,9 @@ import {
 } from '../logic/core/leaderboardUploadHaptic';
 import { prefersReducedMotion } from '../lib/motionPreference';
 
-export type HapticPreset = 'ack' | 'milestone' | 'climax' | 'success' | 'warning' | 'error';
+export type HapticPreset = 'ack' | 'selection' | 'milestone' | 'climax' | 'success' | 'warning' | 'error';
+
+export type NavTabSensoryPhase = 'tick' | 'ack';
 
 function fallbackWeb(preset: HapticPreset): void {
   if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
@@ -14,6 +16,9 @@ function fallbackWeb(preset: HapticPreset): void {
   switch (preset) {
     case 'ack':
       navigator.vibrate(15);
+      break;
+    case 'selection':
+      navigator.vibrate(8);
       break;
     case 'milestone':
       navigator.vibrate(40);
@@ -37,6 +42,9 @@ async function triggerNative(preset: HapticPreset): Promise<void> {
   switch (preset) {
     case 'ack':
       await Haptics.impact({ style: ImpactStyle.Light });
+      break;
+    case 'selection':
+      await Haptics.selectionChanged();
       break;
     case 'milestone':
       await Haptics.impact({ style: ImpactStyle.Medium });
@@ -170,6 +178,24 @@ export const hapticService = {
     if (Capacitor.isNativePlatform()) {
       void Haptics.selectionEnd().catch(() => undefined);
     }
+  },
+
+  /**
+   * Bottom-tab PDK tick/ack — exempt from reduced-motion haptic gate (WHY: tactile wayfinding
+   * must survive Strategy A visual instant-cut; dopamine + orientation without animation cost).
+   */
+  async triggerNavTabSensory(phase: NavTabSensoryPhase): Promise<void> {
+    const preset: HapticPreset = phase === 'tick' ? 'selection' : 'ack';
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await triggerNative(preset);
+        return;
+      } catch {
+        fallbackWeb(preset);
+        return;
+      }
+    }
+    fallbackWeb(preset);
   },
 
   /** Breakthrough / rank climax — three-beat success burst. */

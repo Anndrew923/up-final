@@ -1,4 +1,5 @@
 export const Z_INDEX_CLASS = {
+  topProgressBar: 'z-[42]',
   dynoIntelTrigger: 'z-[55]',
   dynoIntelSheet: 'z-[220]',
   performanceBreakthroughModal: 'z-[240]',

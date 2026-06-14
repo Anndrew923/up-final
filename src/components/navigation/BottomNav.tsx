@@ -1,7 +1,8 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ONBOARDING_ASSESS_TARGET_ID } from '../../constants/onboardingTargets';
 import { NAV_CENTER_TAB_INDEX, NAV_ITEMS } from '../../config/nav.config';
+import { triggerNavTabTick } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked, useUiInteractionStore } from '../../stores/uiInteractionStore';
 import { NavGlyph } from './NavIcons';
 import { NavTabLabels } from './NavTabLabels';
@@ -28,9 +29,14 @@ const NAV_LABEL_INSET = 'px-0.5';
  */
 export default function BottomNav() {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const isBlocked = useShellInteractionBlocked();
   const bootPhase = useUiInteractionStore((s) => s.bootSequencePhase);
   const isResonanceBlocking = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
+
+  const handleTabPress = (targetPath: string) => {
+    if (pathname !== targetPath) triggerNavTabTick();
+  };
 
   const isBootPhase3Spotlight = bootPhase === 3;
   const dimEntireNav = isResonanceBlocking || (isBlocked && bootPhase !== 0 && bootPhase !== 3);
@@ -60,6 +66,7 @@ export default function BottomNav() {
                 id={ONBOARDING_ASSESS_TARGET_ID}
                 to={item.path}
                 end
+                onClick={() => handleTabPress(item.path)}
                 className={({ isActive }) =>
                   [
                     TAB_LINK_BASE,
@@ -113,6 +120,7 @@ export default function BottomNav() {
               key={item.key}
               to={item.path}
               end
+              onClick={() => handleTabPress(item.path)}
               className={({ isActive }) =>
                 [
                   TAB_LINK_BASE,

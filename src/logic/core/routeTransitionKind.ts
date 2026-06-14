@@ -5,12 +5,16 @@ export const TAB_ROUTE_PATHS: readonly string[] = NAV_ITEMS.map((item) => item.p
 
 const TAB_ROUTE_PATH_SET = new Set<string>(TAB_ROUTE_PATHS);
 
-export type TabSlideDirection = 'forward' | 'backward';
-
-export type RouteTransitionKind = 'none' | 'tab-parallax' | 'reduced-tab-fade';
+export type RouteTransitionKind = 'none' | 'tab-crossfade';
 
 export function isTabRoutePath(pathname: string): boolean {
   return TAB_ROUTE_PATH_SET.has(pathname);
+}
+
+/** True when both endpoints are bottom tabs and the path actually changes. */
+export function isTabRouteTransition(fromPath: string, toPath: string): boolean {
+  if (fromPath === toPath) return false;
+  return isTabRoutePath(fromPath) && isTabRoutePath(toPath);
 }
 
 export function resolveTabRouteIndex(pathname: string): number | null {
@@ -19,24 +23,16 @@ export function resolveTabRouteIndex(pathname: string): number | null {
 }
 
 /**
- * Tab bar order drives parallax direction (WHY: forward = new tab to the right in NAV_ITEMS).
- */
-export function resolveTabSlideDirection(fromPath: string, toPath: string): TabSlideDirection {
-  const fromIndex = resolveTabRouteIndex(fromPath);
-  const toIndex = resolveTabRouteIndex(toPath);
-  if (fromIndex == null || toIndex == null) return 'forward';
-  return toIndex >= fromIndex ? 'forward' : 'backward';
-}
-
-/**
  * Pure transition classifier — only bottom-tab ↔ bottom-tab switches animate in P1.
+ * Reduced motion (Strategy A): instant swap, no fade.
  */
 export function resolveRouteTransitionKind(
   fromPath: string,
   toPath: string,
   reducedMotion: boolean,
 ): RouteTransitionKind {
+  if (reducedMotion) return 'none';
   if (fromPath === toPath) return 'none';
   if (!isTabRoutePath(fromPath) || !isTabRoutePath(toPath)) return 'none';
-  return reducedMotion ? 'reduced-tab-fade' : 'tab-parallax';
+  return 'tab-crossfade';
 }

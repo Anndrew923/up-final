@@ -3,38 +3,28 @@ import { useLocation, useOutlet } from 'react-router-dom';
 import { cn } from '../../lib/cn';
 import {
   GLOBAL_TAB_ROUTE_DURATION_MS,
-  GLOBAL_TAB_ROUTE_REDUCED_DURATION_MS,
-  GLOBAL_TAB_ROUTE_REDUCED_TRANSITION,
   GLOBAL_TAB_ROUTE_TRANSITION,
   globalTabRouteEnterVisible,
   globalTabRouteExitVisible,
-  globalTabRouteReducedVisible,
   globalTabRouteWillChange,
 } from '../../lib/globalRouteMotion';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
-import {
-  resolveRouteTransitionKind,
-  resolveTabSlideDirection,
-  type RouteTransitionKind,
-  type TabSlideDirection,
-} from '../../logic/core/routeTransitionKind';
-
-interface ExitingLayer {
-  outlet: ReactNode;
-  direction: TabSlideDirection;
-  kind: Exclude<RouteTransitionKind, 'none'>;
-}
+import { resolveRouteTransitionKind, isTabRouteTransition } from '../../logic/core/routeTransitionKind';
+import { useTabRouteTransitionStore } from '../../stores/tabRouteTransitionStore';
 
 /**
- * AppShell route outlet with bottom-tab parallax (WHY: single gate — pages stay transition-free).
+ * AppShell route outlet with bottom-tab crossfade (WHY: single gate — pages stay transition-free).
  */
 const ShellAnimatedOutlet: FC = () => {
   const location = useLocation();
   const outlet = useOutlet();
   const reducedMotion = usePrefersReducedMotion();
+  const startSprint = useTabRouteTransitionStore((state) => state.startSprint);
+  const completeSettle = useTabRouteTransitionStore((state) => state.completeSettle);
+  const cancelTransition = useTabRouteTransitionStore((state) => state.cancel);
   const prevPathRef = useRef(location.pathname);
   const prevOutletRef = useRef(outlet);
-  const [exiting, setExiting] = useState<ExitingLayer | null>(null);
+  const [exitingOutlet, setExitingOutlet] = useState<ReactNode | null>(null);
   const [entered, setEntered] = useState(true);
   const [compositorHint, setCompositorHint] = useState(false);
 
@@ -43,9 +33,11 @@ const ShellAnimatedOutlet: FC = () => {
     const toPath = location.pathname;
     const previousOutlet = prevOutletRef.current;
     const kind = resolveRouteTransitionKind(fromPath, toPath, reducedMotion);
+    const tabSwitch = isTabRouteTransition(fromPath, toPath);
 
-    if (kind === 'none') {
-      setExiting(null);
+    if (!tabSwitch) {
+      cancelTransition();
+      setExitingOutlet(null);
       setEntered(true);
       setCompositorHint(false);
       prevPathRef.current = toPath;
@@ -53,78 +45,77 @@ const ShellAnimatedOutlet: FC = () => {
       return;
     }
 
-    const direction = resolveTabSlideDirection(fromPath, toPath);
-    const durationMs =
-      kind === 'reduced-tab-fade'
-        ? GLOBAL_TAB_ROUTE_REDUCED_DURATION_MS
-        : GLOBAL_TAB_ROUTE_DURATION_MS;
+    // Central 150ms clock — drives PDK Ack even when Strategy A skips crossfade visuals.
+    startSprint();
 
-    if (kind === 'tab-parallax') {
-      setExiting({
-        outlet: previousOutlet,
-        direction,
-        kind,
-      });
+    const crossfade = kind === 'tab-crossfade';
+
+    if (crossfade) {
+      setExitingOutlet(previousOutlet);
+      setEntered(false);
+      setCompositorHint(true);
     } else {
-      setExiting(null);
+      setExitingOutlet(null);
+      setEntered(true);
+      setCompositorHint(false);
     }
-
-    setEntered(false);
-    setCompositorHint(true);
 
     prevPathRef.current = toPath;
     prevOutletRef.current = outlet;
 
     let cancelled = false;
-    const raf = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        if (!cancelled) setEntered(true);
+    let raf = 0;
+    if (crossfade) {
+      raf = window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          if (!cancelled) setEntered(true);
+        });
       });
-    });
+    }
 
     const timer = window.setTimeout(() => {
-      setExiting(null);
-      setCompositorHint(false);
-    }, durationMs);
+      completeSettle();
+      if (crossfade) {
+        setExitingOutlet(null);
+        setCompositorHint(false);
+      }
+    }, GLOBAL_TAB_ROUTE_DURATION_MS);
 
     return () => {
       cancelled = true;
-      window.cancelAnimationFrame(raf);
+      if (crossfade) window.cancelAnimationFrame(raf);
       window.clearTimeout(timer);
     };
-  }, [location.pathname, outlet, reducedMotion]);
-
-  const transitionClass = reducedMotion
-    ? GLOBAL_TAB_ROUTE_REDUCED_TRANSITION
-    : GLOBAL_TAB_ROUTE_TRANSITION;
-  const slideDirection =
-    exiting?.direction ?? resolveTabSlideDirection(prevPathRef.current, location.pathname);
+  }, [
+    cancelTransition,
+    completeSettle,
+    location.pathname,
+    outlet,
+    reducedMotion,
+    startSprint,
+  ]);
 
   return (
     <div className="relative">
-      {exiting?.kind === 'tab-parallax' ? (
+      {exitingOutlet != null ? (
         <div
           className={cn(
             'pointer-events-none absolute inset-x-0 top-0 z-0',
             GLOBAL_TAB_ROUTE_TRANSITION,
             globalTabRouteWillChange(compositorHint),
-            globalTabRouteExitVisible(entered, exiting.direction),
+            globalTabRouteExitVisible(entered),
           )}
           aria-hidden
         >
-          {exiting.outlet}
+          {exitingOutlet}
         </div>
       ) : null}
       <div
         className={cn(
           'relative z-[1]',
-          compositorHint && transitionClass,
+          compositorHint && GLOBAL_TAB_ROUTE_TRANSITION,
           compositorHint && globalTabRouteWillChange(compositorHint),
-          exiting?.kind === 'tab-parallax'
-            ? globalTabRouteEnterVisible(entered, slideDirection)
-            : compositorHint && reducedMotion
-              ? globalTabRouteReducedVisible(entered)
-              : '',
+          compositorHint ? globalTabRouteEnterVisible(entered) : '',
         )}
       >
         {outlet}

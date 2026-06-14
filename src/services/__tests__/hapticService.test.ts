@@ -63,6 +63,16 @@ describe('hapticService', () => {
     expect(impact).not.toHaveBeenCalled();
   });
 
+  it('keeps nav tab tick/ack haptics when reduced motion is enabled', async () => {
+    const motion = await import('../../lib/motionPreference');
+    vi.mocked(motion.prefersReducedMotion).mockReturnValue(true);
+    const { hapticService } = await import('../hapticService');
+    await hapticService.triggerNavTabSensory('tick');
+    expect(navigator.vibrate).toHaveBeenCalledWith(8);
+    await hapticService.triggerNavTabSensory('ack');
+    expect(navigator.vibrate).toHaveBeenCalledWith(15);
+  });
+
   it('skips google sign-in haptic for anonymous users', async () => {
     const { hapticService } = await import('../hapticService');
     hapticService.triggerGoogleSignInSuccess({ isAnonymous: true });

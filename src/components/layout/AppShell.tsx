@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import BootSequenceOverlay from '../onboarding/BootSequenceOverlay';
 import BottomNav from '../navigation/BottomNav';
 import ShellAnimatedOutlet from '../navigation/ShellAnimatedOutlet';
+import TopProgressBar from '../navigation/TopProgressBar';
 import { ROUTES, isCompactShellRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
@@ -59,6 +60,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
           <HudProfileControls />
         </div>
       </div>
+
+      <TopProgressBar />
 
       <BottomNav />
 
