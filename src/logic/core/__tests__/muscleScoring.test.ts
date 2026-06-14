@@ -6,6 +6,7 @@ import {
   getMuscleAgeRange,
   getSmmKgCeilingForGender,
   mergeScoreMapWithResolvedMuscle,
+  resolveMuscleDualSovereignI18nKey,
   resolveMuscleLadderScoreBundle,
   tryComputeMuscleAssessmentScore,
 } from '../muscleScoring';
@@ -53,9 +54,9 @@ describe('calculateMuscleScores', () => {
 });
 
 describe('SMM ceiling', () => {
-  it('returns male cap 80 and female cap 52', () => {
-    expect(getSmmKgCeilingForGender('male')).toBe(80);
-    expect(getSmmKgCeilingForGender('female')).toBe(52);
+  it('returns male cap 90 and female cap 60', () => {
+    expect(getSmmKgCeilingForGender('male')).toBe(90);
+    expect(getSmmKgCeilingForGender('female')).toBe(60);
   });
 
   it('tryCompute rejects SMM above ceiling for male', () => {
@@ -67,7 +68,7 @@ describe('SMM ceiling', () => {
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '81',
+      smmInput: '90.1',
       profile,
       profileReady: true,
     });
@@ -84,7 +85,7 @@ describe('SMM ceiling', () => {
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '52.1',
+      smmInput: '60.1',
       profile,
       profileReady: true,
     });
@@ -101,7 +102,7 @@ describe('SMM ceiling', () => {
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '80',
+      smmInput: '90',
       profile,
       profileReady: true,
     });
@@ -118,7 +119,7 @@ describe('SMM ceiling', () => {
       updatedAt: '',
     };
     const merged = mergeScoreMapWithResolvedMuscle(scores, profile, {
-      muscle: { smmKg: 80.1 },
+      muscle: { smmKg: 90.1 },
     });
     expect(merged.muscleMass).toBe(55);
   });
@@ -207,5 +208,22 @@ describe('resolveMuscleLadderScoreBundle', () => {
     expect(b.weightBranchScore).not.toBeNull();
     expect(b.ratioBranchScore).not.toBeNull();
     expect(b.weightBranchScore).not.toBe(b.ratioBranchScore);
+  });
+});
+
+describe('resolveMuscleDualSovereignI18nKey', () => {
+  it('maps ceiling and error keys by sex', () => {
+    expect(resolveMuscleDualSovereignI18nKey('male', 'ceiling')).toBe(
+      'muscle.standardsInfo.dualSovereignMale',
+    );
+    expect(resolveMuscleDualSovereignI18nKey('female', 'ceiling')).toBe(
+      'muscle.standardsInfo.dualSovereignFemale',
+    );
+    expect(resolveMuscleDualSovereignI18nKey('male', 'exceedsCeiling')).toBe(
+      'muscle.errors.smm-exceeds-ceilingMale',
+    );
+    expect(resolveMuscleDualSovereignI18nKey('female', 'exceedsCeiling')).toBe(
+      'muscle.errors.smm-exceeds-ceilingFemale',
+    );
   });
 });

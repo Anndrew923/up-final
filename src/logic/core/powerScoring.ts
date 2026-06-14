@@ -118,6 +118,11 @@ export function getPowerAgeRange(age: number | string | null | undefined): Power
   return null;
 }
 
+/** Resolved norm rows for explosive reference UI (null when profile incomplete or age outside tables). */
+export type ExplosivePowerNormAnchors = NonNullable<
+  ReturnType<typeof getPowerStandardsForProfile>
+>;
+
 export function getPowerStandardsForProfile(profile: PhysicalProfile): {
   vjump: PowerStandardRow;
   slj: PowerStandardRow;

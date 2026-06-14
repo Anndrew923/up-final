@@ -38,7 +38,14 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
   {
     metric: 'muscleMass',
     titleKey: 'muscle.title',
-    bodyKeys: ['muscle.standardsInfo.p2', 'muscle.standardsInfo.p3', 'muscle.standardsInfo.p4'],
+    bodyKeys: [
+      'muscle.standardsInfo.p2',
+      'muscle.standardsInfo.p3',
+      'muscle.standardsInfo.p4',
+      'muscle.standardsInfo.dualSovereignPreamble',
+      'muscle.standardsInfo.dualSovereignMale',
+      'muscle.standardsInfo.dualSovereignFemale',
+    ],
   },
   {
     metric: 'bodyFat',
@@ -53,7 +60,12 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
   {
     metric: 'gripStrength',
     titleKey: 'grip.referenceInfo.title',
-    bodyKeys: ['grip.referenceInfo.p1', 'grip.referenceInfo.p2'],
+    bodyKeys: [
+      'grip.referenceInfo.p1',
+      'grip.referenceInfo.p2',
+      'grip.referenceInfo.p3',
+      'grip.referenceInfo.p4',
+    ],
   },
   {
     metric: 'armSize',

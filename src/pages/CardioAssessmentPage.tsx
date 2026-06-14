@@ -6,7 +6,8 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
-import { DisclosurePanel } from '../components/DisclosurePanel';
+import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -173,20 +174,21 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           hidden={activeTab !== 'cooper'}
           className="space-y-5"
         >
-          <DisclosurePanel
+          <AssessmentReferenceDisclosure
             instanceId="cooper-info"
             expanded={cooperInfoOpen}
             onToggle={() => setCooperInfoOpen((v) => !v)}
-            title={t('assessment.referenceInfo.title')}
-            toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-            toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
           >
-            <p>{t('cardio.cooperInfo.p1')}</p>
-            <p>{t('cardio.cooperInfo.p2')}</p>
-            <p>{t('cardio.cooperInfo.p3')}</p>
-            <p>{t('cardio.cooperInfo.p4')}</p>
-            <p>{t('cardio.cooperInfo.p5')}</p>
-          </DisclosurePanel>
+            <ReferenceSimpleCopy
+              paragraphs={[
+                t('cardio.cooperInfo.p1'),
+                t('cardio.cooperInfo.p2'),
+                t('cardio.cooperInfo.p3'),
+                t('cardio.cooperInfo.p4'),
+              ]}
+              footnote={t('cardio.cooperInfo.p5')}
+            />
+          </AssessmentReferenceDisclosure>
 
           <div className="space-y-3">
             <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">

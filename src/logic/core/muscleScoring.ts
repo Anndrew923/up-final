@@ -35,9 +35,9 @@ export function getMuscleAgeRange(age: number | string | null | undefined): Musc
   return null;
 }
 
-/** SMM (kg) ceiling — above this we do not score or merge (fantasy-proofing). */
-export const SMM_KG_CEILING_MALE = 80;
-export const SMM_KG_CEILING_FEMALE = 52;
+/** SMM (kg) ceiling — above this we do not score or merge (fantasy-proofing). Keep i18n preamble {{maleMax}}/{{femaleMax}} in sync. */
+export const SMM_KG_CEILING_MALE = 90;
+export const SMM_KG_CEILING_FEMALE = 60;
 
 export function getSmmKgCeilingForGender(gender: string | null | undefined): number {
   return normalizeGenderForNormTables(gender) === 'female'
@@ -315,4 +315,22 @@ export function tryComputeMuscleAssessmentScore(args: {
       smPercentScoreRaw: raw.smPercentScoreRaw,
     },
   };
+}
+
+export type MuscleDualSovereignCopyKind = 'ceiling' | 'exceedsCeiling';
+
+/** Design Intent (WHY): One resolver for gender-specific four-sovereign i18n keys — kills Ronnie-only UI drift. */
+export function resolveMuscleDualSovereignI18nKey(
+  gender: string | null | undefined,
+  kind: MuscleDualSovereignCopyKind,
+): string {
+  const isFemale = normalizeGenderForNormTables(gender) === 'female';
+  if (kind === 'ceiling') {
+    return isFemale
+      ? 'muscle.standardsInfo.dualSovereignFemale'
+      : 'muscle.standardsInfo.dualSovereignMale';
+  }
+  return isFemale
+    ? 'muscle.errors.smm-exceeds-ceilingFemale'
+    : 'muscle.errors.smm-exceeds-ceilingMale';
 }

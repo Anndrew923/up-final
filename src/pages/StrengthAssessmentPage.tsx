@@ -2,6 +2,8 @@ import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import HexRadarChart from '../components/radar/HexRadarChart';
@@ -158,21 +160,22 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <DisclosurePanel
+        <AssessmentReferenceDisclosure
           instanceId="strength-howto"
           expanded={howToOpen}
           onToggle={() => setHowToOpen((v) => !v)}
-          title={t('assessment.referenceInfo.title')}
-          toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-          toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
         >
-          <p>{t('strength.howToInfo.intro')}</p>
-          <p>{t('strength.howToInfo.reps')}</p>
-          <p>{t('strength.howToInfo.repsAccuracy')}</p>
-          <p>{t('strength.fieldsHint')}</p>
-          <p>{t('strength.howToInfo.combinedRule')}</p>
-          <p className="text-zinc-500">{t('strength.howToInfo.tip')}</p>
-        </DisclosurePanel>
+          <ReferenceSimpleCopy
+            paragraphs={[
+              t('strength.howToInfo.intro'),
+              t('strength.howToInfo.reps'),
+              t('strength.howToInfo.repsAccuracy'),
+              t('strength.fieldsHint'),
+              t('strength.howToInfo.combinedRule'),
+            ]}
+            footnote={t('strength.howToInfo.tip')}
+          />
+        </AssessmentReferenceDisclosure>
 
         <div className="grid gap-6">
           {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {

@@ -4,6 +4,10 @@ import {
   COOPER_MAX_DISTANCE_MALE_METERS,
 } from './cardioScoring';
 import {
+  SMM_KG_CEILING_FEMALE,
+  SMM_KG_CEILING_MALE,
+} from './muscleScoring';
+import {
   DYNO_SCORING_METHODOLOGY_CATALOG,
 } from './dynoIntelScoringMethodologyCatalog';
 import type { DynoScoringMethodologyBrief } from './dynoIntelTypes';
@@ -13,6 +17,12 @@ const METHODOLOGY_I18N_INTERPOLATIONS: Record<string, Record<string, number>> = 
     maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
     femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
   },
+  'muscle.standardsInfo.dualSovereignPreamble': {
+    maleMax: SMM_KG_CEILING_MALE,
+    femaleMax: SMM_KG_CEILING_FEMALE,
+  },
+  'muscle.standardsInfo.dualSovereignMale': { max: SMM_KG_CEILING_MALE },
+  'muscle.standardsInfo.dualSovereignFemale': { max: SMM_KG_CEILING_FEMALE },
 };
 
 function resolveCatalogLine(t: TFunction, key: string): string {

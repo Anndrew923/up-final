@@ -11,11 +11,13 @@
       "title": "評測參考資料",
       "p1": "計算式：score = peakKg × 1.4（女性再乘 1.6）。分數保留 1 位小數，並保留超過 100 的上行空間。",
       "p2": "模型上限為 160 kg；超過時會以 160 kg 進行計分與儲存，避免極端值破壞體驗尺度。",
-      "p3": "上限參照人物：Magnus Samuelsson。此設定為產品量測保護，非競賽認證。"
+      "p3": "資料來源背書：本計分模型之常模分佈與上限，核心參考自國際權威握力認證機構 IronMind 之 CoC (Captains of Crush) 菁英適格者數據，並參照世界大力士冠軍賽 (WSM) 歷史紀錄文獻。",
+      "p4": "上限參照人物：Magnus Samuelsson（1998 年世界大力士冠軍，歷史上極少數能剛性抓開 CoC No.4 的傳奇握力之神）。",
+      "p5": "此設定為產品量測保護，非競賽認證。"
     },
     "capNoticeTitle": "輸入已超過模型上限",
     "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
-    "capNoticeLegend": "上限參照人物：瑞典大力士 Magnus Samuelsson。",
+    "capNoticeLegend": "上限參照：Magnus Samuelsson（1998 世界大力士冠軍；極少數能抓開 CoC No.4 的握力傳奇）。",
     "previewLabel": "預覽分數",
     "performanceSpecHeader": "潛力規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",

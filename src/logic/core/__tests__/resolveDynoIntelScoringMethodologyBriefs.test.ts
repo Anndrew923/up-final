@@ -68,6 +68,22 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     const cooper = briefs.find((b) => b.metric === 'cooper');
     expect(cooper?.body).toMatch(/4900/);
     expect(cooper?.body).toMatch(/4400/);
+
+    const grip = briefs.find((b) => b.metric === 'gripStrength');
+    expect(grip?.body).toMatch(/IronMind/);
+    expect(grip?.body).toMatch(/CoC/);
+    expect(grip?.body).toMatch(/Magnus Samuelsson/);
+    expect(grip?.body).toMatch(/1\.4/);
+    expect(grip?.body).toMatch(/160/);
+
+    const muscle = briefs.find((b) => b.metric === 'muscleMass');
+    expect(muscle?.body).toMatch(/Hafthor|魔山/);
+    expect(muscle?.body).toMatch(/Ronnie Coleman|羅尼/);
+    expect(muscle?.body).toMatch(/Nataliya|俄羅斯亞馬遜/);
+    expect(muscle?.body).toMatch(/Iris Kyle|艾瑞斯/);
+    expect(muscle?.body).toMatch(/90/);
+    expect(muscle?.body).toMatch(/60/);
+    expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 
   it('resolves nine methodology briefs in English', async () => {
@@ -76,5 +92,21 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
 
     expect(briefs).toHaveLength(DYNO_SCORING_METHODOLOGY_CATALOG.length);
     expect(briefs.map((b) => b.metric)).toEqual([...EXPECTED_METHODOLOGY_METRICS]);
+
+    const grip = briefs.find((b) => b.metric === 'gripStrength');
+    expect(grip?.body).toMatch(/IronMind/i);
+    expect(grip?.body).toMatch(/CoC|Captains of Crush/i);
+    expect(grip?.body).toMatch(/Magnus Samuelsson/);
+    expect(grip?.body).toMatch(/1\.4/);
+    expect(grip?.body).toMatch(/160/);
+
+    const muscle = briefs.find((b) => b.metric === 'muscleMass');
+    expect(muscle?.body).toMatch(/Hafthor Bjornsson|The Mountain/i);
+    expect(muscle?.body).toMatch(/Ronnie Coleman/);
+    expect(muscle?.body).toMatch(/Nataliya Kuznetsova/i);
+    expect(muscle?.body).toMatch(/Iris Kyle/i);
+    expect(muscle?.body).toMatch(/90/);
+    expect(muscle?.body).toMatch(/60/);
+    expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 });

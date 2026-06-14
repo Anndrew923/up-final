@@ -6,7 +6,8 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
-import { DisclosurePanel } from '../components/DisclosurePanel';
+import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -17,14 +18,6 @@ import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/asses
 
 export interface ExplosiveAssessmentPageProps {
   onBack?: () => void;
-}
-
-function formatExplosiveAnchorCm(n: number): string {
-  return n.toFixed(0);
-}
-
-function formatExplosiveAnchorSprintS(n: number): string {
-  return n.toFixed(1);
 }
 
 const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) => {
@@ -51,6 +44,11 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     persistToDashboard,
     submitToRadar,
   } = useExplosiveAssessmentPage();
+
+  const anchorsFallback = useMemo(() => {
+    if (powerNormAnchors) return null;
+    return profileReady && profile ? 'age_out_of_range' : 'profile_incomplete';
+  }, [powerNormAnchors, profileReady, profile]);
 
   const ladderUploadBundle = useMemo(
     () =>
@@ -149,76 +147,16 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <DisclosurePanel
+        <AssessmentReferenceDisclosure
           instanceId="explosive-reference"
           expanded={referenceOpen}
           onToggle={() => setReferenceOpen((v) => !v)}
-          title={t('assessment.referenceInfo.title')}
-          toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-          toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
-          panelBodyClassName="space-y-3 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400"
         >
-          <p className="font-medium text-zinc-300">{t('explosive.howToInfo.verticalJump')}</p>
-          <p>{t('explosive.howToInfo.standingLongJump')}</p>
-          <p>{t('explosive.howToInfo.sprint')}</p>
-          <p>{t('explosive.fieldsHint')}</p>
-          <p className="text-zinc-500">{t('explosive.howToInfo.tip')}</p>
-          <p>{t('explosive.standardsInfo.disclaimer')}</p>
-          {powerNormAnchors ? (
-            <>
-              <p className="font-medium text-zinc-300">
-                {t('explosive.standardsInfo.anchorsIntro')}
-              </p>
-              <p className="text-xs text-zinc-500">
-                {t('explosive.standardsInfo.ageBand', {
-                  band: t(`explosive.standardsInfo.ageBands.${powerNormAnchors.ageRange}`),
-                })}
-              </p>
-              <ul className="list-inside list-disc space-y-1.5 font-mono text-xs tabular-nums text-zinc-300 sm:text-sm">
-                <li>
-                  {t('explosive.standardsInfo.anchorVerticalLine', {
-                    v0: formatExplosiveAnchorCm(powerNormAnchors.vjump[0]),
-                    v50: formatExplosiveAnchorCm(powerNormAnchors.vjump[50]),
-                    v100: formatExplosiveAnchorCm(powerNormAnchors.vjump[100]),
-                  })}
-                </li>
-                <li>
-                  {t('explosive.standardsInfo.anchorSljLine', {
-                    v0: formatExplosiveAnchorCm(powerNormAnchors.slj[0]),
-                    v50: formatExplosiveAnchorCm(powerNormAnchors.slj[50]),
-                    v100: formatExplosiveAnchorCm(powerNormAnchors.slj[100]),
-                  })}
-                </li>
-                <li>
-                  {t('explosive.standardsInfo.anchorSprintLine', {
-                    v0: formatExplosiveAnchorSprintS(powerNormAnchors.sprint[0]),
-                    v50: formatExplosiveAnchorSprintS(powerNormAnchors.sprint[50]),
-                    v100: formatExplosiveAnchorSprintS(powerNormAnchors.sprint[100]),
-                  })}
-                </li>
-              </ul>
-            </>
-          ) : profileReady && profile ? (
-            <p className="text-amber-100/90">{t('explosive.standardsInfo.noAnchorsHint')}</p>
-          ) : (
-            <p className="text-zinc-500">
-              {t('explosive.standardsInfo.profileIncompleteForAnchors')}
-            </p>
-          )}
-          <p>
-            <span className="font-medium text-zinc-300">
-              {t('explosive.standardsInfo.sourceLabel')}
-            </span>{' '}
-            {t('explosive.standardsInfo.sourceBody')}
-          </p>
-          <p className="font-medium text-zinc-300">{t('explosive.standardsInfo.basisLabel')}</p>
-          <ul className="list-inside list-disc space-y-1 text-zinc-400">
-            <li>{t('explosive.standardsInfo.basisVjump')}</li>
-            <li>{t('explosive.standardsInfo.basisSlj')}</li>
-            <li>{t('explosive.standardsInfo.basisSprint')}</li>
-          </ul>
-          <p className="text-xs text-zinc-500">{t('explosive.standardsInfo.remark')}</p>
-        </DisclosurePanel>
+          <ExplosiveReferencePanel
+            powerNormAnchors={powerNormAnchors}
+            anchorsFallback={anchorsFallback}
+          />
+        </AssessmentReferenceDisclosure>
 
         <div className="grid gap-5">
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-vj">

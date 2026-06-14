@@ -6,13 +6,15 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
-import { DisclosurePanel } from '../components/DisclosurePanel';
+import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildMuscleAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { resolveMuscleDualSovereignI18nKey, SMM_KG_CEILING_FEMALE, SMM_KG_CEILING_MALE } from '../logic/core/muscleScoring';
 
 export interface MuscleAssessmentPageProps {
   onBack?: () => void;
@@ -82,6 +84,9 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning('muscleMass', previewScore ?? heroScore);
 
+  const dualSovereignCeilingKey = resolveMuscleDualSovereignI18nKey(profile?.gender, 'ceiling');
+  const dualSovereignExceedsKey = resolveMuscleDualSovereignI18nKey(profile?.gender, 'exceedsCeiling');
+
   return (
     <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="muscle" />
@@ -129,24 +134,31 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <DisclosurePanel
+        <AssessmentReferenceDisclosure
           instanceId="muscle-standards-info"
           expanded={standardsInfoOpen}
           onToggle={() => setStandardsInfoOpen((v) => !v)}
-          title={t('assessment.referenceInfo.title')}
-          toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-          toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
         >
-          <p>{t('muscle.smmHint')}</p>
-          {smmCeilingKg != null ? (
-            <p>{t('muscle.smmCeilingLine', { max: smmCeilingKg })}</p>
-          ) : null}
-          <p>{t('muscle.standardsInfo.p1')}</p>
-          <p>{t('muscle.standardsInfo.p2')}</p>
-          <p>{t('muscle.standardsInfo.p3')}</p>
-          <p>{t('muscle.standardsInfo.p4')}</p>
-          <p>{t('muscle.standardsInfo.p5')}</p>
-        </DisclosurePanel>
+          <ReferenceSimpleCopy
+            paragraphs={[
+              t('muscle.smmHint'),
+              ...(smmCeilingKg != null && profile
+                ? [
+                    t('muscle.standardsInfo.dualSovereignPreamble', {
+                      maleMax: SMM_KG_CEILING_MALE,
+                      femaleMax: SMM_KG_CEILING_FEMALE,
+                    }),
+                    t(dualSovereignCeilingKey, { max: smmCeilingKg }),
+                  ]
+                : []),
+              t('muscle.standardsInfo.p1'),
+              t('muscle.standardsInfo.p2'),
+              t('muscle.standardsInfo.p3'),
+              t('muscle.standardsInfo.p4'),
+            ]}
+            footnote={t('muscle.standardsInfo.p5')}
+          />
+        </AssessmentReferenceDisclosure>
 
         <div className="space-y-3">
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="muscle-smm">
@@ -177,7 +189,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
             className="rounded-lg border border-amber-500/35 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-100/95"
             role="status"
           >
-            <p>{t('muscle.errors.smm-exceeds-ceiling', { max: smmCeilingKg })}</p>
+            <p>{t(dualSovereignExceedsKey, { max: smmCeilingKg })}</p>
           </section>
         ) : errorKey ? (
           <p className="text-sm text-red-400" role="alert">

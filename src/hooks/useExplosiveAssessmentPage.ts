@@ -11,6 +11,7 @@ import {
   tryComputeExplosiveAssessmentScore,
   type ExplosiveAssessmentComputeError,
   type ExplosivePowerBreakdown,
+  type ExplosivePowerNormAnchors,
 } from '../logic/core/powerScoring';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
@@ -26,8 +27,7 @@ import type { PowerInputsPersisted } from '../types/powerInputs';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type { ExplosiveCapNoticeInterpolation };
-
-export type ExplosivePowerNormAnchors = NonNullable<ReturnType<typeof getPowerStandardsForProfile>>;
+export type { ExplosivePowerNormAnchors };
 
 export type ExplosivePageErrorKey = ExplosiveAssessmentComputeError | null;
 

@@ -65,13 +65,20 @@ vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
   default: () => null,
 }));
 
-const SMM_CEILING_COPY = 'Scoring SMM cap: 80 kg for your sex';
+const SMM_CEILING_COPY = 'Scoring SMM cap: 90 kg for your sex';
+const SMM_PREAMBLE_COPY = 'Ceiling 90/60';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'muscle.smmCeilingLine') {
+      if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
+        return `Ceiling ${String(options?.maleMax)}/${String(options?.femaleMax)}`;
+      }
+      if (key === 'muscle.standardsInfo.dualSovereignMale') {
         return `Scoring SMM cap: ${String(options?.max)} kg for your sex`;
+      }
+      if (key === 'muscle.standardsInfo.dualSovereignFemale') {
+        return `Scoring SMM cap female: ${String(options?.max)} kg`;
       }
       if (key === 'home.profile.male') return 'Male';
       if (key === 'home.profile.female') return 'Female';
@@ -94,7 +101,7 @@ function baseHookReturn() {
     calculate: vi.fn(),
     persistToDashboard: vi.fn(),
     submitToRadar: vi.fn(),
-    smmCeilingKg: 80,
+    smmCeilingKg: 90,
     scoreLocked: false,
   };
 }
@@ -141,6 +148,7 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     const panel = container.querySelector('#muscle-standards-info-panel');
 
     expect(panel?.hasAttribute('hidden')).toBe(true);
+    expect(panel?.textContent).toContain(SMM_PREAMBLE_COPY);
     expect(panel?.textContent).toContain(SMM_CEILING_COPY);
 
     unmount();
@@ -162,7 +170,33 @@ describe('MuscleAssessmentPage reference disclosure', () => {
       toggle.click();
     });
 
+    expect(container.textContent).toContain(SMM_PREAMBLE_COPY);
     expect(container.textContent).toContain(SMM_CEILING_COPY);
+
+    unmount();
+  });
+
+  it('shows female dual-sovereign copy when profile sex is female', () => {
+    mockUseMuscleAssessmentPage.mockReturnValue({
+      ...baseHookReturn(),
+      profile: { gender: 'female', weightKg: 62, age: 28 },
+      smmCeilingKg: 60,
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: null,
+      summary: null,
+      nextMilestone: null,
+      remainingPoints: null,
+    });
+
+    const { container, unmount } = renderPage();
+    const toggle = container.querySelector('#muscle-standards-info-toggle') as HTMLButtonElement;
+
+    act(() => {
+      toggle.click();
+    });
+
+    expect(container.textContent).toContain('Scoring SMM cap female: 60 kg');
 
     unmount();
   });

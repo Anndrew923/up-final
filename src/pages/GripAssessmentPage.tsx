@@ -6,7 +6,8 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
-import { DisclosurePanel } from '../components/DisclosurePanel';
+import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
@@ -116,18 +117,21 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       ) : null}
 
       <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <DisclosurePanel
+        <AssessmentReferenceDisclosure
           instanceId="grip-reference-info"
           expanded={referenceOpen}
           onToggle={() => setReferenceOpen((v) => !v)}
-          title={t('assessment.referenceInfo.title')}
-          toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-          toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
         >
-          <p>{t('grip.referenceInfo.p1')}</p>
-          <p>{t('grip.referenceInfo.p2')}</p>
-          <p className="text-zinc-500">{t('grip.referenceInfo.p3')}</p>
-        </DisclosurePanel>
+          <ReferenceSimpleCopy
+            paragraphs={[
+              t('grip.referenceInfo.p1'),
+              t('grip.referenceInfo.p2'),
+              t('grip.referenceInfo.p3'),
+              t('grip.referenceInfo.p4'),
+            ]}
+            footnote={t('grip.referenceInfo.p5')}
+          />
+        </AssessmentReferenceDisclosure>
 
         <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="grip-peak">
           <span className="font-medium text-zinc-200">{t('grip.peakLabel')}</span>

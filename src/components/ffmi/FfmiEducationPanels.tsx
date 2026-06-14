@@ -1,39 +1,40 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DisclosurePanel } from '../DisclosurePanel';
 import { FFMI_TABLE_FEMALE_ORDER, FFMI_TABLE_MALE_ORDER } from '../../logic/core/ffmiTableRows';
+import AssessmentReferenceDisclosure from '../assessment/AssessmentReferenceDisclosure';
+import {
+  ASSESSMENT_REFERENCE_STRUCTURED_PANEL_BODY_CLASS,
+  ReferenceOrderedList,
+  ReferenceParagraph,
+  ReferenceSection,
+  ReferenceSectionHint,
+  ReferenceSectionTitle,
+} from '../assessment/AssessmentReferenceProse';
 
 export const FfmiEducationPanels: FC = () => {
   const { t } = useTranslation('common');
   const [referenceOpen, setReferenceOpen] = useState(false);
 
   return (
-    <DisclosurePanel
+    <AssessmentReferenceDisclosure
       instanceId="ffmi-reference"
       expanded={referenceOpen}
       onToggle={() => setReferenceOpen((v) => !v)}
-      title={t('assessment.referenceInfo.title')}
-      toggleExpandLabel={t('assessment.referenceInfo.toggleExpand')}
-      toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse')}
-      panelBodyClassName="space-y-4 px-5 pb-5 pt-4 text-sm leading-relaxed text-zinc-300"
+      panelBodyClassName={ASSESSMENT_REFERENCE_STRUCTURED_PANEL_BODY_CLASS}
     >
-      <h3 className="text-sm font-semibold tracking-tight text-zinc-100">
-        {t('ffmi.info.whatIsTitle')}
-      </h3>
-      <p>{t('ffmi.info.whatIsIntro')}</p>
-      <ol className="list-decimal space-y-2 pl-5 text-zinc-400">
+      <ReferenceSectionTitle>{t('ffmi.info.whatIsTitle')}</ReferenceSectionTitle>
+      <ReferenceParagraph>{t('ffmi.info.whatIsIntro')}</ReferenceParagraph>
+      <ReferenceOrderedList>
         <li>{t('ffmi.info.caveats.tall')}</li>
         <li>{t('ffmi.info.caveats.highFat')}</li>
         <li>{t('ffmi.info.caveats.heavy')}</li>
-      </ol>
+      </ReferenceOrderedList>
 
-      <div className="border-t border-zinc-800/80 pt-4">
-        <h3 className="text-sm font-semibold tracking-tight text-zinc-100">
-          {t('ffmi.table.sectionTitle')}
-        </h3>
-        <p className="mt-1 text-xs text-zinc-500">{t('ffmi.table.sectionHint')}</p>
-      </div>
+      <ReferenceSection>
+        <ReferenceSectionTitle>{t('ffmi.table.sectionTitle')}</ReferenceSectionTitle>
+        <ReferenceSectionHint>{t('ffmi.table.sectionHint')}</ReferenceSectionHint>
+      </ReferenceSection>
 
       <h4 className="text-xs font-semibold uppercase tracking-wide text-accent-primary">
         {t('ffmi.table.genderMale')}
@@ -82,7 +83,7 @@ export const FfmiEducationPanels: FC = () => {
           </tbody>
         </table>
       </div>
-    </DisclosurePanel>
+    </AssessmentReferenceDisclosure>
   );
 };
 
