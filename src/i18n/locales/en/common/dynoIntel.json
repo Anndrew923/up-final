@@ -1,7 +1,6 @@
 {
   "dynoIntel": {
     "triggerAria": "Open DYNO INTEL console",
-    "triggerBadge": "DI",
     "triggerTicker": {
       "online": "INTEL: ONLINE",
       "scanning": "SCANNING...",

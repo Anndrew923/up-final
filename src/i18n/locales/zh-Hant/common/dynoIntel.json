@@ -1,7 +1,6 @@
 {
   "dynoIntel": {
     "triggerAria": "開啟 DYNO INTEL 智庫艙",
-    "triggerBadge": "DI",
     "triggerTicker": {
       "online": "INTEL: ONLINE",
       "scanning": "SCANNING...",

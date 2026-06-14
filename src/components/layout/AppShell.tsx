@@ -1,7 +1,8 @@
 import type { FC, ReactNode } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import BootSequenceOverlay from '../onboarding/BootSequenceOverlay';
 import BottomNav from '../navigation/BottomNav';
+import ShellAnimatedOutlet from '../navigation/ShellAnimatedOutlet';
 import { ROUTES, isCompactShellRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
@@ -44,7 +45,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         id={SHELL_SCROLL_ID}
         className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
       >
-        {children ?? <Outlet />}
+        {children ?? <ShellAnimatedOutlet />}
       </div>
 
       <div

@@ -58,7 +58,7 @@ export function useDynoIntelTriggerTicker(
 
   return {
     label: t(entry.key),
-    phase: entry.phase,
+    phase: resolveDynoTriggerPhaseAtIndex(activeIndex),
     index: activeIndex,
     reducedMotion,
   };

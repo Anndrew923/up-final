@@ -300,6 +300,7 @@ const DynoIntelConsole = () => {
         consoleLabel={consoleLabel}
         onPress={openSheetWithGate}
         hidden={hideTrigger}
+        sheetOpen={sheet.open}
       />
       <DynoIntelBottomSheet
         open={sheet.open}

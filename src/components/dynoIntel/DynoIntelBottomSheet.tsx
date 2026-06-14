@@ -4,6 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import type { DynoIntelChatStatus } from '../../hooks/useDynoIntelChat';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import {
+  DYNO_INTEL_SHEET_PANEL_TRANSITION,
+  DYNO_INTEL_SHEET_SCRIM_TRANSITION,
+  DYNO_INTEL_SHEET_SLIDE_MS,
+  dynoIntelSheetPanelVisible,
+  dynoIntelSheetScrimVisible,
+} from '../../lib/dynoIntelTriggerMotion';
+import { cn } from '../../lib/cn';
+import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { hasProAccess } from '../../logic/core/entitlement';
 import type { EntitlementState } from '../../types/entitlement';
@@ -73,8 +82,38 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   const titleId = useId();
   const [draft, setDraft] = useState('');
   const isPro = hasProAccess(entitlement);
+  const reducedMotion = usePrefersReducedMotion();
+  const [mounted, setMounted] = useState(open);
+  const [visible, setVisible] = useState(false);
 
-  useShellScrollLock(open);
+  useShellScrollLock(mounted);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      if (reducedMotion) {
+        setVisible(true);
+        return;
+      }
+      let cancelled = false;
+      const raf = window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          if (!cancelled) setVisible(true);
+        });
+      });
+      return () => {
+        cancelled = true;
+        window.cancelAnimationFrame(raf);
+      };
+    }
+
+    setVisible(false);
+    const timer = window.setTimeout(
+      () => setMounted(false),
+      reducedMotion ? 0 : DYNO_INTEL_SHEET_SLIDE_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [open, reducedMotion]);
 
   useEffect(() => {
     if (!open) return;
@@ -99,16 +138,24 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
     setDraft('');
   };
 
-  if (!open || typeof document === 'undefined') return null;
+  if (!mounted || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.dynoIntelSheet} flex flex-col justify-end`}
+      className={cn(
+        'fixed inset-0 flex flex-col justify-end',
+        Z_INDEX_CLASS.dynoIntelSheet,
+      )}
       role="presentation"
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        className={cn(
+          'absolute inset-0 bg-black/70 backdrop-blur-md',
+          DYNO_INTEL_SHEET_SCRIM_TRANSITION,
+          dynoIntelSheetScrimVisible(visible),
+          !visible && 'pointer-events-none',
+        )}
         aria-label={t('dynoIntel.close')}
         onClick={view === 'paywall' ? onPaywallDismiss : onClose}
       />
@@ -116,7 +163,11 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 flex max-h-[60dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+        className={cn(
+          'relative z-10 flex max-h-[60dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
+          DYNO_INTEL_SHEET_PANEL_TRANSITION,
+          dynoIntelSheetPanelVisible(visible),
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="shrink-0 border-b border-zinc-800/80 px-4 pb-3 pt-4">

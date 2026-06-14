@@ -12,7 +12,7 @@ const CENTER_HEX_SPOTLIGHT =
   'bg-cyan-500 text-white shadow-[0_0_28px_rgba(34,211,238,0.85),0_0_48px_rgba(34,211,238,0.35)] ring-2 ring-cyan-300/90';
 
 const TAB_LINK_BASE =
-  'relative flex min-w-0 flex-1 basis-0 flex-col items-center justify-center text-center transition-all duration-300';
+  'relative flex min-w-0 flex-1 basis-0 flex-col items-center justify-center text-center motion-safe:transition-[transform,opacity] motion-safe:duration-300 motion-safe:ease-report-ease motion-reduce:transition-none';
 const SIDE_TAB_SIZING = 'h-16 gap-0.5 px-0.5 sm:px-1';
 const CENTER_TAB_SIZING = 'min-h-16';
 const NAV_LABEL_INSET = 'px-0.5';
@@ -64,7 +64,7 @@ export default function BottomNav() {
                   [
                     TAB_LINK_BASE,
                     CENTER_TAB_SIZING,
-                    'z-20 -translate-y-4 motion-safe:transition-transform motion-safe:duration-300',
+                    'z-20 -translate-y-4 motion-safe:transition-[transform,opacity] motion-safe:duration-300 motion-safe:ease-report-ease motion-reduce:transition-none',
                     isBootPhase3Spotlight ? 'scale-105 text-cyan-300' : '',
                     isActive ? 'text-cyan-300' : 'text-slate-400',
                   ].join(' ')
@@ -83,7 +83,7 @@ export default function BottomNav() {
                     <>
                       <div
                         className={[
-                          'relative flex h-16 w-16 shrink-0 items-center justify-center transition-all duration-300',
+                          'relative flex h-16 w-16 shrink-0 items-center justify-center motion-safe:transition-[transform,opacity] motion-safe:duration-300 motion-safe:ease-report-ease motion-reduce:transition-none',
                           '[clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)]',
                           'before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/15 before:to-transparent',
                           'after:pointer-events-none after:absolute after:bottom-0 after:h-1 after:w-full after:bg-cyan-300/50 after:blur-sm',
