@@ -30,8 +30,8 @@ export async function resolveDynoIntelEntitlement(uid, authToken, now = new Date
 }
 
 export function assertDynoIntelModeAllowed(mode, isPro) {
-  if (mode === "single-axis") return;
-  if (!isPro) {
+  if (mode === "single-axis" || mode === "cross-axis") return;
+  if (mode === "weight-simulation" && !isPro) {
     const err = new Error("pro-required");
     err.code = "pro-required";
     throw err;
@@ -39,7 +39,8 @@ export function assertDynoIntelModeAllowed(mode, isPro) {
 }
 
 export function assertDynoIntelTrialCoreOwned(mode, isPro, hasCore) {
-  if (mode !== "single-axis" || isPro) return;
+  if (isPro) return;
+  if (mode === "weight-simulation") return;
   if (!hasCore) {
     const err = new Error("core-required");
     err.code = "core-required";

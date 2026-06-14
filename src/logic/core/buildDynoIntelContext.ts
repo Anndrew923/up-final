@@ -216,6 +216,9 @@ export function buildDynoIntelContext(input: BuildDynoIntelContextInput): DynoIn
     scoringMethodologyBriefs: [],
     assessmentDeepDiveNudge: '',
     replyClosingCue: '',
+    closingBeatKind: 'return-ritual',
+    closingBeatSecondLine: '',
+    questionFocusAxis: null,
     generatedAt: now.toISOString(),
   };
 }

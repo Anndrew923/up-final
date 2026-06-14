@@ -34,16 +34,16 @@ describe("system_v1_en prompt artifact", () => {
     );
   });
 
-  it("defines v2.2 data resonance beat three without legend lore", () => {
+  it("defines v2.3 data resonance beat three without legend lore", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
-    assert.match(text, /THREE-BEAT CONSTITUTION v2\.2/);
+    assert.match(text, /THREE-BEAT CONSTITUTION v2\.3/);
     assert.match(text, /Uplink Close · Data Resonance/);
-    assert.match(text, /replyClosingCue/);
+    assert.match(text, /closingBeatSecondLine/);
     assert.doesNotMatch(text, /Legend Analogy/);
     assert.doesNotMatch(text, /Weave \*\*checkable Olympia lore\*\*/);
   });
 
-  it("defines human-to-machine three-beat constitution v2.2", () => {
+  it("defines human-to-machine three-beat constitution v2.3", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
     assert.match(text, /On this host's telemetry chassis, this force profile maps to a/);
     assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
@@ -51,10 +51,11 @@ describe("system_v1_en prompt artifact", () => {
 });
 
 describe("system_v1 prompt artifact", () => {
-  it("defines 由人入機 three-beat constitution v2.2", () => {
+  it("defines 由人入機 three-beat constitution v2.3", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
-    assert.match(text, /【由人入機】三段憲法 v2\.2/);
+    assert.match(text, /【由人入機】三段憲法 v2\.3/);
     assert.match(text, /第三段【通電收束 · 數據共鳴】/);
+    assert.match(text, /closingBeatSecondLine/);
     assert.match(text, /在《最強肉體》主機的遙測底盤中，這份力量天賦被精準類比為/);
     assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
   });
@@ -62,7 +63,7 @@ describe("system_v1 prompt artifact", () => {
   it("retires legend analogies and requires replyClosingCue", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
     assert.match(text, /replyClosingCue/);
-    assert.match(text, /assessmentDeepDiveNudge/);
+    assert.match(text, /closingBeatKind/);
     assert.match(text, /通電收束 · 數據共鳴/);
     assert.doesNotMatch(text, /奧林匹亞傳奇/);
     assert.doesNotMatch(text, /傳奇類比與鋼鐵意志/);
@@ -80,6 +81,7 @@ describe("stripTechnicalLeakage locale routing", () => {
       "scoring methodology briefs"
     );
     assert.equal(stripTechnicalLeakage("replyClosingCue", "en"), "uplink close cue");
+    assert.equal(stripTechnicalLeakage("closingBeatSecondLine", "en"), "close beat second line");
   });
 
   it("uses zh-Hant product language by default", () => {
@@ -89,5 +91,6 @@ describe("stripTechnicalLeakage locale routing", () => {
       "給分標準說明"
     );
     assert.equal(stripTechnicalLeakage("replyClosingCue", "zh-Hant"), "通電收束");
+    assert.equal(stripTechnicalLeakage("closingBeatKind", "zh-Hant"), "收束模式");
   });
 });

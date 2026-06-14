@@ -25,9 +25,20 @@
     "replyAssessmentDeepDiveNudge": "Each assessment page includes fuller scoring notes and norm context — open that page and expand the info section for the complete picture.",
     "replyClosingCue": {
       "default": "Uplink complete. This telemetry is logged on the host — come back and track your own progress curve; I'll be here.",
+      "questionFocus": "{{axisLabel}} holds at {{score}} pts{{tierSuffix}} — the host has locked this read; worth revisiting on your next uplink.",
+      "questionFocusTierSuffix": ", tier [{{tierTitle}}]",
+      "chassisBalance": "Chassis weakest on {{weakestLabel}} ({{weakestScore}} pts), strongest on {{strongestLabel}} ({{strongestScore}} pts) — balance beats a single-axis spike for the next tier.",
       "momentumUp": "Since your last uplink, {{axisLabel}} moved up {{delta}} points — the host remembers that rhythm; log it.",
       "highTier": "[{{tierTitle}}] tier locked on the host — rare spec worth revisiting on every uplink.",
       "weakestCompanion": "Weakest link: {{axisLabel}} — the next tier waits on the assessment page; I'll stay on this host while you fill the gap."
+    },
+    "closingBeatSecondLine": {
+      "passionClose0": "Score {{axisScore}}, tier {{tierTitle}} — logged on the host; don't let this spec live only on screen.",
+      "passionClose1": "The host remembers the {{axisScore}}-pt curve — next uplink, compare against yourself, not others.",
+      "passionClose2": "[{{tierTitle}}] isn't decoration — it's your physique's signature on this host; sign it again.",
+      "returnRitual0": "Uplink closed. Come back — I'll match your progress curve on this same host.",
+      "returnRitual1": "Telemetry archived. Return with fresh scores — I'll be here.",
+      "returnRitual2": "This read is on the host. Next time, we track only your tier curve."
     },
     "console": {
       "home": "CONSOLE: HOME",
@@ -46,19 +57,19 @@
     },
     "gate": {
       "authDescription": "Sign in with Google to power on DYNO INTEL.",
-      "coreDescription": "Own Core for 2 daily single-axis AI briefings.",
-      "proDescription": "Cross-axis diagnostics and weight simulation are Pro — join the arena.",
+      "coreDescription": "Own Core for 2 daily AI briefings (includes cross-axis diagnostics).",
+      "proDescription": "Weight simulation is Pro-only — 30 daily uplinks; join the arena for full DYNO channel.",
       "quotaDescription": "Daily uplink exhausted. Try again tomorrow or upgrade to Pro for 30/day."
     },
     "paywall": {
       "badge": "Console integrity error",
       "title": {
-        "pro-required": "Cross-axis uplink locked",
+        "pro-required": "Weight simulation uplink locked",
         "quota-exhausted": "Daily uplink exhausted"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: The ECU has tripped remaining cross-axis diagnostics. Driver {{axis}} axis is idling at {{score}} pts with a leak — chassis balance at risk. For the price of a convenience-store coffee, ignite Pro: global ladder, silent cloud backup, and full DYNO INTEL rigidity.",
-        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's 2 single-axis briefings are spent. Your {{axis}} axis still idles at {{score}} pts — cross-axis diagnostics and 30 daily uplinks are Pro-only. Ignite Pro to restore full chassis telemetry."
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: Weight simulation uplink is locked. {{axis}} axis idles at {{score}} pts — weight simulation matrix and 30 daily uplinks are Pro-only. Ignite Pro for global ladder, cloud backup, and full DYNO telemetry.",
+        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's 2 AI briefings (including cross-axis) are spent. {{axis}} axis still idles at {{score}} pts — upgrade to Pro for 30 daily uplinks and weight simulation."
       },
       "cta": "Ignite Pro Pass",
       "dismiss": "Return to console",

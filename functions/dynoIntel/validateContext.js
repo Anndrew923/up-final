@@ -16,6 +16,12 @@ const METHODOLOGY_TITLE_MAX_LENGTH = 200;
 const METHODOLOGY_BODY_MAX_LENGTH = 8000;
 const ASSESSMENT_DEEP_DIVE_NUDGE_MAX_LENGTH = 500;
 const REPLY_CLOSING_CUE_MAX_LENGTH = 800;
+const CLOSING_BEAT_SECOND_LINE_MAX_LENGTH = 800;
+const VALID_CLOSING_BEAT_KINDS = new Set([
+  "methodology-nudge",
+  "passion-close",
+  "return-ritual",
+]);
 
 /** Mirrors client scoreMeaning card copy — prevents Callable abuse. */
 const CARD_COPY_TITLE_MAX_LENGTH = 200;
@@ -244,6 +250,61 @@ function assertReplyClosingCue(replyClosingCue) {
   }
 }
 
+function assertClosingBeatKind(closingBeatKind) {
+  if (closingBeatKind == null) return;
+  if (typeof closingBeatKind !== "string" || !VALID_CLOSING_BEAT_KINDS.has(closingBeatKind)) {
+    const err = new Error("invalid-closing-beat-kind");
+    err.code = "invalid-argument";
+    throw err;
+  }
+}
+
+function assertClosingBeatSecondLine(closingBeatSecondLine) {
+  if (closingBeatSecondLine == null) return;
+  if (typeof closingBeatSecondLine !== "string") {
+    const err = new Error("invalid-closing-beat-second-line");
+    err.code = "invalid-argument";
+    throw err;
+  }
+  if (closingBeatSecondLine.length === 0) {
+    const err = new Error("empty-closing-beat-second-line");
+    err.code = "invalid-argument";
+    throw err;
+  }
+  if (closingBeatSecondLine.length > CLOSING_BEAT_SECOND_LINE_MAX_LENGTH) {
+    const err = new Error("invalid-closing-beat-second-line-length");
+    err.code = "invalid-argument";
+    throw err;
+  }
+}
+
+function assertQuestionFocusAxis(questionFocusAxis) {
+  if (questionFocusAxis == null) return;
+  if (!isValidSixAxisMetric(questionFocusAxis)) {
+    const err = new Error("invalid-question-focus-axis");
+    err.code = "invalid-argument";
+    throw err;
+  }
+}
+
+/** WHY: Beat-3 fields ship as a bundle from enriched client — partial payloads break v2.3 prompt contract. */
+function assertBeat3Bundle(context) {
+  const hasReplyClosingCue =
+    typeof context.replyClosingCue === "string" && context.replyClosingCue.length > 0;
+  if (!hasReplyClosingCue) return;
+
+  if (context.closingBeatKind == null) {
+    const err = new Error("missing-closing-beat-kind");
+    err.code = "invalid-argument";
+    throw err;
+  }
+  if (context.closingBeatSecondLine == null || context.closingBeatSecondLine.length === 0) {
+    const err = new Error("missing-closing-beat-second-line");
+    err.code = "invalid-argument";
+    throw err;
+  }
+}
+
 export function validateDynoIntelContext(context) {
   if (!context || typeof context !== "object") {
     const err = new Error("invalid-context");
@@ -284,6 +345,10 @@ export function validateDynoIntelContext(context) {
   assertScoringMethodologyBriefs(context.scoringMethodologyBriefs);
   assertAssessmentDeepDiveNudge(context.assessmentDeepDiveNudge);
   assertReplyClosingCue(context.replyClosingCue);
+  assertClosingBeatKind(context.closingBeatKind);
+  assertClosingBeatSecondLine(context.closingBeatSecondLine);
+  assertBeat3Bundle(context);
+  assertQuestionFocusAxis(context.questionFocusAxis);
 
   if (context.focusAxisLexicon != null) {
     assertFocusAxisLexicon(context.focusAxisLexicon);

@@ -16,6 +16,7 @@ export type DynoIntelChatStatus = 'idle' | 'loading' | 'typing' | 'error';
 export interface UseDynoIntelChatInput {
   mode: DynoIntelMode;
   resolveContext: (mode: DynoIntelMode) => DynoIntelContextV1;
+  enrichContext: (base: DynoIntelContextV1, userQuestion: string) => DynoIntelContextV1;
   quota: Pick<DynoIntelQuotaState, 'applyServerQuota' | 'remaining'>;
   onPaywallRequest: (reason: DynoIntelPaywallReason) => void;
   onAuthBlocked: () => void;
@@ -69,7 +70,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         return;
       }
 
-      const context = input.resolveContext(effectiveMode);
+      const context = input.enrichContext(input.resolveContext(effectiveMode), userQuestion);
 
       setStatus('loading');
       setErrorMessageKey(null);

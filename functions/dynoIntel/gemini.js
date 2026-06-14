@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DYNO_INTEL_GEMINI_MODEL } from "../shared/constants.js";
+import { enforceCommentaryBeatContract } from "./commentaryBeatContract.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -79,7 +80,7 @@ function requireGeminiApiKey() {
  * Gemini occasionally wraps JSON in fences or prefixes prose despite responseSchema.
  * Design intent (WHY): avoid surfacing intermittent parse flakes as user-facing 500s.
  */
-export function salvagePartialGeminiReply(text, locale = "zh-Hant") {
+export function salvagePartialGeminiReply(text, locale = "zh-Hant", context = null) {
   const trimmed = String(text ?? "").trim();
   if (!trimmed.startsWith("{")) return null;
 
@@ -99,7 +100,8 @@ export function salvagePartialGeminiReply(text, locale = "zh-Hant") {
       is_off_topic: offTopicMatch?.[1] === "true",
       detected_weakest_axis: axisMatch?.[1] ? unescapeJsonString(axisMatch[1]) : "",
     },
-    locale
+    locale,
+    context
   );
 }
 
@@ -149,14 +151,14 @@ function extractGeminiTextPayload(json) {
   return combined || null;
 }
 
-function normalizeGeminiReply(parsed, locale = "zh-Hant") {
+function normalizeGeminiReply(parsed, locale = "zh-Hant", context = null) {
   const base = {
     commentary: String(parsed.commentary ?? ""),
     action_directive: String(parsed.action_directive ?? ""),
     is_off_topic: Boolean(parsed.is_off_topic),
     detected_weakest_axis: String(parsed.detected_weakest_axis ?? ""),
   };
-  return finalizeDynoIntelReply(base, locale);
+  return enforceCommentaryBeatContract(finalizeDynoIntelReply(base, locale), context);
 }
 
 /** WHY: Model may leak internal persona names despite prompt blacklist — strip before client render. */
@@ -199,6 +201,9 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_ZH = [
   [/scoringMethodologyBriefs/gi, "給分標準說明"],
   [/assessmentDeepDiveNudge/gi, "評測頁深度說明"],
   [/replyClosingCue/gi, "通電收束"],
+  [/closingBeatKind/gi, "收束模式"],
+  [/closingBeatSecondLine/gi, "收束尾韻"],
+  [/questionFocusAxis/gi, "問題焦點軸"],
   [/資料鏈路/g, "服務範圍"],
 ];
 
@@ -219,6 +224,9 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
   [/scoringMethodologyBriefs/gi, "scoring methodology briefs"],
   [/assessmentDeepDiveNudge/gi, "assessment page deep dive"],
   [/replyClosingCue/gi, "uplink close cue"],
+  [/closingBeatKind/gi, "close beat mode"],
+  [/closingBeatSecondLine/gi, "close beat second line"],
+  [/questionFocusAxis/gi, "question focus axis"],
 ];
 
 export function stripTechnicalLeakage(text, locale = "zh-Hant") {
@@ -314,7 +322,7 @@ async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, use
   const replyLocale = resolveReplyLocale(context);
   const parsed = parseGeminiStructuredJson(text);
   if (!parsed) {
-    const salvaged = salvagePartialGeminiReply(text, replyLocale);
+    const salvaged = salvagePartialGeminiReply(text, replyLocale, context);
     if (salvaged) return salvaged;
     const err = new Error("gemini-invalid-json");
     err.code = "internal";
@@ -322,7 +330,7 @@ async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, use
     throw err;
   }
 
-  return normalizeGeminiReply(parsed, replyLocale);
+  return normalizeGeminiReply(parsed, replyLocale, context);
 }
 
 /**

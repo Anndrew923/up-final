@@ -23,7 +23,8 @@ export interface DynoIntelAccessResult {
 }
 
 function gateFeatureForMode(mode: DynoIntelMode): 'dyno-intel-trial' | 'dyno-intel-full' {
-  return mode === 'single-axis' ? 'dyno-intel-trial' : 'dyno-intel-full';
+  if (mode === 'weight-simulation') return 'dyno-intel-full';
+  return 'dyno-intel-trial';
 }
 
 function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
@@ -39,7 +40,7 @@ function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
 
 /**
  * Maps DYNO INTEL diagnostic mode to auth / Core / Pro gates.
- * WHY: Trial (single-axis, 2/day) is Core-only bait; cross-axis and weight-sim require Pro.
+ * WHY: Core trial (2/day) covers single-axis + cross-axis; weight-simulation stays Pro-only.
  */
 export function resolveDynoIntelAccess(
   mode: DynoIntelMode,
@@ -61,8 +62,8 @@ export function resolveDynoIntelAccess(
 }
 
 /**
- * Resolves sheet entry mode — non-Pro users on cross-axis surfaces fall back to single-axis trial.
- * WHY: Home/Lobby suggest cross-axis but Core bait must still open the console.
+ * Resolves sheet entry mode from route suggestion — no cross-axis downgrade for Core.
+ * WHY: Home/Lobby suggest cross-axis; Core trial now uses the same 2/day bucket for cross-axis.
  */
 export function resolveDynoIntelSheetEntry(
   suggestedMode: DynoIntelMode,
@@ -71,20 +72,8 @@ export function resolveDynoIntelSheetEntry(
   isAnonymous: boolean,
   now: Date = new Date()
 ): { openMode: DynoIntelMode; access: DynoIntelAccessResult } {
-  const primary = resolveDynoIntelAccess(suggestedMode, ent, authStatus, isAnonymous, now);
-  if (primary.allowed) {
-    return { openMode: suggestedMode, access: primary };
-  }
-
-  if (suggestedMode !== 'single-axis') {
-    const trial = resolveDynoIntelAccess('single-axis', ent, authStatus, isAnonymous, now);
-    if (trial.allowed) {
-      return { openMode: 'single-axis', access: trial };
-    }
-    return { openMode: suggestedMode, access: trial };
-  }
-
-  return { openMode: suggestedMode, access: primary };
+  const access = resolveDynoIntelAccess(suggestedMode, ent, authStatus, isAnonymous, now);
+  return { openMode: suggestedMode, access };
 }
 
 export function canUseDynoIntelTrial(
@@ -114,8 +103,5 @@ export function canUseDynoIntelMode(
   isAnonymous: boolean,
   now: Date = new Date()
 ): boolean {
-  if (mode === 'single-axis') {
-    return canUseDynoIntelTrial(ent, authStatus, isAnonymous, now);
-  }
-  return canUseDynoIntelFull(ent, authStatus, isAnonymous, now);
+  return resolveDynoIntelAccess(mode, ent, authStatus, isAnonymous, now).allowed;
 }

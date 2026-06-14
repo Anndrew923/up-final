@@ -76,6 +76,17 @@ describe("buildDynoIntelCacheHash", () => {
     });
     assert.notEqual(baseline, withCue);
   });
+
+  it("changes when closing beat fields change", () => {
+    const baseline = buildDynoIntelCacheHash(baseParts);
+    const withBeat = buildDynoIntelCacheHash({
+      ...baseParts,
+      closingBeatKind: "passion-close",
+      closingBeatSecondLine: "主機記得這條曲線。",
+      questionFocusAxis: "bodyFat",
+    });
+    assert.notEqual(baseline, withBeat);
+  });
 });
 
 describe("shouldPersistDynoIntelCache", () => {

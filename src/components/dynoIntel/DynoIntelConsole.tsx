@@ -53,7 +53,7 @@ const DynoIntelConsole = () => {
     setMode(route.suggestedMode);
   }, [route.suggestedMode, route.consoleLabelKey]);
 
-  const resolveContext = useCallback(
+  const resolveBaseContext = useCallback(
     (effectiveMode: DynoIntelMode) => {
       const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
       const focusAxis = effectiveMode === 'single-axis' ? route.focusAxis : null;
@@ -62,7 +62,7 @@ const DynoIntelConsole = () => {
         effectiveMode === 'weight-simulation'
           ? resolveWeightSimulationTargetKg(snapshot.profile)
           : undefined;
-      const context = buildDynoIntelContext({
+      return buildDynoIntelContext({
         radarInput: snapshot,
         historyRecords: snapshot.historyRecords,
         locale,
@@ -71,15 +71,19 @@ const DynoIntelConsole = () => {
         focusSupplemental: route.focusSupplemental,
         targetWeightKg,
       });
-
-      return enrichDynoIntelContextCardCopy(context, t);
     },
-    [buildRadarInput, i18n.language, route.focusAxis, route.focusSupplemental, t]
+    [buildRadarInput, i18n.language, route.focusAxis, route.focusSupplemental]
+  );
+
+  const enrichContext = useCallback(
+    (base: ReturnType<typeof buildDynoIntelContext>, userQuestion: string) =>
+      enrichDynoIntelContextCardCopy(base, t, userQuestion),
+    [t]
   );
 
   const paywallContext = useMemo(
-    () => resolveContext('cross-axis'),
-    [resolveContext]
+    () => enrichContext(resolveBaseContext('cross-axis'), ''),
+    [enrichContext, resolveBaseContext]
   );
 
   const paywallBrief = useMemo(
@@ -122,7 +126,8 @@ const DynoIntelConsole = () => {
 
   const chat = useDynoIntelChat({
     mode,
-    resolveContext,
+    resolveContext: resolveBaseContext,
+    enrichContext,
     quota,
     onPaywallRequest: openPaywall,
     onAuthBlocked: handleAuthBlocked,

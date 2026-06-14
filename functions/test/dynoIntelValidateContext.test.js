@@ -340,8 +340,32 @@ describe("validateDynoIntelContext", () => {
       validateDynoIntelContext({
         ...baseContext,
         replyClosingCue: "通電完成。這份遙測已寫入主機——下次再來對照。",
+        closingBeatKind: "return-ritual",
+        closingBeatSecondLine: "下次通電時，帶著新的分數回來——我會在這裡等你。",
       }),
       true
+    );
+  });
+
+  it("rejects replyClosingCue without beat-3 bundle fields", () => {
+    assert.throws(
+      () =>
+        validateDynoIntelContext({
+          ...baseContext,
+          replyClosingCue: "通電完成。這份遙測已寫入主機——下次再來對照。",
+        }),
+      /missing-closing-beat-kind/
+    );
+  });
+
+  it("rejects invalid questionFocusAxis", () => {
+    assert.throws(
+      () =>
+        validateDynoIntelContext({
+          ...baseContext,
+          questionFocusAxis: "invalid-axis",
+        }),
+      /invalid-question-focus-axis/
     );
   });
 
@@ -353,6 +377,40 @@ describe("validateDynoIntelContext", () => {
           replyClosingCue: "",
         }),
       /empty-reply-closing-cue/
+    );
+  });
+
+  it("accepts closingBeatKind and closingBeatSecondLine when enriched", () => {
+    assert.equal(
+      validateDynoIntelContext({
+        ...baseContext,
+        replyClosingCue: "通電完成。這份遙測已寫入主機——下次再來對照。",
+        closingBeatKind: "return-ritual",
+        closingBeatSecondLine: "下次通電時，帶著新的分數回來——我會在這裡等你。",
+      }),
+      true
+    );
+  });
+
+  it("rejects invalid closingBeatKind", () => {
+    assert.throws(
+      () =>
+        validateDynoIntelContext({
+          ...baseContext,
+          closingBeatKind: "evergreen-ad",
+        }),
+      /invalid-closing-beat-kind/
+    );
+  });
+
+  it("rejects empty closingBeatSecondLine", () => {
+    assert.throws(
+      () =>
+        validateDynoIntelContext({
+          ...baseContext,
+          closingBeatSecondLine: "",
+        }),
+      /empty-closing-beat-second-line/
     );
   });
 });

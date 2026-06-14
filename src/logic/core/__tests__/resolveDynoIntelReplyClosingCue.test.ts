@@ -14,7 +14,7 @@ const baseProfile: PhysicalProfile = {
 };
 
 describe('resolveDynoIntelReplyClosingCue', () => {
-  it('prefers momentum-up cue when history shows positive delta', async () => {
+  it('prefers momentum-up cue when user asks about progress', async () => {
     await i18n.changeLanguage('zh-Hant');
     const t = i18n.t.bind(i18n);
 
@@ -45,7 +45,7 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       focusAxis: 'strength',
     });
 
-    const enriched = enrichDynoIntelContextCardCopy(base, t);
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '有進步嗎？');
     expect(enriched.replyClosingCue).toMatch(/推進 7 分/);
   });
 
@@ -80,9 +80,45 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       focusAxis: 'strength',
     });
 
-    const enriched = enrichDynoIntelContextCardCopy(base, t);
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '力量有進步嗎');
     expect(enriched.replyClosingCue).toMatch(/推進 2 分/);
     expect(enriched.replyClosingCue).toMatch(/力量/);
+  });
+
+  it('anchors FFMI question to bodyFat axis instead of global momentum', async () => {
+    await i18n.changeLanguage('zh-Hant');
+    const t = i18n.t.bind(i18n);
+
+    const base = buildDynoIntelContext({
+      radarInput: {
+        scores: { bodyFat: 96, explosivePower: 80 },
+        profile: baseProfile,
+        cardioInputs: null,
+        muscleInputs: null,
+        powerInputs: null,
+        strengthInputs: null,
+        gripInputs: null,
+      },
+      historyRecords: [
+        {
+          createdAt: '2026-02-01T00:00:00.000Z',
+          scores: { bodyFat: 96, explosivePower: 80 },
+          overallScore: 88,
+        },
+        {
+          createdAt: '2026-01-01T00:00:00.000Z',
+          scores: { bodyFat: 94, explosivePower: 70 },
+          overallScore: 82,
+        },
+      ],
+      locale: 'zh-Hant',
+      mode: 'cross-axis',
+    });
+
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '我的 FFMI 9% 體脂狀態如何？');
+    expect(enriched.questionFocusAxis).toBe('bodyFat');
+    expect(enriched.replyClosingCue).toMatch(/96 分/);
+    expect(enriched.replyClosingCue).not.toMatch(/推進/);
   });
 
   it('uses high-tier cue when tier is LEGEND and no positive momentum', async () => {
@@ -101,15 +137,14 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       },
       historyRecords: [],
       locale: 'zh-Hant',
-      mode: 'single-axis',
-      focusAxis: 'strength',
+      mode: 'cross-axis',
     });
 
-    const enriched = enrichDynoIntelContextCardCopy(base, t);
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '');
     expect(enriched.replyClosingCue).toMatch(/級距已被主機封存/);
   });
 
-  it('uses weakest-companion cue on low focus-axis score', async () => {
+  it('uses weakest-companion cue on low focus axis when user asks about progress', async () => {
     await i18n.changeLanguage('zh-Hant');
     const t = i18n.t.bind(i18n);
 
@@ -129,7 +164,7 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       focusAxis: 'strength',
     });
 
-    const enriched = enrichDynoIntelContextCardCopy(base, t);
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '力量有進步嗎');
     expect(enriched.replyClosingCue).toMatch(/最弱鏈路/);
   });
 
@@ -137,18 +172,32 @@ describe('resolveDynoIntelReplyClosingCue', () => {
     for (const locale of ['zh-Hant', 'en'] as const) {
       await i18n.changeLanguage(locale);
       const t = i18n.t.bind(i18n);
-      for (const key of ['default', 'momentumUp', 'highTier', 'weakestCompanion'] as const) {
+      for (const key of [
+        'default',
+        'questionFocus',
+        'questionFocusTierSuffix',
+        'chassisBalance',
+        'momentumUp',
+        'highTier',
+        'weakestCompanion',
+      ] as const) {
         const resolved = t(`dynoIntel.replyClosingCue.${key}`, {
           axisLabel: 'test',
           delta: '1',
           tierTitle: 'test',
+          score: '85',
+          tierSuffix: '',
+          weakestLabel: 'a',
+          weakestScore: '60',
+          strongestLabel: 'b',
+          strongestScore: '90',
         });
         expect(resolved).not.toBe(`dynoIntel.replyClosingCue.${key}`);
       }
     }
   });
 
-  it('falls back to default when no special telemetry signal', async () => {
+  it('uses chassis balance on cross-axis status reads', async () => {
     await i18n.changeLanguage('en');
     const t = i18n.t.bind(i18n);
 
@@ -167,8 +216,11 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       mode: 'cross-axis',
     });
 
-    const enriched = enrichDynoIntelContextCardCopy(base, t);
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '幫我解讀整體狀態');
     expect(enriched.replyClosingCue.length).toBeGreaterThan(0);
-    expect(resolveDynoIntelReplyClosingCue(enriched, t)).toBe(enriched.replyClosingCue);
+    expect(enriched.replyClosingCue.toLowerCase()).toMatch(/weakest|chassis|底盤|最弱/);
+    expect(resolveDynoIntelReplyClosingCue(enriched, t, '幫我解讀整體狀態')).toBe(
+      enriched.replyClosingCue
+    );
   });
 });

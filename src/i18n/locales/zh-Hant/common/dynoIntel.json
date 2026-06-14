@@ -25,9 +25,20 @@
     "replyAssessmentDeepDiveNudge": "各評測頁面備有更完整的計分說明與常模解讀——請直接進入對應評測頁，展開說明區查閱全貌。",
     "replyClosingCue": {
       "default": "通電完成。這份遙測已寫入主機——下次再來，對照你自己的進步曲線，我會在這裡等你。",
+      "questionFocus": "{{axisLabel}} 停在 {{score}} 分{{tierSuffix}}——這份遙測主機已鎖定，值得你下次通電再對照。",
+      "questionFocusTierSuffix": "，級距【{{tierTitle}}】",
+      "chassisBalance": "底盤最弱在 {{weakestLabel}}（{{weakestScore}} 分），最強在 {{strongestLabel}}（{{strongestScore}} 分）——整車均衡比單點爆發更能撐住下一格級距。",
       "momentumUp": "比上次通電，{{axisLabel}} 已推進 {{delta}} 分——這種節奏主機記得住，也值得你寫進日誌。",
       "highTier": "【{{tierTitle}}】這份級距已被主機封存——稀有規格，值得你反覆對照、繼續通電。",
       "weakestCompanion": "最弱鏈路在 {{axisLabel}}，但下一格級距已在評測頁等你——我會在這台主機上陪你把底盤補齊。"
+    },
+    "closingBeatSecondLine": {
+      "passionClose0": "分數 {{axisScore}}、級距 {{tierTitle}} 已寫入主機——別讓這份規格只停在螢幕上。",
+      "passionClose1": "主機記得 {{axisScore}} 分這條曲線——下次通電，對照你自己，不是對照別人。",
+      "passionClose2": "【{{tierTitle}}】不是裝飾——這是你肉體寫給主機的簽名，值得反覆簽回來。",
+      "returnRitual0": "通電收束。下次再來，我會在同一台主機上對照你的進步曲線。",
+      "returnRitual1": "遙測已封存。下次通電時，帶著新的分數回來——我會在這裡等你。",
+      "returnRitual2": "這份遙測已寫入主機。下次再來，我們只對照你自己的級距曲線。"
     },
     "console": {
       "home": "CONSOLE: HOME",
@@ -46,19 +57,19 @@
     },
     "gate": {
       "authDescription": "DYNO INTEL 需要 Google 登入後才能通電遙測。",
-      "coreDescription": "解鎖 Core 買斷後，每日可體驗 2 次單軸 AI 解讀。",
-      "proDescription": "跨軸綜合診斷與體重模擬為 Pro 專屬 — 加入戰場解鎖 DYNO INTEL 全頻道。",
+      "coreDescription": "解鎖 Core 買斷後，每日 2 次 AI 解讀（含跨軸診斷）。",
+      "proDescription": "體重模擬遙測為 Pro 專屬 — 每日 30 次通電，加入戰場解鎖全頻道。",
       "quotaDescription": "今日通電額度已耗盡。明日再來，或升級 Pro 取得 30 次/日。"
     },
     "paywall": {
       "badge": "行車電腦完整性錯誤",
       "title": {
-        "pro-required": "跨軸遙測通道已熔斷",
+        "pro-required": "體重模擬遙測已熔斷",
         "quota-exhausted": "今日通電額度已耗盡"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：行車電腦已熔斷其餘綜合診斷。檢測到駕駛者的 {{axis}} 軸線處於 {{score}} 分漏水怠速，全車底盤剛性陷入失衡風險。一杯便利商店咖啡的代價，點火解鎖全球天梯、無感雲端備份與 DYNO 智慧分析官全車完整剛性。",
-        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 2 次單軸解讀已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 跨軸診斷與每日 30 次通電為 Pro 專屬。點火 Pro，恢復全車遙測剛性。"
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：體重模擬遙測通道已熔斷。檢測到 {{axis}} 軸線處於 {{score}} 分漏水怠速 — 體重模擬矩陣與每日 30 次通電為 Pro 專屬。點火 Pro，解鎖全球天梯、無感雲端備份與全頻道 DYNO 遙測。",
+        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 2 次 AI 解讀（含跨軸）已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 升級 Pro 可恢復每日 30 次通電與體重模擬遙測。"
       },
       "cta": "點火 Pro Pass",
       "dismiss": "返回控制台",

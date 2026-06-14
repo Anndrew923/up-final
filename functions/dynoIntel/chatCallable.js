@@ -8,6 +8,7 @@ import {
 } from "../shared/dynoEntitlement.js";
 import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from "./cache.js";
 import { runGeminiDynoIntel } from "./gemini.js";
+import { enforceCommentaryBeatContract } from "./commentaryBeatContract.js";
 import {
   checkDynoIntelDailyLimit,
   loadDynoRateLimitDoc,
@@ -98,6 +99,9 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     scoringMethodologyBriefs: context.scoringMethodologyBriefs ?? [],
     assessmentDeepDiveNudge: context.assessmentDeepDiveNudge ?? null,
     replyClosingCue: context.replyClosingCue ?? null,
+    closingBeatKind: context.closingBeatKind ?? null,
+    closingBeatSecondLine: context.closingBeatSecondLine ?? null,
+    questionFocusAxis: context.questionFocusAxis ?? null,
     focusSupplemental: context.focusSupplemental ?? null,
     deltas: context.momentum?.deltas ?? [],
     mode: context.mode,
@@ -126,7 +130,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       remaining: quota.remaining,
       limit: quota.limit,
       resetAt: quota.resetAt,
-      reply: cached,
+      reply: enforceCommentaryBeatContract(cached, context),
     };
   }
 

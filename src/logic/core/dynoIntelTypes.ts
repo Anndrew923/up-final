@@ -18,6 +18,8 @@ export type DynoAgeBucket =
 
 export type DynoIntelMode = 'single-axis' | 'cross-axis' | 'weight-simulation';
 
+export type DynoClosingBeatKind = 'methodology-nudge' | 'passion-close' | 'return-ritual';
+
 /** Minimal history slice — keeps logic/core free of storage service imports. */
 export interface DynoHistoryRecordSlice {
   createdAt: string;
@@ -125,6 +127,12 @@ export interface DynoIntelContextV1 {
   assessmentDeepDiveNudge: string;
   /** Beat-3 data-anchored emotional closing — selected client-side from telemetry. */
   replyClosingCue: string;
+  /** Beat-3 sentence-2 mode — methodology nudge vs passion/ritual (v2.3). */
+  closingBeatKind: DynoClosingBeatKind;
+  /** Pre-resolved beat-3 sentence-2 copy for the model to paraphrase. */
+  closingBeatSecondLine: string;
+  /** Axis resolved from user question — anchors beat 3 away from global momentum drift. */
+  questionFocusAxis: SixAxisMetric | null;
   generatedAt: string;
 }
 

@@ -49,5 +49,33 @@ describe('enrichDynoIntelContextCardCopy', () => {
     expect(enriched.assessmentDeepDiveNudge.length).toBeGreaterThan(0);
     expect(enriched.assessmentDeepDiveNudge).toMatch(/評測頁/);
     expect(enriched.replyClosingCue.length).toBeGreaterThan(0);
+    expect(enriched.closingBeatKind).toMatch(/methodology-nudge|passion-close|return-ritual/);
+    expect(enriched.closingBeatSecondLine.length).toBeGreaterThan(0);
+    expect(enriched.questionFocusAxis).toBeNull();
+  });
+
+  it('binds methodology beat-3 bundle to assessment nudge', async () => {
+    await i18n.changeLanguage('zh-Hant');
+    const t = i18n.t.bind(i18n);
+
+    const base = buildDynoIntelContext({
+      radarInput: {
+        scores: { bodyFat: 96 },
+        profile: baseProfile,
+        cardioInputs: null,
+        muscleInputs: null,
+        powerInputs: null,
+        strengthInputs: null,
+        gripInputs: null,
+      },
+      historyRecords: [],
+      locale: 'zh-Hant',
+      mode: 'cross-axis',
+    });
+
+    const enriched = enrichDynoIntelContextCardCopy(base, t, 'FFMI 公式怎麼算？');
+    expect(enriched.closingBeatKind).toBe('methodology-nudge');
+    expect(enriched.closingBeatSecondLine).toBe(enriched.assessmentDeepDiveNudge);
+    expect(enriched.questionFocusAxis).toBe('bodyFat');
   });
 });

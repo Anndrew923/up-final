@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EntitlementState } from '../../../types/entitlement';
 import {
   canUseDynoIntelFull,
+  canUseDynoIntelMode,
   canUseDynoIntelTrial,
   resolveDynoIntelAccess,
   resolveDynoIntelSheetEntry,
@@ -51,17 +52,21 @@ describe('dynoIntelGates', () => {
     expect(access.blockReason).toBe('core-required');
   });
 
-  it('requires pro for cross-axis mode', () => {
-    const access = resolveDynoIntelAccess(
-      'cross-axis',
-      buildEntitlement({ subscriptionStatus: 'free' }),
-      'signed-in',
-      false
-    );
+  it('allows core user for cross-axis mode', () => {
+    const ent = buildEntitlement({ subscriptionStatus: 'free' });
+    const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
+    expect(access.allowed).toBe(true);
+    expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(false);
+    expect(canUseDynoIntelMode('cross-axis', ent, 'signed-in', false)).toBe(true);
+  });
+
+  it('requires pro for weight-simulation mode', () => {
+    const ent = buildEntitlement({ subscriptionStatus: 'free' });
+    const access = resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false);
     expect(access.allowed).toBe(false);
     expect(access.blockReason).toBe('pro-required');
     expect(access.joinArenaFrom).toBe('dyno-intel');
-    expect(canUseDynoIntelFull(buildEntitlement(), 'signed-in', false)).toBe(false);
+    expect(canUseDynoIntelMode('weight-simulation', ent, 'signed-in', false)).toBe(false);
   });
 
   it('allows pro user for weight-simulation mode', () => {
@@ -71,10 +76,10 @@ describe('dynoIntelGates', () => {
     expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
   });
 
-  it('falls back core user from cross-axis suggestion to single-axis sheet entry', () => {
+  it('opens cross-axis for core users without single-axis fallback', () => {
     const ent = buildEntitlement();
     const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
-    expect(entry.openMode).toBe('single-axis');
+    expect(entry.openMode).toBe('cross-axis');
     expect(entry.access.allowed).toBe(true);
   });
 
@@ -110,7 +115,7 @@ describe('dynoIntelGates', () => {
       expect(canUseDynoIntelFull(buildEntitlement(), 'signed-in', true)).toBe(false);
     });
 
-    it('keeps production paywall when bypass is inactive', () => {
+    it('allows core cross-axis when bypass is inactive', () => {
       mockIsDynoIntelProBypassActive.mockReturnValue(false);
       const access = resolveDynoIntelAccess(
         'cross-axis',
@@ -118,8 +123,7 @@ describe('dynoIntelGates', () => {
         'signed-in',
         false
       );
-      expect(access.allowed).toBe(false);
-      expect(access.blockReason).toBe('pro-required');
+      expect(access.allowed).toBe(true);
     });
   });
 });
