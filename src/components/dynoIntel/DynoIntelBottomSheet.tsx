@@ -164,7 +164,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          'relative z-10 flex max-h-[60dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
+          'relative z-10 flex h-[min(72dvh,640px)] max-h-[min(80dvh,calc(100dvh-env(safe-area-inset-top)-2rem))] w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
           DYNO_INTEL_SHEET_PANEL_TRANSITION,
           dynoIntelSheetPanelVisible(visible),
         )}
@@ -221,7 +221,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
           />
         ) : (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-3 [-webkit-overflow-scrolling:touch]">
               {status === 'loading' ? (
                 <p className="text-sm text-zinc-400">{t('dynoIntel.loading')}</p>
               ) : null}
@@ -233,7 +233,23 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
               ) : (
                 !errorMessage &&
                 status !== 'loading' && (
-                  <p className="text-sm text-zinc-500">{t('dynoIntel.inputPlaceholder')}</p>
+                  <div className="text-xs leading-relaxed text-slate-400">
+                    <p>
+                      {t('dynoIntel.welcomeIntroduction.line1Prefix')}
+                      <span className="font-semibold text-[#DFFF00]">
+                        {t('dynoIntel.welcomeIntroduction.line1Highlight')}
+                      </span>
+                      {t('dynoIntel.welcomeIntroduction.line1Suffix')}
+                    </p>
+                    <p className="mt-1">{t('dynoIntel.welcomeIntroduction.line2')}</p>
+                    <p className="mt-1">
+                      {t('dynoIntel.welcomeIntroduction.line3Prefix')}
+                      <span className="font-semibold text-[#DFFF00]">
+                        {t('dynoIntel.welcomeIntroduction.line3Highlight')}
+                      </span>
+                      {t('dynoIntel.welcomeIntroduction.line3Suffix')}
+                    </p>
+                  </div>
                 )
               )}
               {actionDirective ? (
@@ -247,7 +263,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
             </div>
 
             <footer className="shrink-0 border-t border-zinc-800/80 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
                 {chips.map((chip) => (
                   <button
                     key={chip.id}

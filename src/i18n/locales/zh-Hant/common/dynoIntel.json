@@ -11,6 +11,15 @@
     "close": "關閉",
     "send": "發送",
     "inputPlaceholder": "輸入診斷問題…",
+    "welcomeIntroduction": {
+      "line1Prefix": "歡迎來到主控艙。我是你的 ",
+      "line1Highlight": "Dino Intel 數據智庫",
+      "line1Suffix": "。",
+      "line2": "已全量同步你的馬力、扭矩與 FFMI 核心指標，",
+      "line3Prefix": "請輸入診斷問題，或點擊下方標籤發動",
+      "line3Highlight": "全規格分析",
+      "line3Suffix": "。"
+    },
     "loading": "遙測解碼中…",
     "actionKicker": "修煉指針",
     "console": {

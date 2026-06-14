@@ -11,6 +11,15 @@
     "close": "Close",
     "send": "Send",
     "inputPlaceholder": "Ask a diagnostic question…",
+    "welcomeIntroduction": {
+      "line1Prefix": "Welcome to the command deck. I'm your ",
+      "line1Highlight": "Dino Intel data core",
+      "line1Suffix": ".",
+      "line2": "Horsepower, torque, and FFMI core metrics are fully synced.",
+      "line3Prefix": "Enter a diagnostic question, or tap a tag below to run a ",
+      "line3Highlight": "full-spec analysis",
+      "line3Suffix": "."
+    },
     "loading": "Decoding telemetry…",
     "actionKicker": "Action directive",
     "console": {
