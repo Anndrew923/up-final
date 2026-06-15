@@ -48,6 +48,12 @@ describe('resolveDynoIntelQuestionFocus', () => {
     ).toBe(false);
   });
 
+  it('detects status intent from performance phrasing', () => {
+    expect(resolveDynoQuestionIntent('我的握力分數表現如何')).toBe('status');
+    expect(resolveDynoQuestionIntent('幫我解讀狀態')).toBe('status');
+    expect(resolveDynoQuestionIntent('那我握力成績如何？')).toBe('status');
+  });
+
   it('detects bodyFat axis from FFMI / body-fat wording', () => {
     expect(
       detectQuestionFocusAxis('我的 FFMI 9% 體脂算多少分？', {

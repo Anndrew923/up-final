@@ -15,6 +15,9 @@ const PROGRESS_PATTERNS = [
   /進步了嗎|有進步|進步多少|進展如何|提升了嗎|有沒有進步|比上次|progress(ed)?\?|did\s+i\s+improve|getting\s+better|momentum/i,
 ];
 
+const STATUS_PERFORMANCE_PATTERNS =
+  /表現如何|表現怎樣|表現怎麼樣|成績如何|成績怎樣|成績怎麼樣|how\s+.*perform/i;
+
 const METHODOLOGY_HEURISTIC_HOW = /如何|怎[麼么]|what|how/i;
 const METHODOLOGY_HEURISTIC_SCORE_STANDARD = /分|標準|score|scor|規|依據/i;
 const METHODOLOGY_HEURISTIC_PANEL_READ = /我|我的|my|me|多少分/i;
@@ -37,10 +40,16 @@ export function shouldEscalateMethodologyViaHeuristic(userQuestion, context) {
 export function resolveDynoQuestionIntent(userQuestion, context = null) {
   const q = String(userQuestion ?? "").trim();
   if (!q) return "general";
+  if (STATUS_PERFORMANCE_PATTERNS.test(q)) return "status";
   if (METHODOLOGY_PATTERNS.some((re) => re.test(q))) return "methodology";
   if (shouldEscalateMethodologyViaHeuristic(userQuestion, context)) return "methodology";
   if (PROGRESS_PATTERNS.some((re) => re.test(q))) return "progress";
-  if (/狀態|状态|解讀|解读|分析|diagnos|status|interpret/i.test(q)) return "status";
+  if (
+    /狀態|状态|解讀|解读|分析|diagnos|status|interpret/.test(q) ||
+    STATUS_PERFORMANCE_PATTERNS.test(q)
+  ) {
+    return "status";
+  }
   return "general";
 }
 

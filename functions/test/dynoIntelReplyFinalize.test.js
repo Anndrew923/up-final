@@ -67,6 +67,13 @@ describe("stripTechnicalLeakage", () => {
       "Read supplemental telemetry via supplemental focus"
     );
   });
+
+  it("strips camelCase axis score labels from user-facing commentary", () => {
+    assert.equal(
+      stripTechnicalLeakage("握力 / 抓地 (gripStrength 軸分數) 停在 98.4 分", "zh-Hant"),
+      "握力 / 抓地 停在 98.4 分"
+    );
+  });
 });
 
 describe("finalizeDynoIntelReply", () => {

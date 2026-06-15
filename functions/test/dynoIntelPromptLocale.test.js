@@ -45,7 +45,9 @@ describe("system_v1_en prompt artifact", () => {
 
   it("defines human-to-machine three-beat constitution v2.3", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
-    assert.match(text, /On this host's telemetry chassis, this force profile maps to a/);
+    assert.match(text, /Steel Vehicle Mapping/);
+    assert.match(text, /telemetry chassis/i);
+    assert.match(text, /must differ in meaning/i);
     assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
   });
 });
@@ -56,7 +58,8 @@ describe("system_v1 prompt artifact", () => {
     assert.match(text, /【由人入機】三段憲法 v2\.3/);
     assert.match(text, /第三段【通電收束 · 數據共鳴】/);
     assert.match(text, /closingBeatSecondLine/);
-    assert.match(text, /在《最強肉體》主機的遙測底盤中，這份力量天賦被精準類比為/);
+    assert.match(text, /遙測底盤中，這份力量天賦被類比為/);
+    assert.match(text, /嚴禁複製貼上/);
     assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
   });
 

@@ -44,6 +44,8 @@ describe("resolveDynoQuestionIntent", () => {
   it("detects progress and status intents", () => {
     assert.equal(resolveDynoQuestionIntent("我有進步嗎？"), "progress");
     assert.equal(resolveDynoQuestionIntent("幫我解讀這個狀態"), "status");
+    assert.equal(resolveDynoQuestionIntent("我的握力分數表現如何"), "status");
+    assert.equal(resolveDynoQuestionIntent("那我握力成績如何？"), "status");
   });
 
   it("defaults to general for telemetry reads", () => {

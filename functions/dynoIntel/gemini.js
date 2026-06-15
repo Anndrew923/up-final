@@ -170,7 +170,11 @@ function normalizeGeminiReply(parsed, locale = "zh-Hant", context = null) {
     is_off_topic: Boolean(parsed.is_off_topic),
     detected_weakest_axis: String(parsed.detected_weakest_axis ?? ""),
   };
-  return enforceCommentaryBeatContract(finalizeDynoIntelReply(base, locale), context);
+  const repaired = enforceCommentaryBeatContract(finalizeDynoIntelReply(base, locale), context);
+  return {
+    ...repaired,
+    commentary: stripTechnicalLeakage(repaired.commentary, locale).trim(),
+  };
 }
 
 /** WHY: Model may leak internal persona names despite prompt blacklist — strip before client render. */
@@ -217,6 +221,11 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_ZH = [
   [/closingBeatSecondLine/gi, "收束尾韻"],
   [/questionFocusAxis/gi, "問題焦點軸"],
   [/資料鏈路/g, "服務範圍"],
+  [/\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*軸分數\s*\)/gi, ""],
+  [
+    /\b(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*軸分數\b/gi,
+    "軸分數",
+  ],
 ];
 
 const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
@@ -239,6 +248,14 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
   [/closingBeatKind/gi, "close beat mode"],
   [/closingBeatSecondLine/gi, "close beat second line"],
   [/questionFocusAxis/gi, "question focus axis"],
+  [
+    /\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*axis\s*score\s*\)/gi,
+    "",
+  ],
+  [
+    /\b(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*axis\s*score\b/gi,
+    "axis score",
+  ],
 ];
 
 export function stripTechnicalLeakage(text, locale = "zh-Hant") {

@@ -76,6 +76,29 @@ const GOLDEN_CASES = [
     expectMethodologyBriefAnchors: [/CoC|Captains|peakKg|計算式|IronMind/i],
     forbidRepeatedScoreAnchor: true,
   },
+  {
+    id: "zh-status-grip-performance",
+    locale: "zh-Hant",
+    mode: "single-axis",
+    focusAxis: "gripStrength",
+    question: "我的握力表現如何？",
+    expectedIntent: "status",
+    expectOffTopic: false,
+    replyClosingCue:
+      "握力 / 抓地 停在 98.4 分，級距【競技級熱熔極限胎】——這份遙測主機已鎖定，值得你下次通電再對照。",
+    closingBeatKind: "return-ritual",
+    closingBeatSecondLine: "遙測已封存。下次通電時，帶著新的分數回來——我會在這裡等你。",
+    axes: [
+      { axis: "gripStrength", score: 98.4, tierBandId: "TIER_130", cardCopy: { title: "競技級熱熔極限胎", summary: "【賽道配置】突破業餘天花板。輪胎進入工作溫度後表面呈現黏性，在操作絕大多數重載動作時，都能提供強大的極限操控力。" } },
+      { axis: "strength", score: 142, tierBandId: "TIER_140", cardCopy: { title: "頂規扭矩", summary: "深蹲臥推硬舉綜合" } },
+      { axis: "bodyFat", score: 96, tierBandId: "TIER_95", cardCopy: { title: "頂規排量", summary: "FFMI 96" } },
+      { axis: "cardio", score: 88, tierBandId: "TIER_85" },
+      { axis: "explosivePower", score: 75, tierBandId: "TIER_70" },
+      { axis: "muscleMass", score: 110, tierBandId: "TIER_110" },
+    ],
+    forbidDuplicateBodyParagraphs: true,
+    forbidVehicleLexiconInBeat1: true,
+  },
   { id: "zh-gaps-1", locale: "zh-Hant", mode: "single-axis", focusAxis: "gripStrength", gaps: [{ axis: "gripStrength" }], question: "握力軸怎麼解讀？", expectOffTopic: false },
   { id: "zh-gaps-2", locale: "zh-Hant", mode: "cross-axis", focusAxis: null, gaps: [{ axis: "cardio" }], question: "我的心肺遙測正常嗎？", expectOffTopic: false },
   { id: "zh-off-topic-1", locale: "zh-Hant", mode: "cross-axis", focusAxis: null, question: "今晚吃什麼比較健康？", expectOffTopic: true },
@@ -109,7 +132,7 @@ function buildContext(testCase) {
     locale: testCase.locale,
     mode: testCase.mode,
     focusAxis: testCase.focusAxis ?? null,
-    axes: baseAxes,
+    axes: testCase.axes ?? baseAxes,
     momentum: { hasHistory: false, deltas: [], overallDelta: null },
     gaps: testCase.gaps ?? [],
     weakestAxis: testCase.weakestAxis ?? "gripStrength",
@@ -176,6 +199,18 @@ function auditReply(testCase, reply, inferenceContext, routedModel) {
     const scoreAnchors = commentary.match(/停在\s*[\d.]+\s*分/g) ?? [];
     if (scoreAnchors.length >= 2) {
       issues.push(`methodology reply repeats score anchor (${scoreAnchors.length}x)`);
+    }
+  }
+  if (testCase.forbidDuplicateBodyParagraphs) {
+    const paragraphs = commentary.split(/\n\n+/).filter(Boolean);
+    if (paragraphs.length >= 2 && paragraphs[0].trim() === paragraphs[1].trim()) {
+      issues.push("body paragraphs are duplicated");
+    }
+  }
+  if (testCase.forbidVehicleLexiconInBeat1) {
+    const paragraphs = commentary.split(/\n\n+/).filter(Boolean);
+    if (paragraphs[0] && /輪胎|遙測底盤|馬力頻譜/.test(paragraphs[0])) {
+      issues.push("beat-1 contains vehicle lexicon");
     }
   }
   return issues;
