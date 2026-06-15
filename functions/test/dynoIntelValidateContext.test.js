@@ -204,6 +204,18 @@ describe("validateDynoIntelContext", () => {
     assert.equal(validateDynoIntelContext({ ...baseContext, locale: "en" }), true);
   });
 
+  it("accepts valid intent values", () => {
+    assert.equal(validateDynoIntelContext({ ...baseContext, intent: "methodology" }), true);
+    assert.equal(validateDynoIntelContext({ ...baseContext, intent: "general" }), true);
+  });
+
+  it("rejects invalid intent", () => {
+    assert.throws(
+      () => validateDynoIntelContext({ ...baseContext, intent: "free-chat" }),
+      /invalid-intent/
+    );
+  });
+
   it("accepts supplementalMetrics with valid cardCopy", () => {
     assert.equal(
       validateDynoIntelContext({

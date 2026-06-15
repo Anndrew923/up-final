@@ -14,6 +14,7 @@ import {
   loadDynoRateLimitDoc,
   recordDynoIntelUsage,
 } from "./rateLimits.js";
+import { buildDynoIntelInferenceContext } from "./pruneScoringMethodologyBriefs.js";
 import { validateDynoIntelContext } from "./validateContext.js";
 
 function isAnonymousProvider(request) {
@@ -93,10 +94,13 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     throw err;
   }
 
+  const inferenceContext = buildDynoIntelInferenceContext(context, userQuestion);
+
   const cacheHash = buildDynoIntelCacheHash({
     mergedScores: context.axes,
     supplementalMetrics: context.supplementalMetrics ?? [],
-    scoringMethodologyBriefs: context.scoringMethodologyBriefs ?? [],
+    scoringMethodologyBriefs: inferenceContext.scoringMethodologyBriefs ?? [],
+    intent: inferenceContext.intent,
     assessmentDeepDiveNudge: context.assessmentDeepDiveNudge ?? null,
     replyClosingCue: context.replyClosingCue ?? null,
     closingBeatKind: context.closingBeatKind ?? null,
@@ -130,7 +134,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       remaining: quota.remaining,
       limit: quota.limit,
       resetAt: quota.resetAt,
-      reply: enforceCommentaryBeatContract(cached, context),
+      reply: enforceCommentaryBeatContract(cached, inferenceContext),
     };
   }
 
@@ -148,7 +152,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
   let reply;
   try {
     reply = await runGeminiDynoIntel({
-      context,
+      context: inferenceContext,
       userQuestion,
       promptTemplateId,
     });

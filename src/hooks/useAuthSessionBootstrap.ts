@@ -6,6 +6,7 @@ import {
 } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
+import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 
 /**
  * Initializes Firebase auth observer and mirrors state into auth store.
@@ -16,6 +17,7 @@ export function useAuthSessionBootstrap(): void {
   const setFromUser = useAuthStore((s) => s.setFromUser);
   const refreshEntitlement = useEntitlementStore((s) => s.refreshEntitlement);
   const bindEntitlementSession = useEntitlementStore((s) => s.bindEntitlementSession);
+  const bindDynoIntelLogSession = useDynoIntelLogStore((s) => s.bindSession);
 
   useEffect(() => {
     // WHY: React StrictMode remounts this effect; resetting signed-in → loading flashes AppShell on deep routes (/muscle, etc.).
@@ -39,10 +41,12 @@ export function useAuthSessionBootstrap(): void {
           }
           setSignedOut();
           bindEntitlementSession(null);
+          bindDynoIntelLogSession(null);
           return;
         }
         setFromUser(user);
         bindEntitlementSession(user.uid);
+        bindDynoIntelLogSession(user.uid);
         void refreshEntitlement();
       });
     })();
@@ -51,5 +55,5 @@ export function useAuthSessionBootstrap(): void {
       isDisposed = true;
       unsubscribe?.();
     };
-  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement, bindEntitlementSession]);
+  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement, bindEntitlementSession, bindDynoIntelLogSession]);
 }

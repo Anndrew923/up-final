@@ -88,6 +88,18 @@
       "weightProfileMissing": "請先在首頁完成身體資料，才能啟動體重模擬。",
       "quotaExhaustedPro": "今日通電額度已滿（30 次/日）— 請待重置後再試。"
     },
+    "telemetryLog": {
+      "title": "歷史遙測日誌",
+      "subtitleCore": "本地已封存 {{count}}/{{cap}} 則通電紀錄",
+      "subtitlePro": "本地已封存 {{count}} 則通電紀錄",
+      "empty": "此主機尚無歷史通電紀錄。",
+      "entryAxis": "聚焦：{{axis}}",
+      "entryTime": "{{date}}",
+      "expand": "展開",
+      "collapse": "收合",
+      "crossAxis": "跨軸診斷",
+      "unknownAxis": "未標定軸向"
+    },
     "localTelemetry": {
       "title": "DYNO INTEL TELEMETRY",
       "subtitle": "本地通電遙測 — 一眼確認 Client / Emulator / Auth 是否就位。",

@@ -3,7 +3,7 @@ import { dynoSupplementalScoreMeaningMetric } from './buildDynoIntelSupplemental
 import type { DynoIntelContextV1 } from './dynoIntelTypes';
 import { resolveDynoIntelClosingBeatKind } from './resolveDynoIntelClosingBeatKind';
 import { resolveDynoIntelClosingBeatSecondLine } from './resolveDynoIntelClosingBeatSecondLine';
-import { detectQuestionFocusAxis } from './resolveDynoIntelQuestionFocus';
+import { detectQuestionFocusAxis, resolveDynoQuestionIntent } from './resolveDynoIntelQuestionFocus';
 import { resolveDynoIntelReplyClosingCue } from './resolveDynoIntelReplyClosingCue';
 import { resolveDynoIntelScoringMethodologyBriefs } from './resolveDynoIntelScoringMethodologyBriefs';
 import { translateScoreBandMeaning } from './scoreMeaningCopy';
@@ -17,7 +17,7 @@ export function enrichDynoIntelContextCardCopy(
   t: TFunction,
   userQuestion = ''
 ): DynoIntelContextV1 {
-  const withCardCopy = {
+  const withCardCopyBase = {
     ...context,
     axes: context.axes.map((snap) => {
       if (snap.score == null) {
@@ -34,6 +34,11 @@ export function enrichDynoIntelContextCardCopy(
     scoringMethodologyBriefs: resolveDynoIntelScoringMethodologyBriefs(t),
     assessmentDeepDiveNudge: t('dynoIntel.replyAssessmentDeepDiveNudge'),
     questionFocusAxis: detectQuestionFocusAxis(userQuestion, context),
+  };
+
+  const withCardCopy: DynoIntelContextV1 = {
+    ...withCardCopyBase,
+    intent: resolveDynoQuestionIntent(userQuestion, withCardCopyBase),
   };
 
   const closingBeatKind = resolveDynoIntelClosingBeatKind(userQuestion, withCardCopy);

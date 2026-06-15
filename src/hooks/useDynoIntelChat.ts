@@ -2,9 +2,12 @@ import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID } from '../config/dynoIntel';
 import { canUseDynoIntelFull, resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
+import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
+import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
 import type { DynoIntelChatResponseV1, DynoIntelContextV1, DynoIntelMode } from '../logic/core/dynoIntelTypes';
 import { requestDynoIntelChat } from '../services/dynoIntelService';
 import { useAuthStore } from '../stores/authStore';
+import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useTypewriterText } from './useTypewriterText';
@@ -25,10 +28,14 @@ export interface UseDynoIntelChatInput {
 
 export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const authStatus = useAuthStore((s) => s.status);
+  const uid = useAuthStore((s) => s.uid);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const appendLog = useDynoIntelLogStore((s) => s.appendLog);
 
-  const { visibleText, play, reset, cancel } = useTypewriterText({ charIntervalMs: 18 });
+  const { visibleText, play, reset, cancel, showImmediately } = useTypewriterText({
+    charIntervalMs: 18,
+  });
   const [status, setStatus] = useState<DynoIntelChatStatus>('idle');
   const [errorMessageKey, setErrorMessageKey] = useState<string | null>(null);
   const [lastReply, setLastReply] = useState<DynoIntelChatResponseV1 | null>(null);
@@ -127,6 +134,16 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         setStatus('typing');
         await play(result.reply.commentary);
         setStatus('idle');
+
+        if (uid && !result.reply.is_off_topic) {
+          appendLog({
+            uid,
+            focusAxis: resolveDynoIntelLogFocusAxis(context, effectiveMode),
+            userQuestion,
+            commentary: result.reply.commentary,
+            closingBeatKind: context.closingBeatKind,
+          });
+        }
       } catch (error) {
         const mappedKey =
           error instanceof Error &&
@@ -138,7 +155,23 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         setStatus('error');
       }
     },
-    [authStatus, cancel, entitlement, input, isAnonymous, play, reset]
+    [appendLog, authStatus, cancel, entitlement, input, isAnonymous, play, reset, uid]
+  );
+
+  const restoreFromLog = useCallback(
+    (entry: DynoIntelLogEntry) => {
+      cancel();
+      showImmediately(entry.commentary);
+      setLastReply({
+        commentary: entry.commentary,
+        action_directive: '',
+        is_off_topic: false,
+        detected_weakest_axis: entry.focusAxis,
+      });
+      setErrorMessageKey(null);
+      setStatus('idle');
+    },
+    [cancel, showImmediately]
   );
 
   const clearChat = useCallback(() => {
@@ -167,6 +200,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
     lastReply,
     sendQuestion,
     clearChat,
+    restoreFromLog,
     showError,
   };
 }

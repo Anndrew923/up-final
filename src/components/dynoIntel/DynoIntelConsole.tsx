@@ -11,12 +11,15 @@ import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
 import { resolveDynoIntelSheetEntry } from '../../logic/core/dynoIntelGates';
+import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
+import { hasProAccess } from '../../logic/core/entitlement';
 import { resolveWeightSimulationTargetKg } from '../../logic/core/dynoIntelWeightSim';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { hapticService } from '../../services/hapticService';
 import { purchaseProSubscription } from '../../services/subscriptionService';
 import { useAuthStore } from '../../stores/authStore';
+import { useDynoIntelLogStore } from '../../stores/dynoIntelLogStore';
 import { useEntitlementStore } from '../../stores/entitlementStore';
 import { selectEntitlementState } from '../../stores/entitlementSelectors';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
@@ -41,6 +44,9 @@ const DynoIntelConsole = () => {
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const logEntries = useDynoIntelLogStore((s) => s.entries);
+  const loadLocalLogs = useDynoIntelLogStore((s) => s.loadLocalLogs);
+  const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
 
   const [mode, setMode] = useState<DynoIntelMode>(route.suggestedMode);
   const [sheetView, setSheetView] = useState<DynoIntelSheetView>('chat');
@@ -134,7 +140,19 @@ const DynoIntelConsole = () => {
     onCoreRequired: handleCoreRequired,
   });
 
+  const { restoreFromLog, clearChat } = chat;
+
   const consoleLabel = t(`dynoIntel.console.${route.consoleLabelKey}`);
+
+  const restoreLatestLog = useCallback(() => {
+    loadLocalLogs();
+    const latest = getMostRecentLog();
+    if (latest) {
+      restoreFromLog(latest);
+      return;
+    }
+    clearChat();
+  }, [clearChat, getMostRecentLog, loadLocalLogs, restoreFromLog]);
 
   const openSheetWithGate = useCallback(() => {
     const entry = resolveDynoIntelSheetEntry(
@@ -157,16 +175,16 @@ const DynoIntelConsole = () => {
     }
     setSheetView('chat');
     setMode(entry.openMode);
-    chat.clearChat();
+    restoreLatestLog();
     sheet.openSheet();
   }, [
     authStatus,
-    chat,
     entitlement,
     handleAuthBlocked,
     handleCoreRequired,
     isAnonymous,
     openPaywall,
+    restoreLatestLog,
     route.suggestedMode,
     sheet,
   ]);
@@ -194,11 +212,11 @@ const DynoIntelConsole = () => {
       }
       await useEntitlementStore.getState().refreshEntitlement();
       setSheetView('chat');
-      chat.clearChat();
+      restoreLatestLog();
     } finally {
       setPaywallBusy(false);
     }
-  }, [chat]);
+  }, [restoreLatestLog]);
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
@@ -208,6 +226,7 @@ const DynoIntelConsole = () => {
   );
 
   const hideTrigger = isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname);
+  const isProTelemetry = hasProAccess(entitlement);
 
   return (
     <>
@@ -235,6 +254,9 @@ const DynoIntelConsole = () => {
         status={chat.status}
         errorMessage={chat.errorMessageKey ? t(chat.errorMessageKey) : null}
         onSubmitQuestion={handleSubmitQuestion}
+        telemetryLogs={logEntries}
+        telemetryLogCap={isProTelemetry ? null : DYNO_INTEL_CORE_LOG_CAP}
+        isProTelemetry={isProTelemetry}
       />
       <LeaderboardGateSheet
         open={authGateOpen}

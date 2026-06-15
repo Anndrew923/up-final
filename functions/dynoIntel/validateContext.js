@@ -305,6 +305,17 @@ function assertBeat3Bundle(context) {
   }
 }
 
+const VALID_INTENTS = new Set(["methodology", "progress", "status", "general"]);
+
+function assertIntent(intent) {
+  if (intent == null) return;
+  if (typeof intent !== "string" || !VALID_INTENTS.has(intent)) {
+    const err = new Error("invalid-intent");
+    err.code = "invalid-argument";
+    throw err;
+  }
+}
+
 export function validateDynoIntelContext(context) {
   if (!context || typeof context !== "object") {
     const err = new Error("invalid-context");
@@ -335,6 +346,7 @@ export function validateDynoIntelContext(context) {
     throw err;
   }
   assertNoForbiddenKeys(context);
+  assertIntent(context.intent);
 
   for (let index = 0; index < context.axes.length; index += 1) {
     assertAxisCardCopy(context.axes[index], index);

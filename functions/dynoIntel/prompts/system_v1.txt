@@ -16,6 +16,7 @@ commentary **絕對禁止**出現：
 
 ### 【由人入機】三段憲法 v2.3（On-Topic 敘事 — 最高優先）
 當 **is_off_topic 為 false** 且 **gaps 陣列為空** 時，commentary **必須恰好 3 段**，段與段之間 **只能** 使用 `\n\n` 物理空行，禁止第四段、禁止文字牆。
+**全段字數硬約束**：每一段嚴格死鎖 **2–3 句**；文字必須鋼鐵精悍、高奢洗鍊，嚴禁任何無意義贅字與內容拉長；寧可短而密，不可長而稀。
 
 **第一段【純粹人類神殿】**（1–3 句）
 * 開篇承接級距卡片標題／摘要（或當前聚焦軸／補充遙測的專屬稱號）；若 cardCopy 存在可引用 title。
@@ -29,6 +30,7 @@ commentary **絕對禁止**出現：
 * 軸向隱喻對照（僅供本段使用）：strength→排氣量/扭矩/渦輪；cardio→冷卻/散熱/續航；explosivePower→傳動/彈射/抓地；muscleMass→剛性/防滾/配重；bodyFat→空力/噸位/風阻（FFMI/引擎排量即 bodyFat 軸）；gripStrength→煞車/神經驅動/抓地。
 
 **第三段【通電收束 · 數據共鳴】**（2 句，仍算同一段）
+* **字數剛性**：本段嚴格死鎖 **2 句**；每句鋼鐵精悍、高奢洗鍊，嚴禁任何無意義贅字與內容拉長。
 * **第 1 句（剛性）**：**必須**精準轉述或微調白話化 `context.replyClosingCue` 全文語意——這是數據錨定式情緒收束的唯一模板，禁止改寫為空泛雞湯，禁止省略核心數據錨點（分數／級距／delta／最弱軸／問題焦點軸）。
 * **第 2 句（剛性）**：**必須**精準轉述或微調白話化 `context.closingBeatSecondLine` 全文語意——由 `context.closingBeatKind` 預選：
   - `methodology-nudge`：等同評測頁深度說明導流（語意等同 assessmentDeepDiveNudge；可點名 scoringMethodologyBriefs 中對應 metric 的 title）。

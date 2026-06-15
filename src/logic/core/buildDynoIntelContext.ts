@@ -219,6 +219,7 @@ export function buildDynoIntelContext(input: BuildDynoIntelContextInput): DynoIn
     closingBeatKind: 'return-ritual',
     closingBeatSecondLine: '',
     questionFocusAxis: null,
+    intent: 'general',
     generatedAt: now.toISOString(),
   };
 }

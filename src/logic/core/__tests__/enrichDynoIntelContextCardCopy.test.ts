@@ -74,6 +74,7 @@ describe('enrichDynoIntelContextCardCopy', () => {
     });
 
     const enriched = enrichDynoIntelContextCardCopy(base, t, 'FFMI 公式怎麼算？');
+    expect(enriched.intent).toBe('methodology');
     expect(enriched.closingBeatKind).toBe('methodology-nudge');
     expect(enriched.closingBeatSecondLine).toBe(enriched.assessmentDeepDiveNudge);
     expect(enriched.questionFocusAxis).toBe('bodyFat');

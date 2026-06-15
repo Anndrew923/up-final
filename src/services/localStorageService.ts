@@ -8,6 +8,7 @@ import type { GripInputsPersisted } from '../types/gripInputs';
 import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
+import { clearAllDynoIntelLogs } from './dynoIntelLogPersistence';
 
 const STORAGE_KEYS = {
   profile: 'up.profile',
@@ -305,6 +306,7 @@ export function saveBootSequenceCompleted(completed: boolean): void {
 
 export function clearLocalData(): void {
   Object.values(STORAGE_KEYS).forEach((key) => safeRemoveItem(key));
+  clearAllDynoIntelLogs();
   notifyProfileObservers();
   notifyPhysicalProfileObservers();
   notifyCardioInputsObservers();

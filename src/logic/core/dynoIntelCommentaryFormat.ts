@@ -2,7 +2,8 @@ const SENTENCE_END = /(?<=[。！？!?])\s*/;
 
 /**
  * Inserts paragraph breaks when the model returns a wall of text.
- * WHY: Prompt mandates \\n\\n — this is a client-side fallback for occasional non-compliance.
+ * WHY: Prompt mandates \\n\\n — sentence splitting is a last-resort fallback only when the
+ * backend ships zero paragraph breaks; never re-split an already canonical three-beat body.
  */
 export function formatDynoIntelCommentary(text: string): string {
   const trimmed = String(text ?? '').trim();

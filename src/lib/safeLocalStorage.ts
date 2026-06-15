@@ -41,3 +41,18 @@ export function safeRemoveItem(key: string): void {
     // ignore
   }
 }
+
+export function listStorageKeys(): string[] {
+  const storage = getStorage();
+  if (!storage) return [];
+  try {
+    const keys: string[] = [];
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key) keys.push(key);
+    }
+    return keys;
+  } catch {
+    return [];
+  }
+}

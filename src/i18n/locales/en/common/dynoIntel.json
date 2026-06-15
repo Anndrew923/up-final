@@ -88,6 +88,18 @@
       "weightProfileMissing": "Complete your body profile on Home before running weight simulation.",
       "quotaExhaustedPro": "Daily uplink cap reached (30/day) — return after reset."
     },
+    "telemetryLog": {
+      "title": "Telemetry evolution logs",
+      "subtitleCore": "{{count}}/{{cap}} local uplinks archived",
+      "subtitlePro": "{{count}} local uplinks archived",
+      "empty": "No prior uplinks on this host.",
+      "entryAxis": "Focus: {{axis}}",
+      "entryTime": "{{date}}",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "crossAxis": "Cross-axis",
+      "unknownAxis": "Unscoped"
+    },
     "localTelemetry": {
       "title": "DYNO INTEL TELEMETRY",
       "subtitle": "Local uplink telemetry — scannable Client / Emulator / Auth readiness.",

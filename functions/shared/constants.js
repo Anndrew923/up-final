@@ -66,8 +66,18 @@ export const DYNO_INTEL_TRIAL_PER_DAY = 2;
 export const DYNO_INTEL_PRO_PER_DAY = 30;
 export const DYNO_INTEL_RATE_LIMITS_COLLECTION = "dyno_intel_rate_limits";
 export const DYNO_INTEL_CACHE_COLLECTION = "dyno_intel_cache";
-export const DYNO_INTEL_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+export const DYNO_INTEL_CACHE_TTL_MS = 48 * 60 * 60 * 1000;
 export const DYNO_INTEL_CONTEXT_SCHEMA_VERSION = 1;
-/** Override via Functions env when Gemini 3.5 Flash GA in your project region. */
-export const DYNO_INTEL_GEMINI_MODEL =
-  process.env.GEMINI_MODEL_ID || "gemini-2.5-flash";
+/** Lite engine — default for status/progress/general telemetry reads. */
+export const DYNO_INTEL_GEMINI_MODEL_LITE =
+  process.env.GEMINI_MODEL_LITE_ID || "gemini-2.5-flash-lite";
+/** Quality engine — methodology / scoring-standard questions only. */
+export const DYNO_INTEL_GEMINI_MODEL_METHODOLOGY =
+  process.env.GEMINI_MODEL_METHODOLOGY_ID || "gemini-2.5-flash";
+/** Back-compat alias — points at lite default. */
+export const DYNO_INTEL_GEMINI_MODEL = DYNO_INTEL_GEMINI_MODEL_LITE;
+/** Explicit Context Cache TTL — Google default is 1h; refresh before expiry. */
+export const DYNO_INTEL_GEMINI_CONTEXT_CACHE_TTL_SECONDS = 3600;
+export const DYNO_INTEL_GEMINI_CONTEXT_CACHE_REFRESH_BUFFER_MS = 10 * 60 * 1000;
+/** Cap structured JSON commentary length — three-beat constitution fits well under 1536. */
+export const DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS = 1536;

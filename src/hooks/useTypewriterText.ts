@@ -56,5 +56,14 @@ export function useTypewriterText(options: UseTypewriterTextOptions = {}) {
     setVisibleText('');
   }, [cancel]);
 
-  return { visibleText, play, reset, cancel };
+  /** Restores persisted commentary without typewriter animation. */
+  const showImmediately = useCallback(
+    (fullText: string) => {
+      cancel();
+      setVisibleText(fullText);
+    },
+    [cancel]
+  );
+
+  return { visibleText, play, reset, cancel, showImmediately };
 }

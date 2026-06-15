@@ -13,6 +13,28 @@ describe('resolveDynoIntelQuestionFocus', () => {
     expect(resolveDynoQuestionIntent('計分依據是什麼')).toBe('methodology');
     expect(resolveDynoQuestionIntent('What is the scoring logic?')).toBe('methodology');
     expect(resolveDynoQuestionIntent('evaluation criteria for grip')).toBe('methodology');
+    expect(resolveDynoQuestionIntent('握力分數是如何評斷的？')).toBe('methodology');
+    expect(resolveDynoQuestionIntent('握力怎麼給分')).toBe('methodology');
+  });
+
+  it('escalates methodology via heuristic when regex misses but axis + probes hit', () => {
+    expect(
+      resolveDynoQuestionIntent('握力標準 how to read', {
+        focusAxis: null,
+        mode: 'cross-axis',
+        focusAxisLexicon: null,
+      })
+    ).toBe('methodology');
+  });
+
+  it('does not escalate panel-read score questions to methodology', () => {
+    expect(
+      resolveDynoQuestionIntent('我的握力標準how', {
+        focusAxis: 'gripStrength',
+        mode: 'single-axis',
+        focusAxisLexicon: null,
+      })
+    ).toBe('general');
   });
 
   it('does not misclassify score-status questions as methodology', () => {

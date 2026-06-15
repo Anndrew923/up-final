@@ -18,6 +18,8 @@ export type DynoAgeBucket =
 
 export type DynoIntelMode = 'single-axis' | 'cross-axis' | 'weight-simulation';
 
+export type DynoQuestionIntent = 'methodology' | 'progress' | 'status' | 'general';
+
 export type DynoClosingBeatKind = 'methodology-nudge' | 'passion-close' | 'return-ritual';
 
 /** Minimal history slice — keeps logic/core free of storage service imports. */
@@ -133,6 +135,8 @@ export interface DynoIntelContextV1 {
   closingBeatSecondLine: string;
   /** Axis resolved from user question — anchors beat 3 away from global momentum drift. */
   questionFocusAxis: SixAxisMetric | null;
+  /** Question intent — resolved client-side; server re-validates for model routing. */
+  intent: DynoQuestionIntent;
   generatedAt: string;
 }
 

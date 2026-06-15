@@ -16,7 +16,9 @@ import { cn } from '../../lib/cn';
 import { splitDynoIntelCommentaryParagraphs } from '../../logic/core/dynoIntelCommentaryFormat';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
+import type { DynoIntelLogEntry } from '../../logic/core/dynoIntelLogTypes';
 import DynoIntelPaywallView from './DynoIntelPaywallView';
+import DynoIntelTelemetryLogAccordion from './DynoIntelTelemetryLogAccordion';
 
 export type DynoIntelSheetView = 'chat' | 'paywall';
 
@@ -38,6 +40,9 @@ export interface DynoIntelBottomSheetProps {
   status: DynoIntelChatStatus;
   errorMessage: string | null;
   onSubmitQuestion: (question: string) => void;
+  telemetryLogs: DynoIntelLogEntry[];
+  telemetryLogCap: number | null;
+  isProTelemetry: boolean;
 }
 
 const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
@@ -58,6 +63,9 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   status,
   errorMessage,
   onSubmitQuestion,
+  telemetryLogs,
+  telemetryLogCap,
+  isProTelemetry,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
@@ -221,6 +229,11 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                   </div>
                 )
               )}
+              <DynoIntelTelemetryLogAccordion
+                entries={telemetryLogs}
+                logCap={telemetryLogCap}
+                isPro={isProTelemetry}
+              />
             </div>
 
             <footer className="shrink-0 border-t border-zinc-800/80 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">

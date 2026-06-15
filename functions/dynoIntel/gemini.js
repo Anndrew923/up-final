@@ -1,8 +1,20 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DYNO_INTEL_GEMINI_MODEL } from "../shared/constants.js";
-import { enforceCommentaryBeatContract } from "./commentaryBeatContract.js";
+import {
+  DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS,
+  DYNO_INTEL_GEMINI_MODEL_LITE,
+  DYNO_INTEL_GEMINI_MODEL_METHODOLOGY,
+} from "../shared/constants.js";
+import {
+  enforceCommentaryBeatContract,
+  splitCommentaryParagraphs,
+} from "./commentaryBeatContract.js";
+import {
+  invalidateGeminiContextCache,
+  resolveGeminiContextCache,
+} from "./geminiContextCache.js";
+import { resolveDynoIntelGeminiModel, resolveDynoIntelRoutingIntent } from "./resolveGeminiModel.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -267,13 +279,22 @@ export function finalizeDynoIntelReply(reply, locale = "zh-Hant") {
   return enforceOffTopicContract(sanitized);
 }
 
-async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, userQuestion, promptTemplateId }) {
+/** Last Gemini usageMetadata — for cost telemetry / golden audits. */
+export let lastGeminiUsageMetadata = null;
+
+async function invokeGeminiOnce({
+  apiKey,
+  model,
+  systemInstruction,
+  context,
+  userQuestion,
+  promptTemplateId,
+  locale,
+  cachedContentName = null,
+}) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const body = {
-    systemInstruction: {
-      parts: [{ text: systemInstruction }],
-    },
     contents: [
       {
         role: "user",
@@ -290,11 +311,19 @@ async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, use
     ],
     generationConfig: {
       temperature: 0.55,
-      maxOutputTokens: 4096,
+      maxOutputTokens: DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS,
       responseMimeType: "application/json",
       responseSchema: RESPONSE_SCHEMA,
     },
   };
+
+  if (cachedContentName) {
+    body.cachedContent = cachedContentName;
+  } else {
+    body.systemInstruction = {
+      parts: [{ text: systemInstruction }],
+    };
+  }
 
   const response = await fetch(url, {
     method: "POST",
@@ -311,6 +340,7 @@ async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, use
   }
 
   const json = await response.json();
+  lastGeminiUsageMetadata = json?.usageMetadata ?? null;
   const text = extractGeminiTextPayload(json);
 
   if (!text) {
@@ -333,6 +363,57 @@ async function invokeGeminiOnce({ apiKey, model, systemInstruction, context, use
   return normalizeGeminiReply(parsed, replyLocale, context);
 }
 
+function countOnTopicParagraphs(reply, context) {
+  if (!reply || reply.is_off_topic) return null;
+  if (Array.isArray(context?.gaps) && context.gaps.length > 0) return null;
+  return splitCommentaryParagraphs(reply.commentary).length;
+}
+
+async function invokeWithCacheResolution(apiKey, basePayload, model, { skipCache = false } = {}) {
+  let cachedContentName = null;
+  if (!skipCache) {
+    const cacheResolution = await resolveGeminiContextCache({
+      apiKey,
+      model,
+      locale: basePayload.locale,
+      systemInstruction: basePayload.systemInstruction,
+      promptTemplateId: basePayload.promptTemplateId,
+    });
+    cachedContentName = cacheResolution.cacheName;
+  }
+
+  return invokeGeminiOnce({
+    ...basePayload,
+    model,
+    cachedContentName,
+  });
+}
+
+async function maybeEscalateLiteParagraphRepair(reply, context, apiKey, basePayload, model) {
+  const paragraphCount = countOnTopicParagraphs(reply, context);
+  if (
+    paragraphCount == null ||
+    paragraphCount >= 3 ||
+    model !== DYNO_INTEL_GEMINI_MODEL_LITE
+  ) {
+    return reply;
+  }
+
+  try {
+    return await invokeWithCacheResolution(
+      apiKey,
+      basePayload,
+      DYNO_INTEL_GEMINI_MODEL_METHODOLOGY
+    );
+  } catch (escalationErr) {
+    console.warn(
+      "[dynoIntel] lite paragraph repair escalation failed — keeping lite reply",
+      escalationErr?.message
+    );
+    return reply;
+  }
+}
+
 /**
  * Calls Gemini with structured JSON output.
  * Design intent (WHY): API key stays server-side; client only sends de-identified context.
@@ -345,17 +426,49 @@ export async function runGeminiDynoIntel({
   const apiKey = requireGeminiApiKey();
   const replyLocale = resolveReplyLocale(context);
   const systemInstruction = loadSystemPrompt(promptTemplateId, replyLocale);
-  const model = DYNO_INTEL_GEMINI_MODEL;
-  const payload = { apiKey, model, systemInstruction, context, userQuestion, promptTemplateId };
+  resolveDynoIntelRoutingIntent(userQuestion, context?.intent);
+  const model = resolveDynoIntelGeminiModel(userQuestion);
 
-  const MAX_ATTEMPTS = 2;
+  const basePayload = {
+    apiKey,
+    systemInstruction,
+    context,
+    userQuestion,
+    promptTemplateId,
+    locale: replyLocale,
+  };
+
+  const MAX_ATTEMPTS = 3;
   let lastError;
+  let skipCacheOnNextAttempt = false;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
-      return await invokeGeminiOnce(payload);
+      let reply = await invokeWithCacheResolution(apiKey, basePayload, model, {
+        skipCache: skipCacheOnNextAttempt,
+      });
+      skipCacheOnNextAttempt = false;
+
+      reply = await maybeEscalateLiteParagraphRepair(
+        reply,
+        context,
+        apiKey,
+        basePayload,
+        model
+      );
+
+      return reply;
     } catch (err) {
       lastError = err;
+      const status = String(err?.message ?? "");
+      const cacheRequestFailed = status.startsWith("gemini-http-");
+
+      if (cacheRequestFailed && !skipCacheOnNextAttempt && attempt < MAX_ATTEMPTS) {
+        invalidateGeminiContextCache(replyLocale, model);
+        skipCacheOnNextAttempt = true;
+        continue;
+      }
+
       const retryable = ["gemini-invalid-json", "gemini-empty-response"].includes(err?.message);
       if (!retryable || attempt === MAX_ATTEMPTS) {
         throw err;
