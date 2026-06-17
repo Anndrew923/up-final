@@ -8,6 +8,7 @@ import {
 import {
   detectQuestionFocusAxis,
   detectQuestionFocusSupplemental,
+  isChassisMacroQuestion,
 } from "../dynoIntel/resolveQuestionIntent.js";
 
 const ALL_BRIEFS = [
@@ -39,14 +40,37 @@ describe("detectQuestionFocusSupplemental", () => {
 });
 
 describe("pruneScoringMethodologyBriefs", () => {
-  it("returns all briefs for methodology intent", () => {
+  it("keeps only focused briefs for methodology intent", () => {
     const pruned = pruneScoringMethodologyBriefs(
       ALL_BRIEFS,
       "本 App 力量怎麼計分？",
       "methodology",
       {}
     );
-    assert.equal(pruned.length, ALL_BRIEFS.length);
+    assert.equal(pruned.length, 1);
+    assert.equal(pruned[0].metric, "strength");
+  });
+
+  it("prunes methodology grip questions to gripStrength brief only", () => {
+    const pruned = pruneScoringMethodologyBriefs(
+      ALL_BRIEFS,
+      "握力分數是如何評斷的？",
+      "methodology",
+      {}
+    );
+    assert.equal(pruned.length, 1);
+    assert.equal(pruned[0].metric, "gripStrength");
+  });
+
+  it("routes 握力怎麼評測 to gripStrength even when context.questionFocusAxis is stale bodyFat", () => {
+    const pruned = pruneScoringMethodologyBriefs(
+      ALL_BRIEFS,
+      "握力怎麼評測的？",
+      "methodology",
+      { questionFocusAxis: "bodyFat", focusAxis: "bodyFat" }
+    );
+    assert.equal(pruned.length, 1);
+    assert.equal(pruned[0].metric, "gripStrength");
   });
 
   it("keeps at most two relevant briefs for general status questions", () => {
@@ -61,7 +85,7 @@ describe("pruneScoringMethodologyBriefs", () => {
   });
 
   it("includes cardio brief when cooper supplemental is detected", () => {
-    const metrics = collectOnDemandMethodologyMetrics("Cooper 12 分鐘怎麼解讀？", {}, "status");
+    const metrics = collectOnDemandMethodologyMetrics("Cooper 12 分鐘怎麼解讀？", {});
     assert.ok(metrics.includes("cardio"));
     const pruned = pruneScoringMethodologyBriefs(
       ALL_BRIEFS,
@@ -83,6 +107,19 @@ describe("pruneScoringMethodologyBriefs", () => {
     assert.equal(pruned.length, 1);
     assert.equal(pruned[0].metric, "gripStrength");
   });
+
+  it("buildDynoIntelInferenceContext prunes methodology to one axis brief", () => {
+    const ctx = buildDynoIntelInferenceContext(
+      {
+        scoringMethodologyBriefs: ALL_BRIEFS,
+        weakestAxis: "strength",
+      },
+      "本 App 力量怎麼計分？"
+    );
+    assert.equal(ctx.intent, "methodology");
+    assert.equal(ctx.scoringMethodologyBriefs.length, 1);
+    assert.equal(ctx.scoringMethodologyBriefs[0].metric, "strength");
+  });
 });
 
 describe("buildDynoIntelInferenceContext", () => {
@@ -94,8 +131,18 @@ describe("buildDynoIntelInferenceContext", () => {
       },
       "握力分數怎麼看？"
     );
-    assert.equal(ctx.intent, "general");
+    assert.equal(ctx.intent, "status");
+    assert.equal(ctx.questionFocusAxis, "gripStrength");
+    assert.equal(ctx.userQuestion, "握力分數怎麼看？");
     assert.equal(ctx.scoringMethodologyBriefs.length, 1);
     assert.equal(ctx.scoringMethodologyBriefs[0].metric, "gripStrength");
+  });
+});
+
+describe("isChassisMacroQuestion", () => {
+  it("opens chassis factory only for macro overall reads", () => {
+    assert.equal(isChassisMacroQuestion("我的總分成績如何？"), true);
+    assert.equal(isChassisMacroQuestion("我的握力表現如何？"), false);
+    assert.equal(isChassisMacroQuestion("六軸裡我最該先補哪個短板？"), false);
   });
 });

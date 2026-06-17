@@ -41,8 +41,8 @@ describe('resolveDynoIntelReplyClosingCue', () => {
         },
       ],
       locale: 'zh-Hant',
-      mode: 'single-axis',
-      focusAxis: 'strength',
+      mode: 'cross-axis',
+      focusAxis: null,
     });
 
     const enriched = enrichDynoIntelContextCardCopy(base, t, '有進步嗎？');
@@ -76,8 +76,8 @@ describe('resolveDynoIntelReplyClosingCue', () => {
         },
       ],
       locale: 'zh-Hant',
-      mode: 'single-axis',
-      focusAxis: 'strength',
+      mode: 'cross-axis',
+      focusAxis: null,
     });
 
     const enriched = enrichDynoIntelContextCardCopy(base, t, '力量有進步嗎');
@@ -160,8 +160,8 @@ describe('resolveDynoIntelReplyClosingCue', () => {
       },
       historyRecords: [],
       locale: 'zh-Hant',
-      mode: 'single-axis',
-      focusAxis: 'strength',
+      mode: 'cross-axis',
+      focusAxis: null,
     });
 
     const enriched = enrichDynoIntelContextCardCopy(base, t, '力量有進步嗎');

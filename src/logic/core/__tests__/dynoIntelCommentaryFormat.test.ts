@@ -5,20 +5,18 @@ import {
 } from '../dynoIntelCommentaryFormat';
 
 describe('formatDynoIntelCommentary', () => {
-  it('preserves existing double newlines', () => {
+  it('preserves existing double newlines for GAPS replies', () => {
     expect(formatDynoIntelCommentary('第一段。\n\n第二段。')).toBe('第一段。\n\n第二段。');
   });
 
-  it('does not sentence-split when backend already uses standard paragraph breaks', () => {
-    expect(formatDynoIntelCommentary('第一段。\n\n第二段。\n\n第三句一。第三句二。')).toBe(
-      '第一段。\n\n第二段。\n\n第三句一。第三句二。'
-    );
+  it('keeps single-beat multi-sentence commentary as one block', () => {
+    const singleBeat =
+      '以同齡一般人來看，你的多關節力量已站上業餘運動員頂尖水準。硬拉時把腳跟踩實，核心就能守住大重量。';
+    expect(formatDynoIntelCommentary(singleBeat)).toBe(singleBeat);
   });
 
-  it('inserts paragraph breaks after Chinese sentence endings', () => {
-    expect(formatDynoIntelCommentary('第一句。第二句！第三句。')).toBe(
-      '第一句。\n\n第二句！\n\n第三句。'
-    );
+  it('normalizes triple-or-more newlines', () => {
+    expect(formatDynoIntelCommentary('A。\n\n\nB。')).toBe('A。\n\nB。');
   });
 
   it('returns single sentence unchanged', () => {
@@ -27,15 +25,15 @@ describe('formatDynoIntelCommentary', () => {
 });
 
 describe('splitDynoIntelCommentaryParagraphs', () => {
-  it('splits formatted commentary into paragraphs', () => {
+  it('splits formatted commentary on paragraph breaks only', () => {
     expect(splitDynoIntelCommentaryParagraphs('A。\n\nB。')).toEqual(['A。', 'B。']);
   });
 
-  it('auto-formats wall of text before splitting', () => {
-    expect(splitDynoIntelCommentaryParagraphs('A。B。')).toEqual(['A。', 'B。']);
+  it('does not sentence-split a single-beat wall of text', () => {
+    expect(splitDynoIntelCommentaryParagraphs('A。B。C。')).toEqual(['A。B。C。']);
   });
 
-  it('does not sentence-split a multi-sentence third beat when paragraph breaks exist', () => {
+  it('preserves multi-sentence third beat inside one paragraph when breaks exist', () => {
     expect(
       splitDynoIntelCommentaryParagraphs('A。\n\nB。\n\nC第一句。C第二句。')
     ).toEqual(['A。', 'B。', 'C第一句。C第二句。']);

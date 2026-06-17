@@ -22,6 +22,11 @@
       "line4": "僅解讀六軸遙測與你的級距解碼；通用訓練百科不在服務範圍內。"
     },
     "loading": "遙測解碼中…",
+    "displayCard": {
+      "scoreLabel": "{{score}} 分",
+      "overallScoreLabel": "總分 {{score}}",
+      "tierPrefix": "級距"
+    },
     "replyAssessmentDeepDiveNudge": "各評測頁面備有更完整的計分說明與常模解讀——請直接進入對應評測頁，展開說明區查閱全貌。",
     "replyClosingCue": {
       "default": "通電完成。這份遙測已寫入主機——下次再來，對照你自己的進步曲線，我會在這裡等你。",
@@ -33,9 +38,9 @@
       "weakestCompanion": "最弱鏈路在 {{axisLabel}}，但下一格級距已在評測頁等你——我會在這台主機上陪你把底盤補齊。"
     },
     "closingBeatSecondLine": {
-      "passionClose0": "分數 {{axisScore}}、級距 {{tierTitle}} 已寫入主機——別讓這份規格只停在螢幕上。",
+      "passionClose0": "分數 {{axisScore}} 已寫入主機——別讓這份規格只停在螢幕上。",
       "passionClose1": "主機記得 {{axisScore}} 分這條曲線——下次通電，對照你自己，不是對照別人。",
-      "passionClose2": "【{{tierTitle}}】不是裝飾——這是你肉體寫給主機的簽名，值得反覆簽回來。",
+      "passionClose2": "這份級距不是裝飾——這是你肉體寫給主機的簽名，值得反覆簽回來。",
       "returnRitual0": "通電收束。下次再來，我會在同一台主機上對照你的進步曲線。",
       "returnRitual1": "遙測已封存。下次通電時，帶著新的分數回來——我會在這裡等你。",
       "returnRitual2": "這份遙測已寫入主機。下次再來，我們只對照你自己的級距曲線。"

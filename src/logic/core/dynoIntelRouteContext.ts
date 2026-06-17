@@ -28,9 +28,11 @@ export type DynoConsoleLabelKey =
 
 export interface DynoRouteContext {
   consoleLabelKey: DynoConsoleLabelKey;
+  /** UI / placeholder hint only — inference always uses cross-axis (v2.4.2). */
   focusAxis: SixAxisMetric | null;
+  /** UI hint for supplemental copy — not sent to Callable inference context. */
   focusSupplemental: DynoSupplementalMetricId | null;
-  /** Default diagnostic mode for this surface — Pro users may upgrade to cross-axis in UI. */
+  /** Legacy route metadata — DynoIntelConsole no longer binds chat mode to this field. */
   suggestedMode: DynoIntelMode;
 }
 

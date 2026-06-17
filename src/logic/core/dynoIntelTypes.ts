@@ -3,6 +3,7 @@ import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import type { PhysicalProfile } from '../../types/userProfile';
 import type { RadarMergedScoresInput } from './radarMergedScores';
 import type { VehicleClassId } from './vehicleResolver';
+import type { DynoIntelChassisBeatsOfficial } from './dynoIntelChassisFactory';
 
 /** De-identified age bucket — never ship exact age to the AI pipeline. */
 export type DynoAgeBucket =
@@ -137,6 +138,13 @@ export interface DynoIntelContextV1 {
   questionFocusAxis: SixAxisMetric | null;
   /** Question intent — resolved client-side; server re-validates for model routing. */
   intent: DynoQuestionIntent;
+  /**
+   * Server-injected official human anchor before Gemini (v3.0).
+   * WHY: Not set client-side — present only on the enriched Callable payload mirror.
+   */
+  chassisBeats?: DynoIntelChassisBeatsOfficial;
+  /** Echo of the user question when present on enriched inference context. */
+  userQuestion?: string;
   generatedAt: string;
 }
 

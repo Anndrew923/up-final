@@ -15,9 +15,6 @@ function resolvePrimaryAxisSnap(context: DynoIntelContextV1): DynoAxisSnapshot |
   if (context.questionFocusAxis) {
     return context.axes.find((snap) => snap.axis === context.questionFocusAxis) ?? null;
   }
-  if (context.focusAxis) {
-    return context.axes.find((snap) => snap.axis === context.focusAxis) ?? null;
-  }
   return null;
 }
 
@@ -35,8 +32,10 @@ function findBestPositiveMomentum(
     return null;
   }
 
-  if (context.focusAxis) {
-    const focusDelta = context.momentum.deltas.find((entry) => entry.axis === context.focusAxis);
+  if (context.questionFocusAxis) {
+    const focusDelta = context.momentum.deltas.find(
+      (entry) => entry.axis === context.questionFocusAxis
+    );
     if (focusDelta?.delta != null && focusDelta.delta > 0) {
       return { axis: focusDelta.axis, delta: focusDelta.delta };
     }
@@ -84,10 +83,7 @@ function resolveQuestionFocusCue(
   locale: DynoIntelContextV1['locale'],
   t: TFunction
 ): string {
-  const tierSuffix =
-    snap.cardCopy?.title != null ? t('dynoIntel.replyClosingCue.questionFocusTierSuffix', {
-      tierTitle: snap.cardCopy.title,
-    }) : '';
+  const tierSuffix = '';
   return t('dynoIntel.replyClosingCue.questionFocus', {
     axisLabel: getAxisSurfaceLabel(snap.axis, locale),
     score: formatScore(snap.score!),
@@ -121,9 +117,13 @@ function resolveWeakestCompanionCue(
 ): string | null {
   const locale = context.locale;
 
-  if (context.mode === 'single-axis' && isLowScoreSnap(primary)) {
+  if (
+    primary &&
+    context.questionFocusAxis === primary.axis &&
+    isLowScoreSnap(primary)
+  ) {
     return t('dynoIntel.replyClosingCue.weakestCompanion', {
-      axisLabel: getAxisSurfaceLabel(primary!.axis, locale),
+      axisLabel: getAxisSurfaceLabel(primary.axis, locale),
     });
   }
 
@@ -160,7 +160,7 @@ export function resolveDynoIntelReplyClosingCue(
     }
   }
 
-  if (context.mode === 'cross-axis' && intent !== 'progress') {
+  if (context.mode === 'cross-axis' && intent !== 'progress' && !questionFocusAxis) {
     const chassis = resolveChassisBalanceCue(context, t);
     if (chassis) return chassis;
   }

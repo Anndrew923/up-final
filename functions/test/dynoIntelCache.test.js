@@ -113,4 +113,51 @@ describe("shouldPersistDynoIntelCache", () => {
       true
     );
   });
+
+  it("rejects truncated methodology replies", () => {
+    const methodologyContext = {
+      locale: "zh-Hant",
+      intent: "methodology",
+      closingBeatKind: "methodology-nudge",
+      questionFocusAxis: "cardio",
+      scoringMethodologyBriefs: [
+        { metric: "cardio", title: "心肺評測", body: "常模距離表換算。" },
+      ],
+    };
+    assert.equal(
+      shouldPersistDynoIntelCache(
+        {
+          commentary:
+            "心肺評測分數，是依據你選擇的測驗方式，結合首頁身體資料中的性別與年齡組，對照專屬常模距離表換算而來。由於不同年",
+          action_directive: "",
+          is_off_topic: false,
+          detected_weakest_axis: "cardio",
+        },
+        methodologyContext
+      ),
+      false
+    );
+  });
+
+  it("accepts complete methodology replies", () => {
+    const methodologyContext = {
+      locale: "zh-Hant",
+      intent: "methodology",
+      closingBeatKind: "methodology-nudge",
+      questionFocusAxis: "cardio",
+    };
+    assert.equal(
+      shouldPersistDynoIntelCache(
+        {
+          commentary:
+            "心肺評測分數依首頁性別與年齡組對照常模距離表換算，不同年齡組門檻不同，同一距離得分可能差異很大。",
+          action_directive: "",
+          is_off_topic: false,
+          detected_weakest_axis: "cardio",
+        },
+        methodologyContext
+      ),
+      true
+    );
+  });
 });

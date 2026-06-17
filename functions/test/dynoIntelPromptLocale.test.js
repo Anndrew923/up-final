@@ -26,50 +26,35 @@ describe("resolveDynoIntelPromptFile", () => {
 });
 
 describe("system_v1_en prompt artifact", () => {
-  it("contains the English off-topic fixed sentence template", () => {
+  it("defines v3.0.4 semantic compression steel coach role", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
-    assert.match(
-      text,
-      /I am DYNO INTEL on this "Ultimate Physique" host\. I only decode your 6-axis telemetry, tier decode, and this App's scoring standard explanations\./
-    );
+    assert.match(text, /v3\.0\.4/i);
+    assert.match(text, /De-fat prose mandate/i);
+    assert.match(text, /Active pruning authority/i);
+    assert.doesNotMatch(text, /p2Official/);
   });
 
-  it("defines v2.3 data resonance beat three without legend lore", () => {
+  it("keeps gaps and methodology routing", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
-    assert.match(text, /THREE-BEAT CONSTITUTION v2\.3/);
-    assert.match(text, /Uplink Close · Data Resonance/);
-    assert.match(text, /closingBeatSecondLine/);
-    assert.doesNotMatch(text, /Legend Analogy/);
-    assert.doesNotMatch(text, /Weave \*\*checkable Olympia lore\*\*/);
-  });
-
-  it("defines human-to-machine three-beat constitution v2.3", () => {
-    const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
-    assert.match(text, /Steel Vehicle Mapping/);
-    assert.match(text, /telemetry chassis/i);
-    assert.match(text, /must differ in meaning/i);
-    assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
+    assert.match(text, /GAPS/i);
+    assert.match(text, /SCORING_METHODOLOGY/i);
+    assert.match(text, /OFF-TOPIC/i);
   });
 });
 
 describe("system_v1 prompt artifact", () => {
-  it("defines 由人入機 three-beat constitution v2.3", () => {
+  it("defines v3.0.4 語意壓縮與文風去脂", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
-    assert.match(text, /【由人入機】三段憲法 v2\.3/);
-    assert.match(text, /第三段【通電收束 · 數據共鳴】/);
-    assert.match(text, /closingBeatSecondLine/);
-    assert.match(text, /遙測底盤中，這份力量天賦被類比為/);
-    assert.match(text, /嚴禁複製貼上/);
-    assert.doesNotMatch(text, /PROGRESSIVE DISCLOSURE/);
+    assert.match(text, /v3\.0\.4/);
+    assert.match(text, /文筆去脂鐵律/);
+    assert.match(text, /主動剪裁主權/);
+    assert.doesNotMatch(text, /p2Official/);
   });
 
-  it("retires legend analogies and requires replyClosingCue", () => {
+  it("retires multi-beat v2.5 constitution", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
-    assert.match(text, /replyClosingCue/);
-    assert.match(text, /closingBeatKind/);
-    assert.match(text, /通電收束 · 數據共鳴/);
-    assert.doesNotMatch(text, /奧林匹亞傳奇/);
-    assert.doesNotMatch(text, /傳奇類比與鋼鐵意志/);
+    assert.doesNotMatch(text, /v2\.5 結構化分工/);
+    assert.doesNotMatch(text, /第二段延伸：硬核機械動態/);
   });
 });
 
@@ -79,21 +64,9 @@ describe("stripTechnicalLeakage locale routing", () => {
       stripTechnicalLeakage("cardCopy and tierBandId in JSON", "en"),
       "tier decode and tier in telemetry data"
     );
-    assert.equal(
-      stripTechnicalLeakage("scoringMethodologyBriefs", "en"),
-      "scoring methodology briefs"
-    );
-    assert.equal(stripTechnicalLeakage("replyClosingCue", "en"), "uplink close cue");
-    assert.equal(stripTechnicalLeakage("closingBeatSecondLine", "en"), "close beat second line");
   });
 
   it("uses zh-Hant product language by default", () => {
     assert.equal(stripTechnicalLeakage("cardCopy", "zh-Hant"), "級距解碼");
-    assert.equal(
-      stripTechnicalLeakage("scoringMethodologyBriefs", "zh-Hant"),
-      "給分標準說明"
-    );
-    assert.equal(stripTechnicalLeakage("replyClosingCue", "zh-Hant"), "通電收束");
-    assert.equal(stripTechnicalLeakage("closingBeatKind", "zh-Hant"), "收束模式");
   });
 });

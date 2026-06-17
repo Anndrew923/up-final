@@ -7,14 +7,14 @@ import {
   resolveDynoIntelEntitlement,
 } from "../shared/dynoEntitlement.js";
 import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from "./cache.js";
-import { runGeminiDynoIntel } from "./gemini.js";
-import { enforceCommentaryBeatContract } from "./commentaryBeatContract.js";
+import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
 import {
   checkDynoIntelDailyLimit,
   loadDynoRateLimitDoc,
   recordDynoIntelUsage,
 } from "./rateLimits.js";
 import { buildDynoIntelInferenceContext } from "./pruneScoringMethodologyBriefs.js";
+import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { validateDynoIntelContext } from "./validateContext.js";
 
 function isAnonymousProvider(request) {
@@ -57,7 +57,9 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
 
   const data = request.data ?? {};
   const context = data.context;
-  const userQuestion = typeof data.userQuestion === "string" ? data.userQuestion.trim() : "";
+  const userQuestion = normalizeDynoIntelQuestion(
+    typeof data.userQuestion === "string" ? data.userQuestion : ""
+  );
   const promptTemplateId =
     typeof data.promptTemplateId === "string" && data.promptTemplateId
       ? data.promptTemplateId
@@ -134,7 +136,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       remaining: quota.remaining,
       limit: quota.limit,
       resetAt: quota.resetAt,
-      reply: enforceCommentaryBeatContract(cached, inferenceContext),
+      reply: finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
     };
   }
 
@@ -170,7 +172,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     throw new HttpsError("internal", "DYNO INTEL inference failed");
   }
 
-  await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now);
+  await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
 
   return {
     ok: true,

@@ -12,6 +12,7 @@ describe("resolveDynoQuestionIntent", () => {
     assert.equal(resolveDynoQuestionIntent("本 App 力量怎麼計分？"), "methodology");
     assert.equal(resolveDynoQuestionIntent("How does this app score strength?"), "methodology");
     assert.equal(resolveDynoQuestionIntent("握力分數是如何評斷的？"), "methodology");
+    assert.equal(resolveDynoQuestionIntent("握力怎麼評測的？"), "methodology");
   });
 
   it("escalates methodology via heuristic when axis and probes align", () => {
@@ -31,13 +32,13 @@ describe("resolveDynoQuestionIntent", () => {
     );
   });
 
-  it("does not escalate panel-read questions", () => {
+  it("routes axis panel-read questions to status under v3.0.3", () => {
     assert.equal(
       resolveDynoQuestionIntent("我的握力標準how", {
         mode: "single-axis",
         focusAxis: "gripStrength",
       }),
-      "general"
+      "status"
     );
   });
 
@@ -46,10 +47,17 @@ describe("resolveDynoQuestionIntent", () => {
     assert.equal(resolveDynoQuestionIntent("幫我解讀這個狀態"), "status");
     assert.equal(resolveDynoQuestionIntent("我的握力分數表現如何"), "status");
     assert.equal(resolveDynoQuestionIntent("那我握力成績如何？"), "status");
+    assert.equal(resolveDynoQuestionIntent("我的 FFMI 評分如何？"), "status");
+    assert.equal(resolveDynoQuestionIntent("我的ＦＦＭＩ評分如何？"), "status");
   });
 
-  it("defaults to general for telemetry reads", () => {
-    assert.equal(resolveDynoQuestionIntent("我的 FFMI 分數代表什麼？"), "general");
+  it("keeps methodology for scoring-standard questions", () => {
+    assert.equal(resolveDynoQuestionIntent("FFMI 評分標準是什麼？"), "methodology");
+    assert.equal(resolveDynoQuestionIntent("FFMI 評分怎麼算？"), "methodology");
+  });
+
+  it("defaults axis-only reads to status under v3.0.3", () => {
+    assert.equal(resolveDynoQuestionIntent("我的 FFMI 分數代表什麼？"), "status");
     assert.equal(resolveDynoQuestionIntent("我的評分多少？"), "general");
   });
 });
@@ -79,6 +87,6 @@ describe("resolveDynoIntelGeminiModel", () => {
 describe("resolveDynoIntelRoutingIntent", () => {
   it("returns server-resolved intent", () => {
     assert.equal(resolveDynoIntelRoutingIntent("本 App 力量怎麼計分？", "general"), "methodology");
-    assert.equal(resolveDynoIntelRoutingIntent("FFMI 分數多少？", "general"), "general");
+    assert.equal(resolveDynoIntelRoutingIntent("FFMI 分數多少？", "general"), "status");
   });
 });

@@ -22,6 +22,11 @@
       "line4": "Six-axis telemetry and your tier decode only — general training encyclopedia is out of scope."
     },
     "loading": "Decoding telemetry…",
+    "displayCard": {
+      "scoreLabel": "{{score}} pts",
+      "overallScoreLabel": "Overall {{score}}",
+      "tierPrefix": "Tier"
+    },
     "replyAssessmentDeepDiveNudge": "Each assessment page includes fuller scoring notes and norm context — open that page and expand the info section for the complete picture.",
     "replyClosingCue": {
       "default": "Uplink complete. This telemetry is logged on the host — come back and track your own progress curve; I'll be here.",
@@ -33,9 +38,9 @@
       "weakestCompanion": "Weakest link: {{axisLabel}} — the next tier waits on the assessment page; I'll stay on this host while you fill the gap."
     },
     "closingBeatSecondLine": {
-      "passionClose0": "Score {{axisScore}}, tier {{tierTitle}} — logged on the host; don't let this spec live only on screen.",
+      "passionClose0": "Score {{axisScore}} — logged on the host; don't let this spec live only on screen.",
       "passionClose1": "The host remembers the {{axisScore}}-pt curve — next uplink, compare against yourself, not others.",
-      "passionClose2": "[{{tierTitle}}] isn't decoration — it's your physique's signature on this host; sign it again.",
+      "passionClose2": "This tier band isn't decoration — it's your physique's signature on this host; sign it again.",
       "returnRitual0": "Uplink closed. Come back — I'll match your progress curve on this same host.",
       "returnRitual1": "Telemetry archived. Return with fresh scores — I'll be here.",
       "returnRitual2": "This read is on the host. Next time, we track only your tier curve."

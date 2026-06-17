@@ -5,6 +5,8 @@ import {
 } from "../shared/constants.js";
 import { db } from "../shared/admin.js";
 import { stableStringify } from "../shared/stableStringify.js";
+import { isMethodologyReplyContext } from "./dynoIntelChassisFactory.js";
+import { isMethodologyCommentaryComplete } from "./methodologyBeatRepair.js";
 
 export function buildDynoIntelCacheHash(parts) {
   const payload = stableStringify(parts);
@@ -24,15 +26,24 @@ export async function loadDynoIntelCache(hash, nowMs = Date.now()) {
 }
 
 /**
- * WHY: Off-topic replies are boundary-only — caching them wastes Firestore and preserves stale bad patterns.
+ * WHY: Off-topic and truncated methodology replies must not be cached — they replay bad UX for 48h.
  */
-export function shouldPersistDynoIntelCache(reply) {
+export function shouldPersistDynoIntelCache(reply, context = null) {
   if (!reply || typeof reply !== "object") return false;
-  return reply.is_off_topic !== true;
+  if (reply.is_off_topic === true) return false;
+
+  if (context && isMethodologyReplyContext(context)) {
+    const locale = context.locale === "en" ? "en" : "zh-Hant";
+    if (!isMethodologyCommentaryComplete(String(reply.commentary ?? "").trim(), locale)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
-export async function saveDynoIntelCache(hash, payload, promptTemplateId, now = new Date()) {
-  if (!shouldPersistDynoIntelCache(payload)) {
+export async function saveDynoIntelCache(hash, payload, promptTemplateId, now = new Date(), context = null) {
+  if (!shouldPersistDynoIntelCache(payload, context)) {
     return false;
   }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -13,7 +13,6 @@ import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
 import { resolveDynoIntelSheetEntry } from '../../logic/core/dynoIntelGates';
 import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import { hasProAccess } from '../../logic/core/entitlement';
-import { resolveWeightSimulationTargetKg } from '../../logic/core/dynoIntelWeightSim';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { hapticService } from '../../services/hapticService';
@@ -30,6 +29,8 @@ import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import { useDynoIntelContextBuilder } from '../../hooks/useDynoIntelContextBuilder';
 
 const HIDDEN_TRIGGER_ROUTES = new Set<string>([ROUTES.authChoice, ROUTES.joinArena]);
+/** v2.4.2 — inference always cross-axis; route label is UI-only. */
+const DYNO_INFERENCE_MODE: DynoIntelMode = 'cross-axis';
 
 const DynoIntelConsole = () => {
   const { t, i18n } = useTranslation('common');
@@ -48,37 +49,25 @@ const DynoIntelConsole = () => {
   const loadLocalLogs = useDynoIntelLogStore((s) => s.loadLocalLogs);
   const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
 
-  const [mode, setMode] = useState<DynoIntelMode>(route.suggestedMode);
   const [sheetView, setSheetView] = useState<DynoIntelSheetView>('chat');
   const [paywallReason, setPaywallReason] = useState<DynoIntelPaywallReason>('pro-required');
   const [paywallBusy, setPaywallBusy] = useState(false);
   const [paywallBillingError, setPaywallBillingError] = useState(false);
   const [authGateOpen, setAuthGateOpen] = useState(false);
 
-  useEffect(() => {
-    setMode(route.suggestedMode);
-  }, [route.suggestedMode, route.consoleLabelKey]);
-
-  const resolveBaseContext = useCallback(
-    (effectiveMode: DynoIntelMode) => {
+  const resolveBaseContext = useCallback(() => {
       const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
-      const focusAxis = effectiveMode === 'single-axis' ? route.focusAxis : null;
       const snapshot = buildRadarInput();
-      const targetWeightKg =
-        effectiveMode === 'weight-simulation'
-          ? resolveWeightSimulationTargetKg(snapshot.profile)
-          : undefined;
       return buildDynoIntelContext({
         radarInput: snapshot,
         historyRecords: snapshot.historyRecords,
         locale,
-        mode: effectiveMode,
-        focusAxis,
-        focusSupplemental: route.focusSupplemental,
-        targetWeightKg,
+        mode: DYNO_INFERENCE_MODE,
+        focusAxis: null,
+        focusSupplemental: null,
       });
     },
-    [buildRadarInput, i18n.language, route.focusAxis, route.focusSupplemental]
+    [buildRadarInput, i18n.language]
   );
 
   const enrichContext = useCallback(
@@ -88,7 +77,7 @@ const DynoIntelConsole = () => {
   );
 
   const paywallContext = useMemo(
-    () => enrichContext(resolveBaseContext('cross-axis'), ''),
+    () => enrichContext(resolveBaseContext(), ''),
     [enrichContext, resolveBaseContext]
   );
 
@@ -131,8 +120,8 @@ const DynoIntelConsole = () => {
   }, [navigate, sheet]);
 
   const chat = useDynoIntelChat({
-    mode,
-    resolveContext: resolveBaseContext,
+    mode: DYNO_INFERENCE_MODE,
+    resolveContext: () => resolveBaseContext(),
     enrichContext,
     quota,
     onPaywallRequest: openPaywall,
@@ -156,7 +145,7 @@ const DynoIntelConsole = () => {
 
   const openSheetWithGate = useCallback(() => {
     const entry = resolveDynoIntelSheetEntry(
-      route.suggestedMode,
+      DYNO_INFERENCE_MODE,
       entitlement,
       authStatus,
       isAnonymous
@@ -174,7 +163,6 @@ const DynoIntelConsole = () => {
       return;
     }
     setSheetView('chat');
-    setMode(entry.openMode);
     restoreLatestLog();
     sheet.openSheet();
   }, [
@@ -185,7 +173,6 @@ const DynoIntelConsole = () => {
     isAnonymous,
     openPaywall,
     restoreLatestLog,
-    route.suggestedMode,
     sheet,
   ]);
 
@@ -220,9 +207,9 @@ const DynoIntelConsole = () => {
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
-      void chat.sendQuestion(question, undefined, mode);
+      void chat.sendQuestion(question);
     },
-    [chat.sendQuestion, mode]
+    [chat.sendQuestion]
   );
 
   const hideTrigger = isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname);
@@ -251,6 +238,7 @@ const DynoIntelConsole = () => {
         remaining={quota.remaining}
         limit={quota.limit}
         commentary={chat.visibleText}
+        displayMeta={chat.lastDisplayMeta}
         status={chat.status}
         errorMessage={chat.errorMessageKey ? t(chat.errorMessageKey) : null}
         onSubmitQuestion={handleSubmitQuestion}

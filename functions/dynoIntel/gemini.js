@@ -8,8 +8,13 @@ import {
 } from "../shared/constants.js";
 import {
   enforceCommentaryBeatContract,
-  splitCommentaryParagraphs,
 } from "./commentaryBeatContract.js";
+import { injectChassisBeatsIntoContext, isMethodologyReplyContext } from "./dynoIntelChassisFactory.js";
+import { enforceOnTopicRail } from "./enforceOnTopicRail.js";
+import {
+  isMethodologyCommentaryComplete,
+  resolveMethodologyFullBrief,
+} from "./methodologyBeatRepair.js";
 import {
   invalidateGeminiContextCache,
   resolveGeminiContextCache,
@@ -113,7 +118,8 @@ export function salvagePartialGeminiReply(text, locale = "zh-Hant", context = nu
       detected_weakest_axis: axisMatch?.[1] ? unescapeJsonString(axisMatch[1]) : "",
     },
     locale,
-    context
+    context,
+    context?.userQuestion ?? ""
   );
 }
 
@@ -163,17 +169,25 @@ function extractGeminiTextPayload(json) {
   return combined || null;
 }
 
-function normalizeGeminiReply(parsed, locale = "zh-Hant", context = null) {
+function normalizeGeminiReply(parsed, locale = "zh-Hant", context = null, userQuestion = "") {
   const base = {
     commentary: String(parsed.commentary ?? ""),
     action_directive: String(parsed.action_directive ?? ""),
     is_off_topic: Boolean(parsed.is_off_topic),
     detected_weakest_axis: String(parsed.detected_weakest_axis ?? ""),
   };
-  const repaired = enforceCommentaryBeatContract(finalizeDynoIntelReply(base, locale), context);
+  return finalizeDynoIntelCallableReply(base, context, userQuestion, locale);
+}
+
+/** Post-model pipeline: sanitize → on-topic rail → beat contract. */
+export function finalizeDynoIntelCallableReply(reply, context, userQuestion = "", locale = null) {
+  const resolvedLocale = locale ?? resolveReplyLocale(context);
+  const finalized = finalizeDynoIntelReply(reply, resolvedLocale);
+  const railed = enforceOnTopicRail(finalized, context, userQuestion);
+  const repaired = enforceCommentaryBeatContract(railed, context);
   return {
     ...repaired,
-    commentary: stripTechnicalLeakage(repaired.commentary, locale).trim(),
+    commentary: stripTechnicalLeakage(repaired.commentary, resolvedLocale).trim(),
   };
 }
 
@@ -221,7 +235,8 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_ZH = [
   [/closingBeatSecondLine/gi, "收束尾韻"],
   [/questionFocusAxis/gi, "問題焦點軸"],
   [/資料鏈路/g, "服務範圍"],
-  [/\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*軸分數\s*\)/gi, ""],
+  [/\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*(軸分數|axis\s*score)?\s*\)/gi, ""],
+  [/\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*\)/gi, ""],
   [
     /\b(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*軸分數\b/gi,
     "軸分數",
@@ -249,9 +264,10 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
   [/closingBeatSecondLine/gi, "close beat second line"],
   [/questionFocusAxis/gi, "question focus axis"],
   [
-    /\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*axis\s*score\s*\)/gi,
+    /\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*(axis\s*score)?\s*\)/gi,
     "",
   ],
+  [/\(\s*(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*\)/gi, ""],
   [
     /\b(strength|cardio|bodyFat|muscleMass|explosivePower|gripStrength)\s*axis\s*score\b/gi,
     "axis score",
@@ -358,6 +374,7 @@ async function invokeGeminiOnce({
 
   const json = await response.json();
   lastGeminiUsageMetadata = json?.usageMetadata ?? null;
+  const finishReason = json?.candidates?.[0]?.finishReason ?? null;
   const text = extractGeminiTextPayload(json);
 
   if (!text) {
@@ -367,7 +384,7 @@ async function invokeGeminiOnce({
   }
 
   const replyLocale = resolveReplyLocale(context);
-  const parsed = parseGeminiStructuredJson(text);
+  let parsed = parseGeminiStructuredJson(text);
   if (!parsed) {
     const salvaged = salvagePartialGeminiReply(text, replyLocale, context);
     if (salvaged) return salvaged;
@@ -377,13 +394,18 @@ async function invokeGeminiOnce({
     throw err;
   }
 
-  return normalizeGeminiReply(parsed, replyLocale, context);
-}
+  if (
+    finishReason === "MAX_TOKENS" &&
+    isMethodologyReplyContext(context) &&
+    !isMethodologyCommentaryComplete(String(parsed.commentary ?? "").trim(), replyLocale)
+  ) {
+    const fullBrief = resolveMethodologyFullBrief(context);
+    if (fullBrief) {
+      parsed = { ...parsed, commentary: fullBrief };
+    }
+  }
 
-function countOnTopicParagraphs(reply, context) {
-  if (!reply || reply.is_off_topic) return null;
-  if (Array.isArray(context?.gaps) && context.gaps.length > 0) return null;
-  return splitCommentaryParagraphs(reply.commentary).length;
+  return normalizeGeminiReply(parsed, replyLocale, context, userQuestion);
 }
 
 async function invokeWithCacheResolution(apiKey, basePayload, model, { skipCache = false } = {}) {
@@ -406,31 +428,6 @@ async function invokeWithCacheResolution(apiKey, basePayload, model, { skipCache
   });
 }
 
-async function maybeEscalateLiteParagraphRepair(reply, context, apiKey, basePayload, model) {
-  const paragraphCount = countOnTopicParagraphs(reply, context);
-  if (
-    paragraphCount == null ||
-    paragraphCount >= 3 ||
-    model !== DYNO_INTEL_GEMINI_MODEL_LITE
-  ) {
-    return reply;
-  }
-
-  try {
-    return await invokeWithCacheResolution(
-      apiKey,
-      basePayload,
-      DYNO_INTEL_GEMINI_MODEL_METHODOLOGY
-    );
-  } catch (escalationErr) {
-    console.warn(
-      "[dynoIntel] lite paragraph repair escalation failed — keeping lite reply",
-      escalationErr?.message
-    );
-    return reply;
-  }
-}
-
 /**
  * Calls Gemini with structured JSON output.
  * Design intent (WHY): API key stays server-side; client only sends de-identified context.
@@ -449,7 +446,7 @@ export async function runGeminiDynoIntel({
   const basePayload = {
     apiKey,
     systemInstruction,
-    context,
+    context: injectChassisBeatsIntoContext(context),
     userQuestion,
     promptTemplateId,
     locale: replyLocale,
@@ -465,14 +462,6 @@ export async function runGeminiDynoIntel({
         skipCache: skipCacheOnNextAttempt,
       });
       skipCacheOnNextAttempt = false;
-
-      reply = await maybeEscalateLiteParagraphRepair(
-        reply,
-        context,
-        apiKey,
-        basePayload,
-        model
-      );
 
       return reply;
     } catch (err) {

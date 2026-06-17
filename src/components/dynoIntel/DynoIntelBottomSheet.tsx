@@ -17,6 +17,8 @@ import { splitDynoIntelCommentaryParagraphs } from '../../logic/core/dynoIntelCo
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import type { DynoIntelLogEntry } from '../../logic/core/dynoIntelLogTypes';
+import type { DynoIntelDisplayMeta } from '../../logic/core/resolveDynoIntelDisplayMeta';
+import DynoIntelDisplayCards from './DynoIntelDisplayCards';
 import DynoIntelPaywallView from './DynoIntelPaywallView';
 import DynoIntelTelemetryLogAccordion from './DynoIntelTelemetryLogAccordion';
 
@@ -37,6 +39,7 @@ export interface DynoIntelBottomSheetProps {
   remaining: number;
   limit: number;
   commentary: string;
+  displayMeta?: DynoIntelDisplayMeta | null;
   status: DynoIntelChatStatus;
   errorMessage: string | null;
   onSubmitQuestion: (question: string) => void;
@@ -60,6 +63,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   remaining,
   limit,
   commentary,
+  displayMeta = null,
   status,
   errorMessage,
   onSubmitQuestion,
@@ -198,6 +202,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                 <p className="text-sm text-zinc-400">{t('dynoIntel.loading')}</p>
               ) : null}
               {errorMessage ? <p className="text-sm text-red-300">{errorMessage}</p> : null}
+              <DynoIntelDisplayCards displayMeta={displayMeta} />
               {commentaryParagraphs.length > 0 ? (
                 <div className="space-y-3 text-sm leading-7 text-zinc-100">
                   {commentaryParagraphs.map((paragraph, index) => (

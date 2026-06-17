@@ -5,6 +5,10 @@ import { canUseDynoIntelFull, resolveDynoIntelAccess } from '../logic/core/dynoI
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
 import type { DynoIntelChatResponseV1, DynoIntelContextV1, DynoIntelMode } from '../logic/core/dynoIntelTypes';
+import {
+  resolveDynoIntelDisplayMeta,
+  type DynoIntelDisplayMeta,
+} from '../logic/core/resolveDynoIntelDisplayMeta';
 import { requestDynoIntelChat } from '../services/dynoIntelService';
 import { useAuthStore } from '../stores/authStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
@@ -39,6 +43,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const [status, setStatus] = useState<DynoIntelChatStatus>('idle');
   const [errorMessageKey, setErrorMessageKey] = useState<string | null>(null);
   const [lastReply, setLastReply] = useState<DynoIntelChatResponseV1 | null>(null);
+  const [lastDisplayMeta, setLastDisplayMeta] = useState<DynoIntelDisplayMeta | null>(null);
 
   const sendQuestion = useCallback(
     async (
@@ -78,9 +83,11 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       }
 
       const context = input.enrichContext(input.resolveContext(effectiveMode), userQuestion);
+      const displayMeta = resolveDynoIntelDisplayMeta(context, userQuestion);
 
       setStatus('loading');
       setErrorMessageKey(null);
+      setLastDisplayMeta(displayMeta);
       cancel();
       reset();
 
@@ -142,6 +149,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             userQuestion,
             commentary: result.reply.commentary,
             closingBeatKind: context.closingBeatKind,
+            displayMeta,
           });
         }
       } catch (error) {
@@ -168,6 +176,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         is_off_topic: false,
         detected_weakest_axis: entry.focusAxis,
       });
+      setLastDisplayMeta(entry.displayMeta ?? null);
       setErrorMessageKey(null);
       setStatus('idle');
     },
@@ -179,6 +188,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
     reset();
     setErrorMessageKey(null);
     setLastReply(null);
+    setLastDisplayMeta(null);
     setStatus('idle');
   }, [cancel, reset]);
 
@@ -187,6 +197,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       cancel();
       reset();
       setLastReply(null);
+      setLastDisplayMeta(null);
       setErrorMessageKey(messageKey);
       setStatus('error');
     },
@@ -198,6 +209,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
     visibleText,
     errorMessageKey,
     lastReply,
+    lastDisplayMeta,
     sendQuestion,
     clearChat,
     restoreFromLog,
