@@ -27,6 +27,7 @@ export async function loadDynoIntelCache(hash, nowMs = Date.now()) {
 
 /**
  * WHY: Off-topic and truncated methodology replies must not be cached — they replay bad UX for 48h.
+ * Stale truncated payloads already in cache are healed on read via finalizeDynoIntelCallableReply in chatCallable.
  */
 export function shouldPersistDynoIntelCache(reply, context = null) {
   if (!reply || typeof reply !== "object") return false;

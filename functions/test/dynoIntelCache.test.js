@@ -161,3 +161,37 @@ describe("shouldPersistDynoIntelCache", () => {
     );
   });
 });
+
+describe("stale methodology cache replay", () => {
+  it("heals truncated cached payloads on finalizeDynoIntelCallableReply", async () => {
+    const { finalizeDynoIntelCallableReply } = await import("../dynoIntel/gemini.js");
+    const context = {
+      locale: "zh-Hant",
+      intent: "methodology",
+      closingBeatKind: "methodology-nudge",
+      questionFocusAxis: "cardio",
+      scoringMethodologyBriefs: [
+        {
+          metric: "cardio",
+          title: "心肺評測",
+          body: "選擇測驗方式，計算後寫入心肺軸。不同年齡組門檻不同，同一距離得分可能差異很大。",
+        },
+      ],
+      gaps: [],
+      axes: [],
+    };
+    const healed = finalizeDynoIntelCallableReply(
+      {
+        commentary:
+          "心肺評測分數，是依據你選擇的測驗方式，結合首頁身體資料中的性別與年齡組，對照專屬常模距離表換算而來。由於不同年",
+        action_directive: "",
+        is_off_topic: false,
+        detected_weakest_axis: "cardio",
+      },
+      context,
+      "心肺怎麼計分？"
+    );
+    assert.match(healed.commentary, /年齡組/);
+    assert.match(healed.commentary, /。$/);
+  });
+});

@@ -76,6 +76,7 @@ export function capTextAtSentenceBoundary(text, maxChars, locale = "zh-Hant") {
 
 /**
  * Detect truncated methodology synthesis (salvage flakes, MAX_TOKENS, model glitches).
+ * WHY: Structural checks only — no symptom-specific regex; incomplete text fails terminal punct.
  */
 export function isMethodologyCommentaryComplete(text, locale = "zh-Hant") {
   const row = String(text ?? "").trim();
@@ -84,14 +85,12 @@ export function isMethodologyCommentaryComplete(text, locale = "zh-Hant") {
   if (locale === "en") {
     if (!/[.!?]$/.test(row)) return false;
     if (/[,;:]\s*$/.test(row)) return false;
-    if (/\b(and|or|the|a|for|with|due|age)\s*$/i.test(row)) return false;
+    if (/\b(and|or|for|with|due)\s*$/i.test(row)) return false;
     return true;
   }
 
   if (!/[。！？]$/.test(row)) return false;
   if (/[，、：；]$/.test(row)) return false;
-  if (/由於不同年$/.test(row)) return false;
-  if (/[的在之以因由與及]$/.test(row) && row.length < 72) return false;
 
   return true;
 }

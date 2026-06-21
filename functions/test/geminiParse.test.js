@@ -78,7 +78,7 @@ describe("salvagePartialGeminiReply", () => {
   });
 });
 
-describe("finalizeDynoIntelCallableReply methodology MAX_TOKENS guard", () => {
+describe("finalizeDynoIntelCallableReply methodology completeness guard", () => {
   it("replaces incomplete parsed commentary with full brief before beat contract", () => {
     const context = {
       locale: "zh-Hant",

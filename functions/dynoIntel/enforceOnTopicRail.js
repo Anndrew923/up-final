@@ -2,10 +2,7 @@
  * Deterministic on-topic guard — overrides model misclassification (e.g. FFMI → off-topic).
  */
 import { buildOfficialHumanAnchor, isMethodologyReplyContext } from "./dynoIntelChassisFactory.js";
-import {
-  resolveMethodologyBriefAnchor,
-  resolveMethodologyFullBrief,
-} from "./methodologyBeatRepair.js";
+import { ensureMethodologyCommentaryComplete } from "./methodologyBeatRepair.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import {
   detectQuestionFocusAxis,
@@ -53,9 +50,8 @@ export function shouldForceDynoIntelOnTopic(userQuestion, context) {
 function resolveForcedOnTopicFallbackCommentary(context, userQuestion) {
   const intent = resolveIntent(context, userQuestion);
   if (intent === "methodology" || isMethodologyReplyContext(context)) {
-    const methodologyAnchor =
-      resolveMethodologyFullBrief(context) ?? resolveMethodologyBriefAnchor(context);
-    if (methodologyAnchor) return methodologyAnchor;
+    const methodologyCopy = ensureMethodologyCommentaryComplete("", context);
+    if (methodologyCopy) return methodologyCopy;
   }
 
   const humanAnchor = buildOfficialHumanAnchor(context);

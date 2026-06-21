@@ -9,12 +9,8 @@ import {
 import {
   enforceCommentaryBeatContract,
 } from "./commentaryBeatContract.js";
-import { injectChassisBeatsIntoContext, isMethodologyReplyContext } from "./dynoIntelChassisFactory.js";
+import { injectChassisBeatsIntoContext } from "./dynoIntelChassisFactory.js";
 import { enforceOnTopicRail } from "./enforceOnTopicRail.js";
-import {
-  isMethodologyCommentaryComplete,
-  resolveMethodologyFullBrief,
-} from "./methodologyBeatRepair.js";
 import {
   invalidateGeminiContextCache,
   resolveGeminiContextCache,
@@ -374,7 +370,6 @@ async function invokeGeminiOnce({
 
   const json = await response.json();
   lastGeminiUsageMetadata = json?.usageMetadata ?? null;
-  const finishReason = json?.candidates?.[0]?.finishReason ?? null;
   const text = extractGeminiTextPayload(json);
 
   if (!text) {
@@ -384,7 +379,7 @@ async function invokeGeminiOnce({
   }
 
   const replyLocale = resolveReplyLocale(context);
-  let parsed = parseGeminiStructuredJson(text);
+  const parsed = parseGeminiStructuredJson(text);
   if (!parsed) {
     const salvaged = salvagePartialGeminiReply(text, replyLocale, context);
     if (salvaged) return salvaged;
@@ -392,17 +387,6 @@ async function invokeGeminiOnce({
     err.code = "internal";
     err.detail = text.slice(0, 500);
     throw err;
-  }
-
-  if (
-    finishReason === "MAX_TOKENS" &&
-    isMethodologyReplyContext(context) &&
-    !isMethodologyCommentaryComplete(String(parsed.commentary ?? "").trim(), replyLocale)
-  ) {
-    const fullBrief = resolveMethodologyFullBrief(context);
-    if (fullBrief) {
-      parsed = { ...parsed, commentary: fullBrief };
-    }
   }
 
   return normalizeGeminiReply(parsed, replyLocale, context, userQuestion);
