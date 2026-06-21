@@ -1,11 +1,7 @@
 /**
- * v3.3.2 — Dual-layer human brief codex (population pyramid + per-axis tier tails).
- * WHY: Commentary P1 = axis prefix + populationClass + core-aligned tier tail; overall uses scale summaryHuman.
+ * v3.5.1 — P1 human brief: axis prefix + populationClass + soul praise (tier tail retired).
+ * WHY: Drop axis tier tails to kill synonym loops; zh uses four-track soul matrix, en uses summaryHuman.
  */
-import {
-  DYNO_INTEL_AXIS_TIER_BRIEFS_EN,
-  DYNO_INTEL_AXIS_TIER_BRIEFS_ZH,
-} from "./dynoIntelAxisTierBriefs.data.js";
 import {
   DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
   DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH,
@@ -15,16 +11,14 @@ import { isChassisMacroQuestion, detectQuestionFocusAxis } from "./resolveQuesti
 import {
   resolveHumanScaleDecadeKey,
   resolveScoreBandId,
+  resolveSoulGenderTrack,
+  resolveSoulMatrixFieldKey,
+  resolveSoulStream,
 } from "./scoreBandResolver.js";
 
 const SCALE_MATRIX_BY_LOCALE = {
   "zh-Hant": DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH,
   en: DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
-};
-
-const AXIS_TIER_BRIEFS_BY_LOCALE = {
-  "zh-Hant": DYNO_INTEL_AXIS_TIER_BRIEFS_ZH,
-  en: DYNO_INTEL_AXIS_TIER_BRIEFS_EN,
 };
 
 /** v3.3.2 — axis anchor prefixes (layer 1 opening). */
@@ -108,10 +102,6 @@ function resolveScaleMatrix(locale) {
   return SCALE_MATRIX_BY_LOCALE[normalizeLocale(locale)];
 }
 
-function resolveAxisTierBriefs(locale) {
-  return AXIS_TIER_BRIEFS_BY_LOCALE[normalizeLocale(locale)];
-}
-
 function resolveAxisPrefix(axis, locale) {
   const map = AXIS_PREFIX_BY_LOCALE[normalizeLocale(locale)];
   return map[axis] ?? map.overall;
@@ -122,54 +112,85 @@ function resolveScaleRow(decadeKey, locale) {
   return matrix[decadeKey] ?? matrix["0"];
 }
 
-function resolveAxisTierTail(axis, tierId, locale) {
-  const briefs = resolveAxisTierBriefs(locale);
-  const axisBriefs = briefs[axis];
-  if (!axisBriefs) return null;
-  return (
-    axisBriefs[tierId] ??
-    axisBriefs.BASE ??
-    axisBriefs.TIER_50 ??
-    Object.values(axisBriefs)[0] ??
-    null
-  );
-}
-
 function belongsGlue(locale) {
   return normalizeLocale(locale) === "en" ? " maps to " : "屬於";
 }
 
+function resolveSoulPraiseSegment(scaleRow, axis, locale, profile) {
+  if (normalizeLocale(locale) === "en") {
+    return String(scaleRow.summaryHuman ?? "").trim();
+  }
+
+  const stream = resolveSoulStream(axis);
+  const genderTrack = resolveSoulGenderTrack(profile);
+  const fieldKey = resolveSoulMatrixFieldKey(stream, genderTrack);
+  const soul = scaleRow[fieldKey];
+  if (typeof soul === "string" && soul.trim()) {
+    return soul.trim();
+  }
+
+  const maleFallbackKey = resolveSoulMatrixFieldKey(stream, "male");
+  return String(scaleRow[maleFallbackKey] ?? scaleRow.summaryHuman ?? "").trim();
+}
+
+function ensureTerminalPunctuation(text, locale) {
+  const row = String(text ?? "").trim();
+  if (!row) return row;
+  if (normalizeLocale(locale) === "en") {
+    return /[.!?]$/.test(row) ? row : `${row}.`;
+  }
+  if (/[。！？]$/.test(row)) return row;
+  return `${row}。`;
+}
+
+function assembleP1Anchor(prefix, populationClass, soulPraise, locale) {
+  const soul = String(soulPraise ?? "").trim();
+  if (!soul) {
+    return ensureTerminalPunctuation(
+      normalizeLocale(locale) === "en"
+        ? `${prefix}${belongsGlue(locale)}${populationClass}.`
+        : `${prefix}${belongsGlue(locale)}${populationClass}`,
+      locale
+    );
+  }
+
+  if (normalizeLocale(locale) === "en") {
+    return ensureTerminalPunctuation(
+      `${prefix}${belongsGlue(locale)}${populationClass}. ${soul}`,
+      locale
+    );
+  }
+
+  return ensureTerminalPunctuation(
+    `${prefix}${belongsGlue(locale)}${populationClass}，${soul}`,
+    locale
+  );
+}
+
 /**
- * v3.3.2 — deterministic P1 anchor from population pyramid + per-axis tier tail.
+ * v3.5.1 — deterministic P1 anchor: prefix + populationClass + soul praise (no tier tail).
  */
-export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant") {
+export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant", context = null) {
   const metric = BRIEF_METRICS.has(axis) ? axis : "overall";
-  const tierId = resolveScoreBandId(metric === "5km" ? "cardio" : metric === "overall" ? "strength" : metric, score);
+  const bandMetric = metric === "5km" ? "cardio" : metric === "overall" ? "strength" : metric;
+  const tierId = resolveScoreBandId(bandMetric, score);
   const decadeKey = resolveHumanScaleDecadeKey(tierId);
   const scaleRow = resolveScaleRow(decadeKey, locale);
   const prefix = resolveAxisPrefix(metric, locale);
+  const profile = context?.profile ?? null;
+  const soulPraise = resolveSoulPraiseSegment(scaleRow, metric, locale, profile);
 
-  if (metric === "overall") {
-    const tail = resolveAxisTierTail("overall", tierId, locale) ?? scaleRow.summaryHuman;
-    const anchor =
-      normalizeLocale(locale) === "en"
-        ? `${prefix}${belongsGlue(locale)}${scaleRow.populationClass}. ${tail}`
-        : `${prefix}${belongsGlue(locale)}${scaleRow.populationClass}，${tail}`;
-    return containsVehicleLexicon(anchor) ? scrubVehicleLexicon(anchor) : anchor;
+  if (!soulPraise && normalizeLocale(locale) !== "en") {
+    return null;
   }
 
-  const tail = resolveAxisTierTail(metric, tierId, locale);
-  if (!tail) return null;
-
-  const anchor =
-    normalizeLocale(locale) === "en"
-      ? `${prefix}${belongsGlue(locale)}${scaleRow.populationClass}. ${tail}`
-      : `${prefix}${belongsGlue(locale)}${scaleRow.populationClass}，${tail}`;
+  const anchor = assembleP1Anchor(prefix, scaleRow.populationClass, soulPraise, locale);
 
   if (containsVehicleLexicon(anchor)) {
     const scrubbed = scrubVehicleLexicon(anchor);
     return scrubbed && !containsVehicleLexicon(scrubbed) ? scrubbed : null;
   }
+
   return anchor;
 }
 
@@ -184,7 +205,7 @@ export function resolveHumanBrief(context) {
 
   if (isChassisMacroContext(context)) {
     const overallScore = context?.overallScore ?? 90;
-    return resolveRigidHumanPopulationClass("overall", overallScore, locale);
+    return resolveRigidHumanPopulationClass("overall", overallScore, locale, context);
   }
 
   const focus = resolvePrimaryBeatSnap(context);
@@ -194,5 +215,5 @@ export function resolveHumanBrief(context) {
 
   const metric = focus.metric;
   const score = focus.snap.score;
-  return resolveRigidHumanPopulationClass(metric, score, locale);
+  return resolveRigidHumanPopulationClass(metric, score, locale, context);
 }

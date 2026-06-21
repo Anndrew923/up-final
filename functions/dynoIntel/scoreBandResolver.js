@@ -1,7 +1,56 @@
 /**
  * v3.0 — Score band resolver (Functions mirror of client scoreMeaningCatalog).
  * WHY: Human briefs resolve by band id without importing client TS into Cloud Functions.
+ * v3.5.1 — soul stream / gender routing for four-track praise matrix.
  */
+
+const NEURO_SOUL_AXES = new Set(["strength", "explosivePower", "gripStrength"]);
+
+const VOLUME_SOUL_AXES = new Set([
+  "muscleMass",
+  "bodyFat",
+  "armSize",
+  "cardio",
+  "cooper",
+  "5km",
+  "overall",
+]);
+
+export const SOUL_STREAM_NEURO = "neuro";
+export const SOUL_STREAM_VOLUME = "volume";
+
+/** @typedef {"neuro" | "volume"} SoulStream */
+/** @typedef {"male" | "female"} SoulGenderTrack */
+
+/**
+ * v3.5.1 — axis camp router: neuro recruitment vs volume/time accumulation.
+ * @param {string} axis
+ * @returns {SoulStream}
+ */
+export function resolveSoulStream(axis) {
+  if (NEURO_SOUL_AXES.has(axis)) return SOUL_STREAM_NEURO;
+  if (VOLUME_SOUL_AXES.has(axis)) return SOUL_STREAM_VOLUME;
+  return SOUL_STREAM_VOLUME;
+}
+
+/**
+ * v3.5.1 — profile gender with male default when missing (0-crash guard).
+ * @param {{ gender?: string | null } | null | undefined} profile
+ * @returns {SoulGenderTrack}
+ */
+export function resolveSoulGenderTrack(profile) {
+  return profile?.gender === "female" ? "female" : "male";
+}
+
+/**
+ * v3.5.1 — matrix field key for zh-Hant four-track soul praise slot.
+ * @param {SoulStream} stream
+ * @param {SoulGenderTrack} genderTrack
+ * @returns {"neuro_male" | "neuro_female" | "volume_male" | "volume_female"}
+ */
+export function resolveSoulMatrixFieldKey(stream, genderTrack) {
+  return `${stream}_${genderTrack}`;
+}
 
 const DECADE_AXIS_TIER_BANDS = [
   { id: "BASE", min: 0, max: 39.99 },

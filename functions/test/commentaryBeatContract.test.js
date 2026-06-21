@@ -36,11 +36,13 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.ok(!containsVehicleLexicon("深蹲硬舉的募集水準"));
   });
 
-  it("resolveHumanBrief returns pure human copy for status strength v3.3.2", () => {
+  it("resolveHumanBrief returns pure human copy for status strength v3.5.1", () => {
     const brief = resolveHumanBrief(strengthStatusContext);
     assert.ok(brief);
     assert.ok(!containsVehicleLexicon(brief));
     assert.match(brief, /業餘運動員中優秀表現/);
+    assert.match(brief, /\[Mock Neuro Male\]/);
+    assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|TIER_/);
   });
 
   it("scrubVehicleLexicon strips blacklisted tokens", () => {
@@ -48,39 +50,42 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.ok(!VEHICLE_LEXICON_REGEX.test(cleaned));
   });
 
-  it("v3.3.2 regression — muscleMass 91.6 uses population class + tier tail", () => {
+  it("v3.5.1 — muscleMass 91.6 uses population class + volume soul mock (no tier tail)", () => {
     const ctx = {
       locale: "zh-Hant",
       mode: "cross-axis",
       intent: "status",
       userQuestion: "我的肌肉量表現如何？",
       questionFocusAxis: "muscleMass",
+      profile: { gender: "male" },
       gaps: [],
       axes: [{ axis: "muscleMass", score: 91.6, tierBandId: "TIER_90", cardCopy: { title: "競技級打孔寬體", summary: "x" } }],
     };
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
     assert.match(brief, /地區型各類賽事常勝軍/);
-    assert.match(brief, /視覺天花板|量體飽滿/);
-    assert.doesNotMatch(brief, /梯隊定位/);
+    assert.match(brief, /\[Mock Volume Male\]/);
+    assert.doesNotMatch(brief, /視覺天花板|量體飽滿|梯隊定位/);
   });
 
-  it("v3.3.2 regression — muscleMass 124.4 uses international master tier tail", () => {
+  it("v3.5.1 — muscleMass 124.4 uses volume soul + international master population class", () => {
     const ctx = {
       locale: "zh-Hant",
       mode: "cross-axis",
       intent: "status",
       userQuestion: "我的肌肉量表現如何？",
       questionFocusAxis: "muscleMass",
+      profile: { gender: "female" },
       gaps: [],
       axes: [{ axis: "muscleMass", score: 124.4, tierBandId: "TIER_120", cardCopy: { title: "LMP", summary: "x" } }],
     };
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /國際大師級運動員/);
-    assert.match(brief, /量體飽滿|肌纖維/);
+    assert.match(brief, /\[Mock Volume Female\]/);
+    assert.doesNotMatch(brief, /肌纖維|量體飽滿/);
   });
 
-  it("v3.3.2 regression — strength 87.9 uses amateur excellent population class", () => {
+  it("v3.5.1 — strength 87.9 uses neuro male mock without tier tail", () => {
     const ctx = {
       locale: "zh-Hant",
       mode: "cross-axis",
@@ -92,7 +97,8 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /業餘運動員中優秀表現/);
-    assert.match(brief, /業餘運動員頂尖|大重量/);
+    assert.match(brief, /\[Mock Neuro Male\]/);
+    assert.doesNotMatch(brief, /業餘運動員頂尖|大重量/);
   });
 
   it("resolveHumanBrief never returns vehicle lexicon even on fallback tiers", () => {
@@ -102,11 +108,13 @@ describe("dynoIntelHumanBriefs v3", () => {
       intent: "status",
       userQuestion: "我的心肺表現如何？",
       questionFocusAxis: "cardio",
+      profile: { gender: "male" },
       gaps: [],
       axes: [{ axis: "cardio", score: 118, tierBandId: "TIER_110", cardCopy: { title: "長程續航引擎", summary: "x" } }],
     };
     const brief = resolveHumanBrief(cardioContext);
     assert.ok(brief);
+    assert.match(brief, /\[Mock Volume Male\]/);
     assert.ok(!containsVehicleLexicon(brief));
   });
 });
@@ -287,6 +295,7 @@ describe("enforceCommentaryBeatContract v3", () => {
     assert.doesNotMatch(repaired.commentary, /力量評分，已達業餘運動員頂尖強度/);
     assert.doesNotMatch(repaired.commentary, /顯示肌群協同穩定/);
     assert.match(repaired.commentary, /業餘運動員中優秀表現/);
+    assert.match(repaired.commentary, /\[Mock Neuro Male\]/);
   });
 });
 
