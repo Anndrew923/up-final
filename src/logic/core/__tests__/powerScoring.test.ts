@@ -9,9 +9,12 @@ import {
   mergeScoreMapWithResolvedExplosivePower,
   resolveExplosiveLadderScoreBundle,
   resolveExplosivePowerScoreForDisplay,
+  scoreSprintOverflowAboveT100,
   tryComputeExplosiveAssessmentScore,
   VERTICAL_JUMP_STANDARDS_MALE,
 } from '../powerScoring';
+import { clampScoreMapValue } from '../scoring';
+import { EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS } from '../explosiveInputCaps';
 
 describe('getPowerAgeRange', () => {
   it('maps 13–15 to 12-15 bucket', () => {
@@ -34,9 +37,64 @@ describe('calculateScoreIncreasing', () => {
 });
 
 describe('calculateScoreDecreasing', () => {
-  it('scores higher when time is at or below 100 anchor', () => {
-    const std = { 0: 17, 50: 14, 100: 11 } as const;
-    expect(calculateScoreDecreasing(11, std)).toBe(100);
+  /** Male 21–30 sprint anchors — regression guard for 4th-power warp above T100. */
+  const male2130Sprint = { 0: 17, 50: 14, 100: 11 } as const;
+
+  it('interpolates between T50 and T0 without warp (mid-band unchanged)', () => {
+    expect(calculateScoreDecreasing(14, male2130Sprint)).toBe(50);
+    expect(calculateScoreDecreasing(15, male2130Sprint)).toBeCloseTo(33.33, 2);
+    expect(calculateScoreDecreasing(17, male2130Sprint)).toBe(0);
+    expect(calculateScoreDecreasing(18, male2130Sprint)).toBe(0);
+  });
+
+  it('applies 4th-power warp above T100 (male 21–30 critical checkpoints)', () => {
+    expect(calculateScoreDecreasing(11, male2130Sprint)).toBe(100);
+    expect(calculateScoreDecreasing(10.2, male2130Sprint)).toBe(120.92);
+    expect(calculateScoreDecreasing(10, male2130Sprint)).toBe(132);
+    expect(calculateScoreDecreasing(9.92, male2130Sprint)).toBe(137.93);
+    expect(calculateScoreDecreasing(9.58, male2130Sprint)).toBe(177.19);
+  });
+
+  it('scoreSprintOverflowAboveT100 matches calculateScoreDecreasing at T100 and below', () => {
+    expect(scoreSprintOverflowAboveT100(0)).toBe(100);
+    expect(scoreSprintOverflowAboveT100(11 - 9.58)).toBe(177.19);
+  });
+
+  it('clamps Bolt-class sprint raw into radar 0–200 via clampScoreMapValue', () => {
+    const raw = calculateScoreDecreasing(9.58, male2130Sprint);
+    expect(raw).toBe(177.19);
+    expect(clampScoreMapValue(raw)).toBe(raw);
+    expect(clampScoreMapValue(raw)).toBeLessThanOrEqual(200);
+  });
+
+  it('floors sub-record sprint input before scoring; ladder sprint shard clamps at 200', () => {
+    const profile: PhysicalProfile = {
+      gender: 'male',
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    };
+    const r = tryComputeExplosiveAssessmentScore({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '9.0',
+      profile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.persisted.sprintSeconds).toBe(EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS.male);
+    expect(r.capApplied.sprint).toBe(true);
+    expect(r.breakdown.sprintRaw).toBe(210.64);
+    // Radar explosive axis = fixed /3 composite when only sprint is filled.
+    expect(r.score).toBe(70.21);
+
+    const ladder = resolveExplosiveLadderScoreBundle(profile, {
+      explosivePower: { sprintSeconds: r.persisted.sprintSeconds },
+    });
+    expect(ladder.sprint).toBe(200);
+    expect(ladder.composite).toBe(70.21);
   });
 });
 

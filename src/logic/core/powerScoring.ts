@@ -1,6 +1,7 @@
 /**
- * Explosive power (vertical jump / standing long jump / sprint) — norm tables and
- * piecewise formulas match reference-app `assessmentStandards.js` + `assessmentScoring.js` Power section.
+ * Explosive power (vertical jump / standing long jump / sprint) — norm tables align with
+ * reference-app `assessmentStandards.js`; sprint overflow above the T100 anchor uses a
+ * UP-specific 4th-power warp (see `SPRINT_OVERFLOW_*` constants).
  */
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -13,6 +14,18 @@ import { clampScoreMapValue } from './scoring';
 export type { ExplosiveCapApplied } from './explosiveInputCaps';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Linear pts per second faster than T100 (deltaT = 0 → score stays 100). */
+export const SPRINT_OVERFLOW_LINEAR_PER_SECOND = 20 as const;
+/** Quartic coefficient for elite sprint warp above T100 anchor. */
+export const SPRINT_OVERFLOW_QUARTIC_COEFFICIENT = 12 as const;
+
+/** Sprint-only: score when time t ≤ T100 after `deltaT = T100 - t`. */
+export function scoreSprintOverflowAboveT100(deltaT: number): number {
+  const linearBonus = deltaT * SPRINT_OVERFLOW_LINEAR_PER_SECOND;
+  const quarticBonus = Math.pow(deltaT, 4) * SPRINT_OVERFLOW_QUARTIC_COEFFICIENT;
+  return round2(100 + linearBonus + quarticBonus);
+}
 
 /** Fixed denominator for explosive composite (vertical / broad jump / sprint; missing = 0). */
 export const EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR = 3 as const;
@@ -170,9 +183,8 @@ export function calculateScoreDecreasing(value: number, standard: PowerStandardR
   if (v > standard[0]) return 0;
 
   if (v <= standard[100]) {
-    const excess = standard[100] - v;
-    const bonus = excess * 20;
-    return round2(100 + bonus);
+    // 4th-power warp above T100: linear preserves anchor; quartic models near-limit sprint output.
+    return scoreSprintOverflowAboveT100(standard[100] - v);
   }
 
   if (v > standard[50]) {
