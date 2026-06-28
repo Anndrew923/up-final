@@ -2,28 +2,71 @@ import { describe, expect, it } from 'vitest';
 import {
   applyGripPeakCap,
   calculateGripStrengthScore,
+  GRIP_BASE_WEIGHT_KG,
   GRIP_MAX_PEAK_KG,
   getGripRankMetadata,
   resolveGripAuraFromBandId,
   resolveGripStrengthScoreFromInputs,
+  resolveGripWeightFactor,
 } from '../gripStrength';
 
+const ANCHOR_WEIGHT = GRIP_BASE_WEIGHT_KG;
+
+describe('resolveGripWeightFactor', () => {
+  it('returns 1.0 at the 75 kg anchor', () => {
+    expect(resolveGripWeightFactor(75)).toBe(1);
+  });
+
+  it('applies 0.5 exponent below anchor and 0.33 above', () => {
+    expect(resolveGripWeightFactor(60)).toBeCloseTo(Math.pow(75 / 60, 0.5), 5);
+    expect(resolveGripWeightFactor(200)).toBeCloseTo(Math.pow(75 / 200, 0.3333), 4);
+  });
+
+  it('defaults to anchor when weight missing', () => {
+    expect(resolveGripWeightFactor(null)).toBe(1);
+    expect(resolveGripWeightFactor(undefined)).toBe(1);
+  });
+});
+
 describe('calculateGripStrengthScore', () => {
-  it('matches male calibration samples', () => {
-    expect(calculateGripStrengthScore(45, 'male')).toBe(63);
-    expect(calculateGripStrengthScore(65, 'male')).toBe(91);
-    expect(calculateGripStrengthScore(72, 'male')).toBe(100.8);
-    expect(calculateGripStrengthScore(160, 'male')).toBe(224);
+  it('matches male calibration samples at 75 kg anchor', () => {
+    expect(calculateGripStrengthScore(45, ANCHOR_WEIGHT, 'male')).toBe(63);
+    expect(calculateGripStrengthScore(65, ANCHOR_WEIGHT, 'male')).toBe(91);
+    expect(calculateGripStrengthScore(72, ANCHOR_WEIGHT, 'male')).toBe(100.8);
+    expect(calculateGripStrengthScore(160, ANCHOR_WEIGHT, 'male')).toBe(224);
   });
 
-  it('matches female compensation sample', () => {
-    expect(calculateGripStrengthScore(40, 'female')).toBe(89.6);
+  it('boosts lighter athletes relative to anchor', () => {
+    expect(calculateGripStrengthScore(55, 60, 'male')).toBe(86.1);
   });
 
-  it('locks scoring at 160kg model cap', () => {
-    expect(calculateGripStrengthScore(180, 'male')).toBe(calculateGripStrengthScore(160, 'male'));
-    expect(calculateGripStrengthScore(180, 'female')).toBe(
-      calculateGripStrengthScore(160, 'female'),
+  it('dampens heavyweight absolute grip inflation (Hafthor-class)', () => {
+    expect(calculateGripStrengthScore(140, 200, 'male')).toBe(141.3);
+    expect(getGripRankMetadata(141.3).rankKey).toBe('TIER_140');
+  });
+
+  it('dampens Shaq-class heavy frames while preserving elite tier', () => {
+    expect(calculateGripStrengthScore(110, 150, 'male')).toBe(122.2);
+    expect(getGripRankMetadata(122.2).rankKey).toBe('TIER_120');
+  });
+
+  it('scores higher grip at same peak when body weight is lighter', () => {
+    const atAnchor = calculateGripStrengthScore(65, 75, 'male');
+    const lighter = calculateGripStrengthScore(65, 73, 'male');
+    expect(lighter).toBeGreaterThan(atAnchor);
+  });
+
+  it('matches female compensation at anchor weight', () => {
+    expect(calculateGripStrengthScore(40, ANCHOR_WEIGHT, 'female')).toBe(89.6);
+    expect(calculateGripStrengthScore(40, ANCHOR_WEIGHT, '女性')).toBe(89.6);
+  });
+
+  it('locks scoring at 160kg model cap regardless of body weight', () => {
+    expect(calculateGripStrengthScore(180, ANCHOR_WEIGHT, 'male')).toBe(
+      calculateGripStrengthScore(160, ANCHOR_WEIGHT, 'male'),
+    );
+    expect(calculateGripStrengthScore(180, 200, 'female')).toBe(
+      calculateGripStrengthScore(160, 200, 'female'),
     );
   });
 });
@@ -106,11 +149,25 @@ describe('resolveGripStrengthScoreFromInputs', () => {
         gender: 'male',
         age: 30,
         heightCm: 180,
-        weightKg: 80,
+        weightKg: ANCHOR_WEIGHT,
         updatedAt: '',
       },
       { peakKg: 180 },
     );
     expect(score).toBe(200);
+  });
+
+  it('applies allometric factor from profile weight', () => {
+    const score = resolveGripStrengthScoreFromInputs(
+      {
+        gender: 'male',
+        age: 30,
+        heightCm: 180,
+        weightKg: 200,
+        updatedAt: '',
+      },
+      { peakKg: 140 },
+    );
+    expect(score).toBe(141.3);
   });
 });

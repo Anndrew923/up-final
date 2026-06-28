@@ -87,7 +87,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       return;
     }
     const capped = applyGripPeakCap(peakKg);
-    const score = calculateGripStrengthScore(peakKg, profile.gender);
+    const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
     setPreviewScore(score);
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
   }, [peakKgInput, profile, profileReady]);
@@ -105,7 +105,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       return false;
     }
     const capped = applyGripPeakCap(peakKg);
-    const score = calculateGripStrengthScore(peakKg, profile.gender);
+    const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
     saveGripInputs({ peakKg: capped.usedKg, genderSnapshot: profile.gender });
     setStoreScore('gripStrength', clampScoreMapValue(score));
     setPreviewScore(score);

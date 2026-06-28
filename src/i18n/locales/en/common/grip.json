@@ -9,11 +9,14 @@
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References",
       "title": "Assessment References",
-      "p1": "Formula: score = peakKg × 1.4 (female: multiply by an additional 1.6). One decimal; may exceed 100.",
+      "p1": "Formula: score = peakKg × 1.4 × W_factor (female: × 1.6 more). W_factor from Home weight vs 75 kg anchor: if weight ≤ 75 kg, W_factor = (75 ÷ weight)^0.5; if weight > 75 kg, W_factor = (75 ÷ weight)^0.33. One decimal; may exceed 100.",
       "p2": "Model cap: 160 kg. Inputs above cap clamp for scoring and storage to avoid extreme values distorting the scale.",
       "p3": "Source authority: norm distribution and ceiling reference IronMind Captains of Crush (CoC) elite-qualifier data, cross-checked against World’s Strongest Man (WSM) historical record literature.",
       "p4": "Ceiling benchmark: Magnus Samuelsson (1998 World’s Strongest Man champion; one of the few athletes in history to close CoC No.4 under strict certification conditions).",
-      "p5": "Product measurement guardrail — not a competition certification."
+      "p5": "Product measurement guardrail — not a competition certification.",
+      "p6": "Scientific calibration: this assessment uses allometric scaling (as in weightlifting / powerlifting Sinclair-style norms). Square–cube physiology means strength does not scale 1:1 with body mass; we apply 0.5 and 0.33 power-law W_factor exponents instead of raw grip÷body-weight to avoid punishing heavy-class absolute monsters.",
+      "p7": "Balance checkpoints: at the 75 kg / 72 kg peak anchor, score sits near ~101 (elite century gate); lighter athletes gain a relative-strength boost; super-heavy frames (e.g. 200 kg strongman, 150 kg NBA center) keep TIER_140+ aura while inflation is damped for six-axis radar balance.",
+      "p8": "Changing Home body weight will dynamically recalculate your grip axis score from the latest weight."
     },
     "capNoticeTitle": "Input Exceeds Model Cap",
     "capNoticeBody": "Entered {{input}} kg, above cap of {{max}} kg. Scoring and saved value locked to {{max}} kg.",

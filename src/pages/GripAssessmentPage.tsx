@@ -128,6 +128,9 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
               t('grip.referenceInfo.p2'),
               t('grip.referenceInfo.p3'),
               t('grip.referenceInfo.p4'),
+              t('grip.referenceInfo.p6'),
+              t('grip.referenceInfo.p7'),
+              t('grip.referenceInfo.p8'),
             ]}
             footnote={t('grip.referenceInfo.p5')}
           />
