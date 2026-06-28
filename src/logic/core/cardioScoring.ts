@@ -109,23 +109,35 @@ export const RUN_5KM_FEMALE = {
 
 export type Run5KmNorm = typeof RUN_5KM_MALE;
 
+/** Overflow above T100: +1 pt per this many seconds faster than T100. */
+export const RUN_5KM_OVERFLOW_POINTS_PER_SECOND = 10 as const;
+
 export function resolveRun5KmNorm(gender: string | null | undefined): Run5KmNorm {
   return normalizeGenderForCardio(gender) === 'female' ? RUN_5KM_FEMALE : RUN_5KM_MALE;
 }
 
 /** Linear 0–100 band plus linear overflow above T100 (seconds faster → higher score). */
 export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number {
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return 0;
+
   const effectiveSeconds = Math.max(totalSeconds, norm.floorSeconds);
 
   if (effectiveSeconds > norm.t0Seconds) return 0;
 
   if (effectiveSeconds <= norm.t100Seconds) {
-    return round2(100 + (norm.t100Seconds - effectiveSeconds) / 10);
+    return round2(
+      100 + (norm.t100Seconds - effectiveSeconds) / RUN_5KM_OVERFLOW_POINTS_PER_SECOND
+    );
   }
 
   const range = norm.t0Seconds - norm.t100Seconds;
   const diff = effectiveSeconds - norm.t100Seconds;
   return round2(100 - (diff / range) * 100);
+}
+
+/** Max raw score at the WR-aligned floor (after overflow math). */
+export function run5KmCeilingScore(norm: Run5KmNorm): number {
+  return score5KmFromNorm(norm.floorSeconds, norm);
 }
 
 /**

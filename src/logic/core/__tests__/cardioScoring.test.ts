@@ -11,6 +11,7 @@ import {
   mergeScoreMapWithResolvedCardio,
   resolveCardioScoreForDisplay,
   resolveRun5KmNorm,
+  run5KmCeilingScore,
   score5KmFromNorm,
   tryComputeCardioAssessmentScore,
   parse5KmFieldSplit,
@@ -84,8 +85,12 @@ describe('calculate5KmScore', () => {
     });
 
     it('floors world-record-faster inputs at 740s (ceiling 146)', () => {
-      expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(146);
-      expect(calculate5KmScore({ totalSeconds: 700, gender: 'male' })).toBe(146);
+      expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(
+        run5KmCeilingScore(RUN_5KM_MALE)
+      );
+      expect(calculate5KmScore({ totalSeconds: 700, gender: 'male' })).toBe(
+        run5KmCeilingScore(RUN_5KM_MALE)
+      );
     });
   });
 
@@ -108,8 +113,17 @@ describe('calculate5KmScore', () => {
     });
 
     it('floors world-record-faster inputs at 825s (ceiling 152.5)', () => {
-      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(152.5);
-      expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(152.5);
+      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(
+        run5KmCeilingScore(RUN_5KM_FEMALE)
+      );
+      expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(
+        run5KmCeilingScore(RUN_5KM_FEMALE)
+      );
+      expect(run5KmCeilingScore(RUN_5KM_FEMALE)).toBe(152.5);
+    });
+
+    it('still scores above zero at 45:00 (decoupled T0 is 50:00)', () => {
+      expect(calculate5KmScore({ totalSeconds: 45 * 60, gender: 'female' })).toBe(18.18);
     });
 
     it('scores higher than male at same 25:00 wall-clock time', () => {
@@ -137,7 +151,9 @@ describe('calculate5KmScore', () => {
   it('score5KmFromNorm matches calculate5KmScore at checkpoints', () => {
     expect(score5KmFromNorm(1200, RUN_5KM_MALE)).toBe(100);
     expect(score5KmFromNorm(1350, RUN_5KM_FEMALE)).toBe(100);
-    expect(score5KmFromNorm(825, RUN_5KM_FEMALE)).toBe(152.5);
+    expect(score5KmFromNorm(825, RUN_5KM_FEMALE)).toBe(run5KmCeilingScore(RUN_5KM_FEMALE));
+    expect(score5KmFromNorm(0, RUN_5KM_MALE)).toBe(0);
+    expect(score5KmFromNorm(-10, RUN_5KM_FEMALE)).toBe(0);
   });
 });
 
@@ -180,6 +196,20 @@ describe('resolveCardioScoreForDisplay', () => {
       calculate5KmScore({ totalSeconds: 30 * 60, gender: maleProfile.gender })
     );
   });
+
+  it('resolves female 5 km with decoupled norms', () => {
+    const femaleProfile: PhysicalProfile = {
+      gender: 'female',
+      age: 28,
+      heightCm: 165,
+      weightKg: 58,
+      updatedAt: '',
+    };
+    const inputs: CardioInputsPersisted = {
+      run_5km: { totalSeconds: 20 * 60 },
+    };
+    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115);
+  });
 });
 
 describe('parse5KmFieldSplit', () => {
@@ -221,6 +251,26 @@ describe('tryComputeCardioAssessmentScore', () => {
     });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.score).toBe(calculate5KmScore({ totalSeconds: 25 * 60, gender: 'male' }));
+  });
+
+  it('uses female norms when profile sex is female on 5 km tab', () => {
+    const femaleProfile: PhysicalProfile = {
+      gender: 'female',
+      age: 28,
+      heightCm: 165,
+      weightKg: 58,
+      updatedAt: '',
+    };
+    const r = tryComputeCardioAssessmentScore({
+      tab: '5km',
+      distanceInput: '',
+      runMinutesInput: '22',
+      runSecondsInput: '30',
+      profile: femaleProfile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.score).toBe(100);
   });
 });
 
