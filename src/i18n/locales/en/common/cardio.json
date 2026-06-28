@@ -23,7 +23,7 @@
     "run5kmHeading": "5 km Finish Time",
     "minutesLabel": "Minutes",
     "secondsLabel": "Seconds",
-    "run5kmHint": "Sex-specific anchors from Home: male 20:00 = 100, 45:00 = 0; female 22:30 = 100, 50:00 = 0. Faster than 100-pt anchor scores above 100. Missing sex defaults to male norms. Stored on device only.",
+    "run5kmHint": "Sex-specific anchors from Home: male 20:00 = 100, 45:00 = 0; female 22:30 = 100, 50:00 = 0. Faster than 100-pt anchor uses nonlinear overflow (scores above 100). Missing sex defaults to male norms. Stored on device only.",
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "PERFORMANCE SPEC / Thermal Spec",
     "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",

@@ -126,7 +126,8 @@ export function score5KmOverflowAboveT100(
 ): number {
   const deltaTMinutes = (norm.t100Seconds - effectiveSeconds) / 60;
   const linear = deltaTMinutes * RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE;
-  const quartic = Math.pow(deltaTMinutes, 4) * RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT;
+  const quartic =
+    Math.pow(deltaTMinutes, 4) * RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT;
   return round2(100 + linear + quartic);
 }
 
