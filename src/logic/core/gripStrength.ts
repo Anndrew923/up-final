@@ -12,12 +12,21 @@ export const GRIP_FEMALE_COMPENSATION = 1.6;
 /** Product model ceiling aligned with Magnus Samuelsson-level public records context. */
 export const GRIP_MAX_PEAK_KG = 160;
 
-/** Standard body-weight anchor for allometric grip compensation (IWF / Sinclair-style reference mass). */
-export const GRIP_BASE_WEIGHT_KG = 75;
-/** Lighter-than-anchor athletes: √(75/W) boosts relative-strength performers without 1:1 grip÷BW punishment. */
+/** Male allometric grip anchor — 72 kg peak × 1.4 → ~100.8 elite century gate at 75 kg. */
+export const GRIP_BASE_WEIGHT_KG_MALE = 75;
+/**
+ * Female allometric grip anchor — 45 kg peak × 2.24 → ~100.8 century gate at 55 kg.
+ * WHY: square–cube scaling applies to both sexes; reusing the male 75 kg anchor would stack W_factor
+ * boost on the existing 1.6× sex compensation and inflate typical 50–60 kg female scores.
+ */
+export const GRIP_BASE_WEIGHT_KG_FEMALE = 55;
+/** @deprecated Use GRIP_BASE_WEIGHT_KG_MALE — kept for import stability. */
+export const GRIP_BASE_WEIGHT_KG = GRIP_BASE_WEIGHT_KG_MALE;
+
+/** Lighter-than-anchor: √(anchor/W) rewards relative-strength performers without 1:1 grip÷BW punishment. */
 export const GRIP_WEIGHT_EXPONENT_LIGHT = 0.5;
 /**
- * Heavier-than-anchor athletes: ∛(75/W) dampens mass dilution per square–cube / allometric scaling —
+ * Heavier-than-anchor: ∛(anchor/W) dampens mass dilution per square–cube / allometric scaling —
  * absolute monsters keep TIER_140+ without linear power creep on the six-axis radar.
  */
 export const GRIP_WEIGHT_EXPONENT_HEAVY = 0.3333;
@@ -95,12 +104,25 @@ export function applyGripPeakCap(peakKg: number): GripPeakCapResult {
 }
 
 /**
- * WHY: Allometric body-mass correction — square–cube law means mass scales faster than muscle cross-section;
- * pure grip÷BW crushes heavyweights while raw peak×1.4 inflates titans on the radar.
- * IMPACT: W_factor = 1.0 at 75 kg; lighter bodies get ^0.5 lift, heavier get gentler ^⅓ dampening.
+ * WHY: Sex-specific golden anchors decouple W_factor from the 1.6× female grip compensation —
+ * prevents double inflation when most women sit well below the male 75 kg reference mass.
+ * IMPACT: male 75 kg / female 55 kg; defaults to sex-appropriate anchor when weight missing.
  */
-export function resolveGripWeightFactor(weightKg: number | null | undefined): number {
-  const baseWeight = GRIP_BASE_WEIGHT_KG;
+export function resolveGripBaseWeightKg(gender: string | null | undefined): number {
+  return normalizeGenderForNormTables(gender) === 'female'
+    ? GRIP_BASE_WEIGHT_KG_FEMALE
+    : GRIP_BASE_WEIGHT_KG_MALE;
+}
+
+/**
+ * WHY: Allometric body-mass correction per square–cube law — mass scales faster than muscle cross-section.
+ * IMPACT: W_factor = 1.0 at sex-specific anchor; lighter bodies get ^0.5 lift, heavier get gentler ^⅓ dampening.
+ */
+export function resolveGripWeightFactor(
+  weightKg: number | null | undefined,
+  gender: string | null | undefined = 'male',
+): number {
+  const baseWeight = resolveGripBaseWeightKg(gender);
   const currentWeight =
     weightKg != null && Number.isFinite(Number(weightKg)) && Number(weightKg) > 0
       ? Number(weightKg)
@@ -119,7 +141,7 @@ function resolveGripGenderMultiplier(gender: string | null | undefined): number 
 }
 
 /**
- * WHY: 1.4 at 75 kg anchors ~72 kg peak → 100.8 (elite century threshold); W_factor syncs with Home body mass.
+ * WHY: Dual-track anchors — male 72 kg @ 75 kg BW and female 45 kg @ 55 kg BW both land ~100.8 century gate.
  * IMPACT: Grip axis only — ladder shard and aura bands unchanged; stored score still clamped 0–200.
  */
 export function calculateGripStrengthScore(
@@ -130,7 +152,7 @@ export function calculateGripStrengthScore(
   const { usedKg } = applyGripPeakCap(peakKg);
   if (usedKg <= 0) return 0;
 
-  const wFactor = resolveGripWeightFactor(weightKg);
+  const wFactor = resolveGripWeightFactor(weightKg, gender);
   const genderMultiplier = resolveGripGenderMultiplier(gender);
   return round1(usedKg * genderMultiplier * wFactor);
 }
