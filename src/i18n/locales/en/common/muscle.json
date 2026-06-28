@@ -13,7 +13,7 @@
       "p1": "SMM is muscle mass from body-composition devices (BIA, scans). Enter device reading — no photo or height estimation here.",
       "p2": "SM% = SMM ÷ body weight × 100 (Home weight). SMM and SM% answer different questions; both branches reduce one-sided readings.",
       "p3": "Each branch scores against age/sex norm tables (0–100 decile anchors). Linear interpolation between anchors; damped extension above top anchor. Profile age 13–80 required.",
-      "p4": "Radar exterior axis = arithmetic mean of SMM score and SM% score. Preview matches saved value.",
+      "p4": "Radar exterior axis starts as the arithmetic mean of both branches. When absolute SMM score exceeds 100, a cliffless beast blend (80% SMM / 20% SM%, taking the better of equal-mean vs beast) activates so elite mass is not penalized. Preview matches saved value.",
       "p5": "Max SMM input by sex (four-sovereign ceiling above) is a scoring guardrail, not medical judgment. Recheck device calibration if readings exceed cap.",
       "dualSovereignPreamble": "The scoring ceiling for skeletal muscle mass is calibrated at {{maleMax}} kg for males and {{femaleMax}} kg for females, honoring the ultimate legends on Earth:",
       "dualSovereignMale": "[Male {{max}} kg Dual Legends] 1) Absolute Mass Ceiling: Hafthor Bjornsson (The Mountain, WSM Champion, possessing the non-human absolute total muscle mass under the heaviest skeletal chassis); 2) Pure Muscle Density Ceiling: Ronnie Coleman (8-time Mr. Olympia, the absolute physiological limit of packing extraordinary shredded skeletal muscle into a standard frame at near-zero body fat).",

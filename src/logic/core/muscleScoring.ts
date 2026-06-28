@@ -1,6 +1,6 @@
 /**
- * Muscle (SMM + SM%) composite scoring — norm tables match reference-app; final score is
- * unweighted mean of SMM branch and SM% branch (reference’s legacy ×1.25 on SMM removed).
+ * Muscle (SMM + SM%) composite scoring — norm tables match reference-app; final score uses
+ * equal-weight mean below the beast threshold, then max(equal, 80/20 beast blend) above it.
  * SMM inputs above sex-based kg ceilings do not score or merge (see `SMM_KG_CEILING_*`).
  */
 import type { MuscleInputsPersisted } from '../../types/muscleInputs';
@@ -97,6 +97,31 @@ export function calculateScoreFromStandard(
   return rawScore;
 }
 
+const MUSCLE_COMPOSITE_BEAST_SMM_THRESHOLD = 100;
+const MUSCLE_COMPOSITE_BEAST_SMM_WEIGHT = 0.8;
+const MUSCLE_COMPOSITE_BEAST_SMPCT_WEIGHT = 0.2;
+
+/**
+ * WHY: Beast 80/20 lifts absolute-SMM titans dragged down by SM% dilution on heavy frames;
+ * max(equal, beast) prevents sorting inversion at the smmScoreRaw > 100 handoff.
+ * IMPACT: Composite radar score only — ladder weight/ratio shards stay on single branches.
+ */
+export function composeMuscleCompositeScore(
+  smmScoreRaw: number,
+  smPercentScoreRaw: number,
+): number {
+  const baseEqualScore = (smmScoreRaw + smPercentScoreRaw) / 2;
+
+  if (smmScoreRaw > MUSCLE_COMPOSITE_BEAST_SMM_THRESHOLD) {
+    const beastWeightedScore =
+      smmScoreRaw * MUSCLE_COMPOSITE_BEAST_SMM_WEIGHT +
+      smPercentScoreRaw * MUSCLE_COMPOSITE_BEAST_SMPCT_WEIGHT;
+    return round2(Math.max(baseEqualScore, beastWeightedScore));
+  }
+
+  return round2(baseEqualScore);
+}
+
 export interface MuscleScoresNullable {
   smPercent: number | null;
   smmScoreRaw: number | null;
@@ -150,7 +175,7 @@ export function calculateMuscleScores(input: {
   const smmRaw = calculateScoreFromStandard(smm, smmStandard);
   const smPercentRaw = calculateScoreFromStandard(smPercent, smPercentStandard);
 
-  const finalRawScore = (smmRaw + smPercentRaw) / 2;
+  const finalRawScore = composeMuscleCompositeScore(smmRaw, smPercentRaw);
 
   return {
     smPercent: round2(smPercent),
