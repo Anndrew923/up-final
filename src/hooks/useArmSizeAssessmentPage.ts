@@ -7,9 +7,15 @@ import {
   ARM_SIZE_MAX_CM,
   evaluateArmSizeScore,
 } from '../logic/core/armSizeScoring';
-import { loadArmSizeInputs, saveArmSizeInputs } from '../services/localStorageService';
+import {
+  loadArmSizeInputs,
+  loadPhysicalProfile,
+  saveArmSizeInputs,
+  subscribePhysicalProfile,
+} from '../services/localStorageService';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
+import type { PhysicalProfile } from '../types/userProfile';
 
 export type ArmSizeAssessmentError =
   | 'invalid-arm-cm'
@@ -18,6 +24,7 @@ export type ArmSizeAssessmentError =
   | 'body-fat-out-of-range';
 
 export interface UseArmSizeAssessmentPageResult {
+  profile: PhysicalProfile | null;
   armCircumferenceInput: string;
   setArmCircumferenceInput: (v: string) => void;
   bodyFatInput: string;
@@ -42,6 +49,7 @@ function parsePositiveNumber(raw: string): number | null {
 export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
+  const [profile, setProfile] = useState(loadPhysicalProfile);
   const [armCircumferenceInput, setArmCircumferenceInput] = useState(() => {
     const saved = loadArmSizeInputs()?.armCircumferenceCm;
     return Number.isFinite(saved) && (saved ?? 0) > 0 ? String(saved) : '';
@@ -57,97 +65,83 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   const [submitDone, setSubmitDone] = useState(false);
 
   useEffect(() => {
+    const sync = () => setProfile(loadPhysicalProfile());
+    return subscribePhysicalProfile(sync);
+  }, []);
+
+  useEffect(() => {
     queueMicrotask(() => {
       setPreviewScore(null);
       setSubmittedScore(null);
       setLimitedByAxisCap(false);
       setSubmitDone(false);
     });
-  }, [armCircumferenceInput, bodyFatInput]);
+  }, [armCircumferenceInput, bodyFatInput, profile?.gender]);
 
   const clearError = useCallback(() => setErrorKey(null), []);
+
+  const evaluateFromInputs = useCallback(() => {
+    const armCm = parsePositiveNumber(armCircumferenceInput);
+    if (armCm === null) {
+      return { ok: false as const, error: 'invalid-arm-cm' as const };
+    }
+    if (armCm > ARM_SIZE_MAX_CM) {
+      return { ok: false as const, error: 'arm-exceeds-max' as const };
+    }
+    const bodyFatPct = parsePositiveNumber(bodyFatInput);
+    if (bodyFatPct === null) {
+      return { ok: false as const, error: 'invalid-body-fat' as const };
+    }
+    if (bodyFatPct < ARM_SIZE_BODY_FAT_MIN_PCT || bodyFatPct > ARM_SIZE_BODY_FAT_MAX_PCT) {
+      return { ok: false as const, error: 'body-fat-out-of-range' as const };
+    }
+    const result = evaluateArmSizeScore({
+      armCircumferenceCm: armCm,
+      bodyFatPct,
+      gender: profile?.gender,
+    });
+    if (!result) {
+      return { ok: false as const, error: 'invalid-arm-cm' as const };
+    }
+    return { ok: true as const, armCm, bodyFatPct, result };
+  }, [armCircumferenceInput, bodyFatInput, profile?.gender]);
 
   const calculate = useCallback(() => {
     setSubmitDone(false);
     setErrorKey(null);
-    const armCm = parsePositiveNumber(armCircumferenceInput);
-    if (armCm === null) {
-      setErrorKey('invalid-arm-cm');
+    const evaluated = evaluateFromInputs();
+    if (!evaluated.ok) {
+      setErrorKey(evaluated.error);
       setPreviewScore(null);
       setSubmittedScore(null);
       setLimitedByAxisCap(false);
       return;
     }
-    if (armCm > ARM_SIZE_MAX_CM) {
-      setErrorKey('arm-exceeds-max');
-      setPreviewScore(null);
-      setSubmittedScore(null);
-      setLimitedByAxisCap(false);
-      return;
-    }
-    const bodyFatPct = parsePositiveNumber(bodyFatInput);
-    if (bodyFatPct === null) {
-      setErrorKey('invalid-body-fat');
-      setPreviewScore(null);
-      setSubmittedScore(null);
-      setLimitedByAxisCap(false);
-      return;
-    }
-    if (bodyFatPct < ARM_SIZE_BODY_FAT_MIN_PCT || bodyFatPct > ARM_SIZE_BODY_FAT_MAX_PCT) {
-      setErrorKey('body-fat-out-of-range');
-      setPreviewScore(null);
-      setSubmittedScore(null);
-      setLimitedByAxisCap(false);
-      return;
-    }
-    const result = evaluateArmSizeScore({ armCircumferenceCm: armCm, bodyFatPct });
-    if (!result) {
-      setErrorKey('invalid-arm-cm');
-      setPreviewScore(null);
-      setSubmittedScore(null);
-      setLimitedByAxisCap(false);
-      return;
-    }
-    setPreviewScore(result.rawScore);
-    setSubmittedScore(result.submittedScore);
-    setLimitedByAxisCap(result.limitedByAxisCap);
-  }, [armCircumferenceInput, bodyFatInput]);
+    setPreviewScore(evaluated.result.rawScore);
+    setSubmittedScore(evaluated.result.submittedScore);
+    setLimitedByAxisCap(evaluated.result.limitedByAxisCap);
+  }, [evaluateFromInputs]);
 
   const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
-    const armCm = parsePositiveNumber(armCircumferenceInput);
-    if (armCm === null) {
-      setErrorKey('invalid-arm-cm');
+    const evaluated = evaluateFromInputs();
+    if (!evaluated.ok) {
+      setErrorKey(evaluated.error);
       return false;
     }
-    if (armCm > ARM_SIZE_MAX_CM) {
-      setErrorKey('arm-exceeds-max');
-      return false;
-    }
-    const bodyFatPct = parsePositiveNumber(bodyFatInput);
-    if (bodyFatPct === null) {
-      setErrorKey('invalid-body-fat');
-      return false;
-    }
-    if (bodyFatPct < ARM_SIZE_BODY_FAT_MIN_PCT || bodyFatPct > ARM_SIZE_BODY_FAT_MAX_PCT) {
-      setErrorKey('body-fat-out-of-range');
-      return false;
-    }
-    const result = evaluateArmSizeScore({ armCircumferenceCm: armCm, bodyFatPct });
-    if (!result) {
-      setErrorKey('invalid-arm-cm');
-      return false;
-    }
-    saveArmSizeInputs({ armCircumferenceCm: armCm, bodyFatPct });
-    setStoreScore('armSize', result.submittedScore);
-    setPreviewScore(result.rawScore);
-    setSubmittedScore(result.submittedScore);
-    setLimitedByAxisCap(result.limitedByAxisCap);
+    saveArmSizeInputs({
+      armCircumferenceCm: evaluated.armCm,
+      bodyFatPct: evaluated.bodyFatPct,
+    });
+    setStoreScore('armSize', evaluated.result.submittedScore);
+    setPreviewScore(evaluated.result.rawScore);
+    setSubmittedScore(evaluated.result.submittedScore);
+    setLimitedByAxisCap(evaluated.result.limitedByAxisCap);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
     return true;
-  }, [armCircumferenceInput, bodyFatInput, setStoreScore]);
+  }, [evaluateFromInputs, setStoreScore]);
 
   const submitToRadar = useCallback(() => {
     if (!persistToDashboard()) return;
@@ -155,6 +149,7 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   }, [navigate, persistToDashboard]);
 
   return {
+    profile,
     armCircumferenceInput,
     setArmCircumferenceInput,
     bodyFatInput,
