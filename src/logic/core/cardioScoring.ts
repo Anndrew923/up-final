@@ -108,7 +108,12 @@ export const RUN_5KM_FEMALE = {
   floorSeconds: 825,
 } as const;
 
-export type Run5KmNorm = typeof RUN_5KM_MALE;
+/** Shared shape for male/female 5 km norm rows (not `typeof RUN_5KM_MALE` — literal 740 ≠ 825). */
+export type Run5KmNorm = Readonly<{
+  t0Seconds: number;
+  t100Seconds: number;
+  floorSeconds: number;
+}>;
 
 /** Overflow above T100: linear pts per minute faster than T100 anchor. */
 export const RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE = 6 as const;
