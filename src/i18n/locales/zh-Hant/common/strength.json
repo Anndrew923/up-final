@@ -51,9 +51,9 @@
       "tip": "建議充分熱身，並固定動作幅度與深度以便長期對照。本畫面不提供競賽認證用途。"
     },
     "lifts": {
-      "benchPress": "臥推",
-      "squat": "深蹲",
-      "deadlift": "硬舉",
+      "benchPress": "自由重量平板臥推",
+      "squat": "槓鈴深蹲",
+      "deadlift": "硬舉 (傳統／相撲)",
       "latPulldown": "滑輪下拉",
       "shoulderPress": "站姿槓鈴肩推"
     },

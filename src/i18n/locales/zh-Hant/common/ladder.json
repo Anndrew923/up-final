@@ -189,9 +189,9 @@
     "project": {
       "totalFive": "五項均分（分數）",
       "sbdTotal": "三項 1RM 總和（公斤）",
-      "squat": "深蹲",
-      "benchPress": "臥推",
-      "deadlift": "硬舉",
+      "squat": "槓鈴深蹲",
+      "benchPress": "自由重量平板臥推",
+      "deadlift": "硬舉 (傳統／相撲)",
       "shoulderPress": "肩推",
       "latPulldown": "滑輪下拉",
       "cooper": "Cooper 12 分鐘",
