@@ -6,6 +6,7 @@ import {
   COOPER_MAX_DISTANCE_MALE_METERS,
   RUN_5KM_FEMALE,
   RUN_5KM_MALE,
+  RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT,
   calculate5KmScore,
   calculateCooperScore,
   mergeScoreMapWithResolvedCardio,
@@ -13,6 +14,7 @@ import {
   resolveRun5KmNorm,
   run5KmCeilingScore,
   score5KmFromNorm,
+  score5KmOverflowAboveT100,
   tryComputeCardioAssessmentScore,
   parse5KmFieldSplit,
 } from '../cardioScoring';
@@ -84,7 +86,11 @@ describe('calculate5KmScore', () => {
       expect(calculate5KmScore({ totalSeconds: 19 * 60, gender: 'male' })).toBeGreaterThan(100);
     });
 
-    it('floors world-record-faster inputs at 740s (ceiling 146)', () => {
+    it('applies 4th-power warp above T100 (male elite checkpoints)', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'male' })).toBe(100);
+      expect(calculate5KmScore({ totalSeconds: 755, gender: 'male' })).toBe(176.27);
+      expect(calculate5KmScore({ totalSeconds: 755, gender: 'male' })).toBeGreaterThan(170);
+      expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(182.28);
       expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(
         run5KmCeilingScore(RUN_5KM_MALE)
       );
@@ -108,18 +114,23 @@ describe('calculate5KmScore', () => {
       expect(calculate5KmScore({ totalSeconds: 55 * 60, gender: 'female' })).toBe(0);
     });
 
-    it('scores 115 at 20:00 (elite overflow vs male 100-pt anchor)', () => {
-      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'female' })).toBe(115);
+    it('scores 115.41 at 20:00 (smooth v4.2.0 overflow衔接)', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'female' })).toBe(115.41);
     });
 
-    it('floors world-record-faster inputs at 825s (ceiling 152.5)', () => {
+    it('applies 4th-power warp above T100 (female elite checkpoints)', () => {
+      expect(calculate5KmScore({ totalSeconds: RUN_5KM_FEMALE.t100Seconds, gender: 'female' })).toBe(
+        100
+      );
+      expect(calculate5KmScore({ totalSeconds: 840, gender: 'female' })).toBe(205.81);
+      expect(calculate5KmScore({ totalSeconds: 840, gender: 'female' })).toBeGreaterThan(170);
+      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(214.05);
       expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(
         run5KmCeilingScore(RUN_5KM_FEMALE)
       );
       expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(
         run5KmCeilingScore(RUN_5KM_FEMALE)
       );
-      expect(run5KmCeilingScore(RUN_5KM_FEMALE)).toBe(152.5);
     });
 
     it('still scores above zero at 45:00 (decoupled T0 is 50:00)', () => {
@@ -139,7 +150,8 @@ describe('calculate5KmScore', () => {
     it('defaults to male norms when gender is missing', () => {
       expect(calculate5KmScore({ totalSeconds: 20 * 60 })).toBe(100);
       expect(calculate5KmScore({ totalSeconds: 45 * 60 })).toBe(0);
-      expect(calculate5KmScore({ totalSeconds: 740 })).toBe(146);
+      expect(calculate5KmScore({ totalSeconds: 755 })).toBe(176.27);
+      expect(calculate5KmScore({ totalSeconds: 740 })).toBe(182.28);
     });
 
     it('resolveRun5KmNorm maps unknown gender to male', () => {
@@ -148,12 +160,15 @@ describe('calculate5KmScore', () => {
     });
   });
 
-  it('score5KmFromNorm matches calculate5KmScore at checkpoints', () => {
+  it('score5KmFromNorm and overflow helper match calculate5KmScore at checkpoints', () => {
     expect(score5KmFromNorm(1200, RUN_5KM_MALE)).toBe(100);
     expect(score5KmFromNorm(1350, RUN_5KM_FEMALE)).toBe(100);
+    expect(score5KmOverflowAboveT100(755, RUN_5KM_MALE)).toBe(176.27);
+    expect(score5KmOverflowAboveT100(1200, RUN_5KM_FEMALE)).toBe(115.41);
     expect(score5KmFromNorm(825, RUN_5KM_FEMALE)).toBe(run5KmCeilingScore(RUN_5KM_FEMALE));
     expect(score5KmFromNorm(0, RUN_5KM_MALE)).toBe(0);
     expect(score5KmFromNorm(-10, RUN_5KM_FEMALE)).toBe(0);
+    expect(RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT).toBe(0.0105);
   });
 });
 
@@ -208,7 +223,7 @@ describe('resolveCardioScoreForDisplay', () => {
     const inputs: CardioInputsPersisted = {
       run_5km: { totalSeconds: 20 * 60 },
     };
-    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115);
+    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115.41);
   });
 });
 

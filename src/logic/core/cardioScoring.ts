@@ -1,6 +1,7 @@
 /**
  * Cardio assessment scoring — Cooper 12-minute run + 5 km time trial.
- * Cooper norms match reference-app-fitness; 5 km uses sex-decoupled T0/T100 anchors (see RUN_5KM_*).
+ * Cooper norms match reference-app-fitness; 5 km uses sex-decoupled T0/T100 anchors with
+ * 4th-power overflow above T100 (see RUN_5KM_OVERFLOW_*).
  */
 import type { CardioInputsPersisted } from '../../types/cardioInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -109,14 +110,27 @@ export const RUN_5KM_FEMALE = {
 
 export type Run5KmNorm = typeof RUN_5KM_MALE;
 
-/** Overflow above T100: +1 pt per this many seconds faster than T100. */
-export const RUN_5KM_OVERFLOW_POINTS_PER_SECOND = 10 as const;
+/** Overflow above T100: linear pts per minute faster than T100 anchor. */
+export const RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE = 6 as const;
+/** Quartic warp coefficient — elite aerobic times above 100-pt anchor. */
+export const RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT = 0.0105 as const;
 
 export function resolveRun5KmNorm(gender: string | null | undefined): Run5KmNorm {
   return normalizeGenderForCardio(gender) === 'female' ? RUN_5KM_FEMALE : RUN_5KM_MALE;
 }
 
-/** Linear 0–100 band plus linear overflow above T100 (seconds faster → higher score). */
+/** 4th-power aerobic warp when effective time ≤ T100 (deltaT in minutes from T100). */
+export function score5KmOverflowAboveT100(
+  effectiveSeconds: number,
+  norm: Run5KmNorm
+): number {
+  const deltaTMinutes = (norm.t100Seconds - effectiveSeconds) / 60;
+  const linear = deltaTMinutes * RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE;
+  const quartic = Math.pow(deltaTMinutes, 4) * RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT;
+  return round2(100 + linear + quartic);
+}
+
+/** Linear 0–100 band; 4th-power overflow above T100 (minutes faster → higher score). */
 export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number {
   if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return 0;
 
@@ -125,9 +139,7 @@ export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number
   if (effectiveSeconds > norm.t0Seconds) return 0;
 
   if (effectiveSeconds <= norm.t100Seconds) {
-    return round2(
-      100 + (norm.t100Seconds - effectiveSeconds) / RUN_5KM_OVERFLOW_POINTS_PER_SECOND
-    );
+    return score5KmOverflowAboveT100(effectiveSeconds, norm);
   }
 
   const range = norm.t0Seconds - norm.t100Seconds;
