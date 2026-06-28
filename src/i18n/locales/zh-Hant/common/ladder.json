@@ -16,7 +16,7 @@
     "anonymousIdLabel": "身份已隱藏",
     "updatedLabel": "更新於",
     "rowScoreStrengthKg": "{{kg}} 公斤",
-    "strengthKgShardHint": "此榜為蹲、臥、硬三項估計 1RM 的公斤加總。若曾於改版前上傳，數字可能仍是舊的「分數」；請在力量評測填齊三項後再同步天梯以更新。",
+    "strengthKgShardHint": "此榜為槓鈴深蹲、自由重量平板臥推、硬舉 (傳統／相撲) 三項估計 1RM 的公斤加總。若曾於改版前上傳，數字可能仍是舊的「分數」；請在力量評測填齊三項後再同步天梯以更新。",
     "promotion": {
       "title": "名次晉升 +{{delta}}",
       "current": "目前名次：#{{rank}}",

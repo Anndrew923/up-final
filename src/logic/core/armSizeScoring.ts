@@ -6,11 +6,6 @@ export const ARM_SIZE_BASE_BODY_FAT_PCT_MALE = 20;
 export const ARM_SIZE_BENCHMARK_CM_FEMALE = 35;
 export const ARM_SIZE_BASE_BODY_FAT_PCT_FEMALE = 18;
 
-/** @deprecated Use ARM_SIZE_BENCHMARK_CM_MALE — kept for legacy imports. */
-export const ARM_SIZE_BENCHMARK_CM = ARM_SIZE_BENCHMARK_CM_MALE;
-/** @deprecated Use ARM_SIZE_BASE_BODY_FAT_PCT_MALE — kept for legacy imports. */
-export const ARM_SIZE_BASE_BODY_FAT_PCT = ARM_SIZE_BASE_BODY_FAT_PCT_MALE;
-
 /** Product input ceiling — aligns with plausible upper-arm measurement range. */
 export const ARM_SIZE_MAX_CM = 70;
 export const ARM_SIZE_BODY_FAT_MIN_PCT = 3;

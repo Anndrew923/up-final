@@ -15,7 +15,6 @@ import {
 } from '../services/localStorageService';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
-import type { PhysicalProfile } from '../types/userProfile';
 
 export type ArmSizeAssessmentError =
   | 'invalid-arm-cm'
@@ -24,7 +23,6 @@ export type ArmSizeAssessmentError =
   | 'body-fat-out-of-range';
 
 export interface UseArmSizeAssessmentPageResult {
-  profile: PhysicalProfile | null;
   armCircumferenceInput: string;
   setArmCircumferenceInput: (v: string) => void;
   bodyFatInput: string;
@@ -149,7 +147,6 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   }, [navigate, persistToDashboard]);
 
   return {
-    profile,
     armCircumferenceInput,
     setArmCircumferenceInput,
     bodyFatInput,

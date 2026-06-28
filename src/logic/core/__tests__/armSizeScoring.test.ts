@@ -143,7 +143,17 @@ describe('armSizeScoring', () => {
 
     it('resolveArmSizeNorm maps female and unknown gender', () => {
       expect(resolveArmSizeNorm('female').benchmarkCm).toBe(ARM_SIZE_BENCHMARK_CM_FEMALE);
+      expect(resolveArmSizeNorm('女性').benchmarkCm).toBe(ARM_SIZE_BENCHMARK_CM_FEMALE);
       expect(resolveArmSizeNorm(undefined).benchmarkCm).toBe(ARM_SIZE_BENCHMARK_CM_MALE);
+    });
+
+    it('scores via localized female gender token', () => {
+      const result = evaluateArmSizeScore({
+        armCircumferenceCm: 35,
+        bodyFatPct: 18,
+        gender: '女性',
+      });
+      expect(result?.rawScore).toBe(100);
     });
   });
 
