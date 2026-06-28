@@ -6,10 +6,14 @@ import {
   calculateScoreDecreasing,
   calculateScoreIncreasing,
   getPowerAgeRange,
+  getPowerStandardsForProfile,
   mergeScoreMapWithResolvedExplosivePower,
   resolveExplosiveLadderScoreBundle,
   resolveExplosivePowerScoreForDisplay,
+  scoreIncreasingOverflowAboveT100,
   scoreSprintOverflowAboveT100,
+  STANDING_LONG_JUMP_STANDARDS_FEMALE,
+  STANDING_LONG_JUMP_STANDARDS_MALE,
   tryComputeExplosiveAssessmentScore,
   VERTICAL_JUMP_STANDARDS_MALE,
 } from '../powerScoring';
@@ -28,11 +32,49 @@ describe('getPowerAgeRange', () => {
 });
 
 describe('calculateScoreIncreasing', () => {
+  const maleSlj2130 = STANDING_LONG_JUMP_STANDARDS_MALE['21-30'];
+  const femaleSlj2130 = STANDING_LONG_JUMP_STANDARDS_FEMALE['21-30'];
+
   it('interpolates between 0 and 50 anchors', () => {
     const std = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
     // (40 - 30) / (50 - 30) * 50 = 25
     expect(calculateScoreIncreasing(40, std)).toBe(25);
     expect(calculateScoreIncreasing(50, std)).toBe(50);
+  });
+
+  it('holds T100 anchor at exactly 100.00 (male 21–30 SLJ)', () => {
+    expect(calculateScoreIncreasing(270, maleSlj2130)).toBe(100);
+  });
+
+  it('applies 4th-power warp above T100 (male 21–30 SLJ checkpoints)', () => {
+    expect(calculateScoreIncreasing(320, maleSlj2130)).toBe(122.81);
+    expect(calculateScoreIncreasing(370, maleSlj2130)).toBe(185);
+    expect(scoreIncreasingOverflowAboveT100(0.5)).toBe(122.81);
+    expect(scoreIncreasingOverflowAboveT100(1)).toBe(185);
+  });
+
+  it('clamps cap-class SLJ raw into radar 200 via clampScoreMapValue', () => {
+    const raw = calculateScoreIncreasing(390, maleSlj2130);
+    expect(raw).toBe(241.31);
+    expect(clampScoreMapValue(raw)).toBe(200);
+  });
+
+  it('applies female SLJ norm warp (320 cm on 21–30 row)', () => {
+    expect(calculateScoreIncreasing(320, femaleSlj2130)).toBe(165.52);
+  });
+
+  it('defaults to male norms when profile gender is undefined', () => {
+    const profile = {
+      gender: undefined,
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    } as unknown as PhysicalProfile;
+    const std = getPowerStandardsForProfile(profile);
+    expect(std).not.toBeNull();
+    if (!std) return;
+    expect(calculateScoreIncreasing(370, std.slj)).toBe(185);
   });
 });
 
@@ -272,5 +314,20 @@ describe('resolveExplosiveLadderScoreBundle', () => {
     expect(b.sprint).toBeNull();
     const expectedComposite = b.broad != null ? Math.round((b.broad / 3) * 100) / 100 : 0;
     expect(b.composite).toBeCloseTo(expectedComposite, 5);
+  });
+
+  it('preserves elite SLJ separation on broad shard (370 cm warp, not flat 200)', () => {
+    const b = resolveExplosiveLadderScoreBundle(profile, {
+      explosivePower: { standingLongJumpCm: 370 },
+    });
+    expect(b.broad).toBe(185);
+    expect(b.broad).toBeLessThan(200);
+  });
+
+  it('clamps world-record-class capped SLJ at 390 cm to broad shard 200', () => {
+    const b = resolveExplosiveLadderScoreBundle(profile, {
+      explosivePower: { standingLongJumpCm: 390 },
+    });
+    expect(b.broad).toBe(200);
   });
 });

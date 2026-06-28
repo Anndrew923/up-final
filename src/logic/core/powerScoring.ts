@@ -1,7 +1,8 @@
 /**
  * Explosive power (vertical jump / standing long jump / sprint) — norm tables align with
- * reference-app `assessmentStandards.js`; sprint overflow above the T100 anchor uses a
- * UP-specific 4th-power warp (see `SPRINT_OVERFLOW_*` constants).
+ * reference-app `assessmentStandards.js`; sprint overflow above T100 uses a 4th-power warp
+ * (`SPRINT_OVERFLOW_*`); vertical jump / standing long jump overflow uses meter-based
+ * `INCREASING_OVERFLOW_*` warp to avoid elite dead-zone collapse at radar clamp 200.
  */
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -24,6 +25,21 @@ export const SPRINT_OVERFLOW_QUARTIC_COEFFICIENT = 12 as const;
 export function scoreSprintOverflowAboveT100(deltaT: number): number {
   const linearBonus = deltaT * SPRINT_OVERFLOW_LINEAR_PER_SECOND;
   const quarticBonus = Math.pow(deltaT, 4) * SPRINT_OVERFLOW_QUARTIC_COEFFICIENT;
+  return round2(100 + linearBonus + quarticBonus);
+}
+
+/** Linear pts per meter beyond T100 distance anchor (deltaD = 0 → score stays 100). */
+export const INCREASING_OVERFLOW_LINEAR_PER_METER = 40 as const;
+/** Quartic coefficient for vertical jump / standing long jump elite-distance warp above T100. */
+export const INCREASING_OVERFLOW_QUARTIC_COEFFICIENT = 45 as const;
+
+/**
+ * WHY: 100+ pts use quartic warp on both jump branches — linear excess×2 collapsed SLJ elites
+ * into identical radar 200; mirrors sprint/cardio elite-overflow style across explosive axis.
+ */
+export function scoreIncreasingOverflowAboveT100(deltaD_meters: number): number {
+  const linearBonus = deltaD_meters * INCREASING_OVERFLOW_LINEAR_PER_METER;
+  const quarticBonus = Math.pow(deltaD_meters, 4) * INCREASING_OVERFLOW_QUARTIC_COEFFICIENT;
   return round2(100 + linearBonus + quarticBonus);
 }
 
@@ -162,9 +178,8 @@ export function calculateScoreIncreasing(value: number, standard: PowerStandardR
   if (v < standard[0]) return 0;
 
   if (v >= standard[100]) {
-    const excess = v - standard[100];
-    const bonus = excess * 2;
-    return round2(100 + bonus);
+    const deltaD_meters = (v - standard[100]) / 100;
+    return scoreIncreasingOverflowAboveT100(deltaD_meters);
   }
 
   if (v < standard[50]) {
