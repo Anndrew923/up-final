@@ -1,7 +1,6 @@
 /**
  * Cardio assessment scoring — Cooper 12-minute run + 5 km time trial.
- * Cooper norms and formulas match reference-app-fitness `standards.js` / `useCardioLogic.js`
- * (same anchors as reference-app `assessmentStandards.js` / `assessmentScoring.js`).
+ * Cooper norms match reference-app-fitness; 5 km uses sex-decoupled T0/T100 anchors (see RUN_5KM_*).
  */
 import type { CardioInputsPersisted } from '../../types/cardioInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -93,10 +92,44 @@ export function calculateCooperScore(input: {
 }
 
 /**
- * 5 km score: ≤20 min → bonus above 100; ≥45 min → 0; linear between.
- *
- * Inputs faster than current WR-aligned floors are floored to keep bonuses realistic while
- * still ensuring top-tier performances receive >100 (never excluded / forced to 0).
+ * 5 km time-trial norm anchors — decoupled by sex for mixed-leaderboard fairness.
+ * Missing / unknown gender defaults to male (same as `normalizeGenderForCardio` fallback).
+ */
+export const RUN_5KM_MALE = {
+  t0Seconds: 45 * 60,
+  t100Seconds: 20 * 60,
+  floorSeconds: 740,
+} as const;
+
+export const RUN_5KM_FEMALE = {
+  t0Seconds: 50 * 60,
+  t100Seconds: 22 * 60 + 30,
+  floorSeconds: 825,
+} as const;
+
+export type Run5KmNorm = typeof RUN_5KM_MALE;
+
+export function resolveRun5KmNorm(gender: string | null | undefined): Run5KmNorm {
+  return normalizeGenderForCardio(gender) === 'female' ? RUN_5KM_FEMALE : RUN_5KM_MALE;
+}
+
+/** Linear 0–100 band plus linear overflow above T100 (seconds faster → higher score). */
+export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number {
+  const effectiveSeconds = Math.max(totalSeconds, norm.floorSeconds);
+
+  if (effectiveSeconds > norm.t0Seconds) return 0;
+
+  if (effectiveSeconds <= norm.t100Seconds) {
+    return round2(100 + (norm.t100Seconds - effectiveSeconds) / 10);
+  }
+
+  const range = norm.t0Seconds - norm.t100Seconds;
+  const diff = effectiveSeconds - norm.t100Seconds;
+  return round2(100 - (diff / range) * 100);
+}
+
+/**
+ * 5 km score — sex-specific T0/T100 anchors; WR-aligned floors before overflow math.
  */
 export function calculate5KmScore(input: {
   totalSeconds: number;
@@ -104,24 +137,7 @@ export function calculate5KmScore(input: {
 }): number {
   const sec = parseInt(String(input.totalSeconds), 10);
   if (!sec || sec <= 0) return 0;
-
-  const isFemale = normalizeGenderForCardio(input.gender) === 'female';
-  const maxPerformanceFloorSeconds = isFemale ? 825 : 740;
-  const effectiveSeconds = Math.max(sec, maxPerformanceFloorSeconds);
-
-  const benchmarkSeconds = 20 * 60;
-  const baselineSeconds = 45 * 60;
-
-  if (effectiveSeconds <= benchmarkSeconds) {
-    const bonus = (benchmarkSeconds - effectiveSeconds) / 10;
-    return round2(100 + bonus);
-  }
-  if (effectiveSeconds >= baselineSeconds) return 0;
-
-  const range = baselineSeconds - benchmarkSeconds;
-  const diff = effectiveSeconds - benchmarkSeconds;
-  const score = 100 - (diff / range) * 100;
-  return round2(score);
+  return score5KmFromNorm(sec, resolveRun5KmNorm(input.gender));
 }
 
 /**

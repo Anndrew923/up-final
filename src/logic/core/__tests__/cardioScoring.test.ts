@@ -4,10 +4,14 @@ import type { PhysicalProfile } from '../../../types/userProfile';
 import {
   COOPER_MAX_DISTANCE_FEMALE_METERS,
   COOPER_MAX_DISTANCE_MALE_METERS,
+  RUN_5KM_FEMALE,
+  RUN_5KM_MALE,
   calculate5KmScore,
   calculateCooperScore,
   mergeScoreMapWithResolvedCardio,
   resolveCardioScoreForDisplay,
+  resolveRun5KmNorm,
+  score5KmFromNorm,
   tryComputeCardioAssessmentScore,
   parse5KmFieldSplit,
 } from '../cardioScoring';
@@ -65,31 +69,75 @@ describe('calculateCooperScore', () => {
 });
 
 describe('calculate5KmScore', () => {
-  it('scores above 100 when faster than 20 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 19 * 60, gender: 'male' })).toBeGreaterThan(100);
+  describe('male norms', () => {
+    it('scores 100 at exactly 20 minutes', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'male' })).toBe(100);
+    });
+
+    it('scores 0 at or beyond 45 minutes', () => {
+      expect(calculate5KmScore({ totalSeconds: 45 * 60, gender: 'male' })).toBe(0);
+      expect(calculate5KmScore({ totalSeconds: 50 * 60, gender: 'male' })).toBe(0);
+    });
+
+    it('scores above 100 when faster than 20 minutes', () => {
+      expect(calculate5KmScore({ totalSeconds: 19 * 60, gender: 'male' })).toBeGreaterThan(100);
+    });
+
+    it('floors world-record-faster inputs at 740s (ceiling 146)', () => {
+      expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(146);
+      expect(calculate5KmScore({ totalSeconds: 700, gender: 'male' })).toBe(146);
+    });
   });
 
-  it('scores 100 at exactly 20 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'male' })).toBe(100);
+  describe('female norms (decoupled anchors)', () => {
+    it('scores 100 at exactly 22:30', () => {
+      expect(calculate5KmScore({ totalSeconds: RUN_5KM_FEMALE.t100Seconds, gender: 'female' })).toBe(
+        100
+      );
+    });
+
+    it('scores 0 at or beyond 50 minutes', () => {
+      expect(calculate5KmScore({ totalSeconds: RUN_5KM_FEMALE.t0Seconds, gender: 'female' })).toBe(
+        0
+      );
+      expect(calculate5KmScore({ totalSeconds: 55 * 60, gender: 'female' })).toBe(0);
+    });
+
+    it('scores 115 at 20:00 (elite overflow vs male 100-pt anchor)', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'female' })).toBe(115);
+    });
+
+    it('floors world-record-faster inputs at 825s (ceiling 152.5)', () => {
+      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(152.5);
+      expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(152.5);
+    });
+
+    it('scores higher than male at same 25:00 wall-clock time', () => {
+      const male = calculate5KmScore({ totalSeconds: 25 * 60, gender: 'male' });
+      const female = calculate5KmScore({ totalSeconds: 25 * 60, gender: 'female' });
+      expect(male).toBe(80);
+      expect(female).toBeCloseTo(90.91, 2);
+      expect(female).toBeGreaterThan(male);
+    });
   });
 
-  it('scores 0 at or beyond 45 minutes', () => {
-    expect(calculate5KmScore({ totalSeconds: 45 * 60, gender: 'male' })).toBe(0);
-    expect(calculate5KmScore({ totalSeconds: 50 * 60, gender: 'male' })).toBe(0);
+  describe('gender fallback', () => {
+    it('defaults to male norms when gender is missing', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60 })).toBe(100);
+      expect(calculate5KmScore({ totalSeconds: 45 * 60 })).toBe(0);
+      expect(calculate5KmScore({ totalSeconds: 740 })).toBe(146);
+    });
+
+    it('resolveRun5KmNorm maps unknown gender to male', () => {
+      expect(resolveRun5KmNorm(undefined)).toEqual(RUN_5KM_MALE);
+      expect(resolveRun5KmNorm('female')).toEqual(RUN_5KM_FEMALE);
+    });
   });
 
-  it('floors male world-record-faster inputs at 740s while keeping bonus scoring', () => {
-    const atFloor = calculate5KmScore({ totalSeconds: 740, gender: 'male' });
-    const fasterThanFloor = calculate5KmScore({ totalSeconds: 700, gender: 'male' });
-    expect(fasterThanFloor).toBe(atFloor);
-    expect(atFloor).toBeGreaterThan(100);
-  });
-
-  it('floors female world-record-faster inputs at 825s while keeping bonus scoring', () => {
-    const atFloor = calculate5KmScore({ totalSeconds: 825, gender: 'female' });
-    const fasterThanFloor = calculate5KmScore({ totalSeconds: 780, gender: 'female' });
-    expect(fasterThanFloor).toBe(atFloor);
-    expect(atFloor).toBeGreaterThan(100);
+  it('score5KmFromNorm matches calculate5KmScore at checkpoints', () => {
+    expect(score5KmFromNorm(1200, RUN_5KM_MALE)).toBe(100);
+    expect(score5KmFromNorm(1350, RUN_5KM_FEMALE)).toBe(100);
+    expect(score5KmFromNorm(825, RUN_5KM_FEMALE)).toBe(152.5);
   });
 });
 
