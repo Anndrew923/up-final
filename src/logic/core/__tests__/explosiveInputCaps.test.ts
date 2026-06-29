@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyExplosiveInputCaps,
+  applyExplosiveInputCapsForProfile,
   EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS,
   EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM,
   EXPLOSIVE_VERTICAL_JUMP_MAX_CM,
@@ -91,5 +92,19 @@ describe('applyExplosiveInputCaps', () => {
     expect(r.verticalJumpCm).toBe(60);
     expect(r.standingLongJumpCm).toBeNull();
     expect(r.sprintSeconds).toBe(14);
+  });
+
+  it('resolves 女性 profile token via normalizeGenderForNormTables', () => {
+    const profile: PhysicalProfile = {
+      ...maleProfile,
+      gender: '女性' as PhysicalProfile['gender'],
+    };
+    const r = applyExplosiveInputCapsForProfile(profile, {
+      verticalJumpCm: 200,
+      standingLongJumpCm: null,
+      sprintSeconds: null,
+    });
+    expect(r.capApplied.verticalJump).toBe(true);
+    expect(r.verticalJumpCm).toBe(EXPLOSIVE_VERTICAL_JUMP_MAX_CM.female);
   });
 });

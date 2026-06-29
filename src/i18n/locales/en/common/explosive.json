@@ -65,8 +65,8 @@
       "sourceLabel": "Sources (overview):",
       "sourceBody": "Public fitness norms and field-test literature — youth fitness portals, ACSM guidance, sprint context — inform the reference anchor structure.",
       "basisLabel": "Event basis:",
-      "basisVjump": "Vertical jump: ACSM-style field norms and youth performance bands.",
-      "basisSlj": "Standing long jump: school-age norms and ACSM-style decline curves.",
+      "basisVjump": "Vertical jump: ACSM-style field norms; above T100 uses meter-based linear + quartic overflow (same elite style as sprint).",
+      "basisSlj": "Standing long jump: school-age norms; quartic overflow above T100 prevents 320–390 cm elites collapsing to identical radar 200.",
       "basisSprint": "100 m: sprint time norms aligned with championship-tier reference tables.",
       "remark": "Full-span data per age is not always published; reference tables use interpolated bands. Displayed anchors match scoring rows in this app."
     },

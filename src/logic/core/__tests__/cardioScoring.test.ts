@@ -167,6 +167,9 @@ describe('calculate5KmScore', () => {
       expect(resolveRun5KmQuarticCoefficient('female')).toBe(
         RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE
       );
+      expect(resolveRun5KmQuarticCoefficient('女性')).toBe(
+        RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE
+      );
     });
   });
 

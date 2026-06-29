@@ -20,8 +20,6 @@ export const GRIP_BASE_WEIGHT_KG_MALE = 75;
  * boost on the existing 1.6× sex compensation and inflate typical 50–60 kg female scores.
  */
 export const GRIP_BASE_WEIGHT_KG_FEMALE = 55;
-/** @deprecated Use GRIP_BASE_WEIGHT_KG_MALE — kept for import stability. */
-export const GRIP_BASE_WEIGHT_KG = GRIP_BASE_WEIGHT_KG_MALE;
 
 /** Lighter-than-anchor: √(anchor/W) rewards relative-strength performers without 1:1 grip÷BW punishment. */
 export const GRIP_WEIGHT_EXPONENT_LIGHT = 0.5;

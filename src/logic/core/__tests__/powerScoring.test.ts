@@ -46,6 +46,12 @@ describe('calculateScoreIncreasing', () => {
     expect(calculateScoreIncreasing(270, maleSlj2130)).toBe(100);
   });
 
+  it('applies 4th-power warp above T100 (male 21–30 vertical jump)', () => {
+    const maleVj2130 = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
+    expect(calculateScoreIncreasing(70, maleVj2130)).toBe(100);
+    expect(calculateScoreIncreasing(100, maleVj2130)).toBe(112.36);
+  });
+
   it('applies 4th-power warp above T100 (male 21–30 SLJ checkpoints)', () => {
     expect(calculateScoreIncreasing(320, maleSlj2130)).toBe(122.81);
     expect(calculateScoreIncreasing(370, maleSlj2130)).toBe(185);

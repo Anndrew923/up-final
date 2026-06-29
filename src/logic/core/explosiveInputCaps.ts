@@ -5,6 +5,7 @@
  * Standing long jump user spec is in meters (3.80 m / 3.20 m) — this app stores cm everywhere else.
  */
 import type { PhysicalProfile } from '../../types/userProfile';
+import { normalizeGenderForNormTables } from './genderNormalize';
 
 export const EXPLOSIVE_VERTICAL_JUMP_MAX_CM = { male: 135, female: 135 } as const;
 export const EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM = { male: 390, female: 390 } as const;
@@ -29,6 +30,13 @@ export function getExplosiveSprint100mFloorSeconds(gender: 'male' | 'female'): n
   return EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS[gender];
 }
 
+/** WHY: cap notices and floors must follow the same sex norm as powerScoring (e.g. 女性 token). */
+export function resolveExplosiveCapGender(
+  profile: PhysicalProfile
+): 'male' | 'female' {
+  return normalizeGenderForNormTables(profile.gender) === 'female' ? 'female' : 'male';
+}
+
 export function hasAnyExplosiveCap(cap: ExplosiveCapApplied): boolean {
   return cap.verticalJump || cap.standingLongJump || cap.sprint;
 }
@@ -42,7 +50,7 @@ export function getExplosiveCapNoticeInterpolation(
   maxStandingLongJumpCm?: number;
   sprint100mFloorSeconds?: number;
 } {
-  const gender = profile.gender === 'female' ? 'female' : 'male';
+  const gender = resolveExplosiveCapGender(profile);
   const out: {
     maxVerticalJumpCm?: number;
     maxStandingLongJumpCm?: number;
@@ -108,6 +116,6 @@ export function applyExplosiveInputCapsForProfile(
     sprintSeconds: number | null;
   }
 ): ReturnType<typeof applyExplosiveInputCaps> {
-  const g = profile.gender === 'female' ? 'female' : 'male';
+  const g = resolveExplosiveCapGender(profile);
   return applyExplosiveInputCaps(g, input);
 }
