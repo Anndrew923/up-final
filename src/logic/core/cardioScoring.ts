@@ -117,27 +117,45 @@ export type Run5KmNorm = Readonly<{
 
 /** Overflow above T100: linear pts per minute faster than T100 anchor. */
 export const RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE = 6 as const;
-/** Quartic warp coefficient — elite aerobic times above 100-pt anchor. */
-export const RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT = 0.0105 as const;
+/** Male quartic warp — elite aerobic times above 100-pt anchor (unchanged baseline). */
+export const RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_MALE = 0.0105 as const;
+/**
+ * Female quartic warp — lower coefficient so WR 14:00 (~8.5 min faster than T100) lands ~175+
+ * instead of ~205 with the male coefficient (mixed-leaderboard tier parity).
+ */
+export const RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE = 0.0047 as const;
 
 export function resolveRun5KmNorm(gender: string | null | undefined): Run5KmNorm {
   return normalizeGenderForCardio(gender) === 'female' ? RUN_5KM_FEMALE : RUN_5KM_MALE;
 }
 
+/** WHY: overflow quartic must follow sex norm — female deltaT spans are wider at the same WR tier. */
+export function resolveRun5KmQuarticCoefficient(
+  gender: string | null | undefined,
+): number {
+  return normalizeGenderForCardio(gender) === 'female'
+    ? RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE
+    : RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_MALE;
+}
+
 /** 4th-power aerobic warp when effective time ≤ T100 (deltaT in minutes from T100). */
 export function score5KmOverflowAboveT100(
   effectiveSeconds: number,
-  norm: Run5KmNorm
+  norm: Run5KmNorm,
+  gender: string | null | undefined = 'male',
 ): number {
   const deltaTMinutes = (norm.t100Seconds - effectiveSeconds) / 60;
   const linear = deltaTMinutes * RUN_5KM_OVERFLOW_LINEAR_PER_MINUTE;
-  const quartic =
-    Math.pow(deltaTMinutes, 4) * RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT;
+  const quartic = Math.pow(deltaTMinutes, 4) * resolveRun5KmQuarticCoefficient(gender);
   return round2(100 + linear + quartic);
 }
 
-/** Linear 0–100 band; 4th-power overflow above T100 (minutes faster → higher score). */
-export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number {
+/** Linear 0–100 band; sex-specific 4th-power overflow above T100 (minutes faster → higher score). */
+export function score5KmFromNorm(
+  totalSeconds: number,
+  norm: Run5KmNorm,
+  gender: string | null | undefined = 'male',
+): number {
   if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return 0;
 
   const effectiveSeconds = Math.max(totalSeconds, norm.floorSeconds);
@@ -145,7 +163,7 @@ export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number
   if (effectiveSeconds > norm.t0Seconds) return 0;
 
   if (effectiveSeconds <= norm.t100Seconds) {
-    return score5KmOverflowAboveT100(effectiveSeconds, norm);
+    return score5KmOverflowAboveT100(effectiveSeconds, norm, gender);
   }
 
   const range = norm.t0Seconds - norm.t100Seconds;
@@ -154,8 +172,11 @@ export function score5KmFromNorm(totalSeconds: number, norm: Run5KmNorm): number
 }
 
 /** Max raw score at the WR-aligned floor (after overflow math). */
-export function run5KmCeilingScore(norm: Run5KmNorm): number {
-  return score5KmFromNorm(norm.floorSeconds, norm);
+export function run5KmCeilingScore(
+  norm: Run5KmNorm,
+  gender: string | null | undefined = 'male',
+): number {
+  return score5KmFromNorm(norm.floorSeconds, norm, gender);
 }
 
 /**
@@ -167,7 +188,7 @@ export function calculate5KmScore(input: {
 }): number {
   const sec = parseInt(String(input.totalSeconds), 10);
   if (!sec || sec <= 0) return 0;
-  return score5KmFromNorm(sec, resolveRun5KmNorm(input.gender));
+  return score5KmFromNorm(sec, resolveRun5KmNorm(input.gender), input.gender);
 }
 
 /**

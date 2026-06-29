@@ -6,12 +6,14 @@ import {
   COOPER_MAX_DISTANCE_MALE_METERS,
   RUN_5KM_FEMALE,
   RUN_5KM_MALE,
-  RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT,
+  RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE,
+  RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_MALE,
   calculate5KmScore,
   calculateCooperScore,
   mergeScoreMapWithResolvedCardio,
   resolveCardioScoreForDisplay,
   resolveRun5KmNorm,
+  resolveRun5KmQuarticCoefficient,
   run5KmCeilingScore,
   score5KmFromNorm,
   score5KmOverflowAboveT100,
@@ -88,8 +90,8 @@ describe('calculate5KmScore', () => {
     });
 
     it('applies 4th-power warp above T100 (male elite checkpoints)', () => {
-      const wr = score5KmOverflowAboveT100(755, RUN_5KM_MALE);
-      const ceiling = run5KmCeilingScore(RUN_5KM_MALE);
+      const wr = score5KmOverflowAboveT100(755, RUN_5KM_MALE, 'male');
+      const ceiling = run5KmCeilingScore(RUN_5KM_MALE, 'male');
       expect(calculate5KmScore({ totalSeconds: 755, gender: 'male' })).toBe(wr);
       expect(wr).toBeGreaterThan(170);
       expect(calculate5KmScore({ totalSeconds: 740, gender: 'male' })).toBe(ceiling);
@@ -115,19 +117,17 @@ describe('calculate5KmScore', () => {
       expect(calculate5KmScore({ totalSeconds: 55 * 60, gender: 'female' })).toBe(0);
     });
 
-    it('scores 115.41 at 20:00 (smooth handoff from v4.2.0 anchor)', () => {
-      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'female' })).toBe(
-        score5KmOverflowAboveT100(20 * 60, RUN_5KM_FEMALE)
-      );
+    it('scores 115.18 at 20:00 (female quartic handoff)', () => {
+      expect(calculate5KmScore({ totalSeconds: 20 * 60, gender: 'female' })).toBe(115.18);
+      expect(score5KmOverflowAboveT100(20 * 60, RUN_5KM_FEMALE, 'female')).toBe(115.18);
     });
 
-    it('applies 4th-power warp above T100 (female elite checkpoints)', () => {
-      const wr = score5KmOverflowAboveT100(840, RUN_5KM_FEMALE);
-      const ceiling = run5KmCeilingScore(RUN_5KM_FEMALE);
-      expect(calculate5KmScore({ totalSeconds: 840, gender: 'female' })).toBe(wr);
-      expect(wr).toBeGreaterThan(170);
-      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(ceiling);
-      expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(ceiling);
+    it('applies female quartic warp at WR and floor (elite checkpoints)', () => {
+      expect(calculate5KmScore({ totalSeconds: 840, gender: 'female' })).toBe(175.53);
+      expect(score5KmOverflowAboveT100(840, RUN_5KM_FEMALE, 'female')).toBe(175.53);
+      expect(calculate5KmScore({ totalSeconds: 825, gender: 'female' })).toBe(180.05);
+      expect(run5KmCeilingScore(RUN_5KM_FEMALE, 'female')).toBe(180.05);
+      expect(calculate5KmScore({ totalSeconds: 780, gender: 'female' })).toBe(180.05);
     });
 
     it('still scores above zero at 45:00 (decoupled T0 is 50:00)', () => {
@@ -148,31 +148,45 @@ describe('calculate5KmScore', () => {
       expect(calculate5KmScore({ totalSeconds: 20 * 60 })).toBe(100);
       expect(calculate5KmScore({ totalSeconds: 45 * 60 })).toBe(0);
       expect(calculate5KmScore({ totalSeconds: 755 })).toBe(
-        score5KmOverflowAboveT100(755, RUN_5KM_MALE)
+        score5KmOverflowAboveT100(755, RUN_5KM_MALE, 'male')
       );
-      expect(calculate5KmScore({ totalSeconds: 740 })).toBe(run5KmCeilingScore(RUN_5KM_MALE));
+      expect(calculate5KmScore({ totalSeconds: 740 })).toBe(
+        run5KmCeilingScore(RUN_5KM_MALE, 'male')
+      );
     });
 
     it('resolveRun5KmNorm maps unknown gender to male', () => {
       expect(resolveRun5KmNorm(undefined)).toEqual(RUN_5KM_MALE);
       expect(resolveRun5KmNorm('female')).toEqual(RUN_5KM_FEMALE);
     });
+
+    it('resolveRun5KmQuarticCoefficient defaults to male coefficient', () => {
+      expect(resolveRun5KmQuarticCoefficient(undefined)).toBe(
+        RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_MALE
+      );
+      expect(resolveRun5KmQuarticCoefficient('female')).toBe(
+        RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE
+      );
+    });
   });
 
   it('score5KmFromNorm and overflow helper match calculate5KmScore at checkpoints', () => {
-    expect(score5KmFromNorm(1200, RUN_5KM_MALE)).toBe(100);
-    expect(score5KmFromNorm(1350, RUN_5KM_FEMALE)).toBe(100);
-    expect(score5KmOverflowAboveT100(755, RUN_5KM_MALE)).toBe(
+    expect(score5KmFromNorm(1200, RUN_5KM_MALE, 'male')).toBe(100);
+    expect(score5KmFromNorm(1350, RUN_5KM_FEMALE, 'female')).toBe(100);
+    expect(score5KmOverflowAboveT100(755, RUN_5KM_MALE, 'male')).toBe(
       calculate5KmScore({ totalSeconds: 755, gender: 'male' })
     );
-    expect(score5KmOverflowAboveT100(1200, RUN_5KM_FEMALE)).toBe(115.41);
-    expect(score5KmFromNorm(825, RUN_5KM_FEMALE)).toBe(run5KmCeilingScore(RUN_5KM_FEMALE));
-    expect(score5KmFromNorm(0, RUN_5KM_MALE)).toBe(0);
-    expect(score5KmFromNorm(-10, RUN_5KM_FEMALE)).toBe(0);
-    expect(RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT).toBe(0.0105);
+    expect(score5KmOverflowAboveT100(1200, RUN_5KM_FEMALE, 'female')).toBe(115.18);
+    expect(score5KmFromNorm(825, RUN_5KM_FEMALE, 'female')).toBe(
+      run5KmCeilingScore(RUN_5KM_FEMALE, 'female')
+    );
+    expect(score5KmFromNorm(0, RUN_5KM_MALE, 'male')).toBe(0);
+    expect(score5KmFromNorm(-10, RUN_5KM_FEMALE, 'female')).toBe(0);
+    expect(RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_MALE).toBe(0.0105);
+    expect(RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE).toBe(0.0047);
   });
 
-  it('clamps elite female floor raw above 200 when merging to radar ScoreMap', () => {
+  it('female floor raw stays below radar clamp (no dead-zone collapse at 200)', () => {
     const femaleProfile: PhysicalProfile = {
       gender: 'female',
       age: 28,
@@ -180,13 +194,14 @@ describe('calculate5KmScore', () => {
       weightKg: 58,
       updatedAt: '',
     };
-    const raw = run5KmCeilingScore(RUN_5KM_FEMALE);
-    expect(raw).toBeGreaterThan(200);
+    const raw = run5KmCeilingScore(RUN_5KM_FEMALE, 'female');
+    expect(raw).toBe(180.05);
+    expect(raw).toBeLessThan(200);
     const merged = mergeScoreMapWithResolvedCardio({ cardio: 0 }, femaleProfile, {
       run_5km: { totalSeconds: RUN_5KM_FEMALE.floorSeconds },
     });
-    expect(merged.cardio).toBe(200);
-    expect(clampScoreMapValue(raw)).toBe(200);
+    expect(merged.cardio).toBe(180.05);
+    expect(clampScoreMapValue(raw)).toBe(raw);
   });
 });
 
@@ -241,7 +256,7 @@ describe('resolveCardioScoreForDisplay', () => {
     const inputs: CardioInputsPersisted = {
       run_5km: { totalSeconds: 20 * 60 },
     };
-    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115.41);
+    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115.18);
   });
 });
 
