@@ -34,8 +34,8 @@ export const DECADE_AXIS_TIER_BANDS: readonly ScoreBand[] = [
 export const FOURTEEN_TIER_SCORE_BANDS = DECADE_AXIS_TIER_BANDS;
 
 /**
- * Grip-only 18-tier ladder — decade mids + 150/160/170 high bands; PANTHEON >= 180.
- * WHY: Grip scores often exceed 150 after formula; extra tens before pantheon match product scale.
+ * Grip-only 14-tier ladder — decade mids; LEGEND 150–159.99; PANTHEON >= 160.
+ * WHY: Allometric grip formula recalibrated; elite semantics anchor at 150+ / pantheon at 160+.
  */
 export const DECADE_GRIP_TIER_BANDS: readonly ScoreBand[] = [
   { id: 'BASE', min: 0, max: 39.99 },
@@ -50,10 +50,8 @@ export const DECADE_GRIP_TIER_BANDS: readonly ScoreBand[] = [
   { id: 'TIER_120', min: 120, max: 129.99 },
   { id: 'TIER_130', min: 130, max: 139.99 },
   { id: 'TIER_140', min: 140, max: 149.99 },
-  { id: 'TIER_150', min: 150, max: 159.99 },
-  { id: 'TIER_160', min: 160, max: 169.99 },
-  { id: 'TIER_170', min: 170, max: 179.99 },
-  { id: 'PANTHEON', min: 180, max: 999 },
+  { id: 'LEGEND', min: 150, max: 159.99 },
+  { id: 'PANTHEON', min: 160, max: 999 },
 ] as const;
 
 export const GRIP_SCORE_BANDS = DECADE_GRIP_TIER_BANDS;

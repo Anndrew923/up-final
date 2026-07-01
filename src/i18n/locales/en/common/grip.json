@@ -15,7 +15,7 @@
       "p4": "Ceiling benchmark: Magnus Samuelsson (1998 World’s Strongest Man champion; one of the few athletes in history to close CoC No.4 under strict certification conditions).",
       "p5": "Product measurement guardrail — not a competition certification.",
       "p6": "Scientific calibration: allometric scaling per square–cube physiology. Reusing the male 75 kg anchor for women would stack W_factor on the 1.6× sex multiplier and inflate typical scores; we use male 75 kg / female 55 kg anchors with 0.5 and 0.33 power-law exponents.",
-      "p7": "Balance checkpoints: male century gate — 75 kg BW / 72 kg peak ≈ 101 pts; female century gate — 55 kg BW / 45 kg peak ≈ 101 pts (sports-medicine aligned). Lighter athletes gain relative-strength boost; super-heavy frames keep TIER_140+ aura with inflation damped.",
+      "p7": "Balance checkpoints: male century gate — 75 kg BW / 72 kg peak ≈ 101 pts; female century gate — 55 kg BW / 45 kg peak ≈ 101 pts (sports-medicine aligned). Lighter athletes gain relative-strength boost; super-heavy frames keep LEGEND (150+) / PANTHEON (160+) aura with inflation damped.",
       "p8": "Changing Home body weight will dynamically recalculate your grip axis score from the latest weight."
     },
     "capNoticeTitle": "Input Exceeds Model Cap",
@@ -38,9 +38,6 @@
       "TIER_120": "Sequence Dominance",
       "TIER_130": "Phantom Compression",
       "TIER_140": "Eternal Interface",
-      "TIER_150": "Serial Awakening",
-      "TIER_160": "Core Traction",
-      "TIER_170": "Record Archive",
       "LEGEND": "Planetary Grip",
       "PANTHEON": "Pantheon Compression"
     },

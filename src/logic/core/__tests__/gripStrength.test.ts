@@ -132,8 +132,8 @@ describe('resolveGripAuraFromBandId', () => {
     expect(resolveGripAuraFromBandId('TIER_100')).toBe('shimmer');
     expect(resolveGripAuraFromBandId('TIER_110')).toBe('lightning');
     expect(resolveGripAuraFromBandId('TIER_130')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('TIER_150')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('TIER_170')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('TIER_140')).toBe('void_flame');
+    expect(resolveGripAuraFromBandId('LEGEND')).toBe('divine_light');
     expect(resolveGripAuraFromBandId('PANTHEON')).toBe('divine_light');
   });
 });
@@ -155,9 +155,24 @@ describe('getGripRankMetadata', () => {
       color: 'black',
       aura: 'void_flame',
     });
+    expect(getGripRankMetadata(145)).toEqual({
+      rankKey: 'TIER_140',
+      color: 'black',
+      aura: 'void_flame',
+    });
+    expect(getGripRankMetadata(150)).toEqual({
+      rankKey: 'LEGEND',
+      color: 'gold',
+      aura: 'divine_light',
+    });
   });
 
-  it('returns PANTHEON with divine_light for scores at or above 180', () => {
+  it('returns PANTHEON with divine_light for scores at or above 160', () => {
+    expect(getGripRankMetadata(160)).toEqual({
+      rankKey: 'PANTHEON',
+      color: 'gold',
+      aura: 'divine_light',
+    });
     expect(getGripRankMetadata(185)).toEqual({
       rankKey: 'PANTHEON',
       color: 'gold',

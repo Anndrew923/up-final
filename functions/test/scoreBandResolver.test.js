@@ -60,7 +60,15 @@ describe("resolveHumanScaleDecadeKey v3.3.2", () => {
     assert.equal(resolveHumanScaleDecadeKey("PANTHEON"), "150");
   });
 
-  it("maps grip 150+ tiers to 150", () => {
+  it("maps gripStrength bands with earlier LEGEND and PANTHEON gates", () => {
+    assert.equal(resolveScoreBandId("gripStrength", 149.99), "TIER_140");
+    assert.equal(resolveScoreBandId("gripStrength", 150), "LEGEND");
+    assert.equal(resolveScoreBandId("gripStrength", 159.99), "LEGEND");
+    assert.equal(resolveScoreBandId("gripStrength", 160), "PANTHEON");
+    assert.equal(resolveScoreBandId("gripStrength", 200), "PANTHEON");
+  });
+
+  it("maps legacy grip tier ids to human-scale 150 bucket", () => {
     assert.equal(resolveHumanScaleDecadeKey("TIER_150"), "150");
     assert.equal(resolveHumanScaleDecadeKey("TIER_160"), "150");
     assert.equal(resolveHumanScaleDecadeKey("TIER_170"), "150");

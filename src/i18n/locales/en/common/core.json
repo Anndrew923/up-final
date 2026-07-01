@@ -424,43 +424,31 @@
         },
         "TIER_100": {
           "title": "Drag Strip Slick",
-          "summary": "[ACHIEVEMENT UNLOCKED] Global top 1%. Terrifying sidewall twist resistance—heavy loads rock solid."
+          "summary": "[ACHIEVEMENT UNLOCKED] Top 1% grip after body-weight calibration. NFL-beast and elite climber tier—terrifying sidewall twist resistance; heavy loads rock solid."
         },
         "TIER_110": {
           "title": "FIA Competition Racing Slicks",
-          "summary": "[MAX ANTI-SLIP] Elite powerlifter tier. FIA slicks synced—680 hp, 850 Nm, 2.8 bar; suppresses micro power bleed."
+          "summary": "[MAX ANTI-SLIP] Top-tier pro powerlifter. Pure heat-cycle rubber—680 hp factory racer; suppresses micro power bleed and slip."
         },
         "TIER_120": {
           "title": "LMP All-Weather Ground Tire",
-          "summary": "[GLUED TO TRACK] Pro arm-wrestler entry. Dominates gravity and limit resistance—high-G corners magnet-lock."
+          "summary": "[GLUED TO TRACK] Elite pro arm-wrestler. Dominates gravity and limit resistance—high-G corners magnet-lock to the surface."
         },
         "TIER_130": {
           "title": "Heated-Blanket Full Slick",
-          "summary": "[RAPTOR CLAMP] Elite arm-wrestler tier. Handles deform under clamp—ultimate softened bite limit on track."
+          "summary": "[RAPTOR CLAMP] International arm-wrestling masters and top strongmen. Gym bars yield under clamp—ultimate softened bite on track."
         },
         "TIER_140": {
           "title": "Hydraulic Vise Compound",
-          "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide. Hydraulic vise clamp stress—friction coefficient defies physics."
-        },
-        "TIER_150": {
-          "title": "Factory Supermaterial Tire",
-          "summary": "[GRIP MONSTER] World-top strongman tier. Full-load factory racer grip—no stock rig makes this compound slip."
-        },
-        "TIER_160": {
-          "title": "Superconducting Gravity Grip",
-          "summary": "[GRAVITY GRIP] World-top arm-wrestler. Dynamometers useless—rubber molecular bond at chain-level force."
-        },
-        "TIER_170": {
-          "title": "Limit Stress Archive",
-          "summary": "[RECORD SEALED] Top ~100 worldwide. Both hands turned heavy machinery—no chassis escapes your control."
+          "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide. Factory hydraulic vise clamp stress—friction defies physics; terminal control flawless."
         },
         "LEGEND": {
           "title": "Aerospace-Grade Planetary Compound",
-          "summary": "[PLANETARY ASSET] Arm-wrestling god tier. Aerospace compound synced—1500 hp, 1600 Nm, 5.5 bar; beyond biology."
+          "summary": "[PLANETARY ASSET] World-top arm-wrestling gods and heavy strongman peaks! 1500 hp Bugatti sync—beyond most human grip specs; Earth's strongest outlier."
         },
         "PANTHEON": {
           "title": "Pantheon Ultimate Gravity Bite",
-          "summary": "[PANTHEON] Single-digit humans on Earth. Friction data overflow—grip archived to the Pantheon, written into history."
+          "summary": "[PANTHEON] Single-digit humans after body-weight calibration. Grip model sealed; friction overflow—archived to Dyno Intel Pantheon, written into history."
         }
       },
       "armSize": {

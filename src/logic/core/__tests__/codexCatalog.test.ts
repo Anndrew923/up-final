@@ -29,16 +29,17 @@ describe('codexCatalog', () => {
   });
 
   it('returns correct band ladder lengths per tab', () => {
-    expect(getBandsForCodexTab('gripStrength').length).toBe(16);
+    expect(getBandsForCodexTab('gripStrength').length).toBe(14);
     expect(getBandsForCodexTab('strength').length).toBe(14);
     expect(getBandsForCodexTab('overall').length).toBe(14);
     expect(getBandsForCodexTab('cooper').length).toBe(14);
   });
 
-  it('grip ladder differs from strength ladder', () => {
-    expect(getBandsForCodexTab('gripStrength').map((band) => band.id)).not.toEqual(
-      getBandsForCodexTab('strength').map((band) => band.id)
-    );
+  it('grip pantheon gate is lower than strength (160 vs 180)', () => {
+    const gripPantheon = getBandsForCodexTab('gripStrength').find((band) => band.id === 'PANTHEON');
+    const strengthPantheon = getBandsForCodexTab('strength').find((band) => band.id === 'PANTHEON');
+    expect(gripPantheon?.min).toBe(160);
+    expect(strengthPantheon?.min).toBe(180);
   });
 
   it('resolves user score with shared cardio for cooper and fiveK', () => {

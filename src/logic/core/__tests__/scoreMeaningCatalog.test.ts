@@ -92,9 +92,7 @@ const DECADE_GRIP_TIER_IDS = [
   'TIER_120',
   'TIER_130',
   'TIER_140',
-  'TIER_150',
-  'TIER_160',
-  'TIER_170',
+  'LEGEND',
   'PANTHEON',
 ] as const;
 
@@ -103,21 +101,21 @@ const DECADE_GRIP_CHECKPOINTS: Array<[number, string]> = [
   [40, 'TIER_40'],
   [130, 'TIER_130'],
   [149.99, 'TIER_140'],
-  [150, 'TIER_150'],
-  [169.99, 'TIER_160'],
-  [170, 'TIER_170'],
-  [179.99, 'TIER_170'],
-  [180, 'PANTHEON'],
+  [150, 'LEGEND'],
+  [159.99, 'LEGEND'],
+  [160, 'PANTHEON'],
   [224, 'PANTHEON'],
 ];
 
 describe('resolveScoreBand(gripStrength)', () => {
-  it('uses grip-only extended decade map (not strength 14-tier)', () => {
+  it('uses grip-only band map with earlier LEGEND/PANTHEON gates', () => {
     const gripIds = SCORE_MEANING_CATALOG.gripStrength.map((band) => band.id);
     const strengthIds = SCORE_MEANING_CATALOG.strength.map((band) => band.id);
     expect(gripIds).toEqual([...DECADE_GRIP_TIER_IDS]);
-    expect(gripIds).not.toEqual(strengthIds);
+    expect(gripIds).toEqual(strengthIds);
     expect(DECADE_GRIP_TIER_BANDS).toBe(SCORE_MEANING_CATALOG.gripStrength);
+    expect(DECADE_GRIP_TIER_BANDS.find((b) => b.id === 'LEGEND')?.max).toBe(159.99);
+    expect(DECADE_GRIP_TIER_BANDS.find((b) => b.id === 'PANTHEON')?.min).toBe(160);
   });
 
   it('maps boundary checkpoints including high grip bands', () => {
@@ -130,9 +128,9 @@ describe('resolveScoreBand(gripStrength)', () => {
     expect(resolveScoreBand('gripStrength', 39.99).id).toBe('BASE');
     expect(resolveScoreBand('gripStrength', 130.59).id).toBe('TIER_130');
     expect(resolveScoreBand('gripStrength', 149.99).id).toBe('TIER_140');
-    expect(resolveScoreBand('gripStrength', 150).id).toBe('TIER_150');
-    expect(resolveScoreBand('gripStrength', 179.99).id).toBe('TIER_170');
-    expect(resolveScoreBand('gripStrength', 180).id).toBe('PANTHEON');
+    expect(resolveScoreBand('gripStrength', 150).id).toBe('LEGEND');
+    expect(resolveScoreBand('gripStrength', 159.99).id).toBe('LEGEND');
+    expect(resolveScoreBand('gripStrength', 160).id).toBe('PANTHEON');
   });
 });
 

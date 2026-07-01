@@ -71,10 +71,8 @@ const DECADE_AXIS_TIER_BANDS = [
 
 const DECADE_GRIP_TIER_BANDS = [
   ...DECADE_AXIS_TIER_BANDS.slice(0, 12),
-  { id: "TIER_150", min: 150, max: 159.99 },
-  { id: "TIER_160", min: 160, max: 169.99 },
-  { id: "TIER_170", min: 170, max: 179.99 },
-  { id: "PANTHEON", min: 180, max: 999 },
+  { id: "LEGEND", min: 150, max: 159.99 },
+  { id: "PANTHEON", min: 160, max: 999 },
 ];
 
 const SCORE_MEANING_CATALOG = {

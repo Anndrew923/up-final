@@ -8,7 +8,7 @@ import {
   shouldPreferQuestionFocusClosing,
 } from './resolveDynoIntelQuestionFocus';
 
-const HIGH_TIER_BAND_IDS = new Set(['LEGEND', 'PANTHEON', 'TIER_140', 'TIER_150', 'TIER_160']);
+const HIGH_TIER_BAND_IDS = new Set(['LEGEND', 'PANTHEON', 'TIER_140']);
 const LOW_TIER_BAND_IDS = new Set(['BASE', 'TIER_40', 'TIER_50', 'TIER_60']);
 
 function resolvePrimaryAxisSnap(context: DynoIntelContextV1): DynoAxisSnapshot | null {
