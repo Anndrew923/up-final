@@ -1,8 +1,8 @@
 /**
  * Explosive power (vertical jump / standing long jump / sprint) — norm tables align with
  * reference-app `assessmentStandards.js`; sprint overflow above T100 uses a 4th-power warp
- * (`SPRINT_OVERFLOW_*`); vertical jump / standing long jump overflow uses meter-based
- * `INCREASING_OVERFLOW_*` warp to avoid elite dead-zone collapse at radar clamp 200.
+ * (`SPRINT_OVERFLOW_*`); standing long jump uses meter-based `INCREASING_OVERFLOW_*`;
+ * vertical jump uses cm-based `VJUMP_OVERFLOW_*` (metric-decoupled warp).
  */
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -28,19 +28,80 @@ export function scoreSprintOverflowAboveT100(deltaT: number): number {
   return round2(100 + linearBonus + quarticBonus);
 }
 
-/** Linear pts per meter beyond T100 distance anchor (deltaD = 0 → score stays 100). */
+/** Linear pts per meter beyond T100 distance anchor (standing long jump only). */
 export const INCREASING_OVERFLOW_LINEAR_PER_METER = 40 as const;
-/** Quartic coefficient for vertical jump / standing long jump elite-distance warp above T100. */
+/** Quartic coefficient for standing long jump elite-distance warp above T100. */
 export const INCREASING_OVERFLOW_QUARTIC_COEFFICIENT = 45 as const;
 
+/** Linear pts per cm beyond T100 vertical-jump anchor. */
+export const VJUMP_OVERFLOW_LINEAR_PER_CM = 1.5 as const;
+/** Quartic coefficient tuned so male 21–30 T100+33 cm (103 cm) → 175.00 elite tier. */
+export const VJUMP_OVERFLOW_QUARTIC_COEFFICIENT = 0.000021502 as const;
+
 /**
- * WHY: 100+ pts use quartic warp on both jump branches — linear excess×2 collapsed SLJ elites
- * into identical radar 200; mirrors sprint/cardio elite-overflow style across explosive axis.
+ * WHY: 100+ pts use quartic warp on SLJ — linear excess×2 collapsed elites into identical radar 200.
  */
 export function scoreIncreasingOverflowAboveT100(deltaD_meters: number): number {
   const linearBonus = deltaD_meters * INCREASING_OVERFLOW_LINEAR_PER_METER;
   const quarticBonus = Math.pow(deltaD_meters, 4) * INCREASING_OVERFLOW_QUARTIC_COEFFICIENT;
   return round2(100 + linearBonus + quarticBonus);
+}
+
+/** Shared 0→50→100 linear band (below T100) for jump metrics. */
+export function calculateScoreIncreasingLinearBand(
+  value: number,
+  standard: PowerStandardRow,
+): number {
+  const v = parseFloat(String(value));
+  if (v < standard[50]) {
+    const denom = standard[50] - standard[0];
+    if (denom <= 0) return 0;
+    return round2(((v - standard[0]) / denom) * 50);
+  }
+  const denomHigh = standard[100] - standard[50];
+  if (denomHigh <= 0) return 50;
+  return round2(50 + ((v - standard[50]) / denomHigh) * 50);
+}
+
+/**
+ * WHY: SLJ uses meter overflow — v4.6 warp preserved; decoupled from vertical cm physics.
+ * IMPACT: Broad-jump ladder shard and radar branch only.
+ */
+export function calculateSljScore(value: number, standard: PowerStandardRow): number {
+  const v = parseFloat(String(value));
+  if (!Number.isFinite(v) || v <= 0) return 0;
+  if (v < standard[0]) return 0;
+
+  if (v >= standard[100]) {
+    const deltaD_meters = (v - standard[100]) / 100;
+    return scoreIncreasingOverflowAboveT100(deltaD_meters);
+  }
+
+  return calculateScoreIncreasingLinearBand(v, standard);
+}
+
+/**
+ * WHY: Vertical jump cm overflow — raw 100 cm on male T100=70 hit 311 under meter-shared formula;
+ * cm quartic + tuned k anchors DK-class 103 cm at 175 without radar dead-zone collapse.
+ */
+export function calculateVjumpScore(value: number, standard: PowerStandardRow): number {
+  const v = parseFloat(String(value));
+  if (!Number.isFinite(v) || v <= 0) return 0;
+  if (v < standard[0]) return 0;
+
+  if (v >= standard[100]) {
+    const deltaC_cm = v - standard[100];
+    const linearBonus = deltaC_cm * VJUMP_OVERFLOW_LINEAR_PER_CM;
+    const quarticBonus = Math.pow(deltaC_cm, 4) * VJUMP_OVERFLOW_QUARTIC_COEFFICIENT;
+    return round2(100 + linearBonus + quarticBonus);
+  }
+
+  return calculateScoreIncreasingLinearBand(v, standard);
+}
+
+/** @deprecated Use calculateSljScore or calculateVjumpScore — kept for SLJ regression imports. */
+export function calculateScoreIncreasing(value: number, standard: PowerStandardRow): number {
+  return calculateSljScore(value, standard);
 }
 
 /** Fixed denominator for explosive composite (vertical / broad jump / sprint; missing = 0). */
@@ -172,26 +233,6 @@ export function getPowerStandardsForProfile(profile: PhysicalProfile): {
   return { vjump, slj, sprint, ageRange: range };
 }
 
-export function calculateScoreIncreasing(value: number, standard: PowerStandardRow): number {
-  const v = parseFloat(String(value));
-  if (!Number.isFinite(v) || v <= 0) return 0;
-  if (v < standard[0]) return 0;
-
-  if (v >= standard[100]) {
-    const deltaD_meters = (v - standard[100]) / 100;
-    return scoreIncreasingOverflowAboveT100(deltaD_meters);
-  }
-
-  if (v < standard[50]) {
-    const denom = standard[50] - standard[0];
-    if (denom <= 0) return 0;
-    return round2(((v - standard[0]) / denom) * 50);
-  }
-  const denomHigh = standard[100] - standard[50];
-  if (denomHigh <= 0) return 50;
-  return round2(50 + ((v - standard[50]) / denomHigh) * 50);
-}
-
 export function calculateScoreDecreasing(value: number, standard: PowerStandardRow): number {
   const v = parseFloat(String(value));
   if (!Number.isFinite(v) || v <= 0) return 0;
@@ -232,11 +273,11 @@ export function calculateExplosivePowerBreakdown(input: {
 
   const verticalJumpRaw =
     input.verticalJumpCm !== null && input.verticalJumpCm > 0
-      ? calculateScoreIncreasing(input.verticalJumpCm, std.vjump)
+      ? calculateVjumpScore(input.verticalJumpCm, std.vjump)
       : null;
   const standingLongJumpRaw =
     input.standingLongJumpCm !== null && input.standingLongJumpCm > 0
-      ? calculateScoreIncreasing(input.standingLongJumpCm, std.slj)
+      ? calculateSljScore(input.standingLongJumpCm, std.slj)
       : null;
   const sprintRaw =
     input.sprintSeconds !== null && input.sprintSeconds > 0

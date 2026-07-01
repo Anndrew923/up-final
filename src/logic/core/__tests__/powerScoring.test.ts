@@ -5,6 +5,8 @@ import {
   calculateExplosivePowerFinalRaw,
   calculateScoreDecreasing,
   calculateScoreIncreasing,
+  calculateSljScore,
+  calculateVjumpScore,
   getPowerAgeRange,
   getPowerStandardsForProfile,
   mergeScoreMapWithResolvedExplosivePower,
@@ -31,45 +33,39 @@ describe('getPowerAgeRange', () => {
   });
 });
 
-describe('calculateScoreIncreasing', () => {
+describe('calculateSljScore', () => {
   const maleSlj2130 = STANDING_LONG_JUMP_STANDARDS_MALE['21-30'];
   const femaleSlj2130 = STANDING_LONG_JUMP_STANDARDS_FEMALE['21-30'];
 
-  it('interpolates between 0 and 50 anchors', () => {
+  it('interpolates between 0 and 50 anchors via shared linear band', () => {
     const std = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
-    // (40 - 30) / (50 - 30) * 50 = 25
-    expect(calculateScoreIncreasing(40, std)).toBe(25);
-    expect(calculateScoreIncreasing(50, std)).toBe(50);
+    expect(calculateVjumpScore(40, std)).toBe(25);
+    expect(calculateVjumpScore(50, std)).toBe(50);
   });
 
   it('holds T100 anchor at exactly 100.00 (male 21–30 SLJ)', () => {
+    expect(calculateSljScore(270, maleSlj2130)).toBe(100);
     expect(calculateScoreIncreasing(270, maleSlj2130)).toBe(100);
   });
 
-  it('applies 4th-power warp above T100 (male 21–30 vertical jump)', () => {
-    const maleVj2130 = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
-    expect(calculateScoreIncreasing(70, maleVj2130)).toBe(100);
-    expect(calculateScoreIncreasing(100, maleVj2130)).toBe(112.36);
-  });
-
-  it('applies 4th-power warp above T100 (male 21–30 SLJ checkpoints)', () => {
-    expect(calculateScoreIncreasing(320, maleSlj2130)).toBe(122.81);
-    expect(calculateScoreIncreasing(370, maleSlj2130)).toBe(185);
+  it('applies meter 4th-power warp above T100 (male 21–30 SLJ checkpoints)', () => {
+    expect(calculateSljScore(320, maleSlj2130)).toBe(122.81);
+    expect(calculateSljScore(370, maleSlj2130)).toBe(185);
     expect(scoreIncreasingOverflowAboveT100(0.5)).toBe(122.81);
     expect(scoreIncreasingOverflowAboveT100(1)).toBe(185);
   });
 
   it('clamps cap-class SLJ raw into radar 200 via clampScoreMapValue', () => {
-    const raw = calculateScoreIncreasing(390, maleSlj2130);
+    const raw = calculateSljScore(390, maleSlj2130);
     expect(raw).toBe(241.31);
     expect(clampScoreMapValue(raw)).toBe(200);
   });
 
   it('applies female SLJ norm warp (320 cm on 21–30 row)', () => {
-    expect(calculateScoreIncreasing(320, femaleSlj2130)).toBe(165.52);
+    expect(calculateSljScore(320, femaleSlj2130)).toBe(165.52);
   });
 
-  it('defaults to male norms when profile gender is undefined', () => {
+  it('defaults to male SLJ norms when profile gender is undefined', () => {
     const profile = {
       gender: undefined,
       age: 25,
@@ -80,7 +76,52 @@ describe('calculateScoreIncreasing', () => {
     const std = getPowerStandardsForProfile(profile);
     expect(std).not.toBeNull();
     if (!std) return;
-    expect(calculateScoreIncreasing(370, std.slj)).toBe(185);
+    expect(calculateSljScore(370, std.slj)).toBe(185);
+  });
+});
+
+describe('calculateVjumpScore', () => {
+  const maleVj2130 = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
+
+  it('holds T100 anchor at exactly 100.00 (male 21–30)', () => {
+    expect(calculateVjumpScore(70, maleVj2130)).toBe(100);
+  });
+
+  it('applies cm 4th-power warp above T100 (male 21–30 checkpoints)', () => {
+    expect(calculateVjumpScore(90, maleVj2130)).toBe(133.44);
+    expect(calculateVjumpScore(103, maleVj2130)).toBe(175);
+  });
+
+  it('clamps Sensabaugh-class WR raw into ladder vertical shard 200', () => {
+    const raw = calculateVjumpScore(116.84, maleVj2130);
+    expect(raw).toBe(273.76);
+    expect(clampScoreMapValue(raw)).toBe(200);
+
+    const profile: PhysicalProfile = {
+      gender: 'male',
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    };
+    const ladder = resolveExplosiveLadderScoreBundle(profile, {
+      explosivePower: { verticalJumpCm: 116.84 },
+    });
+    expect(ladder.vertical).toBe(200);
+  });
+
+  it('defaults to male VJump norms when profile gender is undefined', () => {
+    const profile = {
+      gender: undefined,
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    } as unknown as PhysicalProfile;
+    const std = getPowerStandardsForProfile(profile);
+    expect(std).not.toBeNull();
+    if (!std) return;
+    expect(calculateVjumpScore(103, std.vjump)).toBe(175);
   });
 });
 
@@ -157,7 +198,7 @@ describe('calculateExplosivePowerFinalRaw', () => {
 
   it('uses fixed /3 composite (only vertical: raw / 3)', () => {
     const stdRow = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
-    const vjOnly = calculateScoreIncreasing(50, stdRow);
+    const vjOnly = calculateVjumpScore(50, stdRow);
     const r = calculateExplosivePowerFinalRaw({
       verticalJumpCm: 50,
       standingLongJumpCm: null,
