@@ -115,6 +115,50 @@ describe('tryComputeSingleLiftStrength', () => {
     }
   });
 
+  it('caps lat pulldown at 300 kg and matches uncapped ceiling score', () => {
+    const formOver = emptyForm();
+    formOver.latPulldown = { weight: '301', reps: '5' };
+    const formAtCap = emptyForm();
+    formAtCap.latPulldown = { weight: String(STRENGTH_WEIGHT_LIMIT_KG.latPulldown), reps: '5' };
+    const over = tryComputeSingleLiftStrength({
+      lift: 'latPulldown',
+      form: formOver,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    const atCap = tryComputeSingleLiftStrength({
+      lift: 'latPulldown',
+      form: formAtCap,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(over.ok && atCap.ok).toBe(true);
+    if (over.ok && atCap.ok) {
+      expect(over.weightCapped).toBe(true);
+      expect(over.weightInputKg).toBe(301);
+      expect(over.weightUsedKg).toBe(300);
+      expect(over.modelMaxKg).toBe(300);
+      expect(over.finalScore).toBeCloseTo(atCap.finalScore, 5);
+    }
+  });
+
+  it('passes through lat pulldown at exactly 300 kg without cap', () => {
+    const form = emptyForm();
+    form.latPulldown = { weight: '300', reps: '5' };
+    const r = tryComputeSingleLiftStrength({
+      lift: 'latPulldown',
+      form,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.weightCapped).toBe(false);
+      expect(r.weightUsedKg).toBe(300);
+      expect(r.modelMaxKg).toBe(300);
+    }
+  });
+
   it('matches combined batch branch for the same row', () => {
     const form = emptyForm();
     form.benchPress = { weight: '100', reps: '5' };

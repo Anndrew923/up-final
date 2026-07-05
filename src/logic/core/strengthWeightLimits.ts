@@ -10,7 +10,7 @@
  * - Squat: Ray Williams raw w/ wraps class (~490 kg)
  * - Deadlift: Hafthor Bjornsson elephant bar / 501 kg class
  * - Overhead: Zydrunas Savickas log / strict press class
- * - Lat pulldown: stack-machine elite context (e.g. Coleman-class stack)
+ * - Lat pulldown: stack-machine elite context extended to 300 kg product ceiling
  */
 import type { StrengthLiftKey } from '../../types/strengthInputs';
 
@@ -18,8 +18,8 @@ export const STRENGTH_WEIGHT_LIMIT_KG = {
   benchPress: 370,
   squat: 510,
   deadlift: 550,
-  shoulderPress: 245,
-  latPulldown: 225,
+  shoulderPress: 244,
+  latPulldown: 300,
 } as const satisfies Record<StrengthLiftKey, number>;
 
 export function clampStrengthWeightKg(

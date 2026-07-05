@@ -1,0 +1,1194 @@
+{
+  "version": "v1",
+  "source": "DynoIntel_v4.0_名人堂聖殿矩陣.xlsx",
+  "generatedAt": "2026-07-05T16:08:32.919Z",
+  "maxDisplayNames": 3,
+  "entries": [
+    {
+      "decadeKey": "150",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman",
+          "referenceScore": 175
+        },
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson",
+          "referenceScore": 172
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski",
+          "referenceScore": 166
+        }
+      ]
+    },
+    {
+      "decadeKey": "150",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "eliud_kipchoge",
+          "displayZh": "Eliud Kipchoge",
+          "referenceScore": 172
+        },
+        {
+          "id": "kenenisa_bekele",
+          "displayZh": "Kenenisa Bekele",
+          "referenceScore": 175
+        },
+        {
+          "id": "joshua_cheptegei",
+          "displayZh": "Joshua Cheptegei",
+          "referenceScore": 176
+        }
+      ]
+    },
+    {
+      "decadeKey": "150",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        }
+      ]
+    },
+    {
+      "decadeKey": "150",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "magnus_samuelsson",
+          "displayZh": "Magnus Samuelsson",
+          "referenceScore": 170
+        }
+      ]
+    },
+    {
+      "decadeKey": "150",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson",
+          "referenceScore": 176
+        },
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman",
+          "referenceScore": 150
+        }
+      ]
+    },
+    {
+      "decadeKey": "150",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels",
+          "referenceScore": 165
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson",
+          "referenceScore": 155
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski",
+          "referenceScore": 158
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman"
+        },
+        {
+          "id": "roelly_winklaar",
+          "displayZh": "Roelly Winklaar"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "kristian_blummenfelt",
+          "displayZh": "Kristian Blummenfelt"
+        },
+        {
+          "id": "jackson_spencer",
+          "displayZh": "Jackson Spencer"
+        },
+        {
+          "id": "marcelo_mantecon",
+          "displayZh": "Marcelo Mantecon"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski"
+        }
+      ]
+    },
+    {
+      "decadeKey": "140",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman"
+        },
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "brian_shaw",
+          "displayZh": "Brian Shaw"
+        },
+        {
+          "id": "jay_cutler",
+          "displayZh": "Jay Cutler"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman"
+        },
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman"
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski"
+        }
+      ]
+    },
+    {
+      "decadeKey": "130",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "devon_larratt",
+          "displayZh": "Devon Larratt"
+        },
+        {
+          "id": "brian_shaw",
+          "displayZh": "Brian Shaw"
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson"
+        },
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        }
+      ]
+    },
+    {
+      "decadeKey": "120",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike Tyson"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike Tyson"
+        }
+      ]
+    },
+    {
+      "decadeKey": "110",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
+        },
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        }
+      ]
+    },
+    {
+      "decadeKey": "100",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "zac",
+          "displayZh": "Zac"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        }
+      ]
+    },
+    {
+      "decadeKey": "90",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "cardio",
+      "anchors": [
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        },
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "explosivePower",
+      "anchors": [
+        {
+          "id": "haf_r_j_l_us_bj_rnsson",
+          "displayZh": "Hafþór Júlíus Björnsson"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特(特洛伊)"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        }
+      ]
+    },
+    {
+      "decadeKey": "80",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "chris_hemsworth",
+          "displayZh": "Chris Hemsworth"
+        },
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "armSize",
+      "anchors": [
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "overall",
+      "anchors": [
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        }
+      ]
+    },
+    {
+      "decadeKey": "70",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        }
+      ]
+    },
+    {
+      "decadeKey": "60",
+      "axisId": "bodyFat",
+      "anchors": [
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        }
+      ]
+    },
+    {
+      "decadeKey": "60",
+      "axisId": "gripStrength",
+      "anchors": [
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        }
+      ]
+    },
+    {
+      "decadeKey": "60",
+      "axisId": "muscleMass",
+      "anchors": [
+        {
+          "id": "conor_mcgregor",
+          "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        }
+      ]
+    },
+    {
+      "decadeKey": "60",
+      "axisId": "strength",
+      "anchors": [
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        }
+      ]
+    }
+  ]
+}

@@ -183,10 +183,13 @@ function enforceSingleBeatCommentary(reply, context) {
   }
 
   const extension = extractCoachExtension(reply.commentary, anchor, context);
-  const merged = assembleSingleBeatCommentary(anchor, extension, locale);
-  let safe = scrubVehicleLexicon(stripScorePatterns(merged));
+  const cleanedExtension = extension
+    ? stripScorePatterns(scrubVehicleLexicon(extension))
+    : null;
+  const merged = assembleSingleBeatCommentary(anchor, cleanedExtension, locale);
+  let safe = scrubVehicleLexicon(merged);
   safe = pruneSynonymLoopsInParagraph(safe);
-  if (paragraphsAreNearDuplicate(safe, anchor)) {
+  if (cleanedExtension && paragraphsAreNearDuplicate(safe, anchor)) {
     safe = anchor;
   }
 

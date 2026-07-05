@@ -1,11 +1,16 @@
 /**
- * v3.5.1 — P1 human brief: axis prefix + populationClass + soul praise (tier tail retired).
- * WHY: Drop axis tier tails to kill synonym loops; zh uses four-track soul matrix, en uses summaryHuman.
+ * v5.0 — P1 human brief: PR fallback (overall macro only) + axis prefix + populationClass + soul praise + optional hall-of-fame (zh).
+ * WHY: Two-tier assembly — macro triggers viral PR fallback; micro skips PR; en skips hall-of-fame.
  */
 import {
   DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
   DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH,
 } from "./dynoIntelHumanScaleMatrix.js";
+import {
+  DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH,
+  DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
+} from "./dynoIntelHumanPraise.data.js";
+import { resolveHallOfFameSentence } from "./hallOfFameResolver.js";
 import { resolvePrimaryBeatSnap, resolveReplyLocale } from "./beatTemplates.js";
 import { isChassisMacroQuestion, detectQuestionFocusAxis } from "./resolveQuestionIntent.js";
 import {
@@ -168,7 +173,49 @@ function assembleP1Anchor(prefix, populationClass, soulPraise, locale) {
 }
 
 /**
- * v3.5.1 — deterministic P1 anchor: prefix + populationClass + soul praise (no tier tail).
+ * v5.0 — viral-growth PR placeholder; reserved for future dynamic percentile injection.
+ * @param {string} locale
+ * @param {boolean} isOverallMacro
+ * @param {{ prPercentile?: number | null } | null | undefined} context
+ */
+export function resolvePrPercentileSegment(locale, isOverallMacro, context = null) {
+  if (!isOverallMacro || normalizeLocale(locale) !== "zh-Hant") return null;
+  const dynamicPr = context?.prPercentile;
+  if (typeof dynamicPr === "number" && Number.isFinite(dynamicPr)) {
+    return `綜合你所有表現，你的總分排在全人類的 ${dynamicPr.toFixed(1)}%。`;
+  }
+  return DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH;
+}
+
+/**
+ * v5.0 — zh-only hall-of-fame anchor from sparse matrix (60+ decades, non-blank cells only).
+ */
+export function resolveHallOfFameBriefSegment(axis, decadeKey, locale) {
+  if (normalizeLocale(locale) !== "zh-Hant") return null;
+  return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH);
+}
+
+function joinBriefSegments(segments, locale) {
+  const rows = segments.map((row) => String(row ?? "").trim()).filter(Boolean);
+  if (!rows.length) return null;
+  // WHY: Chassis contract is single-paragraph; PR fallback + anchor must not inject \n\n breaks.
+  return rows.join(normalizeLocale(locale) === "en" ? " " : "");
+}
+
+function attachHallOfFameToAnchor(anchor, hallSegment, locale) {
+  const base = String(anchor ?? "").trim();
+  const hall = String(hallSegment ?? "").trim();
+  if (!base) return hall || null;
+  if (!hall) return base;
+  if (normalizeLocale(locale) === "en") {
+    return ensureTerminalPunctuation(`${base} ${hall}`, locale);
+  }
+  const trimmed = base.replace(/[。！？]$/, "");
+  return ensureTerminalPunctuation(`${trimmed}。${hall}`, locale);
+}
+
+/**
+ * v5.0 — deterministic P1 anchor with optional PR + hall-of-fame segments.
  */
 export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant", context = null) {
   const metric = BRIEF_METRICS.has(axis) ? axis : "overall";
@@ -179,19 +226,25 @@ export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant"
   const prefix = resolveAxisPrefix(metric, locale);
   const profile = context?.profile ?? null;
   const soulPraise = resolveSoulPraiseSegment(scaleRow, metric, locale, profile);
+  const isOverallMacro = isChassisMacroContext(context);
 
   if (!soulPraise && normalizeLocale(locale) !== "en") {
     return null;
   }
 
-  const anchor = assembleP1Anchor(prefix, scaleRow.populationClass, soulPraise, locale);
+  let anchor = assembleP1Anchor(prefix, scaleRow.populationClass, soulPraise, locale);
+  const hallSegment = resolveHallOfFameBriefSegment(metric, decadeKey, locale);
+  anchor = attachHallOfFameToAnchor(anchor, hallSegment, locale);
 
   if (containsVehicleLexicon(anchor)) {
     const scrubbed = scrubVehicleLexicon(anchor);
-    return scrubbed && !containsVehicleLexicon(scrubbed) ? scrubbed : null;
+    anchor = scrubbed && !containsVehicleLexicon(scrubbed) ? scrubbed : null;
   }
 
-  return anchor;
+  if (!anchor) return null;
+
+  const prSegment = resolvePrPercentileSegment(locale, isOverallMacro, context);
+  return joinBriefSegments([prSegment, anchor], locale);
 }
 
 /**
