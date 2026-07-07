@@ -77,6 +77,16 @@ describe("buildDynoIntelCacheHash", () => {
     assert.notEqual(baseline, withCue);
   });
 
+  it("changes when overall score changes", () => {
+    const baseline = buildDynoIntelCacheHash(baseParts);
+    const withOverall = buildDynoIntelCacheHash({
+      ...baseParts,
+      mode: "cross-axis",
+      overallScore: 105.2,
+    });
+    assert.notEqual(baseline, withOverall);
+  });
+
   it("changes when closing beat fields change", () => {
     const baseline = buildDynoIntelCacheHash(baseParts);
     const withBeat = buildDynoIntelCacheHash({

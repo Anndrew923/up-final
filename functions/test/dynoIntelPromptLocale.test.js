@@ -60,8 +60,9 @@ describe("system_v1 prompt artifact", () => {
   it("adds hall-of-fame consult unlock rail", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
     assert.match(text, /HALL_OF_FAME_CONSULT/);
-    assert.match(text, /context\.hallOfFameConsult\.locked/);
-    assert.match(text, /不得透露任何名字/);
+    assert.match(text, /後端硬閘門優先/);
+    assert.match(text, /嚴禁自行列舉/);
+    assert.doesNotMatch(text, /context\.hallOfFameConsult/);
   });
 });
 

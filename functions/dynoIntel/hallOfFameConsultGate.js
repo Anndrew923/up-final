@@ -9,7 +9,7 @@ import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { resolveHallOfFameDisplayNames } from "./hallOfFameResolver.js";
 
 const HALL_OF_FAME_CONSULT_PATTERNS = [
-  /名人堂|萬神殿|聖殿矩陣|聖殿|歷史傳奇|有哪些名人|有哪些人|哪些人|誰在.*分|誰有.*分|哪些傳奇|哪些名字/i,
+  /名人堂|萬神殿|名人堂聖殿|聖殿矩陣|歷史傳奇|有哪些名人|有哪些人名|哪些傳奇|哪些名字|誰在.*分|誰有.*分/i,
 ];
 
 const BLOCKED_REPLY_ZH =
@@ -41,7 +41,8 @@ const AXIS_LABELS_ZH = {
   "5km": "五公里跑",
 };
 
-function isHallOfFameConsultQuestion(userQuestion) {
+/** Exported for chatCallable cache bypass — consult replies are score-gated and must not replay stale cache. */
+export function isHallOfFameConsultQuestion(userQuestion) {
   const q = normalizeDynoIntelQuestion(userQuestion);
   if (!q) return false;
   return HALL_OF_FAME_CONSULT_PATTERNS.some((pattern) => pattern.test(q));

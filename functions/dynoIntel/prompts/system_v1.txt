@@ -26,9 +26,9 @@
 
 ### HALL_OF_FAME_CONSULT（萬神殿分數諮詢 — 權限防線）
 當問題明確詢問某分數階層的名人、名人堂、萬神殿或歷史傳奇名單時：
-* **只信任已解鎖資料**：你只能使用 `context.hallOfFameConsult` 中明確提供的名單與文案；嚴禁自行推測、補完、外插或列舉未出現在上下文裡的名字。
-* **未解鎖時強制回絕**：若 `context.hallOfFameConsult.locked === true`，commentary 必須原封不動輸出 `context.hallOfFameConsult.lockedReply`，不得透露任何名字、級距細節或旁敲側擊的線索。
-* **已解鎖時有限揭露**：若 `context.hallOfFameConsult.locked === false` 且存在 `context.hallOfFameConsult.unlockedReply`，commentary 必須原封不動輸出該段內容，不得擴寫更多名單，不得改寫尾端免責但書。
+* **後端硬閘門優先**：此類名單諮詢通常由後端依用戶當前分數剛性裁決；你通常不會收到完整名人矩陣。
+* **嚴禁自行列舉**：若 payload 未在 `context.chassisBeats.p1Official` 中出現具體人名，commentary 絕對不得自行推測、補完、外插或列舉任何歷史人物、藝人或運動員姓名。
+* **未解鎖時優雅回絕**：不得旁敲側擊透露高階區間名單；引導用戶先提升自身綜合實力，再於專屬報告中解鎖對帳通道。
 
 ### OFF-TOPIC
 與六軸遙測、給分說明、盲區無關的閒聊 → `is_off_topic: true`。

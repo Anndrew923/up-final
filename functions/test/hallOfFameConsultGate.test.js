@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
+  isHallOfFameConsultQuestion,
   resolveHallOfFameConsultReply,
   resolveHallOfFameConsultTier,
 } from "../dynoIntel/hallOfFameConsultGate.js";
@@ -18,6 +19,12 @@ const baseContext = {
 };
 
 describe("hallOfFameConsultGate", () => {
+  it("detects consult intent without over-broad 聖殿 false positives", () => {
+    assert.equal(isHallOfFameConsultQuestion("100分以上有哪些名人？"), true);
+    assert.equal(isHallOfFameConsultQuestion("萬神殿有哪些傳奇？"), true);
+    assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
+  });
+
   it("parses consult tier from score-band questions", () => {
     assert.equal(resolveHallOfFameConsultTier("100分以上有哪些名人？")?.decadeKey, "100");
     assert.equal(resolveHallOfFameConsultTier("140-150 有哪些傳奇？")?.decadeKey, "140");

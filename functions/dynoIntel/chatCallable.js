@@ -8,7 +8,10 @@ import {
 } from "../shared/dynoEntitlement.js";
 import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from "./cache.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
-import { resolveHallOfFameConsultReply } from "./hallOfFameConsultGate.js";
+import {
+  isHallOfFameConsultQuestion,
+  resolveHallOfFameConsultReply,
+} from "./hallOfFameConsultGate.js";
 import {
   checkDynoIntelDailyLimit,
   loadDynoRateLimitDoc,
@@ -99,9 +102,11 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
 
   const inferenceContext = buildDynoIntelInferenceContext(context, userQuestion);
   const hallOfFameConsultReply = resolveHallOfFameConsultReply(inferenceContext, userQuestion);
+  const skipCacheForHallConsult = isHallOfFameConsultQuestion(userQuestion);
 
   const cacheHash = buildDynoIntelCacheHash({
     mergedScores: context.axes,
+    overallScore: context.overallScore ?? null,
     supplementalMetrics: context.supplementalMetrics ?? [],
     scoringMethodologyBriefs: inferenceContext.scoringMethodologyBriefs ?? [],
     intent: inferenceContext.intent,
@@ -120,7 +125,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     userQuestion,
   });
 
-  const cached = await loadDynoIntelCache(cacheHash);
+  const cached = skipCacheForHallConsult ? null : await loadDynoIntelCache(cacheHash);
   if (cached) {
     const quota = await consumeDynoQuota(uid, isPro, now);
     if (!quota.allowed) {
@@ -154,14 +159,18 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
   }
 
   if (hallOfFameConsultReply) {
-    await saveDynoIntelCache(cacheHash, hallOfFameConsultReply, promptTemplateId, now, inferenceContext);
+    const finalizedConsultReply = finalizeDynoIntelCallableReply(
+      hallOfFameConsultReply,
+      inferenceContext,
+      userQuestion
+    );
     return {
       ok: true,
       fromCache: false,
       remaining: quota.remaining,
       limit: quota.limit,
       resetAt: quota.resetAt,
-      reply: hallOfFameConsultReply,
+      reply: finalizedConsultReply,
     };
   }
 
