@@ -502,6 +502,23 @@ describe("enforceCommentaryBeatContract v3", () => {
     assert.match(paragraphs[0], /業餘運動員中優秀表現/);
     assert.match(paragraphs[0], /你把「訓練」這個任務的優先權/);
   });
+
+  it("v5.2 — heals stale single-paragraph cache without duplicating PR or legal segments", () => {
+    const fullBrief = resolveHumanBrief(strengthStatusContext);
+    const staleWall = fullBrief.replace(/\n\n+/g, "");
+    const repaired = enforceCommentaryBeatContract(
+      { commentary: staleWall, action_directive: "", is_off_topic: false, detected_weakest_axis: "strength" },
+      strengthStatusContext
+    );
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(paragraphs.length, 2);
+    assert.doesNotMatch(paragraphs[0], /熱烈搜集中|生涯巔峰狀態/);
+    assert.equal((repaired.commentary.match(/生涯巔峰狀態/g) ?? []).length, 1);
+    assert.equal(
+      normalizeBriefWhitespace(repaired.commentary),
+      normalizeBriefWhitespace(fullBrief)
+    );
+  });
 });
 
 describe("assembleSingleBeatCommentary v3", () => {

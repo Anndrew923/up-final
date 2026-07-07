@@ -79,16 +79,24 @@ export function injectChassisBeatsIntoContext(context) {
   };
 }
 
+/** Single resolve — segment1 + trailing segments for beat repair (avoids double matrix lookup). */
+export function resolveChassisBriefAssembly(context) {
+  const parts = resolveHumanBriefPartsFromContext(context);
+  if (!parts?.segment1Core) return null;
+  return {
+    segment1Core: parts.segment1Core,
+    trailingSegments: [parts.prSegment, parts.legalSegment].filter(Boolean),
+  };
+}
+
 /** Segment 1 only — AI extension target; excludes PR and legal shield. */
 export function buildOfficialHumanAnchor(context) {
-  return resolveHumanBriefPartsFromContext(context)?.segment1Core ?? null;
+  return resolveChassisBriefAssembly(context)?.segment1Core ?? null;
 }
 
 /** Segments 2–3 — backend-hardcoded; beat repair re-appends after AI merge. */
 export function buildBriefTrailingSegments(context) {
-  const parts = resolveHumanBriefPartsFromContext(context);
-  if (!parts) return [];
-  return [parts.prSegment, parts.legalSegment].filter(Boolean);
+  return resolveChassisBriefAssembly(context)?.trailingSegments ?? [];
 }
 
 /** @deprecated v5.2 — use buildOfficialHumanAnchor for AI target; resolveHumanBrief for full output */

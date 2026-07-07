@@ -76,11 +76,24 @@ const NEAR_DUPLICATE_COVERAGE_THRESHOLD = 0.52;
 function shorterTextBigramCoverage(shorter, longer) {
   const shortBigrams = bigramSet(shorter);
   const longBigrams = bigramSet(longer);
+  if (!shortBigrams.size) return 0;
   let covered = 0;
   for (const token of shortBigrams) {
     if (longBigrams.has(token)) covered += 1;
   }
   return covered / shortBigrams.size;
+}
+
+/** Extension-vs-anchor paraphrase gate (golden three-segment segment1 AI filter). */
+export function extensionSentenceParaphrasesAnchor(
+  sentence,
+  anchor,
+  coverageThreshold = 0.2
+) {
+  const row = String(sentence ?? "").trim();
+  const anchorNorm = String(anchor ?? "").trim();
+  if (!row || !anchorNorm || row.length < 12) return false;
+  return shorterTextBigramCoverage(row, anchorNorm) >= coverageThreshold;
 }
 
 export function paragraphsAreNearDuplicate(a, b) {

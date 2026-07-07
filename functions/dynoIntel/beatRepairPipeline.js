@@ -8,6 +8,7 @@ import {
 } from "./dynoIntelHumanBriefs.js";
 import {
   ensureBeatTerminalPunctuation,
+  extensionSentenceParaphrasesAnchor,
   finalizeContractCommentary,
   lineAlreadyPresent,
   paragraphsAreNearDuplicate,
@@ -17,11 +18,14 @@ import {
 } from "./beatContractShared.js";
 import {
   assembleSingleBeatCommentary,
-  buildBriefTrailingSegments,
-  buildOfficialHumanAnchor,
+  resolveChassisBriefAssembly,
   isMethodologyReplyContext,
   resolveSingleBeatLocale,
 } from "./dynoIntelChassisFactory.js";
+import {
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
+  DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
+} from "./dynoIntelHumanPraise.data.js";
 import {
   pruneSynonymLoopsInParagraph,
   repairMethodologyCommentary,
@@ -50,33 +54,36 @@ function stripScorePatterns(text) {
 /** Extension bigram overlap with anchor — catches paraphrase loops without dropping orthogonal axes. */
 const EXTENSION_ANCHOR_COVERAGE_REJECT = 0.2;
 
-function bigramSet(text) {
-  const norm = String(text ?? "")
-    .replace(/\s+/g, "")
-    .trim();
-  const set = new Set();
-  for (let i = 0; i < norm.length - 1; i += 1) {
-    set.add(norm.slice(i, i + 2));
-  }
-  return set;
+const OFFICIAL_HARD_SEGMENT_MARKERS = [
+  /熱烈搜集中|嚴謹搜集中|全人類官方\s*PR/i,
+  /生涯巔峰狀態|僅供天梯對帳與娛樂參考/,
+];
+
+function containsOfficialHardSegmentMarker(text) {
+  return OFFICIAL_HARD_SEGMENT_MARKERS.some((pattern) => pattern.test(String(text ?? "")));
 }
 
-function shorterTextBigramCoverage(shorter, longer) {
-  const shortBigrams = bigramSet(shorter);
-  const longBigrams = bigramSet(longer);
-  if (!shortBigrams.size) return 0;
-  let covered = 0;
-  for (const token of shortBigrams) {
-    if (longBigrams.has(token)) covered += 1;
+/** WHY: Stale single-paragraph cache may echo PR/legal — strip before AI extension extraction. */
+function stripOfficialHardSegmentsFromCoachTail(text, locale) {
+  if (locale === "en") {
+    return String(text ?? "").trim();
   }
-  return covered / shortBigrams.size;
-}
-
-function extensionSentenceRepeatsAnchorVerdict(sentence, anchor) {
-  const row = String(sentence ?? "").trim();
-  const anchorNorm = String(anchor ?? "").trim();
-  if (!row || !anchorNorm || row.length < 12) return false;
-  return shorterTextBigramCoverage(row, anchorNorm) >= EXTENSION_ANCHOR_COVERAGE_REJECT;
+  let row = String(text ?? "").trim();
+  const legal = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
+  if (legal && row.includes(legal)) {
+    row = row.replace(legal, "").trim();
+  }
+  const pr = String(DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH ?? "").trim();
+  if (pr && row.includes(pr)) {
+    row = row.replace(pr, "").trim();
+  } else if (pr) {
+    for (const chunk of pr.split(/\n\n+/)) {
+      if (chunk && row.includes(chunk)) {
+        row = row.replace(chunk, "").trim();
+      }
+    }
+  }
+  return row;
 }
 
 const GENERIC_RITUAL_CLOSER_REGEX =
@@ -86,7 +93,8 @@ function extensionSentenceIsSafe(sentence, context, anchor, keptSentences) {
   const row = String(sentence ?? "").trim();
   if (!row) return false;
   if (paragraphsAreNearDuplicate(row, anchor)) return false;
-  if (extensionSentenceRepeatsAnchorVerdict(row, anchor)) return false;
+  if (containsOfficialHardSegmentMarker(row)) return false;
+  if (extensionSentenceParaphrasesAnchor(row, anchor, EXTENSION_ANCHOR_COVERAGE_REJECT)) return false;
   if (Array.isArray(keptSentences) && keptSentences.some((prev) => paragraphsAreNearDuplicate(prev, row))) {
     return false;
   }
@@ -112,6 +120,7 @@ function extractCoachExtension(aiCommentary, anchor, context) {
   if (anchorNorm && text.includes(anchorNorm)) {
     text = text.replace(anchorNorm, "").trim();
   }
+  text = stripOfficialHardSegmentsFromCoachTail(text, locale);
   if (!text) return null;
 
   const sentences = splitCommentarySentences(text);
@@ -204,8 +213,9 @@ function enforceGapsCommentary(reply, context) {
 
 function enforceSingleBeatCommentary(reply, context) {
   const locale = resolveSingleBeatLocale(context);
-  const segment1Core = buildOfficialHumanAnchor(context);
-  const trailingSegments = buildBriefTrailingSegments(context);
+  const assembly = resolveChassisBriefAssembly(context);
+  const segment1Core = assembly?.segment1Core ?? null;
+  const trailingSegments = assembly?.trailingSegments ?? [];
 
   if (!segment1Core) {
     const collapsed = collapseToSingleParagraph(reply.commentary);

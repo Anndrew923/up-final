@@ -1,6 +1,6 @@
 /**
- * v3.0 — Client mirror of `functions/dynoIntel/dynoIntelChassisFactory.js`.
- * WHY: Lock single-beat assembly routing across client ↔ Cloud Functions.
+ * v5.2 — Client mirror of `functions/dynoIntel/dynoIntelChassisFactory.js`.
+ * WHY: Lock golden-three-segment assembly routing across client ↔ Cloud Functions.
  */
 import type {
   DynoClosingBeatKind,
@@ -18,9 +18,14 @@ export interface DynoIntelBeats {
 
 /** Injected into Callable context before Gemini — mirrors `injectChassisBeatsIntoContext`. */
 export interface DynoIntelChassisBeatsOfficial {
+  /** Full golden-three brief (segment1 + optional PR + optional legal). */
   summaryHuman: string;
-  /** @deprecated v3.0 alias — same string as summaryHuman for prompt compat. */
+  /** Segment 1 core only — AI extension target; excludes PR and legal shield. */
   p1Official: string;
+  /** Segment 2 — PR viral-growth copy (overall macro, zh-Hant only). */
+  prSegment?: string | null;
+  /** Segment 3 — hall-of-fame legal shield (60+ with names, zh-Hant only). */
+  legalSegment?: string | null;
 }
 
 /** Inputs for chassis-synthesis feature routing — mirrors server gate preconditions. */
