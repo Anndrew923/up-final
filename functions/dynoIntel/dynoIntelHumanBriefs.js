@@ -1,6 +1,6 @@
 /**
- * v5.1 — P1 human brief: PR fallback (overall macro only) + axis prefix + populationClass + soul praise + optional hall-of-fame + legal shield (zh).
- * WHY: Two-tier assembly — macro triggers viral PR fallback; micro skips PR; en skips hall-of-fame; legal shield only when names render.
+ * v5.2 — Golden three-segment human brief: segment1 core + PR (macro) + legal shield (60+ hall).
+ * WHY: Mobile-readable breathing room via \\n\\n; AI only extends segment1; segments 2–3 are backend-hardcoded.
  */
 import {
   DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
@@ -72,7 +72,7 @@ const BRIEF_METRICS = new Set([
   "overall",
 ]);
 
-function isChassisMacroContext(context) {
+export function isChassisMacroContext(context) {
   if (context?.mode !== "cross-axis") return false;
   const userQuestion = context?.userQuestion ?? "";
   if (!isChassisMacroQuestion(userQuestion)) return false;
@@ -200,14 +200,17 @@ export function resolveHallOfFameBriefSegment(axis, decadeKey, locale) {
   return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH);
 }
 
-function joinBriefSegments(segments, locale) {
+/**
+ * v5.2 — golden three-segment joiner; zh-Hant uses \\n\\n for mobile breathing room.
+ */
+export function joinBriefSegments(segments, locale) {
   const rows = segments.map((row) => String(row ?? "").trim()).filter(Boolean);
   if (!rows.length) return null;
-  // WHY: Chassis contract is single-paragraph; PR fallback + anchor must not inject \n\n breaks.
-  return rows.join(normalizeLocale(locale) === "en" ? " " : "");
+  const separator = normalizeLocale(locale) === "en" ? " " : "\n\n";
+  return rows.join(separator);
 }
 
-/** Appends a suffix as a new sentence in the chassis single-paragraph contract. */
+/** Appends a suffix as a new sentence within the same segment (segment1 AI merge only). */
 function appendLocalizedSuffix(base, suffix, locale) {
   const head = String(base ?? "").trim();
   const tail = String(suffix ?? "").trim();
@@ -225,20 +228,15 @@ function attachHallOfFameToAnchor(anchor, hallSegment, locale) {
 }
 
 /**
- * v5.1 — hall-of-fame legal shield suffix (zh-only, single-paragraph tail).
- * WHY: Black-box easter-egg disclaimer — only when celebrity names were rendered.
+ * v5.2 — hall-of-fame legal shield as standalone segment 3 (zh-only).
  */
-export function attachLegalShieldSuffix(brief, locale) {
-  const shield = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
-  if (!shield || normalizeLocale(locale) !== "zh-Hant") {
-    return String(brief ?? "").trim() || null;
-  }
-  return appendLocalizedSuffix(brief, shield, locale);
+export function resolveLegalShieldSegment(score, hallSegment, locale) {
+  if (!shouldAttachHallOfFameLegalShield(score, hallSegment, locale)) return null;
+  return String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim() || null;
 }
 
 /**
  * v5.1 — Boss spec gate: score >= 60 AND hall-of-fame names rendered (hallSegment truthy).
- * WHY: hallSegment already implies sparse-matrix hit; score guard is defensive against band drift.
  */
 export function shouldAttachHallOfFameLegalShield(score, hallSegment, locale) {
   if (!hallSegment || normalizeLocale(locale) !== "zh-Hant") return false;
@@ -246,10 +244,30 @@ export function shouldAttachHallOfFameLegalShield(score, hallSegment, locale) {
   return Number.isFinite(safeScore) && safeScore >= 60;
 }
 
+/** @deprecated v5.2 — prefer resolveLegalShieldSegment + joinBriefSegments */
+export function attachLegalShieldSuffix(brief, locale) {
+  const shield = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
+  if (!shield || normalizeLocale(locale) !== "zh-Hant") {
+    return String(brief ?? "").trim() || null;
+  }
+  const head = String(brief ?? "").trim();
+  return `${head}${shield}`;
+}
+
 /**
- * v5.0 — deterministic P1 anchor with optional PR + hall-of-fame segments.
+ * v5.2 — segment 1 only: axis prefix + populationClass + soul praise + optional hall-of-fame.
+ * WHY: AI extension and beat repair must never touch PR or legal segments.
  */
-export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant", context = null) {
+export function resolveSegment1Core(axis, score, locale = "zh-Hant", context = null) {
+  const parts = resolveHumanBriefParts(axis, score, locale, context);
+  return parts?.segment1Core ?? null;
+}
+
+/**
+ * v5.2 — structured golden-three assembly for a metric/score tuple.
+ * @returns {{ segment1Core: string, prSegment: string | null, legalSegment: string | null, fullBrief: string } | null}
+ */
+export function resolveHumanBriefParts(axis, score, locale = "zh-Hant", context = null) {
   const metric = BRIEF_METRICS.has(axis) ? axis : "overall";
   const bandMetric = metric === "5km" ? "cardio" : metric === "overall" ? "strength" : metric;
   const tierId = resolveScoreBandId(bandMetric, score);
@@ -264,29 +282,36 @@ export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant"
     return null;
   }
 
-  let anchor = assembleP1Anchor(prefix, scaleRow.populationClass, soulPraise, locale);
+  let segment1Core = assembleP1Anchor(prefix, scaleRow.populationClass, soulPraise, locale);
   const hallSegment = resolveHallOfFameBriefSegment(metric, decadeKey, locale);
-  anchor = attachHallOfFameToAnchor(anchor, hallSegment, locale);
+  segment1Core = attachHallOfFameToAnchor(segment1Core, hallSegment, locale);
 
-  if (containsVehicleLexicon(anchor)) {
-    const scrubbed = scrubVehicleLexicon(anchor);
-    anchor = scrubbed && !containsVehicleLexicon(scrubbed) ? scrubbed : null;
+  if (containsVehicleLexicon(segment1Core)) {
+    const scrubbed = scrubVehicleLexicon(segment1Core);
+    segment1Core = scrubbed && !containsVehicleLexicon(scrubbed) ? scrubbed : null;
   }
 
-  if (!anchor) return null;
+  if (!segment1Core) return null;
 
   const prSegment = resolvePrPercentileSegment(locale, isOverallMacro, context);
-  let brief = joinBriefSegments([prSegment, anchor], locale);
-  if (shouldAttachHallOfFameLegalShield(score, hallSegment, locale)) {
-    brief = attachLegalShieldSuffix(brief, locale);
-  }
-  return brief;
+  const legalSegment = resolveLegalShieldSegment(score, hallSegment, locale);
+  const fullBrief = joinBriefSegments([segment1Core, prSegment, legalSegment], locale);
+
+  return { segment1Core, prSegment, legalSegment, fullBrief };
 }
 
 /**
- * Resolves the official P1 human brief for the active inference context.
+ * v5.2 — deterministic full brief (golden three segments joined).
  */
-export function resolveHumanBrief(context) {
+export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant", context = null) {
+  return resolveHumanBriefParts(axis, score, locale, context)?.fullBrief ?? null;
+}
+
+/**
+ * Resolves brief parts for the active inference context.
+ * @returns {{ segment1Core: string, prSegment: string | null, legalSegment: string | null, fullBrief: string } | null}
+ */
+export function resolveHumanBriefPartsFromContext(context) {
   if (!context) return null;
   const locale = resolveReplyLocale(context);
   const hasGaps = Array.isArray(context.gaps) && context.gaps.length > 0;
@@ -294,7 +319,7 @@ export function resolveHumanBrief(context) {
 
   if (isChassisMacroContext(context)) {
     const overallScore = context?.overallScore ?? 90;
-    return resolveRigidHumanPopulationClass("overall", overallScore, locale, context);
+    return resolveHumanBriefParts("overall", overallScore, locale, context);
   }
 
   const focus = resolvePrimaryBeatSnap(context);
@@ -302,7 +327,12 @@ export function resolveHumanBrief(context) {
     return null;
   }
 
-  const metric = focus.metric;
-  const score = focus.snap.score;
-  return resolveRigidHumanPopulationClass(metric, score, locale, context);
+  return resolveHumanBriefParts(focus.metric, focus.snap.score, locale, context);
+}
+
+/**
+ * Resolves the official P1 human brief for the active inference context.
+ */
+export function resolveHumanBrief(context) {
+  return resolveHumanBriefPartsFromContext(context)?.fullBrief ?? null;
 }

@@ -1,9 +1,12 @@
 /**
- * v3.0 — Single-beat chassis factory (pure human P1 + AI extension merge).
- * WHY: Scores/tier titles render in UI cards; commentary is one paragraph only.
+ * v5.2 — Golden three-segment chassis factory (segment1 AI merge + backend-hardcoded segments 2–3).
+ * WHY: Scores/tier titles render in UI cards; commentary uses \\n\\n paragraph breaks on zh-Hant.
  */
 import { isChassisMacroQuestion, detectQuestionFocusAxis } from "./resolveQuestionIntent.js";
-import { resolveHumanBrief } from "./dynoIntelHumanBriefs.js";
+import {
+  resolveHumanBrief,
+  resolveHumanBriefPartsFromContext,
+} from "./dynoIntelHumanBriefs.js";
 import { resolveReplyLocale } from "./beatTemplates.js";
 
 /** Shared gate — methodology replies use brief-led single paragraph assembly. */
@@ -41,7 +44,7 @@ function ensureTerminalPunctuation(text, locale) {
 }
 
 /**
- * v3.0 — merge official human brief with coach extension into one paragraph (no \\n\\n).
+ * v5.2 — merge segment1 official copy with coach extension (single flowing block, no \\n\\n).
  */
 export function assembleSingleBeatCommentary(summaryHuman, extension, locale = "zh-Hant") {
   const base = ensureTerminalPunctuation(String(summaryHuman ?? "").trim(), locale);
@@ -62,19 +65,34 @@ export function injectChassisBeatsIntoContext(context) {
     return context;
   }
 
-  const summaryHuman = resolveHumanBrief(context);
-  if (!summaryHuman) return context;
+  const parts = resolveHumanBriefPartsFromContext(context);
+  if (!parts?.segment1Core) return context;
 
   return {
     ...context,
     chassisBeats: {
-      summaryHuman,
-      p1Official: summaryHuman,
+      summaryHuman: parts.fullBrief,
+      p1Official: parts.segment1Core,
+      prSegment: parts.prSegment,
+      legalSegment: parts.legalSegment,
     },
   };
 }
 
+/** Segment 1 only — AI extension target; excludes PR and legal shield. */
 export function buildOfficialHumanAnchor(context) {
+  return resolveHumanBriefPartsFromContext(context)?.segment1Core ?? null;
+}
+
+/** Segments 2–3 — backend-hardcoded; beat repair re-appends after AI merge. */
+export function buildBriefTrailingSegments(context) {
+  const parts = resolveHumanBriefPartsFromContext(context);
+  if (!parts) return [];
+  return [parts.prSegment, parts.legalSegment].filter(Boolean);
+}
+
+/** @deprecated v5.2 — use buildOfficialHumanAnchor for AI target; resolveHumanBrief for full output */
+export function buildOfficialHumanBrief(context) {
   return resolveHumanBrief(context);
 }
 

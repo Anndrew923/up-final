@@ -3,12 +3,15 @@ import assert from "node:assert/strict";
 import {
   containsVehicleLexicon,
   resolveHumanBrief,
+  resolveHumanBriefPartsFromContext,
   resolvePrPercentileSegment,
+  resolveSegment1Core,
   scrubVehicleLexicon,
   VEHICLE_LEXICON_REGEX,
 } from "../dynoIntel/dynoIntelHumanBriefs.js";
 import {
   assembleSingleBeatCommentary,
+  buildOfficialHumanAnchor,
   injectChassisBeatsIntoContext,
 } from "../dynoIntel/dynoIntelChassisFactory.js";
 import { enforceCommentaryBeatContract } from "../dynoIntel/beatRepairPipeline.js";
@@ -31,6 +34,19 @@ const strengthStatusContext = {
   ],
 };
 
+function splitParagraphs(text) {
+  return String(text ?? "")
+    .split(/\n\n+/)
+    .map((row) => row.trim())
+    .filter(Boolean);
+}
+
+function normalizeBriefWhitespace(text) {
+  return String(text ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 describe("dynoIntelHumanBriefs v3", () => {
   it("VEHICLE_LEXICON_REGEX flags vehicle metaphors", () => {
     assert.ok(containsVehicleLexicon("這台跑車的馬力輸出"));
@@ -45,6 +61,22 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.match(brief, /你把「訓練」這個任務的優先權/);
     assert.doesNotMatch(brief, /全人類官方 PR 值對照資料/);
     assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|TIER_|Mock Neuro/);
+  });
+
+  it("v5.2 — segment1Core excludes PR viral copy", () => {
+    const macroCtx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的總分表現如何？",
+      gaps: [],
+      overallScore: 92,
+      axes: [{ axis: "strength", score: 90, tierBandId: "TIER_90", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const core = resolveSegment1Core("overall", 92, "zh-Hant", macroCtx);
+    assert.ok(core);
+    assert.doesNotMatch(core, /PR|熱烈搜集中|嚴謹搜集中/);
+    assert.match(core, /除非你是基因樂透得主/);
   });
 
   it("scrubVehicleLexicon strips blacklisted tokens", () => {
@@ -85,9 +117,10 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.match(brief, /國際大師級運動員/);
     assert.match(brief, /你的外型與身體機能/);
     assert.doesNotMatch(brief, /量體飽滿|Mock Volume/);
-    const beforeLegalShield = brief.split("本系統所收錄之各界名將")[0];
-    assert.doesNotMatch(beforeLegalShield, /肌纖維|量體飽滿|Mock Volume/);
-    assert.match(brief, /僅供天梯對帳與娛樂參考。$/);
+    const paragraphs = splitParagraphs(brief);
+    const segment1 = paragraphs[0] ?? brief;
+    assert.doesNotMatch(segment1, /肌纖維|量體飽滿|Mock Volume/);
+    assert.ok(brief.endsWith("僅供天梯對帳與娛樂參考。"));
   });
 
   it("v5.0 — strength 87.9 uses neuro soul praise without tier tail or PR fallback", () => {
@@ -123,7 +156,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.ok(!containsVehicleLexicon(brief));
   });
 
-  it("v5.0 — overall macro injects viral PR fallback (zh) without PR on micro", () => {
+  it("v5.2 — overall macro golden three: PR in segment 2, segment1 PR-free", () => {
     const macroCtx = {
       locale: "zh-Hant",
       mode: "cross-axis",
@@ -133,11 +166,17 @@ describe("dynoIntelHumanBriefs v3", () => {
       overallScore: 92,
       axes: [{ axis: "strength", score: 90, tierBandId: "TIER_90", cardCopy: { title: "x", summary: "x" } }],
     };
-    const macroBrief = resolveHumanBrief(macroCtx);
-    assert.match(macroBrief, /全人類官方 PR 值對照資料正在嚴謹搜集中/);
-    assert.match(macroBrief, /除非你是基因樂透得主/);
-    assert.doesNotMatch(macroBrief, /無論基因如何，能夠到這個程度/);
-    assert.doesNotMatch(macroBrief, /\n/);
+    const parts = resolveHumanBriefPartsFromContext(macroCtx);
+    assert.ok(parts);
+    assert.doesNotMatch(parts.segment1Core, /PR|熱烈搜集中/);
+    assert.match(parts.prSegment, /全人類官方 PR 值對照資料正在熱烈搜集中/);
+    assert.match(parts.fullBrief, /除非你是基因樂透得主/);
+    assert.doesNotMatch(parts.fullBrief, /無論基因如何，能夠到這個程度/);
+
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.ok(paragraphs.length >= 2);
+    assert.doesNotMatch(paragraphs[0], /熱烈搜集中/);
+    assert.match(paragraphs[1], /熱烈搜集中/);
 
     const microPr = resolvePrPercentileSegment("zh-Hant", false, macroCtx);
     assert.equal(microPr, null);
@@ -158,7 +197,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.match(brief, /Jason Statham|Chris Hemsworth|Conor McGregor/);
   });
 
-  it("v5.1 — legal shield appends once at tail when hall-of-fame names render (60+)", () => {
+  it("v5.2 — legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
     const ctx = {
       locale: "zh-Hant",
       mode: "cross-axis",
@@ -168,11 +207,13 @@ describe("dynoIntelHumanBriefs v3", () => {
       gaps: [],
       axes: [{ axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } }],
     };
-    const brief = resolveHumanBrief(ctx);
-    assert.match(brief, /生涯巔峰狀態/);
-    assert.match(brief, /僅供天梯對帳與娛樂參考/);
-    assert.doesNotMatch(brief, /\n/);
-    assert.ok(brief.endsWith("僅供天梯對帳與娛樂參考。"));
+    const parts = resolveHumanBriefPartsFromContext(ctx);
+    assert.match(parts.legalSegment, /生涯巔峰狀態/);
+    assert.match(parts.fullBrief, /僅供天梯對帳與娛樂參考/);
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.equal(paragraphs.length, 2);
+    assert.ok(paragraphs[1].endsWith("僅供天梯對帳與娛樂參考。"));
+    assert.doesNotMatch(paragraphs[0], /生涯巔峰狀態/);
   });
 
   it("v5.1 — scores below 60 omit legal shield even when praise renders", () => {
@@ -213,7 +254,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(brief, /名人堂|生涯巔峰狀態/);
   });
 
-  it("v5.1 — overall macro with blank overall cell keeps PR fallback but omits legal shield", () => {
+  it("v5.2 — overall macro with blank overall cell keeps PR in segment 2 but omits legal shield", () => {
     const ctx = {
       locale: "zh-Hant",
       mode: "cross-axis",
@@ -223,9 +264,14 @@ describe("dynoIntelHumanBriefs v3", () => {
       overallScore: 155,
       axes: [{ axis: "strength", score: 150, tierBandId: "LEGEND", cardCopy: { title: "x", summary: "x" } }],
     };
-    const brief = resolveHumanBrief(ctx);
-    assert.match(brief, /全人類官方 PR 值對照資料正在嚴謹搜集中/);
-    assert.doesNotMatch(brief, /名人堂|生涯巔峰狀態/);
+    const parts = resolveHumanBriefPartsFromContext(ctx);
+    assert.match(parts.prSegment, /全人類官方 PR 值對照資料正在熱烈搜集中/);
+    assert.equal(parts.legalSegment, null);
+    assert.doesNotMatch(parts.fullBrief, /名人堂|生涯巔峰狀態/);
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.ok(paragraphs.length >= 2);
+    assert.doesNotMatch(paragraphs[0], /熱烈搜集中/);
+    assert.match(paragraphs.slice(1).join(" "), /熱烈搜集中/);
   });
 
   it("v5.0 — beat repair preserves official tier-band phrases inside anchor (e.g. 80分)", () => {
@@ -238,9 +284,9 @@ describe("dynoIntelHumanBriefs v3", () => {
       gaps: [],
       axes: [{ axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } }],
     };
-    const anchor = resolveHumanBrief(ctx);
+    const fullBrief = resolveHumanBrief(ctx);
     const repaired = enforceCommentaryBeatContract(
-      { commentary: `${anchor} 你的多關節力量已達 87.8 分。`, action_directive: "", is_off_topic: false },
+      { commentary: `${fullBrief} 你的多關節力量已達 87.8 分。`, action_directive: "", is_off_topic: false },
       ctx
     );
     assert.match(repaired.commentary, /80\s*分以上/);
@@ -264,7 +310,7 @@ describe("dynoIntelHumanBriefs v3", () => {
 });
 
 describe("enforceCommentaryBeatContract v3", () => {
-  it("assembles status replies into a single paragraph without scores", () => {
+  it("v5.2 — assembles status replies with golden segments (segment1 + legal when applicable)", () => {
     const reply = {
       commentary: "以健身房常模來看，你的大重量動作還有上升空間。",
       action_directive: "",
@@ -272,17 +318,20 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "strength",
     };
     const repaired = enforceCommentaryBeatContract(reply, strengthStatusContext);
-    const paragraphs = repaired.commentary.split(/\n\n+/).filter(Boolean);
-    assert.equal(paragraphs.length, 1);
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(paragraphs.length, 2);
     assert.ok(!/\d+(\.\d+)\s*分/.test(repaired.commentary));
     assert.ok(!containsVehicleLexicon(repaired.commentary));
-    assert.ok(repaired.commentary.includes("同齡"));
+    assert.ok(paragraphs[0].includes("同齡"));
+    assert.doesNotMatch(paragraphs[0], /熱烈搜集中|生涯巔峰狀態/);
+    assert.match(paragraphs[1], /生涯巔峰狀態/);
   });
 
   it("drops paraphrased AI extension and generic ritual closers (anchor-only)", () => {
-    const anchor = resolveHumanBrief(strengthStatusContext);
+    const fullBrief = resolveHumanBrief(strengthStatusContext);
+    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
     const reply = {
-      commentary: `${anchor}你的多關節力量表現已達到業餘運動員的頂尖水準，深蹲、硬舉、臥推等大重量動作的肌群協同穩定性，非常接近競技舉重與健力選手的典型募集模式。下次請挑戰更全面的身體潛能，讓你的整體表現更上一層樓！`,
+      commentary: `${segment1}你的多關節力量表現已達到業餘運動員的頂尖水準，深蹲、硬舉、臥推等大重量動作的肌群協同穩定性，非常接近競技舉重與健力選手的典型募集模式。下次請挑戰更全面的身體潛能，讓你的整體表現更上一層樓！`,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: "strength",
@@ -292,30 +341,40 @@ describe("enforceCommentaryBeatContract v3", () => {
       replyClosingCue: "力量停在 87.8 分——這份遙測主機已鎖定。",
       closingBeatSecondLine: "遙測已封存。下次通電時，帶著新的分數回來——我會在這裡等你。",
     });
-    assert.equal(repaired.commentary, anchor);
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(paragraphs.length, 2);
+    assert.equal(
+      normalizeBriefWhitespace(paragraphs[0]),
+      normalizeBriefWhitespace(segment1)
+    );
+    assert.match(paragraphs[1], /生涯巔峰狀態/);
     assert.ok(!repaired.commentary.includes("下次請挑戰"));
   });
 
   it("keeps one orthogonal extension sentence only when it adds a truly new angle", () => {
-    const anchor = resolveHumanBrief(strengthStatusContext);
+    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
     const reply = {
-      commentary: `${anchor}若下一階要補齊，優先盯緊握力軸的穩定制動，硬拉終點才不會鬆掉。`,
+      commentary: `${segment1}若下一階要補齊，優先盯緊握力軸的穩定制動，硬拉終點才不會鬆掉。`,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: "strength",
     };
     const repaired = enforceCommentaryBeatContract(reply, strengthStatusContext);
-    const paragraphs = repaired.commentary.split(/\n\n+/).filter(Boolean);
-    assert.equal(paragraphs.length, 1);
-    // v3.1 允許保留這類真正正交的握力/硬拉線索；若未來被視為套娃而裁撤，至少保底 anchor 不變。
-    assert.ok(repaired.commentary.startsWith(anchor));
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(paragraphs.length, 2);
+    assert.ok(paragraphs[0].startsWith(segment1));
+    assert.match(paragraphs[0], /握力軸|硬拉終點/);
+    assert.match(paragraphs[1], /生涯巔峰狀態/);
   });
 
-  it("injectChassisBeatsIntoContext exposes summaryHuman only", () => {
+  it("injectChassisBeatsIntoContext exposes segment1 and trailing segments", () => {
     const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
     assert.ok(enriched.chassisBeats?.summaryHuman);
-    assert.equal(enriched.chassisBeats.summaryHuman, enriched.chassisBeats.p1Official);
+    assert.ok(enriched.chassisBeats?.p1Official);
+    assert.equal(enriched.chassisBeats.p1Official, buildOfficialHumanAnchor(strengthStatusContext));
+    assert.ok(enriched.chassisBeats.legalSegment);
     assert.equal(enriched.chassisBeats.p2Official, undefined);
+    assert.doesNotMatch(enriched.chassisBeats.p1Official, /熱烈搜集中/);
   });
 
   it("keeps gaps replies at two paragraphs", () => {
@@ -331,7 +390,7 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "gripStrength",
     };
     const repaired = enforceCommentaryBeatContract(reply, gapsContext);
-    const paragraphs = repaired.commentary.split(/\n\n+/).filter(Boolean);
+    const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 2);
   });
 
@@ -356,7 +415,7 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "strength",
     };
     const repaired = enforceCommentaryBeatContract(reply, methodologyContext);
-    const paragraphs = repaired.commentary.split(/\n\n+/).filter(Boolean);
+    const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 1);
     assert.match(repaired.commentary, /Brzycki|IPF DOTS/);
   });
@@ -381,7 +440,7 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "gripStrength",
     };
     const repaired = enforceCommentaryBeatContract(reply, methodologyContext);
-    assert.equal(repaired.commentary.split(/\n\n+/).filter(Boolean).length, 1);
+    assert.equal(splitParagraphs(repaired.commentary).length, 1);
     assert.match(repaired.commentary, /Captains of Crush|握力計分/);
     assert.doesNotMatch(repaired.commentary, /收到你的詢問/);
     assert.doesNotMatch(repaired.commentary, /FFMI|體脂/);
@@ -416,16 +475,17 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "bodyFat",
     };
     const repaired = enforceCommentaryBeatContract(reply, methodologyContext);
-    assert.equal(repaired.commentary.split(/\n\n+/).filter(Boolean).length, 1);
+    assert.equal(splitParagraphs(repaired.commentary).length, 1);
     assert.doesNotMatch(repaired.commentary, /下列情境容易造成結果失真/);
     assert.match(repaired.commentary, /190|校正|健康教育/);
   });
 
   it("v3.1 prunes strength status synonym loops when anchor plus two short extensions repeat the same verdict", () => {
-    const anchor = resolveHumanBrief(strengthStatusContext);
+    const fullBrief = resolveHumanBrief(strengthStatusContext);
+    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
     const reply = {
       commentary:
-        anchor +
+        segment1 +
         "力量評分，已達業餘運動員頂尖強度。" +
         "你的多關節力量表現，顯示肌群協同穩定，足以應付多數專項運動挑戰，逼近競技層級。",
       action_directive: "",
@@ -433,13 +493,14 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "strength",
     };
     const repaired = enforceCommentaryBeatContract(reply, strengthStatusContext);
-    const paragraphs = repaired.commentary.split(/\n\n+/).filter(Boolean);
-    assert.equal(paragraphs.length, 1);
-    assert.equal(repaired.commentary, anchor);
-    assert.doesNotMatch(repaired.commentary, /力量評分，已達業餘運動員頂尖強度/);
-    assert.doesNotMatch(repaired.commentary, /顯示肌群協同穩定/);
-    assert.match(repaired.commentary, /業餘運動員中優秀表現/);
-    assert.match(repaired.commentary, /你把「訓練」這個任務的優先權/);
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(paragraphs.length, 2);
+    assert.equal(normalizeBriefWhitespace(paragraphs[0]), normalizeBriefWhitespace(segment1));
+    assert.equal(normalizeBriefWhitespace(paragraphs[1]), normalizeBriefWhitespace(splitParagraphs(fullBrief)[1]));
+    assert.doesNotMatch(paragraphs[0], /力量評分，已達業餘運動員頂尖強度/);
+    assert.doesNotMatch(paragraphs[0], /顯示肌群協同穩定/);
+    assert.match(paragraphs[0], /業餘運動員中優秀表現/);
+    assert.match(paragraphs[0], /你把「訓練」這個任務的優先權/);
   });
 });
 

@@ -3,6 +3,7 @@
  */
 import {
   containsVehicleLexicon,
+  joinBriefSegments,
   scrubVehicleLexicon,
 } from "./dynoIntelHumanBriefs.js";
 import {
@@ -12,9 +13,11 @@ import {
   paragraphsAreNearDuplicate,
   splitCommentaryParagraphs,
   splitCommentarySentences,
+  stripEngineeringLeakageFromCommentary,
 } from "./beatContractShared.js";
 import {
   assembleSingleBeatCommentary,
+  buildBriefTrailingSegments,
   buildOfficialHumanAnchor,
   isMethodologyReplyContext,
   resolveSingleBeatLocale,
@@ -44,6 +47,38 @@ function stripScorePatterns(text) {
     .trim();
 }
 
+/** Extension bigram overlap with anchor — catches paraphrase loops without dropping orthogonal axes. */
+const EXTENSION_ANCHOR_COVERAGE_REJECT = 0.2;
+
+function bigramSet(text) {
+  const norm = String(text ?? "")
+    .replace(/\s+/g, "")
+    .trim();
+  const set = new Set();
+  for (let i = 0; i < norm.length - 1; i += 1) {
+    set.add(norm.slice(i, i + 2));
+  }
+  return set;
+}
+
+function shorterTextBigramCoverage(shorter, longer) {
+  const shortBigrams = bigramSet(shorter);
+  const longBigrams = bigramSet(longer);
+  if (!shortBigrams.size) return 0;
+  let covered = 0;
+  for (const token of shortBigrams) {
+    if (longBigrams.has(token)) covered += 1;
+  }
+  return covered / shortBigrams.size;
+}
+
+function extensionSentenceRepeatsAnchorVerdict(sentence, anchor) {
+  const row = String(sentence ?? "").trim();
+  const anchorNorm = String(anchor ?? "").trim();
+  if (!row || !anchorNorm || row.length < 12) return false;
+  return shorterTextBigramCoverage(row, anchorNorm) >= EXTENSION_ANCHOR_COVERAGE_REJECT;
+}
+
 const GENERIC_RITUAL_CLOSER_REGEX =
   /下次請挑戰|讓你的整體表現|下次通電|更值得你反覆|保持這股|主機記得|我會在這裡等你|bring.*new score|next uplink|overall performance/i;
 
@@ -51,6 +86,7 @@ function extensionSentenceIsSafe(sentence, context, anchor, keptSentences) {
   const row = String(sentence ?? "").trim();
   if (!row) return false;
   if (paragraphsAreNearDuplicate(row, anchor)) return false;
+  if (extensionSentenceRepeatsAnchorVerdict(row, anchor)) return false;
   if (Array.isArray(keptSentences) && keptSentences.some((prev) => paragraphsAreNearDuplicate(prev, row))) {
     return false;
   }
@@ -68,7 +104,9 @@ function extensionSentenceIsSafe(sentence, context, anchor, keptSentences) {
 function extractCoachExtension(aiCommentary, anchor, context) {
   const locale = resolveSingleBeatLocale(context);
   const anchorNorm = String(anchor ?? "").trim();
-  let text = collapseToSingleParagraph(aiCommentary);
+  // WHY: Golden three-segment — only paragraph 1 is AI territory; ignore PR/legal hard segments.
+  const firstParagraph = splitCommentaryParagraphs(aiCommentary)[0];
+  let text = firstParagraph ? collapseToSingleParagraph(firstParagraph) : collapseToSingleParagraph(aiCommentary);
   if (!text) return null;
 
   if (anchorNorm && text.includes(anchorNorm)) {
@@ -166,8 +204,10 @@ function enforceGapsCommentary(reply, context) {
 
 function enforceSingleBeatCommentary(reply, context) {
   const locale = resolveSingleBeatLocale(context);
-  const anchor = buildOfficialHumanAnchor(context);
-  if (!anchor) {
+  const segment1Core = buildOfficialHumanAnchor(context);
+  const trailingSegments = buildBriefTrailingSegments(context);
+
+  if (!segment1Core) {
     const collapsed = collapseToSingleParagraph(reply.commentary);
     return {
       ...reply,
@@ -182,24 +222,33 @@ function enforceSingleBeatCommentary(reply, context) {
     };
   }
 
-  const extension = extractCoachExtension(reply.commentary, anchor, context);
-  const cleanedExtension = extension
+  const extension = extractCoachExtension(reply.commentary, segment1Core, context);
+  let cleanedExtension = extension
     ? stripScorePatterns(scrubVehicleLexicon(extension))
     : null;
-  const merged = assembleSingleBeatCommentary(anchor, cleanedExtension, locale);
-  let safe = scrubVehicleLexicon(merged);
-  safe = pruneSynonymLoopsInParagraph(safe);
-  if (cleanedExtension && paragraphsAreNearDuplicate(safe, anchor)) {
-    safe = anchor;
+  if (cleanedExtension) {
+    cleanedExtension = pruneSynonymLoopsInParagraph(cleanedExtension);
   }
+  const mergedSegment1 = assembleSingleBeatCommentary(segment1Core, cleanedExtension, locale);
+  let safeSegment1 = scrubVehicleLexicon(mergedSegment1);
+  // WHY: merged always contains segment1Core as prefix — only drop when the extension itself paraphrases core.
+  if (cleanedExtension && paragraphsAreNearDuplicate(cleanedExtension, segment1Core)) {
+    safeSegment1 = segment1Core;
+  }
+
+  const finalizedSegment1 = finalizeContractCommentary(
+    ensureBeatTerminalPunctuation(safeSegment1, locale),
+    context,
+    { contractMode: "single" }
+  );
+  const commentary = stripEngineeringLeakageFromCommentary(
+    joinBriefSegments([finalizedSegment1, ...trailingSegments], locale),
+    locale
+  );
 
   return {
     ...reply,
-    commentary: finalizeContractCommentary(
-      ensureBeatTerminalPunctuation(safe, locale),
-      context,
-      { contractMode: "single" }
-    ),
+    commentary,
   };
 }
 

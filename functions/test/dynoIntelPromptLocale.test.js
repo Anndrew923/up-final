@@ -57,6 +57,13 @@ describe("system_v1 prompt artifact", () => {
     assert.doesNotMatch(text, /第二段延伸：硬核機械動態/);
   });
 
+  it("defines v5.2 golden three-segment AI contract", () => {
+    const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
+    assert.match(text, /v5\.2 黃金三段式分工/);
+    assert.match(text, /禁止自行輸出 `\\n\\n`/);
+    assert.match(text, /第 2 段（PR 拉新召喚）與第 3 段（法律免責聖盾）將由系統後端硬貼焊接/);
+  });
+
   it("adds hall-of-fame consult unlock rail", () => {
     const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
     assert.match(text, /HALL_OF_FAME_CONSULT/);
