@@ -8,6 +8,7 @@ import {
 } from "../shared/dynoEntitlement.js";
 import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from "./cache.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
+import { resolveHallOfFameConsultReply } from "./hallOfFameConsultGate.js";
 import {
   checkDynoIntelDailyLimit,
   loadDynoRateLimitDoc,
@@ -97,6 +98,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
   }
 
   const inferenceContext = buildDynoIntelInferenceContext(context, userQuestion);
+  const hallOfFameConsultReply = resolveHallOfFameConsultReply(inferenceContext, userQuestion);
 
   const cacheHash = buildDynoIntelCacheHash({
     mergedScores: context.axes,
@@ -148,6 +150,18 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       remaining: 0,
       limit: quota.limit,
       resetAt: quota.resetAt,
+    };
+  }
+
+  if (hallOfFameConsultReply) {
+    await saveDynoIntelCache(cacheHash, hallOfFameConsultReply, promptTemplateId, now, inferenceContext);
+    return {
+      ok: true,
+      fromCache: false,
+      remaining: quota.remaining,
+      limit: quota.limit,
+      resetAt: quota.resetAt,
+      reply: hallOfFameConsultReply,
     };
   }
 

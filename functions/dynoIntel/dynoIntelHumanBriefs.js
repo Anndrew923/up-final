@@ -127,6 +127,10 @@ function resolveSoulPraiseSegment(scaleRow, axis, locale, profile) {
     return String(scaleRow.summaryHuman ?? "").trim();
   }
 
+  if (axis === "overall") {
+    return String(scaleRow.overall ?? scaleRow.summaryHuman ?? "").trim();
+  }
+
   const stream = resolveSoulStream(axis);
   const genderTrack = resolveSoulGenderTrack(profile);
   const fieldKey = resolveSoulMatrixFieldKey(stream, genderTrack);

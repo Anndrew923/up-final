@@ -1,6 +1,6 @@
 /**
- * v3.5.1 — Shared population-class pyramid + four-track soul praise slots (zh-Hant).
- * DESIGN INTENT: populationClass + soul stream/gender routing; summaryHuman retained for en fallback.
+ * v5.2 — Shared population-class pyramid + overall/neuro/volume praise slots (zh-Hant).
+ * DESIGN INTENT: zh macro uses dedicated overall copy while micro keeps neuro/volume routing.
  */
 
 import { DYNO_INTEL_HUMAN_PRAISE_BY_DECADE } from "./dynoIntelHumanPraise.data.js";
@@ -11,13 +11,15 @@ import { DYNO_INTEL_HUMAN_PRAISE_BY_DECADE } from "./dynoIntelHumanPraise.data.j
  */
 function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHuman }) {
   const praise = DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decadeKey] ?? DYNO_INTEL_HUMAN_PRAISE_BY_DECADE["0"];
+  const overall = praise?.overall ?? summaryHuman;
   const neuro = praise?.neuro ?? summaryHuman;
   const volume = praise?.volume ?? summaryHuman;
   return {
     tierId,
     scoreRange,
     populationClass: praise?.populationClass ?? populationClass,
-    summaryHuman,
+    summaryHuman: overall,
+    overall,
     neuro_male: neuro,
     neuro_female: neuro,
     volume_male: volume,

@@ -90,6 +90,20 @@ function patchScaleMatrix() {
     );
   }
 
+  if (!src.includes("const overall = praise?.overall ?? summaryHuman;")) {
+    src = src.replace(
+      "  const neuro = praise?.neuro ?? summaryHuman;\n  const volume = praise?.volume ?? summaryHuman;\n",
+      "  const overall = praise?.overall ?? summaryHuman;\n  const neuro = praise?.neuro ?? summaryHuman;\n  const volume = praise?.volume ?? summaryHuman;\n"
+    );
+  }
+
+  if (!src.includes("overall,")) {
+    src = src.replace(
+      "    populationClass: praise?.populationClass ?? populationClass,\n    summaryHuman,\n",
+      "    populationClass: praise?.populationClass ?? populationClass,\n    summaryHuman: overall,\n    overall,\n"
+    );
+  }
+
   src = src.replace(
     /"(\d+)": scaleBucket\(\{\n    decadeKey: "[^"]+",/g,
     '"$1": scaleBucket({\n    decadeKey: "$1",'

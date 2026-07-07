@@ -56,6 +56,13 @@ describe("system_v1 prompt artifact", () => {
     assert.doesNotMatch(text, /v2\.5 結構化分工/);
     assert.doesNotMatch(text, /第二段延伸：硬核機械動態/);
   });
+
+  it("adds hall-of-fame consult unlock rail", () => {
+    const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
+    assert.match(text, /HALL_OF_FAME_CONSULT/);
+    assert.match(text, /context\.hallOfFameConsult\.locked/);
+    assert.match(text, /不得透露任何名字/);
+  });
 });
 
 describe("stripTechnicalLeakage locale routing", () => {

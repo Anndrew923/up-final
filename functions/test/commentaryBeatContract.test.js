@@ -135,6 +135,8 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const macroBrief = resolveHumanBrief(macroCtx);
     assert.match(macroBrief, /全人類官方 PR 值對照資料正在嚴謹搜集中/);
+    assert.match(macroBrief, /除非你是基因樂透得主/);
+    assert.doesNotMatch(macroBrief, /無論基因如何，能夠到這個程度/);
     assert.doesNotMatch(macroBrief, /\n/);
 
     const microPr = resolvePrPercentileSegment("zh-Hant", false, macroCtx);
@@ -241,7 +243,7 @@ describe("dynoIntelHumanBriefs v3", () => {
       { commentary: `${anchor} 你的多關節力量已達 87.8 分。`, action_directive: "", is_off_topic: false },
       ctx
     );
-    assert.match(repaired.commentary, /80分以上/);
+    assert.match(repaired.commentary, /80\s*分以上/);
     assert.doesNotMatch(repaired.commentary, /87\.8\s*分/);
   });
 
