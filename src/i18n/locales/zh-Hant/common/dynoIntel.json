@@ -13,7 +13,7 @@
     "inputPlaceholder": "輸入診斷問題…",
     "welcomeIntroduction": {
       "line1Prefix": "歡迎來到主控艙。我是你的 ",
-      "line1Highlight": "Dino Intel 數據智庫",
+      "line1Highlight": "DYNO INTEL 數據智庫",
       "line1Suffix": "。",
       "line2": "已全量同步你的各項指標，",
       "line3Prefix": "請直接輸入診斷問題，發動",
@@ -122,6 +122,9 @@
     "humanBrief": {
       "prPercentileFallback": "綜合你所有表現──【全人類官方 PR 值對照資料正在嚴謹搜集中。為了確保百分位數據的科學金本位含金量，本功能將在全網名單豐富後動態更新解鎖；誠摯邀請你幫忙介紹新用戶，一同加速解鎖這座全球肉體極限座標！】",
       "hallOfFameSentence": "在名人堂聖殿中，你正與 {{names}} 站在同一個王座座標。"
+    },
+    "hallOfFame": {
+      "legalShield": "本系統所收錄之各界名將、藝人運動表現數據，均為其生涯巔峰狀態，源自全球網路公開史料與賽事紀實。部分未公開之空白維度，均由 Dyno Intel 運動科學研究中心依據跨領域生理常模、肌纖維募集比例與物理特質進行高精度推算。本矩陣非臨床與官方賽事認證，數據並非 100% 絕對精準，僅供天梯對帳與娛樂參考。"
     },
     "humanPraise": {
       "byDecade": {

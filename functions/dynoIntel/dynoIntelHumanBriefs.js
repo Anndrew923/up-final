@@ -1,12 +1,13 @@
 /**
- * v5.0 — P1 human brief: PR fallback (overall macro only) + axis prefix + populationClass + soul praise + optional hall-of-fame (zh).
- * WHY: Two-tier assembly — macro triggers viral PR fallback; micro skips PR; en skips hall-of-fame.
+ * v5.1 — P1 human brief: PR fallback (overall macro only) + axis prefix + populationClass + soul praise + optional hall-of-fame + legal shield (zh).
+ * WHY: Two-tier assembly — macro triggers viral PR fallback; micro skips PR; en skips hall-of-fame; legal shield only when names render.
  */
 import {
   DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
   DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH,
 } from "./dynoIntelHumanScaleMatrix.js";
 import {
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
   DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH,
   DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
 } from "./dynoIntelHumanPraise.data.js";
@@ -202,16 +203,43 @@ function joinBriefSegments(segments, locale) {
   return rows.join(normalizeLocale(locale) === "en" ? " " : "");
 }
 
-function attachHallOfFameToAnchor(anchor, hallSegment, locale) {
-  const base = String(anchor ?? "").trim();
-  const hall = String(hallSegment ?? "").trim();
-  if (!base) return hall || null;
-  if (!hall) return base;
+/** Appends a suffix as a new sentence in the chassis single-paragraph contract. */
+function appendLocalizedSuffix(base, suffix, locale) {
+  const head = String(base ?? "").trim();
+  const tail = String(suffix ?? "").trim();
+  if (!head) return tail || null;
+  if (!tail) return head;
   if (normalizeLocale(locale) === "en") {
-    return ensureTerminalPunctuation(`${base} ${hall}`, locale);
+    return ensureTerminalPunctuation(`${head} ${tail}`, locale);
   }
-  const trimmed = base.replace(/[。！？]$/, "");
-  return ensureTerminalPunctuation(`${trimmed}。${hall}`, locale);
+  const trimmed = head.replace(/[。！？]$/, "");
+  return ensureTerminalPunctuation(`${trimmed}。${tail}`, locale);
+}
+
+function attachHallOfFameToAnchor(anchor, hallSegment, locale) {
+  return appendLocalizedSuffix(anchor, hallSegment, locale);
+}
+
+/**
+ * v5.1 — hall-of-fame legal shield suffix (zh-only, single-paragraph tail).
+ * WHY: Black-box easter-egg disclaimer — only when celebrity names were rendered.
+ */
+export function attachLegalShieldSuffix(brief, locale) {
+  const shield = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
+  if (!shield || normalizeLocale(locale) !== "zh-Hant") {
+    return String(brief ?? "").trim() || null;
+  }
+  return appendLocalizedSuffix(brief, shield, locale);
+}
+
+/**
+ * v5.1 — Boss spec gate: score >= 60 AND hall-of-fame names rendered (hallSegment truthy).
+ * WHY: hallSegment already implies sparse-matrix hit; score guard is defensive against band drift.
+ */
+export function shouldAttachHallOfFameLegalShield(score, hallSegment, locale) {
+  if (!hallSegment || normalizeLocale(locale) !== "zh-Hant") return false;
+  const safeScore = Number(score);
+  return Number.isFinite(safeScore) && safeScore >= 60;
 }
 
 /**
@@ -244,7 +272,11 @@ export function resolveRigidHumanPopulationClass(axis, score, locale = "zh-Hant"
   if (!anchor) return null;
 
   const prSegment = resolvePrPercentileSegment(locale, isOverallMacro, context);
-  return joinBriefSegments([prSegment, anchor], locale);
+  let brief = joinBriefSegments([prSegment, anchor], locale);
+  if (shouldAttachHallOfFameLegalShield(score, hallSegment, locale)) {
+    brief = attachLegalShieldSuffix(brief, locale);
+  }
+  return brief;
 }
 
 /**

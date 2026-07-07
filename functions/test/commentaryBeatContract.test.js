@@ -84,7 +84,10 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /國際大師級運動員/);
     assert.match(brief, /你的外型與身體機能/);
-    assert.doesNotMatch(brief, /肌纖維|量體飽滿|Mock Volume/);
+    assert.doesNotMatch(brief, /量體飽滿|Mock Volume/);
+    const beforeLegalShield = brief.split("本系統所收錄之各界名將")[0];
+    assert.doesNotMatch(beforeLegalShield, /肌纖維|量體飽滿|Mock Volume/);
+    assert.match(brief, /僅供天梯對帳與娛樂參考。$/);
   });
 
   it("v5.0 — strength 87.9 uses neuro soul praise without tier tail or PR fallback", () => {
@@ -151,6 +154,76 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /在名人堂聖殿中/);
     assert.match(brief, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+  });
+
+  it("v5.1 — legal shield appends once at tail when hall-of-fame names render (60+)", () => {
+    const ctx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的力量表現如何？",
+      questionFocusAxis: "strength",
+      gaps: [],
+      axes: [{ axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const brief = resolveHumanBrief(ctx);
+    assert.match(brief, /生涯巔峰狀態/);
+    assert.match(brief, /僅供天梯對帳與娛樂參考/);
+    assert.doesNotMatch(brief, /\n/);
+    assert.ok(brief.endsWith("僅供天梯對帳與娛樂參考。"));
+  });
+
+  it("v5.1 — scores below 60 omit legal shield even when praise renders", () => {
+    const ctx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的力量表現如何？",
+      questionFocusAxis: "strength",
+      gaps: [],
+      axes: [{ axis: "strength", score: 55, tierBandId: "TIER_50", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const brief = resolveHumanBrief(ctx);
+    assert.ok(brief);
+    assert.doesNotMatch(brief, /生涯巔峰狀態|僅供天梯對帳與娛樂參考/);
+    assert.doesNotMatch(brief, /名人堂/);
+  });
+
+  it("v5.1 — blank matrix cell omits hall-of-fame and legal shield (explosive 70 band)", () => {
+    const ctx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的爆發力如何？",
+      questionFocusAxis: "explosivePower",
+      gaps: [],
+      axes: [
+        {
+          axis: "explosivePower",
+          score: 75,
+          tierBandId: "TIER_70",
+          cardCopy: { title: "x", summary: "x" },
+        },
+      ],
+    };
+    const brief = resolveHumanBrief(ctx);
+    assert.ok(brief);
+    assert.doesNotMatch(brief, /名人堂|生涯巔峰狀態/);
+  });
+
+  it("v5.1 — overall macro with blank overall cell keeps PR fallback but omits legal shield", () => {
+    const ctx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的總分表現如何？",
+      gaps: [],
+      overallScore: 155,
+      axes: [{ axis: "strength", score: 150, tierBandId: "LEGEND", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const brief = resolveHumanBrief(ctx);
+    assert.match(brief, /全人類官方 PR 值對照資料正在嚴謹搜集中/);
+    assert.doesNotMatch(brief, /名人堂|生涯巔峰狀態/);
   });
 
   it("v5.0 — beat repair preserves official tier-band phrases inside anchor (e.g. 80分)", () => {
