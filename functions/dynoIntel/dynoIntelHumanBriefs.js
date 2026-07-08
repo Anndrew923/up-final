@@ -210,7 +210,9 @@ export function resolvePrPercentileSegment(locale, isOverallMacro, context = nul
 export function resolveHallOfFameBriefSegment(axis, decadeKey, locale) {
   const normalized = normalizeLocale(locale);
   if (normalized === "en") {
-    return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN);
+    return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN, {
+      nameGlue: ", ",
+    });
   }
   if (normalized === "zh-Hant") {
     return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH);

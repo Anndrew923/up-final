@@ -12,24 +12,21 @@ import {
 } from "./resolveQuestionIntent.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { resolveHallOfFameDisplayNames } from "./hallOfFameResolver.js";
+import { resolveReplyLocale } from "./beatTemplates.js";
 
 const HALL_OF_FAME_CONSULT_PATTERNS = [
   /名人堂|萬神殿|名人堂聖殿|聖殿矩陣|歷史傳奇|有哪些名人|有哪些人名|哪些傳奇|哪些名字|誰在.*分|誰有.*分/i,
   /Hall of Fame|Pantheon|historical legends?|famous names?|legendary athletes?|who.*(?:at|above|over).*\d+/i,
 ];
 
-function resolveConsultLocale(context) {
-  return context?.locale === "en" ? "en" : "zh-Hant";
-}
-
 function resolveBlockedReplyCopy(context) {
-  return resolveConsultLocale(context) === "en"
+  return resolveReplyLocale(context) === "en"
     ? DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN
     : DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH;
 }
 
 function resolveConsultLegalShieldCopy(context) {
-  return resolveConsultLocale(context) === "en"
+  return resolveReplyLocale(context) === "en"
     ? DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN
     : DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH;
 }
@@ -53,17 +50,71 @@ export function isHallOfFameConsultHardReply(reply) {
 }
 
 const TIER_PATTERNS = [
-  { decadeKey: "150", label: "150+（地表最強）", pattern: /150\+|150\s*分以上|150以上|a2/i },
-  { decadeKey: "140", label: "140-150（怪物領域）", pattern: /140\s*[-~～到至]\s*150|140分以上|140以上|a3/i },
-  { decadeKey: "130", label: "130-140（統計神話）", pattern: /130\s*[-~～到至]\s*140|130分以上|130以上|a4/i },
-  { decadeKey: "120", label: "120-130（歷史級別）", pattern: /120\s*[-~～到至]\s*130|120分以上|120以上|a5/i },
-  { decadeKey: "110", label: "110-120（超凡入聖）", pattern: /110\s*[-~～到至]\s*120|110分以上|110以上|a6/i },
-  { decadeKey: "100", label: "100-110（凡體覺醒）", pattern: /100\s*[-~～到至]\s*110|100分以上|100以上|a7/i },
-  { decadeKey: "90", label: "90-100（凡人頂尖）", pattern: /90\s*[-~～到至]\s*100|90分以上|90以上|a8/i },
-  { decadeKey: "80", label: "80-90（高階玩家）", pattern: /80\s*[-~～到至]\s*90|80分以上|80以上|a9/i },
-  { decadeKey: "70", label: "70-80（進階健身者）", pattern: /70\s*[-~～到至]\s*80|70分以上|70以上/ },
-  { decadeKey: "60", label: "60-70（大眾健康常模）", pattern: /60\s*[-~～到至]\s*70|60分以上|60以上/ },
+  {
+    decadeKey: "150",
+    label: "150+（地表最強）",
+    labelEn: "150+ (Earth's apex)",
+    pattern: /150\+|150\s*分以上|150以上|a2|(?:above|over)\s*150|150\s*points?/i,
+  },
+  {
+    decadeKey: "140",
+    label: "140-150（怪物領域）",
+    labelEn: "140-150 (Monster tier)",
+    pattern: /140\s*[-~～到至]\s*150|140分以上|140以上|a3|(?:above|over)\s*140|140\s*points?/i,
+  },
+  {
+    decadeKey: "130",
+    label: "130-140（統計神話）",
+    labelEn: "130-140 (Statistical myth)",
+    pattern: /130\s*[-~～到至]\s*140|130分以上|130以上|a4|(?:above|over)\s*130|130\s*points?/i,
+  },
+  {
+    decadeKey: "120",
+    label: "120-130（歷史級別）",
+    labelEn: "120-130 (Historic tier)",
+    pattern: /120\s*[-~～到至]\s*130|120分以上|120以上|a5|(?:above|over)\s*120|120\s*points?/i,
+  },
+  {
+    decadeKey: "110",
+    label: "110-120（超凡入聖）",
+    labelEn: "110-120 (Transcendent tier)",
+    pattern: /110\s*[-~～到至]\s*120|110分以上|110以上|a6|(?:above|over)\s*110|110\s*points?/i,
+  },
+  {
+    decadeKey: "100",
+    label: "100-110（凡體覺醒）",
+    labelEn: "100-110 (Awakened mortal)",
+    pattern: /100\s*[-~～到至]\s*110|100分以上|100以上|a7|(?:above|over)\s*100|100\s*points?/i,
+  },
+  {
+    decadeKey: "90",
+    label: "90-100（凡人頂尖）",
+    labelEn: "90-100 (Top mortal tier)",
+    pattern: /90\s*[-~～到至]\s*100|90分以上|90以上|a8|(?:above|over)\s*90|90\s*points?/i,
+  },
+  {
+    decadeKey: "80",
+    label: "80-90（高階玩家）",
+    labelEn: "80-90 (Advanced tier)",
+    pattern: /80\s*[-~～到至]\s*90|80分以上|80以上|a9|(?:above|over)\s*80|80\s*points?/i,
+  },
+  {
+    decadeKey: "70",
+    label: "70-80（進階健身者）",
+    labelEn: "70-80 (Intermediate lifter)",
+    pattern: /70\s*[-~～到至]\s*80|70分以上|70以上|(?:above|over)\s*70|70\s*points?/i,
+  },
+  {
+    decadeKey: "60",
+    label: "60-70（大眾健康常模）",
+    labelEn: "60-70 (General health norm)",
+    pattern: /60\s*[-~～到至]\s*70|60分以上|60以上|(?:above|over)\s*60|60\s*points?/i,
+  },
 ];
+
+function resolveTierLabel(tier, locale) {
+  return locale === "en" ? tier.labelEn : tier.label;
+}
 
 const AXIS_LABELS_ZH = {
   overall: "總分",
@@ -151,7 +202,7 @@ function resolveAggregateTierNames(decadeKey, limit = 6) {
 }
 
 function buildUnlockedReply({ decadeLabel, axis, names, context }) {
-  const locale = resolveConsultLocale(context);
+  const locale = resolveReplyLocale(context);
   const axisLabels = locale === "en" ? AXIS_LABELS_EN : AXIS_LABELS_ZH;
   const axisLabel = axisLabels[axis] ?? (locale === "en" ? "this axis" : "該軸");
   const joinedNames = locale === "en" ? names.join(", ") : names.join("、");
@@ -190,12 +241,12 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
   const fallbackNames =
     axis && names.length === 0 ? [] : names.length > 0 ? names : resolveAggregateTierNames(tier.decadeKey, 6);
 
-  const locale = resolveConsultLocale(context);
+  const locale = resolveReplyLocale(context);
 
   if (fallbackNames.length === 0) {
     const commentary =
       locale === "en"
-        ? `You have unlocked ${tier.label} Pantheon benchmarking, but this cell is still a blank anchor with no public roster yet.`
+        ? `You have unlocked ${resolveTierLabel(tier, locale)} Pantheon benchmarking, but this cell is still a blank anchor with no public roster yet.`
         : `你已解鎖 ${tier.label} 的萬神殿對帳權限，但這一格目前仍是空白錨點，尚無可公開對帳名單。`;
     return wrapHallOfFameConsultReply({
       commentary,
@@ -206,7 +257,12 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
   }
 
   return wrapHallOfFameConsultReply({
-    commentary: buildUnlockedReply({ decadeLabel: tier.label, axis, names: fallbackNames, context }),
+    commentary: buildUnlockedReply({
+      decadeLabel: resolveTierLabel(tier, resolveReplyLocale(context)),
+      axis,
+      names: fallbackNames,
+      context,
+    }),
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),

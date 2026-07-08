@@ -32,6 +32,7 @@ describe("hallOfFameConsultGate", () => {
   it("parses consult tier from score-band questions", () => {
     assert.equal(resolveHallOfFameConsultTier("100分以上有哪些名人？")?.decadeKey, "100");
     assert.equal(resolveHallOfFameConsultTier("140-150 有哪些傳奇？")?.decadeKey, "140");
+    assert.equal(resolveHallOfFameConsultTier("Hall of Fame names above 80?")?.decadeKey, "80");
   });
 
   it("blocks locked tier consultations when overall score is insufficient", () => {
@@ -69,6 +70,18 @@ describe("hallOfFameConsultGate", () => {
     assert.match(reply.commentary, /力量萬神殿對帳權限/);
     assert.match(reply.commentary, /Jason Statham|Chris Hemsworth|Conor McGregor/);
     assert.match(reply.commentary, /僅供天梯對帳與娛樂參考。$/);
+  });
+
+  it("unlocks EN strength consult with English tier phrasing and zero CJK leakage", () => {
+    const reply = resolveHallOfFameConsultReply(
+      { ...baseContext, locale: "en" },
+      "Hall of Fame names above 80 for strength?"
+    );
+    assert.ok(reply);
+    assert.match(reply.commentary, /80-90 \(Advanced tier\)/);
+    assert.match(reply.commentary, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.match(reply.commentary, /entertainment purposes\.$/);
+    assert.doesNotMatch(reply.commentary, /[\u4e00-\u9fff]/);
   });
 
   it("keeps blank unlocked cells disclaimer-free", () => {

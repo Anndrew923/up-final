@@ -41,4 +41,16 @@ describe("hallOfFameResolver v5.0", () => {
     assert.match(sentence, /在名人堂聖殿中/);
     assert.doesNotMatch(sentence, /\{\{names\}\}/);
   });
+
+  it("renders EN hall-of-fame sentence with comma-separated Western names", () => {
+    const sentence = resolveHallOfFameSentence(
+      "strength",
+      "80",
+      "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}.",
+      { nameGlue: ", " }
+    );
+    assert.ok(sentence);
+    assert.match(sentence, /Jason Statham, Chris Hemsworth|Chris Hemsworth, Conor McGregor/);
+    assert.doesNotMatch(sentence, /、/);
+  });
 });

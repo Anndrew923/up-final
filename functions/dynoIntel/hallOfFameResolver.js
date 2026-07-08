@@ -36,13 +36,16 @@ export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DIS
  * @param {string} axisId
  * @param {string} decadeKey
  * @param {string} sentenceTemplate — must include {{names}}
- * @param {number} [limit]
+ * @param {{ limit?: number, nameGlue?: string } | number} [options]
  * @returns {string | null}
  */
-export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, limit = MAX_DISPLAY_NAMES) {
+export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, options = {}) {
+  const resolved = typeof options === "number" ? { limit: options } : options;
+  const limit = resolved.limit ?? MAX_DISPLAY_NAMES;
+  const nameGlue = resolved.nameGlue ?? "、";
   const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit);
   if (!names.length) return null;
-  return String(sentenceTemplate ?? "").replace("{{names}}", names.join("、"));
+  return String(sentenceTemplate ?? "").replace("{{names}}", names.join(nameGlue));
 }
 
 export { MAX_DISPLAY_NAMES as HALL_OF_FAME_MAX_DISPLAY_NAMES };

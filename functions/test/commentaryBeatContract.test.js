@@ -197,7 +197,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /在名人堂聖殿中/);
-    assert.match(brief, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.match(brief, /Jason Statham、Chris Hemsworth、Conor McGregor/);
   });
 
   it("v5.2 — legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
@@ -309,7 +309,8 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
     assert.match(brief, /Hall of Fame sanctum/i);
-    assert.match(brief, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.match(brief, /Jason Statham, Chris Hemsworth|Chris Hemsworth, Conor McGregor/);
+    assert.doesNotMatch(brief, /、/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
   });
 
