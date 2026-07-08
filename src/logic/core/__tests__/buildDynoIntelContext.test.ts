@@ -181,6 +181,28 @@ describe('buildDynoIntelContext', () => {
       surfaceLabel: 'FFMI / 引擎排量 (bodyFat 軸分數)',
     });
   });
+
+  it('applies liveScoreOverrides after radar merge for consult alignment', () => {
+    const ctx = buildDynoIntelContext({
+      radarInput: {
+        scores: { strength: 60, cardio: 65, explosivePower: 70, muscleMass: 68, bodyFat: 72, gripStrength: 66 },
+        profile: baseProfile,
+        cardioInputs: null,
+        muscleInputs: null,
+        powerInputs: null,
+        strengthInputs,
+        gripInputs: null,
+      },
+      liveScoreOverrides: { strength: 105 },
+      historyRecords: [],
+      locale: 'zh-Hant',
+      mode: 'cross-axis',
+    });
+
+    const strengthAxis = ctx.axes.find((a) => a.axis === 'strength');
+    expect(strengthAxis?.score).toBe(105);
+    expect(ctx.overallScore).toBeGreaterThan(60);
+  });
 });
 
 describe('resolveWeakestAxis', () => {

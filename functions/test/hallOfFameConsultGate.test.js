@@ -33,8 +33,19 @@ describe("hallOfFameConsultGate", () => {
   it("blocks locked tier consultations when overall score is insufficient", () => {
     const reply = resolveHallOfFameConsultReply(baseContext, "100分以上有哪些名人？");
     assert.ok(reply);
+    assert.match(reply.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
     assert.match(reply.commentary, /尚未解鎖該重力場/);
     assert.doesNotMatch(reply.commentary, /大谷翔平|阿諾|Jason/);
+    assert.doesNotMatch(reply.commentary, /不在我的服務範圍內/);
+  });
+
+  it("hard-blocks tier-less hall consult vagueness with motivational copy", () => {
+    const reply = resolveHallOfFameConsultReply(baseContext, "萬神殿有哪些傳奇？");
+    assert.ok(reply);
+    assert.equal(reply.is_off_topic, false);
+    assert.match(reply.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
+    assert.match(reply.commentary, /天梯大腦會在你的專屬報告中/);
+    assert.doesNotMatch(reply.commentary, /不在我的服務範圍內/);
   });
 
   it("unlocks axis-specific celebrity names when the user score reaches the tier", () => {

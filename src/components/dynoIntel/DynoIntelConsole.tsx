@@ -61,6 +61,7 @@ const DynoIntelConsole = () => {
       return buildDynoIntelContext({
         radarInput: snapshot,
         historyRecords: snapshot.historyRecords,
+        liveScoreOverrides: snapshot.liveScoreOverrides,
         locale,
         mode: DYNO_INFERENCE_MODE,
         focusAxis: null,

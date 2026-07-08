@@ -7,9 +7,24 @@ import { DYNO_INTEL_HUMAN_PRAISE_BY_DECADE } from "./dynoIntelHumanPraise.data.j
 
 
 /**
- * @deprecated v3.5.1 — en locale soul fallback only; zh uses neuro_* / volume_* fields.
+ * zh-Hant: merge synced praise slots (overall / neuro / volume).
+ * en: rigid isolation — never overlay DYNO_INTEL_HUMAN_PRAISE_BY_DECADE (zh-only sync).
  */
-function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHuman }) {
+function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHuman, locale = "zh-Hant" }) {
+  if (locale === "en") {
+    return {
+      tierId,
+      scoreRange,
+      populationClass,
+      summaryHuman,
+      overall: summaryHuman,
+      neuro_male: summaryHuman,
+      neuro_female: summaryHuman,
+      volume_male: summaryHuman,
+      volume_female: summaryHuman,
+    };
+  }
+
   const praise = DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decadeKey] ?? DYNO_INTEL_HUMAN_PRAISE_BY_DECADE["0"];
   const overall = praise?.overall ?? summaryHuman;
   const neuro = praise?.neuro ?? summaryHuman;
@@ -26,6 +41,8 @@ function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHu
     volume_female: volume,
   };
 }
+
+const scaleBucketEn = (row) => scaleBucket({ ...row, locale: "en" });
 
 export const DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH = {
   "150": scaleBucket({
@@ -135,7 +152,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH = {
 };
 
 export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
-  "150": scaleBucket({
+  "150": scaleBucketEn({
     decadeKey: "150",
     tierId: "LEGEND",
     scoreRange: "150+",
@@ -143,7 +160,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You have broken past established human physiological norms — recruitment speed and skeletal loading show hall-of-fame dominance.",
   }),
-  "140": scaleBucket({
+  "140": scaleBucketEn({
     decadeKey: "140",
     tierId: "TIER_140",
     scoreRange: "140–149",
@@ -151,7 +168,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You sit at the global genetic ceiling with rare specialist dominance across every physiological read.",
   }),
-  "130": scaleBucket({
+  "130": scaleBucketEn({
     decadeKey: "130",
     tierId: "TIER_130",
     scoreRange: "130–139",
@@ -159,7 +176,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "Your reads benchmark world-top athletes with airtight specialty output under international-level stress.",
   }),
-  "120": scaleBucket({
+  "120": scaleBucketEn({
     decadeKey: "120",
     tierId: "TIER_120",
     scoreRange: "120–129",
@@ -167,7 +184,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You carry an international master-athlete base — energy systems and major-muscle recruitment sit far above conventional competitive norms.",
   }),
-  "110": scaleBucket({
+  "110": scaleBucketEn({
     decadeKey: "110",
     tierId: "TIER_110",
     scoreRange: "110–119",
@@ -175,7 +192,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You anchor in the national elite band with stable multi-joint synergy and peak explosive output near the sport pyramid top.",
   }),
-  "100": scaleBucket({
+  "100": scaleBucketEn({
     decadeKey: "100",
     tierId: "TIER_100",
     scoreRange: "100–109",
@@ -183,7 +200,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You hold national-event winner physiology with stable professional competitive patterns across hard training blocks.",
   }),
-  "90": scaleBucket({
+  "90": scaleBucketEn({
     decadeKey: "90",
     tierId: "TIER_90",
     scoreRange: "90–99",
@@ -191,7 +208,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You are a regional multi-event benchmark with excellent multi-joint loading synergy and a clear specialty edge.",
   }),
-  "80": scaleBucket({
+  "80": scaleBucketEn({
     decadeKey: "80",
     tierId: "TIER_80",
     scoreRange: "80–89",
@@ -199,7 +216,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "Among amateur athletes you show standout norms with thick major-muscle reserves and clearly above-average physiology.",
   }),
-  "70": scaleBucket({
+  "70": scaleBucketEn({
     decadeKey: "70",
     tierId: "TIER_70",
     scoreRange: "70–79",
@@ -207,7 +224,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You rank among standout commercial-gym performers with deep, consistent training traces above the amateur majority.",
   }),
-  "60": scaleBucket({
+  "60": scaleBucketEn({
     decadeKey: "60",
     tierId: "TIER_60",
     scoreRange: "60–69",
@@ -215,7 +232,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You maintain regular exercise habits with fluent multi-joint patterns and reads above population average.",
   }),
-  "50": scaleBucket({
+  "50": scaleBucketEn({
     decadeKey: "50",
     tierId: "TIER_50",
     scoreRange: "50–59",
@@ -223,7 +240,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You lock onto the healthy same-age average baseline with standard physiological markers.",
   }),
-  "40": scaleBucket({
+  "40": scaleBucketEn({
     decadeKey: "40",
     tierId: "TIER_40",
     scoreRange: "40–49",
@@ -231,7 +248,7 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     summaryHuman:
       "You are in a high-upside beginner phase with clear room to improve recruitment and base capacity.",
   }),
-  "0": scaleBucket({
+  "0": scaleBucketEn({
     decadeKey: "0",
     tierId: "BASE",
     scoreRange: "0–39",

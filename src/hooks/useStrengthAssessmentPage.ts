@@ -23,6 +23,7 @@ import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSy
 import type { PhysicalProfile } from '../types/userProfile';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 import { useScoreStore } from '../stores/scoreStore';
+import { useDynoIntelScoreDraftStore } from '../stores/dynoIntelScoreDraftStore';
 
 export type PerLiftScore = {
   oneRepMax: number;
@@ -74,6 +75,8 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
+  const setLiveStrengthScore = useDynoIntelScoreDraftStore((s) => s.setLiveScore);
+  const clearLiveStrengthScore = useDynoIntelScoreDraftStore((s) => s.clearLiveScore);
   const [profile, setProfile] = useState(loadPhysicalProfile);
   const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm());
 
@@ -177,6 +180,21 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     }),
     [form, profile, profileReady]
   );
+
+  const livePreviewScore = useMemo(() => {
+    const result = tryComputeStrengthAssessmentScore(computeArgs);
+    return result.ok ? result.score : null;
+  }, [computeArgs]);
+
+  useEffect(() => {
+    if (livePreviewScore != null && Number.isFinite(livePreviewScore)) {
+      setLiveStrengthScore('strength', livePreviewScore);
+      return;
+    }
+    clearLiveStrengthScore('strength');
+  }, [clearLiveStrengthScore, livePreviewScore, setLiveStrengthScore]);
+
+  useEffect(() => () => clearLiveStrengthScore('strength'), [clearLiveStrengthScore]);
 
   const calculateLift = useCallback(
     (lift: StrengthLiftKey) => {

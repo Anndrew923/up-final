@@ -26,6 +26,11 @@ import { buildDynoIntelSupplementalMetrics } from './buildDynoIntelSupplementalM
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
+function applyLiveScoreOverrides(merged: ScoreMap, overrides?: ScoreMap): ScoreMap {
+  if (!overrides || Object.keys(overrides).length === 0) return merged;
+  return { ...merged, ...overrides };
+}
+
 const WEIGHT_SENSITIVE_AXIS: SixAxisMetric = 'strength';
 
 function isValidTargetWeightKg(value: number): boolean {
@@ -170,7 +175,10 @@ export function resolveWeakestAxis(
  */
 export function buildDynoIntelContext(input: BuildDynoIntelContextInput): DynoIntelContextV1 {
   const now = input.now ?? new Date();
-  const mergedScores = mergeScoreMapForHomeRadar(input.radarInput);
+  const mergedScores = applyLiveScoreOverrides(
+    mergeScoreMapForHomeRadar(input.radarInput),
+    input.liveScoreOverrides
+  );
   const gaps = buildGaps(mergedScores);
   const axes = buildAxisSnapshots(mergedScores);
   const sortedHistory = sortHistoryNewestFirst(input.historyRecords);

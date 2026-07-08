@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { RadarMergedScoresInput } from '../logic/core/radarMergedScores';
 import type { DynoHistoryRecordSlice } from '../logic/core/dynoIntelTypes';
+import type { ScoreMap } from '../types/scoring';
 import {
   CARDIO_INPUTS_STORAGE_KEY,
   GRIP_INPUTS_STORAGE_KEY,
@@ -23,10 +24,12 @@ import {
   subscribeStrengthInputs,
 } from '../services/localStorageService';
 import { useHistoryStore } from '../stores/historyStore';
+import { useDynoIntelScoreDraftStore } from '../stores/dynoIntelScoreDraftStore';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type DynoIntelRadarSnapshot = RadarMergedScoresInput & {
   historyRecords: readonly DynoHistoryRecordSlice[];
+  liveScoreOverrides: ScoreMap;
 };
 
 /**
@@ -34,6 +37,7 @@ export type DynoIntelRadarSnapshot = RadarMergedScoresInput & {
  */
 export function useDynoIntelContextBuilder(): () => DynoIntelRadarSnapshot {
   const scores = useScoreStore((s) => s.scores);
+  const liveScoreOverrides = useDynoIntelScoreDraftStore((s) => s.overrides);
   const historyRecords = useHistoryStore((s) => s.records);
   const [localEpoch, setLocalEpoch] = useState(0);
 
@@ -89,8 +93,9 @@ export function useDynoIntelContextBuilder(): () => DynoIntelRadarSnapshot {
       strengthInputs: loadStrengthInputs(),
       gripInputs: loadGripInputs(),
       historyRecords: records,
+      liveScoreOverrides,
     };
-  }, [historyRecords, localEpoch, scores]);
+  }, [historyRecords, liveScoreOverrides, localEpoch, scores]);
 
   return useMemo(() => () => snapshot, [snapshot]);
 }

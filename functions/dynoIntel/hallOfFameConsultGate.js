@@ -13,7 +13,16 @@ const HALL_OF_FAME_CONSULT_PATTERNS = [
 ];
 
 const BLOCKED_REPLY_ZH =
-  "在 Dyno Intel 的萬神殿深處，該區間已正式跨入超凡神格區間。你目前的綜合實力尚未解鎖該重力場。拼盡全力訓練吧！當你將功能推向臨界點時，天梯大腦會在你的專屬報告中，為你開啟與該階層歷史傳奇的正面對帳通道！";
+  "在 Dyno Intel 的萬神殿深處，該分數帶已正式跨入凡人頂尖的神格區間。你目前的綜合實力尚未解鎖該重力場。拼盡全力訓練吧！當你將功能推向臨界點時，天梯大腦會在你的專屬報告中，為你開啟與該階層歷史傳奇的正面對帳通道！";
+
+function buildBlockedConsultReply(context) {
+  return {
+    commentary: BLOCKED_REPLY_ZH,
+    action_directive: "",
+    is_off_topic: false,
+    detected_weakest_axis: String(context?.weakestAxis ?? ""),
+  };
+}
 
 const TIER_PATTERNS = [
   { decadeKey: "150", label: "150+（地表最強）", pattern: /150\+|150\s*分以上|150以上|a2/i },
@@ -112,17 +121,14 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
   if (!isHallOfFameConsultQuestion(userQuestion)) return null;
 
   const tier = resolveHallOfFameConsultTier(userQuestion);
-  if (!tier) return null;
+  if (!tier) {
+    return buildBlockedConsultReply(context);
+  }
 
   const axis = resolveConsultAxis(userQuestion, context);
   const unlockScore = resolveAxisScore(context, axis ?? "overall");
   if (!Number.isFinite(unlockScore) || unlockScore < Number(tier.decadeKey)) {
-    return {
-      commentary: BLOCKED_REPLY_ZH,
-      action_directive: "",
-      is_off_topic: false,
-      detected_weakest_axis: String(context?.weakestAxis ?? ""),
-    };
+    return buildBlockedConsultReply(context);
   }
 
   const names = axis

@@ -157,6 +157,8 @@ export interface BuildDynoIntelContextInput {
   focusSupplemental?: DynoSupplementalMetricId | null;
   targetWeightKg?: number;
   now?: Date;
+  /** In-memory assessment preview — applied after radar merge (pre-persist draft). */
+  liveScoreOverrides?: ScoreMap;
 }
 
 /** Gemini structured output contract — mirrored server-side for validation. */

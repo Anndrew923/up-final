@@ -307,6 +307,26 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.ok(brief);
     assert.doesNotMatch(brief, /名人堂|Hall of Fame/i);
   });
+
+  it("v5.2.1 — en locale segment1 has zero CJK pollution", () => {
+    const ctx = {
+      locale: "en",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "How is my strength?",
+      questionFocusAxis: "strength",
+      gaps: [],
+      axes: [{ axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const segment1 = resolveSegment1Core("strength", 87.8, "en", ctx);
+    const brief = resolveHumanBrief(ctx);
+    assert.ok(segment1);
+    assert.ok(brief);
+    assert.doesNotMatch(segment1, /[\u4e00-\u9fff]/);
+    assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
+    assert.match(segment1, /maps to|Against same-age norms/i);
+    assert.match(segment1, /strong amateur athlete performance/i);
+  });
 });
 
 describe("enforceCommentaryBeatContract v3", () => {
