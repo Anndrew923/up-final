@@ -23,7 +23,10 @@ describe("hallOfFameConsultGate", () => {
   it("detects consult intent without over-broad 聖殿 false positives", () => {
     assert.equal(isHallOfFameConsultQuestion("100分以上有哪些名人？"), true);
     assert.equal(isHallOfFameConsultQuestion("萬神殿有哪些傳奇？"), true);
+    assert.equal(isHallOfFameConsultQuestion("Who are the Pantheon legends?"), true);
+    assert.equal(isHallOfFameConsultQuestion("Hall of Fame names above 80?"), true);
     assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
+    assert.equal(isHallOfFameConsultQuestion("How is my cardio?"), false);
   });
 
   it("parses consult tier from score-band questions", () => {
@@ -47,6 +50,17 @@ describe("hallOfFameConsultGate", () => {
     assert.match(reply.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
     assert.match(reply.commentary, /天梯大腦會在你的專屬報告中/);
     assert.doesNotMatch(reply.commentary, /不在我的服務範圍內/);
+  });
+
+  it("hard-blocks English Pantheon vagueness with EN motivational copy", () => {
+    const reply = resolveHallOfFameConsultReply(
+      { ...baseContext, locale: "en" },
+      "Who are the Pantheon legends?"
+    );
+    assert.ok(reply);
+    assert.match(reply.commentary, /deepest sanctum of the Dyno Intel Pantheon/i);
+    assert.match(reply.commentary, /Core Mind will unlock the gateway/i);
+    assert.doesNotMatch(reply.commentary, /outside my scope/i);
   });
 
   it("unlocks axis-specific celebrity names when the user score reaches the tier", () => {

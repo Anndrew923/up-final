@@ -296,7 +296,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(repaired.commentary, /87\.8\s*分/);
   });
 
-  it("v5.0 — en locale skips hall-of-fame segment", () => {
+  it("v5.2.2 — en locale micro strength appends hall-of-fame names when matrix cell exists", () => {
     const ctx = {
       locale: "en",
       mode: "cross-axis",
@@ -308,7 +308,50 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
-    assert.doesNotMatch(brief, /名人堂|Hall of Fame/i);
+    assert.match(brief, /Hall of Fame sanctum/i);
+    assert.match(brief, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
+  });
+
+  it("v5.2.2 — en locale overall macro golden three with \\n\\n breathing room", () => {
+    const macroCtx = {
+      locale: "en",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "How is my overall score?",
+      gaps: [],
+      overallScore: 92,
+      axes: [{ axis: "strength", score: 90, tierBandId: "TIER_90", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const parts = resolveHumanBriefPartsFromContext(macroCtx);
+    assert.ok(parts);
+    assert.doesNotMatch(parts.segment1Core, /Global Peer PR|career-peak states/i);
+    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
+
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.ok(paragraphs.length >= 2);
+    assert.doesNotMatch(paragraphs[0], /Global Peer PR Percentile Data/i);
+    assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
+  });
+
+  it("v5.2.2 — en locale legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
+    const ctx = {
+      locale: "en",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "How is my strength?",
+      questionFocusAxis: "strength",
+      gaps: [],
+      axes: [{ axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const parts = resolveHumanBriefPartsFromContext(ctx);
+    assert.match(parts.legalSegment, /career-peak states/);
+    assert.match(parts.fullBrief, /entertainment purposes/);
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.equal(paragraphs.length, 2);
+    assert.ok(paragraphs[1].endsWith("entertainment purposes."));
+    assert.doesNotMatch(paragraphs[0], /career-peak states/);
   });
 
   it("v5.2.1 — en locale segment1 has zero CJK pollution", () => {

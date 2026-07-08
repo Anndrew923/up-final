@@ -24,7 +24,9 @@ import {
   resolveSingleBeatLocale,
 } from "./dynoIntelChassisFactory.js";
 import {
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
+  DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN,
   DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
 } from "./dynoIntelHumanPraise.data.js";
 import {
@@ -58,6 +60,8 @@ const EXTENSION_ANCHOR_COVERAGE_REJECT = 0.2;
 const OFFICIAL_HARD_SEGMENT_MARKERS = [
   /熱烈搜集中|嚴謹搜集中|全人類官方\s*PR/i,
   /生涯巔峰狀態|僅供天梯對帳與娛樂參考/,
+  /Global Peer PR Percentile Data Is Actively Being Gathered/i,
+  /career-peak states|entertainment purposes/i,
 ];
 
 function containsOfficialHardSegmentMarker(text) {
@@ -66,15 +70,18 @@ function containsOfficialHardSegmentMarker(text) {
 
 /** WHY: Stale single-paragraph cache may echo PR/legal — strip before AI extension extraction. */
 function stripOfficialHardSegmentsFromCoachTail(text, locale) {
-  if (locale === "en") {
-    return String(text ?? "").trim();
-  }
   let row = String(text ?? "").trim();
-  const legal = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
+  const legal =
+    locale === "en"
+      ? String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN ?? "").trim()
+      : String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
   if (legal && row.includes(legal)) {
     row = row.replace(legal, "").trim();
   }
-  const pr = String(DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH ?? "").trim();
+  const pr =
+    locale === "en"
+      ? String(DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN ?? "").trim()
+      : String(DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH ?? "").trim();
   if (pr && row.includes(pr)) {
     row = row.replace(pr, "").trim();
   } else if (pr) {

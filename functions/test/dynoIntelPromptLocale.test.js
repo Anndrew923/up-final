@@ -26,6 +26,13 @@ describe("resolveDynoIntelPromptFile", () => {
 });
 
 describe("system_v1_en prompt artifact", () => {
+  it("defines v5.2 golden three-segment AI contract", () => {
+    const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
+    assert.match(text, /v5\.2 Golden Three-Paragraph UX Contract/i);
+    assert.match(text, /forbidden from outputting `\\n\\n`/i);
+    assert.match(text, /Segment 2 \(PR percentile viral-growth copy\) and Segment 3 \(legal disclaimer shield\)/i);
+  });
+
   it("defines v3.0.4 semantic compression steel coach role", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
     assert.match(text, /v3\.0\.4/i);
@@ -34,10 +41,11 @@ describe("system_v1_en prompt artifact", () => {
     assert.doesNotMatch(text, /p2Official/);
   });
 
-  it("keeps gaps and methodology routing", () => {
+  it("keeps gaps, methodology, and hall-of-fame consult routing", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
     assert.match(text, /GAPS/i);
     assert.match(text, /SCORING_METHODOLOGY/i);
+    assert.match(text, /HALL_OF_FAME_CONSULT/i);
     assert.match(text, /OFF-TOPIC/i);
   });
 });

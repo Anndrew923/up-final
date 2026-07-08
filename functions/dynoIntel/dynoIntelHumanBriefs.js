@@ -7,8 +7,11 @@ import {
   DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH,
 } from "./dynoIntelHumanScaleMatrix.js";
 import {
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
+  DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN,
   DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH,
+  DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN,
   DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
 } from "./dynoIntelHumanPraise.data.js";
 import { resolveHallOfFameSentence } from "./hallOfFameResolver.js";
@@ -184,30 +187,45 @@ function assembleP1Anchor(prefix, populationClass, soulPraise, locale) {
  * @param {{ prPercentile?: number | null } | null | undefined} context
  */
 export function resolvePrPercentileSegment(locale, isOverallMacro, context = null) {
-  if (!isOverallMacro || normalizeLocale(locale) !== "zh-Hant") return null;
+  if (!isOverallMacro) return null;
+  const normalized = normalizeLocale(locale);
+  if (normalized !== "zh-Hant" && normalized !== "en") return null;
+
   const dynamicPr = context?.prPercentile;
   if (typeof dynamicPr === "number" && Number.isFinite(dynamicPr)) {
+    if (normalized === "en") {
+      return `Across your full profile, your overall score ranks at the ${dynamicPr.toFixed(1)}th percentile of humanity.`;
+    }
     return `綜合你所有表現，你的總分排在全人類的 ${dynamicPr.toFixed(1)}%。`;
   }
-  return DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH;
+
+  return normalized === "en"
+    ? DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN
+    : DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH;
 }
 
 /**
- * v5.0 — zh-only hall-of-fame anchor from sparse matrix (60+ decades, non-blank cells only).
+ * v5.0 — hall-of-fame anchor from sparse matrix (60+ decades, non-blank cells only).
  */
 export function resolveHallOfFameBriefSegment(axis, decadeKey, locale) {
-  if (normalizeLocale(locale) !== "zh-Hant") return null;
-  return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH);
+  const normalized = normalizeLocale(locale);
+  if (normalized === "en") {
+    return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN);
+  }
+  if (normalized === "zh-Hant") {
+    return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH);
+  }
+  return null;
 }
 
 /**
- * v5.2 — golden three-segment joiner; zh-Hant uses \\n\\n for mobile breathing room.
+ * v5.2 — golden three-segment joiner; both locales use \\n\\n for macro breathing room.
  */
 export function joinBriefSegments(segments, locale) {
   const rows = segments.map((row) => String(row ?? "").trim()).filter(Boolean);
   if (!rows.length) return null;
-  const separator = normalizeLocale(locale) === "en" ? " " : "\n\n";
-  return rows.join(separator);
+  void locale;
+  return rows.join("\n\n");
 }
 
 /** Appends a suffix as a new sentence within the same segment (segment1 AI merge only). */
@@ -227,27 +245,34 @@ function attachHallOfFameToAnchor(anchor, hallSegment, locale) {
   return appendLocalizedSuffix(anchor, hallSegment, locale);
 }
 
+function resolveLegalShieldCopy(locale) {
+  return normalizeLocale(locale) === "en"
+    ? DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN
+    : DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH;
+}
+
 /**
- * v5.2 — hall-of-fame legal shield as standalone segment 3 (zh-only).
+ * v5.2 — hall-of-fame legal shield as standalone segment 3.
  */
 export function resolveLegalShieldSegment(score, hallSegment, locale) {
   if (!shouldAttachHallOfFameLegalShield(score, hallSegment, locale)) return null;
-  return String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim() || null;
+  return String(resolveLegalShieldCopy(locale) ?? "").trim() || null;
 }
 
 /**
  * v5.1 — Boss spec gate: score >= 60 AND hall-of-fame names rendered (hallSegment truthy).
  */
 export function shouldAttachHallOfFameLegalShield(score, hallSegment, locale) {
-  if (!hallSegment || normalizeLocale(locale) !== "zh-Hant") return false;
+  void locale;
+  if (!hallSegment) return false;
   const safeScore = Number(score);
   return Number.isFinite(safeScore) && safeScore >= 60;
 }
 
 /** @deprecated v5.2 — prefer resolveLegalShieldSegment + joinBriefSegments */
 export function attachLegalShieldSuffix(brief, locale) {
-  const shield = String(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH ?? "").trim();
-  if (!shield || normalizeLocale(locale) !== "zh-Hant") {
+  const shield = String(resolveLegalShieldCopy(locale) ?? "").trim();
+  if (!shield) {
     return String(brief ?? "").trim() || null;
   }
   const head = String(brief ?? "").trim();

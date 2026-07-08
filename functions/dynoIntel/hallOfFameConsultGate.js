@@ -1,5 +1,10 @@
 import matrixDoc from "./data/hallOfFameMatrix.v1.json" with { type: "json" };
-import { DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH } from "./dynoIntelHumanPraise.data.js";
+import {
+  DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN,
+  DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH,
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN,
+  DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
+} from "./dynoIntelHumanPraise.data.js";
 import {
   detectQuestionFocusAxis,
   detectQuestionFocusSupplemental,
@@ -10,14 +15,28 @@ import { resolveHallOfFameDisplayNames } from "./hallOfFameResolver.js";
 
 const HALL_OF_FAME_CONSULT_PATTERNS = [
   /名人堂|萬神殿|名人堂聖殿|聖殿矩陣|歷史傳奇|有哪些名人|有哪些人名|哪些傳奇|哪些名字|誰在.*分|誰有.*分/i,
+  /Hall of Fame|Pantheon|historical legends?|famous names?|legendary athletes?|who.*(?:at|above|over).*\d+/i,
 ];
 
-const BLOCKED_REPLY_ZH =
-  "在 Dyno Intel 的萬神殿深處，該分數帶已正式跨入凡人頂尖的神格區間。你目前的綜合實力尚未解鎖該重力場。拼盡全力訓練吧！當你將功能推向臨界點時，天梯大腦會在你的專屬報告中，為你開啟與該階層歷史傳奇的正面對帳通道！";
+function resolveConsultLocale(context) {
+  return context?.locale === "en" ? "en" : "zh-Hant";
+}
+
+function resolveBlockedReplyCopy(context) {
+  return resolveConsultLocale(context) === "en"
+    ? DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN
+    : DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH;
+}
+
+function resolveConsultLegalShieldCopy(context) {
+  return resolveConsultLocale(context) === "en"
+    ? DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN
+    : DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH;
+}
 
 function buildBlockedConsultReply(context) {
   return wrapHallOfFameConsultReply({
-    commentary: BLOCKED_REPLY_ZH,
+    commentary: resolveBlockedReplyCopy(context),
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),
@@ -57,6 +76,19 @@ const AXIS_LABELS_ZH = {
   armSize: "臂圍",
   cooper: "十二分鐘跑",
   "5km": "五公里跑",
+};
+
+const AXIS_LABELS_EN = {
+  overall: "overall",
+  strength: "strength",
+  explosivePower: "explosive power",
+  cardio: "cardio",
+  muscleMass: "muscle mass",
+  bodyFat: "FFMI",
+  gripStrength: "grip strength",
+  armSize: "arm size",
+  cooper: "Cooper 12-minute run",
+  "5km": "5 km run",
 };
 
 /** Exported for chatCallable cache bypass — consult replies are score-gated and must not replay stale cache. */
@@ -118,12 +150,24 @@ function resolveAggregateTierNames(decadeKey, limit = 6) {
   return names;
 }
 
-function buildUnlockedReply({ decadeLabel, axis, names }) {
-  const axisLabel = AXIS_LABELS_ZH[axis] ?? "該軸";
+function buildUnlockedReply({ decadeLabel, axis, names, context }) {
+  const locale = resolveConsultLocale(context);
+  const axisLabels = locale === "en" ? AXIS_LABELS_EN : AXIS_LABELS_ZH;
+  const axisLabel = axisLabels[axis] ?? (locale === "en" ? "this axis" : "該軸");
+  const joinedNames = locale === "en" ? names.join(", ") : names.join("、");
+  const legalShield = resolveConsultLegalShieldCopy(context);
+
+  if (locale === "en") {
+    const body = axis
+      ? `You have unlocked ${decadeLabel} ${axisLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`
+      : `You have unlocked ${decadeLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`;
+    return `${body}${legalShield}`;
+  }
+
   const body = axis
-    ? `你已解鎖 ${decadeLabel} 的${axisLabel}萬神殿對帳權限。這一階目前可開啟的代表性名字包括 ${names.join("、")}。`
-    : `你已解鎖 ${decadeLabel} 的萬神殿對帳權限。這一階目前可開啟的代表性名字包括 ${names.join("、")}。`;
-  return `${body}${DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH}`;
+    ? `你已解鎖 ${decadeLabel} 的${axisLabel}萬神殿對帳權限。這一階目前可開啟的代表性名字包括 ${joinedNames}。`
+    : `你已解鎖 ${decadeLabel} 的萬神殿對帳權限。這一階目前可開啟的代表性名字包括 ${joinedNames}。`;
+  return `${body}${legalShield}`;
 }
 
 export function resolveHallOfFameConsultReply(context, userQuestion) {
@@ -146,9 +190,15 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
   const fallbackNames =
     axis && names.length === 0 ? [] : names.length > 0 ? names : resolveAggregateTierNames(tier.decadeKey, 6);
 
+  const locale = resolveConsultLocale(context);
+
   if (fallbackNames.length === 0) {
+    const commentary =
+      locale === "en"
+        ? `You have unlocked ${tier.label} Pantheon benchmarking, but this cell is still a blank anchor with no public roster yet.`
+        : `你已解鎖 ${tier.label} 的萬神殿對帳權限，但這一格目前仍是空白錨點，尚無可公開對帳名單。`;
     return wrapHallOfFameConsultReply({
-      commentary: `你已解鎖 ${tier.label} 的萬神殿對帳權限，但這一格目前仍是空白錨點，尚無可公開對帳名單。`,
+      commentary,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: String(context?.weakestAxis ?? ""),
@@ -156,7 +206,7 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
   }
 
   return wrapHallOfFameConsultReply({
-    commentary: buildUnlockedReply({ decadeLabel: tier.label, axis, names: fallbackNames }),
+    commentary: buildUnlockedReply({ decadeLabel: tier.label, axis, names: fallbackNames, context }),
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),
