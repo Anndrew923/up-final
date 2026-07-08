@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
+  DYNO_INTEL_HUMAN_SCALE_MATRIX_EN,
+} from "../dynoIntel/dynoIntelHumanScaleMatrix.js";
+import {
   containsVehicleLexicon,
   resolveHumanBrief,
   resolveHumanBriefPartsFromContext,
@@ -326,6 +329,13 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
     assert.match(segment1, /maps to|Against same-age norms/i);
     assert.match(segment1, /strong amateur athlete performance/i);
+  });
+
+  it("v5.2.1 — EN scale matrix build rows contain zero CJK", () => {
+    for (const row of Object.values(DYNO_INTEL_HUMAN_SCALE_MATRIX_EN)) {
+      const blob = `${row.populationClass} ${row.summaryHuman}`;
+      assert.doesNotMatch(blob, /[\u4e00-\u9fff]/, `CJK leak in tier ${row.tierId}`);
+    }
   });
 });
 

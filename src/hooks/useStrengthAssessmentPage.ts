@@ -189,12 +189,11 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   useEffect(() => {
     if (livePreviewScore != null && Number.isFinite(livePreviewScore)) {
       setLiveStrengthScore('strength', livePreviewScore);
-      return;
+    } else {
+      clearLiveStrengthScore('strength');
     }
-    clearLiveStrengthScore('strength');
+    return () => clearLiveStrengthScore('strength');
   }, [clearLiveStrengthScore, livePreviewScore, setLiveStrengthScore]);
-
-  useEffect(() => () => clearLiveStrengthScore('strength'), [clearLiveStrengthScore]);
 
   const calculateLift = useCallback(
     (lift: StrengthLiftKey) => {

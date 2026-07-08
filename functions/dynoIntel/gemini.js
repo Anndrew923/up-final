@@ -181,9 +181,10 @@ export function finalizeDynoIntelCallableReply(reply, context, userQuestion = ""
   const finalized = finalizeDynoIntelReply(reply, resolvedLocale);
   const railed = enforceOnTopicRail(finalized, context, userQuestion);
   const repaired = enforceCommentaryBeatContract(railed, context);
+  const { hallOfFameConsultReply: _consultMarker, ...clientReply } = repaired;
   return {
-    ...repaired,
-    commentary: stripTechnicalLeakage(repaired.commentary, resolvedLocale).trim(),
+    ...clientReply,
+    commentary: stripTechnicalLeakage(clientReply.commentary, resolvedLocale).trim(),
   };
 }
 

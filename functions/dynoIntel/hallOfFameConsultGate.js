@@ -16,12 +16,21 @@ const BLOCKED_REPLY_ZH =
   "在 Dyno Intel 的萬神殿深處，該分數帶已正式跨入凡人頂尖的神格區間。你目前的綜合實力尚未解鎖該重力場。拼盡全力訓練吧！當你將功能推向臨界點時，天梯大腦會在你的專屬報告中，為你開啟與該階層歷史傳奇的正面對帳通道！";
 
 function buildBlockedConsultReply(context) {
-  return {
+  return wrapHallOfFameConsultReply({
     commentary: BLOCKED_REPLY_ZH,
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),
-  };
+  });
+}
+
+/** WHY: Consult replies are final copy — beat contract must not merge chassis segment1 over them. */
+export function wrapHallOfFameConsultReply(reply) {
+  return { ...reply, hallOfFameConsultReply: true };
+}
+
+export function isHallOfFameConsultHardReply(reply) {
+  return reply?.hallOfFameConsultReply === true;
 }
 
 const TIER_PATTERNS = [
@@ -138,18 +147,18 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
     axis && names.length === 0 ? [] : names.length > 0 ? names : resolveAggregateTierNames(tier.decadeKey, 6);
 
   if (fallbackNames.length === 0) {
-    return {
+    return wrapHallOfFameConsultReply({
       commentary: `你已解鎖 ${tier.label} 的萬神殿對帳權限，但這一格目前仍是空白錨點，尚無可公開對帳名單。`,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: String(context?.weakestAxis ?? ""),
-    };
+    });
   }
 
-  return {
+  return wrapHallOfFameConsultReply({
     commentary: buildUnlockedReply({ decadeLabel: tier.label, axis, names: fallbackNames }),
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),
-  };
+  });
 }

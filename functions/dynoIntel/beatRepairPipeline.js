@@ -16,6 +16,7 @@ import {
   splitCommentarySentences,
   stripEngineeringLeakageFromCommentary,
 } from "./beatContractShared.js";
+import { isHallOfFameConsultHardReply } from "./hallOfFameConsultGate.js";
 import {
   assembleSingleBeatCommentary,
   resolveChassisBriefAssembly,
@@ -267,6 +268,7 @@ function enforceSingleBeatCommentary(reply, context) {
  */
 export function enforceCommentaryBeatContract(reply, context) {
   if (!reply || reply.is_off_topic || !context) return reply;
+  if (isHallOfFameConsultHardReply(reply)) return reply;
 
   let commentary = String(reply.commentary ?? "").trim();
   if (!commentary) return reply;

@@ -5,6 +5,7 @@ import {
   resolveHallOfFameConsultReply,
   resolveHallOfFameConsultTier,
 } from "../dynoIntel/hallOfFameConsultGate.js";
+import { finalizeDynoIntelCallableReply } from "../dynoIntel/gemini.js";
 
 const baseContext = {
   locale: "zh-Hant",
@@ -64,5 +65,21 @@ describe("hallOfFameConsultGate", () => {
     assert.ok(reply);
     assert.match(reply.commentary, /空白錨點/);
     assert.doesNotMatch(reply.commentary, /僅供天梯對帳與娛樂參考/);
+  });
+
+  it("preserves consult hard-gate copy through finalize pipeline", () => {
+    const ctx = {
+      ...baseContext,
+      userQuestion: "萬神殿有哪些傳奇？",
+      intent: "general",
+      gaps: [],
+    };
+    const raw = resolveHallOfFameConsultReply(ctx, "萬神殿有哪些傳奇？");
+    const finalized = finalizeDynoIntelCallableReply(raw, ctx, "萬神殿有哪些傳奇？");
+    assert.ok(raw);
+    assert.equal(finalized.commentary, raw.commentary);
+    assert.match(finalized.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
+    assert.doesNotMatch(finalized.commentary, /以同齡一般人來看/);
+    assert.equal(finalized.hallOfFameConsultReply, undefined);
   });
 });
