@@ -15,7 +15,7 @@ const MAX_DISPLAY_NAMES = matrixDoc.maxDisplayNames ?? 3;
 
 /**
  * Fisher–Yates sample without mutating the source pool.
- * WHY: Consult roster asks should rotate names; status praise keeps deterministic slice.
+ * WHY: Both consult roster and status hall-of-fame tail should rotate names across replies.
  * @param {string[]} pool
  * @param {number} limit
  * @returns {string[]}
@@ -69,8 +69,9 @@ export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, o
   const resolved = typeof options === "number" ? { limit: options } : options;
   const limit = resolved.limit ?? MAX_DISPLAY_NAMES;
   const nameGlue = resolved.nameGlue ?? "、";
-  // WHY: Status segment1 hall sentence stays deterministic — only consult path shuffles.
-  const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit);
+  const shuffle = resolved.shuffle !== false;
+  // WHY: Status segment1 hall tail rotates like consult — fixed order felt stale on repeat asks.
+  const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit, { shuffle });
   if (!names.length) return null;
   return String(sentenceTemplate ?? "").replace("{{names}}", names.join(nameGlue));
 }

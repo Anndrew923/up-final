@@ -81,6 +81,22 @@ export function injectChassisBeatsIntoContext(context) {
 
 /** Single resolve — segment1 + trailing segments for beat repair (avoids double matrix lookup). */
 export function resolveChassisBriefAssembly(context) {
+  const cachedP1 = context?.chassisBeats?.p1Official;
+  if (typeof cachedP1 === "string" && cachedP1.trim()) {
+    const cachedTrailing = [context.chassisBeats?.prSegment, context.chassisBeats?.legalSegment].filter(
+      (row) => typeof row === "string" && row.trim()
+    );
+    if (cachedTrailing.length > 0) {
+      return { segment1Core: cachedP1.trim(), trailingSegments: cachedTrailing };
+    }
+    // Gemini payload keeps p1 only — refresh PR/legal without reshuffling the welded segment1.
+    const parts = resolveHumanBriefPartsFromContext(context);
+    return {
+      segment1Core: cachedP1.trim(),
+      trailingSegments: [parts?.prSegment, parts?.legalSegment].filter(Boolean),
+    };
+  }
+
   const parts = resolveHumanBriefPartsFromContext(context);
   if (!parts?.segment1Core) return null;
   return {

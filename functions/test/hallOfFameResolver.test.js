@@ -67,7 +67,24 @@ describe("hallOfFameResolver v5.0", () => {
       { nameGlue: ", " }
     );
     assert.ok(sentence);
-    assert.match(sentence, /Jason Statham, Chris Hemsworth|Chris Hemsworth, Conor McGregor/);
+    assert.match(sentence, /Jason Statham/);
+    assert.match(sentence, /Chris Hemsworth/);
+    assert.match(sentence, /Conor McGregor/);
     assert.doesNotMatch(sentence, /、/);
+  });
+
+  it("v5.8.1 — status hall sentence rotates name order across draws", () => {
+    const orders = new Set();
+    for (let i = 0; i < 20; i += 1) {
+      const sentence = resolveHallOfFameSentence(
+        "strength",
+        "80",
+        "在名人堂聖殿中，你正與 {{names}} 站在同一個王座座標。"
+      );
+      const match = sentence.match(/你正與 (.+) 站在同一個王座座標/);
+      assert.ok(match?.[1]);
+      orders.add(match[1]);
+    }
+    assert.ok(orders.size > 1, `expected rotating orders, got ${[...orders].join(" || ")}`);
   });
 });

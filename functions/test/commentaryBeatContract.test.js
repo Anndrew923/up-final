@@ -50,6 +50,33 @@ function normalizeBriefWhitespace(text) {
     .trim();
 }
 
+/** WHY: Status hall-of-fame tails shuffle — sort embedded names so equality asserts stay stable. */
+function normalizeHallOfFameNameOrder(text) {
+  return String(text ?? "")
+    .replace(/你正與 (.+?) 站在同一個王座座標/g, (_, names) => {
+      const sorted = String(names)
+        .split("、")
+        .map((row) => row.trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b))
+        .join("、");
+      return `你正與 ${sorted} 站在同一個王座座標`;
+    })
+    .replace(/same throne coordinate as ([^.]+)\./gi, (_, names) => {
+      const sorted = String(names)
+        .split(",")
+        .map((row) => row.trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b))
+        .join(", ");
+      return `same throne coordinate as ${sorted}.`;
+    });
+}
+
+function normalizeBriefForAssert(text) {
+  return normalizeHallOfFameNameOrder(normalizeBriefWhitespace(text));
+}
+
 describe("dynoIntelHumanBriefs v3", () => {
   it("VEHICLE_LEXICON_REGEX flags vehicle metaphors", () => {
     assert.ok(containsVehicleLexicon("這台跑車的馬力輸出"));
@@ -197,7 +224,9 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /在名人堂聖殿中/);
-    assert.match(brief, /Jason Statham、Chris Hemsworth、Conor McGregor/);
+    assert.match(brief, /Jason Statham/);
+    assert.match(brief, /Chris Hemsworth/);
+    assert.match(brief, /Conor McGregor/);
   });
 
   it("v5.2 — legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
@@ -309,7 +338,9 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
     assert.match(brief, /Hall of Fame sanctum/i);
-    assert.match(brief, /Jason Statham, Chris Hemsworth|Chris Hemsworth, Conor McGregor/);
+    assert.match(brief, /Jason Statham/);
+    assert.match(brief, /Chris Hemsworth/);
+    assert.match(brief, /Conor McGregor/);
     assert.doesNotMatch(brief, /、/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
   });
@@ -481,7 +512,8 @@ describe("enforceCommentaryBeatContract v3", () => {
 
   it("drops paraphrased AI extension and generic ritual closers (anchor-only)", () => {
     const fullBrief = resolveHumanBrief(strengthStatusContext);
-    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
+    const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
+    const segment1 = enriched.chassisBeats.p1Official;
     const reply = {
       commentary: `${segment1}你把訓練的優先權排得很高，光去健身房擺樣子根本達不到目前程度，高階玩家就是這樣練出來的。下次請挑戰更全面的身體潛能，讓你的整體表現更上一層樓！`,
       action_directive: "",
@@ -489,29 +521,27 @@ describe("enforceCommentaryBeatContract v3", () => {
       detected_weakest_axis: "strength",
     };
     const repaired = enforceCommentaryBeatContract(reply, {
-      ...strengthStatusContext,
+      ...enriched,
       replyClosingCue: "力量停在 87.8 分——這份遙測主機已鎖定。",
       closingBeatSecondLine: "遙測已封存。下次通電時，帶著新的分數回來——我會在這裡等你。",
     });
     const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 2);
-    assert.equal(
-      normalizeBriefWhitespace(paragraphs[0]),
-      normalizeBriefWhitespace(segment1)
-    );
+    assert.equal(normalizeBriefWhitespace(paragraphs[0]), normalizeBriefWhitespace(segment1));
     assert.match(paragraphs[1], /生涯巔峰狀態/);
     assert.ok(!repaired.commentary.includes("下次請挑戰"));
   });
 
   it("keeps one orthogonal extension sentence only when it adds a truly new angle", () => {
-    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
+    const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
+    const segment1 = enriched.chassisBeats.p1Official;
     const reply = {
       commentary: `${segment1}若下一階要補齊，優先盯緊握力軸的穩定制動，硬拉終點才不會鬆掉。`,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: "strength",
     };
-    const repaired = enforceCommentaryBeatContract(reply, strengthStatusContext);
+    const repaired = enforceCommentaryBeatContract(reply, enriched);
     const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 2);
     assert.ok(paragraphs[0].startsWith(segment1));
@@ -523,7 +553,10 @@ describe("enforceCommentaryBeatContract v3", () => {
     const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
     assert.ok(enriched.chassisBeats?.summaryHuman);
     assert.ok(enriched.chassisBeats?.p1Official);
-    assert.equal(enriched.chassisBeats.p1Official, buildOfficialHumanAnchor(strengthStatusContext));
+    assert.equal(
+      normalizeBriefForAssert(enriched.chassisBeats.p1Official),
+      normalizeBriefForAssert(buildOfficialHumanAnchor(strengthStatusContext))
+    );
     assert.ok(enriched.chassisBeats.legalSegment);
     assert.equal(enriched.chassisBeats.p2Official, undefined);
     assert.doesNotMatch(enriched.chassisBeats.p1Official, /熱烈搜集中/);
@@ -651,8 +684,9 @@ describe("enforceCommentaryBeatContract v3", () => {
   });
 
   it("v3.1 prunes strength status synonym loops when anchor plus two short extensions repeat the same verdict", () => {
-    const fullBrief = resolveHumanBrief(strengthStatusContext);
-    const segment1 = buildOfficialHumanAnchor(strengthStatusContext);
+    const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
+    const fullBrief = enriched.chassisBeats.summaryHuman;
+    const segment1 = enriched.chassisBeats.p1Official;
     const reply = {
       commentary:
         segment1 +
@@ -662,11 +696,14 @@ describe("enforceCommentaryBeatContract v3", () => {
       is_off_topic: false,
       detected_weakest_axis: "strength",
     };
-    const repaired = enforceCommentaryBeatContract(reply, strengthStatusContext);
+    const repaired = enforceCommentaryBeatContract(reply, enriched);
     const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 2);
     assert.equal(normalizeBriefWhitespace(paragraphs[0]), normalizeBriefWhitespace(segment1));
-    assert.equal(normalizeBriefWhitespace(paragraphs[1]), normalizeBriefWhitespace(splitParagraphs(fullBrief)[1]));
+    assert.equal(
+      normalizeBriefWhitespace(paragraphs[1]),
+      normalizeBriefWhitespace(splitParagraphs(fullBrief)[1])
+    );
     assert.doesNotMatch(paragraphs[0], /力量評分，已達高階玩家頂尖強度/);
     assert.doesNotMatch(paragraphs[0], /光去健身房擺樣子根本達不到目前程度。$/);
     assert.match(paragraphs[0], /高階玩家/);
@@ -674,20 +711,18 @@ describe("enforceCommentaryBeatContract v3", () => {
   });
 
   it("v5.2 — heals stale single-paragraph cache without duplicating PR or legal segments", () => {
-    const fullBrief = resolveHumanBrief(strengthStatusContext);
+    const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
+    const fullBrief = enriched.chassisBeats.summaryHuman;
     const staleWall = fullBrief.replace(/\n\n+/g, "");
     const repaired = enforceCommentaryBeatContract(
       { commentary: staleWall, action_directive: "", is_off_topic: false, detected_weakest_axis: "strength" },
-      strengthStatusContext
+      enriched
     );
     const paragraphs = splitParagraphs(repaired.commentary);
     assert.equal(paragraphs.length, 2);
     assert.doesNotMatch(paragraphs[0], /熱烈搜集中|生涯巔峰狀態/);
     assert.equal((repaired.commentary.match(/生涯巔峰狀態/g) ?? []).length, 1);
-    assert.equal(
-      normalizeBriefWhitespace(repaired.commentary),
-      normalizeBriefWhitespace(fullBrief)
-    );
+    assert.equal(normalizeBriefWhitespace(repaired.commentary), normalizeBriefWhitespace(fullBrief));
   });
 });
 
