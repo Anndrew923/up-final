@@ -60,6 +60,12 @@ describe("resolveDynoQuestionIntent", () => {
     assert.equal(resolveDynoQuestionIntent("我的 FFMI 分數代表什麼？"), "status");
     assert.equal(resolveDynoQuestionIntent("我的評分多少？"), "general");
   });
+
+  it("locks chassis macro score reads to status before methodology", () => {
+    assert.equal(resolveDynoQuestionIntent("How is my total score?"), "status");
+    assert.equal(resolveDynoQuestionIntent("How is my average score?"), "status");
+    assert.notEqual(resolveDynoQuestionIntent("How is grip score calculated?"), "status");
+  });
 });
 
 describe("resolveDynoIntelGeminiModel", () => {

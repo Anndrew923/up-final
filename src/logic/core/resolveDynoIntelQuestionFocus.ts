@@ -5,8 +5,11 @@ export type { DynoQuestionIntent };
 
 /** Mirrors functions/dynoIntel/resolveQuestionIntent.js — keep regex lists in sync (v3.0.4.1). */
 const METHODOLOGY_PATTERNS: RegExp[] = [
-  /公式|常模|給分|計分|計算方式|怎[麼么]算|如何計算|係数|系数|評分標準|評測標準|計分依據|評分邏輯|评分逻辑|计分依据|评测标准|打分|換算|怎[麼么]評分|如何評分|評分方式|評分機制|评分方式|怎[麼么]評測|如何評測|評測方式|怎[麼么]測|如何測|how\s+(is|are|does).*(score|calculat|formula)/i,
-  /formula|methodology|scoring\s+(rule|standard|logic)|evaluation\s+criteria|norm\s+table|coefficient|dots|brzycki|mcculloch|ffmi\s*公式|how\s+.*\bscor/i,
+  /公式|常模|給分|計分|計算方式|怎[麼么]算|如何計算|係数|系数|評分標準|評測標準|計分依據|評分邏輯|评分逻辑|计分依据|评测标准|打分|換算|怎[麼么]評分|如何評分|評分方式|評分機制|评分方式|怎[麼么]評測|如何評測|評測方式|怎[麼么]測|如何測/i,
+  /how\s+(is|are|does).*(calculat|formula|computed|determined)/i,
+  /how\s+to\s+(calculate|compute)\b/i,
+  /how\s+(does|do)\s+.*\bscor/i,
+  /formula|methodology|scoring\s+(rule|standard|logic)|evaluation\s+criteria|norm\s+table|coefficient|dots|brzycki|mcculloch|ffmi\s*公式/i,
   /captains\s+of\s+crush|ironmind|cooper\s*test/i,
   /(?<![的])評分(?!多少|如何|怎樣|怎麼樣)/,
   /評斷|評定|判定|判斷|評測參考|評測依據|依據|如何評斷|怎[麼么]評斷|如何判定|怎[麼么]判定|如何評判|分數.{0,6}如何|如何.{0,6}分數/i,
@@ -25,7 +28,7 @@ const STATUS_PERFORMANCE_PATTERNS =
 
 /** v2.4.2 — whole-chassis reads only; mirrors functions/dynoIntel/resolveQuestionIntent.js */
 export const CHASSIS_MACRO_PATTERNS =
-  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|total\s+score|total\s+performance|full\s+report|aggregate\s+score|summary\s+score|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
+  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|total\s+score|total\s+performance|full\s+report|aggregate\s+score|summary\s+score|average\s+score|mean\s+score|what'?s\s+my\s+score|how\s+am\s+i\s+doing\s+overall|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
 
 export function isChassisMacroQuestion(userQuestion: string): boolean {
   const q = normalizeQuestion(userQuestion);
@@ -111,6 +114,8 @@ export function resolveDynoQuestionIntent(
   if (PROGRESS_PATTERNS.some((re) => re.test(q))) return 'progress';
 
   if (STATUS_PERFORMANCE_PATTERNS.test(q)) return 'status';
+
+  if (isChassisMacroQuestion(userQuestion)) return 'status';
 
   if (METHODOLOGY_PATTERNS.some((re) => re.test(q))) return 'methodology';
   if (shouldEscalateMethodologyViaHeuristic(userQuestion, context)) return 'methodology';

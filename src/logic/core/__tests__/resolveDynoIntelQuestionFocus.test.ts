@@ -88,6 +88,15 @@ describe('resolveDynoIntelQuestionFocus', () => {
     expect(isChassisMacroQuestion('Give me a full report on my chassis')).toBe(true);
     expect(isChassisMacroQuestion('How is my total performance?')).toBe(true);
     expect(isChassisMacroQuestion('summary score check')).toBe(true);
+    expect(isChassisMacroQuestion('How is my average score?')).toBe(true);
+    expect(isChassisMacroQuestion("What's my score?")).toBe(true);
+    expect(isChassisMacroQuestion('How am I doing overall?')).toBe(true);
+  });
+
+  it('locks chassis macro score reads to status before methodology', () => {
+    expect(resolveDynoQuestionIntent('How is my total score?')).toBe('status');
+    expect(resolveDynoQuestionIntent('How is my average score?')).toBe('status');
+    expect(resolveDynoQuestionIntent('How is grip score calculated?')).not.toBe('status');
   });
 
   it('prefers question-focus closing for status and methodology intents', () => {

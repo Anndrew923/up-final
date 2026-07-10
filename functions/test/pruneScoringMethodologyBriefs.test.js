@@ -152,5 +152,8 @@ describe("isChassisMacroQuestion", () => {
     assert.equal(isChassisMacroQuestion("Give me a full report on my six-axis chassis"), true);
     assert.equal(isChassisMacroQuestion("How is my total performance?"), true);
     assert.equal(isChassisMacroQuestion("summary score check"), true);
+    assert.equal(isChassisMacroQuestion("How is my average score?"), true);
+    assert.equal(isChassisMacroQuestion("What's my score?"), true);
+    assert.equal(isChassisMacroQuestion("How am I doing overall?"), true);
   });
 });
