@@ -1,13 +1,20 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildGeminiInferencePayload } from "../dynoIntel/buildGeminiInferencePayload.js";
-import { buildGapsSeedReply } from "../dynoIntel/deterministicDynoIntelRoutes.js";
+import {
+  buildCoachingBoundaryReply,
+  buildGapsSeedReply,
+  DYNO_INTEL_COACHING_BOUNDARY_EN,
+  DYNO_INTEL_COACHING_BOUNDARY_ZH,
+  shouldPreemptCoaching,
+} from "../dynoIntel/deterministicDynoIntelRoutes.js";
 import { finalizeDynoIntelCallableReply } from "../dynoIntel/gemini.js";
 import { injectChassisBeatsIntoContext } from "../dynoIntel/dynoIntelChassisFactory.js";
 import {
   buildPreemptiveOffTopicReply,
   shouldPreemptOffTopic,
 } from "../dynoIntel/offTopicPreempt.js";
+import { resolveDynoQuestionIntent } from "../dynoIntel/resolveQuestionIntent.js";
 
 const strengthStatusContext = {
   locale: "zh-Hant",
@@ -151,5 +158,42 @@ describe("off-topic preemptive guard", () => {
     assert.equal(reply.is_off_topic, true);
     assert.match(reply.commentary, /不在我的服務範圍內/);
     assert.match(reply.commentary, /今晚吃什麼/);
+  });
+});
+
+describe("coaching-deterministic zero-token route", () => {
+  it("classifies prescription asks as coaching", () => {
+    assert.equal(resolveDynoQuestionIntent("我的力量要如何進步呢？"), "coaching");
+    assert.equal(resolveDynoQuestionIntent("How can I improve my grip strength?"), "coaching");
+    assert.equal(shouldPreemptCoaching("我的力量要如何進步呢？"), true);
+  });
+
+  it("returns Boss boundary copy verbatim through finalize", () => {
+    const zhCtx = {
+      ...strengthStatusContext,
+      intent: "coaching",
+      userQuestion: "我的力量要如何進步呢？",
+    };
+    const zhReply = finalizeDynoIntelCallableReply(
+      buildCoachingBoundaryReply(zhCtx),
+      zhCtx,
+      "我的力量要如何進步呢？"
+    );
+    assert.equal(zhReply.commentary, DYNO_INTEL_COACHING_BOUNDARY_ZH);
+    assert.equal(zhReply.is_off_topic, true);
+
+    const enCtx = { ...zhCtx, locale: "en", intent: "coaching" };
+    const enReply = finalizeDynoIntelCallableReply(
+      buildCoachingBoundaryReply(enCtx),
+      enCtx,
+      "How can I improve my grip strength?"
+    );
+    assert.equal(enReply.commentary, DYNO_INTEL_COACHING_BOUNDARY_EN);
+    assert.equal(enReply.is_off_topic, true);
+  });
+
+  it("does not pollute retrospective progress intent", () => {
+    assert.equal(resolveDynoQuestionIntent("我有進步嗎？"), "progress");
+    assert.equal(shouldPreemptCoaching("我有進步嗎？"), false);
   });
 });

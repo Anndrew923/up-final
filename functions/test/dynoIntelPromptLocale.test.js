@@ -47,6 +47,7 @@ describe("system_v1_en prompt artifact", () => {
     assert.match(text, /SCORING_METHODOLOGY/i);
     assert.match(text, /HALL_OF_FAME_CONSULT/i);
     assert.match(text, /OFF-TOPIC/i);
+    assert.match(text, /BOUNDARY_LOCK/i);
   });
 });
 
@@ -78,6 +79,12 @@ describe("system_v1 prompt artifact", () => {
     assert.match(text, /後端硬閘門優先/);
     assert.match(text, /嚴禁自行列舉/);
     assert.doesNotMatch(text, /context\.hallOfFameConsult/);
+  });
+
+  it("adds BOUNDARY_LOCK prescription ban", () => {
+    const text = readFileSync(join(promptsDir, "system_v1.txt"), "utf8");
+    assert.match(text, /BOUNDARY_LOCK/);
+    assert.match(text, /訓練課表|私人教練/);
   });
 });
 

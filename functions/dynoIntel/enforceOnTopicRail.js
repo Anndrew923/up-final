@@ -32,6 +32,7 @@ export function shouldForceDynoIntelOnTopic(userQuestion, context) {
   if (!q || !context) return false;
 
   const intent = resolveIntent(context, userQuestion);
+  if (intent === "coaching") return false;
   if (intent === "methodology" || intent === "status" || intent === "progress") {
     return true;
   }

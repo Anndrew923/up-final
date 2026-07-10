@@ -8,8 +8,10 @@ import {
 } from "../shared/dynoEntitlement.js";
 import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from "./cache.js";
 import {
+  buildCoachingBoundaryReply,
   buildGapsSeedReply,
   resolveDeterministicDynoIntelReply,
+  shouldPreemptCoaching,
 } from "./deterministicDynoIntelRoutes.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
 import { recordDynoIntelRouteTelemetry } from "./geminiTelemetry.js";
@@ -184,6 +186,16 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     );
     await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
     recordDynoIntelRouteTelemetry({ route: "gaps-deterministic", uid, userQuestion });
+    return buildDynoChatSuccess(quota, reply);
+  }
+
+  if (shouldPreemptCoaching(userQuestion, inferenceContext)) {
+    const reply = finalizeDynoIntelCallableReply(
+      buildCoachingBoundaryReply(inferenceContext),
+      inferenceContext,
+      userQuestion
+    );
+    recordDynoIntelRouteTelemetry({ route: "coaching-deterministic", uid, userQuestion });
     return buildDynoChatSuccess(quota, reply);
   }
 

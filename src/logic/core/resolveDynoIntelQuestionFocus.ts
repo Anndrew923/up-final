@@ -19,6 +19,12 @@ const PROGRESS_PATTERNS: RegExp[] = [
   /進步了嗎|有進步|進步多少|進展如何|提升了嗎|有沒有進步|比上次|歷程|歷史|紀錄|趋势|趨勢|progress(ed)?\?|did\s+i\s+improve|getting\s+better|momentum|\bhistory\b|\blog\b/i,
 ];
 
+/** Prescription / coaching asks — decode dashboard only, never personal trainer. */
+const COACHING_PATTERNS: RegExp[] = [
+  /如何進步|怎麼進步|怎[麼么]練|如何提升|如何變強|課表/i,
+  /how\s+to\s+improve|how\s+can\s+i\s+improve|training\s+plan|workout\s+schedule|how\s+to\s+get\s+stronger/i,
+];
+
 const GAPS_PATTERNS: RegExp[] = [
   /盲區|盲区|未測|未测|沒測|沒測過|沒數據|丟失|漏掉|少測|少算|雷達圖失衡|失衡|remote\s*error|gap|error|missing/i,
 ];
@@ -113,6 +119,8 @@ export function resolveDynoQuestionIntent(
   if (!q) return 'general';
 
   if (GAPS_PATTERNS.some((re) => re.test(q))) return 'status';
+
+  if (COACHING_PATTERNS.some((re) => re.test(q))) return 'coaching';
 
   if (PROGRESS_PATTERNS.some((re) => re.test(q))) return 'progress';
 

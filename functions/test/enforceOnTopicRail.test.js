@@ -47,6 +47,19 @@ describe("shouldForceDynoIntelOnTopic", () => {
       false
     );
   });
+
+  it("does not force on-topic for coaching prescription asks with axis keywords", () => {
+    assert.equal(
+      shouldForceDynoIntelOnTopic("我的力量要如何進步呢？", {
+        locale: "zh-Hant",
+        mode: "cross-axis",
+        intent: "coaching",
+        gaps: [],
+        axes: bodyFatContext.axes,
+      }),
+      false
+    );
+  });
 });
 
 describe("enforceOnTopicRail", () => {

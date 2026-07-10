@@ -78,6 +78,13 @@ describe("resolveDynoQuestionIntent", () => {
     assert.equal(resolveDynoQuestionIntent("我的握力表現點評"), "status");
     assert.equal(resolveDynoQuestionIntent("How is my grip performance?"), "status");
   });
+
+  it("routes prescription asks to coaching without polluting progress", () => {
+    assert.equal(resolveDynoQuestionIntent("我的力量要如何進步呢？"), "coaching");
+    assert.equal(resolveDynoQuestionIntent("How can I improve my grip strength?"), "coaching");
+    assert.equal(resolveDynoQuestionIntent("我有進步嗎？"), "progress");
+    assert.equal(resolveDynoQuestionIntent("比上次有進步嗎"), "progress");
+  });
 });
 
 describe("resolveDynoIntelGeminiModel", () => {

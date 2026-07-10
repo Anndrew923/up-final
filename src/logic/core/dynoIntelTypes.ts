@@ -19,7 +19,12 @@ export type DynoAgeBucket =
 
 export type DynoIntelMode = 'single-axis' | 'cross-axis' | 'weight-simulation';
 
-export type DynoQuestionIntent = 'methodology' | 'progress' | 'status' | 'general';
+export type DynoQuestionIntent =
+  | 'methodology'
+  | 'progress'
+  | 'status'
+  | 'general'
+  | 'coaching';
 
 export type DynoClosingBeatKind = 'methodology-nudge' | 'passion-close' | 'return-ritual';
 

@@ -305,7 +305,7 @@ function assertBeat3Bundle(context) {
   }
 }
 
-const VALID_INTENTS = new Set(["methodology", "progress", "status", "general"]);
+const VALID_INTENTS = new Set(["methodology", "progress", "status", "general", "coaching"]);
 
 function assertIntent(intent) {
   if (intent == null) return;

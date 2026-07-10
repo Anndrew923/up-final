@@ -116,6 +116,12 @@ describe('resolveDynoIntelQuestionFocus', () => {
     expect(detectQuestionFocusAxis('How is my grip performance?')).toBe('gripStrength');
   });
 
+  it('routes prescription asks to coaching without polluting progress', () => {
+    expect(resolveDynoQuestionIntent('我的力量要如何進步呢？')).toBe('coaching');
+    expect(resolveDynoQuestionIntent('How can I improve my grip strength?')).toBe('coaching');
+    expect(resolveDynoQuestionIntent('我有進步嗎？')).toBe('progress');
+  });
+
   it('prefers question-focus closing for status and methodology intents', () => {
     expect(
       shouldPreferQuestionFocusClosing('幫我解讀狀態', { focusAxis: null, mode: 'cross-axis' })
