@@ -137,6 +137,19 @@ describe("buildDynoIntelInferenceContext", () => {
     assert.equal(ctx.scoringMethodologyBriefs.length, 1);
     assert.equal(ctx.scoringMethodologyBriefs[0].metric, "gripStrength");
   });
+
+  it("routes en total score panel-read to status not weakest-axis methodology", () => {
+    const ctx = buildDynoIntelInferenceContext(
+      {
+        mode: "cross-axis",
+        scoringMethodologyBriefs: ALL_BRIEFS,
+        weakestAxis: "gripStrength",
+      },
+      "How is my total score?"
+    );
+    assert.equal(ctx.intent, "status");
+    assert.equal(ctx.questionFocusAxis, null);
+  });
 });
 
 describe("isChassisMacroQuestion", () => {
@@ -154,6 +167,7 @@ describe("isChassisMacroQuestion", () => {
     assert.equal(isChassisMacroQuestion("summary score check"), true);
     assert.equal(isChassisMacroQuestion("How is my average score?"), true);
     assert.equal(isChassisMacroQuestion("What's my score?"), true);
+    assert.equal(isChassisMacroQuestion("How is my score?"), true);
     assert.equal(isChassisMacroQuestion("How am I doing overall?"), true);
   });
 });

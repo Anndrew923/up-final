@@ -64,7 +64,10 @@ describe("resolveDynoQuestionIntent", () => {
   it("locks chassis macro score reads to status before methodology", () => {
     assert.equal(resolveDynoQuestionIntent("How is my total score?"), "status");
     assert.equal(resolveDynoQuestionIntent("How is my average score?"), "status");
+    assert.equal(resolveDynoQuestionIntent("How is my score?"), "status");
     assert.notEqual(resolveDynoQuestionIntent("How is grip score calculated?"), "status");
+    assert.equal(resolveDynoQuestionIntent("how to compute my total score"), "methodology");
+    assert.equal(resolveDynoQuestionIntent("How is my total score calculated?"), "methodology");
   });
 });
 

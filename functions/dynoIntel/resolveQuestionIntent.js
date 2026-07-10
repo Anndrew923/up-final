@@ -28,7 +28,11 @@ const STATUS_PERFORMANCE_PATTERNS =
 
 /** v2.4.2 — whole-chassis reads only; axis-specific status questions must not open the factory. */
 export const CHASSIS_MACRO_PATTERNS =
-  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|total\s+score|total\s+performance|full\s+report|aggregate\s+score|summary\s+score|average\s+score|mean\s+score|what'?s\s+my\s+score|how\s+am\s+i\s+doing\s+overall|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
+  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|total\s+score|total\s+performance|full\s+report|aggregate\s+score|summary\s+score|average\s+score|mean\s+score|what'?s\s+my\s+score|how\s+is\s+my\s+score\b|how\s+am\s+i\s+doing\s+overall|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
+
+/** Explicit compute/formula phrasing must not be overridden by macro panel-read routing. */
+const CHASSIS_MACRO_FORMULA_ESCAPE =
+  /how\s+to\s+(calculate|compute)\b|how\s+(is|are|does).*(calculat|formula|computed|determined)/i;
 
 export function isChassisMacroQuestion(userQuestion) {
   const q = normalizeDynoIntelQuestion(userQuestion);
@@ -64,7 +68,7 @@ export function resolveDynoQuestionIntent(userQuestion, context = null) {
 
   if (STATUS_PERFORMANCE_PATTERNS.test(q)) return "status";
 
-  if (isChassisMacroQuestion(userQuestion)) return "status";
+  if (isChassisMacroQuestion(userQuestion) && !CHASSIS_MACRO_FORMULA_ESCAPE.test(q)) return "status";
 
   if (METHODOLOGY_PATTERNS.some((re) => re.test(q))) return "methodology";
   if (shouldEscalateMethodologyViaHeuristic(userQuestion, context)) return "methodology";
