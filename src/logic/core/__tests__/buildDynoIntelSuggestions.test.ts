@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import {
+  detectQuestionFocusAxis,
+  resolveDynoQuestionIntent,
+} from '../resolveDynoIntelQuestionFocus';
 import { resolveDynoIntelAxisQueryKeyword } from '../dynoIntelAxisQueryKeyword';
 import {
   buildDynoIntelSuggestions,
   resolveDynoIntelAxisSuggestionQuery,
 } from '../buildDynoIntelSuggestions';
+import type { SixAxisMetric } from '../../../types/scoring';
 
 describe('buildDynoIntelSuggestions', () => {
   it('omits axis chip when weakest axis query is unavailable', () => {
@@ -33,5 +38,26 @@ describe('resolveDynoIntelAxisQueryKeyword', () => {
     expect(resolveDynoIntelAxisQueryKeyword('strength')).toBe('strength');
     expect(resolveDynoIntelAxisQueryKeyword('bodyFat')).toBe('FFMI');
     expect(resolveDynoIntelAxisQueryKeyword('muscleMass')).toBe('muscle mass');
+  });
+});
+
+describe('suggestion axis query routing', () => {
+  const axes: SixAxisMetric[] = [
+    'gripStrength',
+    'strength',
+    'explosivePower',
+    'cardio',
+    'muscleMass',
+    'bodyFat',
+  ];
+
+  it.each(axes)('routes en weakest-axis template for %s to status + axis focus', (axis) => {
+    const query = resolveDynoIntelAxisSuggestionQuery(
+      axis,
+      'How is my {{axisLabel}} performance?',
+      resolveDynoIntelAxisQueryKeyword
+    );
+    expect(resolveDynoQuestionIntent(query)).toBe('status');
+    expect(detectQuestionFocusAxis(query)).toBe(axis);
   });
 });

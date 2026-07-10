@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -213,11 +213,16 @@ const DynoIntelConsole = () => {
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
-      setSuggestionsDismissed(true);
       void chat.sendQuestion(question);
     },
     [chat.sendQuestion]
   );
+
+  useEffect(() => {
+    if (chat.status === 'loading' || chat.status === 'typing') {
+      setSuggestionsDismissed(true);
+    }
+  }, [chat.status]);
 
   const showSuggestionChips =
     sheetView === 'chat' &&
@@ -259,6 +264,7 @@ const DynoIntelConsole = () => {
         onSubmitQuestion={handleSubmitQuestion}
         suggestionItems={suggestionItems}
         showSuggestionChips={showSuggestionChips}
+        suggestionGroupAriaLabel={t('dynoIntel.suggestions.ariaLabel')}
         onSuggestionSelect={handleSubmitQuestion}
         telemetryLogs={logEntries}
         telemetryLogCap={isProTelemetry ? null : DYNO_INTEL_CORE_LOG_CAP}

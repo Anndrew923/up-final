@@ -12,6 +12,7 @@
     "send": "Send",
     "inputPlaceholder": "Ask a diagnostic question…",
     "suggestions": {
+      "ariaLabel": "DYNO INTEL suggestion shortcuts",
       "overall": {
         "label": "👑 My overall performance review",
         "query": "How is my overall score right now?"

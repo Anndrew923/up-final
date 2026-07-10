@@ -47,6 +47,7 @@ export interface DynoIntelBottomSheetProps {
   onSubmitQuestion: (question: string) => void;
   suggestionItems?: readonly DynoIntelSuggestionItem[];
   showSuggestionChips?: boolean;
+  suggestionGroupAriaLabel?: string;
   onSuggestionSelect?: (question: string) => void;
   telemetryLogs: DynoIntelLogEntry[];
   telemetryLogCap: number | null;
@@ -74,6 +75,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   onSubmitQuestion,
   suggestionItems = [],
   showSuggestionChips = false,
+  suggestionGroupAriaLabel,
   onSuggestionSelect,
   telemetryLogs,
   telemetryLogCap,
@@ -254,6 +256,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                 items={suggestionItems}
                 visible={showSuggestionChips}
                 disabled={status === 'loading' || status === 'typing'}
+                groupAriaLabel={suggestionGroupAriaLabel}
                 onSelect={(query) => onSuggestionSelect?.(query)}
               />
               <form onSubmit={handleSubmit} className="flex gap-2">

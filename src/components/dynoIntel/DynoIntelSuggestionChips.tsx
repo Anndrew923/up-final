@@ -6,6 +6,7 @@ export interface DynoIntelSuggestionChipsProps {
   items: readonly DynoIntelSuggestionItem[];
   visible: boolean;
   disabled?: boolean;
+  groupAriaLabel?: string;
   onSelect: (query: string) => void;
 }
 
@@ -13,6 +14,7 @@ const DynoIntelSuggestionChips: FC<DynoIntelSuggestionChipsProps> = ({
   items,
   visible,
   disabled = false,
+  groupAriaLabel,
   onSelect,
 }) => {
   if (!visible || items.length === 0) return null;
@@ -25,7 +27,7 @@ const DynoIntelSuggestionChips: FC<DynoIntelSuggestionChipsProps> = ({
         visible ? 'opacity-100' : 'pointer-events-none opacity-0'
       )}
       role="group"
-      aria-label="DYNO INTEL suggestions"
+      aria-label={groupAriaLabel}
     >
       {items.map((item) => (
         <button

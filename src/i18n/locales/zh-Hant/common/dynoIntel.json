@@ -12,6 +12,7 @@
     "send": "發送",
     "inputPlaceholder": "輸入診斷問題…",
     "suggestions": {
+      "ariaLabel": "DYNO INTEL 引導捷徑",
       "overall": {
         "label": "👑 我的總分表現點評",
         "query": "我的總分表現點評"

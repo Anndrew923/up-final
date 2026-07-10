@@ -14,7 +14,7 @@ export function resolveDynoIntelAxisSuggestionQuery(
   resolveAxisLabel: (axis: SixAxisMetric) => string
 ): string {
   const axisLabel = resolveAxisLabel(axis);
-  return queryTemplate.replace('{{axisLabel}}', axisLabel);
+  return queryTemplate.replaceAll('{{axisLabel}}', axisLabel);
 }
 
 /**
