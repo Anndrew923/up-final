@@ -11,7 +11,7 @@ import {
   isChassisMacroQuestion,
 } from "./resolveQuestionIntent.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
-import { resolveHallOfFameDisplayNames } from "./hallOfFameResolver.js";
+import { resolveHallOfFameDisplayNames, sampleHallOfFameNames } from "./hallOfFameResolver.js";
 import { resolveReplyLocale } from "./beatTemplates.js";
 
 /**
@@ -250,9 +250,9 @@ function resolveAxisScore(context, axis) {
   return Number(supplemental?.score);
 }
 
-function resolveAggregateTierNames(decadeKey, limit = 6) {
+function collectAggregateTierNamePool(decadeKey) {
   const seen = new Set();
-  const names = [];
+  const pool = [];
 
   for (const entry of matrixDoc.entries ?? []) {
     if (entry?.decadeKey !== decadeKey) continue;
@@ -262,12 +262,32 @@ function resolveAggregateTierNames(decadeKey, limit = 6) {
       const key = name.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      names.push(name);
-      if (names.length >= limit) return names;
+      pool.push(name);
     }
   }
 
-  return names;
+  return pool;
+}
+
+/** WHY: Matrix stores displayZh; EN consult should prefer Latin-script labels when available. */
+function localizeConsultNamePool(pool, locale) {
+  if (locale !== "en" || !Array.isArray(pool) || pool.length === 0) return pool;
+  const latin = pool.filter((name) => !/[\u4e00-\u9fff]/.test(name));
+  return latin.length > 0 ? latin : pool;
+}
+
+/**
+ * Consult-only roster pick: shuffle from axis cell, or aggregate decade pool when axis is absent.
+ * Blank axis cells stay blank (no silent aggregate fill).
+ */
+function resolveConsultDisplayNames(axis, decadeKey, locale) {
+  const limit = !axis || axis === "overall" ? 6 : 4;
+  const pool = axis
+    ? resolveHallOfFameDisplayNames(axis, decadeKey, 99)
+    : collectAggregateTierNamePool(decadeKey);
+
+  if (axis && pool.length === 0) return [];
+  return sampleHallOfFameNames(localizeConsultNamePool(pool, locale), limit);
 }
 
 function buildUnlockedReply({ decadeLabel, axis, names, context }) {
@@ -304,13 +324,8 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
     return buildBlockedConsultReply(context);
   }
 
-  const names = axis
-    ? resolveHallOfFameDisplayNames(axis, tier.decadeKey, axis === "overall" ? 6 : 4)
-    : [];
-  const fallbackNames =
-    axis && names.length === 0 ? [] : names.length > 0 ? names : resolveAggregateTierNames(tier.decadeKey, 6);
-
   const locale = resolveReplyLocale(context);
+  const fallbackNames = resolveConsultDisplayNames(axis, tier.decadeKey, locale);
 
   if (fallbackNames.length === 0) {
     const commentary =
@@ -327,7 +342,7 @@ export function resolveHallOfFameConsultReply(context, userQuestion) {
 
   return wrapHallOfFameConsultReply({
     commentary: buildUnlockedReply({
-      decadeLabel: resolveTierLabel(tier, resolveReplyLocale(context)),
+      decadeLabel: resolveTierLabel(tier, locale),
       axis,
       names: fallbackNames,
       context,

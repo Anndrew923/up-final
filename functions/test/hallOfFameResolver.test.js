@@ -4,6 +4,7 @@ import {
   HALL_OF_FAME_MAX_DISPLAY_NAMES,
   resolveHallOfFameDisplayNames,
   resolveHallOfFameSentence,
+  sampleHallOfFameNames,
 } from "../dynoIntel/hallOfFameResolver.js";
 import matrixDoc from "../dynoIntel/data/hallOfFameMatrix.v1.json" with { type: "json" };
 
@@ -23,6 +24,22 @@ describe("hallOfFameResolver v5.0", () => {
   it("caps display names at three per cell", () => {
     const names = resolveHallOfFameDisplayNames("cardio", "150");
     assert.ok(names.length <= 3);
+  });
+
+  it("v5.8 — shuffle samples from the cell pool without leaving the pool", () => {
+    const pool = resolveHallOfFameDisplayNames("strength", "80", 99);
+    assert.ok(pool.length >= 2);
+    const sampled = resolveHallOfFameDisplayNames("strength", "80", 2, { shuffle: true });
+    assert.equal(sampled.length, 2);
+    assert.ok(sampled.every((name) => pool.includes(name)));
+    assert.equal(new Set(sampled).size, sampled.length);
+  });
+
+  it("v5.8 — sampleHallOfFameNames respects limit and uniqueness", () => {
+    const sampled = sampleHallOfFameNames(["A", "B", "C", "D"], 3);
+    assert.equal(sampled.length, 3);
+    assert.equal(new Set(sampled).size, 3);
+    assert.ok(sampled.every((name) => ["A", "B", "C", "D"].includes(name)));
   });
 
   it("returns empty for decades below 60 or blank cells", () => {

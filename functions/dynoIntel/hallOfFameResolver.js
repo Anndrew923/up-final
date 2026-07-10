@@ -14,22 +14,48 @@ const INDEX = new Map(
 const MAX_DISPLAY_NAMES = matrixDoc.maxDisplayNames ?? 3;
 
 /**
+ * Fisher–Yates sample without mutating the source pool.
+ * WHY: Consult roster asks should rotate names; status praise keeps deterministic slice.
+ * @param {string[]} pool
+ * @param {number} limit
+ * @returns {string[]}
+ */
+export function sampleHallOfFameNames(pool, limit) {
+  const cap = Math.max(0, Math.floor(Number(limit) || 0));
+  if (!Array.isArray(pool) || pool.length === 0 || cap <= 0) return [];
+  const copy = pool.slice();
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
+  }
+  return copy.slice(0, Math.min(cap, copy.length));
+}
+
+/**
  * @param {string} axisId
  * @param {string} decadeKey
  * @param {number} [limit]
+ * @param {{ shuffle?: boolean }} [options]
  * @returns {string[]}
  */
-export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DISPLAY_NAMES) {
+export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DISPLAY_NAMES, options = {}) {
   const decade = Number(decadeKey);
   if (!Number.isFinite(decade) || decade < 60) return [];
 
   const anchors = INDEX.get(`${decadeKey}:${axisId}`);
   if (!Array.isArray(anchors) || anchors.length === 0) return [];
 
-  return anchors
+  const pool = anchors
     .map((anchor) => String(anchor.displayZh ?? "").trim())
-    .filter(Boolean)
-    .slice(0, Math.max(1, limit));
+    .filter(Boolean);
+
+  const cap = Math.max(1, limit);
+  if (options?.shuffle) {
+    return sampleHallOfFameNames(pool, cap);
+  }
+  return pool.slice(0, cap);
 }
 
 /**
@@ -43,6 +69,7 @@ export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, o
   const resolved = typeof options === "number" ? { limit: options } : options;
   const limit = resolved.limit ?? MAX_DISPLAY_NAMES;
   const nameGlue = resolved.nameGlue ?? "、";
+  // WHY: Status segment1 hall sentence stays deterministic — only consult path shuffles.
   const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit);
   if (!names.length) return null;
   return String(sentenceTemplate ?? "").replace("{{names}}", names.join(nameGlue));

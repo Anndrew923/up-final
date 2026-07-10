@@ -127,6 +127,21 @@ describe("hallOfFameConsultGate", () => {
     assert.match(reply.commentary, /僅供天梯對帳與娛樂參考。$/);
   });
 
+  it("v5.8 — overall consult samples rotating names from the decade pool", () => {
+    const pool = new Set();
+    for (let i = 0; i < 24; i += 1) {
+      const reply = resolveHallOfFameConsultReply(baseContext, "還有誰也是80多分？");
+      assert.ok(reply);
+      const match = reply.commentary.match(/代表性名字包括\s*(.+?)。/);
+      assert.ok(match?.[1]);
+      for (const name of match[1].split("、")) {
+        pool.add(name.trim());
+      }
+    }
+    // Aggregate 80-band has more than one axis worth of names — rotation should surface >3 unique.
+    assert.ok(pool.size > 3, `expected rotating pool, got ${[...pool].join("|")}`);
+  });
+
   it("unlocks EN strength consult with English tier phrasing and zero CJK leakage", () => {
     const reply = resolveHallOfFameConsultReply(
       { ...baseContext, locale: "en" },
