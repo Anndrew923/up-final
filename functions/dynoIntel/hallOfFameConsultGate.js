@@ -27,7 +27,7 @@ const HALL_SANCTUM_PATTERNS = [
 ];
 
 const PEER_AND_LIST_PATTERNS = [
-  /有哪些名人|有哪些人名|有哪些人|哪些傳奇|哪些名字|誰在.*分|誰有.*分|誰是.*分/i,
+  /有哪些名人|有哪些人名|有哪些人|哪些傳奇|哪些名字|誰在.*分|誰有.*分|誰是.*分|有誰|是誰/i,
   /還有誰|也是.*分|同.*分.*誰|誰跟我一樣|一樣是.*分|同個分數|同級距|同.*分/i,
   /who else|same (score )?band|anyone else|who is also|shared\s+scores?/i,
   /who.*(?:at|above|over).*\d+|who\s+(?:is|are|sit).*(?:at|in|above|over)/i,

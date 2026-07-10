@@ -29,6 +29,7 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(isHallOfFameConsultQuestion("Who else is in the 90s?"), true);
     assert.equal(isHallOfFameConsultQuestion("我想知道更多80多分的運動員"), true);
     assert.equal(isHallOfFameConsultQuestion("Tell me more about players in the 110s"), true);
+    assert.equal(isHallOfFameConsultQuestion("怪物領域有誰"), true);
     assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
     assert.equal(isHallOfFameConsultQuestion("How is my cardio?"), false);
     assert.equal(isHallOfFameConsultQuestion("我的絕對力量表現如何？"), false);
