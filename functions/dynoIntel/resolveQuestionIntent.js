@@ -114,3 +114,5 @@ export function detectQuestionFocusAxis(userQuestion, _context) {
 
   return null;
 }
+
+export { shouldPreemptOffTopic, buildPreemptiveOffTopicReply } from "./offTopicPreempt.js";

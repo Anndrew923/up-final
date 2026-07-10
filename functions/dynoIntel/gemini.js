@@ -9,8 +9,13 @@ import {
 import {
   enforceCommentaryBeatContract,
 } from "./commentaryBeatContract.js";
-import { injectChassisBeatsIntoContext } from "./dynoIntelChassisFactory.js";
+import { buildGeminiInferencePayload } from "./buildGeminiInferencePayload.js";
+import { resolveDeterministicDynoIntelReply } from "./deterministicDynoIntelRoutes.js";
 import { enforceOnTopicRail } from "./enforceOnTopicRail.js";
+import {
+  readLastGeminiUsageMetadata,
+  recordDynoIntelGeminiTelemetry,
+} from "./geminiTelemetry.js";
 import {
   invalidateGeminiContextCache,
   resolveGeminiContextCache,
@@ -309,7 +314,15 @@ export function finalizeDynoIntelReply(reply, locale = "zh-Hant") {
   return enforceOffTopicContract(sanitized);
 }
 
-/** Last Gemini usageMetadata — for cost telemetry / golden audits. */
+/**
+ * Back-compat export — delegates to per-request telemetry snapshot.
+ * @deprecated Prefer readLastGeminiUsageMetadata() from geminiTelemetry.js
+ */
+export function getLastGeminiUsageMetadata() {
+  return readLastGeminiUsageMetadata();
+}
+
+/** @deprecated Use getLastGeminiUsageMetadata() — kept for golden audit script compat. */
 export let lastGeminiUsageMetadata = null;
 
 async function invokeGeminiOnce({
@@ -370,7 +383,17 @@ async function invokeGeminiOnce({
   }
 
   const json = await response.json();
-  lastGeminiUsageMetadata = json?.usageMetadata ?? null;
+  const usageMetadata = json?.usageMetadata ?? null;
+  lastGeminiUsageMetadata = usageMetadata;
+  recordDynoIntelGeminiTelemetry({
+    route: model.includes("flash-lite") ? "gemini-lite" : "gemini-flash",
+    model,
+    promptTokenCount: usageMetadata?.promptTokenCount ?? null,
+    cachedContentTokenCount: usageMetadata?.cachedContentTokenCount ?? null,
+    candidatesTokenCount: usageMetadata?.candidatesTokenCount ?? null,
+    totalTokenCount: usageMetadata?.totalTokenCount ?? null,
+    usageMetadata,
+  });
   const text = extractGeminiTextPayload(json);
 
   if (!text) {
@@ -431,40 +454,63 @@ export async function runGeminiDynoIntel({
   const basePayload = {
     apiKey,
     systemInstruction,
-    context: injectChassisBeatsIntoContext(context),
+    context: buildGeminiInferencePayload(context),
     userQuestion,
     promptTemplateId,
     locale: replyLocale,
   };
 
-  const MAX_ATTEMPTS = 3;
   let lastError;
   let skipCacheOnNextAttempt = false;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
-      let reply = await invokeWithCacheResolution(apiKey, basePayload, model, {
+      const reply = await invokeWithCacheResolution(apiKey, basePayload, model, {
         skipCache: skipCacheOnNextAttempt,
       });
-      skipCacheOnNextAttempt = false;
-
       return reply;
     } catch (err) {
       lastError = err;
       const status = String(err?.message ?? "");
-      const cacheRequestFailed = status.startsWith("gemini-http-");
 
-      if (cacheRequestFailed && !skipCacheOnNextAttempt && attempt < MAX_ATTEMPTS) {
+      // WHY: 400 / malformed JSON never retry — bill amplification with no quality gain.
+      if (
+        status.includes("gemini-http-400") ||
+        status === "gemini-invalid-json" ||
+        status === "gemini-empty-response"
+      ) {
+        break;
+      }
+
+      const httpStatus = Number.parseInt(status.replace("gemini-http-", ""), 10);
+      const cacheRecoverable =
+        status.startsWith("gemini-http-") &&
+        !skipCacheOnNextAttempt &&
+        (httpStatus === 429 || httpStatus >= 500);
+
+      if (cacheRecoverable && attempt < 2) {
         invalidateGeminiContextCache(replyLocale, model);
         skipCacheOnNextAttempt = true;
         continue;
       }
 
-      const retryable = ["gemini-invalid-json", "gemini-empty-response"].includes(err?.message);
-      if (!retryable || attempt === MAX_ATTEMPTS) {
-        throw err;
-      }
+      break;
     }
+  }
+
+  const fallbackSeed = resolveDeterministicDynoIntelReply(context, userQuestion);
+  if (fallbackSeed) {
+    recordDynoIntelGeminiTelemetry({
+      route: "deterministic-fallback",
+      model,
+      fallbackReason: String(lastError?.message ?? "unknown"),
+      promptTokenCount: 0,
+      cachedContentTokenCount: 0,
+      candidatesTokenCount: 0,
+      totalTokenCount: 0,
+      usageMetadata: null,
+    });
+    return finalizeDynoIntelCallableReply(fallbackSeed, context, userQuestion, replyLocale);
   }
 
   throw lastError;

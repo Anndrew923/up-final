@@ -277,14 +277,13 @@ export function enforceCommentaryBeatContract(reply, context) {
   if (!reply || reply.is_off_topic || !context) return reply;
   if (isHallOfFameConsultHardReply(reply)) return reply;
 
-  let commentary = String(reply.commentary ?? "").trim();
-  if (!commentary) return reply;
-
   const hasGaps = Array.isArray(context.gaps) && context.gaps.length > 0;
-
   if (hasGaps) {
     return enforceGapsCommentary(reply, context);
   }
+
+  let commentary = String(reply.commentary ?? "").trim();
+  if (!commentary) return reply;
 
   if (isMethodologyReplyContext(context)) {
     return repairMethodologyCommentary(reply, context);

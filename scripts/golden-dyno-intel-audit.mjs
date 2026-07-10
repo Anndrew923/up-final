@@ -7,7 +7,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runGeminiDynoIntel, lastGeminiUsageMetadata } from "../functions/dynoIntel/gemini.js";
+import { runGeminiDynoIntel, getLastGeminiUsageMetadata } from "../functions/dynoIntel/gemini.js";
 import { resetGeminiContextCacheForTests } from "../functions/dynoIntel/geminiContextCache.js";
 import { buildDynoIntelInferenceContext } from "../functions/dynoIntel/pruneScoringMethodologyBriefs.js";
 import { resolveDynoIntelGeminiModel } from "../functions/dynoIntel/resolveGeminiModel.js";
@@ -626,7 +626,7 @@ async function runGoldenCase(testCase) {
       userQuestion: testCase.question,
     });
     const issues = auditReply(testCase, reply, inferenceContext, routedModel);
-    const usage = lastGeminiUsageMetadata ?? {};
+    const usage = getLastGeminiUsageMetadata() ?? {};
     lastAttempt = { reply, issues, usage, routedModel, attempt };
 
     if (issues.length === 0) {
