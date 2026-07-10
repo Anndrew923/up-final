@@ -27,8 +27,12 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(isHallOfFameConsultQuestion("Hall of Fame names above 80?"), true);
     assert.equal(isHallOfFameConsultQuestion("還有誰也是80多分？"), true);
     assert.equal(isHallOfFameConsultQuestion("Who else is in the 90s?"), true);
+    assert.equal(isHallOfFameConsultQuestion("我想知道更多80多分的運動員"), true);
+    assert.equal(isHallOfFameConsultQuestion("Tell me more about players in the 110s"), true);
     assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
     assert.equal(isHallOfFameConsultQuestion("How is my cardio?"), false);
+    assert.equal(isHallOfFameConsultQuestion("我的絕對力量表現如何？"), false);
+    assert.equal(isHallOfFameConsultQuestion("Tell me more about my strength"), false);
   });
 
   it("parses consult tier from score-band questions", () => {
@@ -37,6 +41,29 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(resolveHallOfFameConsultTier("Hall of Fame names above 80?")?.decadeKey, "80");
     assert.equal(resolveHallOfFameConsultTier("還有誰也是80多分？")?.decadeKey, "80");
     assert.equal(resolveHallOfFameConsultTier("Who else is in the 90s?")?.decadeKey, "90");
+    assert.equal(resolveHallOfFameConsultTier("我想知道更多80多分的運動員")?.decadeKey, "80");
+    assert.equal(resolveHallOfFameConsultTier("Tell me more about players in the 110s")?.decadeKey, "110");
+  });
+
+  it("v5.7 — athlete roster colloquial asks unlock pantheon (not status chassis praise)", () => {
+    const zhReply = resolveHallOfFameConsultReply(baseContext, "我想知道更多80多分的運動員");
+    assert.ok(zhReply);
+    assert.equal(zhReply.hallOfFameConsultReply, true);
+    assert.match(zhReply.commentary, /80-90（高階玩家）/);
+    assert.match(zhReply.commentary, /萬神殿對帳權限/);
+    assert.doesNotMatch(zhReply.commentary, /以同齡一般人來看/);
+    assert.doesNotMatch(zhReply.commentary, /進階健身者/);
+
+    const enReply = resolveHallOfFameConsultReply(
+      { ...baseContext, locale: "en", overallScore: 115 },
+      "Tell me more about players in the 110s"
+    );
+    assert.ok(enReply);
+    assert.equal(enReply.hallOfFameConsultReply, true);
+    assert.match(enReply.commentary, /110-120 \(Transcendent tier\)/);
+    assert.match(enReply.commentary, /Pantheon benchmarking/i);
+    assert.doesNotMatch(enReply.commentary, /Against same-age/);
+    assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);
   });
 
   it("v5.6 — colloquial peer asks unlock aggregate pantheon roster (not status chassis praise)", () => {
