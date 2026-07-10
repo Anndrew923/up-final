@@ -103,6 +103,19 @@ describe('resolveDynoIntelQuestionFocus', () => {
     expect(resolveDynoQuestionIntent('How is my total score calculated?')).toBe('methodology');
   });
 
+  it('routes onboarding suggestion chip queries to the intended intents', () => {
+    expect(resolveDynoQuestionIntent('我的總分表現點評')).toBe('status');
+    expect(isChassisMacroQuestion('我的總分表現點評')).toBe(true);
+    expect(resolveDynoQuestionIntent('How is my overall score right now?')).toBe('status');
+    expect(isChassisMacroQuestion('How is my overall score right now?')).toBe(true);
+    expect(resolveDynoQuestionIntent('科學計分公式說明')).toBe('methodology');
+    expect(resolveDynoQuestionIntent('How are my scores calculated?')).toBe('methodology');
+    expect(resolveDynoQuestionIntent('我的握力表現點評')).toBe('status');
+    expect(detectQuestionFocusAxis('我的握力表現點評')).toBe('gripStrength');
+    expect(resolveDynoQuestionIntent('How is my grip performance?')).toBe('status');
+    expect(detectQuestionFocusAxis('How is my grip performance?')).toBe('gripStrength');
+  });
+
   it('prefers question-focus closing for status and methodology intents', () => {
     expect(
       shouldPreferQuestionFocusClosing('幫我解讀狀態', { focusAxis: null, mode: 'cross-axis' })

@@ -11,6 +11,20 @@
     "close": "Close",
     "send": "Send",
     "inputPlaceholder": "Ask a diagnostic question…",
+    "suggestions": {
+      "overall": {
+        "label": "👑 My overall performance review",
+        "query": "How is my overall score right now?"
+      },
+      "axis": {
+        "label": "🎯 Analyze my weakest metric",
+        "queryTemplate": "How is my {{axisLabel}} performance?"
+      },
+      "methodology": {
+        "label": "🔬 How are my scores calculated?",
+        "query": "How are my scores calculated?"
+      }
+    },
     "welcomeIntroduction": {
       "line1Prefix": "Welcome to the command deck. I'm your ",
       "line1Highlight": "DYNO INTEL data core",

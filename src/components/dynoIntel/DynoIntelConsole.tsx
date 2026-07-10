@@ -9,6 +9,7 @@ import { resolveDynoPaywallWeakestBrief } from '../../logic/core/dynoIntelPaywal
 import { useDynoIntelChat } from '../../hooks/useDynoIntelChat';
 import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
+import { useDynoIntelSuggestions } from '../../hooks/useDynoIntelSuggestions';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
 import { resolveDynoIntelSheetEntry } from '../../logic/core/dynoIntelGates';
 import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
@@ -54,6 +55,7 @@ const DynoIntelConsole = () => {
   const [paywallBusy, setPaywallBusy] = useState(false);
   const [paywallBillingError, setPaywallBillingError] = useState(false);
   const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
 
   const resolveBaseContext = useCallback(() => {
       const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
@@ -86,6 +88,8 @@ const DynoIntelConsole = () => {
     () => resolveDynoPaywallWeakestBrief(paywallContext),
     [paywallContext]
   );
+
+  const suggestionItems = useDynoIntelSuggestions(paywallBrief.axis);
 
   const paywallAxisLabel = useMemo(() => {
     if (!paywallBrief.axis) {
@@ -181,6 +185,7 @@ const DynoIntelConsole = () => {
     sheet.closeSheet();
     setSheetView('chat');
     setPaywallBillingError(false);
+    setSuggestionsDismissed(false);
   }, [sheet]);
 
   const handlePaywallDismiss = useCallback(() => {
@@ -208,10 +213,19 @@ const DynoIntelConsole = () => {
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
+      setSuggestionsDismissed(true);
       void chat.sendQuestion(question);
     },
     [chat.sendQuestion]
   );
+
+  const showSuggestionChips =
+    sheetView === 'chat' &&
+    !suggestionsDismissed &&
+    !chat.visibleText &&
+    !chat.lastReply &&
+    chat.status !== 'loading' &&
+    chat.status !== 'typing';
 
   const hideTrigger = isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname);
   const isProTelemetry = hasProAccess(entitlement);
@@ -243,6 +257,9 @@ const DynoIntelConsole = () => {
         status={chat.status}
         errorMessage={chat.errorMessageKey ? t(chat.errorMessageKey) : null}
         onSubmitQuestion={handleSubmitQuestion}
+        suggestionItems={suggestionItems}
+        showSuggestionChips={showSuggestionChips}
+        onSuggestionSelect={handleSubmitQuestion}
         telemetryLogs={logEntries}
         telemetryLogCap={isProTelemetry ? null : DYNO_INTEL_CORE_LOG_CAP}
         isProTelemetry={isProTelemetry}

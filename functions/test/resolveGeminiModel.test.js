@@ -69,6 +69,15 @@ describe("resolveDynoQuestionIntent", () => {
     assert.equal(resolveDynoQuestionIntent("how to compute my total score"), "methodology");
     assert.equal(resolveDynoQuestionIntent("How is my total score calculated?"), "methodology");
   });
+
+  it("routes onboarding suggestion chip queries to the intended intents", () => {
+    assert.equal(resolveDynoQuestionIntent("我的總分表現點評"), "status");
+    assert.equal(resolveDynoQuestionIntent("How is my overall score right now?"), "status");
+    assert.equal(resolveDynoQuestionIntent("科學計分公式說明"), "methodology");
+    assert.equal(resolveDynoQuestionIntent("How are my scores calculated?"), "methodology");
+    assert.equal(resolveDynoQuestionIntent("我的握力表現點評"), "status");
+    assert.equal(resolveDynoQuestionIntent("How is my grip performance?"), "status");
+  });
 });
 
 describe("resolveDynoIntelGeminiModel", () => {

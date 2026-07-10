@@ -20,7 +20,9 @@ import type { DynoIntelLogEntry } from '../../logic/core/dynoIntelLogTypes';
 import type { DynoIntelDisplayMeta } from '../../logic/core/resolveDynoIntelDisplayMeta';
 import DynoIntelDisplayCards from './DynoIntelDisplayCards';
 import DynoIntelPaywallView from './DynoIntelPaywallView';
+import DynoIntelSuggestionChips from './DynoIntelSuggestionChips';
 import DynoIntelTelemetryLogAccordion from './DynoIntelTelemetryLogAccordion';
+import type { DynoIntelSuggestionItem } from '../../logic/core/buildDynoIntelSuggestions';
 
 export type DynoIntelSheetView = 'chat' | 'paywall';
 
@@ -43,6 +45,9 @@ export interface DynoIntelBottomSheetProps {
   status: DynoIntelChatStatus;
   errorMessage: string | null;
   onSubmitQuestion: (question: string) => void;
+  suggestionItems?: readonly DynoIntelSuggestionItem[];
+  showSuggestionChips?: boolean;
+  onSuggestionSelect?: (question: string) => void;
   telemetryLogs: DynoIntelLogEntry[];
   telemetryLogCap: number | null;
   isProTelemetry: boolean;
@@ -67,6 +72,9 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   status,
   errorMessage,
   onSubmitQuestion,
+  suggestionItems = [],
+  showSuggestionChips = false,
+  onSuggestionSelect,
   telemetryLogs,
   telemetryLogCap,
   isProTelemetry,
@@ -242,6 +250,12 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
             </div>
 
             <footer className="shrink-0 border-t border-zinc-800/80 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+              <DynoIntelSuggestionChips
+                items={suggestionItems}
+                visible={showSuggestionChips}
+                disabled={status === 'loading' || status === 'typing'}
+                onSelect={(query) => onSuggestionSelect?.(query)}
+              />
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <input
                   value={draft}
