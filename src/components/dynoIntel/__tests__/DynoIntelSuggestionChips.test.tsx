@@ -59,6 +59,7 @@ describe('DynoIntelSuggestionChips', () => {
     const { container, unmount } = renderChips({ onSelect });
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBe(2);
+    expect(buttons[0]!.querySelector('svg[aria-hidden]')).not.toBeNull();
     act(() => {
       buttons[0]!.click();
     });

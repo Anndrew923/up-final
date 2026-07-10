@@ -14,15 +14,15 @@
     "suggestions": {
       "ariaLabel": "DYNO INTEL suggestion shortcuts",
       "overall": {
-        "label": "👑 My overall performance review",
+        "label": "My overall performance review",
         "query": "How is my overall score right now?"
       },
       "axis": {
-        "label": "🎯 Analyze my weakest metric",
+        "label": "Analyze my weakest metric",
         "queryTemplate": "How is my {{axisLabel}} performance?"
       },
       "methodology": {
-        "label": "🔬 How are my scores calculated?",
+        "label": "How are my scores calculated?",
         "query": "How are my scores calculated?"
       }
     },

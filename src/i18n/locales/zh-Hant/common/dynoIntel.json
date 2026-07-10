@@ -14,15 +14,15 @@
     "suggestions": {
       "ariaLabel": "DYNO INTEL 引導捷徑",
       "overall": {
-        "label": "👑 我的總分表現點評",
+        "label": "我的總分表現點評",
         "query": "我的總分表現點評"
       },
       "axis": {
-        "label": "🎯 最弱軸向實力解析",
+        "label": "最弱軸向實力解析",
         "queryTemplate": "我的{{axisLabel}}表現點評"
       },
       "methodology": {
-        "label": "🔬 科學計分公式說明",
+        "label": "科學計分公式說明",
         "query": "科學計分公式說明"
       }
     },
