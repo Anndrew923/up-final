@@ -1,5 +1,16 @@
+import { DYNO_INTEL_GEMINI_MODEL_METHODOLOGY } from "../shared/constants.js";
+
 /** @type {Record<string, unknown> | null} */
 export let lastDynoIntelGeminiTelemetry = null;
+
+/** Maps resolved model id to stable telemetry route labels. */
+export function resolveGeminiTelemetryRoute(model) {
+  const normalized = String(model ?? "").replace(/^models\//, "");
+  if (normalized === DYNO_INTEL_GEMINI_MODEL_METHODOLOGY) {
+    return "gemini-flash";
+  }
+  return "gemini-lite";
+}
 
 /**
  * WHY: Per-request structured telemetry — replaces module-level usageMetadata singleton
@@ -28,4 +39,9 @@ export function recordDynoIntelRouteTelemetry(record) {
 export function readLastGeminiUsageMetadata() {
   const usage = lastDynoIntelGeminiTelemetry?.usageMetadata;
   return usage && typeof usage === "object" ? usage : null;
+}
+
+/** Test-only reset — clears in-process telemetry between node:test cases. */
+export function resetDynoIntelGeminiTelemetryForTests() {
+  lastDynoIntelGeminiTelemetry = null;
 }

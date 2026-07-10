@@ -13,10 +13,7 @@ import {
 } from "./deterministicDynoIntelRoutes.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
 import { recordDynoIntelRouteTelemetry } from "./geminiTelemetry.js";
-import {
-  isHallOfFameConsultQuestion,
-  resolveHallOfFameConsultReply,
-} from "./hallOfFameConsultGate.js";
+import { resolveHallOfFameConsultReply } from "./hallOfFameConsultGate.js";
 import { buildPreemptiveOffTopicReply, shouldPreemptOffTopic } from "./offTopicPreempt.js";
 import {
   checkDynoIntelDailyLimit,
@@ -30,6 +27,24 @@ import { validateDynoIntelContext } from "./validateContext.js";
 function isAnonymousProvider(request) {
   const provider = request.auth?.token?.firebase?.sign_in_provider;
   return provider === "anonymous" || !provider;
+}
+
+function buildDynoChatSuccess(quota, reply, { fromCache = false } = {}) {
+  return {
+    ok: true,
+    fromCache,
+    remaining: quota.remaining,
+    limit: quota.limit,
+    resetAt: quota.resetAt,
+    reply,
+  };
+}
+
+function isGeminiUnavailableError(err) {
+  return (
+    err?.code === "failed-precondition" ||
+    String(err?.message ?? "").includes("gemini-not-configured")
+  );
 }
 
 async function consumeDynoQuota(uid, isPro, now) {
@@ -57,10 +72,6 @@ async function consumeDynoQuota(uid, isPro, now) {
       resetAt: usage.resetAt,
     };
   });
-}
-
-async function persistDynoReplyCache(cacheHash, reply, promptTemplateId, now, inferenceContext) {
-  await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
 }
 
 export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
@@ -111,7 +122,6 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
   }
 
   const inferenceContext = buildDynoIntelInferenceContext(context, userQuestion);
-  const hallOfFameConsultReply = resolveHallOfFameConsultReply(inferenceContext, userQuestion);
 
   const cacheHash = buildDynoIntelCacheHash({
     mergedScores: context.axes,
@@ -147,14 +157,11 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       };
     }
     recordDynoIntelRouteTelemetry({ route: "firestore-cache", uid, userQuestion });
-    return {
-      ok: true,
-      fromCache: true,
-      remaining: quota.remaining,
-      limit: quota.limit,
-      resetAt: quota.resetAt,
-      reply: finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
-    };
+    return buildDynoChatSuccess(
+      quota,
+      finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
+      { fromCache: true }
+    );
   }
 
   const quota = await consumeDynoQuota(uid, isPro, now);
@@ -175,16 +182,9 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       inferenceContext,
       userQuestion
     );
-    await persistDynoReplyCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+    await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
     recordDynoIntelRouteTelemetry({ route: "gaps-deterministic", uid, userQuestion });
-    return {
-      ok: true,
-      fromCache: false,
-      remaining: quota.remaining,
-      limit: quota.limit,
-      resetAt: quota.resetAt,
-      reply,
-    };
+    return buildDynoChatSuccess(quota, reply);
   }
 
   if (shouldPreemptOffTopic(userQuestion, inferenceContext)) {
@@ -194,82 +194,62 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       userQuestion
     );
     recordDynoIntelRouteTelemetry({ route: "off-topic-preempt", uid, userQuestion });
-    return {
-      ok: true,
-      fromCache: false,
-      remaining: quota.remaining,
-      limit: quota.limit,
-      resetAt: quota.resetAt,
-      reply,
-    };
+    return buildDynoChatSuccess(quota, reply);
   }
 
+  const hallOfFameConsultReply = resolveHallOfFameConsultReply(inferenceContext, userQuestion);
   if (hallOfFameConsultReply) {
-    const finalizedConsultReply = finalizeDynoIntelCallableReply(
+    const reply = finalizeDynoIntelCallableReply(
       hallOfFameConsultReply,
       inferenceContext,
       userQuestion
     );
-    await persistDynoReplyCache(
-      cacheHash,
-      finalizedConsultReply,
-      promptTemplateId,
-      now,
-      inferenceContext
-    );
-    recordDynoIntelRouteTelemetry({
-      route: isHallOfFameConsultQuestion(userQuestion) ? "hall-of-fame" : "hall-of-fame",
-      uid,
-      userQuestion,
-    });
-    return {
-      ok: true,
-      fromCache: false,
-      remaining: quota.remaining,
-      limit: quota.limit,
-      resetAt: quota.resetAt,
-      reply: finalizedConsultReply,
-    };
+    await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+    recordDynoIntelRouteTelemetry({ route: "hall-of-fame", uid, userQuestion });
+    return buildDynoChatSuccess(quota, reply);
   }
 
   let reply;
+  let inferenceRoute = "gemini";
   try {
-    reply = await runGeminiDynoIntel({
+    const geminiResult = await runGeminiDynoIntel({
       context: inferenceContext,
       userQuestion,
       promptTemplateId,
     });
-    recordDynoIntelRouteTelemetry({ route: "gemini", uid, userQuestion });
+    reply = geminiResult.reply;
+    inferenceRoute = geminiResult.inferenceRoute;
   } catch (err) {
-    const fallbackSeed = resolveDeterministicDynoIntelReply(inferenceContext, userQuestion);
-    if (fallbackSeed) {
-      reply = finalizeDynoIntelCallableReply(fallbackSeed, inferenceContext, userQuestion);
-      recordDynoIntelRouteTelemetry({
-        route: "deterministic-fallback",
-        uid,
-        userQuestion,
-        fallbackReason: String(err?.message ?? "unknown"),
-      });
-    } else if (err?.code === "failed-precondition") {
-      throw new HttpsError("failed-precondition", "Gemini API is not configured");
-    } else if (String(err?.message ?? "").includes("gemini-http-429")) {
-      throw new HttpsError("resource-exhausted", "Gemini API quota exhausted");
-    } else if (String(err?.message ?? "").includes("gemini-invalid-json")) {
-      throw new HttpsError("internal", "DYNO_INTEL_INFERENCE_MALFORMED");
-    } else {
-      console.error("[dynoIntelChat] gemini failure", err?.message, err?.detail ?? "");
-      throw new HttpsError("internal", "DYNO INTEL inference failed");
+    if (isGeminiUnavailableError(err)) {
+      const fallbackSeed = resolveDeterministicDynoIntelReply(inferenceContext, userQuestion);
+      if (fallbackSeed) {
+        reply = finalizeDynoIntelCallableReply(fallbackSeed, inferenceContext, userQuestion);
+        inferenceRoute = "deterministic-fallback";
+        recordDynoIntelRouteTelemetry({
+          route: inferenceRoute,
+          uid,
+          userQuestion,
+          fallbackReason: String(err?.message ?? "unknown"),
+        });
+        await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+        return buildDynoChatSuccess(quota, reply);
+      }
     }
+
+    if (err?.code === "failed-precondition") {
+      throw new HttpsError("failed-precondition", "Gemini API is not configured");
+    }
+    if (String(err?.message ?? "").includes("gemini-http-429")) {
+      throw new HttpsError("resource-exhausted", "Gemini API quota exhausted");
+    }
+    if (String(err?.message ?? "").includes("gemini-invalid-json")) {
+      throw new HttpsError("internal", "DYNO_INTEL_INFERENCE_MALFORMED");
+    }
+    console.error("[dynoIntelChat] gemini failure", err?.message, err?.detail ?? "");
+    throw new HttpsError("internal", "DYNO INTEL inference failed");
   }
 
-  await persistDynoReplyCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
-
-  return {
-    ok: true,
-    fromCache: false,
-    remaining: quota.remaining,
-    limit: quota.limit,
-    resetAt: quota.resetAt,
-    reply,
-  };
+  recordDynoIntelRouteTelemetry({ route: inferenceRoute, uid, userQuestion });
+  await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+  return buildDynoChatSuccess(quota, reply);
 });

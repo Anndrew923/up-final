@@ -55,6 +55,17 @@ describe("buildGeminiInferencePayload", () => {
     assert.equal(payload.chassisBeats.legalSegment, undefined);
     assert.equal(payload.chassisBeats.summaryHuman, undefined);
   });
+
+  it("omits chassisBeats when segment1 core is unavailable", () => {
+    const payload = buildGeminiInferencePayload({
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "methodology",
+      gaps: [{ axis: "gripStrength" }],
+      axes: [],
+    });
+    assert.equal(payload.chassisBeats, undefined);
+  });
 });
 
 describe("gaps deterministic zero-token route", () => {

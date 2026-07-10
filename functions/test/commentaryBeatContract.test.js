@@ -451,6 +451,24 @@ describe("enforceCommentaryBeatContract v3", () => {
     assert.doesNotMatch(enriched.chassisBeats.p1Official, /熱烈搜集中/);
   });
 
+  it("synthesizes gaps commentary from empty seed without Gemini", () => {
+    const gapsContext = {
+      ...strengthStatusContext,
+      gaps: [{ axis: "gripStrength" }],
+      assessmentDeepDiveNudge: "請先完成握力評測。",
+    };
+    const repaired = enforceCommentaryBeatContract(
+      {
+        commentary: "",
+        action_directive: "",
+        is_off_topic: false,
+        detected_weakest_axis: "gripStrength",
+      },
+      gapsContext
+    );
+    assert.equal(splitParagraphs(repaired.commentary).length, 2);
+  });
+
   it("keeps gaps replies at two paragraphs", () => {
     const gapsContext = {
       ...strengthStatusContext,

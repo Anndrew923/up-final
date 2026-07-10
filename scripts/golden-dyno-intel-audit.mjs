@@ -621,7 +621,7 @@ async function runGoldenCase(testCase) {
 
   let lastAttempt = null;
   for (let attempt = 1; attempt <= MAX_CASE_ATTEMPTS; attempt += 1) {
-    const reply = await runGeminiDynoIntel({
+    const { reply } = await runGeminiDynoIntel({
       context: inferenceContext,
       userQuestion: testCase.question,
     });

@@ -1,11 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS,
-  DYNO_INTEL_GEMINI_MODEL_LITE,
-  DYNO_INTEL_GEMINI_MODEL_METHODOLOGY,
-} from "../shared/constants.js";
+import { DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS } from "../shared/constants.js";
 import {
   enforceCommentaryBeatContract,
 } from "./commentaryBeatContract.js";
@@ -15,6 +11,7 @@ import { enforceOnTopicRail } from "./enforceOnTopicRail.js";
 import {
   readLastGeminiUsageMetadata,
   recordDynoIntelGeminiTelemetry,
+  resolveGeminiTelemetryRoute,
 } from "./geminiTelemetry.js";
 import {
   invalidateGeminiContextCache,
@@ -314,16 +311,10 @@ export function finalizeDynoIntelReply(reply, locale = "zh-Hant") {
   return enforceOffTopicContract(sanitized);
 }
 
-/**
- * Back-compat export — delegates to per-request telemetry snapshot.
- * @deprecated Prefer readLastGeminiUsageMetadata() from geminiTelemetry.js
- */
+/** Back-compat export — delegates to per-request telemetry snapshot. */
 export function getLastGeminiUsageMetadata() {
   return readLastGeminiUsageMetadata();
 }
-
-/** @deprecated Use getLastGeminiUsageMetadata() — kept for golden audit script compat. */
-export let lastGeminiUsageMetadata = null;
 
 async function invokeGeminiOnce({
   apiKey,
@@ -384,9 +375,8 @@ async function invokeGeminiOnce({
 
   const json = await response.json();
   const usageMetadata = json?.usageMetadata ?? null;
-  lastGeminiUsageMetadata = usageMetadata;
   recordDynoIntelGeminiTelemetry({
-    route: model.includes("flash-lite") ? "gemini-lite" : "gemini-flash",
+    route: resolveGeminiTelemetryRoute(model),
     model,
     promptTokenCount: usageMetadata?.promptTokenCount ?? null,
     cachedContentTokenCount: usageMetadata?.cachedContentTokenCount ?? null,
@@ -468,7 +458,7 @@ export async function runGeminiDynoIntel({
       const reply = await invokeWithCacheResolution(apiKey, basePayload, model, {
         skipCache: skipCacheOnNextAttempt,
       });
-      return reply;
+      return { reply, inferenceRoute: "gemini" };
     } catch (err) {
       lastError = err;
       const status = String(err?.message ?? "");
@@ -510,7 +500,10 @@ export async function runGeminiDynoIntel({
       totalTokenCount: 0,
       usageMetadata: null,
     });
-    return finalizeDynoIntelCallableReply(fallbackSeed, context, userQuestion, replyLocale);
+    return {
+      reply: finalizeDynoIntelCallableReply(fallbackSeed, context, userQuestion, replyLocale),
+      inferenceRoute: "deterministic-fallback",
+    };
   }
 
   throw lastError;
