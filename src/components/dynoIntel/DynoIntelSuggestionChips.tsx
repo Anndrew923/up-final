@@ -35,11 +35,7 @@ const DynoIntelSuggestionChips: FC<DynoIntelSuggestionChipsProps> = ({
 
   return (
     <div
-      className={cn(
-        'mb-3 flex flex-wrap justify-center gap-2',
-        'motion-safe:transition-opacity motion-safe:duration-300 motion-reduce:transition-none',
-        visible ? 'opacity-100' : 'pointer-events-none opacity-0'
-      )}
+      className="mb-3 flex flex-wrap justify-center gap-2"
       role="group"
       aria-label={groupAriaLabel}
     >

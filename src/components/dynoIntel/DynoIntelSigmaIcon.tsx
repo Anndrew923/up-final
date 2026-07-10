@@ -12,7 +12,7 @@ const DynoIntelSigmaIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <path
       d="M11.6 3.2H4.4l3.6 4.8-3.6 4.8h7.2"
       stroke="currentColor"
-      strokeWidth="1.15"
+      strokeWidth="0.85"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
