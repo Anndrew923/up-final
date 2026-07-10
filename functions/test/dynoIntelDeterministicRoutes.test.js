@@ -192,6 +192,16 @@ describe("coaching-deterministic zero-token route", () => {
     assert.equal(enReply.is_off_topic, true);
   });
 
+  it("preempts coaching even when context.intent is stale or spoofed", () => {
+    assert.equal(
+      shouldPreemptCoaching("我的力量要如何進步呢？", {
+        ...strengthStatusContext,
+        intent: "status",
+      }),
+      true
+    );
+  });
+
   it("does not pollute retrospective progress intent", () => {
     assert.equal(resolveDynoQuestionIntent("我有進步嗎？"), "progress");
     assert.equal(shouldPreemptCoaching("我有進步嗎？"), false);

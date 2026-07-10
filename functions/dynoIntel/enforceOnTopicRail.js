@@ -31,8 +31,10 @@ export function shouldForceDynoIntelOnTopic(userQuestion, context) {
   const q = normalizeDynoIntelQuestion(userQuestion);
   if (!q || !context) return false;
 
+  // WHY: Prescription asks must never be rewritten into status/methodology anchors.
+  if (resolveDynoQuestionIntent(userQuestion, context) === "coaching") return false;
+
   const intent = resolveIntent(context, userQuestion);
-  if (intent === "coaching") return false;
   if (intent === "methodology" || intent === "status" || intent === "progress") {
     return true;
   }

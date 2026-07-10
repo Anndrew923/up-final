@@ -21,7 +21,7 @@ const PROGRESS_PATTERNS = [
 
 /** Prescription / coaching asks — decode dashboard only, never personal trainer. */
 const COACHING_PATTERNS = [
-  /如何進步|怎麼進步|怎[麼么]練|如何提升|如何變強|課表/i,
+  /如何進步|怎[麼么]進步|怎[麼么]練|如何提升|如何變強|課表/i,
   /how\s+to\s+improve|how\s+can\s+i\s+improve|training\s+plan|workout\s+schedule|how\s+to\s+get\s+stronger/i,
 ];
 

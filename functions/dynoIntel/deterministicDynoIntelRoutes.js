@@ -26,8 +26,8 @@ export function buildGapsSeedReply(context) {
  * WHY: Product sovereignty — decode dashboard, never personal trainer.
  */
 export function shouldPreemptCoaching(userQuestion, context = null) {
-  const intent = context?.intent ?? resolveDynoQuestionIntent(userQuestion, context);
-  return intent === "coaching";
+  // WHY: Always re-resolve from the question — never trust a stale/spoofed context.intent.
+  return resolveDynoQuestionIntent(userQuestion, context) === "coaching";
 }
 
 export function buildCoachingBoundaryReply(context = null) {
