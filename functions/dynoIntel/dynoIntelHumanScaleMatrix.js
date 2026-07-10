@@ -2,6 +2,8 @@
  * v5.2 — Shared population-class pyramid + overall/neuro/volume praise slots (zh-Hant).
  * DESIGN INTENT: zh macro uses dedicated overall copy while micro keeps neuro/volume routing.
  * v5.3 — en overlay: all decades 0–150 weld synced EN epic praise from i18n (parity with zh-Hant).
+ * v5.4 — populationClass/summaryHuman args below are cold fallbacks only; runtime always prefers
+ *         synced dynoIntelHumanPraise.data.js after `npm run dyno:sync-human-praise`.
  */
 
 import {

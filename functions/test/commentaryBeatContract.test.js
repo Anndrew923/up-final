@@ -434,6 +434,11 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
     assert.match(segment1, /maps to|Against same-age norms/i);
     assert.match(segment1, /Advanced Operator Tier/i);
+    assert.match(
+      segment1,
+      /Against same-age competitive norms, your absolute strength performance maps to Advanced Operator Tier/
+    );
+    assert.doesNotMatch(segment1, /performance {2}maps/);
   });
 
   it("v5.2.1 — EN scale matrix build rows contain zero CJK", () => {

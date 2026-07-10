@@ -45,7 +45,8 @@ export const AXIS_ANCHOR_PREFIX_ZH = {
 };
 
 export const AXIS_ANCHOR_PREFIX_EN = {
-  strength: "Against same-age competitive norms, your absolute strength performance ",
+  // WHY: no trailing space — belongsGlue("en") already supplies " maps to ".
+  strength: "Against same-age competitive norms, your absolute strength performance",
   explosivePower: "Against same-age norms, your explosive first-step power",
   cardio: "Against same-age norms, your cardio endurance",
   muscleMass: "For your body weight and age cohort, your skeletal muscle mass",
@@ -113,7 +114,8 @@ function resolveScaleMatrix(locale) {
 
 function resolveAxisPrefix(axis, locale) {
   const map = AXIS_PREFIX_BY_LOCALE[normalizeLocale(locale)];
-  return map[axis] ?? map.overall;
+  // WHY: belongsGlue already owns spacing; trailing spaces on prefixes create EN double-space bugs.
+  return String(map[axis] ?? map.overall).trimEnd();
 }
 
 function resolveScaleRow(decadeKey, locale) {
