@@ -25,6 +25,8 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(isHallOfFameConsultQuestion("萬神殿有哪些傳奇？"), true);
     assert.equal(isHallOfFameConsultQuestion("Who are the Pantheon legends?"), true);
     assert.equal(isHallOfFameConsultQuestion("Hall of Fame names above 80?"), true);
+    assert.equal(isHallOfFameConsultQuestion("還有誰也是80多分？"), true);
+    assert.equal(isHallOfFameConsultQuestion("Who else is in the 90s?"), true);
     assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
     assert.equal(isHallOfFameConsultQuestion("How is my cardio?"), false);
   });
@@ -33,6 +35,31 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(resolveHallOfFameConsultTier("100分以上有哪些名人？")?.decadeKey, "100");
     assert.equal(resolveHallOfFameConsultTier("140-150 有哪些傳奇？")?.decadeKey, "140");
     assert.equal(resolveHallOfFameConsultTier("Hall of Fame names above 80?")?.decadeKey, "80");
+    assert.equal(resolveHallOfFameConsultTier("還有誰也是80多分？")?.decadeKey, "80");
+    assert.equal(resolveHallOfFameConsultTier("Who else is in the 90s?")?.decadeKey, "90");
+  });
+
+  it("v5.6 — colloquial peer asks unlock aggregate pantheon roster (not status chassis praise)", () => {
+    const zhReply = resolveHallOfFameConsultReply(baseContext, "還有誰也是80多分？");
+    assert.ok(zhReply);
+    assert.equal(zhReply.hallOfFameConsultReply, true);
+    assert.match(zhReply.commentary, /80-90（高階玩家）/);
+    assert.match(zhReply.commentary, /萬神殿對帳權限/);
+    assert.match(zhReply.commentary, /僅供天梯對帳與娛樂參考。$/);
+    assert.doesNotMatch(zhReply.commentary, /以同齡一般人來看/);
+    assert.doesNotMatch(zhReply.commentary, /進階健身者/);
+
+    const enReply = resolveHallOfFameConsultReply(
+      { ...baseContext, locale: "en", overallScore: 95 },
+      "Who else is in the 90s?"
+    );
+    assert.ok(enReply);
+    assert.equal(enReply.hallOfFameConsultReply, true);
+    assert.match(enReply.commentary, /90-100 \(Top mortal tier\)/);
+    assert.match(enReply.commentary, /Pantheon benchmarking/i);
+    assert.match(enReply.commentary, /entertainment purposes\.$/);
+    assert.doesNotMatch(enReply.commentary, /Against same-age/);
+    assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);
   });
 
   it("blocks locked tier consultations when overall score is insufficient", () => {

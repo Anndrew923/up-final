@@ -14,9 +14,15 @@ import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { resolveHallOfFameDisplayNames } from "./hallOfFameResolver.js";
 import { resolveReplyLocale } from "./beatTemplates.js";
 
+/**
+ * WHY: Colloquial peer asks ("還有誰也是80多分") must hit the zero-token consult gate
+ * before status chassis praise — otherwise Gemini answers the wrong question type.
+ */
 const HALL_OF_FAME_CONSULT_PATTERNS = [
   /名人堂|萬神殿|名人堂聖殿|聖殿矩陣|歷史傳奇|有哪些名人|有哪些人名|哪些傳奇|哪些名字|誰在.*分|誰有.*分/i,
+  /還有誰|也是.*分|同.*分.*誰|誰跟我一樣|一樣是.*分|同個分數|同級距/i,
   /Hall of Fame|Pantheon|historical legends?|famous names?|legendary athletes?|who.*(?:at|above|over).*\d+/i,
+  /who else|same (score )?band|anyone else|also in the|who is also|shared\s+scores?/i,
 ];
 
 function resolveBlockedReplyCopy(context) {
@@ -49,66 +55,77 @@ export function isHallOfFameConsultHardReply(reply) {
   return reply?.hallOfFameConsultReply === true;
 }
 
+/** Colloquial decade bands — "80多/80幾/80s" must resolve before status chassis routing. */
 const TIER_PATTERNS = [
   {
     decadeKey: "150",
     label: "150+（地表最強）",
     labelEn: "150+ (Earth's apex)",
-    pattern: /150\+|150\s*分以上|150以上|a2|(?:above|over)\s*150|150\s*points?/i,
+    pattern:
+      /150\+|150\s*分以上|150以上|150多|150幾|一百五十多|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s/i,
   },
   {
     decadeKey: "140",
     label: "140-150（怪物領域）",
     labelEn: "140-150 (Monster tier)",
-    pattern: /140\s*[-~～到至]\s*150|140分以上|140以上|a3|(?:above|over)\s*140|140\s*points?/i,
+    pattern:
+      /140\s*[-~～到至]\s*150|140分以上|140以上|140多|140幾|一百四十多|a3|(?:above|over)\s*140|140\s*points?|140s|in the 140s/i,
   },
   {
     decadeKey: "130",
     label: "130-140（統計神話）",
     labelEn: "130-140 (Statistical myth)",
-    pattern: /130\s*[-~～到至]\s*140|130分以上|130以上|a4|(?:above|over)\s*130|130\s*points?/i,
+    pattern:
+      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s/i,
   },
   {
     decadeKey: "120",
     label: "120-130（歷史級別）",
     labelEn: "120-130 (Historic tier)",
-    pattern: /120\s*[-~～到至]\s*130|120分以上|120以上|a5|(?:above|over)\s*120|120\s*points?/i,
+    pattern:
+      /120\s*[-~～到至]\s*130|120分以上|120以上|120多|120幾|一百二十多|a5|(?:above|over)\s*120|120\s*points?|120s|in the 120s/i,
   },
   {
     decadeKey: "110",
     label: "110-120（超凡入聖）",
     labelEn: "110-120 (Transcendent tier)",
-    pattern: /110\s*[-~～到至]\s*120|110分以上|110以上|a6|(?:above|over)\s*110|110\s*points?/i,
+    pattern:
+      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s/i,
   },
   {
     decadeKey: "100",
     label: "100-110（凡體覺醒）",
     labelEn: "100-110 (Awakened mortal)",
-    pattern: /100\s*[-~～到至]\s*110|100分以上|100以上|a7|(?:above|over)\s*100|100\s*points?/i,
+    pattern:
+      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s/i,
   },
   {
     decadeKey: "90",
     label: "90-100（凡人頂尖）",
     labelEn: "90-100 (Top mortal tier)",
-    pattern: /90\s*[-~～到至]\s*100|90分以上|90以上|a8|(?:above|over)\s*90|90\s*points?/i,
+    pattern:
+      /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s/i,
   },
   {
     decadeKey: "80",
     label: "80-90（高階玩家）",
     labelEn: "80-90 (Advanced tier)",
-    pattern: /80\s*[-~～到至]\s*90|80分以上|80以上|a9|(?:above|over)\s*80|80\s*points?/i,
+    pattern:
+      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s/i,
   },
   {
     decadeKey: "70",
     label: "70-80（進階健身者）",
     labelEn: "70-80 (Intermediate lifter)",
-    pattern: /70\s*[-~～到至]\s*80|70分以上|70以上|(?:above|over)\s*70|70\s*points?/i,
+    pattern:
+      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
   },
   {
     decadeKey: "60",
     label: "60-70（大眾健康常模）",
     labelEn: "60-70 (General health norm)",
-    pattern: /60\s*[-~～到至]\s*70|60分以上|60以上|(?:above|over)\s*60|60\s*points?/i,
+    pattern:
+      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|(?:above|over)\s*60|60\s*points?|60s|in the 60s/i,
   },
 ];
 
