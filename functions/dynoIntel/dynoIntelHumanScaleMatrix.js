@@ -63,105 +63,105 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_ZH = {
     decadeKey: "150",
     tierId: "LEGEND",
     scoreRange: "150+",
-    populationClass: "突破生理常模極限",
+    populationClass: "地表最強",
     summaryHuman:
-      "已完全突破人類生理科學的既有常模極限，神經募集速度與骨骼肌極限承載展現非人哉的殿堂級主權。",
+      "已站上地表最強級距，絕對力量表現與生理讀數展現殿堂級主權。",
   }),
   "140": scaleBucket({
     decadeKey: "140",
     tierId: "TIER_140",
     scoreRange: "140–149",
-    populationClass: "極限天賦神殿層級",
+    populationClass: "怪物領域",
     summaryHuman:
-      "站上全球人類基因與天賦的終極神殿層級，生理機能指標具備極致非凡的專項統治力。",
+      "已踏入怪物領域，生理機能指標具備極致非凡的專項統治力。",
   }),
   "130": scaleBucket({
     decadeKey: "130",
     tierId: "TIER_130",
     scoreRange: "130–139",
-    populationClass: "世界頂尖運動員層級",
+    populationClass: "統計神話",
     summaryHuman:
-      "生理讀數完全對標世界頂尖運動員層級，在國際級超高強度對抗中展現毫無死角的絕對專項輸出。",
+      "已踏入統計神話級距，在超高強度對抗中展現毫無死角的專項輸出。",
   }),
   "120": scaleBucket({
     decadeKey: "120",
     tierId: "TIER_120",
     scoreRange: "120–129",
-    populationClass: "國際大師級運動員",
+    populationClass: "歷史級別",
     summaryHuman:
-      "具備國際大師級運動員的硬核體能基礎，專項能量系統與主要肌群募集大幅甩開常規競技常模。",
+      "已站上歷史級別，專項能量系統與主要肌群募集大幅甩開常規競技常模。",
   }),
   "110": scaleBucket({
     decadeKey: "110",
     tierId: "TIER_110",
     scoreRange: "110–119",
-    populationClass: "國家級頂尖運動員",
+    populationClass: "超凡入聖",
     summaryHuman:
-      "生理常模精準錨定在國家級頂尖運動員之列，多關節協同穩定與絕對爆發輸出逼近該項目金字塔頂端。",
+      "已錨定超凡入聖級距，絕對力量表現與爆發輸出逼近該項目金字塔頂端。",
   }),
   "100": scaleBucket({
     decadeKey: "100",
     tierId: "TIER_100",
     scoreRange: "100–109",
-    populationClass: "國家級賽事常勝軍",
+    populationClass: "凡體覺醒",
     summaryHuman:
-      "具備國家級賽事常勝軍的生理底蘊，在各高難度規律阻力或心肺週期中展現穩固的專業競技型態。",
+      "已進入凡體覺醒，在高難度阻力或心肺週期中展現穩固的專業競技型態。",
   }),
   "90": scaleBucket({
     decadeKey: "90",
     tierId: "TIER_90",
     scoreRange: "90–99",
-    populationClass: "地區型各類賽事常勝軍",
+    populationClass: "凡人頂尖",
     summaryHuman:
-      "已成為地區型各類賽事常勝軍的指標常模，多關節大重量動作中肌群協同極佳，展現清晰降維長板。",
+      "已站上凡人頂尖，絕對力量表現中肌群協同極佳，展現清晰降維長板。",
   }),
   "80": scaleBucket({
     decadeKey: "80",
     tierId: "TIER_80",
     scoreRange: "80–89",
-    populationClass: "業餘運動員中優秀表現",
+    populationClass: "高階玩家",
     summaryHuman:
-      "在業餘運動員群體中展現極其優秀的常模表現，主要肌群儲備厚實，生理機能處於同齡顯著高位。",
+      "已成為高階玩家，主要肌群儲備厚實，生理機能處於同齡顯著高位。",
   }),
   "70": scaleBucket({
     decadeKey: "70",
     tierId: "TIER_70",
     scoreRange: "70–79",
-    populationClass: "商業健身房傑出族群",
+    populationClass: "進階健身者",
     summaryHuman:
-      "已站上商業健身房的傑出菁英族群之列，具備深刻且規律的科學訓練痕跡，穩定超越業餘大眾。",
+      "已站上進階健身者級距，具備深刻且規律的科學訓練痕跡。",
   }),
   "60": scaleBucket({
     decadeKey: "60",
     tierId: "TIER_60",
     scoreRange: "60–69",
-    populationClass: "擁有規律運動習慣族群（略優於大眾水平）",
+    populationClass: "大眾健康常模",
     summaryHuman:
-      "具備良好且規律的日常運動習慣，多關節協同動作流暢，各項讀數穩定高於群體平均水平。",
+      "已站上大眾健康常模，絕對力量表現動作流暢，讀數穩定高於群體平均。",
   }),
   "50": scaleBucket({
     decadeKey: "50",
     tierId: "TIER_50",
     scoreRange: "50–59",
-    populationClass: "健康常模大眾平均水平",
+    populationClass: "新手期",
     summaryHuman:
-      "精準鎖定在同齡健康大眾的平均水平基準線，生理功能指標皆符合標準體態健康常模。",
+      "正處於新手期，生理功能指標皆符合標準體態健康常模入門線。",
   }),
   "40": scaleBucket({
     decadeKey: "40",
     tierId: "TIER_40",
     scoreRange: "40–49",
-    populationClass: "擁有巨大進步潛力新手期",
+    populationClass: "探索期",
     summaryHuman:
-      "正處於擁有巨大進步潛力的體能初始新手期，主要肌群募集與基礎機能具備清晰的優化提升空間。",
+      "正處於探索期，主要肌群募集與基礎機能具備清晰的優化提升空間。",
   }),
   "0": scaleBucket({
     decadeKey: "0",
     tierId: "BASE",
     scoreRange: "0–39",
-    populationClass: "生理低谷／亟需啟動評測頁調校",
+    populationClass: "嬰兒期",
     summaryHuman:
-      "相關肌群長期缺乏阻力刺激導致募集效率下滑，生理機能處於低谷，亟需透過評測引導啟動身體機能調校。",
+      "正處於嬰兒期，生理機能處於低谷，亟需透過評測引導啟動身體機能調校。",
   }),
 };
 
@@ -170,104 +170,104 @@ export const DYNO_INTEL_HUMAN_SCALE_MATRIX_EN = {
     decadeKey: "150",
     tierId: "LEGEND",
     scoreRange: "150+",
-    populationClass: "beyond conventional physiological norms",
+    populationClass: "Apex of the Earth Tier",
     summaryHuman:
-      "You have broken past established human physiological norms — recruitment speed and skeletal loading show hall-of-fame dominance.",
+      "You stand in Apex of the Earth Tier — absolute strength performance and physiological reads show hall-of-fame dominance.",
   }),
   "140": scaleBucketEn({
     decadeKey: "140",
     tierId: "TIER_140",
     scoreRange: "140–149",
-    populationClass: "extreme talent temple tier",
+    populationClass: "Monster Domain Tier",
     summaryHuman:
-      "You sit at the global genetic ceiling with rare specialist dominance across every physiological read.",
+      "You sit in Monster Domain Tier with rare specialist dominance across every physiological read.",
   }),
   "130": scaleBucketEn({
     decadeKey: "130",
     tierId: "TIER_130",
     scoreRange: "130–139",
-    populationClass: "world-top athlete tier",
+    populationClass: "Statistical Myth Tier",
     summaryHuman:
-      "Your reads benchmark world-top athletes with airtight specialty output under international-level stress.",
+      "Your reads sit in Statistical Myth Tier with airtight specialty output under extreme stress.",
   }),
   "120": scaleBucketEn({
     decadeKey: "120",
     tierId: "TIER_120",
     scoreRange: "120–129",
-    populationClass: "international master athlete",
+    populationClass: "Historical Elite Tier",
     summaryHuman:
-      "You carry an international master-athlete base — energy systems and major-muscle recruitment sit far above conventional competitive norms.",
+      "You carry Historical Elite Tier baselines — energy systems and major-muscle recruitment sit far above conventional norms.",
   }),
   "110": scaleBucketEn({
     decadeKey: "110",
     tierId: "TIER_110",
     scoreRange: "110–119",
-    populationClass: "national elite athlete",
+    populationClass: "Ascended Demigod Tier",
     summaryHuman:
-      "You anchor in the national elite band with stable multi-joint synergy and peak explosive output near the sport pyramid top.",
+      "You anchor in Ascended Demigod Tier with stable absolute strength performance and peak explosive output.",
   }),
   "100": scaleBucketEn({
     decadeKey: "100",
     tierId: "TIER_100",
     scoreRange: "100–109",
-    populationClass: "national event perennial winner",
+    populationClass: "Mortal Awakening Tier",
     summaryHuman:
-      "You hold national-event winner physiology with stable professional competitive patterns across hard training blocks.",
+      "You hold Mortal Awakening Tier physiology with stable professional competitive patterns across hard training blocks.",
   }),
   "90": scaleBucketEn({
     decadeKey: "90",
     tierId: "TIER_90",
     scoreRange: "90–99",
-    populationClass: "regional multi-event perennial winner",
+    populationClass: "Peak Mortal Tier",
     summaryHuman:
-      "You are a regional multi-event benchmark with excellent multi-joint loading synergy and a clear specialty edge.",
+      "You are Peak Mortal Tier with excellent absolute strength loading synergy and a clear specialty edge.",
   }),
   "80": scaleBucketEn({
     decadeKey: "80",
     tierId: "TIER_80",
     scoreRange: "80–89",
-    populationClass: "strong amateur athlete performance",
+    populationClass: "Advanced Operator Tier",
     summaryHuman:
-      "Among amateur athletes you show standout norms with thick major-muscle reserves and clearly above-average physiology.",
+      "Among Advanced Operator Tier athletes you show standout norms with thick major-muscle reserves.",
   }),
   "70": scaleBucketEn({
     decadeKey: "70",
     tierId: "TIER_70",
     scoreRange: "70–79",
-    populationClass: "standout commercial-gym cohort",
+    populationClass: "Advanced Trainee Tier",
     summaryHuman:
-      "You rank among standout commercial-gym performers with deep, consistent training traces above the amateur majority.",
+      "You rank in Advanced Trainee Tier with deep, consistent training traces above the amateur majority.",
   }),
   "60": scaleBucketEn({
     decadeKey: "60",
     tierId: "TIER_60",
     scoreRange: "60–69",
-    populationClass: "regular exerciser slightly above average",
+    populationClass: "General Health Baseline Tier",
     summaryHuman:
-      "You maintain regular exercise habits with fluent multi-joint patterns and reads above population average.",
+      "You maintain General Health Baseline Tier habits with fluent absolute strength patterns and reads above population average.",
   }),
   "50": scaleBucketEn({
     decadeKey: "50",
     tierId: "TIER_50",
     scoreRange: "50–59",
-    populationClass: "healthy population average",
+    populationClass: "Novice Phase Tier",
     summaryHuman:
-      "You lock onto the healthy same-age average baseline with standard physiological markers.",
+      "You lock onto Novice Phase Tier — the healthy same-age on-ramp with standard physiological markers.",
   }),
   "40": scaleBucketEn({
     decadeKey: "40",
     tierId: "TIER_40",
     scoreRange: "40–49",
-    populationClass: "high-upside beginner phase",
+    populationClass: "Exploration Phase Tier",
     summaryHuman:
-      "You are in a high-upside beginner phase with clear room to improve recruitment and base capacity.",
+      "You are in Exploration Phase Tier with clear room to improve recruitment and base capacity.",
   }),
   "0": scaleBucketEn({
     decadeKey: "0",
     tierId: "BASE",
     scoreRange: "0–39",
-    populationClass: "physiological low point needing assessment reset",
+    populationClass: "Infant Phase Tier",
     summaryHuman:
-      "Long-term under-stimulation has dragged recruitment efficiency down — assessment-guided rebuilding is the priority.",
+      "You are in Infant Phase Tier — long-term under-stimulation has dragged recruitment efficiency down; assessment-guided rebuilding is the priority.",
   }),
 };

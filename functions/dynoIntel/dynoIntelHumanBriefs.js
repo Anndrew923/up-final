@@ -32,7 +32,7 @@ const SCALE_MATRIX_BY_LOCALE = {
 
 /** v3.3.2 — axis anchor prefixes (layer 1 opening). */
 export const AXIS_ANCHOR_PREFIX_ZH = {
-  strength: "以同齡一般人來看，你的多關節力量",
+  strength: "以同齡一般人來看，你的絕對力量表現",
   explosivePower: "以同齡一般人來看，你的爆發起跳",
   cardio: "以同齡一般人來看，你的心肺續航",
   muscleMass: "以同齡同體重來看，你的骨骼肌量",
@@ -45,7 +45,7 @@ export const AXIS_ANCHOR_PREFIX_ZH = {
 };
 
 export const AXIS_ANCHOR_PREFIX_EN = {
-  strength: "Against same-age norms, your multi-joint strength",
+  strength: "Against same-age competitive norms, your absolute strength performance ",
   explosivePower: "Against same-age norms, your explosive first-step power",
   cardio: "Against same-age norms, your cardio endurance",
   muscleMass: "For your body weight and age cohort, your skeletal muscle mass",

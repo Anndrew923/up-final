@@ -40,7 +40,7 @@ export const AXIS_HUMAN_GENERAL_ZH = {
   explosivePower:
     "你的爆發起跳在同齡梯隊中反應靈敏，跳箱與短跑衝刺時下肢能在瞬間完成蹬地發力。這份彈射表現，對應校隊與球類專項選手的起步爆發型態。",
   strength:
-    "你的多關節力量在同齡梯隊中屬於高位，深蹲、硬舉、臥推等大重量動作中肌群仍能協同頂住槓鈴。這份出力表現，對應進階練力與健力業餘選手的典型募集型態。",
+    "你的絕對力量表現在同齡梯隊中屬於高位，深蹲、硬舉、臥推等大重量動作中肌群仍能協同頂住槓鈴。這份出力表現，對應進階練力與健力業餘選手的典型募集型態。",
   cardio:
     "你的心肺續航在同齡梯隊中屬於中上段，長時間跑步或高頻訓練中節奏仍能維持穩定。這份耐力表現，對應業餘跑者與耐力專項選手的典型續航型態。",
   muscleMass:
@@ -80,7 +80,7 @@ export const AXIS_HUMAN_GENERAL_EN = {
   explosivePower:
     "Your explosive launch ranks high in your age cohort — box jumps and sprint starts fire fast from the floor. That burst profile matches school-team and court-sport athletes.",
   strength:
-    "Your multi-joint barbell strength ranks high in your age cohort — squats, deadlifts, and benches still hold under load. That output shape matches advanced amateur lifters.",
+    "Your absolute strength performance ranks high in your age cohort — squats, deadlifts, and benches still hold under load. That output shape matches advanced amateur lifters.",
   cardio:
     "Your cardio endurance ranks in the upper half of your age cohort — rhythm holds on longer efforts. That aerobic profile matches trained amateur endurance athletes.",
   muscleMass:
@@ -223,7 +223,7 @@ export function isCanonicalHumanBeatSynthesis(text) {
     /^Against same-age norms/i.test(normalized) ||
     /^Against untrained same-age norms/i.test(normalized) ||
     /^For your (body weight|height)/i.test(normalized) ||
-    /^你的(握力|多關節|重載|心肺|骨骼肌|純肌肉|瘦體重|爆發|臂圍)/.test(normalized) ||
+    /^你的(握力|絕對力量|多關節|重載|心肺|骨骼肌|純肌肉|瘦體重|爆發|臂圍)/.test(normalized) ||
     /^Your (grip|multi-joint|barbell|cardio|muscle mass|lean-mass|explosive|arm girth)/i.test(normalized)
   );
 }

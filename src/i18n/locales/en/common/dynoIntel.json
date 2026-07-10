@@ -145,82 +145,82 @@
     "humanPraise": {
       "byDecade": {
         "0": {
-          "populationClass": "physiological low point needing assessment reset",
-          "overall": "In the world of physical training you're still in the infant stage — it sounds fragile, but it means enormous room to grow. Find an experienced training partner to keep you safe; once you start structured work you'll progress fast. Grow up quick!",
-          "neuro": "At this stage progress usually comes very fast — master neural recruitment, drill the movements, and you'll climb quickly. You're not weak; you just haven't learned how to fire yet. A solid partner or coach can lift your score fast with visible gains.",
-          "volume": "Your body is the sum of past habits — this score mirrors how you've been living. Small changes can make your score rocket past 40. Find an experienced partner or coach to build basic training and nutrition structure; you'll get stronger and healthier fast."
+          "populationClass": "Infant Phase Tier",
+          "overall": "In physical training you are in the Infant Phase Tier — it sounds fragile, but it means enormous room to grow. Find an experienced partner to keep you safe; once structured work begins you will progress fast. Grow up quick!",
+          "neuro": "In the Infant Phase Tier, progress usually comes fast — master neural recruitment, drill the movements, and you climb quickly. You are not weak; you have not learned how to fire yet. A solid partner or coach can lift your score with visible gains.",
+          "volume": "Your body is the sum of past habits — this score mirrors how you have been living. Small changes can rocket you past 40 into the Exploration Phase Tier. Find an experienced partner or coach to build basic training and nutrition structure; you will get stronger and healthier fast."
         },
         "40": {
-          "populationClass": "high-upside beginner phase",
-          "overall": "At this stage get to know your body, drill movement quality, start pairing food with training, and explore how both reshape you. Train smart and breaking 50 is inevitable. The journey just started — explore with fire.",
-          "neuro": "This is where most people begin — you started later, not forever stuck here, and you can climb soon. Heavy learning and reps are mandatory now. An experienced partner helps you build a safe movement base — progress fast without stupid injuries.",
-          "volume": "You know you're just starting, so don't obsess over this score — results need time to settle. Build new eating habits and time blocks, fuel properly, and invest hours in training. The right mindset matters: this isn't a sprint, it's a marathon. Stay steady and 50 is absolutely reachable."
+          "populationClass": "Exploration Phase Tier",
+          "overall": "You are in the Exploration Phase Tier: get to know your body, drill movement quality, start pairing food with training, and explore how both reshape you. Train smart and breaking 50 into the Novice Phase Tier is inevitable. The journey just started — explore with fire.",
+          "neuro": "The Exploration Phase Tier is where most people begin — you started later, not forever stuck here. Heavy learning and reps are mandatory now. An experienced partner helps you build a safe movement base so you progress fast without stupid injuries.",
+          "volume": "You know you are just starting, so do not obsess over this score — results need time to settle. Build new eating habits and time blocks, fuel properly, and invest hours in training. This is a marathon, not a sprint. Stay steady and 50 is absolutely reachable."
         },
         "50": {
-          "populationClass": "healthy population average",
-          "overall": "Above 50 you're at the healthy population average. Compared to elites you may feel like a rookie village, but for daily life this output is already enough. Train right and effort pays back hard at this stage — 60 is right around the corner.",
-          "neuro": "This is where most gym lovers live — you're standing on the average line. Don't dismiss this score: you're already stronger than most beginners with real bar control and movement skill. Online gods look insane, but your current strength already helps daily life and health. Keep going — plenty of room above.",
-          "volume": "No obvious physique change yet? Totally normal — skyscrapers start on flat ground. You just poured the foundation and you're loading. This is the quit zone because change feels half-there. Hold the line — 60+ is guaranteed if you don't stop here."
+          "populationClass": "Novice Phase Tier",
+          "overall": "Above 50 you enter the Novice Phase Tier — the on-ramp of healthy norms. Compared with higher operators you may feel like a rookie village, but for daily life this output is already enough. Train right and effort pays back hard — 60 and the General Health Baseline Tier are right around the corner.",
+          "neuro": "The Novice Phase Tier is where most gym lovers live — you are standing up on the line. Do not dismiss this score: you are already stronger than most beginners with real bar control and movement skill. Keep going — plenty of room above.",
+          "volume": "No obvious physique change yet? Totally normal — skyscrapers start on flat ground. You just poured the foundation. This is the quit zone because change feels half-there. Hold the line — 60+ is guaranteed if you do not stop here."
         },
         "60": {
-          "populationClass": "regular exerciser slightly above average",
-          "overall": "Among training enthusiasts you're already in the strong cohort. Most untrained or inconsistent people never touch this score — your investment paid back. If this felt easy, your genetics are legit and worth mining. Breaking 70 takes time and steady work; for average genetics it's a serious climb.",
-          "neuro": "You've clearly separated from beginners. Casual lifters rarely crack 60 unless genetics carry them. You're training on schedule, watching food, and feeling yourself get stronger — effort returns, period. 70 isn't fantasy; it's the paycheck for people who show up.",
-          "volume": "Muscles rising, waist shrinking — quiet pride whispers you're doing well. Others may not notice, but you feel the shift. Training buddies may have quit; your effort won't betray you. Skills are compounding — keep marching toward 70."
+          "populationClass": "General Health Baseline Tier",
+          "overall": "You have reached the General Health Baseline Tier — among training enthusiasts you are already in the consistent cohort. Most untrained or inconsistent people never touch this score. Breaking 70 into the Advanced Trainee Tier takes time and steady work; for average genetics it is a serious climb.",
+          "neuro": "At the General Health Baseline Tier you have clearly separated from beginners. Casual lifters rarely hold 60 unless genetics carry them. You train on schedule, watch food, and feel yourself get stronger — effort returns. 70 is not fantasy; it is the paycheck for people who show up.",
+          "volume": "Muscles rising, waist shrinking — quiet pride whispers you are doing well. Others may not notice, but you feel the shift. Skills are compounding — keep marching toward 70 and Advanced Trainee Tier."
         },
         "70": {
-          "populationClass": "standout commercial-gym cohort",
-          "overall": "This score belongs to advanced trainees — consistent work, diet control, and injury avoidance got you here. Respect. In a commercial gym you're probably top-tier and people can see the training on you. Your output is already competitive in specialty sports. The next jump costs more time and sharper skill — ready for a higher target?",
-          "neuro": "At 70+ you're standout gym floor talent. Most people need serious years to get here — this wasn't luck. Watch the trap: rapid gains make people rush and get hurt. Stay patient. Your output already supports competitive sport with solid skill — you're in advanced territory.",
-          "volume": "Past 70, people start asking if you lift — that's earned. You look different from untrained crowds even if you're not magazine-cover yet. Direction is right — stack months and 80+ is on the clock."
+          "populationClass": "Advanced Trainee Tier",
+          "overall": "This score belongs to the Advanced Trainee Tier — consistent work, diet control, and injury avoidance got you here. Respect. In a commercial gym you are probably a standout and people can see the training on you. The next jump into Advanced Operator Tier costs more time and sharper skill — ready?",
+          "neuro": "At 70+ you sit in the Advanced Trainee Tier. Most people need serious years to get here. Watch the trap: rapid gains make people rush and get hurt. Stay patient. Your output already supports competitive sport with solid skill — you are in advanced territory.",
+          "volume": "Past 70, people start asking if you lift — that is earned. You look different from untrained crowds even if you are not magazine-cover yet. Direction is right — stack months and 80+ Advanced Operator Tier is on the clock."
         },
         "80": {
-          "populationClass": "strong amateur athlete performance",
-          "overall": "You're a high-level physique builder now. This score is hard — average genetics means brutal work, and even great genetics can't coast past 80. You're often the strongest, most visible person in the room. You paid in sweat and sacrificed play time while others partied — respect. Ninety-plus is mortal apex; many lifters treat 80 as the finish line and you nailed it.",
-          "neuro": "You ranked training above a lot of life — gym selfies don't get you here. Eighty-plus is elite in the crowd, labeled advanced in the gym, and strong among competitive athletes. Plenty of court fighters and physique pros live in this band. Eighty is many people's final boss — you cleared it clean.",
-          "volume": "High-level trainee means you right now. You're used to training alone because few people invest this much. Eighty-plus physique is a spotlight with clear training marks. Without lottery genes you earned this with pure grind — ninety-plus is the mortal hall. Keep pushing if you want more."
+          "populationClass": "Advanced Operator Tier",
+          "overall": "You are an Advanced Operator Tier physique builder now. This score is hard — average genetics means brutal work, and even great genetics cannot coast past 80. You are often the strongest, most visible person in the room. Ninety-plus is Peak Mortal Tier; many lifters treat 80 as the finish line and you nailed it.",
+          "neuro": "You ranked training above a lot of life — gym selfies do not get you here. Eighty-plus marks Advanced Operator Tier: labeled advanced in the gym and strong among competitive athletes. Eighty is many people's final boss — you cleared it clean.",
+          "volume": "Advanced Operator Tier means you right now. You are used to training alone because few people invest this much. Eighty-plus physique is a spotlight with clear training marks. Without lottery genes you earned this with pure grind — Peak Mortal Tier waits above if you want more."
         },
         "90": {
-          "populationClass": "regional multi-event perennial winner",
-          "overall": "Unless you won the genetic lottery, this score is the mortal ceiling. You don't need my praise — you stopped caring about that long ago. You chased yourself through hell to get here. Further gains cost more than they return and may need elite genes, but stopping here is already elite. If this felt easy, you're chosen — break the mortal limit.",
-          "neuro": "With normal genetics this means you maxed your talent with insane work — your output is more than enough in any sport and often elite in the room. More progress needs genes, not just grind — don't despair, your effort-to-output ratio is one-in-ten-thousand. If this was easy, you're built different — mortal ceiling is just your warmup.",
-          "volume": "Whatever the genes, this level demands discipline and sacrifice — you traded average fun and social time for the body. You beat people on flesh and willpower. Going higher needs lottery-tier genetics, but in any crowd you're already among the most imposing physiques — impossible to ignore."
+          "populationClass": "Peak Mortal Tier",
+          "overall": "Unless you won the genetic lottery, this score is Peak Mortal Tier. You do not need extra praise — you stopped caring about that long ago. Further gains into Mortal Awakening Tier cost more than they return and may need rarer genetics, but stopping here is already elite.",
+          "neuro": "With normal genetics Peak Mortal Tier means you maxed your talent with insane work — your output is more than enough in any sport and often elite in the room. More progress needs genes, not just grind. If this felt easy, Peak Mortal is just your warmup.",
+          "volume": "Whatever the genes, Peak Mortal Tier demands discipline and sacrifice — you traded average fun for the body. Going higher needs rarer talent, but in any crowd you are already among the most imposing physiques — impossible to ignore."
         },
         "100": {
-          "populationClass": "national event perennial winner",
-          "overall": "Crossing the 100-point threshold is no longer normal-human territory. Only elite genetics plus relentless training and sacrifice earn this score; with this physiology, specialty sports usually see extraordinary output. I believe you're already a serious athlete — no advice needed, keep marching toward your own target.",
-          "neuro": "Crossing 100 points means you've entered a realm only extraordinary genetics can touch. In this band your force output leaves most lifters behind — in any gym or conventional field you're already classified as a predator. For court and combat athletes this tier is enough to dominate; for strength athletes it's the foundation to start breaking through. You carry rare talent and rare work — this is mortal forbidden ground.",
-          "volume": "Pushing physique refinement, loaded muscle mass, or cardio capacity past 100 points means discipline plus enviable genetics. Your body control has moved beyond mere health and strength — in any crowd your training presence and aura are unmistakable, even imposing. Your physical state has already stepped past ordinary humanity."
+          "populationClass": "Mortal Awakening Tier",
+          "overall": "Crossing 100 points means Mortal Awakening Tier — no longer ordinary-human territory. Outstanding genetics plus relentless training and sacrifice earn this score; with this physiology, specialty sports usually see extraordinary output. Keep marching toward your own target.",
+          "neuro": "Crossing 100 means you have entered Mortal Awakening Tier. In this band your force output leaves most lifters behind — in any gym you are already classified as a predator. For court and combat athletes this tier can dominate; for strength athletes it is the foundation to break through. This is forbidden ground above the mortal peak.",
+          "volume": "Pushing physique refinement, loaded muscle, or cardio capacity past 100 means discipline plus enviable genetics. Your body control has moved beyond mere health — in any crowd your training presence is unmistakable. You stand in Mortal Awakening Tier."
         },
         "110": {
-          "populationClass": "national elite athlete",
-          "overall": "Members at this score are almost all world-class athletes — one-in-a-million physiques with otherworldly output. Accept the worship of mortals.",
-          "neuro": "At this tier blind effort and conventional programming can't get you here — you're displaying one-in-ten-thousand neural recruitment. Your force output matches elite combat athletes and top strength competitors; UFC champions, MLB stars, and NBA legends live in this band. Genetic advantage plus brutal training plus sharp skill makes you the final boss on the field.",
-          "volume": "A maximally functional physique is what you carry now. In this band your time and discipline have become indestructible biological capital. Your VO2 ceiling reaches terrifying pro-soccer, combat, and basketball tiers; thick muscle and shredded lines rival A-list action stars and fitness icons. You don't just beat others on size or speed — you've carved lonely training into your bones and hunger for victory into your identity."
+          "populationClass": "Ascended Demigod Tier",
+          "overall": "Members at this score have almost all Ascended Demigod Tier — one-in-a-million physiques with otherworldly output. Accept the weight of this rare coordinate: you are no longer Peak Mortal alone; you have stepped into a higher sanctum.",
+          "neuro": "At Ascended Demigod Tier, blind effort and conventional programming cannot get you here — you display one-in-ten-thousand neural recruitment. Your force output matches elite combat athletes and top strength competitors. Genetic advantage plus brutal training plus sharp skill makes you the final boss on the field.",
+          "volume": "A maximally functional physique is what you carry in Ascended Demigod Tier. Your time and discipline have become indestructible biological capital. VO2 ceilings reach terrifying pro tiers; thick muscle and shredded lines rival action icons. You beat others not only on size or speed — you carved lonely training into your bones."
         },
         "120": {
-          "populationClass": "international master athlete",
-          "overall": "At this score you are already among the greatest physical specimens in human athletic history. Top-tier combined strength — only a handful on Earth can stand beside you.",
-          "neuro": "At this score you're tearing through the bell curve with raw force output — top-tier strength-athlete territory. To ordinary eyes your power and burst are incomprehensible. That means elite talent, extreme sacrifice, and suffering most won't endure. Generic programs can't feed you anymore — every session rewrites gym history. Stay steady — you're marching toward myth.",
-          "volume": "Your look and physical function are an absolute spotlight in real life. This score means you abandoned mediocre social life and entertainment and poured every hour into building your body. Your muscle mass, body-fat precision, or aerobic ceiling carry historical weight — in the internet age you could leave a permanent mark on the record books."
+          "populationClass": "Historical Elite Tier",
+          "overall": "At this score you stand in Historical Elite Tier — among the greatest physical specimens in athletic history. Top-tier combined strength — only a handful on Earth can stand beside you.",
+          "neuro": "At Historical Elite Tier you are tearing through the bell curve with raw force — top-tier strength-athlete territory. To ordinary eyes your power and burst are incomprehensible. Generic programs cannot feed you anymore. Stay steady — you are marching toward myth.",
+          "volume": "Your look and physical function are an absolute spotlight in real life. This Historical Elite Tier score means you abandoned mediocre social life and poured every hour into building your body. Your metrics carry historical weight — you could leave a permanent mark on the record books."
         },
         "130": {
-          "populationClass": "world-top athlete tier",
-          "overall": "Players who reach this combined score are top-ten on the Earth Online server. We can only salute this mythic achievement — this chassis is an unreplicable miracle.",
-          "neuro": "Your neural recruitment and strength output sit at elite strength-athlete levels — top strongmen, powerlifters, and Olympic medalists appear here; hearing your numbers alone makes ordinary people shiver. Opponents are scarce — often only your own records stand in your way. Keep burning fast-twitch fibers — you're writing your own ladder mythology by hand.",
-          "volume": "Whatever the genetics, anyone who reaches this step is a near-mad ascetic in willpower. Your body sculpting is another dimension — impossible muscle mass, body-fat readings, or max VO2 instantly evoke extreme discipline, sacrifice, and lottery-tier genes; nothing less could forge this miracle. In any crowd you're an unreplicable benchmark — your state deserves to be sung."
+          "populationClass": "Statistical Myth Tier",
+          "overall": "Players who reach this combined score have entered Statistical Myth Tier — top-band miracles on the Earth Online server. We can only salute this mythic achievement — this chassis is an unreplicable miracle.",
+          "neuro": "Your neural recruitment and strength output sit at elite strength-athlete levels inside Statistical Myth Tier — top strongmen, powerlifters, and Olympic medalists appear here. Opponents are scarce — often only your own records stand in your way. Keep burning fast-twitch fibers — you are writing ladder mythology by hand.",
+          "volume": "Whatever the genetics, anyone who reaches Statistical Myth Tier is a near-mad ascetic in willpower. Your body sculpting is another dimension — impossible metrics instantly evoke extreme discipline, sacrifice, and lottery-tier genes. In any crowd you are an unreplicable benchmark."
         },
         "140": {
-          "populationClass": "extreme talent temple tier",
-          "overall": "No player in the database has posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if such a monster appears, load the data into the host and preserve it forever.",
-          "neuro": "You've stepped into the unbelievable Monster Domain. Scoring above 140 means your neural efficiency and instant power output are a monster phenomenon to normal eyes — everyone wonders how you did it. Ordinary loads are props; the weights you move, speeds you run, and heights you jump shock witnesses. In any gym or arena your presence intimidates — most opponents face dimensional suppression. You've entered monster territory, looking down on mortals — one of the few humans who can chase the title of strongest on Earth.",
-          "volume": "This physique has transcended perfect aesthetics into a pure monster totem. In this band your invested time and near-cursed discipline compound. What you see in the mirror is a miracle forged from extreme sacrifice and monster-tier genes. Shredded lines, massive muscle, or max VO2 — a body pushed past human limits. Stares of shock, envy, fear, worship, and curiosity follow you from every direction — because you are the monster."
+          "populationClass": "Monster Domain Tier",
+          "overall": "No player in the database has stably posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if such a Monster Domain Tier athlete appears, load the data into the host and preserve it forever.",
+          "neuro": "You have stepped into the Monster Domain Tier. Scoring above 140 means your neural efficiency and instant power output are a monster phenomenon to normal eyes. Ordinary loads are props; the weights you move shock witnesses. You have entered monster territory — one of the few humans who can chase Apex of the Earth.",
+          "volume": "This physique has transcended perfect aesthetics into a pure monster totem. In Monster Domain Tier your invested time and near-cursed discipline compound. What you see in the mirror is a miracle forged from extreme sacrifice and monster-tier genes. Stares follow you from every direction — because you are the monster."
         },
         "150": {
-          "populationClass": "beyond conventional physiological norms",
-          "overall": "No player in the database has posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if such a monster appears, load the data into the host and preserve it forever.",
-          "neuro": "Here is the supreme dome of carbon-based flesh — the strongest-on-Earth title is yours. Scoring above 150 means your absolute force output can stand toe-to-toe with the greatest legends in all of human sports history; strongest is no longer an adjective but a fact. Among the world's apex predators you are an undisputed sovereign — you stomp gravity with flesh alone. The ceiling mortals spend lifetimes staring at is you. Your output is planetary capital.",
-          "volume": "This isn't a physique stacked by discipline alone — it's a world-record-caliber masterpiece of creation. Your state defeated billions and claimed the supreme strongest-on-Earth crown. When you reach this achievement history has already engraved you — time and aging cannot erase your peak; humanity always chases limits and you are the synonym for limit, impossible to forget. Enjoy the supreme honor that belongs only to you on this planet — you are the strongest physique on Earth."
+          "populationClass": "Apex of the Earth Tier",
+          "overall": "No player in the database has stably posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if an Apex of the Earth Tier athlete appears, load the data into the host and preserve it forever.",
+          "neuro": "Here is the supreme dome of carbon-based flesh — Apex of the Earth Tier is yours. Scoring above 150 means your absolute force output can stand toe-to-toe with the greatest legends in sports history; strongest is no longer an adjective but a fact. The ceiling mortals spend lifetimes staring at is you.",
+          "volume": "This is not a physique stacked by discipline alone — it is world-record-caliber craftsmanship. Your state defeated billions and claimed the Apex of the Earth crown. History has already engraved you — enjoy the supreme honor that belongs only to you on this planet. You are the strongest physique on Earth."
         }
       }
     }

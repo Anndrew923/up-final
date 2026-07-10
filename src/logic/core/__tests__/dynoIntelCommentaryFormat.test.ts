@@ -11,7 +11,7 @@ describe('formatDynoIntelCommentary', () => {
 
   it('keeps single-beat multi-sentence commentary as one block', () => {
     const singleBeat =
-      '以同齡一般人來看，你的多關節力量已站上業餘運動員頂尖水準。硬拉時把腳跟踩實，核心就能守住大重量。';
+      '以同齡一般人來看，你的絕對力量表現已站上高階玩家頂尖水準。硬拉時把腳跟踩實，核心就能守住大重量。';
     expect(formatDynoIntelCommentary(singleBeat)).toBe(singleBeat);
   });
 
