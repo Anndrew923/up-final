@@ -1,7 +1,7 @@
 /**
  * v5.2 — Shared population-class pyramid + overall/neuro/volume praise slots (zh-Hant).
  * DESIGN INTENT: zh macro uses dedicated overall copy while micro keeps neuro/volume routing.
- * v5.3 — en overlay: decades 100–150 weld synced EN epic praise from i18n (zero CJK).
+ * v5.3 — en overlay: all decades 0–150 weld synced EN epic praise from i18n (parity with zh-Hant).
  */
 
 import {
@@ -9,20 +9,19 @@ import {
   DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN,
 } from "./dynoIntelHumanPraise.data.js";
 
-/** Decades that receive full epic praise overlay in EN (matches zh-Hant praise routing). */
-const EN_EPIC_PRAISE_DECADES = new Set(["100", "110", "120", "130", "140", "150"]);
-
 function resolvePraiseByDecade(locale, decadeKey) {
   if (locale === "en") {
-    if (!EN_EPIC_PRAISE_DECADES.has(decadeKey)) return null;
-    return DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN[decadeKey] ?? null;
+    return (
+      DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN[decadeKey] ??
+      DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN["0"] ??
+      null
+    );
   }
   return DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decadeKey] ?? DYNO_INTEL_HUMAN_PRAISE_BY_DECADE["0"];
 }
 
 /**
- * zh-Hant: merge synced praise slots (overall / neuro / volume).
- * en: short summaryHuman below 100; 100–150 overlay EN epic praise from i18n sync.
+ * zh-Hant + en: merge synced praise slots (overall / neuro / volume) when i18n corpus exists.
  */
 function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHuman, locale = "zh-Hant" }) {
   const praise = resolvePraiseByDecade(locale, decadeKey);

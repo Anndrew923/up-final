@@ -10,6 +10,8 @@ import {
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
   DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN,
   DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH,
+  DYNO_INTEL_HUMAN_PRAISE_BY_DECADE,
+  DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN,
   DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN,
   DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH,
 } from "../dynoIntel/dynoIntelHumanPraise.data.js";
@@ -42,5 +44,20 @@ describe("dynoIntelHumanPraise sync parity", () => {
     assert.match(doc.hallOfFame.legalShield, /career-peak states/);
     assert.match(doc.hallOfFame.legalShield, /entertainment purposes/);
     assert.doesNotMatch(doc.humanBrief.prPercentileFallback, /[\u4e00-\u9fff]/);
+  });
+
+  it("mirrors humanPraise.byDecade decade keys from zh-Hant and en dynoIntel.json", () => {
+    const zh = loadDynoIntelI18n(zhDynoIntelPath);
+    const en = loadDynoIntelI18n(enDynoIntelPath);
+    const decades = ["0", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
+    for (const decade of decades) {
+      assert.ok(zh.humanPraise.byDecade[decade], `zh missing decade ${decade}`);
+      assert.ok(en.humanPraise.byDecade[decade], `en missing decade ${decade}`);
+      assert.equal(Object.keys(DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decade]).sort().join(","), "neuro,overall,populationClass,volume");
+      assert.equal(Object.keys(DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN[decade]).sort().join(","), "neuro,overall,populationClass,volume");
+      for (const field of ["overall", "neuro", "volume", "populationClass"]) {
+        assert.doesNotMatch(String(DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN[decade][field]), /[\u4e00-\u9fff]/);
+      }
+    }
   });
 });

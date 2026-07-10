@@ -378,6 +378,25 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(repaired.commentary, /[\u4e00-\u9fff]/);
   });
 
+  it("v5.3.1 — en 90-band overall macro uses epic praise parity (not short summaryHuman)", () => {
+    const macroCtx = {
+      locale: "en",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "How is my total score?",
+      gaps: [],
+      overallScore: 92,
+      axes: [{ axis: "strength", score: 90, tierBandId: "TIER_90", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const parts = resolveHumanBriefPartsFromContext(macroCtx);
+    assert.ok(parts);
+    assert.match(parts.segment1Core, /genetic lottery|mortal ceiling/i);
+    assert.doesNotMatch(parts.segment1Core, /regional multi-event benchmark with excellent/i);
+    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.match(parts.legalSegment, /career-peak states/);
+    assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
+  });
+
   it("v5.2.2 — en locale legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
     const ctx = {
       locale: "en",
@@ -424,13 +443,16 @@ describe("dynoIntelHumanBriefs v3", () => {
     }
   });
 
-  it("v5.3 — EN scale matrix 100+ decades overlay epic praise not short summaryHuman", () => {
+  it("v5.3 — EN scale matrix 0–150 decades overlay epic praise (parity with zh-Hant)", () => {
+    const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
+    assert.match(row90.summaryHuman, /genetic lottery|mortal ceiling/i);
+    assert.ok(row90.summaryHuman.length > 120);
     const row100 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["100"];
     assert.match(row100.summaryHuman, /Crossing the 100-point threshold/);
     assert.ok(row100.summaryHuman.length > 120);
-    const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
-    assert.match(row90.summaryHuman, /regional multi-event benchmark/i);
-    assert.ok(row90.summaryHuman.length < 200);
+    const row0 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["0"];
+    assert.match(row0.summaryHuman, /infant stage|enormous room to grow/i);
+    assert.ok(row0.summaryHuman.length > 80);
   });
 });
 

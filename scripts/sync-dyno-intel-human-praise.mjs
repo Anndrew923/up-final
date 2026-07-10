@@ -14,6 +14,35 @@ const zhDynoIntelPath = join(root, "src/i18n/locales/zh-Hant/common/dynoIntel.js
 const enDynoIntelPath = join(root, "src/i18n/locales/en/common/dynoIntel.json");
 const praiseDataPath = join(root, "functions/dynoIntel/dynoIntelHumanPraise.data.js");
 
+/** Must stay aligned with scoreBandResolver decade keys and zh-Hant humanPraise.byDecade. */
+const PRAISE_DECADE_KEYS = ["0", "40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150"];
+const PRAISE_SLOT_FIELDS = ["populationClass", "overall", "neuro", "volume"];
+
+function assertHumanPraiseParity(zhDecades, enDecades) {
+  for (const decade of PRAISE_DECADE_KEYS) {
+    if (!zhDecades[decade]) {
+      throw new Error(`zh-Hant dynoIntel.json missing dynoIntel.humanPraise.byDecade["${decade}"]`);
+    }
+    if (!enDecades[decade]) {
+      throw new Error(`en dynoIntel.json missing dynoIntel.humanPraise.byDecade["${decade}"]`);
+    }
+    for (const field of PRAISE_SLOT_FIELDS) {
+      for (const [label, bucket] of [
+        ["zh-Hant", zhDecades],
+        ["en", enDecades],
+      ]) {
+        const value = String(bucket[decade][field] ?? "").trim();
+        if (!value) {
+          throw new Error(`${label} humanPraise.byDecade["${decade}"].${field} is empty`);
+        }
+        if (label === "en" && /[\u4e00-\u9fff]/.test(value)) {
+          throw new Error(`en humanPraise.byDecade["${decade}"].${field} contains CJK`);
+        }
+      }
+    }
+  }
+}
+
 function loadLocaleBundle(localePath, localeLabel) {
   const doc = JSON.parse(readFileSync(localePath, "utf8"));
   const humanBrief = doc?.dynoIntel?.humanBrief;
@@ -80,6 +109,7 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = ${JSON.stringify(en.humanPra
 
 const zh = loadLocaleBundle(zhDynoIntelPath, "zh-Hant");
 const en = loadLocaleBundle(enDynoIntelPath, "en");
+assertHumanPraiseParity(zh.humanPraiseByDecade, en.humanPraiseByDecade);
 writePraiseDataModule({ zh, en });
 console.log(
   "Synced dynoIntelHumanPraise.data.js from zh-Hant + en dynoIntel.json (ZH/EN dual-track constants)"
