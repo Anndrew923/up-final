@@ -100,3 +100,42 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
     "volume": "這不是單靠紀律就能堆疊出來的肉體，這是可匹敵世界紀錄，造物主最完美的作品。你的狀態擊敗了數十億人，直接拿下了「地表最強」的無上稱號。當你達到這個成就，歷史就已經將你銘記，時間和老化都抹滅不了你的頂尖；人類總追求超越極限，你就是極限的代名詞，注定不可能被遺忘。享受全地球上只屬於你的無上尊榮吧！你，就是地表最強的肉體！"
   }
 };
+
+export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
+  "100": {
+    "populationClass": "national event perennial winner",
+    "overall": "Crossing the 100-point threshold is no longer normal-human territory. Only elite genetics plus relentless training and sacrifice earn this score; with this physiology, specialty sports usually see extraordinary output. I believe you're already a serious athlete — no advice needed, keep marching toward your own target.",
+    "neuro": "Crossing 100 points means you've entered a realm only extraordinary genetics can touch. In this band your force output leaves most lifters behind — in any gym or conventional field you're already classified as a predator. For court and combat athletes this tier is enough to dominate; for strength athletes it's the foundation to start breaking through. You carry rare talent and rare work — this is mortal forbidden ground.",
+    "volume": "Pushing physique refinement, loaded muscle mass, or cardio capacity past 100 points means discipline plus enviable genetics. Your body control has moved beyond mere health and strength — in any crowd your training presence and aura are unmistakable, even imposing. Your physical state has already stepped past ordinary humanity."
+  },
+  "110": {
+    "populationClass": "national elite athlete",
+    "overall": "Members at this score are almost all world-class athletes — one-in-a-million physiques with otherworldly output. Accept the worship of mortals.",
+    "neuro": "At this tier blind effort and conventional programming can't get you here — you're displaying one-in-ten-thousand neural recruitment. Your force output matches elite combat athletes and top strength competitors; UFC champions, MLB stars, and NBA legends live in this band. Genetic advantage plus brutal training plus sharp skill makes you the final boss on the field.",
+    "volume": "A maximally functional physique is what you carry now. In this band your time and discipline have become indestructible biological capital. Your VO2 ceiling reaches terrifying pro-soccer, combat, and basketball tiers; thick muscle and shredded lines rival A-list action stars and fitness icons. You don't just beat others on size or speed — you've carved lonely training into your bones and hunger for victory into your identity."
+  },
+  "120": {
+    "populationClass": "international master athlete",
+    "overall": "At this score you are already among the greatest physical specimens in human athletic history. Top-tier combined strength — only a handful on Earth can stand beside you.",
+    "neuro": "At this score you're tearing through the bell curve with raw force output — top-tier strength-athlete territory. To ordinary eyes your power and burst are incomprehensible. That means elite talent, extreme sacrifice, and suffering most won't endure. Generic programs can't feed you anymore — every session rewrites gym history. Stay steady — you're marching toward myth.",
+    "volume": "Your look and physical function are an absolute spotlight in real life. This score means you abandoned mediocre social life and entertainment and poured every hour into building your body. Your muscle mass, body-fat precision, or aerobic ceiling carry historical weight — in the internet age you could leave a permanent mark on the record books."
+  },
+  "130": {
+    "populationClass": "world-top athlete tier",
+    "overall": "Players who reach this combined score are top-ten on the Earth Online server. We can only salute this mythic achievement — this chassis is an unreplicable miracle.",
+    "neuro": "Your neural recruitment and strength output sit at elite strength-athlete levels — top strongmen, powerlifters, and Olympic medalists appear here; hearing your numbers alone makes ordinary people shiver. Opponents are scarce — often only your own records stand in your way. Keep burning fast-twitch fibers — you're writing your own ladder mythology by hand.",
+    "volume": "Whatever the genetics, anyone who reaches this step is a near-mad ascetic in willpower. Your body sculpting is another dimension — impossible muscle mass, body-fat readings, or max VO2 instantly evoke extreme discipline, sacrifice, and lottery-tier genes; nothing less could forge this miracle. In any crowd you're an unreplicable benchmark — your state deserves to be sung."
+  },
+  "140": {
+    "populationClass": "extreme talent temple tier",
+    "overall": "No player in the database has posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if such a monster appears, load the data into the host and preserve it forever.",
+    "neuro": "You've stepped into the unbelievable Monster Domain. Scoring above 140 means your neural efficiency and instant power output are a monster phenomenon to normal eyes — everyone wonders how you did it. Ordinary loads are props; the weights you move, speeds you run, and heights you jump shock witnesses. In any gym or arena your presence intimidates — most opponents face dimensional suppression. You've entered monster territory, looking down on mortals — one of the few humans who can chase the title of strongest on Earth.",
+    "volume": "This physique has transcended perfect aesthetics into a pure monster totem. In this band your invested time and near-cursed discipline compound. What you see in the mirror is a miracle forged from extreme sacrifice and monster-tier genes. Shredded lines, massive muscle, or max VO2 — a body pushed past human limits. Stares of shock, envy, fear, worship, and curiosity follow you from every direction — because you are the monster."
+  },
+  "150": {
+    "populationClass": "beyond conventional physiological norms",
+    "overall": "No player in the database has posted this score yet — massive muscle mass and massive aerobic capacity are conflicting physiological limits; if such a monster appears, load the data into the host and preserve it forever.",
+    "neuro": "Here is the supreme dome of carbon-based flesh — the strongest-on-Earth title is yours. Scoring above 150 means your absolute force output can stand toe-to-toe with the greatest legends in all of human sports history; strongest is no longer an adjective but a fact. Among the world's apex predators you are an undisputed sovereign — you stomp gravity with flesh alone. The ceiling mortals spend lifetimes staring at is you. Your output is planetary capital.",
+    "volume": "This isn't a physique stacked by discipline alone — it's a world-record-caliber masterpiece of creation. Your state defeated billions and claimed the supreme strongest-on-Earth crown. When you reach this achievement history has already engraved you — time and aging cannot erase your peak; humanity always chases limits and you are the synonym for limit, impossible to forget. Enjoy the supreme honor that belongs only to you on this planet — you are the strongest physique on Earth."
+  }
+};

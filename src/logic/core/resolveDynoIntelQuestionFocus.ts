@@ -25,7 +25,7 @@ const STATUS_PERFORMANCE_PATTERNS =
 
 /** v2.4.2 — whole-chassis reads only; mirrors functions/dynoIntel/resolveQuestionIntent.js */
 export const CHASSIS_MACRO_PATTERNS =
-  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
+  /總分|整車|六軸.{0,8}(成績|分數)|全車.{0,6}(成績|分數)|解碼|整體|overall\s+score|total\s+score|total\s+performance|full\s+report|aggregate\s+score|summary\s+score|whole[\s-]chassis|six[\s-]axis.{0,12}score/i;
 
 export function isChassisMacroQuestion(userQuestion: string): boolean {
   const q = normalizeQuestion(userQuestion);

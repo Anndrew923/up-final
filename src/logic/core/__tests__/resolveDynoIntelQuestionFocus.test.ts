@@ -82,6 +82,14 @@ describe('resolveDynoIntelQuestionFocus', () => {
     expect(isChassisMacroQuestion('六軸裡我最該先補哪個短板？')).toBe(false);
   });
 
+  it('v5.3 — en total score and aggregate aliases trigger macro routing', () => {
+    expect(isChassisMacroQuestion('How is my total score?')).toBe(true);
+    expect(isChassisMacroQuestion('What is my aggregate score?')).toBe(true);
+    expect(isChassisMacroQuestion('Give me a full report on my chassis')).toBe(true);
+    expect(isChassisMacroQuestion('How is my total performance?')).toBe(true);
+    expect(isChassisMacroQuestion('summary score check')).toBe(true);
+  });
+
   it('prefers question-focus closing for status and methodology intents', () => {
     expect(
       shouldPreferQuestionFocusClosing('幫我解讀狀態', { focusAxis: null, mode: 'cross-axis' })

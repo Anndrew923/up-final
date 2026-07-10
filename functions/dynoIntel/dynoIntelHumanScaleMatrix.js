@@ -1,17 +1,33 @@
 /**
  * v5.2 — Shared population-class pyramid + overall/neuro/volume praise slots (zh-Hant).
  * DESIGN INTENT: zh macro uses dedicated overall copy while micro keeps neuro/volume routing.
+ * v5.3 — en overlay: decades 100–150 weld synced EN epic praise from i18n (zero CJK).
  */
 
-import { DYNO_INTEL_HUMAN_PRAISE_BY_DECADE } from "./dynoIntelHumanPraise.data.js";
+import {
+  DYNO_INTEL_HUMAN_PRAISE_BY_DECADE,
+  DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN,
+} from "./dynoIntelHumanPraise.data.js";
 
+/** Decades that receive full epic praise overlay in EN (matches zh-Hant praise routing). */
+const EN_EPIC_PRAISE_DECADES = new Set(["100", "110", "120", "130", "140", "150"]);
+
+function resolvePraiseByDecade(locale, decadeKey) {
+  if (locale === "en") {
+    if (!EN_EPIC_PRAISE_DECADES.has(decadeKey)) return null;
+    return DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN[decadeKey] ?? null;
+  }
+  return DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decadeKey] ?? DYNO_INTEL_HUMAN_PRAISE_BY_DECADE["0"];
+}
 
 /**
  * zh-Hant: merge synced praise slots (overall / neuro / volume).
- * en: rigid isolation — never overlay DYNO_INTEL_HUMAN_PRAISE_BY_DECADE (zh-only sync).
+ * en: short summaryHuman below 100; 100–150 overlay EN epic praise from i18n sync.
  */
 function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHuman, locale = "zh-Hant" }) {
-  if (locale === "en") {
+  const praise = resolvePraiseByDecade(locale, decadeKey);
+
+  if (locale === "en" && !praise) {
     return {
       tierId,
       scoreRange,
@@ -25,7 +41,6 @@ function scaleBucket({ decadeKey, tierId, scoreRange, populationClass, summaryHu
     };
   }
 
-  const praise = DYNO_INTEL_HUMAN_PRAISE_BY_DECADE[decadeKey] ?? DYNO_INTEL_HUMAN_PRAISE_BY_DECADE["0"];
   const overall = praise?.overall ?? summaryHuman;
   const neuro = praise?.neuro ?? summaryHuman;
   const volume = praise?.volume ?? summaryHuman;

@@ -336,6 +336,48 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
   });
 
+  it("v5.3 — en total score macro triggers golden three with 100+ epic praise overlay", () => {
+    const macroCtx = {
+      locale: "en",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "How is my total score?",
+      gaps: [],
+      overallScore: 105,
+      axes: [{ axis: "strength", score: 100, tierBandId: "TIER_100", cardCopy: { title: "x", summary: "x" } }],
+    };
+    const parts = resolveHumanBriefPartsFromContext(macroCtx);
+    assert.ok(parts);
+    assert.match(parts.segment1Core, /Crossing the 100-point threshold/);
+    assert.match(parts.segment1Core, /Hall of Fame sanctum/i);
+    assert.doesNotMatch(parts.segment1Core, /Global Peer PR|career-peak states/i);
+    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.match(parts.legalSegment, /career-peak states/);
+    assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
+
+    const paragraphs = splitParagraphs(parts.fullBrief);
+    assert.equal(paragraphs.length, 3);
+    assert.match(paragraphs[0], /Crossing the 100-point threshold/);
+    assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
+    assert.ok(paragraphs[2].endsWith("entertainment purposes."));
+
+    const repaired = enforceCommentaryBeatContract(
+      {
+        commentary: "Your aggregate output still has room to sharpen weak-axis synergy.",
+        action_directive: "",
+        is_off_topic: false,
+        detected_weakest_axis: "",
+      },
+      macroCtx
+    );
+    const repairedParagraphs = splitParagraphs(repaired.commentary);
+    assert.equal(repairedParagraphs.length, 3);
+    assert.match(repairedParagraphs[0], /Crossing the 100-point threshold/);
+    assert.match(repairedParagraphs[1], /Global Peer PR Percentile Data/i);
+    assert.match(repairedParagraphs[2], /entertainment purposes/);
+    assert.doesNotMatch(repaired.commentary, /[\u4e00-\u9fff]/);
+  });
+
   it("v5.2.2 — en locale legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
     const ctx = {
       locale: "en",
@@ -380,6 +422,15 @@ describe("dynoIntelHumanBriefs v3", () => {
       const blob = `${row.populationClass} ${row.summaryHuman}`;
       assert.doesNotMatch(blob, /[\u4e00-\u9fff]/, `CJK leak in tier ${row.tierId}`);
     }
+  });
+
+  it("v5.3 — EN scale matrix 100+ decades overlay epic praise not short summaryHuman", () => {
+    const row100 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["100"];
+    assert.match(row100.summaryHuman, /Crossing the 100-point threshold/);
+    assert.ok(row100.summaryHuman.length > 120);
+    const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
+    assert.match(row90.summaryHuman, /regional multi-event benchmark/i);
+    assert.ok(row90.summaryHuman.length < 200);
   });
 });
 

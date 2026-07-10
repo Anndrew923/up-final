@@ -145,4 +145,12 @@ describe("isChassisMacroQuestion", () => {
     assert.equal(isChassisMacroQuestion("我的握力表現如何？"), false);
     assert.equal(isChassisMacroQuestion("六軸裡我最該先補哪個短板？"), false);
   });
+
+  it("v5.3 — en total score and aggregate aliases trigger macro routing", () => {
+    assert.equal(isChassisMacroQuestion("How is my total score?"), true);
+    assert.equal(isChassisMacroQuestion("What is my aggregate score?"), true);
+    assert.equal(isChassisMacroQuestion("Give me a full report on my six-axis chassis"), true);
+    assert.equal(isChassisMacroQuestion("How is my total performance?"), true);
+    assert.equal(isChassisMacroQuestion("summary score check"), true);
+  });
 });
