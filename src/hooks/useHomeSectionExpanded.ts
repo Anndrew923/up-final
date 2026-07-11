@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const STORAGE_PREFIX = 'up.home.section.';
 
@@ -41,11 +41,22 @@ export function useHomeSectionExpanded({
   const [userExpanded, setUserExpanded] = useState<boolean | null>(() =>
     readStoredExpanded(sectionId)
   );
+  const wasForceExpandedRef = useRef(forceExpanded);
 
   useEffect(() => {
-    if (!forceExpanded) return;
-    setUserExpanded(true);
-    writeStoredExpanded(sectionId, true);
+    if (forceExpanded) {
+      setUserExpanded(true);
+      // WHY: Do not persist force-open into sessionStorage. Writing `true` here used to leave
+      // physical-profile sticky-open after baseline completed, pushing sync CTA below the fold.
+      wasForceExpandedRef.current = true;
+      return;
+    }
+    if (wasForceExpandedRef.current) {
+      // Lock lifted → collapse so Home returns to radar-first density.
+      setUserExpanded(false);
+      writeStoredExpanded(sectionId, false);
+      wasForceExpandedRef.current = false;
+    }
   }, [forceExpanded, sectionId]);
 
   const expanded = forceExpanded ? true : (userExpanded ?? defaultExpanded);

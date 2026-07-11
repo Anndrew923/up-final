@@ -23,6 +23,7 @@ import {
   resolvePreviewRadarMetric,
 } from '../logic/core/leaderboardPreviewContract';
 import { scoresEqualForLadderWrite } from '../logic/core/ladderScoreCompare';
+import { hasLadderIdentityReady } from '../logic/core/ladderUploadPolicy';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
@@ -713,9 +714,10 @@ function applyMemoryPreviewFullSixAxis(options: {
     ...rowProfile,
     uid,
     schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+    // WHY: Never invent a ghost nickname — callers must pass a ready identity (hard gate upstream).
     displayName: isAnonymousInLadder
       ? 'Anonymous'
-      : normalizeLadderDisplayName(displayName.trim() || 'Pilot'),
+      : normalizeLadderDisplayName(displayName.trim()),
     avatarUrl: safeAvatar,
     updatedAt: now,
     radarUpdatedAt: isAnonymousInLadder ? undefined : now,
@@ -771,6 +773,11 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
   const dn = normalizeLadderDisplayName(
     (displayName && displayName.trim()) || identity.displayName || ''
   );
+  const isAnonymousPreview = profileProjection?.isAnonymousInLadder === true;
+  // WHY: Defense-in-depth — preview writes must not publish an empty public display name.
+  if (!isAnonymousPreview && !hasLadderIdentityReady(dn)) {
+    return { ok: false, reason: 'invalid-input' };
+  }
   const av = resolveLeaderboardAvatarUrlForCloud(avatarUrl, ensuredAvatarUrl);
 
   const db = getFirestoreDb();

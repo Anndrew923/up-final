@@ -26,7 +26,18 @@ function readIdentityFieldsFromStorage(): {
   };
 }
 
-export function useLadderIdentityForm() {
+export interface UseLadderIdentityFormOptions {
+  /** Fires after a successful local identity save (sheet close, haptics, etc.). */
+  onSaveSuccess?: () => void;
+}
+
+export function useLadderIdentityForm(options: UseLadderIdentityFormOptions = {}) {
+  const { onSaveSuccess } = options;
+  const onSaveSuccessRef = useRef(onSaveSuccess);
+  useEffect(() => {
+    onSaveSuccessRef.current = onSaveSuccess;
+  }, [onSaveSuccess]);
+
   const { t } = useTranslation('common');
   const [fields, setFields] = useState(() => readIdentityFieldsFromStorage());
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
@@ -131,6 +142,9 @@ export function useLadderIdentityForm() {
         savedToastTimerRef.current = null;
       }, 2200);
       syncFromStorage();
+      // WHY: Sheet closes via explicit callback — not by watching `justSaved`, which would
+      // immediately re-dismiss if the user reopens during the toast window.
+      onSaveSuccessRef.current?.();
     } catch {
       setErrorKey('home.ladderIdentity.errorSave');
     } finally {

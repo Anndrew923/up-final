@@ -1,6 +1,7 @@
 import { isLadderAvatarDataUrl, isLadderAvatarHttpsUrl } from '../logic/core/ladderAvatarUrl';
 import { validateLadderDisplayNameForSave } from '../logic/core/ladderDisplayNamePolicy';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
+import { hasLadderIdentityReady } from '../logic/core/ladderUploadPolicy';
 import { parseIsoMs } from '../logic/core/structuredSyncReconcile';
 import { loadProfile, saveProfile, type LocalProfile } from './localStorageService';
 
@@ -187,11 +188,16 @@ export function getLeaderboardIdentityPayload(): { displayName: string; avatarUr
   return { displayName, ...(avatarUrl ? { avatarUrl } : {}) };
 }
 
-/** Ladder sync entry point: same identity as payload with upload-safe display name fallback. */
-export function getLadderUploadIdentity(): { displayName: string; avatarUrl?: string } {
+/**
+ * Ladder sync entry point. Returns `null` when display name is missing.
+ * WHY: Callers must open the identity sheet instead of inventing a ghost nickname.
+ * Avatar remains optional (omitted → board / HUD render initials).
+ */
+export function getLadderUploadIdentity(): { displayName: string; avatarUrl?: string } | null {
   const { displayName, avatarUrl } = getLeaderboardIdentityPayload();
+  if (!hasLadderIdentityReady(displayName)) return null;
   return {
-    displayName: displayName || 'Pilot',
+    displayName,
     ...(avatarUrl ? { avatarUrl } : {}),
   };
 }

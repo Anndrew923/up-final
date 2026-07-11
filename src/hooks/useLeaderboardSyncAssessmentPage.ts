@@ -162,6 +162,9 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
+      // WHY: Hard gate — assessment sync UI must open identity sheet first; never upload as Pilot.
+      if (!identity) return;
+
       const batch = await runLeaderboardBatchUpload({
         targets: activeTargets,
         uid: user.uid,

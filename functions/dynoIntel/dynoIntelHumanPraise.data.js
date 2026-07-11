@@ -20,6 +20,10 @@ export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH = "在 Dyno Intel 的萬�
 
 export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN = "In the deepest sanctum of the Dyno Intel Pantheon, this tier has officially crossed into the echelon of elite genetic outliers and peak human godhood. Your current aggregate physical capacity has not yet unlocked this gravitational field. Train harder, leave everything on the gym floor, and return with new numbers. When you push your metrics to the absolute threshold, the Core Mind will unlock the gateway for a direct, cross-era benchmarking session with the legends of this tier in your exclusive briefing.";
 
+export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH = "你想探索哪一軸線的萬神殿？你可以試著問我：『爆發力 120 分還有誰？』或『心肺 130 分有哪些強者？』";
+
+export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN = "Which axis of the Pantheon do you want to explore? Try asking: \"Who else is at 120 explosive power?\" or \"Which legends sit at 130 cardio?\"";
+
 export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
   "0": {
     "populationClass": "嬰兒期",

@@ -60,10 +60,20 @@ export default function HomeProfileForm() {
   const { expanded, toggle, canCollapse, setExpanded } = useHomeSectionExpanded({
     sectionId: 'physical-profile',
     forceExpanded,
-    defaultExpanded: !baselineComplete,
+    // WHY: Once baseline exists, Home must stay radar-first — never auto-expand the tall form.
+    defaultExpanded: false,
   });
 
   const [advancedExpanded, setAdvancedExpanded] = useState(false);
+
+  // WHY: Older builds persisted force-open into sessionStorage. Clear sticky open once on mount
+  // so returning users with a complete baseline land on a collapsed profile card (radar-first).
+  useEffect(() => {
+    if (!baselineComplete || errorCode) return;
+    setExpanded(false);
+    // Intentionally mount-only: do not re-collapse after the user manually expands.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sticky session migration
+  }, []);
 
   useEffect(() => {
     if (baselineComplete && justSaved) {

@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import {
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN,
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH,
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN,
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
   DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN,
@@ -31,7 +33,9 @@ describe("dynoIntelHumanPraise sync parity", () => {
     assert.equal(DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH, doc.humanBrief.hallOfFameSentence);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH, doc.hallOfFame.legalShield);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH, doc.hallOfFame.blockedReply);
+    assert.equal(DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH, doc.hallOfFame.guidedReply);
     assert.match(doc.hallOfFame.legalShield, /生涯巔峰狀態/);
+    assert.match(doc.hallOfFame.guidedReply, /爆發力 120 分還有誰/);
     assert.match(doc.hallOfFame.legalShield, /僅供天梯對帳與娛樂參考。$/);
   });
 
@@ -41,9 +45,12 @@ describe("dynoIntelHumanPraise sync parity", () => {
     assert.equal(DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN, doc.humanBrief.hallOfFameSentence);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN, doc.hallOfFame.legalShield);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN, doc.hallOfFame.blockedReply);
+    assert.equal(DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN, doc.hallOfFame.guidedReply);
     assert.match(doc.hallOfFame.legalShield, /career-peak states/);
+    assert.match(doc.hallOfFame.guidedReply, /120 explosive power/i);
     assert.match(doc.hallOfFame.legalShield, /entertainment purposes/);
     assert.doesNotMatch(doc.humanBrief.prPercentileFallback, /[\u4e00-\u9fff]/);
+    assert.doesNotMatch(doc.hallOfFame.guidedReply, /[\u4e00-\u9fff]/);
   });
 
   it("mirrors humanPraise.byDecade decade keys from zh-Hant and en dynoIntel.json", () => {

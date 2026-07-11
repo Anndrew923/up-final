@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
-import { normalizeLadderDisplayName } from '../../services/ladderIdentityService';
 import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
+import { normalizeLadderDisplayName } from '../../services/ladderIdentityService';
+import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { useLadderIdentityForm } from '../../hooks/useLadderIdentityForm';
 import HomeCollapsibleCard from './HomeCollapsibleCard';
@@ -53,7 +54,7 @@ export default function HomeLadderIdentitySection() {
               aria-hidden
             />
           ) : (
-            <span aria-hidden>{(savedName.charAt(0) || 'U').toUpperCase()}</span>
+            <span aria-hidden>{ladderIdentityInitial(savedName)}</span>
           )}
         </div>
         <span className="truncate font-medium text-zinc-200">{label}</span>
@@ -110,7 +111,7 @@ export default function HomeLadderIdentitySection() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span aria-hidden>{(displayName.trim().charAt(0) || 'U').toUpperCase()}</span>
+                <span aria-hidden>{ladderIdentityInitial(displayName)}</span>
               )}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-2">

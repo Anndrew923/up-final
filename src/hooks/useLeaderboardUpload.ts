@@ -46,6 +46,9 @@ export function useLeaderboardUpload() {
     if (!user || user.isAnonymous) return;
 
     const identity = getLadderUploadIdentity();
+    // WHY: Hard gate — empty display name must never reach Firestore as a ghost nickname.
+    if (!identity) return;
+
     setBusy(true);
     try {
       const result = await submitLeaderboardScore({

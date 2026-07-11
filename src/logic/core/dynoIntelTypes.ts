@@ -174,9 +174,22 @@ export interface DynoIntelChatResponseV1 {
   detected_weakest_axis: SixAxisMetric | string;
 }
 
+/**
+ * Prior-turn snapshot for pantheon consult anaphora ("這個區間還有誰").
+ * WHY (client-owned): Dyno Intel logs live on-device; Cloud Functions cannot read
+ * dynoIntelLog. The client must attach the latest log so the consult gate can
+ * inherit axis/decade without inventing conversation memory server-side.
+ */
+export interface DynoIntelPriorTurnV1 {
+  focusAxis: string;
+  userQuestion: string;
+}
+
 export interface DynoIntelChatRequestV1 {
   context: DynoIntelContextV1;
   promptTemplateId: string;
   userQuestion: string;
   mode: DynoIntelMode;
+  /** Newest local log turn, when available — see DynoIntelPriorTurnV1 WHY. */
+  priorTurn?: DynoIntelPriorTurnV1 | null;
 }

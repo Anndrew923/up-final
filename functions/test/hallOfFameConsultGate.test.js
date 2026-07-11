@@ -2,10 +2,15 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   isHallOfFameConsultQuestion,
+  resolveConsultTierFromScore,
   resolveHallOfFameConsultReply,
   resolveHallOfFameConsultTier,
 } from "../dynoIntel/hallOfFameConsultGate.js";
 import { finalizeDynoIntelCallableReply } from "../dynoIntel/gemini.js";
+import {
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN,
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH,
+} from "../dynoIntel/dynoIntelHumanPraise.data.js";
 
 const baseContext = {
   locale: "zh-Hant",
@@ -15,8 +20,19 @@ const baseContext = {
   axes: [
     { axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } },
     { axis: "cardio", score: 65, tierBandId: "TIER_60", cardCopy: { title: "x", summary: "x" } },
+    {
+      axis: "explosivePower",
+      score: 127,
+      tierBandId: "TIER_120",
+      cardCopy: { title: "x", summary: "x" },
+    },
   ],
   supplementalMetrics: [{ metric: "armSize", score: 102, tierBandId: "TIER_100" }],
+};
+
+const explosivePriorTurn = {
+  focusAxis: "explosivePower",
+  userQuestion: "我的爆發力（127分）如何？",
 };
 
 describe("hallOfFameConsultGate", () => {
@@ -30,6 +46,8 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(isHallOfFameConsultQuestion("我想知道更多80多分的運動員"), true);
     assert.equal(isHallOfFameConsultQuestion("Tell me more about players in the 110s"), true);
     assert.equal(isHallOfFameConsultQuestion("怪物領域有誰"), true);
+    assert.equal(isHallOfFameConsultQuestion("在這個區間還有誰？"), true);
+    assert.equal(isHallOfFameConsultQuestion("Who else in this score band?"), true);
     assert.equal(isHallOfFameConsultQuestion("我的心肺表現如何？"), false);
     assert.equal(isHallOfFameConsultQuestion("How is my cardio?"), false);
     assert.equal(isHallOfFameConsultQuestion("我的絕對力量表現如何？"), false);
@@ -44,6 +62,13 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(resolveHallOfFameConsultTier("Who else is in the 90s?")?.decadeKey, "90");
     assert.equal(resolveHallOfFameConsultTier("我想知道更多80多分的運動員")?.decadeKey, "80");
     assert.equal(resolveHallOfFameConsultTier("Tell me more about players in the 110s")?.decadeKey, "110");
+  });
+
+  it("derives decade from live axis score via floor(score/10)*10", () => {
+    assert.equal(resolveConsultTierFromScore(127)?.decadeKey, "120");
+    assert.equal(resolveConsultTierFromScore(88)?.decadeKey, "80");
+    assert.equal(resolveConsultTierFromScore(35)?.decadeKey, "0");
+    assert.equal(resolveConsultTierFromScore(155)?.decadeKey, "150");
   });
 
   it("v5.7 — athlete roster colloquial asks unlock pantheon (not status chassis praise)", () => {
@@ -99,24 +124,81 @@ describe("hallOfFameConsultGate", () => {
     assert.doesNotMatch(reply.commentary, /不在我的服務範圍內/);
   });
 
-  it("hard-blocks tier-less hall consult vagueness with motivational copy", () => {
+  it("v5.9 — tier-less hall consult without priorTurn uses guided Track B", () => {
     const reply = resolveHallOfFameConsultReply(baseContext, "萬神殿有哪些傳奇？");
     assert.ok(reply);
     assert.equal(reply.is_off_topic, false);
-    assert.match(reply.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
-    assert.match(reply.commentary, /天梯大腦會在你的專屬報告中/);
+    assert.equal(reply.commentary, DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH);
+    assert.match(reply.commentary, /爆發力 120 分還有誰/);
+    assert.doesNotMatch(reply.commentary, /尚未解鎖該重力場/);
     assert.doesNotMatch(reply.commentary, /不在我的服務範圍內/);
   });
 
-  it("hard-blocks English Pantheon vagueness with EN motivational copy", () => {
+  it("v5.9 — English Pantheon vagueness uses guided Track B", () => {
     const reply = resolveHallOfFameConsultReply(
       { ...baseContext, locale: "en" },
       "Who are the Pantheon legends?"
     );
     assert.ok(reply);
-    assert.match(reply.commentary, /deepest sanctum of the Dyno Intel Pantheon/i);
-    assert.match(reply.commentary, /Core Mind will unlock the gateway/i);
+    assert.equal(reply.commentary, DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN);
+    assert.match(reply.commentary, /120 explosive power/i);
+    assert.doesNotMatch(reply.commentary, /gravitational field/i);
     assert.doesNotMatch(reply.commentary, /outside my scope/i);
+  });
+
+  it("v5.9 — anaphoric follow-up inherits priorTurn axis and unlocks via live score decade", () => {
+    const reply = resolveHallOfFameConsultReply(
+      baseContext,
+      "在這個區間還有誰？",
+      explosivePriorTurn
+    );
+    assert.ok(reply);
+    assert.match(reply.commentary, /120-130（歷史級別）/);
+    assert.match(reply.commentary, /爆發力萬神殿對帳權限/);
+    assert.doesNotMatch(reply.commentary, /尚未解鎖該重力場/);
+    assert.doesNotMatch(reply.commentary, /想探索哪一軸線/);
+  });
+
+  it("v5.9 — anaphoric follow-up without priorTurn guides instead of blocking", () => {
+    const reply = resolveHallOfFameConsultReply(baseContext, "在這個區間還有誰？");
+    assert.ok(reply);
+    assert.equal(reply.commentary, DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH);
+  });
+
+  it("v5.9 — scored peer ask keeps overall unlock even when priorTurn points at a weak axis", () => {
+    const reply = resolveHallOfFameConsultReply(baseContext, "還有誰也是80多分？", {
+      focusAxis: "cardio",
+      userQuestion: "我的心肺如何？",
+    });
+    assert.ok(reply);
+    assert.match(reply.commentary, /80-90（高階玩家）/);
+    assert.match(reply.commentary, /萬神殿對帳權限/);
+    assert.doesNotMatch(reply.commentary, /心肺機能萬神殿/);
+    assert.doesNotMatch(reply.commentary, /尚未解鎖該重力場/);
+  });
+
+  it("v5.9 — inherited axis never silently unlocks via overallScore", () => {
+    const lowExplosive = {
+      ...baseContext,
+      overallScore: 140,
+      axes: [
+        { axis: "strength", score: 87.8, tierBandId: "TIER_80", cardCopy: { title: "x", summary: "x" } },
+        {
+          axis: "explosivePower",
+          score: 72,
+          tierBandId: "TIER_70",
+          cardCopy: { title: "x", summary: "x" },
+        },
+      ],
+    };
+    const reply = resolveHallOfFameConsultReply(lowExplosive, "在這個區間還有誰？", {
+      focusAxis: "explosivePower",
+      userQuestion: "爆發力120分以上有哪些名人？",
+    });
+    assert.ok(reply);
+    // Prior question named decade 120; explosive 72 < 120 → Track A blocked (not overall 140 unlock).
+    assert.match(reply.commentary, /尚未解鎖該重力場/);
+    assert.doesNotMatch(reply.commentary, /萬神殿對帳權限/);
   });
 
   it("unlocks axis-specific celebrity names when the user score reaches the tier", () => {
@@ -156,7 +238,18 @@ describe("hallOfFameConsultGate", () => {
 
   it("keeps blank unlocked cells disclaimer-free", () => {
     const reply = resolveHallOfFameConsultReply(
-      { ...baseContext, overallScore: 155, axes: [{ axis: "explosivePower", score: 75, tierBandId: "TIER_70", cardCopy: { title: "x", summary: "x" } }] },
+      {
+        ...baseContext,
+        overallScore: 155,
+        axes: [
+          {
+            axis: "explosivePower",
+            score: 75,
+            tierBandId: "TIER_70",
+            cardCopy: { title: "x", summary: "x" },
+          },
+        ],
+      },
       "爆發力70分以上有哪些名人？"
     );
     assert.ok(reply);
@@ -175,7 +268,7 @@ describe("hallOfFameConsultGate", () => {
     const finalized = finalizeDynoIntelCallableReply(raw, ctx, "萬神殿有哪些傳奇？");
     assert.ok(raw);
     assert.equal(finalized.commentary, raw.commentary);
-    assert.match(finalized.commentary, /該分數帶已正式跨入凡人頂尖的神格區間/);
+    assert.equal(finalized.commentary, DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH);
     assert.doesNotMatch(finalized.commentary, /以同齡一般人來看/);
     assert.equal(finalized.hallOfFameConsultReply, undefined);
   });

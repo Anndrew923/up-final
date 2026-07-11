@@ -91,4 +91,39 @@ describe('useHomeSectionExpanded', () => {
     expect(reloaded.getCurrent()!.expanded).toBe(false);
     reloaded.unmount();
   });
+
+  it('does not persist force-open and collapses when the lock lifts', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    let latest: ReturnType<typeof useHomeSectionExpanded> | null = null;
+    let force = true;
+
+    function Harness() {
+      latest = useHomeSectionExpanded({
+        sectionId: 'test-force-unlock',
+        forceExpanded: force,
+        defaultExpanded: false,
+      });
+      return null;
+    }
+
+    act(() => {
+      root.render(<Harness />);
+    });
+    expect(latest!.expanded).toBe(true);
+    expect(sessionStorage.getItem('up.home.section.test-force-unlock')).toBeNull();
+
+    force = false;
+    act(() => {
+      root.render(<Harness />);
+    });
+    expect(latest!.expanded).toBe(false);
+    expect(sessionStorage.getItem('up.home.section.test-force-unlock')).toBe('false');
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

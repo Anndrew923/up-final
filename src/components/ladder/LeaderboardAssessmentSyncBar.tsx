@@ -3,9 +3,12 @@ import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedbac
 import { useTranslation } from 'react-i18next';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
 import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
+import { useLadderIdentityUploadGate } from '../../hooks/useLadderIdentityUploadGate';
 import { ROUTES } from '../../config/routes';
 import LadderUploadGateSheetPortal from './LadderUploadGateSheetPortal';
 import LadderInfoSheet from './LadderInfoSheet';
+import LadderIdentitySheet from './LadderIdentitySheet';
+import LadderIdentityChip from './LadderIdentityChip';
 import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
@@ -24,6 +27,13 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const gateSheet = useLadderUploadGateSheet(ROUTES.ladder);
+  const {
+    identity,
+    identitySheetOpen,
+    openIdentitySheet,
+    closeIdentitySheet,
+    ensureIdentityReady,
+  } = useLadderIdentityUploadGate();
   const [infoOpen, setInfoOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
@@ -52,6 +62,10 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         </p>
       ) : gate !== 'ok' ? (
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
+      ) : !identity.ready ? (
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {t('ladder.syncAll.identityRequiredHint')}
+        </p>
       ) : null}
 
       {tapHint === 'no-targets' ? (
@@ -80,12 +94,21 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
               return;
             }
             if (gateSheet.tryOpenGateSheet(gate)) return;
+            // WHY: Hard name gate on assessment pages too — same ghost-nickname leak path.
+            if (!ensureIdentityReady()) return;
             clearFeedback();
             void syncPage();
           }}
         >
-          {busy ? t('ladder.assessmentSync.busy') : t('ladder.assessmentSync.button')}
+          {busy
+            ? t('ladder.assessmentSync.busy')
+            : identity.ready
+              ? t('ladder.assessmentSync.button')
+              : t('ladder.syncAll.buttonSetupIdentity')}
         </button>
+        {identity.ready ? (
+          <LadderIdentityChip identity={identity} onClick={openIdentitySheet} />
+        ) : null}
         {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
@@ -98,6 +121,7 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         title={t('ladder.assessmentSync.advancedTitle')}
         body={t('ladder.assessmentSync.advancedTip')}
       />
+      <LadderIdentitySheet open={identitySheetOpen} onClose={closeIdentitySheet} />
 
       <LadderUploadGateSheetPortal
         gateSheetKind={gateSheet.gateSheetKind}

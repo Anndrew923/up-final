@@ -8,9 +8,12 @@ import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
 import { useUiGate } from '../../hooks/useUiGate';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
+import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderInfoSheet from './LadderInfoSheet';
+import LadderIdentitySheet from './LadderIdentitySheet';
+import LadderIdentityChip from './LadderIdentityChip';
 import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
@@ -24,6 +27,7 @@ export interface LeaderboardSyncAllBarProps {
 
 /**
  * One-shot upload of every shard derived from the merged radar score map + overall.
+ * Identity-incomplete: CTA opens an in-place sheet instead of ghost-nickname uploads.
  */
 const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   onFinished,
@@ -34,8 +38,10 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
   const uiGate = useUiGate('ladder-upload');
+  const identity = useLadderIdentityReady();
   const [infoOpen, setInfoOpen] = useState(false);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
+  const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | null>(null);
   const { syncAll, busy, summary, failures, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
     useLeaderboardSyncAll({
@@ -65,6 +71,29 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     return null;
   }, [fullSyncBlock, locale, t]);
 
+  const runSyncOrIdentityGate = () => {
+    setTapHint(null);
+    if (fullSyncBlocked) {
+      setTapHint('cooldown');
+      return;
+    }
+    if (targetCount === 0) {
+      setTapHint('no-targets');
+      return;
+    }
+    if (gate !== 'ok') {
+      if (gateSheetKind) setGateSheetOpen(true);
+      return;
+    }
+    // WHY: Name is the hard upload gate — open the drawer in-place; never navigate away from radar.
+    if (!identity.ready) {
+      setIdentitySheetOpen(true);
+      return;
+    }
+    clearFeedback();
+    void syncAll();
+  };
+
   return (
     <div
       className={`relative space-y-2 border-t border-zinc-800/80 ${showSectionTitle ? 'pt-4' : 'pt-2'} ${className ?? ''}`}
@@ -83,6 +112,8 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.noTargets')}</p>
       ) : gate !== 'ok' ? (
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
+      ) : !identity.ready ? (
+        <p className="text-xs leading-relaxed text-zinc-500">{t('ladder.syncAll.identityRequiredHint')}</p>
       ) : null}
 
       {tapHint === 'no-targets' ? (
@@ -109,26 +140,17 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
           type="button"
           className="ui-btn border-accent-primary/40 text-accent-primary"
           disabled={disabled}
-          onClick={() => {
-            setTapHint(null);
-            if (fullSyncBlocked) {
-              setTapHint('cooldown');
-              return;
-            }
-            if (targetCount === 0) {
-              setTapHint('no-targets');
-              return;
-            }
-            if (gate !== 'ok') {
-              if (gateSheetKind) setGateSheetOpen(true);
-              return;
-            }
-            clearFeedback();
-            void syncAll();
-          }}
+          onClick={runSyncOrIdentityGate}
         >
-          {busy ? t('ladder.syncAll.busy') : t('ladder.syncAll.button')}
+          {busy
+            ? t('ladder.syncAll.busy')
+            : identity.ready
+              ? t('ladder.syncAll.button')
+              : t('ladder.syncAll.buttonSetupIdentity')}
         </button>
+        {identity.ready ? (
+          <LadderIdentityChip identity={identity} onClick={() => setIdentitySheetOpen(true)} />
+        ) : null}
         {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
@@ -141,6 +163,10 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         title={t('ladder.syncAll.advancedTitle')}
         body={quotaModalBody}
         variant="syncAll"
+      />
+      <LadderIdentitySheet
+        open={identitySheetOpen}
+        onClose={() => setIdentitySheetOpen(false)}
       />
       {gateSheetKind ? (
         <LeaderboardGateSheet

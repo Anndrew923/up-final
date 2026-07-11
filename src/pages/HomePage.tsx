@@ -23,6 +23,7 @@ export default function HomePage() {
         <HomeRadarBoard />
       </section>
 
+      {/* Profile stays below radar; collapses once baseline is complete (radar-first density). */}
       <HomeProfileForm />
 
       <HomeLadderIdentitySection />

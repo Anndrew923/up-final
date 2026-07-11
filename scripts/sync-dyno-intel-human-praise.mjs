@@ -60,12 +60,16 @@ function loadLocaleBundle(localePath, localeLabel) {
   if (!hallOfFame?.blockedReply || typeof hallOfFame.blockedReply !== "string") {
     throw new Error(`${localeLabel} dynoIntel.json missing dynoIntel.hallOfFame.blockedReply`);
   }
+  if (!hallOfFame?.guidedReply || typeof hallOfFame.guidedReply !== "string") {
+    throw new Error(`${localeLabel} dynoIntel.json missing dynoIntel.hallOfFame.guidedReply`);
+  }
 
   return {
     prPercentileFallback: humanBrief.prPercentileFallback,
     hallOfFameSentence: humanBrief.hallOfFameSentence,
     hallOfFameLegalShield: hallOfFame.legalShield,
     hallOfFameBlockedReply: hallOfFame.blockedReply,
+    hallOfFameGuidedReply: hallOfFame.guidedReply,
     humanPraiseByDecade: humanPraise ?? null,
   };
 }
@@ -99,6 +103,10 @@ export const DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN = ${JSON.stringify(en.hallO
 export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH = ${JSON.stringify(zh.hallOfFameBlockedReply)};
 
 export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN = ${JSON.stringify(en.hallOfFameBlockedReply)};
+
+export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH = ${JSON.stringify(zh.hallOfFameGuidedReply)};
+
+export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN = ${JSON.stringify(en.hallOfFameGuidedReply)};
 
 export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = ${JSON.stringify(zh.humanPraiseByDecade, null, 2)};
 

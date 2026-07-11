@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   finalizeLadderProfileMergeForLocalApply,
+  getLadderUploadIdentity,
   LEADERBOARD_AVATAR_URL_MAX_CHARS,
   mergeLadderProfileWithLocal,
   normalizeLadderDisplayName,
@@ -181,5 +182,38 @@ describe('resolveLeaderboardAvatarUrlForCloud', () => {
       updatedAt: '2026-01-01T00:00:00.000Z',
     });
     expect(resolveLeaderboardAvatarUrlForCloud()).toBe(https);
+  });
+});
+
+describe('getLadderUploadIdentity', () => {
+  beforeEach(() => {
+    loadProfile.mockReset();
+  });
+
+  it('returns null when display name is missing (no Pilot fallback)', () => {
+    loadProfile.mockReturnValue({ uid: 'u1', updatedAt: '' });
+    expect(getLadderUploadIdentity()).toBeNull();
+  });
+
+  it('returns name without requiring avatar', () => {
+    loadProfile.mockReturnValue({
+      uid: 'u1',
+      displayName: '  ArenaBoss  ',
+      updatedAt: '',
+    });
+    expect(getLadderUploadIdentity()).toEqual({ displayName: 'ArenaBoss' });
+  });
+
+  it('includes sanitized avatar when present', () => {
+    loadProfile.mockReturnValue({
+      uid: 'u1',
+      displayName: 'ArenaBoss',
+      avatarUrl: 'https://cdn.example.com/a.png',
+      updatedAt: '',
+    });
+    expect(getLadderUploadIdentity()).toEqual({
+      displayName: 'ArenaBoss',
+      avatarUrl: 'https://cdn.example.com/a.png',
+    });
   });
 });

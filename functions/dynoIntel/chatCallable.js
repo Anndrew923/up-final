@@ -93,6 +93,29 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       : "system_v1";
 
   const MAX_QUESTION_LENGTH = 500;
+
+  /**
+   * WHY: Logs are local-first on device — CF must not invent conversation memory.
+   * Client attaches the newest dynoIntelLog turn so pantheon anaphora can inherit.
+   */
+  const priorTurnRaw = data.priorTurn;
+  const priorFocusAxis =
+    priorTurnRaw &&
+    typeof priorTurnRaw === "object" &&
+    typeof priorTurnRaw.focusAxis === "string"
+      ? priorTurnRaw.focusAxis.trim().slice(0, 64)
+      : "";
+  const priorUserQuestion =
+    priorTurnRaw &&
+    typeof priorTurnRaw === "object" &&
+    typeof priorTurnRaw.userQuestion === "string"
+      ? normalizeDynoIntelQuestion(priorTurnRaw.userQuestion).slice(0, MAX_QUESTION_LENGTH)
+      : "";
+  const priorTurn =
+    priorFocusAxis && priorUserQuestion
+      ? { focusAxis: priorFocusAxis, userQuestion: priorUserQuestion }
+      : null;
+
   if (!userQuestion) {
     throw new HttpsError("invalid-argument", "userQuestion is required");
   }
@@ -144,6 +167,8 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     weightSimulationTargetKg: context.weightSimulation?.targetWeightKg ?? null,
     promptTemplateId,
     userQuestion,
+    priorFocusAxis: priorTurn?.focusAxis ?? null,
+    priorUserQuestion: priorTurn?.userQuestion ?? null,
   });
 
   const cached = await loadDynoIntelCache(cacheHash);
@@ -209,7 +234,11 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     return buildDynoChatSuccess(quota, reply);
   }
 
-  const hallOfFameConsultReply = resolveHallOfFameConsultReply(inferenceContext, userQuestion);
+  const hallOfFameConsultReply = resolveHallOfFameConsultReply(
+    inferenceContext,
+    userQuestion,
+    priorTurn
+  );
   if (hallOfFameConsultReply) {
     const reply = finalizeDynoIntelCallableReply(
       hallOfFameConsultReply,

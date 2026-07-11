@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
+import LadderIdentitySheet from './LadderIdentitySheet';
+import LadderIdentityChip from './LadderIdentityChip';
 import { useTranslation } from 'react-i18next';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
@@ -12,6 +14,7 @@ import {
   useLeaderboardUpload,
   resolveLeaderboardUploadGate,
 } from '../../hooks/useLeaderboardUpload';
+import { useLadderIdentityUploadGate } from '../../hooks/useLadderIdentityUploadGate';
 import { LEADERBOARD_UPLOADS_PER_HOUR } from '../../logic/core/ladderUploadPolicy';
 import { useAuthStore } from '../../stores/authStore';
 import { useEntitlementStore } from '../../stores/entitlementStore';
@@ -41,6 +44,13 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
   const isAnonymous = useAuthStore((state) => state.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
   const uiGate = useUiGate('ladder-upload');
+  const {
+    identity,
+    identitySheetOpen,
+    openIdentitySheet,
+    closeIdentitySheet,
+    ensureIdentityReady,
+  } = useLadderIdentityUploadGate();
 
   const gate = useMemo(
     () => resolveLeaderboardUploadGate(score, entitlement, authStatus, isAnonymous),
@@ -109,6 +119,10 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
       ) : null}
       {gate !== 'ok' ? (
         <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
+      ) : !identity.ready ? (
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {t('ladder.syncAll.identityRequiredHint')}
+        </p>
       ) : (
         <p className="text-xs leading-relaxed text-zinc-500">
           {t('ladder.upload.quotaHint', { limit: LEADERBOARD_UPLOADS_PER_HOUR })}
@@ -125,13 +139,22 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
               if (gateSheetKind) setGateSheetOpen(true);
               return;
             }
+            // WHY: Hard name gate — open sheet in-place before any shard write.
+            if (!ensureIdentityReady()) return;
             if (score != null && Number.isFinite(score)) {
               void upload(metric, score);
             }
           }}
         >
-          {busy ? t('ladder.upload.uploading') : t('ladder.upload.button')}
+          {busy
+            ? t('ladder.upload.uploading')
+            : identity.ready
+              ? t('ladder.upload.button')
+              : t('ladder.syncAll.buttonSetupIdentity')}
         </button>
+        {identity.ready ? (
+          <LadderIdentityChip identity={identity} onClick={openIdentitySheet} />
+        ) : null}
         {gate === 'pro' ? (
           <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
             {t('ladder.upload.joinArena')}
@@ -155,6 +178,7 @@ const LeaderboardUploadBar: FC<LeaderboardUploadBarProps> = ({
           {quotaSubline ? <p className="text-xs text-zinc-500">{quotaSubline}</p> : null}
         </div>
       ) : null}
+      <LadderIdentitySheet open={identitySheetOpen} onClose={closeIdentitySheet} />
       {gateSheetKind ? (
         <LeaderboardGateSheet
           open={gateSheetOpen}

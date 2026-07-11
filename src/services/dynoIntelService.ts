@@ -77,6 +77,11 @@ export function mapDynoIntelCallableErrorToMessageKey(error: unknown): string | 
 /**
  * Sends de-identified context to the DYNO INTEL Cloud Function.
  * WHY: Components never touch Gemini or API keys — entitlement + quota live server-side.
+ *
+ * WHY `priorTurn` is client-supplied: uplink logs (`dynoIntelLog`) are local-first on
+ * device. The Cloud Function has no access to that store, so multi-turn pantheon
+ * anaphora ("在這個區間還有誰") must ride on the callable payload — never by having
+ * CF scrape conversation history.
  */
 export async function requestDynoIntelChat(
   payload: DynoIntelChatRequestV1

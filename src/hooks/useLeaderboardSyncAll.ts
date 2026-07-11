@@ -134,6 +134,9 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
+      // WHY: Hard gate — sync bars open the identity sheet before this path runs; abort if still empty.
+      if (!identity) return;
+
       const batch = await runLeaderboardBatchUpload({
         targets,
         uid: user.uid,

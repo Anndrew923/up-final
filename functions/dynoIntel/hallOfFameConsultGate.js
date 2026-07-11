@@ -2,6 +2,8 @@ import matrixDoc from "./data/hallOfFameMatrix.v1.json" with { type: "json" };
 import {
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN,
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH,
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN,
+  DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN,
   DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH,
 } from "./dynoIntelHumanPraise.data.js";
@@ -21,6 +23,10 @@ import { resolveReplyLocale } from "./beatTemplates.js";
  *  2) Roster lexicon (運動員 / athletes / tell me more…) → consult only when a
  *     score-band token is also present — blocks "Tell me more about my strength"
  *     from stealing the status path.
+ *
+ * WHY (v5.9 priorTurn inherit): CF cannot read on-device dynoIntelLog. Anaphoric
+ * follow-ups ("在這個區間還有誰") arrive without axis/decade tokens — the client
+ * must attach priorTurn so we inherit focus + derive decade from the live axis score.
  */
 const HALL_SANCTUM_PATTERNS = [
   /名人堂|萬神殿|名人堂聖殿|聖殿矩陣|歷史傳奇|Hall of Fame|Pantheon|historical legends?/i,
@@ -29,8 +35,20 @@ const HALL_SANCTUM_PATTERNS = [
 const PEER_AND_LIST_PATTERNS = [
   /有哪些名人|有哪些人名|有哪些人|哪些傳奇|哪些名字|誰在.*分|誰有.*分|誰是.*分|有誰|是誰/i,
   /還有誰|也是.*分|同.*分.*誰|誰跟我一樣|一樣是.*分|同個分數|同級距|同.*分/i,
+  /這個區間|這區間|該區間|這個分數帶|上面那個/i,
   /who else|same (score )?band|anyone else|who is also|shared\s+scores?/i,
+  /this (score )?band|that range/i,
   /who.*(?:at|above|over).*\d+|who\s+(?:is|are|sit).*(?:at|in|above|over)/i,
+];
+
+/**
+ * WHY: Only these short asks may inherit priorTurn — sanctum vagueness
+ * ("萬神殿有哪些傳奇") stays on guided Track B instead of guessing a band.
+ */
+const ANAPHORA_FOLLOWUP_PATTERNS = [
+  /這個區間|這區間|該區間|這個分數帶|上面那個/i,
+  /this (score )?band|that range/i,
+  /還有誰|who else|anyone else/i,
 ];
 
 /** Roster / "know more" lexicon — must co-occur with a decade/score cue. */
@@ -41,6 +59,19 @@ const ROSTER_LEXICON_PATTERNS = [
 
 const SCORE_BAND_CUE =
   /\d+\s*(?:多|幾)?\s*分|\d+\s*\+|in the \d+0?s|\d+0s|(?:above|over)\s*\d+|points?|地表最強|怪物領域|統計神話|歷史級別|超凡入聖|凡體覺醒|凡人頂尖|高階玩家|進階健身者|大眾健康常模|新手期|探索期|嬰兒期/i;
+
+const KNOWN_CONSULT_AXES = new Set([
+  "overall",
+  "strength",
+  "explosivePower",
+  "cardio",
+  "muscleMass",
+  "bodyFat",
+  "gripStrength",
+  "armSize",
+  "cooper",
+  "5km",
+]);
 
 function matchesAny(patterns, text) {
   return patterns.some((pattern) => pattern.test(text));
@@ -151,15 +182,36 @@ function resolveBlockedReplyCopy(context) {
     : DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH;
 }
 
+function resolveGuidedReplyCopy(context) {
+  return resolveReplyLocale(context) === "en"
+    ? DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN
+    : DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH;
+}
+
 function resolveConsultLegalShieldCopy(context) {
   return resolveReplyLocale(context) === "en"
     ? DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN
     : DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH;
 }
 
+/** Track A — score present but below the requested decade. */
 function buildBlockedConsultReply(context) {
   return wrapHallOfFameConsultReply({
     commentary: resolveBlockedReplyCopy(context),
+    action_directive: "",
+    is_off_topic: false,
+    detected_weakest_axis: String(context?.weakestAxis ?? ""),
+  });
+}
+
+/**
+ * Track B — no resolvable decade and nothing to inherit.
+ * WHY: Motivational "gravity field" copy felt like a dead end for vague chats;
+ * a concrete example question restores a recoverable consult path.
+ */
+function buildGuidedConsultReply(context) {
+  return wrapHallOfFameConsultReply({
+    commentary: resolveGuidedReplyCopy(context),
     action_directive: "",
     is_off_topic: false,
     detected_weakest_axis: String(context?.weakestAxis ?? ""),
@@ -250,6 +302,58 @@ function resolveAxisScore(context, axis) {
   return Number(supplemental?.score);
 }
 
+function isValidPriorTurn(priorTurn) {
+  if (!priorTurn || typeof priorTurn !== "object") return false;
+  const focusAxis = typeof priorTurn.focusAxis === "string" ? priorTurn.focusAxis.trim() : "";
+  const userQuestion =
+    typeof priorTurn.userQuestion === "string" ? priorTurn.userQuestion.trim() : "";
+  return Boolean(focusAxis && userQuestion);
+}
+
+function normalizePriorFocusAxis(focusAxis) {
+  const axis = String(focusAxis ?? "").trim();
+  if (!axis || axis === "cross-axis" || axis === "unknown") return null;
+  if (!KNOWN_CONSULT_AXES.has(axis)) return null;
+  return axis;
+}
+
+/**
+ * WHY: Prefer lexical axis from the prior question text (richer than log focusAxis,
+ * which may be "cross-axis" on Home). Fall back to persisted focusAxis when valid.
+ */
+function resolveInheritedAxis(priorTurn, context) {
+  const fromQuestion = resolveConsultAxis(priorTurn.userQuestion, context);
+  if (fromQuestion) return fromQuestion;
+  return normalizePriorFocusAxis(priorTurn.focusAxis);
+}
+
+/**
+ * WHY: Anaphoric asks never carry "120分" — map live axis score → official decade key
+ * via floor(score/10)*10 (with 0–40 and 150+ clamps matching the matrix skeleton).
+ */
+export function resolveConsultTierFromScore(score) {
+  if (!Number.isFinite(score)) return null;
+  let decadeKey;
+  if (score >= 150) decadeKey = "150";
+  else if (score < 40) decadeKey = "0";
+  else decadeKey = String(Math.floor(score / 10) * 10);
+  return TIER_PATTERNS.find((entry) => entry.decadeKey === decadeKey) ?? null;
+}
+
+function shouldAttemptPriorInherit(userQuestion, tierFromCurrent, priorTurn) {
+  if (!isValidPriorTurn(priorTurn)) return false;
+  // WHY: Explicit decade in THIS sentence ("還有誰也是80多分") must keep the
+  // aggregate overall unlock path. Inheriting a prior axis would wrongly gate
+  // unlock on that axis (e.g. prior cardio 65 → false block on an 80-band ask).
+  if (tierFromCurrent) return false;
+  const q = normalizeDynoIntelQuestion(userQuestion);
+  if (!q) return false;
+  if (matchesAny(ANAPHORA_FOLLOWUP_PATTERNS, q)) return true;
+  // Peer list ask with no decade token in THIS sentence (e.g. bare "有誰").
+  if (matchesAny(PEER_AND_LIST_PATTERNS, q)) return true;
+  return false;
+}
+
 function collectAggregateTierNamePool(decadeKey) {
   const seen = new Set();
   const pool = [];
@@ -310,16 +414,49 @@ function buildUnlockedReply({ decadeLabel, axis, names, context }) {
   return `${body}${legalShield}`;
 }
 
-export function resolveHallOfFameConsultReply(context, userQuestion) {
+/**
+ * @param {object} context
+ * @param {string} userQuestion
+ * @param {{ focusAxis: string, userQuestion: string } | null | undefined} [priorTurn]
+ */
+export function resolveHallOfFameConsultReply(context, userQuestion, priorTurn = null) {
   if (!isHallOfFameConsultQuestion(userQuestion)) return null;
 
-  const tier = resolveHallOfFameConsultTier(userQuestion);
-  if (!tier) {
-    return buildBlockedConsultReply(context);
+  const tierFromCurrent = resolveHallOfFameConsultTier(userQuestion);
+  let tier = tierFromCurrent;
+  let axis = resolveConsultAxis(userQuestion, context);
+
+  if ((!tier || !axis) && shouldAttemptPriorInherit(userQuestion, tierFromCurrent, priorTurn)) {
+    if (!axis) {
+      axis = resolveInheritedAxis(priorTurn, context);
+    }
+    if (!tier) {
+      // Prefer decade spoken in the prior question; else derive from live axis score.
+      tier =
+        resolveHallOfFameConsultTier(priorTurn.userQuestion) ??
+        resolveConsultTierFromScore(resolveAxisScore(context, axis));
+    }
   }
 
-  const axis = resolveConsultAxis(userQuestion, context);
-  const unlockScore = resolveAxisScore(context, axis ?? "overall");
+  if (!tier) {
+    return buildGuidedConsultReply(context);
+  }
+
+  /**
+   * Unlock score boundary (v5.9):
+   * - Known axis → THAT axis score only (never silent overall fallback).
+   * - No axis + decade from THIS sentence → aggregate overall (legacy peer band asks).
+   * - No axis after anaphora inherit attempt → guided (do not invent overall unlock).
+   */
+  let unlockScore = Number.NaN;
+  if (axis) {
+    unlockScore = resolveAxisScore(context, axis);
+  } else if (tierFromCurrent) {
+    unlockScore = resolveAxisScore(context, "overall");
+  } else {
+    return buildGuidedConsultReply(context);
+  }
+
   if (!Number.isFinite(unlockScore) || unlockScore < Number(tier.decadeKey)) {
     return buildBlockedConsultReply(context);
   }

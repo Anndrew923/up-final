@@ -4,6 +4,7 @@ import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID } from '../config/dynoIntel';
 import { canUseDynoIntelFull, resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
+import { resolveDynoIntelPriorTurnFromLog } from '../logic/core/resolveDynoIntelPriorTurnFromLog';
 import type { DynoIntelChatResponseV1, DynoIntelContextV1, DynoIntelMode } from '../logic/core/dynoIntelTypes';
 import {
   resolveDynoIntelDisplayMeta,
@@ -35,6 +36,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
   const appendLog = useDynoIntelLogStore((s) => s.appendLog);
+  const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
 
   const { visibleText, play, reset, cancel, showImmediately } = useTypewriterText({
     charIntervalMs: 18,
@@ -80,6 +82,10 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       const context = input.enrichContext(input.resolveContext(effectiveMode), userQuestion);
       const displayMeta = resolveDynoIntelDisplayMeta(context, userQuestion);
 
+      // WHY: CF cannot read on-device dynoIntelLog — attach newest turn so pantheon
+      // consult can inherit axis/decade for anaphoric follow-ups ("這個區間還有誰").
+      const priorTurn = resolveDynoIntelPriorTurnFromLog(getMostRecentLog());
+
       setStatus('loading');
       setErrorMessageKey(null);
       setLastDisplayMeta(displayMeta);
@@ -92,6 +98,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           promptTemplateId,
           userQuestion,
           mode: effectiveMode,
+          priorTurn,
         });
 
         if (!result.ok) {
@@ -154,7 +161,18 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         setStatus('error');
       }
     },
-    [appendLog, authStatus, cancel, entitlement, input, isAnonymous, play, reset, uid]
+    [
+      appendLog,
+      authStatus,
+      cancel,
+      entitlement,
+      getMostRecentLog,
+      input,
+      isAnonymous,
+      play,
+      reset,
+      uid,
+    ]
   );
 
   const restoreFromLog = useCallback(
