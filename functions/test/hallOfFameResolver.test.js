@@ -115,6 +115,23 @@ describe("hallOfFameResolver v5.0", () => {
     }
   });
 
+  it("preferLatin filters CJK display names for EN status hall tails", () => {
+    const mixed = resolveHallOfFameDisplayNames("overall", "90", 99);
+    assert.ok(mixed.some((name) => /[\u4e00-\u9fff]/.test(name)));
+    const latinOnly = resolveHallOfFameDisplayNames("overall", "90", 99, { preferLatin: true });
+    assert.ok(latinOnly.length > 0);
+    assert.ok(latinOnly.every((name) => !/[\u4e00-\u9fff]/.test(name)));
+
+    const sentence = resolveHallOfFameSentence(
+      "overall",
+      "90",
+      "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}.",
+      { nameGlue: ", ", preferLatin: true }
+    );
+    assert.ok(sentence);
+    assert.doesNotMatch(sentence, /[\u4e00-\u9fff]/);
+  });
+
   it("v5.8.1 — status hall sentence rotates name order across draws", () => {
     const orders = new Set();
     for (let i = 0; i < 20; i += 1) {

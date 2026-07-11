@@ -82,49 +82,49 @@ const TIER_PATTERNS = [
   {
     decadeKey: "150",
     label: "150+（地表最強）",
-    labelEn: "150+ (Earth's apex)",
+    labelEn: "150+ (Apex of the Earth)",
     pattern:
       /150\s*(?:\+|分?以上)|150以上|150多|150幾|一百五十多|地表最強|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s/i,
   },
   {
     decadeKey: "140",
     label: "140-150（怪物領域）",
-    labelEn: "140-150 (Monster tier)",
+    labelEn: "140-150 (Monster Domain)",
     pattern:
       /140\s*[-~～到至]\s*150|140分以上|140以上|140多|140幾|一百四十多|怪物領域|a3|(?:above|over)\s*140|140\s*points?|140s|in the 140s/i,
   },
   {
     decadeKey: "130",
     label: "130-140（統計神話）",
-    labelEn: "130-140 (Statistical myth)",
+    labelEn: "130-140 (Statistical Myth)",
     pattern:
       /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s/i,
   },
   {
     decadeKey: "120",
     label: "120-130（歷史級別）",
-    labelEn: "120-130 (Historic tier)",
+    labelEn: "120-130 (Historic Tier)",
     pattern:
       /120\s*[-~～到至]\s*130|120分以上|120以上|120多|120幾|一百二十多|歷史級別|a5|(?:above|over)\s*120|120\s*points?|120s|in the 120s/i,
   },
   {
     decadeKey: "110",
     label: "110-120（超凡入聖）",
-    labelEn: "110-120 (Transcendent tier)",
+    labelEn: "110-120 (Transcendent Sanctification)",
     pattern:
       /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s/i,
   },
   {
     decadeKey: "100",
     label: "100-110（凡體覺醒）",
-    labelEn: "100-110 (Awakened mortal)",
+    labelEn: "100-110 (Mortal Awakening)",
     pattern:
       /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s/i,
   },
   {
     decadeKey: "90",
     label: "90-100（凡人頂尖）",
-    labelEn: "90-100 (Top mortal tier)",
+    labelEn: "90-100 (Peak Mortal)",
     pattern:
       /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|凡人頂尖|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s/i,
   },
