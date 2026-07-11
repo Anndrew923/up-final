@@ -93,9 +93,18 @@
       },
       "featuresTitle": "Pro essentials",
       "features": {
-        "dyno": "Smart telemetry — data briefings & cross-axis diagnostics",
-        "ladder": "Global ladder arena — live multi-metric rankings",
-        "cloud": "Cloud backup — permanent training history sync"
+        "ladder": {
+          "title": "Live global ladder",
+          "body": "Unlock multi-metric rankings with near-instant sync—chase the peak seats."
+        },
+        "cloud": {
+          "title": "Unlimited cloud escort",
+          "body": "Steel-guard your training history; assessments and logs stay sealed in a permanent vault."
+        },
+        "dyno": {
+          "title": "DYNO INTEL analyst",
+          "body": "Full Pro uplink—smart telemetry, deep briefings, and cross-axis diagnostics."
+        }
       },
       "price": "NT$ 30 / mo ($1.00 USD)",
       "cta": "⚡ Ignite Pro Pass (NT$ 30 / mo)",

@@ -13,7 +13,11 @@ export interface DynoIntelPaywallViewProps {
   onDismiss: () => void;
 }
 
-const FEATURE_KEYS = ['dyno', 'ladder', 'cloud'] as const;
+const FEATURE_ROWS = [
+  { key: 'ladder', dot: 'bg-accent-primary shadow-[0_0_8px_rgba(255,140,0,0.9)]' },
+  { key: 'cloud', dot: 'bg-accent-info shadow-[0_0_8px_rgba(0,191,255,0.9)]' },
+  { key: 'dyno', dot: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.9)]' },
+] as const;
 
 const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
   reason,
@@ -52,16 +56,18 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-primary/90">
             {t('dynoIntel.paywall.featuresTitle')}
           </p>
-          <ul className="mt-3 space-y-2.5">
-            {FEATURE_KEYS.map((key) => (
-              <li key={key} className="flex gap-2.5 text-sm leading-snug text-zinc-200">
-                <span
-                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-primary shadow-[0_0_8px_rgba(255,140,0,0.8)]"
-                  aria-hidden
-                />
-                <span className="min-w-0 text-pretty">
-                  {t(`dynoIntel.paywall.features.${key}`)}
-                </span>
+          <ul className="mt-3 space-y-3">
+            {FEATURE_ROWS.map((row) => (
+              <li key={row.key} className="flex gap-2.5">
+                <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${row.dot}`} aria-hidden />
+                <div className="min-w-0 space-y-0.5">
+                  <p className="text-sm font-semibold tracking-tight text-zinc-50 text-pretty">
+                    {t(`dynoIntel.paywall.features.${row.key}.title`)}
+                  </p>
+                  <p className="text-[13px] leading-snug text-zinc-400 text-pretty">
+                    {t(`dynoIntel.paywall.features.${row.key}.body`)}
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import JoinArenaComparisonTable from '../components/arena/JoinArenaComparisonTable';
 import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { hasCoreAccess } from '../logic/core/entitlement';
@@ -207,8 +206,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         </p>
       ) : null}
 
-      {/* WHY: Dyno funnel keeps Pro feature list; hides Core-vs-Pro ladder comparison to avoid arena bleed. */}
-      {isDynoFunnel ? null : <JoinArenaComparisonTable />}
+      {/* WHY: Single Pro kit panel — Core/Pro comparison removed to kill duplicate feature narrative. */}
       <JoinArenaProFeatures />
 
       <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
