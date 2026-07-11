@@ -58,7 +58,7 @@ const ROSTER_LEXICON_PATTERNS = [
 ];
 
 const SCORE_BAND_CUE =
-  /\d+\s*(?:多|幾)?\s*分|\d+\s*\+|in the \d+0?s|\d+0s|(?:above|over)\s*\d+|points?|地表最強|怪物領域|統計神話|歷史級別|超凡入聖|凡體覺醒|凡人頂尖|高階玩家|進階健身者|大眾健康常模|新手期|探索期|嬰兒期/i;
+  /\d+\s*(?:多|幾)?\s*分|\d+\s*\+|in the \d+0?s|\d+0s|(?:above|over)\s*\d+|points?|地表最強|怪物領域|統計神話|歷史級別|超凡入聖|凡體覺醒|凡人頂尖|高階玩家|高級玩家|進階健身者|進階訓練者|大眾健康常模|新手村|新手期|探索期|嬰兒期/i;
 
 const KNOWN_CONSULT_AXES = new Set([
   "overall",
@@ -130,31 +130,31 @@ const TIER_PATTERNS = [
   },
   {
     decadeKey: "80",
-    label: "80-90（高階玩家）",
-    labelEn: "80-90 (Advanced tier)",
+    label: "80-90（高級玩家）",
+    labelEn: "80-90 (Elite Player)",
     pattern:
-      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s/i,
+      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s/i,
   },
   {
     decadeKey: "70",
-    label: "70-80（進階健身者）",
-    labelEn: "70-80 (Intermediate lifter)",
+    label: "70-80（進階訓練者）",
+    labelEn: "70-80 (Advanced Trainee)",
     pattern:
-      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
+      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
   },
   {
     decadeKey: "60",
     label: "60-70（大眾健康常模）",
-    labelEn: "60-70 (General health norm)",
+    labelEn: "60-70 (General Health Norm)",
     pattern:
       /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s/i,
   },
   {
     decadeKey: "50",
-    label: "50-60（新手期）",
-    labelEn: "50-60 (Novice Phase)",
+    label: "50-60（新手村）",
+    labelEn: "50-60 (Novice Village)",
     pattern:
-      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|(?:above|over)\s*50|50\s*points?|50s|in the 50s/i,
+      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|新手村|(?:above|over)\s*50|50\s*points?|50s|in the 50s/i,
   },
   {
     decadeKey: "40",

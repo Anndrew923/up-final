@@ -214,6 +214,7 @@ export function resolveHallOfFameBriefSegment(axis, decadeKey, locale) {
   if (normalized === "en") {
     return resolveHallOfFameSentence(axis, decadeKey, DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN, {
       nameGlue: ", ",
+      preferLatin: true,
     });
   }
   if (normalized === "zh-Hant") {

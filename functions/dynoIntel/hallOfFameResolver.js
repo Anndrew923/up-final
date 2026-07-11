@@ -48,9 +48,15 @@ export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DIS
   const anchors = INDEX.get(`${decadeKey}:${axisId}`);
   if (!Array.isArray(anchors) || anchors.length === 0) return [];
 
-  const pool = anchors
+  let pool = anchors
     .map((anchor) => String(anchor.displayZh ?? "").trim())
     .filter(Boolean);
+
+  // WHY: Matrix cells may mix Latin + CJK labels; EN replies must not leak CJK into segment1.
+  if (options?.preferLatin) {
+    const latin = pool.filter((name) => !/[\u4e00-\u9fff]/.test(name));
+    if (latin.length > 0) pool = latin;
+  }
 
   const cap = Math.max(1, limit);
   if (options?.shuffle) {
@@ -71,8 +77,9 @@ export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, o
   const limit = resolved.limit ?? MAX_DISPLAY_NAMES;
   const nameGlue = resolved.nameGlue ?? "、";
   const shuffle = resolved.shuffle !== false;
+  const preferLatin = resolved.preferLatin === true;
   // WHY: Status segment1 hall tail rotates like consult — fixed order felt stale on repeat asks.
-  const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit, { shuffle });
+  const names = resolveHallOfFameDisplayNames(axisId, decadeKey, limit, { shuffle, preferLatin });
   if (!names.length) return null;
   return String(sentenceTemplate ?? "").replace("{{names}}", names.join(nameGlue));
 }

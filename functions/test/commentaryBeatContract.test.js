@@ -87,8 +87,8 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(strengthStatusContext);
     assert.ok(brief);
     assert.ok(!containsVehicleLexicon(brief));
-    assert.match(brief, /高階玩家/);
-    assert.match(brief, /你把「訓練」的優先權/);
+    assert.match(brief, /高級玩家/);
+    assert.match(brief, /你把「訓練」/);
     assert.doesNotMatch(brief, /全人類官方 PR 值對照資料/);
     assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|TIER_|Mock Neuro/);
   });
@@ -128,7 +128,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
     assert.match(brief, /凡人頂尖/);
-    assert.match(brief, /無論基因如何，能到凡人頂尖/);
+    assert.match(brief, /無論基因如何，能夠到這個程度/);
     assert.doesNotMatch(brief, /視覺天花板|量體飽滿|梯隊定位|Mock Volume/);
   });
 
@@ -164,8 +164,8 @@ describe("dynoIntelHumanBriefs v3", () => {
       axes: [{ axis: "strength", score: 87.9, tierBandId: "TIER_80", cardCopy: { title: "350hp", summary: "x" } }],
     };
     const brief = resolveHumanBrief(ctx);
-    assert.match(brief, /高階玩家/);
-    assert.match(brief, /你把「訓練」的優先權/);
+    assert.match(brief, /高級玩家/);
+    assert.match(brief, /你把「訓練」/);
     assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|全人類官方 PR/);
   });
 
@@ -224,9 +224,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const brief = resolveHumanBrief(ctx);
     assert.match(brief, /在名人堂聖殿中/);
-    assert.match(brief, /Jason Statham/);
-    assert.match(brief, /Chris Hemsworth/);
-    assert.match(brief, /Conor McGregor/);
+    assert.match(brief, /你正與 .+ 站在同一個王座座標/);
   });
 
   it("v5.2 — legal shield is standalone segment 3 when hall-of-fame names render (60+)", () => {
@@ -338,9 +336,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(ctx);
     assert.ok(brief);
     assert.match(brief, /Hall of Fame sanctum/i);
-    assert.match(brief, /Jason Statham/);
-    assert.match(brief, /Chris Hemsworth/);
-    assert.match(brief, /Conor McGregor/);
+    assert.match(brief, /same throne coordinate as .+\./i);
     assert.doesNotMatch(brief, /、/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
   });
@@ -379,7 +375,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const parts = resolveHumanBriefPartsFromContext(macroCtx);
     assert.ok(parts);
-    assert.match(parts.segment1Core, /Crossing 100 points|Mortal Awakening Tier/i);
+    assert.match(parts.segment1Core, /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.match(parts.segment1Core, /Hall of Fame sanctum/i);
     assert.doesNotMatch(parts.segment1Core, /Global Peer PR|career-peak states/i);
     assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
@@ -388,7 +384,7 @@ describe("dynoIntelHumanBriefs v3", () => {
 
     const paragraphs = splitParagraphs(parts.fullBrief);
     assert.equal(paragraphs.length, 3);
-    assert.match(paragraphs[0], /Crossing 100 points|Mortal Awakening Tier/i);
+    assert.match(paragraphs[0], /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
     assert.ok(paragraphs[2].endsWith("entertainment purposes."));
 
@@ -403,7 +399,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     );
     const repairedParagraphs = splitParagraphs(repaired.commentary);
     assert.equal(repairedParagraphs.length, 3);
-    assert.match(repairedParagraphs[0], /Crossing 100 points|Mortal Awakening Tier/i);
+    assert.match(repairedParagraphs[0], /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.match(repairedParagraphs[1], /Global Peer PR Percentile Data/i);
     assert.match(repairedParagraphs[2], /entertainment purposes/);
     assert.doesNotMatch(repaired.commentary, /[\u4e00-\u9fff]/);
@@ -421,7 +417,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const parts = resolveHumanBriefPartsFromContext(macroCtx);
     assert.ok(parts);
-    assert.match(parts.segment1Core, /genetic lottery|Peak Mortal Tier/i);
+    assert.match(parts.segment1Core, /genetic lottery|Peak Mortal/i);
     assert.doesNotMatch(parts.segment1Core, /regional multi-event benchmark with excellent/i);
     assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
     assert.match(parts.legalSegment, /career-peak states/);
@@ -464,10 +460,10 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(segment1, /[\u4e00-\u9fff]/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
     assert.match(segment1, /maps to|Against same-age norms/i);
-    assert.match(segment1, /Advanced Operator Tier/i);
+    assert.match(segment1, /Elite Player/i);
     assert.match(
       segment1,
-      /Against same-age competitive norms, your absolute strength performance maps to Advanced Operator Tier/
+      /Against same-age competitive norms, your absolute strength performance maps to Elite Player/
     );
     assert.doesNotMatch(segment1, /performance {2}maps/);
   });
@@ -481,13 +477,13 @@ describe("dynoIntelHumanBriefs v3", () => {
 
   it("v5.3 — EN scale matrix 0–150 decades overlay epic praise (parity with zh-Hant)", () => {
     const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
-    assert.match(row90.summaryHuman, /genetic lottery|Peak Mortal Tier/i);
+    assert.match(row90.summaryHuman, /genetic lottery|Peak Mortal/i);
     assert.ok(row90.summaryHuman.length > 120);
     const row100 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["100"];
-    assert.match(row100.summaryHuman, /Crossing 100 points|Mortal Awakening Tier/i);
+    assert.match(row100.summaryHuman, /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.ok(row100.summaryHuman.length > 120);
     const row0 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["0"];
-    assert.match(row0.summaryHuman, /Infant Phase Tier|enormous room to grow/i);
+    assert.match(row0.summaryHuman, /Infant Phase|enormous room to grow/i);
     assert.ok(row0.summaryHuman.length > 80);
   });
 });
@@ -515,7 +511,7 @@ describe("enforceCommentaryBeatContract v3", () => {
     const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
     const segment1 = enriched.chassisBeats.p1Official;
     const reply = {
-      commentary: `${segment1}你把訓練的優先權排得很高，光去健身房擺樣子根本達不到目前程度，高階玩家就是這樣練出來的。下次請挑戰更全面的身體潛能，讓你的整體表現更上一層樓！`,
+      commentary: `${segment1}你把訓練的優先權排得很高，光去健身房擺樣子根本達不到目前程度，高級玩家就是這樣練出來的。下次請挑戰更全面的身體潛能，讓你的整體表現更上一層樓！`,
       action_directive: "",
       is_off_topic: false,
       detected_weakest_axis: "strength",
@@ -553,10 +549,16 @@ describe("enforceCommentaryBeatContract v3", () => {
     const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
     assert.ok(enriched.chassisBeats?.summaryHuman);
     assert.ok(enriched.chassisBeats?.p1Official);
+    // WHY: Hall-of-fame tail shuffles per call — compare the class/soul prefix only.
+    const stripHall = (text) => String(text).split(/在名人堂聖殿中/)[0];
     assert.equal(
-      normalizeBriefForAssert(enriched.chassisBeats.p1Official),
-      normalizeBriefForAssert(buildOfficialHumanAnchor(strengthStatusContext))
+      normalizeBriefForAssert(stripHall(enriched.chassisBeats.p1Official)),
+      normalizeBriefForAssert(stripHall(buildOfficialHumanAnchor(strengthStatusContext)))
     );
+    assert.ok(Array.isArray(enriched.chassisBeats.trailingSegments) || enriched.chassisBeats.legalSegment);
+    if (Array.isArray(enriched.chassisBeats.trailingSegments)) {
+      assert.ok(enriched.chassisBeats.trailingSegments.length >= 1);
+    }
     assert.ok(enriched.chassisBeats.legalSegment);
     assert.equal(enriched.chassisBeats.p2Official, undefined);
     assert.doesNotMatch(enriched.chassisBeats.p1Official, /熱烈搜集中/);
@@ -690,7 +692,7 @@ describe("enforceCommentaryBeatContract v3", () => {
     const reply = {
       commentary:
         segment1 +
-        "力量評分，已達高階玩家頂尖強度。" +
+        "力量評分，已達高級玩家頂尖強度。" +
         "你把訓練的優先權排在很多事情前面，光去健身房擺樣子根本達不到目前程度。",
       action_directive: "",
       is_off_topic: false,
@@ -704,10 +706,10 @@ describe("enforceCommentaryBeatContract v3", () => {
       normalizeBriefWhitespace(paragraphs[1]),
       normalizeBriefWhitespace(splitParagraphs(fullBrief)[1])
     );
-    assert.doesNotMatch(paragraphs[0], /力量評分，已達高階玩家頂尖強度/);
+    assert.doesNotMatch(paragraphs[0], /力量評分，已達高級玩家頂尖強度/);
     assert.doesNotMatch(paragraphs[0], /光去健身房擺樣子根本達不到目前程度。$/);
-    assert.match(paragraphs[0], /高階玩家/);
-    assert.match(paragraphs[0], /你把「訓練」的優先權/);
+    assert.match(paragraphs[0], /高級玩家/);
+    assert.match(paragraphs[0], /你把「訓練」/);
   });
 
   it("v5.2 — heals stale single-paragraph cache without duplicating PR or legal segments", () => {
