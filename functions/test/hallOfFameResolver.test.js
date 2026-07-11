@@ -27,6 +27,15 @@ describe("hallOfFameResolver v5.0", () => {
 
     const oversized = matrixDoc.entries.filter((entry) => (entry.anchors?.length ?? 0) > 3);
     assert.ok(oversized.length > 20, `expected many full cells, got ${oversized.length}`);
+
+    for (const entry of matrixDoc.entries) {
+      const ids = entry.anchors.map((anchor) => anchor.id);
+      assert.equal(
+        new Set(ids).size,
+        ids.length,
+        `duplicate anchor ids in ${entry.decadeKey}:${entry.axisId}`
+      );
+    }
   });
 
   it("strips parenthetical reference scores from display names", () => {

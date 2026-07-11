@@ -28,10 +28,12 @@ export async function loadDynoIntelCache(hash, nowMs = Date.now()) {
 /**
  * WHY: Off-topic and truncated methodology replies must not be cached — they replay bad UX for 48h.
  * Stale truncated payloads already in cache are healed on read via finalizeDynoIntelCallableReply in chatCallable.
+ * Pantheon consult replies carry hallOfFameConsultReply before finalize — never persist shuffled rosters.
  */
 export function shouldPersistDynoIntelCache(reply, context = null) {
   if (!reply || typeof reply !== "object") return false;
   if (reply.is_off_topic === true) return false;
+  if (reply.hallOfFameConsultReply === true) return false;
 
   if (context && isMethodologyReplyContext(context)) {
     const locale = context.locale === "en" ? "en" : "zh-Hant";

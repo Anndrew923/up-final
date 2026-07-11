@@ -41,10 +41,10 @@ function resolveDefaultInput() {
 }
 
 function slugifyId(name) {
+  // WHY: Do not strip parenthetical eras — Zac Efron(鐵爪) vs (Baywatch) must stay distinct ids.
   return (
     String(name)
       .toLowerCase()
-      .replace(/[（(].*?[）)]/g, "")
       .replace(/[^a-z0-9\u4e00-\u9fff]+/gi, "_")
       .replace(/^_+|_+$/g, "")
       .slice(0, 64) || "anchor"

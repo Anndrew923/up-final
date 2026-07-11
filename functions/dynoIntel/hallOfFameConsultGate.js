@@ -405,7 +405,7 @@ function buildUnlockedReply({ decadeLabel, axis, names, context }) {
     const body = axis
       ? `You have unlocked ${decadeLabel} ${axisLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`
       : `You have unlocked ${decadeLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`;
-    return `${body}${legalShield}`;
+    return `${body} ${legalShield}`;
   }
 
   const body = axis

@@ -1,7 +1,7 @@
 {
   "version": "v1",
   "source": "DynoIntel_v4.0_名人堂聖殿矩陣.csv",
-  "generatedAt": "2026-07-11T15:30:31.202Z",
+  "generatedAt": "2026-07-11T15:33:46.550Z",
   "maxDisplayNames": 3,
   "entries": [
     {
@@ -617,7 +617,7 @@
           "displayZh": "Conor McGregor"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -647,7 +647,7 @@
           "displayZh": "Bruce Lee"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -667,7 +667,7 @@
           "displayZh": "Ronda Rousey"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
@@ -739,7 +739,7 @@
       "axisId": "muscleMass",
       "anchors": [
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -877,7 +877,7 @@
           "displayZh": "Chris Evans"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -889,7 +889,7 @@
           "displayZh": "LBJ"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -907,7 +907,7 @@
           "displayZh": "Henry Cavill"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -919,7 +919,7 @@
           "displayZh": "Ben Affleck蝙蝠俠"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -969,7 +969,7 @@
           "displayZh": "Gal Gadot"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         }
       ]
@@ -999,7 +999,7 @@
           "displayZh": "Jason Statham"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪(Jeremy Lin)"
         },
         {
@@ -1057,7 +1057,7 @@
           "displayZh": "Henry Cavill"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -1073,7 +1073,7 @@
           "displayZh": "DK Metcalf"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -1127,7 +1127,7 @@
           "displayZh": "張偉麗"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -1153,7 +1153,7 @@
           "displayZh": "Usain Bolt"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -1195,7 +1195,7 @@
           "displayZh": "Mike tyson"
         },
         {
-          "id": "大谷翔平",
+          "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
         {
@@ -1203,7 +1203,7 @@
           "displayZh": "Ronda Rousey"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -1245,11 +1245,11 @@
           "displayZh": "新田真劍佑"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1257,11 +1257,11 @@
           "displayZh": "Maria Sharapova"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -1319,15 +1319,15 @@
           "displayZh": "Sylvester Stallone"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
@@ -1357,7 +1357,7 @@
           "displayZh": "Sylvester Stallone"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1369,11 +1369,11 @@
           "displayZh": "Tom Holland"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -1381,7 +1381,7 @@
           "displayZh": "Milla Jovovich"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -1423,11 +1423,11 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -1439,7 +1439,7 @@
           "displayZh": "Maria Sharapova"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -1455,7 +1455,7 @@
           "displayZh": "Chris Evans"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1481,7 +1481,7 @@
           "displayZh": "Zac"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1489,11 +1489,11 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -1551,11 +1551,11 @@
           "displayZh": "Sylvester Stallone"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1601,11 +1601,11 @@
           "displayZh": "Bruce Lee"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
@@ -1613,7 +1613,7 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -1621,7 +1621,7 @@
           "displayZh": "Cristiano Ronaldo"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹(Donnie Yen)"
         },
         {
@@ -1637,7 +1637,7 @@
           "displayZh": "Ben Affleck蝙蝠俠"
         },
         {
-          "id": "馬東石",
+          "id": "馬東石_don_lee",
           "displayZh": "馬東石（Don Lee）"
         },
         {
@@ -1689,7 +1689,7 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -1705,7 +1705,7 @@
           "displayZh": "Cristiano Ronaldo"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
@@ -1713,11 +1713,11 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -1755,7 +1755,7 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -1763,7 +1763,7 @@
           "displayZh": "Cristiano Ronaldo"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -1793,7 +1793,7 @@
           "displayZh": "Larry Wheels"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
@@ -1823,7 +1823,7 @@
           "displayZh": "Hafþór Júlíus Björnsson"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
@@ -1849,7 +1849,7 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_特洛伊",
           "displayZh": "布萊德·彼特(特洛伊)"
         }
       ]
@@ -1871,7 +1871,7 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
@@ -1879,7 +1879,7 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
@@ -1925,11 +1925,11 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -1963,11 +1963,11 @@
           "displayZh": "新田真劍佑"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_鐵爪時期",
           "displayZh": "Zac Efron(鐵爪時期)"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
@@ -2031,7 +2031,7 @@
           "displayZh": "David Beckham"
         },
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
@@ -2039,11 +2039,11 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -2065,11 +2065,11 @@
       "axisId": "gripStrength",
       "anchors": [
         {
-          "id": "甄子丹",
+          "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
@@ -2099,7 +2099,7 @@
           "displayZh": "新田真劍佑"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -2107,11 +2107,11 @@
           "displayZh": "David Beckham"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -2119,7 +2119,7 @@
           "displayZh": "Michelle Rodriguez"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         }
       ]
@@ -2133,11 +2133,11 @@
           "displayZh": "Tom Holland"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
@@ -2179,7 +2179,7 @@
           "displayZh": "Rain"
         },
         {
-          "id": "林書豪",
+          "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
         {
@@ -2187,7 +2187,7 @@
           "displayZh": "Stephen Curry"
         },
         {
-          "id": "河村勇輝",
+          "id": "河村勇輝_yuki_kawamura",
           "displayZh": "河村勇輝（Yuki Kawamura）"
         },
         {
@@ -2203,11 +2203,11 @@
           "displayZh": "Scarlett Johansson"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_baywatch_時期",
           "displayZh": "Zac Efron(Baywatch 時期)"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -2255,15 +2255,15 @@
           "displayZh": "Tom Holland"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
-          "id": "ryan_reynolds",
+          "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         },
         {
@@ -2303,11 +2303,11 @@
           "displayZh": "Tom Holland"
         },
         {
-          "id": "布萊德_彼特",
+          "id": "布萊德_彼特_fight_club_時期",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
         },
         {
-          "id": "zac_efron",
+          "id": "zac_efron_neighbors_時期",
           "displayZh": "Zac Efron（Neighbors 時期）"
         },
         {
