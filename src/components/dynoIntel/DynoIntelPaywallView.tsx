@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 
 export interface DynoIntelPaywallViewProps {
@@ -12,6 +13,8 @@ export interface DynoIntelPaywallViewProps {
   onDismiss: () => void;
 }
 
+const FEATURE_KEYS = ['dyno', 'ladder', 'cloud'] as const;
+
 const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
   reason,
   weakestAxisLabel,
@@ -22,6 +25,7 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
   onDismiss,
 }) => {
   const { t } = useTranslation('common');
+  const ctaMotionOn = !usePrefersReducedMotion();
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -44,6 +48,28 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
           })}
         </p>
 
+        <div className="mt-4 rounded-xl border border-accent-primary/30 bg-zinc-950/70 p-3.5">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-primary/90">
+            {t('dynoIntel.paywall.featuresTitle')}
+          </p>
+          <ul className="mt-3 space-y-2.5">
+            {FEATURE_KEYS.map((key) => (
+              <li key={key} className="flex gap-2.5 text-sm leading-snug text-zinc-200">
+                <span
+                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-primary shadow-[0_0_8px_rgba(255,140,0,0.8)]"
+                  aria-hidden
+                />
+                <span className="min-w-0 text-pretty">
+                  {t(`dynoIntel.paywall.features.${key}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 border-t border-zinc-800/80 pt-3 font-mono text-sm font-semibold tracking-wide text-amber-200">
+            {t('dynoIntel.paywall.price')}
+          </p>
+        </div>
+
         {billingError ? (
           <p className="mt-3 text-sm text-red-300">{t('dynoIntel.paywall.billingFail')}</p>
         ) : null}
@@ -54,9 +80,27 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
           type="button"
           disabled={busy}
           onClick={onSubscribe}
-          className="mb-2 min-h-12 w-full rounded-xl border border-amber-400/50 bg-gradient-to-r from-amber-950/80 via-zinc-900 to-zinc-950 px-4 text-sm font-semibold text-amber-100 shadow-[0_0_18px_rgba(251,191,36,0.15)] disabled:opacity-50"
+          className={`group relative mb-2 min-h-12 w-full overflow-hidden rounded-xl border border-orange-400/90 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,100,0,0.55),0_0_48px_rgba(255,60,0,0.25)] transition hover:shadow-[0_0_36px_rgba(255,120,0,0.7),0_0_56px_rgba(255,40,0,0.35)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
+            busy ? 'bg-zinc-800 text-zinc-500' : ''
+          }`}
         >
-          {busy ? t('dynoIntel.paywall.busy') : t('dynoIntel.paywall.cta')}
+          {!busy ? (
+            <>
+              <span
+                className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-400 to-red-500 bg-[length:200%_200%] ${
+                  ctaMotionOn ? 'animate-arena-cta-shimmer' : ''
+                }`}
+                aria-hidden
+              />
+              <span
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.45),transparent_45%)] opacity-70"
+                aria-hidden
+              />
+            </>
+          ) : null}
+          <span className="relative z-[1]">
+            {busy ? t('dynoIntel.paywall.busy') : t('dynoIntel.paywall.cta')}
+          </span>
         </button>
         <button
           type="button"

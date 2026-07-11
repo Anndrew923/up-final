@@ -88,10 +88,17 @@
         "quota-exhausted": "Daily uplink exhausted"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: DYNO INTEL full-channel telemetry requires Pro. {{axis}} axis idles at {{score}} pts — ignite Pro for smart analysis, global ladder, and cloud backup.",
-        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's Pro uplink quota is spent. {{axis}} axis still idles at {{score}} pts — try again after reset."
+        "pro-required": "⚠️ {{axis}} axis idles at {{score}} pts. Ignite Pro to unlock three core channels:",
+        "quota-exhausted": "⚠️ Daily uplink spent; {{axis}} still at {{score}} pts. Upgrade or wait for reset to keep all three Pro channels:"
       },
-      "cta": "Ignite Pro Pass",
+      "featuresTitle": "Pro essentials",
+      "features": {
+        "dyno": "Smart telemetry — data briefings & cross-axis diagnostics",
+        "ladder": "Global ladder arena — live multi-metric rankings",
+        "cloud": "Cloud backup — permanent training history sync"
+      },
+      "price": "NT$ 30 / mo ($1.00 USD)",
+      "cta": "⚡ Ignite Pro Pass (NT$ 30 / mo)",
       "dismiss": "Return to console",
       "busy": "Authorizing payment…",
       "billingFail": "Billing link failed — try again or restore purchases in Settings.",

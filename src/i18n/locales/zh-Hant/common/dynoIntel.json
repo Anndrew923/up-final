@@ -88,10 +88,17 @@
         "quota-exhausted": "今日通電額度已耗盡"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：DYNO INTEL 全頻道遙測需 Pro 訂閱。檢測到 {{axis}} 軸線處於 {{score}} 分漏水怠速 — 點火 Pro，解鎖智能分析、全球天梯與雲端備份。",
-        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 Pro 通電額度已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 請待重置後再通電。"
+        "pro-required": "⚠️ 檢測到 {{axis}} 軸線停在 {{score}} 分怠速漏水。點火 Pro，一次解鎖三大核心頻道：",
+        "quota-exhausted": "⚠️ 今日通電額度已用罄；{{axis}} 仍停在 {{score}} 分。升級或等待重置後，可繼續使用 Pro 三大頻道："
       },
-      "cta": "點火 Pro Pass",
+      "featuresTitle": "Pro 三大核心",
+      "features": {
+        "dyno": "智能遙測分析 — 數據說明與跨軸診斷",
+        "ladder": "全球天梯戰場 — 多維排行榜對決",
+        "cloud": "雲端數據備份 — 訓練史永久同步"
+      },
+      "price": "NT$ 30 / 月 ($1.00 USD)",
+      "cta": "⚡ 點火 Pro Pass (NT$ 30 / 月)",
       "dismiss": "返回控制台",
       "busy": "金流授權中…",
       "billingFail": "金流連線失敗 — 請重試或至設定還原購買。",
