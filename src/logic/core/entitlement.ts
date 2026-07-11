@@ -45,11 +45,9 @@ function requiresProForFeature(
   if (feature === 'cloud-sync') {
     return !hasProAccess(ent, now);
   }
-  if (feature === 'dyno-intel-full') {
+  // WHY: Commercial constitution — Dyno Intel (trial + full) is Pro-only with Google auth.
+  if (feature === 'dyno-intel-full' || feature === 'dyno-intel-trial') {
     return !hasProAccess(ent, now);
-  }
-  if (feature === 'dyno-intel-trial') {
-    return false;
   }
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
     return false;
@@ -58,10 +56,12 @@ function requiresProForFeature(
 }
 
 /**
- * Single source of truth for auth vs Pro UI gates across ladder, upload, and cloud sync.
+ * Single source of truth for auth vs Pro UI gates across ladder, upload, cloud sync, and Dyno.
  *
- * Design intent (WHY): Beta ladder open-access and Pro-only cloud sync previously diverged
+ * Design intent (WHY): Beta ladder open-access and Pro-only cloud/Dyno previously diverged
  * in scattered checks — one decision tree keeps modal copy and navigation predictable.
+ * Core is download-included (`owned`); `kind: 'core'` is unused by resolveUiGate
+ * but retained on UiGateKind for upload-gate Exclude<> compatibility.
  * Route materialization stays in `uiGateNavigation` to keep logic/core framework-free.
  */
 export function resolveUiGate(
@@ -77,10 +77,6 @@ export function resolveUiGate(
 
   if (!isGoogleLinkedAuth(authStatus, isAnonymous)) {
     return { kind: 'auth' };
-  }
-
-  if (feature === 'dyno-intel-trial' && !hasCoreAccess(ent) && !hasProAccess(ent, now)) {
-    return { kind: 'core' };
   }
 
   if (!requiresProForFeature(feature, ent, now)) {

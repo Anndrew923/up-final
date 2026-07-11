@@ -55,8 +55,9 @@ describe('subscription service', () => {
     useAuthStore.getState().setSignedOut();
   });
 
-  it('requires core entitlement before purchase', async () => {
+  it('allows purchase path when Core is download-included (always owned)', async () => {
     useEntitlementStore.getState().resetEntitlement();
+    expect(useEntitlementStore.getState().purchaseStatus).toBe('owned');
     useAuthStore.setState({
       status: 'signed-in',
       uid: 'tester',
@@ -68,11 +69,8 @@ describe('subscription service', () => {
     });
 
     const result = await purchaseProSubscription();
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.reason).toBe('core-required');
-    }
-    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+    expect(triggerProPurchaseCelebration).toHaveBeenCalled();
   });
 
   it('requires signed-in identity when purchasing', async () => {

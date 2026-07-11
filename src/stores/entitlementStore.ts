@@ -22,6 +22,9 @@ export interface EntitlementStore extends EntitlementState {
    * WHY: Prevent prior user's Pro snapshot leaking to the next account on shared localStorage.
    */
   bindEntitlementSession(uid: string | null): void;
+  /**
+   * Debug / legacy setter — `none` is coerced to `owned` in normalize (download-includes-Core).
+   */
   setPurchaseStatus(status: PurchaseStatus): void;
   setSubscriptionStatus(status: SubscriptionStatus): void;
   setProExpiry(iso: string | null): void;
@@ -30,7 +33,8 @@ export interface EntitlementStore extends EntitlementState {
 }
 
 const defaultState: EntitlementState = {
-  purchaseStatus: 'none',
+  // WHY: Download-includes-Core constitution — opening the app grants Core buyout.
+  purchaseStatus: 'owned',
   subscriptionStatus: 'free',
   isPro: false,
   proExpiresAt: null,
@@ -41,8 +45,17 @@ const defaultState: EntitlementState = {
 /** Tracks which uid the in-memory subscription cache belongs to. */
 let boundSessionUid: string | null = null;
 
+/**
+ * WHY: Legacy caches / debug toggles may still write `purchaseStatus: 'none'`.
+ * Forcing `owned` here prevents Pro funnels from mis-routing users as "missing Core".
+ */
 function normalizeEntitlementState(state: EntitlementState): EntitlementState {
-  return syncProFlag(normalizeGraceExpiry(state));
+  return syncProFlag(
+    normalizeGraceExpiry({
+      ...state,
+      purchaseStatus: 'owned',
+    })
+  );
 }
 
 function buildInitialEntitlement(): EntitlementState {

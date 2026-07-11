@@ -63,11 +63,13 @@ describe('entitlement core guards', () => {
     expect(canAccessLeaderboard(grace, now)).toBe(true);
   });
 
-  it('dyno-intel trial requires core ownership when not pro', () => {
-    const noCore = buildEntitlement({ purchaseStatus: 'none' });
-    const core = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
-    expect(resolveUiGate('dyno-intel-trial', noCore, 'signed-in', false).kind).toBe('core');
-    expect(resolveUiGate('dyno-intel-trial', core, 'signed-in', false).kind).toBe('none');
+  it('dyno-intel requires Pro for all modes when signed in', () => {
+    const free = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
+    const pro = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'pro' });
+    expect(resolveUiGate('dyno-intel-trial', free, 'signed-in', false).kind).toBe('pro');
+    expect(resolveUiGate('dyno-intel-full', free, 'signed-in', false).kind).toBe('pro');
+    expect(resolveUiGate('dyno-intel-trial', pro, 'signed-in', false).kind).toBe('none');
+    expect(resolveUiGate('dyno-intel-full', pro, 'signed-in', false).kind).toBe('none');
   });
 
   it('structured user sync is Pro-only regardless of leaderboard paywall mode', () => {

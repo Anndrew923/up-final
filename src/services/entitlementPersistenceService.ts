@@ -32,7 +32,8 @@ function parseStoredEntitlement(raw: string | null): PersistedEntitlementSubset 
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<PersistedEntitlementSubset>;
-    const purchaseStatus = parsed.purchaseStatus === 'owned' ? 'owned' : 'none';
+    // WHY: Download-includes-Core — migrate legacy `none` so production users are not locked out.
+    const purchaseStatus = 'owned';
     const subscriptionStatus =
       parsed.subscriptionStatus === 'pro' ||
       parsed.subscriptionStatus === 'grace' ||

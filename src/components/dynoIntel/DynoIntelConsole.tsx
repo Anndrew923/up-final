@@ -16,6 +16,7 @@ import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import { hasProAccess } from '../../logic/core/entitlement';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
+import { joinArenaPath } from '../../lib/joinArenaNavigation';
 import { hapticService } from '../../services/hapticService';
 import { purchaseProSubscription } from '../../services/subscriptionService';
 import { useAuthStore } from '../../stores/authStore';
@@ -119,10 +120,14 @@ const DynoIntelConsole = () => {
     setAuthGateOpen(true);
   }, []);
 
-  const handleCoreRequired = useCallback(() => {
-    navigate(ROUTES.joinArena);
+  /**
+   * Full-page Pro funnel only when native billing cannot complete in-sheet
+   * (e.g. RevenueCat offerings missing). WHY: Preserve surface via allowlisted `returnTo`.
+   */
+  const openJoinArenaProFunnel = useCallback(() => {
     sheet.closeSheet();
-  }, [navigate, sheet]);
+    navigate(joinArenaPath('dyno-intel', pathname));
+  }, [navigate, pathname, sheet]);
 
   const chat = useDynoIntelChat({
     mode: DYNO_INFERENCE_MODE,
@@ -131,7 +136,6 @@ const DynoIntelConsole = () => {
     quota,
     onPaywallRequest: openPaywall,
     onAuthBlocked: handleAuthBlocked,
-    onCoreRequired: handleCoreRequired,
   });
 
   const { restoreFromLog, clearChat } = chat;
@@ -160,10 +164,7 @@ const DynoIntelConsole = () => {
         handleAuthBlocked();
         return;
       }
-      if (entry.access.blockReason === 'core-required') {
-        handleCoreRequired();
-        return;
-      }
+      // WHY: Unauthenticated is auth sheet; missing Pro stays in Bottom Sheet paywall (Spotify-style).
       openPaywall('pro-required');
       return;
     }
@@ -174,7 +175,6 @@ const DynoIntelConsole = () => {
     authStatus,
     entitlement,
     handleAuthBlocked,
-    handleCoreRequired,
     isAnonymous,
     openPaywall,
     restoreLatestLog,
@@ -200,6 +200,11 @@ const DynoIntelConsole = () => {
       void hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
+        // WHY: Native RC configured but offerings/purchase unavailable — escalate with returnTo.
+        if (result.reason === 'billing-unavailable') {
+          openJoinArenaProFunnel();
+          return;
+        }
         setPaywallBillingError(true);
         return;
       }
@@ -209,7 +214,7 @@ const DynoIntelConsole = () => {
     } finally {
       setPaywallBusy(false);
     }
-  }, [restoreLatestLog]);
+  }, [openJoinArenaProFunnel, restoreLatestLog]);
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
@@ -277,7 +282,8 @@ const DynoIntelConsole = () => {
         secondaryLabel={t('gateSheet.secondary')}
         onPrimary={() => {
           setAuthGateOpen(false);
-          navigateFromUiGate(navigate, { kind: 'auth' });
+          // WHY: After Google link, return to the surface that opened Dyno — not a blind home dump.
+          navigateFromUiGate(navigate, { kind: 'auth' }, pathname);
         }}
         onSecondary={() => setAuthGateOpen(false)}
       />

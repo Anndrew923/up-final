@@ -77,19 +77,19 @@
     },
     "gate": {
       "authDescription": "Sign in with Google to power on DYNO INTEL.",
-      "coreDescription": "Own Core for 2 daily AI briefings (includes cross-axis diagnostics).",
-      "proDescription": "Weight simulation is Pro-only — 30 daily uplinks; join the arena for full DYNO channel.",
-      "quotaDescription": "Daily uplink exhausted. Try again tomorrow or upgrade to Pro for 30/day."
+      "coreDescription": "Core local assessment, radar, and history ship with the download; DYNO INTEL is a Pro channel.",
+      "proDescription": "DYNO INTEL is Pro-only — smart analysis, global ladder, and cloud backup in one membership.",
+      "quotaDescription": "Daily uplink exhausted. Try again tomorrow or confirm your Pro subscription."
     },
     "paywall": {
       "badge": "Console integrity error",
       "title": {
-        "pro-required": "Weight simulation uplink locked",
+        "pro-required": "DYNO INTEL channel locked",
         "quota-exhausted": "Daily uplink exhausted"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: Weight simulation uplink is locked. {{axis}} axis idles at {{score}} pts — weight simulation matrix and 30 daily uplinks are Pro-only. Ignite Pro for global ladder, cloud backup, and full DYNO telemetry.",
-        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's 2 AI briefings (including cross-axis) are spent. {{axis}} axis still idles at {{score}} pts — upgrade to Pro for 30 daily uplinks and weight simulation."
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]: DYNO INTEL full-channel telemetry requires Pro. {{axis}} axis idles at {{score}} pts — ignite Pro for smart analysis, global ladder, and cloud backup.",
+        "quota-exhausted": "⚠️ [UPLINK CAP REACHED]: Today's Pro uplink quota is spent. {{axis}} axis still idles at {{score}} pts — try again after reset."
       },
       "cta": "Ignite Pro Pass",
       "dismiss": "Return to console",

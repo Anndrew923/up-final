@@ -14,7 +14,7 @@ function hasDynoIntelBypassAccess(authStatus: AuthStatus, isAnonymous: boolean):
   return isDynoIntelProBypassActive() && isGoogleLinkedAuth(authStatus, isAnonymous);
 }
 
-export type DynoIntelBlockReason = 'auth' | 'core-required' | 'pro-required';
+export type DynoIntelBlockReason = 'auth' | 'pro-required';
 
 export interface DynoIntelAccessResult {
   allowed: boolean;
@@ -22,15 +22,10 @@ export interface DynoIntelAccessResult {
   joinArenaFrom?: UiGateJoinArenaFrom;
 }
 
-function gateFeatureForMode(mode: DynoIntelMode): 'dyno-intel-trial' | 'dyno-intel-full' {
-  if (mode === 'weight-simulation') return 'dyno-intel-full';
-  return 'dyno-intel-trial';
-}
-
 function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
   if (gate.kind === 'none') return { allowed: true };
   if (gate.kind === 'auth') return { allowed: false, blockReason: 'auth' };
-  if (gate.kind === 'core') return { allowed: false, blockReason: 'core-required' };
+  // WHY: `core` is legacy-only (download-includes-Core); collapse into Pro paywall context.
   return {
     allowed: false,
     blockReason: 'pro-required',
@@ -39,8 +34,8 @@ function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
 }
 
 /**
- * Maps DYNO INTEL diagnostic mode to auth / Core / Pro gates.
- * WHY: Core trial (2/day) covers single-axis + cross-axis; weight-simulation stays Pro-only.
+ * Maps DYNO INTEL diagnostic mode to auth / Pro gates.
+ * WHY: Commercial constitution — Dyno Intel is Pro-only; Core buyout is assumed for all installers.
  */
 export function resolveDynoIntelAccess(
   mode: DynoIntelMode,
@@ -57,13 +52,16 @@ export function resolveDynoIntelAccess(
     return { allowed: true };
   }
 
-  const feature = gateFeatureForMode(mode);
-  return mapUiGateToDynoAccess(resolveUiGate(feature, ent, authStatus, isAnonymous, now));
+  // WHY: Mode no longer splits trial vs full — all inference paths share the Pro gate.
+  void mode;
+  return mapUiGateToDynoAccess(
+    resolveUiGate('dyno-intel-full', ent, authStatus, isAnonymous, now)
+  );
 }
 
 /**
- * Resolves sheet entry mode from route suggestion — no cross-axis downgrade for Core.
- * WHY: Home/Lobby suggest cross-axis; Core trial now uses the same 2/day bucket for cross-axis.
+ * Resolves sheet entry mode from route suggestion.
+ * WHY: Inference mode is fixed; access gate alone decides open vs paywall.
  */
 export function resolveDynoIntelSheetEntry(
   suggestedMode: DynoIntelMode,
@@ -76,13 +74,14 @@ export function resolveDynoIntelSheetEntry(
   return { openMode: suggestedMode, access };
 }
 
+/** @deprecated Prefer `canUseDynoIntelFull` — trial is no longer a separate entitlement tier. */
 export function canUseDynoIntelTrial(
   ent: EntitlementState,
   authStatus: AuthStatus,
   isAnonymous: boolean,
   now: Date = new Date()
 ): boolean {
-  return resolveDynoIntelAccess('single-axis', ent, authStatus, isAnonymous, now).allowed;
+  return canUseDynoIntelFull(ent, authStatus, isAnonymous, now);
 }
 
 export function canUseDynoIntelFull(

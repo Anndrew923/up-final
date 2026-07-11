@@ -39,25 +39,21 @@ describe('dynoIntelGates', () => {
     expect(access.blockReason).toBe('auth');
   });
 
-  it('allows signed-in core user for single-axis trial', () => {
+  it('requires Pro for signed-in free users on all Dyno modes', () => {
     const access = resolveDynoIntelAccess('single-axis', buildEntitlement(), 'signed-in', false);
-    expect(access.allowed).toBe(true);
-    expect(canUseDynoIntelTrial(buildEntitlement(), 'signed-in', false)).toBe(true);
-  });
-
-  it('blocks non-core users from trial bait', () => {
-    const ent = buildEntitlement({ purchaseStatus: 'none' });
-    const access = resolveDynoIntelAccess('single-axis', ent, 'signed-in', false);
     expect(access.allowed).toBe(false);
-    expect(access.blockReason).toBe('core-required');
+    expect(access.blockReason).toBe('pro-required');
+    expect(access.joinArenaFrom).toBe('dyno-intel');
+    expect(canUseDynoIntelTrial(buildEntitlement(), 'signed-in', false)).toBe(false);
   });
 
-  it('allows core user for cross-axis mode', () => {
+  it('requires Pro for cross-axis mode when not subscribed', () => {
     const ent = buildEntitlement({ subscriptionStatus: 'free' });
     const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
-    expect(access.allowed).toBe(true);
+    expect(access.allowed).toBe(false);
+    expect(access.blockReason).toBe('pro-required');
     expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(false);
-    expect(canUseDynoIntelMode('cross-axis', ent, 'signed-in', false)).toBe(true);
+    expect(canUseDynoIntelMode('cross-axis', ent, 'signed-in', false)).toBe(false);
   });
 
   it('requires pro for weight-simulation mode', () => {
@@ -69,18 +65,21 @@ describe('dynoIntelGates', () => {
     expect(canUseDynoIntelMode('weight-simulation', ent, 'signed-in', false)).toBe(false);
   });
 
-  it('allows pro user for weight-simulation mode', () => {
+  it('allows pro user for all Dyno modes', () => {
     const ent = buildEntitlement({ subscriptionStatus: 'pro' });
-    const access = resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false);
-    expect(access.allowed).toBe(true);
+    expect(resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false).allowed).toBe(true);
+    expect(resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false).allowed).toBe(
+      true
+    );
     expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
   });
 
-  it('opens cross-axis for core users without single-axis fallback', () => {
+  it('blocks sheet entry for free users on lobby surfaces', () => {
     const ent = buildEntitlement();
     const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
     expect(entry.openMode).toBe('cross-axis');
-    expect(entry.access.allowed).toBe(true);
+    expect(entry.access.allowed).toBe(false);
+    expect(entry.access.blockReason).toBe('pro-required');
   });
 
   it('keeps cross-axis for pro users on lobby surfaces', () => {
@@ -93,7 +92,7 @@ describe('dynoIntelGates', () => {
   describe('pro bypass (dev/beta)', () => {
     it('allows cross-axis for signed-in users when bypass is active', () => {
       mockIsDynoIntelProBypassActive.mockReturnValue(true);
-      const ent = buildEntitlement({ purchaseStatus: 'none', subscriptionStatus: 'free' });
+      const ent = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
       const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
       expect(access.allowed).toBe(true);
       expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
@@ -115,7 +114,7 @@ describe('dynoIntelGates', () => {
       expect(canUseDynoIntelFull(buildEntitlement(), 'signed-in', true)).toBe(false);
     });
 
-    it('allows core cross-axis when bypass is inactive', () => {
+    it('blocks free users when bypass is inactive', () => {
       mockIsDynoIntelProBypassActive.mockReturnValue(false);
       const access = resolveDynoIntelAccess(
         'cross-axis',
@@ -123,7 +122,8 @@ describe('dynoIntelGates', () => {
         'signed-in',
         false
       );
-      expect(access.allowed).toBe(true);
+      expect(access.allowed).toBe(false);
+      expect(access.blockReason).toBe('pro-required');
     });
   });
 });

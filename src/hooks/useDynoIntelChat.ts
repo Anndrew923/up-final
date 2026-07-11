@@ -27,7 +27,6 @@ export interface UseDynoIntelChatInput {
   quota: Pick<DynoIntelQuotaState, 'applyServerQuota' | 'remaining'>;
   onPaywallRequest: (reason: DynoIntelPaywallReason) => void;
   onAuthBlocked: () => void;
-  onCoreRequired: () => void;
 }
 
 export function useDynoIntelChat(input: UseDynoIntelChatInput) {
@@ -62,10 +61,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       if (!access.allowed) {
         if (access.blockReason === 'auth') {
           input.onAuthBlocked();
-          return;
-        }
-        if (access.blockReason === 'core-required') {
-          input.onCoreRequired();
           return;
         }
         input.onPaywallRequest('pro-required');
@@ -117,13 +112,9 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             }
             return;
           }
-          if (result.reason === 'pro-required') {
+          if (result.reason === 'pro-required' || result.reason === 'core-required') {
+            // WHY: Server may still emit legacy core-required; client constitution maps both to Pro paywall.
             input.onPaywallRequest('pro-required');
-            setStatus('idle');
-            return;
-          }
-          if (result.reason === 'core-required') {
-            input.onCoreRequired();
             setStatus('idle');
             return;
           }

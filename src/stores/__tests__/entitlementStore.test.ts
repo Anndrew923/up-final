@@ -54,4 +54,12 @@ describe('entitlementStore', () => {
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
   });
+
+  it('defaults and normalizes purchaseStatus to owned (download-includes-Core)', () => {
+    useEntitlementStore.getState().resetEntitlement();
+    expect(useEntitlementStore.getState().purchaseStatus).toBe('owned');
+
+    useEntitlementStore.getState().setPurchaseStatus('none');
+    expect(useEntitlementStore.getState().purchaseStatus).toBe('owned');
+  });
 });

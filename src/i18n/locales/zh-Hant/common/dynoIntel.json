@@ -77,19 +77,19 @@
     },
     "gate": {
       "authDescription": "DYNO INTEL 需要 Google 登入後才能通電遙測。",
-      "coreDescription": "解鎖 Core 買斷後，每日 2 次 AI 解讀（含跨軸診斷）。",
-      "proDescription": "體重模擬遙測為 Pro 專屬 — 每日 30 次通電，加入戰場解鎖全頻道。",
-      "quotaDescription": "今日通電額度已耗盡。明日再來，或升級 Pro 取得 30 次/日。"
+      "coreDescription": "Core 本機評測、雷達與歷史已隨下載解鎖；DYNO INTEL 為 Pro 頻道。",
+      "proDescription": "DYNO INTEL 為 Pro 專屬 — 智能分析通電、全球天梯與雲端備份一次解鎖。",
+      "quotaDescription": "今日通電額度已耗盡。明日再來，或確認 Pro 訂閱狀態。"
     },
     "paywall": {
       "badge": "行車電腦完整性錯誤",
       "title": {
-        "pro-required": "體重模擬遙測已熔斷",
+        "pro-required": "DYNO INTEL 頻道已熔斷",
         "quota-exhausted": "今日通電額度已耗盡"
       },
       "body": {
-        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：體重模擬遙測通道已熔斷。檢測到 {{axis}} 軸線處於 {{score}} 分漏水怠速 — 體重模擬矩陣與每日 30 次通電為 Pro 專屬。點火 Pro，解鎖全球天梯、無感雲端備份與全頻道 DYNO 遙測。",
-        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 2 次 AI 解讀（含跨軸）已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 升級 Pro 可恢復每日 30 次通電與體重模擬遙測。"
+        "pro-required": "⚠️ [CONSOLE INTEGRITY ERROR]：DYNO INTEL 全頻道遙測需 Pro 訂閱。檢測到 {{axis}} 軸線處於 {{score}} 分漏水怠速 — 點火 Pro，解鎖智能分析、全球天梯與雲端備份。",
+        "quota-exhausted": "⚠️ [通電額度耗盡]：今日 Pro 通電額度已用罄。你的 {{axis}} 軸仍停在 {{score}} 分怠速漏水 — 請待重置後再通電。"
       },
       "cta": "點火 Pro Pass",
       "dismiss": "返回控制台",

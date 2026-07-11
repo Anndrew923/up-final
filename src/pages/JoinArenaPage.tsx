@@ -1,18 +1,18 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import JoinArenaComparisonTable from '../components/arena/JoinArenaComparisonTable';
 import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
 import { MONETIZATION_CONFIG } from '../config/monetization';
-import { ROUTES } from '../config/routes';
 import { hasCoreAccess } from '../logic/core/entitlement';
 import { useUiGate } from '../hooks/useUiGate';
 import {
   joinArenaDescriptionKey,
   joinArenaGateFeature,
   parseJoinArenaFrom,
+  resolveJoinArenaReturnTo,
 } from '../lib/joinArenaNavigation';
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
@@ -33,13 +33,16 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const location = useLocation();
   const joinFrom = useMemo(() => parseJoinArenaFrom(location.search), [location.search]);
   const descriptionKey = joinArenaDescriptionKey(joinFrom);
-  const returnTo = joinFrom === 'backup' ? ROUTES.tools : ROUTES.ladder;
+  // WHY: Explicit allowlisted returnTo beats funnel defaults so Dyno never hard-routes to ladder.
+  const returnTo = useMemo(
+    () => resolveJoinArenaReturnTo(joinFrom, location.search),
+    [joinFrom, location.search]
+  );
   const isBackupFunnel = joinFrom === 'backup';
+  const isDynoFunnel = joinFrom === 'dyno-intel';
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
-  const [banner, setBanner] = useState<'idle' | 'core' | 'auth-ok' | 'auth-fail' | 'billing-fail'>(
-    'idle'
-  );
+  const [banner, setBanner] = useState<'idle' | 'auth-ok' | 'auth-fail' | 'billing-fail'>('idle');
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
 
@@ -53,7 +56,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const uiGate = useUiGate(gateFeature);
   const coreOwned = hasCoreAccess(entitlement);
   const isBetaOpen = !MONETIZATION_CONFIG.leaderboardPaywallEnabled;
-  const showLadderBetaBanner = isBetaOpen && !isBackupFunnel;
+  // WHY: Dyno / backup funnels must not inherit ladder beta copy — context-aware paywall isolation.
+  const showLadderBetaBanner = isBetaOpen && !isBackupFunnel && !isDynoFunnel;
   const ctaMotionOn = !usePrefersReducedMotion();
 
   const handleGoogleSignIn = async () => {
@@ -86,16 +90,15 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
 
     setBillingBusy(true);
     try {
+      // WHY: Download-includes-Core — client always owns Core; keep assert for defense in depth.
       if (!coreOwned) {
-        setBanner('core');
+        setBanner('billing-fail');
         return;
       }
       hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
-        if (result.reason === 'core-required') {
-          setBanner('core');
-        } else if (result.reason === 'auth-required') {
+        if (result.reason === 'auth-required') {
           setBanner('auth-fail');
         } else {
           setBanner('billing-fail');
@@ -111,18 +114,23 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const subscribeDisabled =
     billingBusy ||
     authStatus === 'loading' ||
-    (uiGate.kind === 'pro' && (!coreOwned || (subscriptionStatus === 'pro' && isPro)));
+    (uiGate.kind === 'pro' && subscriptionStatus === 'pro' && isPro);
 
   const handleBack = () => {
     if (onBack) {
       onBack();
       return;
     }
-    navigate(ROUTES.home);
+    navigate(returnTo);
   };
 
   const primaryCtaLabel = (() => {
     if (billingBusy || authStatus === 'loading') return t('billingLoading');
+    if (isDynoFunnel) {
+      if (uiGate.kind === 'auth') return t('googleLogin');
+      if (uiGate.kind === 'none') return t('returnToDynoIntel');
+      return t('subscribeUnlockProDynoIntel');
+    }
     if (uiGate.kind === 'auth') {
       return isBackupFunnel
         ? t('googleLogin')
@@ -170,16 +178,11 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           {isPro ? <span className="text-xs text-emerald-400">{t('activeProBadge')}</span> : null}
         </div>
         <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
-          {t('joinTitle')}
+          {isDynoFunnel ? t('joinTitleFromDynoIntel') : t('joinTitle')}
         </h1>
         <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
       </header>
 
-      {banner === 'core' ? (
-        <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-          {t('coreRequired')}
-        </p>
-      ) : null}
       {banner === 'auth-ok' ? (
         <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
           {t('googleLoginSuccess', { name: signedInDisplayName })}
@@ -204,7 +207,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         </p>
       ) : null}
 
-      <JoinArenaComparisonTable />
+      {/* WHY: Dyno funnel keeps Pro feature list; hides Core-vs-Pro ladder comparison to avoid arena bleed. */}
+      {isDynoFunnel ? null : <JoinArenaComparisonTable />}
       <JoinArenaProFeatures />
 
       <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
@@ -213,7 +217,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         </p>
         <p className="mt-2 text-sm text-zinc-300">
           {uiGate.kind === 'auth'
-            ? isBackupFunnel
+            ? isBackupFunnel || isDynoFunnel
               ? t('identityRequired')
               : isBetaOpen
                 ? t('identityOptionalBeta')
@@ -233,18 +237,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
               : t('googleLogin')}
         </button>
       </section>
-
-      {!coreOwned && uiGate.kind === 'pro' && (isBackupFunnel || !isBetaOpen) ? (
-        <section className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/60 p-5">
-          <p className="text-sm text-zinc-300">{t('coreGateBody')}</p>
-          <Link
-            to={ROUTES.home}
-            className="mt-4 inline-flex items-center justify-center rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-black transition hover:bg-white"
-          >
-            {t('coreGateCta')}
-          </Link>
-        </section>
-      ) : null}
 
       <section className="flex w-full flex-col items-stretch gap-3 pt-2">
         <button

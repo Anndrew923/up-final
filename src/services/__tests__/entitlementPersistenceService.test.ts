@@ -40,6 +40,21 @@ describe('entitlementPersistenceService', () => {
     expect(loaded?.subscriptionStatus).toBe('pro');
     expect(loaded?.isPro).toBe(true);
     expect(loaded?.proExpiresAt).toBe(state.proExpiresAt);
+    expect(loaded?.purchaseStatus).toBe('owned');
+  });
+
+  it('migrates legacy purchaseStatus none to owned', () => {
+    memory.set(
+      'up.final.entitlement.v1:user-legacy',
+      JSON.stringify({
+        purchaseStatus: 'none',
+        subscriptionStatus: 'free',
+        isPro: false,
+        proExpiresAt: null,
+        planId: null,
+      })
+    );
+    expect(loadPersistedEntitlement('user-legacy')?.purchaseStatus).toBe('owned');
   });
 
   it('scopes cache per uid', () => {
