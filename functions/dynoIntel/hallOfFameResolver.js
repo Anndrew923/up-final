@@ -1,6 +1,7 @@
 /**
- * v5.0 — Hall of Fame matrix resolver (sparse JSON from xlsx wash).
+ * v5.0 — Hall of Fame matrix resolver (sparse JSON from xlsx/csv wash).
  * WHY: Decouple celebrity anchors from praise copy; zh-only UI display names.
+ * Matrix cells store FULL rosters; maxDisplayNames is per-reply sample size only.
  */
 import matrixDoc from "./data/hallOfFameMatrix.v1.json" with { type: "json" };
 

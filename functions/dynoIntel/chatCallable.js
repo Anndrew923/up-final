@@ -15,7 +15,7 @@ import {
 } from "./deterministicDynoIntelRoutes.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
 import { recordDynoIntelRouteTelemetry } from "./geminiTelemetry.js";
-import { resolveHallOfFameConsultReply } from "./hallOfFameConsultGate.js";
+import { resolveHallOfFameConsultReply, isHallOfFameConsultQuestion } from "./hallOfFameConsultGate.js";
 import { buildPreemptiveOffTopicReply, shouldPreemptOffTopic } from "./offTopicPreempt.js";
 import {
   checkDynoIntelDailyLimit,
@@ -171,7 +171,10 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
     priorUserQuestion: priorTurn?.userQuestion ?? null,
   });
 
-  const cached = await loadDynoIntelCache(cacheHash);
+  // WHY: Pantheon consult rosters are Fisher–Yates sampled — replaying a cached
+  // commentary freezes the same 3 names across identical questions.
+  const isHallConsult = isHallOfFameConsultQuestion(userQuestion);
+  const cached = isHallConsult ? null : await loadDynoIntelCache(cacheHash);
   if (cached) {
     const quota = await consumeDynoQuota(uid, isPro, now);
     if (!quota.allowed) {
@@ -245,7 +248,7 @@ export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
       inferenceContext,
       userQuestion
     );
-    await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+    // WHY: Never persist shuffled pantheon consult copy — each ask must re-sample.
     recordDynoIntelRouteTelemetry({ route: "hall-of-fame", uid, userQuestion });
     return buildDynoChatSuccess(quota, reply);
   }

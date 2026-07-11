@@ -205,8 +205,27 @@ describe("hallOfFameConsultGate", () => {
     const reply = resolveHallOfFameConsultReply(baseContext, "力量80分以上有哪些名人？");
     assert.ok(reply);
     assert.match(reply.commentary, /力量萬神殿對帳權限/);
-    assert.match(reply.commentary, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.match(reply.commentary, /代表性名字包括/);
     assert.match(reply.commentary, /僅供天梯對帳與娛樂參考。$/);
+  });
+
+  it("v5.10 — overall 90 consult samples from the full cell roster (not first-3 only)", () => {
+    const ctx = {
+      ...baseContext,
+      overallScore: 95,
+    };
+    const seen = new Set();
+    for (let i = 0; i < 30; i += 1) {
+      const reply = resolveHallOfFameConsultReply(ctx, "總分90分以上有哪些名人？");
+      assert.ok(reply);
+      assert.match(reply.commentary, /總分萬神殿對帳權限/);
+      const match = reply.commentary.match(/代表性名字包括\s*(.+?)。/);
+      assert.ok(match?.[1]);
+      for (const name of match[1].split("、")) {
+        seen.add(name.trim());
+      }
+    }
+    assert.ok(seen.size > 3, `expected rotating full 90:overall pool, got ${[...seen].join("|")}`);
   });
 
   it("v5.8 — overall consult samples rotating names from the decade pool", () => {
@@ -231,7 +250,8 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(reply);
     assert.match(reply.commentary, /80-90 \(Advanced tier\)/);
-    assert.match(reply.commentary, /Jason Statham|Chris Hemsworth|Conor McGregor/);
+    assert.match(reply.commentary, /strength Pantheon benchmarking/i);
+    assert.match(reply.commentary, /Representative names currently available/);
     assert.match(reply.commentary, /entertainment purposes\.$/);
     assert.doesNotMatch(reply.commentary, /[\u4e00-\u9fff]/);
   });

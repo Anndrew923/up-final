@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "source": "DynoIntel_v4.0_名人堂聖殿矩陣.xlsx",
-  "generatedAt": "2026-07-07T09:49:28.116Z",
+  "source": "DynoIntel_v4.0_名人堂聖殿矩陣.csv",
+  "generatedAt": "2026-07-11T15:30:31.202Z",
   "maxDisplayNames": 3,
   "entries": [
     {
@@ -22,6 +22,16 @@
           "id": "mariusz_pudzianowski",
           "displayZh": "Mariusz Pudzianowski",
           "referenceScore": 166
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev",
+          "referenceScore": 163
+        },
+        {
+          "id": "tom_haviland",
+          "displayZh": "Tom Haviland",
+          "referenceScore": 150
         }
       ]
     },
@@ -43,6 +53,16 @@
           "id": "joshua_cheptegei",
           "displayZh": "Joshua Cheptegei",
           "referenceScore": 176
+        },
+        {
+          "id": "faith_kipyegon",
+          "displayZh": "Faith Kipyegon",
+          "referenceScore": 175
+        },
+        {
+          "id": "letesenbet_gidey",
+          "displayZh": "Letesenbet Gidey",
+          "referenceScore": 174
         }
       ]
     },
@@ -80,6 +100,11 @@
           "id": "ronnie_coleman",
           "displayZh": "Ronnie Coleman",
           "referenceScore": 150
+        },
+        {
+          "id": "tom_haviland",
+          "displayZh": "Tom Haviland",
+          "referenceScore": 150
         }
       ]
     },
@@ -101,6 +126,11 @@
           "id": "mariusz_pudzianowski",
           "displayZh": "Mariusz Pudzianowski",
           "referenceScore": 158
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev",
+          "referenceScore": 150
         }
       ]
     },
@@ -143,6 +173,14 @@
         {
           "id": "marcelo_mantecon",
           "displayZh": "Marcelo Mantecon"
+        },
+        {
+          "id": "flora_duffy",
+          "displayZh": "Flora Duffy"
+        },
+        {
+          "id": "eri_suzuki",
+          "displayZh": "Eri Suzuki"
         }
       ]
     },
@@ -203,6 +241,10 @@
         {
           "id": "mike_o_hearn",
           "displayZh": "Mike O'Hearn"
+        },
+        {
+          "id": "tom_haviland",
+          "displayZh": "Tom Haviland"
         }
       ]
     },
@@ -269,6 +311,10 @@
         {
           "id": "aleksandr_karelin",
           "displayZh": "Aleksandr Karelin"
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson"
         }
       ]
     },
@@ -279,6 +325,10 @@
         {
           "id": "larry_wheels",
           "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev"
         }
       ]
     },
@@ -321,6 +371,22 @@
         {
           "id": "haf_r_j_l_us_bj_rnsson",
           "displayZh": "Hafþór Júlíus Björnsson"
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson"
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev"
         }
       ]
     },
@@ -339,6 +405,30 @@
         {
           "id": "larry_wheels",
           "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
         }
       ]
     },
@@ -353,6 +443,10 @@
         {
           "id": "cristiano_ronaldo",
           "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
         }
       ]
     },
@@ -371,6 +465,10 @@
         {
           "id": "georges_st_pierre",
           "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
         }
       ]
     },
@@ -407,6 +505,18 @@
         {
           "id": "becca_swanson",
           "displayZh": "Becca Swanson"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
         }
       ]
     },
@@ -425,6 +535,14 @@
         {
           "id": "aleksandr_karelin",
           "displayZh": "Aleksandr Karelin"
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev"
+        },
+        {
+          "id": "tom_haviland",
+          "displayZh": "Tom Haviland"
         }
       ]
     },
@@ -461,6 +579,14 @@
         {
           "id": "batista",
           "displayZh": "Batista"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
         }
       ]
     },
@@ -497,6 +623,14 @@
         {
           "id": "張偉麗",
           "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
         }
       ]
     },
@@ -515,6 +649,42 @@
         {
           "id": "大谷翔平",
           "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "ronnie_coleman",
+          "displayZh": "Ronnie Coleman"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski"
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
         }
       ]
     },
@@ -533,6 +703,34 @@
         {
           "id": "sylvester_stallone",
           "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev"
         }
       ]
     },
@@ -551,6 +749,30 @@
         {
           "id": "ronda_rousey",
           "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
         }
       ]
     },
@@ -569,6 +791,38 @@
         {
           "id": "mike_tyson",
           "displayZh": "Mike Tyson"
+        },
+        {
+          "id": "shaquille_o_neal",
+          "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
         }
       ]
     },
@@ -587,6 +841,22 @@
         {
           "id": "shaquille_o_neal",
           "displayZh": "Shaquille O'Neal"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
         }
       ]
     },
@@ -605,6 +875,26 @@
         {
           "id": "chris_evans",
           "displayZh": "Chris Evans"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
         }
       ]
     },
@@ -623,6 +913,26 @@
         {
           "id": "hugh_jackman",
           "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
+        },
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
         }
       ]
     },
@@ -641,6 +951,26 @@
         {
           "id": "michael_jordan",
           "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
         }
       ]
     },
@@ -659,6 +989,38 @@
         {
           "id": "hugh_jackman",
           "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "the_rock",
+          "displayZh": "The Rock"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪(Jeremy Lin)"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "henry_cavil",
+          "displayZh": "Henry Cavil"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "mike_o_hearn",
+          "displayZh": "Mike O'Hearn"
         }
       ]
     },
@@ -667,16 +1029,76 @@
       "axisId": "gripStrength",
       "anchors": [
         {
-          "id": "jason_statham",
-          "displayZh": "Jason Statham"
-        },
-        {
           "id": "chris_hemsworth",
           "displayZh": "Chris Hemsworth"
         },
         {
           "id": "chris_evans",
           "displayZh": "Chris Evans"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "mike_tyson",
+          "displayZh": "Mike tyson"
+        },
+        {
+          "id": "henry_cavill",
+          "displayZh": "Henry Cavill"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
+        },
+        {
+          "id": "john_cena",
+          "displayZh": "John Cena"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "lbj",
+          "displayZh": "LBJ"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
         }
       ]
     },
@@ -695,6 +1117,22 @@
         {
           "id": "usain_bolt",
           "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
         }
       ]
     },
@@ -703,16 +1141,48 @@
       "axisId": "overall",
       "anchors": [
         {
-          "id": "jason_statham",
-          "displayZh": "Jason Statham"
-        },
-        {
           "id": "henry_cavill",
           "displayZh": "Henry Cavill"
         },
         {
           "id": "kobe_bryant",
           "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "大谷翔平",
+          "displayZh": "大谷翔平（Shohei Ohtani）"
+        },
+        {
+          "id": "arnold",
+          "displayZh": "Arnold"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "iris_kyle",
+          "displayZh": "Iris Kyle"
+        },
+        {
+          "id": "chris_bumstead",
+          "displayZh": "Chris Bumstead"
         }
       ]
     },
@@ -731,6 +1201,18 @@
         {
           "id": "ronda_rousey",
           "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "batista",
+          "displayZh": "Batista"
         }
       ]
     },
@@ -743,12 +1225,72 @@
           "displayZh": "Mike tyson"
         },
         {
-          "id": "jason_statham",
-          "displayZh": "Jason Statham"
-        },
-        {
           "id": "conor_mcgregor",
           "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
+        },
+        {
+          "id": "呂小軍",
+          "displayZh": "呂小軍"
         }
       ]
     },
@@ -767,6 +1309,30 @@
         {
           "id": "kobe_bryant",
           "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
         }
       ]
     },
@@ -785,6 +1351,46 @@
         {
           "id": "rain",
           "displayZh": "Rain"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "tom_holland",
+          "displayZh": "Tom Holland"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "aleksandr_karelin",
+          "displayZh": "Aleksandr Karelin"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
         }
       ]
     },
@@ -803,6 +1409,58 @@
         {
           "id": "rain",
           "displayZh": "Rain"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "chris_evans",
+          "displayZh": "Chris Evans"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
         }
       ]
     },
@@ -821,6 +1479,46 @@
         {
           "id": "zac",
           "displayZh": "Zac"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "dk_metcalf",
+          "displayZh": "DK Metcalf"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
         }
       ]
     },
@@ -839,6 +1537,46 @@
         {
           "id": "chris_evans",
           "displayZh": "Chris Evans"
+        },
+        {
+          "id": "michael_jordan",
+          "displayZh": "Michael Jordan"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "sylvester_stallone",
+          "displayZh": "Sylvester Stallone"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "jennifer_lopez",
+          "displayZh": "Jennifer Lopez"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
         }
       ]
     },
@@ -857,6 +1595,66 @@
         {
           "id": "chris_evans",
           "displayZh": "Chris Evans"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹(Donnie Yen)"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "馬東石",
+          "displayZh": "馬東石（Don Lee）"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
         }
       ]
     },
@@ -889,6 +1687,50 @@
         {
           "id": "stephen_curry",
           "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
+        },
+        {
+          "id": "jason_statham",
+          "displayZh": "Jason Statham"
         }
       ]
     },
@@ -907,6 +1749,30 @@
         {
           "id": "新田真劍佑",
           "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "georges_st_pierre",
+          "displayZh": "Georges St-Pierre"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
         }
       ]
     },
@@ -925,6 +1791,26 @@
         {
           "id": "larry_wheels",
           "displayZh": "Larry Wheels"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
+        },
+        {
+          "id": "jennifer_lopez",
+          "displayZh": "Jennifer Lopez"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
         }
       ]
     },
@@ -943,6 +1829,14 @@
         {
           "id": "michelle_rodriguez",
           "displayZh": "Michelle Rodriguez"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
         }
       ]
     },
@@ -975,6 +1869,30 @@
         {
           "id": "stephen_curry",
           "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
         }
       ]
     },
@@ -993,6 +1911,30 @@
         {
           "id": "新田真劍佑",
           "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "jennifer_lopez",
+          "displayZh": "Jennifer Lopez"
         }
       ]
     },
@@ -1011,6 +1953,38 @@
         {
           "id": "conor_mcgregor",
           "displayZh": "Conor McGregor"
+        },
+        {
+          "id": "usain_bolt",
+          "displayZh": "Usain Bolt"
+        },
+        {
+          "id": "新田真劍佑",
+          "displayZh": "新田真劍佑"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(鐵爪時期)"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
+        },
+        {
+          "id": "jason_momoa",
+          "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "vin_diesel",
+          "displayZh": "Vin Diesel"
         }
       ]
     },
@@ -1043,6 +2017,46 @@
         {
           "id": "rain",
           "displayZh": "Rain"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "gal_gadot",
+          "displayZh": "Gal Gadot"
+        },
+        {
+          "id": "david_beckham",
+          "displayZh": "David Beckham"
+        },
+        {
+          "id": "甄子丹",
+          "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "張偉麗",
+          "displayZh": "張偉麗"
+        },
+        {
+          "id": "ronda_rousey",
+          "displayZh": "Ronda Rousey"
+        },
+        {
+          "id": "jennifer_lopez",
+          "displayZh": "Jennifer Lopez"
         }
       ]
     },
@@ -1061,6 +2075,18 @@
         {
           "id": "milla_jovovich",
           "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
+        },
+        {
+          "id": "hugh_jackman",
+          "displayZh": "Hugh Jackman"
+        },
+        {
+          "id": "ben_affleck蝙蝠俠",
+          "displayZh": "Ben Affleck蝙蝠俠"
         }
       ]
     },
@@ -1079,6 +2105,22 @@
         {
           "id": "david_beckham",
           "displayZh": "David Beckham"
+        },
+        {
+          "id": "布萊德_彼特",
+          "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
         }
       ]
     },
@@ -1097,6 +2139,14 @@
         {
           "id": "zac_efron",
           "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
         }
       ]
     },
@@ -1115,6 +2165,62 @@
         {
           "id": "bruce_lee",
           "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "kobe_bryant",
+          "displayZh": "Kobe bryant"
+        },
+        {
+          "id": "彭于晏eddie_peng",
+          "displayZh": "彭于晏Eddie Peng"
+        },
+        {
+          "id": "rain",
+          "displayZh": "Rain"
+        },
+        {
+          "id": "林書豪",
+          "displayZh": "林書豪（Jeremy Lin）"
+        },
+        {
+          "id": "stephen_curry",
+          "displayZh": "Stephen Curry"
+        },
+        {
+          "id": "河村勇輝",
+          "displayZh": "河村勇輝（Yuki Kawamura）"
+        },
+        {
+          "id": "maria_sharapova",
+          "displayZh": "Maria Sharapova"
+        },
+        {
+          "id": "cristiano_ronaldo",
+          "displayZh": "Cristiano Ronaldo"
+        },
+        {
+          "id": "scarlett_johansson",
+          "displayZh": "Scarlett Johansson"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron(Baywatch 時期)"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "jennifer_lopez",
+          "displayZh": "Jennifer Lopez"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
+        },
+        {
+          "id": "erling_haaland",
+          "displayZh": "Erling Haaland"
         }
       ]
     },
@@ -1133,6 +2239,10 @@
         {
           "id": "milla_jovovich",
           "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
         }
       ]
     },
@@ -1151,6 +2261,14 @@
         {
           "id": "zac_efron",
           "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "ryan_reynolds",
+          "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "布萊德_彼特_特洛伊",
+          "displayZh": "布萊德·彼特《特洛伊》"
         }
       ]
     },
@@ -1187,6 +2305,18 @@
         {
           "id": "布萊德_彼特",
           "displayZh": "布萊德·彼特（Fight Club 時期）"
+        },
+        {
+          "id": "zac_efron",
+          "displayZh": "Zac Efron（Neighbors 時期）"
+        },
+        {
+          "id": "milla_jovovich",
+          "displayZh": "Milla Jovovich"
+        },
+        {
+          "id": "michelle_rodriguez",
+          "displayZh": "Michelle Rodriguez"
         }
       ]
     }

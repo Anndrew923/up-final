@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 /**
- * Washes DynoIntel hall-of-fame xlsx into sparse hallOfFameMatrix.v1.json.
- * Run: node scripts/import-hall-of-fame-matrix.mjs
+ * Washes DynoIntel hall-of-fame matrix (xlsx/csv) into sparse hallOfFameMatrix.v1.json.
+ * Run: node scripts/import-hall-of-fame-matrix.mjs [optional-input-path]
  *
  * DESIGN INTENT:
  * - Rows → decadeKey, columns → axisId (not 1:1 paired — full matrix).
  * - Blank cells omitted (sparse output).
  * - Parenthetical reference scores stripped from display names; kept as optional metadata.
- * - UI sampling capped at 3 names per cell.
+ * - FULL cell roster is persisted (deduped). maxDisplayNames is ONLY the runtime
+ *   per-reply display cap used by resolvers — never an ingest truncate limit.
  */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { basename, dirname, join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import XLSX from "xlsx";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const defaultInput = join(root, "docs/data/DynoIntel_v4.0_名人堂聖殿矩陣.xlsx");
+const defaultCsv = join(root, "docs/data/DynoIntel_v4.0_名人堂聖殿矩陣.csv");
+const defaultXlsx = join(root, "docs/data/DynoIntel_v4.0_名人堂聖殿矩陣.xlsx");
 const outputPath = join(root, "functions/dynoIntel/data/hallOfFameMatrix.v1.json");
 
 const COLUMN_AXIS_MAP = {
@@ -29,15 +31,24 @@ const COLUMN_AXIS_MAP = {
   總分: "overall",
 };
 
+/** Runtime per-reply display cap — mirrored into JSON for resolvers; NOT an ingest limit. */
 const MAX_DISPLAY_NAMES = 3;
 
+function resolveDefaultInput() {
+  // Prefer latest CSV Boss drops; fall back to legacy xlsx.
+  if (existsSync(defaultCsv)) return defaultCsv;
+  return defaultXlsx;
+}
+
 function slugifyId(name) {
-  return String(name)
-    .toLowerCase()
-    .replace(/[（(].*?[）)]/g, "")
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/gi, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 64) || "anchor";
+  return (
+    String(name)
+      .toLowerCase()
+      .replace(/[（(].*?[）)]/g, "")
+      .replace(/[^a-z0-9\u4e00-\u9fff]+/gi, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 64) || "anchor"
+  );
 }
 
 function parseDecadeKey(rowLabel) {
@@ -60,13 +71,20 @@ function stripDisplayName(raw) {
   let name = String(raw ?? "").trim();
   if (!name || name === "、") return "";
   name = name.replace(/\(\d+(?:\.\d+)?\)/g, "").trim();
-  name = name.replace(/（[^）]*）/g, (m) => {
-    if (/^\（\d+(?:\.\d+)?\）$/.test(m)) return "";
-    return m;
-  }).trim();
+  name = name
+    .replace(/（[^）]*）/g, (m) => {
+      if (/^\（\d+(?:\.\d+)?\）$/.test(m)) return "";
+      return m;
+    })
+    .trim();
   return name.replace(/^[,，、\s]+|[,，、\s]+$/g, "").trim();
 }
 
+/**
+ * Persist every unique name in the Excel/CSV cell.
+ * WHY: Ingest used to truncate at MAX_DISPLAY_NAMES (=3), collapsing full pantheon
+ * rosters into a 3-name pool so "random" consults looked frozen.
+ */
 function parseAnchors(cell) {
   const raw = String(cell ?? "").trim();
   if (!raw) return null;
@@ -92,14 +110,23 @@ function parseAnchors(cell) {
     const anchor = { id: slugifyId(displayZh), displayZh };
     if (refMatch) anchor.referenceScore = Number(refMatch[1]);
     anchors.push(anchor);
-    if (anchors.length >= MAX_DISPLAY_NAMES) break;
   }
 
   return anchors.length ? anchors : null;
 }
 
-function importMatrix(inputPath = defaultInput) {
-  const wb = XLSX.readFile(inputPath);
+function readWorkbook(inputPath) {
+  const ext = extname(inputPath).toLowerCase();
+  // WHY: XLSX.readFile mis-detects UTF-8 CJK CSV headers as Latin-1 → only FFMI column matched.
+  if (ext === ".csv") {
+    const text = readFileSync(inputPath, "utf8");
+    return XLSX.read(text, { type: "string", FS: "," });
+  }
+  return XLSX.readFile(inputPath);
+}
+
+function importMatrix(inputPath = resolveDefaultInput()) {
+  const wb = readWorkbook(inputPath);
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
@@ -107,6 +134,12 @@ function importMatrix(inputPath = defaultInput) {
   const columnAxes = header
     .map((h, colIdx) => ({ colIdx, axisId: COLUMN_AXIS_MAP[String(h).trim()] }))
     .filter((c) => c.axisId);
+
+  if (columnAxes.length === 0) {
+    throw new Error(
+      `No axis columns matched in ${basename(inputPath)}. Header was: ${JSON.stringify(header)}`
+    );
+  }
 
   const entries = [];
 
@@ -130,14 +163,26 @@ function importMatrix(inputPath = defaultInput) {
 
   return {
     version: "v1",
-    source: "DynoIntel_v4.0_名人堂聖殿矩陣.xlsx",
+    source: basename(inputPath),
     generatedAt: new Date().toISOString(),
     maxDisplayNames: MAX_DISPLAY_NAMES,
     entries,
   };
 }
 
-const matrix = importMatrix();
+const cliPath = process.argv[2];
+const resolvedInput = cliPath && existsSync(cliPath) ? cliPath : resolveDefaultInput();
+const washed = importMatrix(resolvedInput);
 mkdirSync(dirname(outputPath), { recursive: true });
-writeFileSync(outputPath, `${JSON.stringify(matrix, null, 2)}\n`, "utf8");
-console.log(`Wrote ${matrix.entries.length} sparse cells → ${outputPath}`);
+writeFileSync(outputPath, `${JSON.stringify(washed, null, 2)}\n`, "utf8");
+
+const overall90 = washed.entries.find((e) => e.decadeKey === "90" && e.axisId === "overall");
+const maxAnchors = Math.max(0, ...washed.entries.map((e) => (e.anchors?.length ?? 0)));
+console.log(`Source: ${resolvedInput}`);
+console.log(`Wrote ${washed.entries.length} sparse cells → ${outputPath}`);
+console.log(`max anchors/cell: ${maxAnchors}; display cap metadata: ${washed.maxDisplayNames}`);
+if (overall90) {
+  console.log(
+    `90:overall anchors (${overall90.anchors.length}): ${overall90.anchors.map((a) => a.displayZh).join(" | ")}`
+  );
+}
