@@ -113,19 +113,29 @@
       "axisId": "strength",
       "anchors": [
         {
+          "id": "colton_engelbrecht",
+          "displayZh": "Colton Engelbrecht",
+          "referenceScore": 180
+        },
+        {
+          "id": "john_haack",
+          "displayZh": "John Haack",
+          "referenceScore": 175
+        },
+        {
           "id": "larry_wheels",
           "displayZh": "Larry Wheels",
           "referenceScore": 165
         },
         {
-          "id": "becca_swanson",
-          "displayZh": "Becca Swanson",
-          "referenceScore": 155
-        },
-        {
           "id": "mariusz_pudzianowski",
           "displayZh": "Mariusz Pudzianowski",
           "referenceScore": 158
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson",
+          "referenceScore": 155
         },
         {
           "id": "andrey_smaev",
