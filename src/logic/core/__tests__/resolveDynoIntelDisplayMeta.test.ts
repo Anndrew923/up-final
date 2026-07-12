@@ -148,7 +148,7 @@ describe('resolveDynoIntelDisplayMeta', () => {
             score: 102,
             tierBandId: 'TIER_100',
             meaningI18nPrefix: 'scoreMeaning.bands.cardio.TIER_100',
-            cardCopy: { title: '2.4Bar超跑全載散熱系統', summary: '五公里配速高位。' },
+            cardCopy: { title: '2.4Bar剛性軸全載散熱系統', summary: '五公里配速高位。' },
           },
         ],
       }),

@@ -138,90 +138,90 @@
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE",
       "viewDetailHint": "Tap to view homologation grade details",
-      "carSpecLabel": "Vehicle Benchmark",
+      "carSpecLabel": "Chassis Code",
       "priceLabel": "Est. Value",
       "BASE": {
         "name": "STOCK COMMUTER",
         "desc": "Factory architecture awaiting full unlock.",
-        "representativeCar": "Toyota Corolla Altis 1.8",
+        "representativeCar": "STOCK · Factory Baseline Chassis",
         "carPrice": "Under ~$32K Entry Commuter"
       },
       "TIER_40": {
         "name": "STREET MODIFIED",
         "desc": "Entry street tune. Driveline efficiency and throttle response up.",
-        "representativeCar": "Toyota GR Yaris",
+        "representativeCar": "STOCK · Factory Baseline Chassis (Street Tune)",
         "carPrice": "~$63K Street Hot Hatch"
       },
       "TIER_50": {
         "name": "STAGE 1 TUNE",
         "desc": "Stage-one calibration. Power platform taking shape.",
-        "representativeCar": "Volkswagen Golf GTI",
+        "representativeCar": "Inline-4 Turbo · Street FWD Hatch (Stock)",
         "carPrice": "~$80K Stage 1 Class"
       },
       "TIER_60": {
         "name": "CLUB TRACK SPEC",
         "desc": "Club track build. Chassis rigidity beyond stock norms.",
-        "representativeCar": "Subaru WRX STI",
+        "representativeCar": "Inline-4 Turbo · Street FWD Hatch (Stage 1)",
         "carPrice": "~$95K AWD Chassis Class"
       },
       "TIER_70": {
         "name": "TRACKDAY ENTHUSIAST",
         "desc": "Weekend hot-lap spec. Control and heat-soak resistance elevated.",
-        "representativeCar": "Toyota GR Supra",
+        "representativeCar": "Mid-Engine · Geometric Streamline Complete (Street)",
         "carPrice": "~$125K RWD Sports Coupe"
       },
       "TIER_80": {
         "name": "AMATEUR TIME ATTACK",
         "desc": "Amateur time-attack class. High fill-rate under real track pressure.",
-        "representativeCar": "Mercedes-Benz E350 Coupe (~350 hp)",
+        "representativeCar": "Mid-Engine · Geometric Streamline Complete (Track)",
         "carPrice": "~$140K Two-Door Coupe"
       },
       "TIER_90": {
         "name": "UNLIMITED ATTACK",
         "desc": "Unlimited time-attack ruleset. Peak power and grip in perfect mesh.",
-        "representativeCar": "Porsche 718 Cayman GTS 4.0 (~430 hp)",
+        "representativeCar": "Flat-6 NA · High-Rev Track Rigid Axle (Club)",
         "carPrice": "~$190K Mid-Engine Flagship"
       },
       "TIER_100": {
-        "name": "GT4 CHAMPIONSHIP",
-        "desc": "Regional GT4 homologation. Driveline efficiency at podium threshold.",
-        "representativeCar": "Porsche 911 GT3 RS (992)",
+        "name": "REGIONAL CHAMPIONSHIP",
+        "desc": "Regional championship homologation. Driveline efficiency at podium threshold.",
+        "representativeCar": "Flat-6 NA · High-Rev Track Rigid Axle (Championship)",
         "carPrice": "~$470K NA Track Ceiling"
       },
       "TIER_110": {
-        "name": "GT3 COMPETITION",
-        "desc": "Elite international GT3. High torque and max aero aligned.",
-        "representativeCar": "Mercedes-AMG GT3",
+        "name": "STAGE 2 COMPETITION",
+        "desc": "Elite international Stage 2. High torque and max aero aligned.",
+        "representativeCar": "V8-TwinTurbo · Stage 2 Forced Induction Heavy",
         "carPrice": "~$780K Elite Factory Race Block"
       },
       "TIER_120": {
-        "name": "GTE PRO SPEC",
-        "desc": "Pro Le Mans GTE. Dominant efficiency under extreme sustained load.",
-        "representativeCar": "Ferrari 488 GTE",
+        "name": "PRO ENDURANCE SPEC",
+        "desc": "Pro endurance class. Dominant efficiency under extreme sustained load.",
+        "representativeCar": "V8-TwinTurbo · Stage 2 Forced Induction Heavy (Endurance)",
         "carPrice": "~$1.4M Pro Endurance Tier"
       },
       "TIER_130": {
         "name": "FACTORY PROTOTYPE",
         "desc": "Factory prototype racer. Perfect mechanics at full-load high pressure.",
-        "representativeCar": "Toyota GR010 Hybrid",
+        "representativeCar": "V8-TwinTurbo · Stage 3 Track Apex",
         "carPrice": "~$3M+ Factory Prototype"
       },
       "TIER_140": {
-        "name": "HYPERCAR TIER",
-        "desc": "Top hypercar class. Unbelievable transient launch reserve.",
-        "representativeCar": "McLaren P1 / Ferrari LaFerrari",
-        "carPrice": "~$4.7M Hypercar Apex"
+        "name": "STAGE 3 APEX",
+        "desc": "Top Stage 3 apex class. Unbelievable transient launch reserve.",
+        "representativeCar": "V8-TwinTurbo · Stage 3 Track Apex (Apex)",
+        "carPrice": "~$4.7M Apex Concept"
       },
       "LEGEND": {
         "name": "LEGENDARY MONSTER",
         "desc": "Legendary build monster. Ultimate crystallization of pure mechanical will.",
-        "representativeCar": "Bugatti Bolide / Porsche 919 Hybrid Evo",
+        "representativeCar": "PANTHEON · Ultimate Starship Concept (Legend)",
         "carPrice": "$10M+ Immortal Legend Tier"
       },
       "PANTHEON": {
         "name": "PANTHEON EXPERIMENTAL",
         "desc": "Pantheon experimental. Beyond normal definition—spec archived to the Pantheon.",
-        "representativeCar": "Red Bull RB20",
+        "representativeCar": "PANTHEON · Ultimate Starship Concept",
         "carPrice": "Priceless // Pantheon Archive"
       }
     },

@@ -14,14 +14,14 @@ describe('resolveOverallGradeTierCopy', () => {
     const copy = resolveOverallGradeTierCopy(i18n.t.bind(i18n), 'TIER_90');
     expect(copy.name).toContain('UNLIMITED ATTACK');
     expect(copy.desc).toContain('極限馬力');
-    expect(copy.representativeCar).toContain('718 Cayman GTS 4.0');
+    expect(copy.representativeCar).toContain('Flat-6 NA');
     expect(copy.carPrice).toContain('600 萬');
     expect(copy.name).not.toContain('home.overallGrade');
   });
 
-  it('resolves E350 benchmark row for zh-Hant TIER_80', () => {
+  it('resolves Mid-Engine benchmark row for zh-Hant TIER_80', () => {
     const copy = resolveOverallGradeTierCopy(i18n.t.bind(i18n), 'TIER_80');
-    expect(copy.representativeCar).toContain('E350 Coupe');
+    expect(copy.representativeCar).toContain('Mid-Engine');
     expect(copy.carPrice).toContain('450 萬');
   });
 
@@ -30,6 +30,7 @@ describe('resolveOverallGradeTierCopy', () => {
     const copy = resolveOverallGradeTierCopy(i18n.t.bind(i18n), 'TIER_50');
     expect(copy.name).toBe('STAGE 1 TUNE');
     expect(copy.desc.length).toBeGreaterThan(0);
+    expect(copy.representativeCar).toContain('Inline-4 Turbo');
     await i18n.changeLanguage('zh-Hant');
   });
 
@@ -37,8 +38,8 @@ describe('resolveOverallGradeTierCopy', () => {
     const copy = resolveOverallGradeTierCopy(i18n.t.bind(i18n), 'TIER_90');
     const rows = buildOverallGradeDetailRows(i18n.t.bind(i18n), 'TIER_90', copy);
     expect(rows).toHaveLength(2);
-    expect(rows[0]?.label).toContain('車款');
-    expect(rows[0]?.value).toContain('718 Cayman');
+    expect(rows[0]?.label).toContain('結構');
+    expect(rows[0]?.value).toContain('Flat-6 NA');
     expect(rows[1]?.label).toContain('身價');
     expect(rows[1]?.value).toContain('600 萬');
   });

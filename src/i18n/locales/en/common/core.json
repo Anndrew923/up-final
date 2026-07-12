@@ -75,7 +75,7 @@
           "summary": "[430 hp FLAGSHIP] Past amateur ceiling. Serious horsepower—chassis core drifting toward pro-grade output."
         },
         "TIER_100": {
-          "title": "550 hp Track Supercar",
+          "title": "550 hp Track Apex Chassis",
           "summary": "[550 hp TRACK] Regional podium tier. Floor the throttle—most rivals won't catch the burst."
         },
         "TIER_110": {
@@ -83,8 +83,8 @@
           "summary": "[680 hp FACTORY] Regional meet winner. Devastating horsepower reserve and elite rigid-body control."
         },
         "TIER_120": {
-          "title": "820 hp Le Mans Prototype",
-          "summary": "[820 hp LE MANS] National elite benchmark. Under limit loads, your dominance is absolute."
+          "title": "820 hp Endurance Prototype",
+          "summary": "[820 hp ENDURANCE] National elite benchmark. Under limit loads, your dominance is absolute."
         },
         "TIER_130": {
           "title": "1000 hp Megacar",
@@ -191,7 +191,7 @@
           "summary": "[2.1 bar COMP AWAKEN] Competitive genes detected. Extreme cylinder pressure—serious training, pro lane aimed."
         },
         "TIER_100": {
-          "title": "2.4 bar Supercar Cooling Load",
+          "title": "2.4 bar Apex Cooling Load",
           "summary": "[2.4 bar HIGH-EFF] Regional ace tier. Radiator resilience remarkable—built for long high-boost, high-pressure leads."
         },
         "TIER_110": {
@@ -200,7 +200,7 @@
         },
         "TIER_120": {
           "title": "3.2 bar Prototype Track Rule",
-          "summary": "[3.2 bar DOMINANCE] Amateur ceiling cleared. Le Mans prototype heat rejection—rarely matched in endurance events."
+          "summary": "[3.2 bar DOMINANCE] Amateur ceiling cleared. Endurance prototype heat rejection—rarely matched in endurance events."
         },
         "TIER_130": {
           "title": "3.8 bar Megacar Core Pressure",
@@ -249,7 +249,7 @@
           "summary": "[2.1 bar HEAT AWAKEN] Among active peers your age, already high-tier—earned only through serious training. Fuel and O₂ at extreme cylinder pressure—unfazed by 12-minute hypoxic choke; without relentless work this tier stays out of reach, pro lane ahead."
         },
         "TIER_100": {
-          "title": "2.4 bar Supercar Full-Load HR Cooling",
+          "title": "2.4 bar Apex Full-Load HR Cooling",
           "summary": "[2.4 bar NORM PEAK] Age-group 100-point ceiling unlocked. Radiator and VO₂ resilience remarkable—12-minute full-load torture, leading pace without stride or intake drop."
         },
         "TIER_110": {
@@ -258,7 +258,7 @@
         },
         "TIER_120": {
           "title": "3.2 bar Prototype Transient Dominance",
-          "summary": "[3.2 bar NORM RULE] 12-minute timed ceiling. Boost crosses amateur bounds—Le Mans prototype full-load heat rejection, countdown torture without flinch."
+          "summary": "[3.2 bar NORM RULE] 12-minute timed ceiling. Boost crosses amateur bounds—endurance prototype full-load heat rejection, countdown torture without flinch."
         },
         "TIER_130": {
           "title": "3.8 bar Megacar Overload Core",
@@ -315,8 +315,8 @@
           "summary": "[4.0T V8 RACE] Past natural ceiling. Twin turbos full boost—680 hp factory racer power feedback meshed."
         },
         "TIER_120": {
-          "title": "LMP Hybrid Powerplant",
-          "summary": "[LMP HYBRID] Le Mans hybrid benchmark. Inhuman muscle density—absolute track dominance under limit pressure."
+          "title": "Endurance Hybrid Powerplant",
+          "summary": "[ENDURANCE HYBRID] Hybrid endurance benchmark. Inhuman muscle density—absolute track dominance under limit pressure."
         },
         "TIER_130": {
           "title": "5.0T V8 Thousand-hp Heavy Host",
@@ -328,7 +328,7 @@
         },
         "LEGEND": {
           "title": "8.0L W16 Planetary Asset",
-          "summary": "[8.0L W16 PLANET] Spec overflow. Myth-tier density synced—1500 hp, 1600 Nm, 5.5 bar; Bugatti strength totem."
+          "summary": "[8.0L W16 PLANET] Spec overflow. Myth-tier density synced—1500 hp, 1600 Nm, 5.5 bar; PANTHEON · Ultimate Starship Concept strength totem."
         },
         "PANTHEON": {
           "title": "Pantheon Ultimate Displacement",
@@ -369,12 +369,12 @@
           "summary": "[NATURAL CEILING] Top natural physique tier. Swan-neck wing plus widebody—abnormal track tension proportions."
         },
         "TIER_110": {
-          "title": "FIA Factory Race-Spec Widebody",
-          "summary": "[MONSTER SPEC] Past genetic limits. FIA widebody synced—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
+          "title": "Factory Race-Spec Widebody",
+          "summary": "[MONSTER SPEC] Past genetic limits. Factory widebody synced—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
         },
         "TIER_120": {
-          "title": "LMP Low-Drag Carbon Shell",
-          "summary": "[LIMIT BUILD] Le Mans prototype physique. Ultra-low-drag carbon shell—absolute fullness, pure speed aesthetics."
+          "title": "Endurance Low-Drag Carbon Shell",
+          "summary": "[LIMIT BUILD] Endurance prototype physique. Ultra-low-drag carbon shell—absolute fullness, pure speed aesthetics."
         },
         "TIER_130": {
           "title": "Thousand-hp Carbon Heavy Shell",
@@ -385,8 +385,8 @@
           "summary": "[MEGABEAST WIDEBODY] Different species visually. Outline width and mass thickness defy belief—industrial-monster scale."
         },
         "LEGEND": {
-          "title": "Bugatti Monolithic Carbon Frame",
-          "summary": "[PLANETARY ASSET] Spec overflow. Bugatti carbon synced—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; surface miracle."
+          "title": "PANTHEON Monolithic Carbon Frame",
+          "summary": "[PLANETARY ASSET] Spec overflow. PANTHEON · Ultimate Starship Concept carbon synced—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; surface miracle."
         },
         "PANTHEON": {
           "title": "Pantheon Myth Exterior",
@@ -427,11 +427,11 @@
           "summary": "[ACHIEVEMENT UNLOCKED] Top 1% grip after body-weight calibration. NFL-beast and elite climber tier—terrifying sidewall twist resistance; heavy loads rock solid."
         },
         "TIER_110": {
-          "title": "FIA Competition Racing Slicks",
+          "title": "Competition Racing Slicks",
           "summary": "[MAX ANTI-SLIP] Top-tier pro powerlifter. Pure heat-cycle rubber—680 hp factory racer; suppresses micro power bleed and slip."
         },
         "TIER_120": {
-          "title": "LMP All-Weather Ground Tire",
+          "title": "Endurance All-Weather Ground Tire",
           "summary": "[GLUED TO TRACK] Elite pro arm-wrestler. Dominates gravity and limit resistance—high-G corners magnet-lock to the surface."
         },
         "TIER_130": {
@@ -444,7 +444,7 @@
         },
         "LEGEND": {
           "title": "Aerospace-Grade Planetary Compound",
-          "summary": "[PLANETARY ASSET] World-top arm-wrestling gods and heavy strongman peaks! 1500 hp Bugatti sync—beyond most human grip specs; Earth's strongest outlier."
+          "summary": "[PLANETARY ASSET] World-top arm-wrestling gods and heavy strongman peaks! 1500 hp PANTHEON · Ultimate Starship Concept sync—beyond most human grip specs; Earth's strongest outlier."
         },
         "PANTHEON": {
           "title": "Pantheon Ultimate Gravity Bite",
@@ -485,12 +485,12 @@
           "summary": "[22\" HELLAFLUSH] Regional meet Hellaflush. Limit size fused with fenders—proportions border on art."
         },
         "TIER_110": {
-          "title": "23-Inch FIA 2-Piece",
-          "summary": "[23\" FIA 2-PIECE] Sync locked—680 hp, 850 Nm, 2.8 bar, FIA widebody; extreme offset, crushing downforce."
+          "title": "23-Inch Competition 2-Piece",
+          "summary": "[23\" COMP 2-PIECE] Sync locked—680 hp, 850 Nm, 2.8 bar, factory widebody; extreme offset, crushing downforce."
         },
         "TIER_120": {
-          "title": "24\" LMP Center-Lock",
-          "summary": "[24\" SERIAL OVERSIZE] Le Mans prototype spec. Titanium center-lock—rim scale at absolute visual balance."
+          "title": "24\" Endurance Center-Lock",
+          "summary": "[24\" SERIAL OVERSIZE] Endurance prototype spec. Titanium center-lock—rim scale at absolute visual balance."
         },
         "TIER_130": {
           "title": "26\" Custom Polished Mega Wheels",
@@ -533,7 +533,7 @@
       },
       "ENDURANCE_PROTO": {
         "title": "Serial Code: Endurance Prototype",
-        "summary": "Cardio leads all six axes. Elite thermal management—24-hour Le Mans stability, long-range dominance."
+        "summary": "Cardio leads all six axes. Elite thermal management—24-hour endurance-race stability, long-range dominance."
       },
       "WIDE_BODY": {
         "title": "Serial Code: Wide-Body Architecture",
