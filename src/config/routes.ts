@@ -27,6 +27,7 @@ export const ROUTES = {
   armSize: '/arm-size' as const,
   oneRmCalculator: '/tools/one-rm' as const,
   plateCalculator: '/tools/plates' as const,
+  somatotypeLab: '/tools/somatotype-lab' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 

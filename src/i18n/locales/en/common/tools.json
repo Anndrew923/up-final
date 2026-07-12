@@ -131,6 +131,47 @@
       "restoreEmpty": "No cloud snapshot found.",
       "restoreFail": "Restore failed — check network and retry."
     },
+    "somatotypeLab": {
+      "kicker": "Morphology Lab",
+      "title": "Somatotype Geometry Chart",
+      "subtitle": "Estimate Heath–Carter coordinates and the physical ceiling gap from height, wrist, body fat, and flexed arm girth. No vehicle mapping in this phase.",
+      "cardHint": "Grant / Heath–Carter dual-point chart and arm / BF gap gauge",
+      "emptyHint": "Enter height, weight, body fat, wrist, and flexed arm girth within valid ranges to reveal the chart and gap gauge.",
+      "atypicalWarning": "Your height-weight ratio is outside the usual Reuleaux band (HWR < 35 or > 50). The chart still renders, but treat coordinates as approximate.",
+      "fields": {
+        "height": "Height (cm)",
+        "weight": "Weight (kg)",
+        "bodyFat": "Body fat (%)",
+        "wrist": "Wrist (cm)",
+        "arm": "Flexed arm girth (cm)",
+        "veteran": "Veteran bone correction (+5% humerus residual)"
+      },
+      "placeholders": {
+        "height": "e.g. 180",
+        "weight": "e.g. 80",
+        "bodyFat": "e.g. 18",
+        "wrist": "e.g. 17",
+        "arm": "e.g. 38"
+      },
+      "chart": {
+        "aria": "Heath–Carter somatochart: red current point, green max-tuned point",
+        "meso": "Meso · Rigid",
+        "endo": "Endo · Storage",
+        "ecto": "Ecto · Linear",
+        "legendA": "● Point A current",
+        "legendB": "● Point B max"
+      },
+      "gap": {
+        "title": "Chassis Code / Geometry ID: {{height}}cm / {{wrist}}cm",
+        "currentLabel": "Current",
+        "currentValue": "BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
+        "maxLabel": "Max-tuned",
+        "maxValue": "BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
+        "upgradeGuide": "💡 Upgrade guide: You still have {{armGap}}cm of arm girth headroom to your physical ceiling, plus 【 {{smmGap}}kg of pure skeletal-muscle growth potential 】, with {{bfGap}}% of body-fat cut room.",
+        "upgradeGuideAtCeiling": "💡 Upgrade guide: Arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling."
+      },
+      "readout": "Endo {{endo}} · Meso {{meso}} · Ecto {{ecto}}  →  (X {{x}}, Y {{y}})"
+    },
     "codex": {
       "panelTitle": "Vehicle Specification Codex",
       "mainTitle": "🏁 VEHICLE SPECIFICATION CODEX",

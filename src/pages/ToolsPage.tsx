@@ -116,6 +116,17 @@ export default function ToolsPage() {
                 {t('tools.calculators.plates.title', { ns: 'common' })}
               </p>
             </Link>
+            <Link
+              to={ROUTES.somatotypeLab}
+              className="group rounded-xl border border-accent-primary/25 bg-black/25 p-4 transition hover:border-accent-primary/45 hover:bg-black/40 sm:col-span-2"
+            >
+              <p className="text-sm font-semibold text-zinc-100">
+                {t('tools.somatotypeLab.title', { ns: 'common' })}
+              </p>
+              <p className="mt-1 text-xs text-zinc-500">
+                {t('tools.somatotypeLab.cardHint', { ns: 'common' })}
+              </p>
+            </Link>
           </div>
         </article>
 

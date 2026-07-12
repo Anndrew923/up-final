@@ -37,6 +37,7 @@ const GripAssessmentPage = lazy(() => import('./pages/GripAssessmentPage'));
 const ArmSizeAssessmentPage = lazy(() => import('./pages/ArmSizeAssessmentPage'));
 const OneRmCalculatorPage = lazy(() => import('./pages/OneRmCalculatorPage'));
 const PlateCalculatorPage = lazy(() => import('./pages/PlateCalculatorPage'));
+const SomatotypeLabPage = lazy(() => import('./pages/SomatotypeLabPage'));
 
 const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
   home: HomePage,
@@ -140,6 +141,11 @@ function PlateCalculatorRoute() {
   return withRouteSuspense(<PlateCalculatorPage onBack={() => navigate(-1)} />);
 }
 
+function SomatotypeLabRoute() {
+  const navigate = useNavigate();
+  return withRouteSuspense(<SomatotypeLabPage onBack={() => navigate(-1)} />);
+}
+
 export default function App() {
   useAuthSessionBootstrap();
   useProStructuredUserSyncLifecycle();
@@ -219,6 +225,10 @@ export default function App() {
           <Route
             path={toRelativeRoutePath(ROUTES.plateCalculator)}
             element={<PlateCalculatorRoute />}
+          />
+          <Route
+            path={toRelativeRoutePath(ROUTES.somatotypeLab)}
+            element={<SomatotypeLabRoute />}
           />
           <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
         </Route>
