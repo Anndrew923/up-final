@@ -4,32 +4,38 @@ import { useTranslation } from 'react-i18next';
 export interface SomatotypeGapGaugeProps {
   heightCm: number;
   wristCm: number;
+  currentWeightKg: number;
   currentBodyFatPct: number;
   currentArmGirthCm: number;
   currentSmmKg: number;
+  maxTotalWeightKg: number;
   maxBodyFatPct: number;
   maxArmGirthCm: number;
   maxSmmKg: number;
   armGapCm: number;
   bodyFatGapPct: number;
   smmGapKg: number;
+  weightGapKg: number;
 }
 
 /**
- * Pure numeric gap panel — no vehicle/band naming; chassis code is height/wrist only.
+ * Pure numeric gap panel — height/wrist geometry ID only; no vehicle naming.
  */
 export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   heightCm,
   wristCm,
+  currentWeightKg,
   currentBodyFatPct,
   currentArmGirthCm,
   currentSmmKg,
+  maxTotalWeightKg,
   maxBodyFatPct,
   maxArmGirthCm,
   maxSmmKg,
   armGapCm,
   bodyFatGapPct,
   smmGapKg,
+  weightGapKg,
 }) => {
   const { t } = useTranslation('common');
   const fmt = (n: number, digits = 1) =>
@@ -38,8 +44,9 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   const hasArmHeadroom = armGapCm > 0.05;
   const hasSmmHeadroom = smmGapKg > 0.05;
   const hasBfCutRoom = bodyFatGapPct > 0.05;
+  const hasWeightRoom = Math.abs(weightGapKg) > 0.05;
   const upgradeKey =
-    hasArmHeadroom || hasSmmHeadroom || hasBfCutRoom
+    hasArmHeadroom || hasSmmHeadroom || hasBfCutRoom || hasWeightRoom
       ? 'tools.somatotypeLab.gap.upgradeGuide'
       : 'tools.somatotypeLab.gap.upgradeGuideAtCeiling';
 
@@ -57,6 +64,7 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
           <dt className="text-zinc-500">{t('tools.somatotypeLab.gap.currentLabel')}</dt>
           <dd className="text-zinc-100">
             {t('tools.somatotypeLab.gap.currentValue', {
+              weight: fmt(currentWeightKg, 1),
               bodyFat: fmt(currentBodyFatPct, 1),
               arm: fmt(currentArmGirthCm, 1),
               smm: fmt(currentSmmKg, 1),
@@ -67,6 +75,7 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
           <dt className="text-zinc-500">{t('tools.somatotypeLab.gap.maxLabel')}</dt>
           <dd className="text-emerald-300/90">
             {t('tools.somatotypeLab.gap.maxValue', {
+              weight: fmt(maxTotalWeightKg, 1),
               bodyFat: fmt(maxBodyFatPct, 1),
               arm: fmt(maxArmGirthCm, 1),
               smm: fmt(maxSmmKg, 1),
@@ -79,7 +88,7 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
         {t(upgradeKey, {
           armGap: fmt(armGapCm, 1),
           smmGap: fmt(smmGapKg, 1),
-          bfGap: fmt(bodyFatGapPct, 1),
+          weightGap: fmt(weightGapKg, 1),
         })}
       </p>
     </section>

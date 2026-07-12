@@ -3,10 +3,25 @@
  *
  * WHY: Home UX cannot require calipers; wrist + height + BF% + flexed arm girth
  * approximate the ISAK ten-metric path while staying deterministic and UI-free.
- * IMPACT: Pure logic for somatochart dual-point gap (current vs max-tuned chassis).
+ * IMPACT: Pure logic for somatochart dual-point gap (current vs max-tuned physique).
  */
 
-export const SOMATOTYPE_BF_MAX_TUNED_PCT = 12;
+export type PhysiqueTier = 'athletic' | 'elite' | 'apex';
+
+export const PHYSIQUE_TIERS = ['athletic', 'elite', 'apex'] as const;
+
+/** Target body-fat anchors for each physique evaluation tier. */
+export const PHYSIQUE_TIER_TARGET_BF_PCT: Readonly<Record<PhysiqueTier, number>> = {
+  athletic: 12,
+  elite: 9,
+  apex: 7,
+};
+
+export const DEFAULT_PHYSIQUE_TIER: PhysiqueTier = 'athletic';
+
+/** Athletic-tier BF anchor — single-sourced from {@link PHYSIQUE_TIER_TARGET_BF_PCT}. */
+export const SOMATOTYPE_BF_MAX_TUNED_PCT = PHYSIQUE_TIER_TARGET_BF_PCT.athletic;
+
 export const SOMATOTYPE_ENDO_FLOOR = 0.5;
 export const SOMATOTYPE_ECTO_FLOOR = 0.1;
 export const SOMATOTYPE_HWR_HIGH = 40.75;
@@ -66,32 +81,47 @@ export interface SomatochartPoint {
   y: number;
 }
 
-export interface MaxTunedChassisSpec {
+export interface MaxTunedPhysiqueSpec {
+  physiqueTier: PhysiqueTier;
   bodyFatPct: number;
   ffmMaxKg: number;
-  weightMaxKg: number;
+  /**
+   * Max total body weight at target BF (1dp): FFM_Max / (1 - targetBF/100).
+   * WHY: When legendary mode locks FFM/arm, tier BF switches still move this readout.
+   */
+  maxTotalWeightKg: number;
   armGirthMaxCm: number;
+  /**
+   * True when live arm girth already beat the skeletal formula ceiling
+   * (legendary hypertrophy guardrail). Veteran +5% bone compensation is redundant.
+   */
+  legendaryArmMode: boolean;
   somatotype: HeathCarterSomatotype;
   coordinates: SomatochartPoint;
 }
 
-export interface MaxTunedChassisParams {
+export interface MaxTunedPhysiqueParams {
   heightCm: number;
   wristCm: number;
   isVeteran?: boolean;
   currentBodyFatPct?: number;
   currentWeightKg?: number;
   currentArmGirthCm?: number;
+  physiqueTier?: PhysiqueTier;
 }
 
 export interface SomatotypeLabSnapshot {
   /** Normalized metrics that produced this snapshot (single source for UI gauges). */
   metrics: Readonly<Required<SomatotypeMetrics>>;
+  /** Mirrors maxTuned.physiqueTier — kept at root for report/UI convenience. */
+  physiqueTier: PhysiqueTier;
   current: HeathCarterSomatotype;
   currentPoint: SomatochartPoint;
-  maxTuned: MaxTunedChassisSpec;
+  maxTuned: MaxTunedPhysiqueSpec;
   armGapCm: number;
   bodyFatGapPct: number;
+  /** maxTuned.maxTotalWeightKg − current weight (1dp); can be negative if already above ceiling. */
+  weightGapKg: number;
   currentSmmKg: number;
   maxSmmKg: number;
   smmGapKg: number;
@@ -262,29 +292,60 @@ export function convertToSomatochartCoordinates(
 }
 
 /**
- * Max-tuned chassis (point B).
+ * Max-tuned physique (point B).
  *
  * WHY: Civilian FFM/arm ceilings under-estimate elites who already beat the formula.
- * IMPACT: Dynamic BF anchor + hypertrophy/FFM headroom so point B never shrinks inward of A.
+ * IMPACT: Tiered BF anchors + hypertrophy/FFM headroom so point B never shrinks inward of A.
  */
-export function resolveMaxTunedBodyFatPct(currentBodyFatPct: number | undefined): number {
-  if (currentBodyFatPct == null || !Number.isFinite(currentBodyFatPct) || currentBodyFatPct < 0) {
-    return SOMATOTYPE_BF_MAX_TUNED_PCT;
-  }
-  // Already leaner than the civilian 12% lock — never force BF back up for point B.
-  return Math.min(SOMATOTYPE_BF_MAX_TUNED_PCT, currentBodyFatPct);
+export function isPhysiqueTier(value: unknown): value is PhysiqueTier {
+  return typeof value === 'string' && (PHYSIQUE_TIERS as readonly string[]).includes(value);
 }
 
-export function calculateMaxTunedChassis(
-  params: MaxTunedChassisParams
-): MaxTunedChassisSpec | null {
+export function resolvePhysiqueTier(tier: PhysiqueTier | undefined): PhysiqueTier {
+  return isPhysiqueTier(tier) ? tier : DEFAULT_PHYSIQUE_TIER;
+}
+
+export function resolvePhysiqueTierTargetBf(tier: PhysiqueTier | undefined): number {
+  return PHYSIQUE_TIER_TARGET_BF_PCT[resolvePhysiqueTier(tier)];
+}
+
+/**
+ * Point-B body-fat lock: use the selected tier target, but never raise BF above current
+ * when the athlete is already leaner than that tier (legendary lean defense).
+ */
+export function resolveMaxTunedBodyFatPct(
+  currentBodyFatPct: number | undefined,
+  physiqueTier: PhysiqueTier | undefined = DEFAULT_PHYSIQUE_TIER
+): number {
+  const tierTarget = resolvePhysiqueTierTargetBf(physiqueTier);
+  if (currentBodyFatPct == null || !Number.isFinite(currentBodyFatPct) || currentBodyFatPct < 0) {
+    return tierTarget;
+  }
+  return Math.min(tierTarget, currentBodyFatPct);
+}
+
+/**
+ * Max total body weight at a BF target (1dp display / gauge contract).
+ * Formula: round1(FFM_Max / (1 − targetBF/100)).
+ */
+export function resolveMaxTotalWeightKg(ffmMaxKg: number, targetBodyFatPct: number): number {
+  const ffm = sanitizePositive(ffmMaxKg);
+  if (ffm <= 0 || !Number.isFinite(targetBodyFatPct) || targetBodyFatPct < 0 || targetBodyFatPct >= 100) {
+    return 0;
+  }
+  const leanFraction = Math.max(1e-6, 1 - targetBodyFatPct / 100);
+  return round1(ffm / leanFraction);
+}
+
+export function calculateMaxTunedPhysique(
+  params: MaxTunedPhysiqueParams
+): MaxTunedPhysiqueSpec | null {
   const height = sanitizePositive(params.heightCm);
   const wrist = sanitizePositive(params.wristCm);
   if (height <= 0 || wrist <= 0) return null;
 
-  const targetBf = resolveMaxTunedBodyFatPct(params.currentBodyFatPct);
-  // BF 100% would divide by zero; clamp denominator to a sane fat-free fraction.
-  const leanFraction = Math.max(1e-6, 1 - targetBf / 100);
+  const physiqueTier = resolvePhysiqueTier(params.physiqueTier);
+  const targetBf = resolveMaxTunedBodyFatPct(params.currentBodyFatPct, physiqueTier);
 
   let ffmMaxKg = round3(height * 0.35 + wrist * 2.2 - 15);
   if (ffmMaxKg <= 0) return null;
@@ -299,30 +360,38 @@ export function calculateMaxTunedChassis(
     }
   }
 
-  const weightMaxKg = round3(ffmMaxKg / leanFraction);
+  // 1dp max total weight — moves with tier BF even when FFM/arm are legendary-locked.
+  const maxTotalWeightKg = resolveMaxTotalWeightKg(ffmMaxKg, targetBf);
+  if (maxTotalWeightKg <= 0) return null;
 
   let armGirthMaxCm = round3(wrist * 1.6 + (ffmMaxKg / height) * 15);
   const currentArm = sanitizePositive(params.currentArmGirthCm ?? 0);
   // Elite arm guardrail: live girth already past formula ceiling → +5% breakthrough potential.
-  if (currentArm > armGirthMaxCm) {
+  const legendaryArmMode = currentArm > armGirthMaxCm;
+  if (legendaryArmMode) {
     armGirthMaxCm = round1(currentArm * SOMATOTYPE_ELITE_HEADROOM);
   }
 
+  // Legendary mode already models breakthrough hypertrophy — veteran humerus boost is noise.
+  const effectiveVeteran = legendaryArmMode ? false : Boolean(params.isVeteran);
+
   const somatotype = calculateHeathCarterSomatotype({
     heightCm: height,
-    weightKg: weightMaxKg,
+    weightKg: maxTotalWeightKg,
     bodyFatPct: targetBf,
     wristCm: wrist,
     flexedArmGirthCm: armGirthMaxCm,
-    isVeteran: Boolean(params.isVeteran),
+    isVeteran: effectiveVeteran,
   });
   if (!somatotype) return null;
 
   return {
+    physiqueTier,
     bodyFatPct: targetBf,
     ffmMaxKg,
-    weightMaxKg,
+    maxTotalWeightKg,
     armGirthMaxCm,
+    legendaryArmMode,
     somatotype,
     coordinates: convertToSomatochartCoordinates(
       somatotype.endomorphy,
@@ -332,11 +401,31 @@ export function calculateMaxTunedChassis(
   };
 }
 
+export interface BuildSomatotypeLabSnapshotInput extends SomatotypeMetrics {
+  physiqueTier?: PhysiqueTier;
+}
+
 /** Full dual-point lab snapshot for chart + gap gauge. */
 export function buildSomatotypeLabSnapshot(
-  metrics: SomatotypeMetrics
+  metrics: BuildSomatotypeLabSnapshotInput
 ): SomatotypeLabSnapshot | null {
   if (!isValidSomatotypeMetrics(metrics)) return null;
+
+  const physiqueTier = resolvePhysiqueTier(metrics.physiqueTier);
+
+  const maxTuned = calculateMaxTunedPhysique({
+    heightCm: metrics.heightCm,
+    wristCm: metrics.wristCm,
+    isVeteran: Boolean(metrics.isVeteran),
+    currentBodyFatPct: metrics.bodyFatPct,
+    currentWeightKg: metrics.weightKg,
+    currentArmGirthCm: metrics.flexedArmGirthCm,
+    physiqueTier,
+  });
+  if (!maxTuned) return null;
+
+  // Lock veteran off when legendary arm mode fires — bone +5% no longer has scientific meaning.
+  const effectiveVeteran = maxTuned.legendaryArmMode ? false : Boolean(metrics.isVeteran);
 
   const normalized: Required<SomatotypeMetrics> = {
     heightCm: metrics.heightCm,
@@ -344,21 +433,11 @@ export function buildSomatotypeLabSnapshot(
     bodyFatPct: metrics.bodyFatPct,
     wristCm: metrics.wristCm,
     flexedArmGirthCm: metrics.flexedArmGirthCm,
-    isVeteran: Boolean(metrics.isVeteran),
+    isVeteran: effectiveVeteran,
   };
 
   const current = calculateHeathCarterSomatotype(normalized);
   if (!current) return null;
-
-  const maxTuned = calculateMaxTunedChassis({
-    heightCm: normalized.heightCm,
-    wristCm: normalized.wristCm,
-    isVeteran: normalized.isVeteran,
-    currentBodyFatPct: normalized.bodyFatPct,
-    currentWeightKg: normalized.weightKg,
-    currentArmGirthCm: normalized.flexedArmGirthCm,
-  });
-  if (!maxTuned) return null;
 
   const currentPoint = convertToSomatochartCoordinates(
     current.endomorphy,
@@ -372,12 +451,13 @@ export function buildSomatotypeLabSnapshot(
 
   return {
     metrics: normalized,
+    physiqueTier,
     current,
     currentPoint,
     maxTuned,
     armGapCm: round3(maxTuned.armGirthMaxCm - normalized.flexedArmGirthCm),
-    // Gap vs dynamic target BF (not a hard-coded 12) — avoids fake "cut to 12" when already leaner.
     bodyFatGapPct: round3(normalized.bodyFatPct - maxTuned.bodyFatPct),
+    weightGapKg: round1(maxTuned.maxTotalWeightKg - normalized.weightKg),
     currentSmmKg,
     maxSmmKg,
     smmGapKg: round1(maxSmmKg - currentSmmKg),

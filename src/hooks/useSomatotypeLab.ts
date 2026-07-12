@@ -1,5 +1,10 @@
-import { useMemo, useState } from 'react';
-import { buildSomatotypeLabSnapshot, type SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  DEFAULT_PHYSIQUE_TIER,
+  buildSomatotypeLabSnapshot,
+  type PhysiqueTier,
+  type SomatotypeLabSnapshot,
+} from '../logic/core/somatotypeLab';
 import { loadArmSizeInputs, loadPhysicalProfile } from '../services/localStorageService';
 
 export interface SomatotypeLabFormState {
@@ -9,12 +14,16 @@ export interface SomatotypeLabFormState {
   wristInput: string;
   armGirthInput: string;
   isVeteran: boolean;
+  physiqueTier: PhysiqueTier;
+  /** True when legendary arm mode locks the veteran calibration control. */
+  veteranCalibrationLocked: boolean;
   setHeightInput(value: string): void;
   setWeightInput(value: string): void;
   setBodyFatInput(value: string): void;
   setWristInput(value: string): void;
   setArmGirthInput(value: string): void;
   setIsVeteran(value: boolean): void;
+  setPhysiqueTier(value: PhysiqueTier): void;
   snapshot: SomatotypeLabSnapshot | null;
 }
 
@@ -58,6 +67,7 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
   const [wristInput, setWristInput] = useState('');
   const [armGirthInput, setArmGirthInput] = useState(seed.armGirthInput);
   const [isVeteran, setIsVeteran] = useState(false);
+  const [physiqueTier, setPhysiqueTier] = useState<PhysiqueTier>(DEFAULT_PHYSIQUE_TIER);
 
   const snapshot = useMemo(() => {
     const heightCm = parsePositive(heightInput);
@@ -81,8 +91,18 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
       wristCm,
       flexedArmGirthCm,
       isVeteran,
+      physiqueTier,
     });
-  }, [armGirthInput, bodyFatInput, heightInput, isVeteran, weightInput, wristInput]);
+  }, [armGirthInput, bodyFatInput, heightInput, isVeteran, physiqueTier, weightInput, wristInput]);
+
+  const veteranCalibrationLocked = Boolean(snapshot?.maxTuned.legendaryArmMode);
+
+  // WHY: Clear stale checkmarks so UI matches forced-off science path under legendary mode.
+  useEffect(() => {
+    if (veteranCalibrationLocked && isVeteran) {
+      setIsVeteran(false);
+    }
+  }, [isVeteran, veteranCalibrationLocked]);
 
   return {
     heightInput,
@@ -90,13 +110,16 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
     bodyFatInput,
     wristInput,
     armGirthInput,
-    isVeteran,
+    isVeteran: veteranCalibrationLocked ? false : isVeteran,
+    physiqueTier,
+    veteranCalibrationLocked,
     setHeightInput,
     setWeightInput,
     setBodyFatInput,
     setWristInput,
     setArmGirthInput,
     setIsVeteran,
+    setPhysiqueTier,
     snapshot,
   };
 }

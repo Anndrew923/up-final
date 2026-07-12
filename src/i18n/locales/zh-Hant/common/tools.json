@@ -132,11 +132,10 @@
       "restoreFail": "還原失敗 — 請檢查網路或稍後再試。"
     },
     "somatotypeLab": {
-      "kicker": "內觀改裝實驗室",
+      "kicker": "人體形態學實驗室",
       "title": "人體幾何星圖",
-      "subtitle": "以身高、腕圍、體脂與用力臂圍，推估 Heath–Carter 胚型座標與物理天花板差距。本階段不含車款映射。",
       "cardHint": "Grant／Heath–Carter 雙點星圖與臂圍／體脂差距卡",
-      "emptyHint": "請填入合理範圍的身高、體重、體脂、腕圍與用力臂圍後，星圖與差距卡會自動出現。",
+      "emptyHint": "請填入合理範圍的身高、體重、體脂、腕圍與用力臂圍後，再啟動幾何分析。",
       "atypicalWarning": "目前身高體重比超出標準雷洛模型常用區間（HWR < 35 或 > 50）。圖表仍會顯示，但座標僅供參考。",
       "fields": {
         "height": "身高（cm）",
@@ -145,6 +144,33 @@
         "wrist": "腕圍（cm）",
         "arm": "用力臂圍（cm）",
         "veteran": "老手手動校正（肱骨預測 +5% 殘差補償）"
+      },
+      "physiqueTier": {
+        "label": "評測天賦標竿設定"
+      },
+      "physiqueLabels": {
+        "athletic": "運動體態標竿（體脂 12%）",
+        "elite": "菁英強健體貌（體脂 9%）",
+        "apex": "巔峰人體幾何（體脂 7%）"
+      },
+      "legendaryNotice": "👑 系統提示：您的真實肉體發育已突破骨骼幾何推估天花板，系統已自動解鎖「極致傳奇天賦模式」，無需且無法再進行手動校正。",
+      "ritual": {
+        "cta": "啟動幾何分析",
+        "ctaBusy": "幾何掃描中…",
+        "scanning": "SCANNING PHYSIQUE…",
+        "overlayAria": "人體幾何分析進行中",
+        "lines": {
+          "bone": "SCANNING BONE FRAME…",
+          "somatotype": "CALCULATING SOMATOTYPE…",
+          "ceiling": "RESOLVING FFM / SMM CEILING…"
+        }
+      },
+      "report": {
+        "kicker": "MORPHOLOGY REPORT",
+        "title": "人體幾何報告",
+        "tierLine": "評測標竿：{{tier}}",
+        "dismiss": "返回實驗室",
+        "closeAria": "關閉幾何報告"
       },
       "placeholders": {
         "height": "例如 180",
@@ -162,13 +188,13 @@
         "legendB": "● 點 B 極限"
       },
       "gap": {
-        "title": "Chassis Code / 結構幾何代號: {{height}}cm / {{wrist}}cm",
+        "title": "結構幾何代號: {{height}}cm / {{wrist}}cm",
         "currentLabel": "當前狀態",
-        "currentValue": "體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
+        "currentValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
         "maxLabel": "極限天賦",
-        "maxValue": "體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
-        "upgradeGuide": "💡 升級指南：你距離自己的物理天花板，還有 {{armGap}}cm 的臂圍擴缸空間，以及【 {{smmGap}}kg 的純骨骼肌增肌潛力 】，體脂減重空間則為 {{bfGap}}%。",
-        "upgradeGuideAtCeiling": "💡 升級指南：臂圍、骨骼肌與體脂目標均已對齊當前物理天花板。"
+        "maxValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
+        "upgradeGuide": "💡 升級指南：你距離自己的物理天花板，還有 {{armGap}}cm 的臂圍發展空間、{{smmGap}}kg 的純骨骼肌增肌潛力，以及 {{weightGap}}kg 的體重調整空間。",
+        "upgradeGuideAtCeiling": "💡 升級指南：體重、臂圍、骨骼肌與體脂目標均已對齊當前物理天花板。"
       },
       "readout": "Endo {{endo}} · Meso {{meso}} · Ecto {{ecto}}  →  (X {{x}}, Y {{y}})"
     },

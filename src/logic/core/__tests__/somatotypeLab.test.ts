@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_PHYSIQUE_TIER,
+  PHYSIQUE_TIER_TARGET_BF_PCT,
   SOMATOTYPE_BF_MAX_TUNED_PCT,
   SOMATOTYPE_ECTO_FLOOR,
   SOMATOTYPE_ELITE_HEADROOM,
@@ -13,10 +15,13 @@ import {
   calculateGrantIndex,
   calculateHeathCarterSomatotype,
   calculateHeightWeightRatio,
-  calculateMaxTunedChassis,
+  calculateMaxTunedPhysique,
   convertToSomatochartCoordinates,
   estimateSkeletalMuscleMassKg,
+  isPhysiqueTier,
+  resolveMaxTotalWeightKg,
   resolveMaxTunedBodyFatPct,
+  resolvePhysiqueTier,
 } from '../somatotypeLab';
 
 describe('calculateGrantIndex', () => {
@@ -118,17 +123,40 @@ describe('skeletal muscle mass (SMM)', () => {
   });
 });
 
-describe('max tuned chassis + lab snapshot', () => {
-  it('locks BF at 12% and derives FFM / weight / arm ceiling for civilians', () => {
+describe('resolveMaxTotalWeightKg', () => {
+  it('applies 1dp FFM / lean-fraction formula and rejects invalid inputs', () => {
+    expect(resolveMaxTotalWeightKg(86.85, 12)).toBe(Math.round((86.85 / 0.88) * 10) / 10);
+    expect(resolveMaxTotalWeightKg(86.85, 9)).toBe(Math.round((86.85 / 0.91) * 10) / 10);
+    expect(resolveMaxTotalWeightKg(86.85, 7)).toBe(Math.round((86.85 / 0.93) * 10) / 10);
+    expect(resolveMaxTotalWeightKg(0, 12)).toBe(0);
+    expect(resolveMaxTotalWeightKg(80, 100)).toBe(0);
+    expect(resolveMaxTotalWeightKg(80, -1)).toBe(0);
+  });
+});
+
+describe('physique tier anchors', () => {
+  it('keeps athletic BF constant single-sourced and validates tier ids', () => {
+    expect(SOMATOTYPE_BF_MAX_TUNED_PCT).toBe(PHYSIQUE_TIER_TARGET_BF_PCT.athletic);
+    expect(resolvePhysiqueTier(undefined)).toBe(DEFAULT_PHYSIQUE_TIER);
+    expect(resolvePhysiqueTier('apex')).toBe('apex');
+    expect(isPhysiqueTier('elite')).toBe(true);
+    expect(isPhysiqueTier('street')).toBe(false);
+  });
+});
+
+describe('max tuned physique + lab snapshot', () => {
+  it('locks BF at athletic 12% and derives FFM / weight / arm ceiling for civilians', () => {
     const height = 180;
     const wrist = 17;
     const ffm = height * 0.35 + wrist * 2.2 - 15;
-    const weight = ffm / (1 - 0.12);
+    const weight = Math.round((ffm / (1 - 0.12)) * 10) / 10;
     const arm = wrist * 1.6 + (ffm / height) * 15;
-    const max = calculateMaxTunedChassis({ heightCm: height, wristCm: wrist })!;
+    const max = calculateMaxTunedPhysique({ heightCm: height, wristCm: wrist })!;
+    expect(max.physiqueTier).toBe('athletic');
     expect(max.bodyFatPct).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
     expect(max.ffmMaxKg).toBeCloseTo(ffm, 3);
-    expect(max.weightMaxKg).toBeCloseTo(weight, 3);
+    expect(max.maxTotalWeightKg).toBe(weight);
+    expect(max.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(max.ffmMaxKg, max.bodyFatPct));
     expect(max.armGirthMaxCm).toBeCloseTo(arm, 3);
     expect(max.coordinates.x).toBeDefined();
     expect(max.coordinates.y).toBeDefined();
@@ -140,11 +168,14 @@ describe('max tuned chassis + lab snapshot', () => {
       weightKg: 85,
       bodyFatPct: 20,
       wristCm: 17,
-      flexedArmGirthCm: 36,
+      flexedArmGirthCm: 32,
       isVeteran: false,
     })!;
-    expect(snap.metrics.flexedArmGirthCm).toBe(36);
+    expect(snap.metrics.flexedArmGirthCm).toBe(32);
     expect(snap.maxTuned.bodyFatPct).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
+    expect(snap.weightGapKg).toBe(
+      Math.round((snap.maxTuned.maxTotalWeightKg - 85) * 10) / 10
+    );
     expect(snap.currentPoint).toEqual(
       convertToSomatochartCoordinates(
         snap.current.endomorphy,
@@ -159,10 +190,11 @@ describe('max tuned chassis + lab snapshot', () => {
         snap.maxTuned.somatotype.ectomorphy
       )
     );
-    expect(snap.armGapCm).toBeCloseTo(snap.maxTuned.armGirthMaxCm - 36, 3);
+    expect(snap.armGapCm).toBeCloseTo(snap.maxTuned.armGirthMaxCm - 32, 3);
     expect(snap.bodyFatGapPct).toBeCloseTo(20 - 12, 3);
     expect(snap.armGapCm).toBeGreaterThan(0);
     expect(snap.bodyFatGapPct).toBeGreaterThan(0);
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
     expect(snap.currentSmmKg).toBe(
       estimateSkeletalMuscleMassKg(calculateFatFreeMassKg(85, 20))
     );
@@ -184,6 +216,7 @@ describe('max tuned chassis + lab snapshot', () => {
       wristCm: 17.5,
       flexedArmGirthCm: 43,
       isVeteran: true,
+      physiqueTier: 'athletic',
     })!;
 
     const expectedCurrentSmm = estimateSkeletalMuscleMassKg(
@@ -192,9 +225,13 @@ describe('max tuned chassis + lab snapshot', () => {
     const expectedMaxSmm = estimateSkeletalMuscleMassKg(snap.maxTuned.ffmMaxKg);
 
     expect(snap).not.toBeNull();
+    expect(snap.physiqueTier).toBe('athletic');
+    expect(snap.maxTuned.physiqueTier).toBe('athletic');
     expect(snap.maxTuned.bodyFatPct).toBe(9.3);
     expect(snap.maxTuned.armGirthMaxCm).toBeGreaterThan(43);
     expect(snap.maxTuned.armGirthMaxCm).toBe(45.2); // round1(43 * 1.05)
+    expect(snap.maxTuned.legendaryArmMode).toBe(true);
+    expect(snap.metrics.isVeteran).toBe(false); // veteran forced off under legendary mode
     expect(snap.armGapCm).toBeGreaterThan(0);
     expect(snap.bodyFatGapPct).toBe(0);
     expect(snap.currentSmmKg).toBe(expectedCurrentSmm);
@@ -206,20 +243,76 @@ describe('max tuned chassis + lab snapshot', () => {
     expect(snap.maxTuned.somatotype.mesomorphy).toBeGreaterThanOrEqual(snap.current.mesomorphy);
   });
 
-  it('anchors target BF to current when already below the civilian 12% lock', () => {
+  it('pushes Boss frame toward meso apex under elite and apex physique tiers', () => {
+    const boss = {
+      heightCm: 181,
+      weightKg: 95,
+      bodyFatPct: 9.3,
+      wristCm: 17.5,
+      flexedArmGirthCm: 43,
+      isVeteran: true,
+    } as const;
+
+    const athletic = buildSomatotypeLabSnapshot({ ...boss, physiqueTier: 'athletic' })!;
+    const elite = buildSomatotypeLabSnapshot({ ...boss, physiqueTier: 'elite' })!;
+    const apex = buildSomatotypeLabSnapshot({ ...boss, physiqueTier: 'apex' })!;
+
+    // Athletic keeps lean defense (min(12, 9.3)); elite/apex drop to tier targets.
+    expect(athletic.maxTuned.bodyFatPct).toBe(9.3);
+    expect(elite.maxTuned.bodyFatPct).toBe(9);
+    expect(apex.maxTuned.bodyFatPct).toBe(7);
+    expect(apex.bodyFatGapPct).toBeCloseTo(9.3 - 7, 3);
+
+    // Elite FFM headroom is shared — Max SMM stays on the same lean-mass ceiling (~49 kg for Boss frame).
+    expect(elite.maxSmmKg).toBe(athletic.maxSmmKg);
+    expect(apex.maxSmmKg).toBe(athletic.maxSmmKg);
+    expect(apex.maxSmmKg).toBe(estimateSkeletalMuscleMassKg(apex.maxTuned.ffmMaxKg));
+    expect(apex.maxSmmKg).toBeGreaterThanOrEqual(49);
+
+    // Max total weight stairs with tier BF even when FFM/arm are legendary-locked.
+    // Same FFM + leaner target BF ⇒ lower stage weight (fat mass cut from the ceiling).
+    const ffm = athletic.maxTuned.ffmMaxKg;
+    expect(athletic.maxTuned.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(ffm, 9.3));
+    expect(elite.maxTuned.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(ffm, 9));
+    expect(apex.maxTuned.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(ffm, 7));
+    expect(athletic.maxTuned.maxTotalWeightKg).toBeGreaterThan(elite.maxTuned.maxTotalWeightKg);
+    expect(elite.maxTuned.maxTotalWeightKg).toBeGreaterThan(apex.maxTuned.maxTotalWeightKg);
+    expect(apex.weightGapKg).toBe(
+      Math.round((apex.maxTuned.maxTotalWeightKg - boss.weightKg) * 10) / 10
+    );
+
+    // Lower endomorphy at harder tiers drives point B further toward the meso vertex.
+    expect(elite.maxTuned.somatotype.endomorphy).toBeLessThan(
+      athletic.maxTuned.somatotype.endomorphy
+    );
+    expect(apex.maxTuned.somatotype.endomorphy).toBeLessThan(elite.maxTuned.somatotype.endomorphy);
+    expect(elite.maxTuned.coordinates.y).toBeGreaterThan(athletic.maxTuned.coordinates.y);
+    expect(apex.maxTuned.coordinates.y).toBeGreaterThan(elite.maxTuned.coordinates.y);
+    expect(apex.maxTuned.somatotype.mesomorphy).toBeGreaterThanOrEqual(
+      elite.maxTuned.somatotype.mesomorphy
+    );
+  });
+
+  it('anchors target BF to current when already below the selected tier lock', () => {
     expect(resolveMaxTunedBodyFatPct(undefined)).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
     expect(resolveMaxTunedBodyFatPct(18)).toBe(12);
     expect(resolveMaxTunedBodyFatPct(9.3)).toBe(9.3);
+    expect(resolveMaxTunedBodyFatPct(9.3, 'elite')).toBe(9);
+    expect(resolveMaxTunedBodyFatPct(9.3, 'apex')).toBe(7);
+    expect(resolveMaxTunedBodyFatPct(8, 'apex')).toBe(7);
+    expect(resolveMaxTunedBodyFatPct(6, 'apex')).toBe(6);
     expect(resolveMaxTunedBodyFatPct(-1)).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
 
-    const lean = calculateMaxTunedChassis({
+    const lean = calculateMaxTunedPhysique({
       heightCm: 180,
       wristCm: 17,
       currentBodyFatPct: 8,
       currentWeightKg: 75,
       currentArmGirthCm: 34,
+      physiqueTier: 'athletic',
     })!;
     expect(lean.bodyFatPct).toBe(8);
+    expect(lean.physiqueTier).toBe('athletic');
   });
 
   it('raises FFM_Max with elite headroom when current lean mass beats the skeletal estimate', () => {
@@ -231,7 +324,7 @@ describe('max tuned chassis + lab snapshot', () => {
     const currentFfm = weight * (1 - bf / 100);
     expect(currentFfm).toBeGreaterThan(formulaFfm);
 
-    const max = calculateMaxTunedChassis({
+    const max = calculateMaxTunedPhysique({
       heightCm: height,
       wristCm: wrist,
       currentBodyFatPct: bf,

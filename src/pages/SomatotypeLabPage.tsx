@@ -1,25 +1,46 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import SomatochartView from '../components/tools/SomatochartView';
-import SomatotypeGapGauge from '../components/tools/SomatotypeGapGauge';
+import DiagnosticOverlay from '../components/assessment/DiagnosticOverlay';
+import SomatotypeReportModal from '../components/tools/SomatotypeReportModal';
 import { useSomatotypeLab } from '../hooks/useSomatotypeLab';
+import { useSomatotypeLabRitual } from '../hooks/useSomatotypeLabRitual';
+import { PHYSIQUE_TIERS } from '../logic/core/somatotypeLab';
 
 export interface SomatotypeLabPageProps {
   onBack?: () => void;
 }
 
 const fieldClass =
-  'mt-1.5 w-full rounded-lg border border-zinc-700 bg-black/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-accent-primary/60';
+  'mt-1.5 w-full rounded-lg border border-zinc-700 bg-black/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-accent-primary/60 disabled:cursor-not-allowed disabled:opacity-50';
 
 const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const lab = useSomatotypeLab();
-  const snap = lab.snapshot;
+  const canAnalyze = lab.snapshot != null;
+  const ritual = useSomatotypeLabRitual(canAnalyze, lab.snapshot);
+  const formLocked = ritual.isAnalyzing;
+
+  const chartRemountKey = `report-${ritual.reportSessionId}`;
 
   return (
     <main className="ui-shell relative max-w-3xl space-y-6 text-zinc-100">
+      <DiagnosticOverlay
+        open={ritual.isAnalyzing}
+        statusLine={ritual.statusLine}
+        scanningLabel={ritual.scanningLabel}
+        accent="armSize"
+        ariaLabel={ritual.overlayAriaLabel}
+      />
+
+      <SomatotypeReportModal
+        open={ritual.modalOpen}
+        onClose={ritual.closeReport}
+        snapshot={ritual.reportSnapshot}
+        animationKey={chartRemountKey}
+      />
+
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
           <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
@@ -28,16 +49,21 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl">
             {t('tools.somatotypeLab.title')}
           </h1>
-          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-            {t('tools.somatotypeLab.subtitle')}
-          </p>
         </div>
-        <button type="button" className="ui-btn" onClick={onBack ?? (() => navigate(-1))}>
+        <button
+          type="button"
+          className="ui-btn"
+          disabled={formLocked}
+          onClick={onBack ?? (() => navigate(-1))}
+        >
           {t('back')}
         </button>
       </header>
 
-      <section className="grid gap-3 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 sm:grid-cols-2 sm:p-5">
+      <fieldset
+        disabled={formLocked}
+        className="grid gap-3 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 sm:grid-cols-2 sm:p-5"
+      >
         <label className="block text-xs text-zinc-400">
           {t('tools.somatotypeLab.fields.height')}
           <input
@@ -88,62 +114,73 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
             placeholder={t('tools.somatotypeLab.placeholders.arm')}
           />
         </label>
-        <label className="flex items-center gap-2 text-sm text-zinc-300 sm:col-span-2">
-          <input
-            type="checkbox"
-            checked={lab.isVeteran}
-            onChange={(e) => lab.setIsVeteran(e.target.checked)}
-            className="size-4 rounded border-zinc-600 bg-zinc-900 accent-orange-500"
-          />
-          {t('tools.somatotypeLab.fields.veteran')}
-        </label>
-      </section>
+        <div className="space-y-2 sm:col-span-2">
+          <label
+            className={`flex items-center gap-2 text-sm ${
+              lab.veteranCalibrationLocked ? 'cursor-not-allowed text-zinc-500' : 'text-zinc-300'
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={lab.isVeteran}
+              disabled={lab.veteranCalibrationLocked || formLocked}
+              onChange={(e) => lab.setIsVeteran(e.target.checked)}
+              className="size-4 rounded border-zinc-600 bg-zinc-900 accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {t('tools.somatotypeLab.fields.veteran')}
+          </label>
+        </div>
 
-      {snap ? (
-        <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 sm:p-5">
-          {snap.current.atypicalProportion ? (
-            <p
-              role="status"
-              className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
-            >
-              {t('tools.somatotypeLab.atypicalWarning')}
+        <div className="space-y-2 sm:col-span-2">
+          <p className="text-xs font-medium tracking-wide text-zinc-400">
+            {t('tools.somatotypeLab.physiqueTier.label')}
+          </p>
+          <div
+            role="radiogroup"
+            aria-label={t('tools.somatotypeLab.physiqueTier.label')}
+            className="grid gap-2 sm:grid-cols-3"
+          >
+            {PHYSIQUE_TIERS.map((tier) => {
+              const selected = lab.physiqueTier === tier;
+              return (
+                <button
+                  key={tier}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={formLocked}
+                  onClick={() => lab.setPhysiqueTier(tier)}
+                  className={`rounded-lg border px-3 py-2.5 text-left font-mono text-[11px] leading-snug transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    selected
+                      ? 'border-accent-primary/70 bg-accent-primary/10 text-accent-primary'
+                      : 'border-zinc-700 bg-black/30 text-zinc-300 hover:border-zinc-500'
+                  }`}
+                >
+                  {t(`tools.somatotypeLab.physiqueLabels.${tier}`)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="sm:col-span-2">
+          <button
+            type="button"
+            className="ui-btn ui-btn-primary w-full py-3 font-mono text-sm tracking-wide"
+            disabled={!canAnalyze || formLocked}
+            onClick={ritual.runAnalysis}
+          >
+            {formLocked
+              ? t('tools.somatotypeLab.ritual.ctaBusy')
+              : t('tools.somatotypeLab.ritual.cta')}
+          </button>
+          {!canAnalyze ? (
+            <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
+              {t('tools.somatotypeLab.emptyHint')}
             </p>
           ) : null}
-          <div className="flex justify-center">
-            <SomatochartView
-              key={`${snap.currentPoint.x}:${snap.currentPoint.y}:${snap.maxTuned.coordinates.x}:${snap.maxTuned.coordinates.y}`}
-              pointA={snap.currentPoint}
-              pointB={snap.maxTuned.coordinates}
-            />
-          </div>
-          <SomatotypeGapGauge
-            heightCm={snap.metrics.heightCm}
-            wristCm={snap.metrics.wristCm}
-            currentBodyFatPct={snap.metrics.bodyFatPct}
-            currentArmGirthCm={snap.metrics.flexedArmGirthCm}
-            currentSmmKg={snap.currentSmmKg}
-            maxBodyFatPct={snap.maxTuned.bodyFatPct}
-            maxArmGirthCm={snap.maxTuned.armGirthMaxCm}
-            maxSmmKg={snap.maxSmmKg}
-            armGapCm={snap.armGapCm}
-            bodyFatGapPct={snap.bodyFatGapPct}
-            smmGapKg={snap.smmGapKg}
-          />
-          <p className="font-mono text-[11px] text-zinc-500">
-            {t('tools.somatotypeLab.readout', {
-              endo: snap.current.endomorphy.toFixed(2),
-              meso: snap.current.mesomorphy.toFixed(2),
-              ecto: snap.current.ectomorphy.toFixed(2),
-              x: snap.currentPoint.x.toFixed(2),
-              y: snap.currentPoint.y.toFixed(2),
-            })}
-          </p>
-        </section>
-      ) : (
-        <p className="rounded-xl border border-dashed border-zinc-800 px-4 py-6 text-center text-sm text-zinc-500">
-          {t('tools.somatotypeLab.emptyHint')}
-        </p>
-      )}
+        </div>
+      </fieldset>
     </main>
   );
 };
