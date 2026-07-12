@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DiagnosticOverlay from '../components/assessment/DiagnosticOverlay';
 import SomatotypeReportModal from '../components/tools/SomatotypeReportModal';
+import SomatotypeScientificAppendix from '../components/tools/SomatotypeScientificAppendix';
 import { useSomatotypeLab } from '../hooks/useSomatotypeLab';
 import { useSomatotypeLabRitual } from '../hooks/useSomatotypeLabRitual';
 import { PHYSIQUE_TIERS } from '../logic/core/somatotypeLab';
@@ -181,6 +182,8 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
           ) : null}
         </div>
       </fieldset>
+
+      <SomatotypeScientificAppendix />
     </main>
   );
 };

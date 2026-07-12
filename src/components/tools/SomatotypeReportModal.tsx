@@ -17,7 +17,7 @@ export interface SomatotypeReportModalProps {
 }
 
 /**
- * Full report sheet for the somatotype lab ritual — chart + gap gauge + honor notices.
+ * Full report sheet for the somatotype lab ritual — chart + gap gauge + notices.
  */
 export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
   open,
@@ -119,16 +119,6 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
             smmGapKg={snap.smmGapKg}
             weightGapKg={snap.weightGapKg}
           />
-
-          <p className="font-mono text-[11px] text-zinc-500">
-            {t('tools.somatotypeLab.readout', {
-              endo: snap.current.endomorphy.toFixed(2),
-              meso: snap.current.mesomorphy.toFixed(2),
-              ecto: snap.current.ectomorphy.toFixed(2),
-              x: snap.currentPoint.x.toFixed(2),
-              y: snap.currentPoint.y.toFixed(2),
-            })}
-          </p>
         </div>
 
         <div className="shrink-0 border-t border-zinc-800 px-5 py-4">

@@ -123,9 +123,6 @@ export default function ToolsPage() {
               <p className="text-sm font-semibold text-zinc-100">
                 {t('tools.somatotypeLab.title', { ns: 'common' })}
               </p>
-              <p className="mt-1 text-xs text-zinc-500">
-                {t('tools.somatotypeLab.cardHint', { ns: 'common' })}
-              </p>
             </Link>
           </div>
         </article>

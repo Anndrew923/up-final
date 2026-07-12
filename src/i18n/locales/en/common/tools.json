@@ -134,7 +134,6 @@
     "somatotypeLab": {
       "kicker": "Morphology Lab",
       "title": "Somatotype Geometry Chart",
-      "cardHint": "Grant / Heath–Carter dual-point chart and arm / BF gap gauge",
       "emptyHint": "Enter height, weight, body fat, wrist, and flexed arm girth within valid ranges, then run geometry analysis.",
       "atypicalWarning": "Your height-weight ratio is outside the usual Reuleaux band (HWR < 35 or > 50). The chart still renders, but treat coordinates as approximate.",
       "fields": {
@@ -153,7 +152,7 @@
         "elite": "Elite (BF 9%)",
         "apex": "Physique Apex (BF 7%)"
       },
-      "legendaryNotice": "👑 System Notice: Your current physical development has exceeded the skeletal geometry estimate. Legendary physique mode is unlocked; manual calibration is redundant.",
+      "legendaryNotice": "System Notice: Your current physical development has exceeded the skeletal geometry estimate. Legendary physique mode is unlocked; manual calibration is redundant.",
       "ritual": {
         "cta": "Run Geometry Analysis",
         "ctaBusy": "Scanning geometry…",
@@ -193,10 +192,15 @@
         "currentValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "maxLabel": "Max-tuned",
         "maxValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
-        "upgradeGuide": "💡 Upgrade guide: You still have {{armGap}}cm of arm girth headroom, {{smmGap}}kg of pure skeletal-muscle growth potential, and {{weightGap}}kg of body-weight adjustment room to your physical ceiling.",
-        "upgradeGuideAtCeiling": "💡 Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling."
+        "upgradeGuide": "Upgrade guide: You still have {{armGap}}cm of arm girth headroom, {{smmGap}}kg of pure skeletal-muscle growth potential, and {{weightGap}}kg of body-weight adjustment room to your physical ceiling.",
+        "upgradeGuideAtCeiling": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling."
       },
-      "readout": "Endo {{endo}} · Meso {{meso}} · Ecto {{ecto}}  →  (X {{x}}, Y {{y}})"
+      "appendix": {
+        "title": "Heath–Carter Somatotype Algorithm Guide",
+        "heathCarter": "This assessment is built on the classic Heath–Carter somatotype model. The full clinical formula requires multiple skinfolds and biepicondylar bone breadths; to keep field measurement practical, this app decouples that path and uses wrist girth plus body-composition inputs as the algebraic proxy for skeletal frame. That simplification may introduce roughly ±2% to ±4% estimation residual.",
+        "legendaryDefense": "[Extreme Morphotype Correction] The default theoretical ceiling reflects the upper bound of lean tissue under a population-normal genetic distribution. When long-term high-intensity strength training has already pushed measured muscle mass and arm girth beyond that civilian estimate, the system activates Legendary Physique Defense: it re-anchors and dynamically expands the ceiling from the athlete’s live metrics to honor physiological supercompensation.",
+        "biaDisclaimer": "[Measurement Error & Variability] Skeletal-muscle conversion is aligned to the commercial high-end BIA convention of 0.57 × FFM. Because BIA and this model are sensitive to body-water status, readings taken during high-carbohydrate loading, post-pump states, creatine use, or inflammatory fluid retention may swing by roughly ±3% to ±5%. All values are for physique tracking and scientific reference only and do not constitute medical diagnosis."
+      }
     },
     "codex": {
       "panelTitle": "Vehicle Specification Codex",
