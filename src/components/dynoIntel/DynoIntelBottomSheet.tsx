@@ -31,8 +31,6 @@ export interface DynoIntelBottomSheetProps {
   onClose: () => void;
   view: DynoIntelSheetView;
   paywallReason: DynoIntelPaywallReason;
-  weakestAxisLabel: string;
-  paywallScoreLabel: string;
   paywallBusy: boolean;
   paywallBillingError: boolean;
   onPaywallSubscribe: () => void;
@@ -59,8 +57,6 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   onClose,
   view,
   paywallReason,
-  weakestAxisLabel,
-  paywallScoreLabel,
   paywallBusy,
   paywallBillingError,
   onPaywallSubscribe,
@@ -198,8 +194,6 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
         {view === 'paywall' ? (
           <DynoIntelPaywallView
             reason={paywallReason}
-            weakestAxisLabel={weakestAxisLabel}
-            scoreLabel={paywallScoreLabel}
             busy={paywallBusy}
             billingError={paywallBillingError}
             onSubscribe={onPaywallSubscribe}

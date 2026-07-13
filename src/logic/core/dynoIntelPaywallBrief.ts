@@ -9,8 +9,9 @@ export interface DynoPaywallWeakestBrief {
 }
 
 /**
- * Extracts paywall copy inputs from a pre-built DYNO context.
- * WHY: Paywall UI stays presentational — weakest axis math lives in logic/core.
+ * Resolves weakest-axis brief from a pre-built DYNO context.
+ * WHY: Suggestion chips (and any future weak-axis UX) stay decoupled from UI —
+ * axis/score math lives in logic/core, not in paywall marketing copy.
  */
 export function resolveDynoPaywallWeakestBrief(
   context: DynoIntelContextV1

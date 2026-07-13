@@ -84,12 +84,12 @@
     "paywall": {
       "badge": "Console integrity error",
       "title": {
-        "pro-required": "15x Computing Ignition: Unlock the Complete Matrix",
-        "quota-exhausted": "Micro-Allowance Exhausted: Overclock Your Intelligence"
+        "pro-required": "15x Computing Overclock Available",
+        "quota-exhausted": "Daily Free Quota Exhausted"
       },
       "body": {
-        "pro-required": "Break free from computing limitations. Upgrade to Pro Tier now to instantly overclock your matrix from restrictive caps to <cyan>30</cyan> daily high-voltage queries! Run deep telemetry decodes on your absolute strength performance and cross-examine the legendary Pantheon athletes with zero friction.",
-        "quota-exhausted": "Tired of being restricted by a minor allowance of <bold>2</bold> consultations per day? Your complimentary access has expired. Ignite your Pro Tier immediately to claim your <cyan>30</cyan> elite daily decodes. Absolute authority. Command your data sovereignty now."
+        "pro-required": "Ignite Pro Tier for an instant <cyan>15x power surge</cyan>. Unlock <cyan>30 daily queries</cyan> for absolute strength decodes and Pantheon access with zero friction.",
+        "quota-exhausted": "Your <bold>2 daily queries</bold> have expired. Upgrade to Pro now for <cyan>30 high-voltage decodes</cyan> and complete sovereignty over your data."
       },
       "featuresTitle": "Pro essentials",
       "features": {
@@ -110,9 +110,7 @@
       "cta": "⚡ Ignite Pro Pass (NT$ 30 / mo)",
       "dismiss": "Return to console",
       "busy": "Authorizing payment…",
-      "billingFail": "Billing link failed — try again or restore purchases in Settings.",
-      "blindSpotScore": "unscored",
-      "unknownAxis": "unknown axis"
+      "billingFail": "Billing link failed — try again or restore purchases in Settings."
     },
     "error": {
       "network": "Telemetry link lost — try again shortly.",

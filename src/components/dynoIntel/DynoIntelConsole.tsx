@@ -92,20 +92,6 @@ const DynoIntelConsole = () => {
 
   const suggestionItems = useDynoIntelSuggestions(paywallBrief.axis);
 
-  const paywallAxisLabel = useMemo(() => {
-    if (!paywallBrief.axis) {
-      return t('dynoIntel.paywall.unknownAxis');
-    }
-    return t(`axisLexicon.output.full.${paywallBrief.axis}`);
-  }, [paywallBrief.axis, t]);
-
-  const paywallScoreLabel = useMemo(() => {
-    if (paywallBrief.isBlindSpot || paywallBrief.score == null) {
-      return t('dynoIntel.paywall.blindSpotScore');
-    }
-    return String(Math.round(paywallBrief.score * 10) / 10);
-  }, [paywallBrief.isBlindSpot, paywallBrief.score, t]);
-
   const openPaywall = useCallback(
     (reason: DynoIntelPaywallReason) => {
       setPaywallReason(reason);
@@ -253,8 +239,6 @@ const DynoIntelConsole = () => {
         onClose={handleSheetClose}
         view={sheetView}
         paywallReason={paywallReason}
-        weakestAxisLabel={paywallAxisLabel}
-        paywallScoreLabel={paywallScoreLabel}
         paywallBusy={paywallBusy}
         paywallBillingError={paywallBillingError}
         onPaywallSubscribe={() => void handlePaywallSubscribe()}

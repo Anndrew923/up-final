@@ -5,8 +5,6 @@ import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 
 export interface DynoIntelPaywallViewProps {
   reason: DynoIntelPaywallReason;
-  weakestAxisLabel: string;
-  scoreLabel: string;
   busy: boolean;
   billingError: boolean;
   onSubscribe: () => void;
@@ -19,10 +17,12 @@ const FEATURE_ROWS = [
   { key: 'dyno', dot: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.9)]' },
 ] as const;
 
-/** WHY: Highlight 2 vs 30 quota contrast without hardcoding styled numerals in JSX. */
+/** WHY: Neon cyan anchors 15x/30; struck-through bold marks exhausted free quota. */
 const PAYWALL_BODY_COMPONENTS = {
-  cyan: <span className="text-cyan-400 font-bold shadow-[0_0_8px_rgba(34,211,238,0.2)]" />,
-  bold: <span className="text-zinc-100 font-semibold" />,
+  cyan: (
+    <span className="text-cyan-400 font-bold text-base shadow-[0_0_10px_rgba(34,211,238,0.25)]" />
+  ),
+  bold: <span className="text-zinc-400 font-medium text-sm line-through" />,
 };
 
 const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
@@ -49,13 +49,13 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
           {t(`dynoIntel.paywall.title.${reason}`)}
         </h3>
 
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
-          <Trans
-            ns="common"
-            i18nKey={`dynoIntel.paywall.body.${reason}`}
-            components={PAYWALL_BODY_COMPONENTS}
-          />
-        </p>
+        <Trans
+          parent="p"
+          className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300"
+          ns="common"
+          i18nKey={`dynoIntel.paywall.body.${reason}`}
+          components={PAYWALL_BODY_COMPONENTS}
+        />
 
         <div className="mt-4 rounded-xl border border-accent-primary/30 bg-zinc-950/70 p-3.5">
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-primary/90">
