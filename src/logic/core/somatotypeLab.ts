@@ -34,6 +34,12 @@ export const SOMATOTYPE_VETERAN_HUMERUS_FACTOR = 1.05;
 export const SOMATOTYPE_ELITE_HEADROOM = 1.05;
 /** FFM → skeletal muscle mass (InBody BIA field alignment; not textbook ~0.54). */
 export const SOMATOTYPE_SMM_FFM_RATIO = 0.57;
+/**
+ * Arm-girth share of SMM growth (cm per kg ΔSMM).
+ * Second calibration: 0.48 so ~12.2 kg lean gain unlocks ~5.9 cm arm headroom
+ * (field tank frame ≈ 43.8–44.5 cm at elite BF / ~47 kg max SMM).
+ */
+export const SOMATOTYPE_ARM_SMM_VOLUME_FACTOR = 0.48;
 
 /** Soft physiological bands — keep chart math out of absurd / off-chart regimes. */
 export const SOMATOTYPE_INPUT_LIMITS = {
@@ -92,7 +98,7 @@ export interface MaxTunedPhysiqueSpec {
   maxTotalWeightKg: number;
   armGirthMaxCm: number;
   /**
-   * True when live arm girth already beat the skeletal formula ceiling
+   * True when live arm girth already beat the volume-aware skeletal ceiling
    * (legendary hypertrophy guardrail). Veteran +5% bone compensation is redundant.
    */
   legendaryArmMode: boolean;
@@ -337,6 +343,68 @@ export function resolveMaxTotalWeightKg(ffmMaxKg: number, targetBodyFatPct: numb
   return round1(ffm / leanFraction);
 }
 
+export interface ResolveMaxArmCircumferenceInput {
+  heightCm: number;
+  wristCm: number;
+  ffmMaxKg: number;
+  currentArmGirthCm?: number;
+  currentSmmKg: number;
+  maxSmmKg: number;
+}
+
+export interface ResolveMaxArmCircumferenceResult {
+  /** Wrist/height skeletal baseline before SMM volume parity. */
+  skeletalBaselineCm: number;
+  /** ΔSMM × {@link SOMATOTYPE_ARM_SMM_VOLUME_FACTOR}. */
+  volumeBonusCm: number;
+  armGirthMaxCm: number;
+  /**
+   * True when live girth still exceeds the volume-aware skeletal ceiling
+   * (before applying the current-arm floor + bonus path).
+   */
+  legendaryArmMode: boolean;
+}
+
+/**
+ * Max flexed-arm girth with SMM volume-parity compensation.
+ *
+ * WHY: Wrist girth barely hypertrophies; locking max arm to WC alone under-states
+ * dimensional growth when lean mass climbs hard (hypertrophy blind spot).
+ * IMPACT: ΔSMM unlocks arm headroom while preserving legendary breakthrough.
+ */
+export function resolveMaxArmCircumferenceCm(
+  input: ResolveMaxArmCircumferenceInput
+): ResolveMaxArmCircumferenceResult | null {
+  const height = sanitizePositive(input.heightCm);
+  const wrist = sanitizePositive(input.wristCm);
+  const ffmMax = sanitizePositive(input.ffmMaxKg);
+  if (height <= 0 || wrist <= 0 || ffmMax <= 0) return null;
+
+  const skeletalBaselineCm = round3(wrist * 1.6 + (ffmMax / height) * 15);
+  const currentSmm = Number.isFinite(input.currentSmmKg) ? Math.max(0, input.currentSmmKg) : 0;
+  const maxSmm = Number.isFinite(input.maxSmmKg) ? Math.max(0, input.maxSmmKg) : 0;
+  // Without a live SMM baseline we cannot price growth — keep pure skeletal arm math.
+  const deltaSmm = currentSmm > 0 ? Math.max(0, maxSmm - currentSmm) : 0;
+  const volumeBonusCm = round3(deltaSmm * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR);
+  const currentArm = sanitizePositive(input.currentArmGirthCm ?? 0);
+
+  // Pure skeletal + volume path (no live-arm floor) — legendary trigger baseline.
+  const volumeAwareSkeletalCm = round1(skeletalBaselineCm + volumeBonusCm);
+
+  // Live girth already past volume-aware skeletal math → breakthrough headroom.
+  const legendaryArmMode = currentArm > volumeAwareSkeletalCm;
+  const armGirthMaxCm = legendaryArmMode
+    ? round1(currentArm * SOMATOTYPE_ELITE_HEADROOM)
+    : round1(Math.max(skeletalBaselineCm, currentArm) + volumeBonusCm);
+
+  return {
+    skeletalBaselineCm,
+    volumeBonusCm,
+    armGirthMaxCm,
+    legendaryArmMode,
+  };
+}
+
 export function calculateMaxTunedPhysique(
   params: MaxTunedPhysiqueParams
 ): MaxTunedPhysiqueSpec | null {
@@ -352,8 +420,10 @@ export function calculateMaxTunedPhysique(
 
   const currentWeight = sanitizePositive(params.currentWeightKg ?? 0);
   const currentBf = Number(params.currentBodyFatPct);
+  let currentSmmKg = 0;
   if (currentWeight > 0 && Number.isFinite(currentBf) && currentBf >= 0 && currentBf < 100) {
     const currentFfmKg = currentWeight * (1 - currentBf / 100);
+    currentSmmKg = estimateSkeletalMuscleMassKg(currentFfmKg);
     // Elite FFM guardrail: real lean mass already above skeletal estimate → +5% headroom.
     if (currentFfmKg > ffmMaxKg) {
       ffmMaxKg = round3(currentFfmKg * SOMATOTYPE_ELITE_HEADROOM);
@@ -364,13 +434,18 @@ export function calculateMaxTunedPhysique(
   const maxTotalWeightKg = resolveMaxTotalWeightKg(ffmMaxKg, targetBf);
   if (maxTotalWeightKg <= 0) return null;
 
-  let armGirthMaxCm = round3(wrist * 1.6 + (ffmMaxKg / height) * 15);
-  const currentArm = sanitizePositive(params.currentArmGirthCm ?? 0);
-  // Elite arm guardrail: live girth already past formula ceiling → +5% breakthrough potential.
-  const legendaryArmMode = currentArm > armGirthMaxCm;
-  if (legendaryArmMode) {
-    armGirthMaxCm = round1(currentArm * SOMATOTYPE_ELITE_HEADROOM);
-  }
+  const maxSmmKg = estimateSkeletalMuscleMassKg(ffmMaxKg);
+  const armResolved = resolveMaxArmCircumferenceCm({
+    heightCm: height,
+    wristCm: wrist,
+    ffmMaxKg,
+    currentArmGirthCm: params.currentArmGirthCm,
+    currentSmmKg,
+    maxSmmKg,
+  });
+  if (!armResolved) return null;
+
+  const { armGirthMaxCm, legendaryArmMode } = armResolved;
 
   // Legendary mode already models breakthrough hypertrophy — veteran humerus boost is noise.
   const effectiveVeteran = legendaryArmMode ? false : Boolean(params.isVeteran);

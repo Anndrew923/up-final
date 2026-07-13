@@ -7,6 +7,7 @@ import {
   SOMATOTYPE_ELITE_HEADROOM,
   SOMATOTYPE_ENDO_FLOOR,
   SOMATOTYPE_HWR_MID,
+  SOMATOTYPE_ARM_SMM_VOLUME_FACTOR,
   SOMATOTYPE_SMM_FFM_RATIO,
   SOMATOTYPE_VETERAN_HUMERUS_FACTOR,
   buildSomatotypeLabSnapshot,
@@ -19,6 +20,7 @@ import {
   convertToSomatochartCoordinates,
   estimateSkeletalMuscleMassKg,
   isPhysiqueTier,
+  resolveMaxArmCircumferenceCm,
   resolveMaxTotalWeightKg,
   resolveMaxTunedBodyFatPct,
   resolvePhysiqueTier,
@@ -150,16 +152,99 @@ describe('max tuned physique + lab snapshot', () => {
     const wrist = 17;
     const ffm = height * 0.35 + wrist * 2.2 - 15;
     const weight = Math.round((ffm / (1 - 0.12)) * 10) / 10;
-    const arm = wrist * 1.6 + (ffm / height) * 15;
+    const arm = Math.round((wrist * 1.6 + (ffm / height) * 15) * 10) / 10;
     const max = calculateMaxTunedPhysique({ heightCm: height, wristCm: wrist })!;
     expect(max.physiqueTier).toBe('athletic');
     expect(max.bodyFatPct).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
     expect(max.ffmMaxKg).toBeCloseTo(ffm, 3);
     expect(max.maxTotalWeightKg).toBe(weight);
     expect(max.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(max.ffmMaxKg, max.bodyFatPct));
-    expect(max.armGirthMaxCm).toBeCloseTo(arm, 3);
+    expect(max.armGirthMaxCm).toBe(arm);
     expect(max.coordinates.x).toBeDefined();
     expect(max.coordinates.y).toBeDefined();
+  });
+
+  it('adds SMM volume-parity arm bonus for the field Boss frame under apex', () => {
+    // Weight chosen so current SMM ≈ 32.9 kg at BF 24.2% (InBody 0.57 path).
+    const boss = {
+      heightCm: 170,
+      weightKg: 76.15,
+      bodyFatPct: 24.2,
+      wristCm: 16.7,
+      flexedArmGirthCm: 35,
+      physiqueTier: 'apex' as const,
+    };
+    const snap = buildSomatotypeLabSnapshot(boss)!;
+    expect(snap.currentSmmKg).toBeCloseTo(32.9, 1);
+    expect(snap.maxSmmKg).toBeCloseTo(46.3, 1);
+    expect(snap.smmGapKg).toBeCloseTo(13.4, 1);
+
+    const arm = resolveMaxArmCircumferenceCm({
+      heightCm: boss.heightCm,
+      wristCm: boss.wristCm,
+      ffmMaxKg: snap.maxTuned.ffmMaxKg,
+      currentArmGirthCm: boss.flexedArmGirthCm,
+      currentSmmKg: snap.currentSmmKg,
+      maxSmmKg: snap.maxSmmKg,
+    })!;
+    // Volume factor × ~13.4 kg SMM gap on the live-arm floor.
+    expect(arm.volumeBonusCm).toBeCloseTo(
+      snap.smmGapKg * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR,
+      3
+    );
+    expect(snap.maxTuned.armGirthMaxCm).toBe(arm.armGirthMaxCm);
+    expect(snap.maxTuned.armGirthMaxCm).toBe(
+      Math.round(
+        (Math.max(arm.skeletalBaselineCm, boss.flexedArmGirthCm) + arm.volumeBonusCm) * 10
+      ) / 10
+    );
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
+    expect(snap.maxTuned.maxTotalWeightKg).toBe(
+      resolveMaxTotalWeightKg(snap.maxTuned.ffmMaxKg, snap.maxTuned.bodyFatPct)
+    );
+  });
+
+  it('unlocks tank-frame arm ceiling (≥43.8) for 175cm / +12.2kg SMM under elite', () => {
+    // Journey toward max stage weight ~91.2 kg @ 9% BF / max SMM ~47.3 kg.
+    const tank = {
+      heightCm: 175,
+      weightKg: 80,
+      bodyFatPct: 23,
+      wristCm: 16.7,
+      flexedArmGirthCm: 38,
+      physiqueTier: 'elite' as const,
+    };
+    const snap = buildSomatotypeLabSnapshot(tank)!;
+    expect(snap.currentSmmKg).toBeCloseTo(35.1, 1);
+    expect(snap.maxSmmKg).toBeCloseTo(47.3, 1);
+    expect(snap.smmGapKg).toBeCloseTo(12.2, 1);
+    expect(snap.maxTuned.maxTotalWeightKg).toBeCloseTo(91.2, 1);
+
+    const bonus = snap.smmGapKg * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR;
+    expect(bonus).toBeGreaterThanOrEqual(5.8);
+    expect(bonus).toBeLessThanOrEqual(6.0);
+    expect(snap.maxTuned.armGirthMaxCm).toBeGreaterThanOrEqual(43.8);
+    expect(snap.maxTuned.armGirthMaxCm).toBeLessThanOrEqual(44.5);
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
+  });
+
+  it('resolveMaxArmCircumferenceCm follows max(baseline, current) + ΔSMM×factor', () => {
+    const resolved = resolveMaxArmCircumferenceCm({
+      heightCm: 175,
+      wristCm: 16.7,
+      ffmMaxKg: 82.99,
+      currentArmGirthCm: 38,
+      currentSmmKg: 35.1,
+      maxSmmKg: 47.3,
+    })!;
+    expect(SOMATOTYPE_ARM_SMM_VOLUME_FACTOR).toBe(0.48);
+    expect(resolved.volumeBonusCm).toBeCloseTo(12.2 * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR, 3);
+    expect(resolved.armGirthMaxCm).toBe(
+      Math.round(
+        (Math.max(resolved.skeletalBaselineCm, 38) + resolved.volumeBonusCm) * 10
+      ) / 10
+    );
+    expect(resolved.legendaryArmMode).toBe(false);
   });
 
   it('builds dual-point snapshot with arm and BF gaps', () => {
@@ -195,6 +280,9 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.armGapCm).toBeGreaterThan(0);
     expect(snap.bodyFatGapPct).toBeGreaterThan(0);
     expect(snap.maxTuned.legendaryArmMode).toBe(false);
+    // Volume parity: max arm exceeds pure skeletal wrist lock when ΔSMM > 0.
+    const skeletalOnly = 17 * 1.6 + (snap.maxTuned.ffmMaxKg / 180) * 15;
+    expect(snap.maxTuned.armGirthMaxCm).toBeGreaterThan(skeletalOnly);
     expect(snap.currentSmmKg).toBe(
       estimateSkeletalMuscleMassKg(calculateFatFreeMassKg(85, 20))
     );
