@@ -84,12 +84,12 @@
     "paywall": {
       "badge": "Console integrity error",
       "title": {
-        "pro-required": "DYNO INTEL channel locked",
-        "quota-exhausted": "Daily uplink exhausted"
+        "pro-required": "15x Computing Ignition: Unlock the Complete Matrix",
+        "quota-exhausted": "Micro-Allowance Exhausted: Overclock Your Intelligence"
       },
       "body": {
-        "pro-required": "⚠️ {{axis}} axis idles at {{score}} pts. Ignite Pro to unlock three core channels:",
-        "quota-exhausted": "⚠️ Daily uplink spent; {{axis}} still at {{score}} pts. Upgrade or wait for reset to keep all three Pro channels:"
+        "pro-required": "Break free from computing limitations. Upgrade to Pro Tier now to instantly overclock your matrix from restrictive caps to <cyan>30</cyan> daily high-voltage queries! Run deep telemetry decodes on your absolute strength performance and cross-examine the legendary Pantheon athletes with zero friction.",
+        "quota-exhausted": "Tired of being restricted by a minor allowance of <bold>2</bold> consultations per day? Your complimentary access has expired. Ignite your Pro Tier immediately to claim your <cyan>30</cyan> elite daily decodes. Absolute authority. Command your data sovereignty now."
       },
       "featuresTitle": "Pro essentials",
       "features": {

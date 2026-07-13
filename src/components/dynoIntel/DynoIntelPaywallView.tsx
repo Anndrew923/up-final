@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 
@@ -19,10 +19,14 @@ const FEATURE_ROWS = [
   { key: 'dyno', dot: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.9)]' },
 ] as const;
 
+/** WHY: Highlight 2 vs 30 quota contrast without hardcoding styled numerals in JSX. */
+const PAYWALL_BODY_COMPONENTS = {
+  cyan: <span className="text-cyan-400 font-bold shadow-[0_0_8px_rgba(34,211,238,0.2)]" />,
+  bold: <span className="text-zinc-100 font-semibold" />,
+};
+
 const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
   reason,
-  weakestAxisLabel,
-  scoreLabel,
   busy,
   billingError,
   onSubscribe,
@@ -46,10 +50,11 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
         </h3>
 
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
-          {t(`dynoIntel.paywall.body.${reason}`, {
-            axis: weakestAxisLabel,
-            score: scoreLabel,
-          })}
+          <Trans
+            ns="common"
+            i18nKey={`dynoIntel.paywall.body.${reason}`}
+            components={PAYWALL_BODY_COMPONENTS}
+          />
         </p>
 
         <div className="mt-4 rounded-xl border border-accent-primary/30 bg-zinc-950/70 p-3.5">

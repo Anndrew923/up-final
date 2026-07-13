@@ -84,12 +84,12 @@
     "paywall": {
       "badge": "行車電腦完整性錯誤",
       "title": {
-        "pro-required": "DYNO INTEL 頻道已熔斷",
-        "quota-exhausted": "今日通電額度已耗盡"
+        "pro-required": "解鎖智庫完全體：15倍算力大點火",
+        "quota-exhausted": "每日 2 次額度已熔斷：立刻為算力大點火"
       },
       "body": {
-        "pro-required": "⚠️ 檢測到 {{axis}} 軸線停在 {{score}} 分怠速漏水。點火 Pro，一次解鎖三大核心頻道：",
-        "quota-exhausted": "⚠️ 今日通電額度已用罄；{{axis}} 仍停在 {{score}} 分。升級或等待重置後，可繼續使用 Pro 三大頻道："
+        "pro-required": "解開算力枷鎖，讓智庫主腦為你的肉體極限全量放電！立刻注入 Pro 點火能源，將每日通電額度從微量限額爆速狂飆至 <cyan>30</cyan> 次！讓你的絕對力量表現、萬神殿名將對帳、科學公式無縫一槍打通！",
+        "quota-exhausted": "還在為每天僅有 <bold>2</bold> 次的數據解碼小心翼翼嗎？你的免費額度已用罄。立刻點火 Pro 級距，瞬間釋放 <cyan>30</cyan> 次最高權限通電額度！全量名人堂神話任意對帳，硬核公式一桶到底！"
       },
       "featuresTitle": "Pro 三大核心",
       "features": {
