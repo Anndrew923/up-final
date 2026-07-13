@@ -7,12 +7,14 @@
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References"
     },
-    "rawInputsHeading": "Core Six Inputs",
-    "homeRadarHint": "Radar and performance index live on Home.",
     "viewHomeRadar": "Open Performance Dashboard",
-    "saveToHistory": "Save Snapshot to Logs",
-    "saveToHistoryDone": "Saved to local logs.",
-    "resetScores": "Reset Core Scores",
+    "sixAxisSnapshot": {
+      "title": "Performance Snapshot",
+      "toggleExpand": "Expand performance snapshot",
+      "toggleCollapse": "Collapse performance snapshot",
+      "saveSnapshot": "Snapshot Status to Logs",
+      "saveDone": "Snapshot archived"
+    },
     "axis": {
       "strength": "Horsepower",
       "explosivePower": "Torque",

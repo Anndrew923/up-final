@@ -1,78 +1,51 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
+import DynoSixAxisSnapshotPanel from '../components/assessment/DynoSixAxisSnapshotPanel';
+import { SomatotypeLabEntryCard } from '../components/assessment/SomatotypeLabEntryCard';
 import { useAssessmentLobbyCards } from '../hooks/useAssessmentLobbyCards';
 import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
-import {
-  ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY,
-  ASSESSMENT_RAW_INPUT_GRID_ORDER,
-} from '../config/assessmentLobby';
-import type { SixAxisMetric } from '../types/scoring';
-import {
-  calculateSixAxisOverall,
-  clampSixAxisRawInput,
-  SCORE_AXIS_MAX,
-} from '../logic/core/scoring';
+import { ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY } from '../config/assessmentLobby';
+import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
-import { useScoreStore } from '../stores/scoreStore';
-import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 
-const PDK_AXIS_DEBOUNCE_MS = 120;
+const SAVE_TOAST_MS = 2400;
 
-function parseInput(raw: string): number {
-  const n = Number(raw);
-  return clampSixAxisRawInput(Number.isFinite(n) ? n : 0);
-}
-
-/** Core six-axis raw entry — radar lives on Home; scores persist via `scoreStore`. */
+/** Dyno lobby — assessment cards first; six-axis board is read-only merged status + snapshot. */
 export default function AssessmentPage() {
   const { t } = useTranslation('common');
   const [justSaved, setJustSaved] = useState(false);
-  const scores = useScoreStore((s) => s.scores);
   const mergedScores = useMergedScoresFromLocalStores();
-  const displayOverall = useMemo(() => calculateSixAxisOverall(mergedScores), [mergedScores]);
-  const setScore = useScoreStore((s) => s.setScore);
-  const resetScores = useScoreStore((s) => s.resetScores);
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
-
   const lobbyCards = useAssessmentLobbyCards();
-  const { triggerPdkShift } = useDopamineFeedback();
-  const pdkDebounceRef = useRef<number | null>(null);
-
-  const onAxisChange = useCallback(
-    (metric: SixAxisMetric, value: string) => {
-      setJustSaved(false);
-      setScore(metric, parseInput(value));
-      if (pdkDebounceRef.current !== null) {
-        window.clearTimeout(pdkDebounceRef.current);
-      }
-      pdkDebounceRef.current = window.setTimeout(() => {
-        pdkDebounceRef.current = null;
-        triggerPdkShift();
-      }, PDK_AXIS_DEBOUNCE_MS);
-    },
-    [setScore, triggerPdkShift]
-  );
+  const saveToastTimerRef = useRef<number | null>(null);
 
   useEffect(
     () => () => {
-      if (pdkDebounceRef.current !== null) {
-        window.clearTimeout(pdkDebounceRef.current);
+      if (saveToastTimerRef.current !== null) {
+        window.clearTimeout(saveToastTimerRef.current);
       }
     },
     []
   );
 
-  const saveSnapshotToHistory = () => {
+  const saveSnapshotToHistory = useCallback(() => {
     addHistoryRecord({
       id: generateLocalId(),
       createdAt: new Date().toISOString(),
       scores: { ...mergedScores },
-      overallScore: displayOverall,
+      overallScore: calculateSixAxisOverall(mergedScores),
     });
     setJustSaved(true);
-  };
+    if (saveToastTimerRef.current !== null) {
+      window.clearTimeout(saveToastTimerRef.current);
+    }
+    saveToastTimerRef.current = window.setTimeout(() => {
+      setJustSaved(false);
+      saveToastTimerRef.current = null;
+    }, SAVE_TOAST_MS);
+  }, [addHistoryRecord, mergedScores]);
 
   return (
     <main className="ui-shell max-w-4xl space-y-4">
@@ -96,61 +69,15 @@ export default function AssessmentPage() {
         ))}
       </section>
 
-      <section className="ui-card space-y-3">
-        <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm font-medium text-zinc-300">
-          {t('assessment.rawInputsHeading')}
-          <span className="text-[10px] font-normal text-zinc-500">
-            · {t('assessment.homeRadarHint')}
-          </span>
-        </h2>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-          {ASSESSMENT_RAW_INPUT_GRID_ORDER.map((metric) => (
-            <label key={metric} className="flex items-center gap-2 text-xs text-zinc-400">
-              <span
-                className="w-14 shrink-0 truncate text-xs font-medium text-zinc-400"
-                title={t(`axisLexicon.output.full.${metric}`)}
-              >
-                {t(`axisLexicon.output.full.${metric}`)}
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={SCORE_AXIS_MAX}
-                step={0.5}
-                value={scores[metric] ?? 0}
-                onChange={(e) => onAxisChange(metric, e.target.value)}
-                className="min-h-9 min-w-0 flex-1 rounded-md border border-zinc-700 bg-bg-panel px-2 py-1 text-xs tabular-nums text-zinc-100 outline-none ring-accent-info focus:ring-1"
-                aria-label={t(`axisLexicon.output.full.${metric}`)}
-              />
-            </label>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-2">
-          <button
-            type="button"
-            className="ui-btn ui-btn-primary text-sm"
-            onClick={saveSnapshotToHistory}
-          >
-            {t('assessment.saveToHistory')}
-          </button>
-          <button
-            type="button"
-            className="ui-btn text-sm"
-            onClick={() => {
-              setJustSaved(false);
-              resetScores();
-            }}
-          >
-            {t('assessment.resetScores')}
-          </button>
-          {justSaved ? (
-            <span className="text-xs text-accent-info" role="status">
-              {t('assessment.saveToHistoryDone')}
-            </span>
-          ) : null}
-        </div>
+      <section>
+        <SomatotypeLabEntryCard />
       </section>
+
+      <DynoSixAxisSnapshotPanel
+        scores={mergedScores}
+        justSaved={justSaved}
+        onSaveSnapshot={saveSnapshotToHistory}
+      />
     </main>
   );
 }

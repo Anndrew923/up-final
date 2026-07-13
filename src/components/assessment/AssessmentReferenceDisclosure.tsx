@@ -12,6 +12,20 @@ export interface AssessmentReferenceDisclosureProps {
   collapsedHint?: string;
 }
 
+export interface AssessmentReferenceFooterProps {
+  children: ReactNode;
+}
+
+/**
+ * Bottom-anchored chrome for assessment reference copy.
+ * Design intent: keep core form / ladder sync as the primary path, then park science docs
+ * below a clear visual break. `!mt-8` is required because parent `space-y-*` child selectors
+ * outrank a plain `mt-8` and would otherwise collapse the intended breathing room.
+ */
+export const AssessmentReferenceFooter: FC<AssessmentReferenceFooterProps> = ({ children }) => (
+  <div className="!mt-8 border-t border-zinc-800/80 pt-6">{children}</div>
+);
+
 /** Standardized collapsible wrapper for assessment reference copy (title + toggle i18n in one place). */
 export const AssessmentReferenceDisclosure: FC<AssessmentReferenceDisclosureProps> = ({
   instanceId,

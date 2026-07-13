@@ -6,7 +6,9 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
@@ -147,17 +149,6 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <AssessmentReferenceDisclosure
-          instanceId="explosive-reference"
-          expanded={referenceOpen}
-          onToggle={() => setReferenceOpen((v) => !v)}
-        >
-          <ExplosiveReferencePanel
-            powerNormAnchors={powerNormAnchors}
-            anchorsFallback={anchorsFallback}
-          />
-        </AssessmentReferenceDisclosure>
-
         <div className="grid gap-5">
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-vj">
             <span className="font-medium text-zinc-200">{t('explosive.verticalJumpLabel')}</span>
@@ -336,6 +327,19 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
         ) : null}
 
         <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+        <AssessmentReferenceFooter>
+          <AssessmentReferenceDisclosure
+            instanceId="explosive-reference"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+          >
+            <ExplosiveReferencePanel
+              powerNormAnchors={powerNormAnchors}
+              anchorsFallback={anchorsFallback}
+            />
+          </AssessmentReferenceDisclosure>
+        </AssessmentReferenceFooter>
       </section>
     </main>
   );

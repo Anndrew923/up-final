@@ -2,7 +2,9 @@ import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
@@ -160,23 +162,6 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <AssessmentReferenceDisclosure
-          instanceId="strength-howto"
-          expanded={howToOpen}
-          onToggle={() => setHowToOpen((v) => !v)}
-        >
-          <ReferenceSimpleCopy
-            paragraphs={[
-              t('strength.howToInfo.intro'),
-              t('strength.howToInfo.reps'),
-              t('strength.howToInfo.repsAccuracy'),
-              t('strength.fieldsHint'),
-              t('strength.howToInfo.combinedRule'),
-            ]}
-            footnote={t('strength.howToInfo.tip')}
-          />
-        </AssessmentReferenceDisclosure>
-
         <div className="grid gap-6">
           {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
             const rowResult = perLiftResult[lift];
@@ -444,6 +429,25 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
 
           <LeaderboardAssessmentSyncBar syncController={ladderSync} />
         </div>
+
+        <AssessmentReferenceFooter>
+          <AssessmentReferenceDisclosure
+            instanceId="strength-howto"
+            expanded={howToOpen}
+            onToggle={() => setHowToOpen((v) => !v)}
+          >
+            <ReferenceSimpleCopy
+              paragraphs={[
+                t('strength.howToInfo.intro'),
+                t('strength.howToInfo.reps'),
+                t('strength.howToInfo.repsAccuracy'),
+                t('strength.fieldsHint'),
+                t('strength.howToInfo.combinedRule'),
+              ]}
+              footnote={t('strength.howToInfo.tip')}
+            />
+          </AssessmentReferenceDisclosure>
+        </AssessmentReferenceFooter>
       </section>
     </main>
   );

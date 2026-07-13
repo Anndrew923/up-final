@@ -26,18 +26,33 @@ export const ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY =
   'armSize' as const satisfies AssessmentLobbyCardKey;
 
 /**
- * Raw-input grid order on Assessment (WHY): Matches the 2×3 lobby card positions for the six
- * radar axes so operators read the same left-to-right / top-to-bottom map as the dyno cards.
- * Excludes `armSize` (leaderboard-only, full-width lobby card). Do not reuse `SIX_AXIS_METRICS`
- * here—that order drives radar vertices and history columns globally.
+ * Six-axis order as a row-major 2-column map matching lobby card positions
+ * (L→R, T→B). Excludes `armSize` (leaderboard-only). Do not reuse `SIX_AXIS_METRICS`
+ * here — that order drives radar vertices and history columns globally.
  */
-export const ASSESSMENT_RAW_INPUT_GRID_ORDER = [
+export const SIX_AXIS_LOBBY_GRID_ORDER = [
   'strength',
   'gripStrength',
   'bodyFat',
   'explosivePower',
   'cardio',
   'muscleMass',
+] as const satisfies readonly SixAxisMetric[];
+
+/**
+ * Six-axis snapshot columns derived from the lobby map (even → left, odd → right).
+ * WHY: Single source of truth so the read-only Dyno snapshot panel stays locked to the card grid.
+ */
+export const SIX_AXIS_SNAPSHOT_LEFT_AXES = [
+  SIX_AXIS_LOBBY_GRID_ORDER[0],
+  SIX_AXIS_LOBBY_GRID_ORDER[2],
+  SIX_AXIS_LOBBY_GRID_ORDER[4],
+] as const satisfies readonly SixAxisMetric[];
+
+export const SIX_AXIS_SNAPSHOT_RIGHT_AXES = [
+  SIX_AXIS_LOBBY_GRID_ORDER[1],
+  SIX_AXIS_LOBBY_GRID_ORDER[3],
+  SIX_AXIS_LOBBY_GRID_ORDER[5],
 ] as const satisfies readonly SixAxisMetric[];
 
 export const ASSESSMENT_LOBBY_ROUTES: Record<AssessmentLobbyCardKey, RoutePath> = {

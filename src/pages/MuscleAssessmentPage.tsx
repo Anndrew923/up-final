@@ -6,7 +6,9 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -134,32 +136,6 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
       ) : null}
 
       <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <AssessmentReferenceDisclosure
-          instanceId="muscle-standards-info"
-          expanded={standardsInfoOpen}
-          onToggle={() => setStandardsInfoOpen((v) => !v)}
-        >
-          <ReferenceSimpleCopy
-            paragraphs={[
-              t('muscle.smmHint'),
-              ...(smmCeilingKg != null && profile
-                ? [
-                    t('muscle.standardsInfo.dualSovereignPreamble', {
-                      maleMax: SMM_KG_CEILING_MALE,
-                      femaleMax: SMM_KG_CEILING_FEMALE,
-                    }),
-                    t(dualSovereignCeilingKey, { max: smmCeilingKg }),
-                  ]
-                : []),
-              t('muscle.standardsInfo.p1'),
-              t('muscle.standardsInfo.p2'),
-              t('muscle.standardsInfo.p3'),
-              t('muscle.standardsInfo.p4'),
-            ]}
-            footnote={t('muscle.standardsInfo.p5')}
-          />
-        </AssessmentReferenceDisclosure>
-
         <div className="space-y-3">
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="muscle-smm">
             <span className="font-medium text-zinc-200">{t('muscle.smmLabel')}</span>
@@ -266,6 +242,34 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+        <AssessmentReferenceFooter>
+          <AssessmentReferenceDisclosure
+            instanceId="muscle-standards-info"
+            expanded={standardsInfoOpen}
+            onToggle={() => setStandardsInfoOpen((v) => !v)}
+          >
+            <ReferenceSimpleCopy
+              paragraphs={[
+                t('muscle.smmHint'),
+                ...(smmCeilingKg != null && profile
+                  ? [
+                      t('muscle.standardsInfo.dualSovereignPreamble', {
+                        maleMax: SMM_KG_CEILING_MALE,
+                        femaleMax: SMM_KG_CEILING_FEMALE,
+                      }),
+                      t(dualSovereignCeilingKey, { max: smmCeilingKg }),
+                    ]
+                  : []),
+                t('muscle.standardsInfo.p1'),
+                t('muscle.standardsInfo.p2'),
+                t('muscle.standardsInfo.p3'),
+                t('muscle.standardsInfo.p4'),
+              ]}
+              footnote={t('muscle.standardsInfo.p5')}
+            />
+          </AssessmentReferenceDisclosure>
+        </AssessmentReferenceFooter>
       </section>
     </main>
   );

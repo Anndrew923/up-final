@@ -134,6 +134,10 @@
     "somatotypeLab": {
       "kicker": "Morphology Lab",
       "title": "Somatotype Geometry Chart",
+      "entry": {
+        "title": "📋 Unlock Your Somatochart",
+        "subtitle": "Discover your frame genetics and precision physique alignment."
+      },
       "emptyHint": "Enter height, weight, body fat, wrist, and flexed arm girth within valid ranges, then run geometry analysis.",
       "atypicalWarning": "Your height-weight ratio is outside the usual Reuleaux band (HWR < 35 or > 50). The chart still renders, but treat coordinates as approximate.",
       "fields": {
@@ -144,13 +148,27 @@
         "arm": "Flexed arm girth (cm)",
         "veteran": "Veteran bone correction (+5% humerus residual)"
       },
+      "gender": {
+        "label": "Gender",
+        "options": {
+          "male": "Male",
+          "female": "Female"
+        }
+      },
       "physiqueTier": {
         "label": "Target Physique Tier"
       },
       "physiqueLabels": {
-        "athletic": "Athletic (BF 12%)",
-        "elite": "Elite (BF 9%)",
-        "apex": "Physique Apex (BF 7%)"
+        "male": {
+          "athletic": "Athletic (BF 12%)",
+          "elite": "Elite (BF 9%)",
+          "apex": "Physique Apex (BF 7%)"
+        },
+        "female": {
+          "athletic": "Elegant Athletic Line (BF 24%)",
+          "elite": "Elite Aesthetic Line (BF 21%)",
+          "apex": "Apex Aesthetic Geometry (BF 18%)"
+        }
       },
       "legendaryNotice": "System Notice: Your current physical development has exceeded the skeletal geometry estimate. Legendary physique mode is unlocked; manual calibration is redundant.",
       "ritual": {
@@ -196,8 +214,9 @@
         "upgradeGuideAtCeiling": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling."
       },
       "appendix": {
-        "title": "Heath–Carter Somatotype Algorithm Guide",
+        "title": "Morphology Algorithm Notes",
         "heathCarter": "This assessment is built on the classic Heath–Carter somatotype model. The full clinical formula requires multiple skinfolds and biepicondylar bone breadths; to keep field measurement practical, this app decouples that path and uses wrist girth plus body-composition inputs as the algebraic proxy for skeletal frame. That simplification may introduce roughly ±2% to ±4% estimation residual.",
+        "genderTracks": "[Gender Dual-Track] Male anchors use BF 12% / 9% / 7% with ΔSMM×0.48 arm volume weighting. The female public-health elegant-line track uses BF 24% / 21% / 18%, applies a 0.85 morphology residual on FFM, and prices arm girth with a dedicated ΔSMM×0.28 factor (no double suppression). If live lean mass already exceeds the gender-scaled skeletal ceiling, Legendary Defense still expands point B so it never shrinks inward of current status.",
         "legendaryDefense": "[Extreme Morphotype Correction] The default theoretical ceiling reflects the upper bound of lean tissue under a population-normal genetic distribution. When long-term high-intensity strength training has already pushed measured muscle mass and arm girth beyond that civilian estimate, the system activates Legendary Physique Defense: it re-anchors and dynamically expands the ceiling from the athlete’s live metrics to honor physiological supercompensation.",
         "biaDisclaimer": "[Measurement Error & Variability] Skeletal-muscle conversion is aligned to the commercial high-end BIA convention of 0.57 × FFM. Because BIA and this model are sensitive to body-water status, readings taken during high-carbohydrate loading, post-pump states, creatine use, or inflammatory fluid retention may swing by roughly ±3% to ±5%. All values are for physique tracking and scientific reference only and do not constitute medical diagnosis."
       }

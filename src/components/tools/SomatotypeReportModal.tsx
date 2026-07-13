@@ -72,7 +72,9 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
           </h2>
           <p className="pt-1 font-mono text-[11px] leading-snug text-zinc-400">
             {t('tools.somatotypeLab.report.tierLine', {
-              tier: t(`tools.somatotypeLab.physiqueLabels.${snap.physiqueTier}`),
+              tier: t(
+                `tools.somatotypeLab.physiqueLabels.${snap.gender}.${snap.physiqueTier}`
+              ),
             })}
           </p>
         </header>

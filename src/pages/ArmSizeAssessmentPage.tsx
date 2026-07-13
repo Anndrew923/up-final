@@ -6,7 +6,9 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
@@ -96,17 +98,6 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
       />
 
       <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <AssessmentReferenceDisclosure
-          instanceId="arm-size-reference-info"
-          expanded={referenceOpen}
-          onToggle={() => setReferenceOpen((v) => !v)}
-        >
-          <ReferenceSimpleCopy
-            paragraphs={[t('armSize.referenceInfo.p1'), t('armSize.referenceInfo.p2')]}
-            footnote={t('armSize.referenceInfo.p3')}
-          />
-        </AssessmentReferenceDisclosure>
-
         <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-cm">
           <span className="font-medium text-zinc-200">{t('armSize.armLabel')}</span>
           <input
@@ -223,6 +214,19 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+        <AssessmentReferenceFooter>
+          <AssessmentReferenceDisclosure
+            instanceId="arm-size-reference-info"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+          >
+            <ReferenceSimpleCopy
+              paragraphs={[t('armSize.referenceInfo.p1'), t('armSize.referenceInfo.p2')]}
+              footnote={t('armSize.referenceInfo.p3')}
+            />
+          </AssessmentReferenceDisclosure>
+        </AssessmentReferenceFooter>
       </section>
     </main>
   );

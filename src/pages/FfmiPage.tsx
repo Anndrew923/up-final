@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { ROUTES } from '../config/routes';
@@ -107,8 +108,6 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
         </section>
       ) : (
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-          <FfmiEducationPanels />
-
           <div className="space-y-2">
             <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('ffmi.bodyFatLabel')}
@@ -255,6 +254,10 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
               <LeaderboardAssessmentSyncBar syncController={ladderSync} />
             </div>
           ) : null}
+
+          <AssessmentReferenceFooter>
+            <FfmiEducationPanels />
+          </AssessmentReferenceFooter>
         </section>
       )}
     </main>

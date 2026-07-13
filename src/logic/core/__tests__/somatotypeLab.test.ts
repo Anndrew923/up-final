@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_PHYSIQUE_TIER,
   PHYSIQUE_TIER_TARGET_BF_PCT,
+  PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE,
   SOMATOTYPE_BF_MAX_TUNED_PCT,
   SOMATOTYPE_ECTO_FLOOR,
   SOMATOTYPE_ELITE_HEADROOM,
   SOMATOTYPE_ENDO_FLOOR,
+  SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR,
   SOMATOTYPE_HWR_MID,
   SOMATOTYPE_ARM_SMM_VOLUME_FACTOR,
+  SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE,
   SOMATOTYPE_SMM_FFM_RATIO,
   SOMATOTYPE_VETERAN_HUMERUS_FACTOR,
   buildSomatotypeLabSnapshot,
@@ -24,6 +27,7 @@ import {
   resolveMaxTotalWeightKg,
   resolveMaxTunedBodyFatPct,
   resolvePhysiqueTier,
+  resolvePhysiqueTierTargetBf,
 } from '../somatotypeLab';
 
 describe('calculateGrantIndex', () => {
@@ -391,6 +395,17 @@ describe('max tuned physique + lab snapshot', () => {
     expect(resolveMaxTunedBodyFatPct(6, 'apex')).toBe(6);
     expect(resolveMaxTunedBodyFatPct(-1)).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
 
+    expect(resolvePhysiqueTierTargetBf('athletic', 'female')).toBe(
+      PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE.athletic
+    );
+    expect(resolvePhysiqueTierTargetBf('elite', 'female')).toBe(
+      PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE.elite
+    );
+    expect(resolvePhysiqueTierTargetBf('apex', 'female')).toBe(PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE.apex);
+    expect(resolveMaxTunedBodyFatPct(28, 'elite', 'female')).toBe(21);
+    expect(resolveMaxTunedBodyFatPct(19, 'apex', 'female')).toBe(18);
+    expect(resolveMaxTunedBodyFatPct(16, 'apex', 'female')).toBe(16);
+
     const lean = calculateMaxTunedPhysique({
       heightCm: 180,
       wristCm: 17,
@@ -401,6 +416,90 @@ describe('max tuned physique + lab snapshot', () => {
     })!;
     expect(lean.bodyFatPct).toBe(8);
     expect(lean.physiqueTier).toBe('athletic');
+    expect(lean.gender).toBe('male');
+  });
+
+  it('decouples female elegant-line track with 24/21/18 BF anchors and 0.28 arm volume factor', () => {
+    const female = {
+      heightCm: 165,
+      weightKg: 55,
+      bodyFatPct: 28,
+      wristCm: 14.0,
+      flexedArmGirthCm: 28,
+      gender: 'female' as const,
+      physiqueTier: 'elite' as const,
+    };
+
+    const snap = buildSomatotypeLabSnapshot(female)!;
+    expect(snap.gender).toBe('female');
+    expect(snap.maxTuned.gender).toBe('female');
+    expect(snap.maxTuned.bodyFatPct).toBe(21);
+
+    const formulaFfm = female.heightCm * 0.35 + female.wristCm * 2.2 - 15;
+    const expectedFfm = Math.round(formulaFfm * SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR * 1000) / 1000;
+    expect(snap.maxTuned.ffmMaxKg).toBeCloseTo(expectedFfm, 3);
+
+    expect(snap.maxTuned.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(expectedFfm, 21));
+    expect(snap.maxSmmKg).toBe(estimateSkeletalMuscleMassKg(expectedFfm));
+
+    const maleTwin = buildSomatotypeLabSnapshot({ ...female, gender: 'male' })!;
+    expect(expectedFfm).toBeCloseTo(
+      Math.round(maleTwin.maxTuned.ffmMaxKg * SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR * 1000) / 1000,
+      3
+    );
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
+    expect(snap.maxTuned.armGirthMaxCm).toBeLessThan(maleTwin.maxTuned.armGirthMaxCm);
+
+    // Field acceptance: 165cm / 14.0cm wrist → trained elegant arm band 33.5–34.5 cm.
+    expect(snap.maxTuned.armGirthMaxCm).toBeGreaterThanOrEqual(33.5);
+    expect(snap.maxTuned.armGirthMaxCm).toBeLessThanOrEqual(34.5);
+
+    const athletic = buildSomatotypeLabSnapshot({ ...female, physiqueTier: 'athletic' })!;
+    const apex = buildSomatotypeLabSnapshot({ ...female, physiqueTier: 'apex' })!;
+    expect(athletic.maxTuned.bodyFatPct).toBe(24);
+    expect(apex.maxTuned.bodyFatPct).toBe(18);
+    expect(athletic.maxTuned.maxTotalWeightKg).toBeGreaterThan(snap.maxTuned.maxTotalWeightKg);
+    expect(snap.maxTuned.maxTotalWeightKg).toBeGreaterThan(apex.maxTuned.maxTotalWeightKg);
+    expect(athletic.maxSmmKg).toBe(snap.maxSmmKg);
+    expect(apex.maxSmmKg).toBe(snap.maxSmmKg);
+  });
+
+  it('prices female arm ΔSMM with the dedicated 0.28 volume factor', () => {
+    const resolved = resolveMaxArmCircumferenceCm({
+      heightCm: 165,
+      wristCm: 14,
+      ffmMaxKg: 73.55,
+      currentArmGirthCm: 28,
+      currentSmmKg: 22.6,
+      maxSmmKg: 41.9,
+      gender: 'female',
+    })!;
+    expect(SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE).toBe(0.28);
+    expect(resolved.volumeBonusCm).toBeCloseTo(19.3 * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE, 3);
+    expect(resolved.armGirthMaxCm).toBe(34.5);
+  });
+
+  it('never lets female morphology residual pull FFM_Max below live lean mass', () => {
+    // Formula FFM ≈ 73.99 → ×0.85 ≈ 62.89; live FFM 66.3 sits between scaled and unscaled.
+    const weightKg = 85;
+    const bodyFatPct = 22;
+    const currentFfm = weightKg * (1 - bodyFatPct / 100);
+    expect(currentFfm).toBeGreaterThan(62);
+    expect(currentFfm).toBeLessThan(74);
+
+    const max = calculateMaxTunedPhysique({
+      heightCm: 165,
+      wristCm: 14.2,
+      currentWeightKg: weightKg,
+      currentBodyFatPct: bodyFatPct,
+      currentArmGirthCm: 30,
+      gender: 'female',
+      physiqueTier: 'elite',
+    })!;
+
+    expect(max.ffmMaxKg).toBeCloseTo(currentFfm * SOMATOTYPE_ELITE_HEADROOM, 3);
+    expect(max.ffmMaxKg).toBeGreaterThan(currentFfm);
+    expect(max.bodyFatPct).toBe(21);
   });
 
   it('raises FFM_Max with elite headroom when current lean mass beats the skeletal estimate', () => {

@@ -6,7 +6,9 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -174,22 +176,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           hidden={activeTab !== 'cooper'}
           className="space-y-5"
         >
-          <AssessmentReferenceDisclosure
-            instanceId="cooper-info"
-            expanded={cooperInfoOpen}
-            onToggle={() => setCooperInfoOpen((v) => !v)}
-          >
-            <ReferenceSimpleCopy
-              paragraphs={[
-                t('cardio.cooperInfo.p1'),
-                t('cardio.cooperInfo.p2'),
-                t('cardio.cooperInfo.p3'),
-                t('cardio.cooperInfo.p4'),
-              ]}
-              footnote={t('cardio.cooperInfo.p5')}
-            />
-          </AssessmentReferenceDisclosure>
-
           <div className="space-y-3">
             <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('cardio.cooperDistanceLabel')}
@@ -331,6 +317,26 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+        {activeTab === 'cooper' ? (
+          <AssessmentReferenceFooter>
+            <AssessmentReferenceDisclosure
+              instanceId="cooper-info"
+              expanded={cooperInfoOpen}
+              onToggle={() => setCooperInfoOpen((v) => !v)}
+            >
+              <ReferenceSimpleCopy
+                paragraphs={[
+                  t('cardio.cooperInfo.p1'),
+                  t('cardio.cooperInfo.p2'),
+                  t('cardio.cooperInfo.p3'),
+                  t('cardio.cooperInfo.p4'),
+                ]}
+                footnote={t('cardio.cooperInfo.p5')}
+              />
+            </AssessmentReferenceDisclosure>
+          </AssessmentReferenceFooter>
+        ) : null}
       </section>
     </main>
   );

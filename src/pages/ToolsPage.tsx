@@ -118,10 +118,14 @@ export default function ToolsPage() {
             </Link>
             <Link
               to={ROUTES.somatotypeLab}
+              aria-label={t('tools.somatotypeLab.entry.title', { ns: 'common' })}
               className="group rounded-xl border border-accent-primary/25 bg-black/25 p-4 transition hover:border-accent-primary/45 hover:bg-black/40 sm:col-span-2"
             >
               <p className="text-sm font-semibold text-zinc-100">
-                {t('tools.somatotypeLab.title', { ns: 'common' })}
+                {t('tools.somatotypeLab.entry.title', { ns: 'common' })}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">
+                {t('tools.somatotypeLab.entry.subtitle', { ns: 'common' })}
               </p>
             </Link>
           </div>

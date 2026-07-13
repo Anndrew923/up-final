@@ -7,20 +7,39 @@
  */
 
 export type PhysiqueTier = 'athletic' | 'elite' | 'apex';
+export type SomatotypeGender = 'male' | 'female';
 
 export const PHYSIQUE_TIERS = ['athletic', 'elite', 'apex'] as const;
+export const SOMATOTYPE_GENDERS = ['male', 'female'] as const;
 
-/** Target body-fat anchors for each physique evaluation tier. */
+/** Male target body-fat anchors (hardcore track). */
 export const PHYSIQUE_TIER_TARGET_BF_PCT: Readonly<Record<PhysiqueTier, number>> = {
   athletic: 12,
   elite: 9,
   apex: 7,
 };
 
-export const DEFAULT_PHYSIQUE_TIER: PhysiqueTier = 'athletic';
+/**
+ * Female target body-fat anchors — public health / aesthetic-line track.
+ * athletic 24% · elite 21% · apex 18% (non-stage bikini ceiling).
+ */
+export const PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE: Readonly<Record<PhysiqueTier, number>> = {
+  athletic: 24,
+  elite: 21,
+  apex: 18,
+};
 
-/** Athletic-tier BF anchor — single-sourced from {@link PHYSIQUE_TIER_TARGET_BF_PCT}. */
+export const DEFAULT_PHYSIQUE_TIER: PhysiqueTier = 'athletic';
+export const DEFAULT_SOMATOTYPE_GENDER: SomatotypeGender = 'male';
+
+/** Athletic-tier BF anchor (male) — single-sourced from {@link PHYSIQUE_TIER_TARGET_BF_PCT}. */
 export const SOMATOTYPE_BF_MAX_TUNED_PCT = PHYSIQUE_TIER_TARGET_BF_PCT.athletic;
+
+/**
+ * Female morphology residual on FFM_Max and max arm girth.
+ * WHY: Hormonal dimorphism — keep female ceilings elegant vs male hardcore track.
+ */
+export const SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR = 0.85;
 
 export const SOMATOTYPE_ENDO_FLOOR = 0.5;
 export const SOMATOTYPE_ECTO_FLOOR = 0.1;
@@ -40,6 +59,13 @@ export const SOMATOTYPE_SMM_FFM_RATIO = 0.57;
  * (field tank frame ≈ 43.8–44.5 cm at elite BF / ~47 kg max SMM).
  */
 export const SOMATOTYPE_ARM_SMM_VOLUME_FACTOR = 0.48;
+/**
+ * Female ΔSMM → arm volume factor (cm per kg).
+ * WHY: After stripping ~4% fat-retreat volume from the male 0.48 path, 0.28 still
+ * unlocks trained elegant girth (~33.5–34.5 cm) without the old double-suppression
+ * of (0.48 × morphology 0.85) that collapsed ~13 kg SMM gain into <1 cm arm growth.
+ */
+export const SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE = 0.28;
 
 /** Soft physiological bands — keep chart math out of absurd / off-chart regimes. */
 export const SOMATOTYPE_INPUT_LIMITS = {
@@ -88,6 +114,7 @@ export interface SomatochartPoint {
 }
 
 export interface MaxTunedPhysiqueSpec {
+  gender: SomatotypeGender;
   physiqueTier: PhysiqueTier;
   bodyFatPct: number;
   ffmMaxKg: number;
@@ -114,11 +141,13 @@ export interface MaxTunedPhysiqueParams {
   currentWeightKg?: number;
   currentArmGirthCm?: number;
   physiqueTier?: PhysiqueTier;
+  gender?: SomatotypeGender;
 }
 
 export interface SomatotypeLabSnapshot {
   /** Normalized metrics that produced this snapshot (single source for UI gauges). */
   metrics: Readonly<Required<SomatotypeMetrics>>;
+  gender: SomatotypeGender;
   /** Mirrors maxTuned.physiqueTier — kept at root for report/UI convenience. */
   physiqueTier: PhysiqueTier;
   current: HeathCarterSomatotype;
@@ -307,12 +336,27 @@ export function isPhysiqueTier(value: unknown): value is PhysiqueTier {
   return typeof value === 'string' && (PHYSIQUE_TIERS as readonly string[]).includes(value);
 }
 
+export function isSomatotypeGender(value: unknown): value is SomatotypeGender {
+  return typeof value === 'string' && (SOMATOTYPE_GENDERS as readonly string[]).includes(value);
+}
+
 export function resolvePhysiqueTier(tier: PhysiqueTier | undefined): PhysiqueTier {
   return isPhysiqueTier(tier) ? tier : DEFAULT_PHYSIQUE_TIER;
 }
 
-export function resolvePhysiqueTierTargetBf(tier: PhysiqueTier | undefined): number {
-  return PHYSIQUE_TIER_TARGET_BF_PCT[resolvePhysiqueTier(tier)];
+export function resolveSomatotypeGender(gender: SomatotypeGender | undefined): SomatotypeGender {
+  return isSomatotypeGender(gender) ? gender : DEFAULT_SOMATOTYPE_GENDER;
+}
+
+export function resolvePhysiqueTierTargetBf(
+  tier: PhysiqueTier | undefined,
+  gender: SomatotypeGender | undefined = DEFAULT_SOMATOTYPE_GENDER
+): number {
+  const resolvedTier = resolvePhysiqueTier(tier);
+  const resolvedGender = resolveSomatotypeGender(gender);
+  return resolvedGender === 'female'
+    ? PHYSIQUE_TIER_TARGET_BF_PCT_FEMALE[resolvedTier]
+    : PHYSIQUE_TIER_TARGET_BF_PCT[resolvedTier];
 }
 
 /**
@@ -321,9 +365,10 @@ export function resolvePhysiqueTierTargetBf(tier: PhysiqueTier | undefined): num
  */
 export function resolveMaxTunedBodyFatPct(
   currentBodyFatPct: number | undefined,
-  physiqueTier: PhysiqueTier | undefined = DEFAULT_PHYSIQUE_TIER
+  physiqueTier: PhysiqueTier | undefined = DEFAULT_PHYSIQUE_TIER,
+  gender: SomatotypeGender | undefined = DEFAULT_SOMATOTYPE_GENDER
 ): number {
-  const tierTarget = resolvePhysiqueTierTargetBf(physiqueTier);
+  const tierTarget = resolvePhysiqueTierTargetBf(physiqueTier, gender);
   if (currentBodyFatPct == null || !Number.isFinite(currentBodyFatPct) || currentBodyFatPct < 0) {
     return tierTarget;
   }
@@ -350,12 +395,13 @@ export interface ResolveMaxArmCircumferenceInput {
   currentArmGirthCm?: number;
   currentSmmKg: number;
   maxSmmKg: number;
+  gender?: SomatotypeGender;
 }
 
 export interface ResolveMaxArmCircumferenceResult {
   /** Wrist/height skeletal baseline before SMM volume parity. */
   skeletalBaselineCm: number;
-  /** ΔSMM × {@link SOMATOTYPE_ARM_SMM_VOLUME_FACTOR}. */
+  /** ΔSMM × gender-resolved arm volume factor. */
   volumeBonusCm: number;
   armGirthMaxCm: number;
   /**
@@ -363,6 +409,14 @@ export interface ResolveMaxArmCircumferenceResult {
    * (before applying the current-arm floor + bonus path).
    */
   legendaryArmMode: boolean;
+}
+
+export function resolveArmSmmVolumeFactor(
+  gender: SomatotypeGender | undefined = DEFAULT_SOMATOTYPE_GENDER
+): number {
+  return resolveSomatotypeGender(gender) === 'female'
+    ? SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE
+    : SOMATOTYPE_ARM_SMM_VOLUME_FACTOR;
 }
 
 /**
@@ -380,12 +434,13 @@ export function resolveMaxArmCircumferenceCm(
   const ffmMax = sanitizePositive(input.ffmMaxKg);
   if (height <= 0 || wrist <= 0 || ffmMax <= 0) return null;
 
+  const volumeFactor = resolveArmSmmVolumeFactor(input.gender);
   const skeletalBaselineCm = round3(wrist * 1.6 + (ffmMax / height) * 15);
   const currentSmm = Number.isFinite(input.currentSmmKg) ? Math.max(0, input.currentSmmKg) : 0;
   const maxSmm = Number.isFinite(input.maxSmmKg) ? Math.max(0, input.maxSmmKg) : 0;
   // Without a live SMM baseline we cannot price growth — keep pure skeletal arm math.
   const deltaSmm = currentSmm > 0 ? Math.max(0, maxSmm - currentSmm) : 0;
-  const volumeBonusCm = round3(deltaSmm * SOMATOTYPE_ARM_SMM_VOLUME_FACTOR);
+  const volumeBonusCm = round3(deltaSmm * volumeFactor);
   const currentArm = sanitizePositive(input.currentArmGirthCm ?? 0);
 
   // Pure skeletal + volume path (no live-arm floor) — legendary trigger baseline.
@@ -412,11 +467,24 @@ export function calculateMaxTunedPhysique(
   const wrist = sanitizePositive(params.wristCm);
   if (height <= 0 || wrist <= 0) return null;
 
+  const gender = resolveSomatotypeGender(params.gender);
   const physiqueTier = resolvePhysiqueTier(params.physiqueTier);
-  const targetBf = resolveMaxTunedBodyFatPct(params.currentBodyFatPct, physiqueTier);
+  const targetBf = resolveMaxTunedBodyFatPct(params.currentBodyFatPct, physiqueTier, gender);
+  const femaleResidual = gender === 'female' ? SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR : 1;
 
   let ffmMaxKg = round3(height * 0.35 + wrist * 2.2 - 15);
   if (ffmMaxKg <= 0) return null;
+
+  // Arm volume path uses the pre-morphology FFM ceiling so female 0.28 ΔSMM weighting
+  // is not double-crushed by the 0.85 FFM residual (which still governs weight / SMM).
+  let armFfmMaxKg = ffmMaxKg;
+
+  // Female morphology residual on the skeletal FFM ceiling BEFORE elite headroom.
+  // WHY: Applying 0.85 after headroom can pull max FFM below live lean mass (point B inward of A).
+  if (femaleResidual !== 1) {
+    ffmMaxKg = round3(ffmMaxKg * femaleResidual);
+    if (ffmMaxKg <= 0) return null;
+  }
 
   const currentWeight = sanitizePositive(params.currentWeightKg ?? 0);
   const currentBf = Number(params.currentBodyFatPct);
@@ -424,9 +492,13 @@ export function calculateMaxTunedPhysique(
   if (currentWeight > 0 && Number.isFinite(currentBf) && currentBf >= 0 && currentBf < 100) {
     const currentFfmKg = currentWeight * (1 - currentBf / 100);
     currentSmmKg = estimateSkeletalMuscleMassKg(currentFfmKg);
-    // Elite FFM guardrail: real lean mass already above skeletal estimate → +5% headroom.
+    // Elite FFM guardrail: real lean mass already above (gender-scaled) ceiling → +5% headroom.
     if (currentFfmKg > ffmMaxKg) {
       ffmMaxKg = round3(currentFfmKg * SOMATOTYPE_ELITE_HEADROOM);
+    }
+    // Arm path compares against the unscaled skeletal ceiling so ΔSMM stays physiologically priced.
+    if (currentFfmKg > armFfmMaxKg) {
+      armFfmMaxKg = round3(currentFfmKg * SOMATOTYPE_ELITE_HEADROOM);
     }
   }
 
@@ -435,13 +507,15 @@ export function calculateMaxTunedPhysique(
   if (maxTotalWeightKg <= 0) return null;
 
   const maxSmmKg = estimateSkeletalMuscleMassKg(ffmMaxKg);
+  const armMaxSmmKg = estimateSkeletalMuscleMassKg(armFfmMaxKg);
   const armResolved = resolveMaxArmCircumferenceCm({
     heightCm: height,
     wristCm: wrist,
-    ffmMaxKg,
+    ffmMaxKg: armFfmMaxKg,
     currentArmGirthCm: params.currentArmGirthCm,
     currentSmmKg,
-    maxSmmKg,
+    maxSmmKg: armMaxSmmKg,
+    gender,
   });
   if (!armResolved) return null;
 
@@ -461,6 +535,7 @@ export function calculateMaxTunedPhysique(
   if (!somatotype) return null;
 
   return {
+    gender,
     physiqueTier,
     bodyFatPct: targetBf,
     ffmMaxKg,
@@ -478,6 +553,7 @@ export function calculateMaxTunedPhysique(
 
 export interface BuildSomatotypeLabSnapshotInput extends SomatotypeMetrics {
   physiqueTier?: PhysiqueTier;
+  gender?: SomatotypeGender;
 }
 
 /** Full dual-point lab snapshot for chart + gap gauge. */
@@ -486,6 +562,7 @@ export function buildSomatotypeLabSnapshot(
 ): SomatotypeLabSnapshot | null {
   if (!isValidSomatotypeMetrics(metrics)) return null;
 
+  const gender = resolveSomatotypeGender(metrics.gender);
   const physiqueTier = resolvePhysiqueTier(metrics.physiqueTier);
 
   const maxTuned = calculateMaxTunedPhysique({
@@ -496,6 +573,7 @@ export function buildSomatotypeLabSnapshot(
     currentWeightKg: metrics.weightKg,
     currentArmGirthCm: metrics.flexedArmGirthCm,
     physiqueTier,
+    gender,
   });
   if (!maxTuned) return null;
 
@@ -526,6 +604,7 @@ export function buildSomatotypeLabSnapshot(
 
   return {
     metrics: normalized,
+    gender,
     physiqueTier,
     current,
     currentPoint,

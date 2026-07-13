@@ -6,7 +6,9 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
-import AssessmentReferenceDisclosure from '../components/assessment/AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -117,25 +119,6 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       ) : null}
 
       <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <AssessmentReferenceDisclosure
-          instanceId="grip-reference-info"
-          expanded={referenceOpen}
-          onToggle={() => setReferenceOpen((v) => !v)}
-        >
-          <ReferenceSimpleCopy
-            paragraphs={[
-              t('grip.referenceInfo.p1'),
-              t('grip.referenceInfo.p2'),
-              t('grip.referenceInfo.p3'),
-              t('grip.referenceInfo.p4'),
-              t('grip.referenceInfo.p6'),
-              t('grip.referenceInfo.p7'),
-              t('grip.referenceInfo.p8'),
-            ]}
-            footnote={t('grip.referenceInfo.p5')}
-          />
-        </AssessmentReferenceDisclosure>
-
         <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="grip-peak">
           <span className="font-medium text-zinc-200">{t('grip.peakLabel')}</span>
           <input
@@ -235,6 +218,27 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+        <AssessmentReferenceFooter>
+          <AssessmentReferenceDisclosure
+            instanceId="grip-reference-info"
+            expanded={referenceOpen}
+            onToggle={() => setReferenceOpen((v) => !v)}
+          >
+            <ReferenceSimpleCopy
+              paragraphs={[
+                t('grip.referenceInfo.p1'),
+                t('grip.referenceInfo.p2'),
+                t('grip.referenceInfo.p3'),
+                t('grip.referenceInfo.p4'),
+                t('grip.referenceInfo.p6'),
+                t('grip.referenceInfo.p7'),
+                t('grip.referenceInfo.p8'),
+              ]}
+              footnote={t('grip.referenceInfo.p5')}
+            />
+          </AssessmentReferenceDisclosure>
+        </AssessmentReferenceFooter>
       </section>
     </main>
   );

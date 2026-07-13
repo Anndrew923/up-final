@@ -14,6 +14,7 @@ vi.mock('react-i18next', () => ({
       const map: Record<string, string> = {
         'tools.somatotypeLab.appendix.title': 'Heath–Carter Somatotype Algorithm Guide',
         'tools.somatotypeLab.appendix.heathCarter': 'WRIST_PROXY_RESIDUAL_BODY',
+        'tools.somatotypeLab.appendix.genderTracks': 'GENDER_TRACKS_BODY',
         'tools.somatotypeLab.appendix.legendaryDefense': 'LEGENDARY_DEFENSE_BODY',
         'tools.somatotypeLab.appendix.biaDisclaimer': 'BIA_DISCLAIMER_BODY',
       };
@@ -53,6 +54,7 @@ describe('SomatotypeScientificAppendix', () => {
     expect(details!.open).toBe(false);
     expect(container.textContent).toContain('Heath–Carter Somatotype Algorithm Guide');
     expect(container.textContent).toContain('WRIST_PROXY_RESIDUAL_BODY');
+    expect(container.textContent).toContain('GENDER_TRACKS_BODY');
     expect(container.textContent).toContain('LEGENDARY_DEFENSE_BODY');
     expect(container.textContent).toContain('BIA_DISCLAIMER_BODY');
     expect(container.textContent).not.toMatch(/🔬|📋|💡|👑|\//);

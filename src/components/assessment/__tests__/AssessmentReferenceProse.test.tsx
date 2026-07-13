@@ -5,7 +5,9 @@ import { createRoot, type Root } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { afterEach, describe, expect, it } from 'vitest';
 import i18n from '../../../i18n';
-import AssessmentReferenceDisclosure from '../AssessmentReferenceDisclosure';
+import AssessmentReferenceDisclosure, {
+  AssessmentReferenceFooter,
+} from '../AssessmentReferenceDisclosure';
 import {
   ASSESSMENT_REFERENCE_PANEL_BODY_CLASS,
   ReferenceDataBlock,
@@ -101,6 +103,25 @@ describe('AssessmentReferenceDisclosure', () => {
 
     const body = container.querySelector(`#test-reference-panel > div`);
     expect(body?.className).toBe(ASSESSMENT_REFERENCE_PANEL_BODY_CLASS);
+    unmount();
+  });
+});
+
+describe('AssessmentReferenceFooter', () => {
+  it('applies bottom-anchor chrome that overrides parent space-y margin', () => {
+    const { container, unmount } = renderWithI18n(
+      <div className="space-y-6">
+        <p>Above</p>
+        <AssessmentReferenceFooter>
+          <span>Reference</span>
+        </AssessmentReferenceFooter>
+      </div>,
+    );
+
+    const footer = container.querySelector('.border-t.border-zinc-800\\/80');
+    expect(footer?.className).toContain('!mt-8');
+    expect(footer?.className).toContain('pt-6');
+    expect(footer?.textContent).toBe('Reference');
     unmount();
   });
 });

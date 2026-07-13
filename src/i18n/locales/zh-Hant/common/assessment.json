@@ -7,12 +7,14 @@
       "toggleExpand": "展開評測參考資料",
       "toggleCollapse": "收合評測參考資料"
     },
-    "rawInputsHeading": "六軸原始輸入",
-    "homeRadarHint": "雷達與總分在首頁。",
     "viewHomeRadar": "前往首頁性能儀表",
-    "saveToHistory": "儲存快照到日誌",
-    "saveToHistoryDone": "已寫入本機日誌。",
-    "resetScores": "重設六軸分數",
+    "sixAxisSnapshot": {
+      "title": "當前性能六軸快照",
+      "toggleExpand": "展開性能六軸快照",
+      "toggleCollapse": "收合性能六軸快照",
+      "saveSnapshot": "封存當前性能快照至日誌",
+      "saveDone": "快照成功封存"
+    },
     "axis": {
       "strength": "馬力",
       "explosivePower": "扭矩",

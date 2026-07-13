@@ -6,7 +6,7 @@ import SomatotypeReportModal from '../components/tools/SomatotypeReportModal';
 import SomatotypeScientificAppendix from '../components/tools/SomatotypeScientificAppendix';
 import { useSomatotypeLab } from '../hooks/useSomatotypeLab';
 import { useSomatotypeLabRitual } from '../hooks/useSomatotypeLabRitual';
-import { PHYSIQUE_TIERS } from '../logic/core/somatotypeLab';
+import { PHYSIQUE_TIERS, SOMATOTYPE_GENDERS } from '../logic/core/somatotypeLab';
 
 export interface SomatotypeLabPageProps {
   onBack?: () => void;
@@ -14,6 +14,13 @@ export interface SomatotypeLabPageProps {
 
 const fieldClass =
   'mt-1.5 w-full rounded-lg border border-zinc-700 bg-black/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-accent-primary/60 disabled:cursor-not-allowed disabled:opacity-50';
+
+const segmentClass = (selected: boolean) =>
+  `rounded-lg border px-3 py-2.5 font-mono text-[11px] leading-snug transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+    selected
+      ? 'border-accent-primary/70 bg-accent-primary/10 text-accent-primary'
+      : 'border-zinc-700 bg-black/30 text-zinc-300 hover:border-zinc-500'
+  }`;
 
 const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
@@ -65,6 +72,34 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
         disabled={formLocked}
         className="grid gap-3 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 sm:grid-cols-2 sm:p-5"
       >
+        <div className="space-y-2 sm:col-span-2">
+          <p className="text-xs font-medium tracking-wide text-zinc-400">
+            {t('tools.somatotypeLab.gender.label')}
+          </p>
+          <div
+            role="radiogroup"
+            aria-label={t('tools.somatotypeLab.gender.label')}
+            className="grid grid-cols-2 gap-2"
+          >
+            {SOMATOTYPE_GENDERS.map((option) => {
+              const selected = lab.gender === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={formLocked}
+                  onClick={() => lab.setGender(option)}
+                  className={`${segmentClass(selected)} text-center`}
+                >
+                  {t(`tools.somatotypeLab.gender.options.${option}`)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <label className="block text-xs text-zinc-400">
           {t('tools.somatotypeLab.fields.height')}
           <input
@@ -151,13 +186,9 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
                   aria-checked={selected}
                   disabled={formLocked}
                   onClick={() => lab.setPhysiqueTier(tier)}
-                  className={`rounded-lg border px-3 py-2.5 text-left font-mono text-[11px] leading-snug transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                    selected
-                      ? 'border-accent-primary/70 bg-accent-primary/10 text-accent-primary'
-                      : 'border-zinc-700 bg-black/30 text-zinc-300 hover:border-zinc-500'
-                  }`}
+                  className={`${segmentClass(selected)} text-left`}
                 >
-                  {t(`tools.somatotypeLab.physiqueLabels.${tier}`)}
+                  {t(`tools.somatotypeLab.physiqueLabels.${lab.gender}.${tier}`)}
                 </button>
               );
             })}
@@ -181,9 +212,11 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
             </p>
           ) : null}
         </div>
-      </fieldset>
 
-      <SomatotypeScientificAppendix />
+        <div className="sm:col-span-2">
+          <SomatotypeScientificAppendix />
+        </div>
+      </fieldset>
     </main>
   );
 };
