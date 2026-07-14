@@ -211,7 +211,11 @@
         "maxLabel": "極限天賦",
         "maxValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
         "upgradeGuide": "升級指南：你距離自己的物理天花板，還有 {{armGap}}cm 的臂圍發展空間、{{smmGap}}kg 的純骨骼肌增肌潛力，以及 {{weightGap}}kg 的體重調整空間。",
-        "upgradeGuideAtCeiling": "升級指南：體重、臂圍、骨骼肌與體脂目標均已對齊當前物理天花板。"
+        "upgradeGuideAtCeiling": "升級指南：體重、臂圍、骨骼肌與體脂目標均已對齊當前物理天花板。",
+        "beyondTitle_male": "👑 檢測到極致幾何維度 / Peak Physique Horizon",
+        "beyondBody_male": "「您當前的肉體幾何已完美登頂該性別的自然幾何天花板！形態學實驗室已將您的數據定錨為【傳奇級巔峰體貌】。在當前維度下，常規物理指南已不再適用，請繼續保持您的頂峰狀態，主宰這座改裝廠！」",
+        "beyondTitle_female": "👑 檢測到極致幾何維度 / Peak Physique Horizon",
+        "beyondBody_female": "「您當前的肉體幾何已完美登頂該性別的自然幾何天花板！形態學實驗室已將您的數據定錨為【史詩級極致體貌】。在當前維度下，常規幾何指南已不再適用，您已主裝該改裝廠的極限比例！」"
       },
       "appendix": {
         "title": "形態學演算法底層說明",

@@ -211,7 +211,11 @@
         "maxLabel": "Max-tuned",
         "maxValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "upgradeGuide": "Upgrade guide: You still have {{armGap}}cm of arm girth headroom, {{smmGap}}kg of pure skeletal-muscle growth potential, and {{weightGap}}kg of body-weight adjustment room to your physical ceiling.",
-        "upgradeGuideAtCeiling": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling."
+        "upgradeGuideAtCeiling": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling.",
+        "beyondTitle_male": "👑 Peak Physique Horizon Detected / Peak Physique Horizon",
+        "beyondBody_male": "\"Your physique geometry has perfectly topped this gender's natural geometric ceiling. Morphology Lab anchors your data as Legendary Peak Physique. At this dimension, conventional physical guides no longer apply — hold your summit and command this workshop.\"",
+        "beyondTitle_female": "👑 Peak Physique Horizon Detected / Peak Physique Horizon",
+        "beyondBody_female": "\"Your physique geometry has perfectly topped this gender's natural geometric ceiling. Morphology Lab anchors your data as Epic Apex Physique. At this dimension, conventional geometry guides no longer apply — you now own this workshop's limit proportions.\""
       },
       "appendix": {
         "title": "Morphology Algorithm Notes",

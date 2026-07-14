@@ -120,6 +120,8 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
             bodyFatGapPct={snap.bodyFatGapPct}
             smmGapKg={snap.smmGapKg}
             weightGapKg={snap.weightGapKg}
+            beyondHumanLimits={snap.beyondHumanLimits}
+            gender={snap.gender}
           />
         </div>
 

@@ -2,11 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { prefersReducedMotion } from '../lib/motionPreference';
 import type { SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
+import { hapticService } from '../services/hapticService';
 
 export type SomatotypeAnalysisState = 'idle' | 'analyzing' | 'completed';
 
 export const SOMATOTYPE_ANALYSIS_MS = 2000;
 export const SOMATOTYPE_ANALYSIS_REDUCED_MS = 400;
+export const SOMATOTYPE_SCAN_HAPTIC_INTERVAL_MS = 500;
+export const SOMATOTYPE_SCAN_HAPTIC_COUNT = 4;
 const STATUS_TICK_MS = 650;
 
 export interface UseSomatotypeLabRitualResult {
@@ -34,7 +37,7 @@ function readRitualLines(t: (key: string) => string): string[] {
 
 /**
  * Ritual timeline for the somatotype lab: analyze veil (2s) → report modal.
- * WHY: Live form math stays in useSomatotypeLab; ceremony UX is isolated here.
+ * WHY: Live form math stays in useSomatotypeLab; ceremony UX + haptics are isolated here.
  */
 export function useSomatotypeLabRitual(
   canAnalyze: boolean,
@@ -78,6 +81,9 @@ export function useSomatotypeLabRitual(
     setReportSessionId((n) => n + 1);
     setAnalysisState('analyzing');
 
+    // Stage 1 — CTA tap: light impact (`ack` = project light preset).
+    void hapticService.trigger('ack');
+
     const lines = readRitualLines(t);
     let lineIndex = 0;
     setStatusLine(lines[0] ?? scanningLabel);
@@ -93,8 +99,23 @@ export function useSomatotypeLabRitual(
       intervalIdsRef.current.push(tickId);
     }
 
+    // Stage 2 — scan pulses: selection ×4 across the 2s veil (t=0 sync, then 500/1000/1500).
+    // WHY: Avoid setTimeout(0) so the first instrument tick is deterministic with the CTA ack.
+    // hapticService itself no-ops on reduced-motion / missing vibrate — safe on web.
+    if (!reduceMotion) {
+      void hapticService.trigger('selection');
+      for (let i = 1; i < SOMATOTYPE_SCAN_HAPTIC_COUNT; i += 1) {
+        const pulseId = window.setTimeout(() => {
+          void hapticService.trigger('selection');
+        }, i * SOMATOTYPE_SCAN_HAPTIC_INTERVAL_MS);
+        timeoutIdsRef.current.push(pulseId);
+      }
+    }
+
     const doneId = window.setTimeout(() => {
       clearTimers();
+      // Stage 3 — report modal open: success notification burst.
+      void hapticService.trigger('success');
       setStatusLine('');
       setAnalysisState('completed');
       busyRef.current = false;

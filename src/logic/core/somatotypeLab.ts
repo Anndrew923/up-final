@@ -41,6 +41,21 @@ export const SOMATOTYPE_BF_MAX_TUNED_PCT = PHYSIQUE_TIER_TARGET_BF_PCT.athletic;
  */
 export const SOMATOTYPE_FEMALE_MORPHOLOGY_FACTOR = 0.85;
 
+/**
+ * Female absolute morphotype thresholds for Olympia-class transcendence easter egg.
+ * WHY: Civilian formula gaps still show “room to grow” for female physiques that are
+ * already stage-ready at lower absolute numbers than male hardcore ceilings.
+ */
+export const SOMATOTYPE_FEMALE_BEYOND_ARM_CM = 35;
+export const SOMATOTYPE_FEMALE_BEYOND_SMM_KG = 34;
+
+/**
+ * Male absolute morphotype thresholds (Ronnie-class / Olympia heavy).
+ * WHY: Legendary +5% headroom alone must not fire the easter egg for mild breakthroughs.
+ */
+export const SOMATOTYPE_MALE_BEYOND_ARM_CM = 55;
+export const SOMATOTYPE_MALE_BEYOND_SMM_KG = 50;
+
 export const SOMATOTYPE_ENDO_FLOOR = 0.5;
 export const SOMATOTYPE_ECTO_FLOOR = 0.1;
 export const SOMATOTYPE_HWR_HIGH = 40.75;
@@ -153,9 +168,14 @@ export interface SomatotypeLabSnapshot {
   current: HeathCarterSomatotype;
   currentPoint: SomatochartPoint;
   maxTuned: MaxTunedPhysiqueSpec;
+  /**
+   * True when live metrics tear past the gender-calibrated civilian ceiling
+   * (negative growth residue and/or female Olympia absolute thresholds).
+   */
+  beyondHumanLimits: boolean;
   armGapCm: number;
   bodyFatGapPct: number;
-  /** maxTuned.maxTotalWeightKg − current weight (1dp); can be negative if already above ceiling. */
+  /** Non-negative development headroom (1dp); never negative after beyond-gap clamp. */
   weightGapKg: number;
   currentSmmKg: number;
   maxSmmKg: number;
@@ -359,6 +379,33 @@ export function resolvePhysiqueTierTargetBf(
     : PHYSIQUE_TIER_TARGET_BF_PCT[resolvedTier];
 }
 
+export interface ResolveBeyondHumanLimitsInput {
+  gender: SomatotypeGender;
+  currentArmGirthCm: number;
+  currentSmmKg: number;
+  /** maxArm − currentArm before clamp (negative ⇒ tore past Point B arm). */
+  rawArmGapCm: number;
+  /** maxSmm − currentSmm before clamp (negative ⇒ tore past Point B SMM). */
+  rawSmmGapKg: number;
+}
+
+/**
+ * Gender-decoupled Olympia transcendence gate for upgrade-guide easter egg.
+ * WHY: Shared negative-residue algebra + gender-specific absolute morphotype thresholds
+ * so female stage physiques are not diluted by male hardcore ceilings.
+ */
+export function resolveBeyondHumanLimits(input: ResolveBeyondHumanLimitsInput): boolean {
+  if (input.rawArmGapCm < 0 || input.rawSmmGapKg < 0) return true;
+  if (input.gender === 'female') {
+    if (input.currentArmGirthCm >= SOMATOTYPE_FEMALE_BEYOND_ARM_CM) return true;
+    if (input.currentSmmKg >= SOMATOTYPE_FEMALE_BEYOND_SMM_KG) return true;
+    return false;
+  }
+  if (input.currentArmGirthCm >= SOMATOTYPE_MALE_BEYOND_ARM_CM) return true;
+  if (input.currentSmmKg >= SOMATOTYPE_MALE_BEYOND_SMM_KG) return true;
+  return false;
+}
+
 /**
  * Point-B body-fat lock: use the selected tier target, but never raise BF above current
  * when the athlete is already leaner than that tier (legendary lean defense).
@@ -403,6 +450,8 @@ export interface ResolveMaxArmCircumferenceResult {
   skeletalBaselineCm: number;
   /** ΔSMM × gender-resolved arm volume factor. */
   volumeBonusCm: number;
+  /** Civilian volume-aware ceiling used as the legendary trigger baseline. */
+  volumeAwareSkeletalCm: number;
   armGirthMaxCm: number;
   /**
    * True when live girth still exceeds the volume-aware skeletal ceiling
@@ -455,6 +504,7 @@ export function resolveMaxArmCircumferenceCm(
   return {
     skeletalBaselineCm,
     volumeBonusCm,
+    volumeAwareSkeletalCm,
     armGirthMaxCm,
     legendaryArmMode,
   };
@@ -565,7 +615,7 @@ export function buildSomatotypeLabSnapshot(
   const gender = resolveSomatotypeGender(metrics.gender);
   const physiqueTier = resolvePhysiqueTier(metrics.physiqueTier);
 
-  const maxTuned = calculateMaxTunedPhysique({
+  const computedMax = calculateMaxTunedPhysique({
     heightCm: metrics.heightCm,
     wristCm: metrics.wristCm,
     isVeteran: Boolean(metrics.isVeteran),
@@ -575,10 +625,10 @@ export function buildSomatotypeLabSnapshot(
     physiqueTier,
     gender,
   });
-  if (!maxTuned) return null;
+  if (!computedMax) return null;
 
   // Lock veteran off when legendary arm mode fires — bone +5% no longer has scientific meaning.
-  const effectiveVeteran = maxTuned.legendaryArmMode ? false : Boolean(metrics.isVeteran);
+  const effectiveVeteran = computedMax.legendaryArmMode ? false : Boolean(metrics.isVeteran);
 
   const normalized: Required<SomatotypeMetrics> = {
     heightCm: metrics.heightCm,
@@ -600,7 +650,47 @@ export function buildSomatotypeLabSnapshot(
 
   const currentFfmKg = calculateFatFreeMassKg(normalized.weightKg, normalized.bodyFatPct);
   const currentSmmKg = estimateSkeletalMuscleMassKg(currentFfmKg);
-  const maxSmmKg = estimateSkeletalMuscleMassKg(maxTuned.ffmMaxKg);
+  const computedMaxSmmKg = estimateSkeletalMuscleMassKg(computedMax.ffmMaxKg);
+
+  const rawArmGapCm = round3(computedMax.armGirthMaxCm - normalized.flexedArmGirthCm);
+  const rawSmmGapKg = round1(computedMaxSmmKg - currentSmmKg);
+  const rawWeightGapKg = round1(computedMax.maxTotalWeightKg - normalized.weightKg);
+
+  const beyondHumanLimits = resolveBeyondHumanLimits({
+    gender,
+    currentArmGirthCm: normalized.flexedArmGirthCm,
+    currentSmmKg,
+    rawArmGapCm,
+    rawSmmGapKg,
+  });
+
+  // Beyond: force Point B ↔ Point A co-tuning so “no upgrade guide” matches the readout.
+  // WHY: Legendary ×1.05 headroom otherwise leaves max > current while the easter egg claims ceiling.
+  let maxTuned: MaxTunedPhysiqueSpec = computedMax;
+  let maxSmmKg = computedMaxSmmKg;
+  let bodyFatGapPct = round3(normalized.bodyFatPct - computedMax.bodyFatPct);
+  let armGapCm = Math.max(0, rawArmGapCm);
+  let smmGapKg = Math.max(0, rawSmmGapKg);
+  let weightGapKg = Math.max(0, rawWeightGapKg);
+
+  if (beyondHumanLimits) {
+    maxTuned = {
+      ...computedMax,
+      // Clear legendary banner — beyond easter egg is the single transcendence surface.
+      legendaryArmMode: false,
+      bodyFatPct: normalized.bodyFatPct,
+      ffmMaxKg: currentFfmKg,
+      maxTotalWeightKg: round1(normalized.weightKg),
+      armGirthMaxCm: round1(normalized.flexedArmGirthCm),
+      somatotype: current,
+      coordinates: currentPoint,
+    };
+    maxSmmKg = currentSmmKg;
+    bodyFatGapPct = 0;
+    armGapCm = 0;
+    smmGapKg = 0;
+    weightGapKg = 0;
+  }
 
   return {
     metrics: normalized,
@@ -609,11 +699,12 @@ export function buildSomatotypeLabSnapshot(
     current,
     currentPoint,
     maxTuned,
-    armGapCm: round3(maxTuned.armGirthMaxCm - normalized.flexedArmGirthCm),
-    bodyFatGapPct: round3(normalized.bodyFatPct - maxTuned.bodyFatPct),
-    weightGapKg: round1(maxTuned.maxTotalWeightKg - normalized.weightKg),
+    beyondHumanLimits,
+    armGapCm: round3(armGapCm),
+    bodyFatGapPct,
+    weightGapKg: round1(weightGapKg),
     currentSmmKg,
     maxSmmKg,
-    smmGapKg: round1(maxSmmKg - currentSmmKg),
+    smmGapKg: round1(smmGapKg),
   };
 }

@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { SomatotypeGender } from '../../logic/core/somatotypeLab';
 
 export interface SomatotypeGapGaugeProps {
   heightCm: number;
@@ -16,6 +17,9 @@ export interface SomatotypeGapGaugeProps {
   bodyFatGapPct: number;
   smmGapKg: number;
   weightGapKg: number;
+  /** Peak-horizon transcendence — swaps upgrade guide for gender-tuned easter-egg copy. */
+  beyondHumanLimits?: boolean;
+  gender?: SomatotypeGender;
 }
 
 /**
@@ -36,6 +40,8 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   bodyFatGapPct,
   smmGapKg,
   weightGapKg,
+  beyondHumanLimits = false,
+  gender = 'male',
 }) => {
   const { t } = useTranslation('common');
   const fmt = (n: number, digits = 1) =>
@@ -44,11 +50,19 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   const hasArmHeadroom = armGapCm > 0.05;
   const hasSmmHeadroom = smmGapKg > 0.05;
   const hasBfCutRoom = bodyFatGapPct > 0.05;
-  const hasWeightRoom = Math.abs(weightGapKg) > 0.05;
+  const hasWeightRoom = weightGapKg > 0.05;
   const upgradeKey =
     hasArmHeadroom || hasSmmHeadroom || hasBfCutRoom || hasWeightRoom
       ? 'tools.somatotypeLab.gap.upgradeGuide'
       : 'tools.somatotypeLab.gap.upgradeGuideAtCeiling';
+  const beyondTitleKey =
+    gender === 'female'
+      ? 'tools.somatotypeLab.gap.beyondTitle_female'
+      : 'tools.somatotypeLab.gap.beyondTitle_male';
+  const beyondBodyKey =
+    gender === 'female'
+      ? 'tools.somatotypeLab.gap.beyondBody_female'
+      : 'tools.somatotypeLab.gap.beyondBody_male';
 
   return (
     <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-950/80 p-4 font-mono text-sm text-zinc-200">
@@ -84,13 +98,20 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
         </div>
       </dl>
 
-      <p className="text-[13px] leading-relaxed text-zinc-300">
-        {t(upgradeKey, {
-          armGap: fmt(armGapCm, 1),
-          smmGap: fmt(smmGapKg, 1),
-          weightGap: fmt(weightGapKg, 1),
-        })}
-      </p>
+      {beyondHumanLimits ? (
+        <div className="space-y-1.5 border border-amber-500/35 bg-amber-500/10 px-3 py-2.5">
+          <p className="text-[12px] font-semibold tracking-wide text-amber-100/95">{t(beyondTitleKey)}</p>
+          <p className="text-[13px] leading-relaxed text-amber-50/90">{t(beyondBodyKey)}</p>
+        </div>
+      ) : (
+        <p className="text-[13px] leading-relaxed text-zinc-300">
+          {t(upgradeKey, {
+            armGap: fmt(armGapCm, 1),
+            smmGap: fmt(smmGapKg, 1),
+            weightGap: fmt(weightGapKg, 1),
+          })}
+        </p>
+      )}
     </section>
   );
 };

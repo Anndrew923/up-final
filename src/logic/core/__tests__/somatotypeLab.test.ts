@@ -28,7 +28,12 @@ import {
   resolveMaxTunedBodyFatPct,
   resolvePhysiqueTier,
   resolvePhysiqueTierTargetBf,
+  resolveBeyondHumanLimits,
+  SOMATOTYPE_FEMALE_BEYOND_ARM_CM,
+  SOMATOTYPE_MALE_BEYOND_ARM_CM,
 } from '../somatotypeLab';
+import zhTools from '../../../i18n/locales/zh-Hant/common/tools.json';
+import enTools from '../../../i18n/locales/en/common/tools.json';
 
 describe('calculateGrantIndex', () => {
   it('returns null for non-positive inputs', () => {
@@ -369,9 +374,11 @@ describe('max tuned physique + lab snapshot', () => {
     expect(apex.maxTuned.maxTotalWeightKg).toBe(resolveMaxTotalWeightKg(ffm, 7));
     expect(athletic.maxTuned.maxTotalWeightKg).toBeGreaterThan(elite.maxTuned.maxTotalWeightKg);
     expect(elite.maxTuned.maxTotalWeightKg).toBeGreaterThan(apex.maxTuned.maxTotalWeightKg);
+    // Development potential never goes negative — overshooting stage weight floors at 0 headroom.
     expect(apex.weightGapKg).toBe(
-      Math.round((apex.maxTuned.maxTotalWeightKg - boss.weightKg) * 10) / 10
+      Math.max(0, Math.round((apex.maxTuned.maxTotalWeightKg - boss.weightKg) * 10) / 10)
     );
+    expect(apex.beyondHumanLimits).toBe(false);
 
     // Lower endomorphy at harder tiers drives point B further toward the meso vertex.
     expect(elite.maxTuned.somatotype.endomorphy).toBeLessThan(
@@ -543,4 +550,90 @@ describe('max tuned physique + lab snapshot', () => {
     })!;
     expect(result.correctedArmGirthCm).toBe(0);
   });
+
+  it('zeros growth gaps and co-tunes Point B to Point A for Ronnie-class male olympia metrics', () => {
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 180,
+      weightKg: 135,
+      bodyFatPct: 4,
+      wristCm: 19,
+      flexedArmGirthCm: 61,
+      gender: 'male',
+      physiqueTier: 'apex',
+    })!;
+
+    expect(snap.beyondHumanLimits).toBe(true);
+    expect(snap.armGapCm).toBe(0);
+    expect(snap.smmGapKg).toBe(0);
+    expect(snap.weightGapKg).toBe(0);
+    expect(snap.bodyFatGapPct).toBe(0);
+    expect(snap.metrics.flexedArmGirthCm).toBeGreaterThanOrEqual(SOMATOTYPE_MALE_BEYOND_ARM_CM);
+
+    // Point B forced identical to live Point A — no legendary 1.05 drift.
+    expect(snap.maxTuned.maxTotalWeightKg).toBe(roundWeight(snap.metrics.weightKg));
+    expect(snap.maxTuned.armGirthMaxCm).toBe(roundWeight(snap.metrics.flexedArmGirthCm));
+    expect(snap.maxTuned.bodyFatPct).toBe(snap.metrics.bodyFatPct);
+    expect(snap.maxSmmKg).toBe(snap.currentSmmKg);
+    expect(snap.maxTuned.coordinates).toEqual(snap.currentPoint);
+    expect(snap.maxTuned.somatotype).toEqual(snap.current);
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
+
+    expect(zhTools.tools.somatotypeLab.gap.beyondTitle_male).toContain('Peak Physique Horizon');
+    expect(zhTools.tools.somatotypeLab.gap.beyondTitle_male).toContain('極致幾何維度');
+    expect(enTools.tools.somatotypeLab.gap.beyondTitle_male).toContain('Peak Physique Horizon');
+    expect(zhTools.tools.somatotypeLab.gap.beyondBody_male).toContain('傳奇級巔峰體貌');
+    expect(zhTools.tools.somatotypeLab.gap.beyondBody_female).toContain('史詩級極致體貌');
+  });
+
+  it('co-tunes Point B for female Olympia beyond gate at ≥35cm arm', () => {
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 165,
+      weightKg: 76,
+      bodyFatPct: 18,
+      wristCm: 14,
+      flexedArmGirthCm: 35.4,
+      gender: 'female',
+      physiqueTier: 'apex',
+    })!;
+
+    expect(snap.gender).toBe('female');
+    expect(snap.metrics.flexedArmGirthCm).toBeGreaterThanOrEqual(SOMATOTYPE_FEMALE_BEYOND_ARM_CM);
+    expect(snap.beyondHumanLimits).toBe(true);
+    expect(snap.armGapCm).toBe(0);
+    expect(snap.smmGapKg).toBe(0);
+    expect(snap.weightGapKg).toBe(0);
+    expect(snap.bodyFatGapPct).toBe(0);
+
+    expect(snap.maxTuned.maxTotalWeightKg).toBe(roundWeight(snap.metrics.weightKg));
+    expect(snap.maxTuned.armGirthMaxCm).toBe(roundWeight(snap.metrics.flexedArmGirthCm));
+    expect(snap.maxTuned.bodyFatPct).toBe(snap.metrics.bodyFatPct);
+    expect(snap.maxSmmKg).toBe(snap.currentSmmKg);
+    expect(snap.maxTuned.coordinates).toEqual(snap.currentPoint);
+    expect(snap.maxTuned.somatotype).toEqual(snap.current);
+    expect(snap.maxTuned.legendaryArmMode).toBe(false);
+
+    // Same absolute arm would not trip male absolute gate alone at 35.4cm.
+    expect(
+      resolveBeyondHumanLimits({
+        gender: 'male',
+        currentArmGirthCm: 35.4,
+        currentSmmKg: 30,
+        rawArmGapCm: 2,
+        rawSmmGapKg: 2,
+      })
+    ).toBe(false);
+    expect(
+      resolveBeyondHumanLimits({
+        gender: 'female',
+        currentArmGirthCm: 35.4,
+        currentSmmKg: 30,
+        rawArmGapCm: 2,
+        rawSmmGapKg: 2,
+      })
+    ).toBe(true);
+  });
 });
+
+function roundWeight(value: number): number {
+  return Math.round(value * 10) / 10;
+}
