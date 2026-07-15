@@ -135,8 +135,7 @@
       "kicker": "Morphology Lab",
       "title": "Somatotype Geometry Chart",
       "entry": {
-        "title": "📋 Unlock Your Somatochart",
-        "subtitle": "Discover your frame genetics and precision physique alignment."
+        "title": "📋 Unlock Your Somatochart"
       },
       "emptyHint": "Enter height, weight, body fat, wrist, and flexed arm girth within valid ranges, then run geometry analysis.",
       "atypicalWarning": "Your height-weight ratio is outside the usual Reuleaux band (HWR < 35 or > 50). The chart still renders, but treat coordinates as approximate.",
@@ -210,7 +209,7 @@
         "title": "Geometry ID: {{height}}cm / {{wrist}}cm",
         "currentLabel": "Current",
         "currentValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
-        "goldenLabel": "✨ Golden Ratio Talent / Golden Ratio",
+        "goldenLabel": "✨ Golden Ratio Talent",
         "goldenValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "maxLabel": "Max-tuned",
         "maxValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",

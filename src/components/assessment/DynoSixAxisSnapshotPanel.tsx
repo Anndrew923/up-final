@@ -72,6 +72,7 @@ export const DynoSixAxisSnapshotPanel: FC<DynoSixAxisSnapshotPanelProps> = ({
       title={t('assessment.sixAxisSnapshot.title')}
       toggleExpandLabel={t('assessment.sixAxisSnapshot.toggleExpand')}
       toggleCollapseLabel={t('assessment.sixAxisSnapshot.toggleCollapse')}
+      actionMode="chevron"
       panelBodyClassName="space-y-4 px-4 pb-4 pt-3"
     >
       <div className="grid grid-cols-2 gap-3">

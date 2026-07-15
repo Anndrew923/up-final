@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
         'tools.somatotypeLab.gap.upgradeGuideGolden_female': `升級指南：【黃金比例目標】尚需增肌 ${opts?.smmGap ?? ''}kg、提升臂圍 ${opts?.armGap ?? ''}cm。`,
         'tools.somatotypeLab.gap.upgradeGuideLimit_male': `升級指南：【極限天賦挑戰】尚需增肌 ${opts?.smmGap ?? ''}kg、提升臂圍 ${opts?.armGap ?? ''}cm。`,
         'tools.somatotypeLab.gap.upgradeGuideLimit_female': `升級指南：【極限天賦挑戰】尚需增肌 ${opts?.smmGap ?? ''}kg、提升臂圍 ${opts?.armGap ?? ''}cm。`,
-        'tools.somatotypeLab.gap.goldenLabel': '✨ 黃金比例天賦 / Golden Ratio',
+        'tools.somatotypeLab.gap.goldenLabel': '✨ 黃金比例天賦',
         'tools.somatotypeLab.gap.goldenValue': `GOLDEN ${opts?.weight}/${opts?.bodyFat}/${opts?.arm}/${opts?.smm}`,
         'tools.somatotypeLab.help.somatotype.infoAria': '開啟胚型說明',
         'tools.somatotypeLab.help.goldenRatio.infoAria': '開啟黃金比例說明',
@@ -128,7 +128,8 @@ describe('SomatotypeGapGauge beyondHumanLimits', () => {
       gender: 'female',
       goldenRatio: { weightKg: 53.1, bodyFatPct: 20, armGirthCm: 26.7, smmKg: 19.5 },
     });
-    expect(container.textContent).toContain('黃金比例天賦 / Golden Ratio');
+    expect(container.textContent).toContain('黃金比例天賦');
+    expect(container.textContent).not.toContain('Golden Ratio');
     expect(container.textContent).toContain('GOLDEN 53.1/20.0/26.7/19.5');
     expect(container.textContent).toContain('tools.somatotypeLab.gap.maxLabel');
     unmount();

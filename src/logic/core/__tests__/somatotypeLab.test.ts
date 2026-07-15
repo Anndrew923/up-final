@@ -761,7 +761,10 @@ describe('max tuned physique + lab snapshot', () => {
     expect(enTools.tools.somatotypeLab.gap.upgradeGuideLimit_female.toLowerCase()).toContain(
       'max-tuned'
     );
-    expect(zhTools.tools.somatotypeLab.gap.goldenLabel).toContain('Golden Ratio');
+    expect(zhTools.tools.somatotypeLab.gap.goldenLabel).toContain('黃金比例天賦');
+    expect(zhTools.tools.somatotypeLab.gap.goldenLabel).not.toContain('Golden Ratio');
+    expect(enTools.tools.somatotypeLab.gap.goldenLabel).toContain('Golden Ratio Talent');
+    expect(enTools.tools.somatotypeLab.gap.goldenLabel).not.toMatch(/\/\s*Golden Ratio/);
   });
 
   it('guideMode A — mass cleared + BF above bulk health cap → cut toward bulk cap', () => {

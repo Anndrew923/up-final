@@ -135,8 +135,7 @@
       "kicker": "人體形態學實驗室",
       "title": "人體幾何星圖",
       "entry": {
-        "title": "📋 解鎖你的人體幾何星圖",
-        "subtitle": "一秒精確定位你的天賦骨架與健康精美線條比例"
+        "title": "📋 解鎖你的人體幾何星圖"
       },
       "emptyHint": "請填入合理範圍的身高、體重、體脂、腕圍與用力臂圍後，再啟動幾何分析。",
       "atypicalWarning": "目前身高體重比超出標準雷洛模型常用區間（HWR < 35 或 > 50）。圖表仍會顯示，但座標僅供參考。",
@@ -210,7 +209,7 @@
         "title": "結構幾何代號: {{height}}cm / {{wrist}}cm",
         "currentLabel": "當前狀態",
         "currentValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
-        "goldenLabel": "✨ 黃金比例天賦 / Golden Ratio",
+        "goldenLabel": "✨ 黃金比例天賦",
         "goldenValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",
         "maxLabel": "極限天賦",
         "maxValue": "體重 {{weight}}kg / 體脂 {{bodyFat}}% / 臂圍 {{arm}}cm / 骨骼肌 {{smm}}kg",

@@ -55,7 +55,6 @@ vi.mock('react-i18next', () => ({
           'tools.calculators.oneRm.title': '1RM Calculator',
           'tools.calculators.plates.title': 'Plate Calculator',
           'tools.somatotypeLab.entry.title': 'Unlock Your Somatochart',
-          'tools.somatotypeLab.entry.subtitle': 'Discover your frame genetics.',
           'tools.codex.panelTitle': 'Vehicle Codex',
           'assessment.referenceInfo.toggleExpand': 'Expand',
           'assessment.referenceInfo.toggleCollapse': 'Collapse',

@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { CollapsibleActionRow } from './CollapsibleActionRow';
+import { CollapsibleChevron } from './CollapsibleChevron';
 import { onCollapsibleToggleKeyDown } from '../lib/collapsibleKeyboard';
 
 export interface DisclosurePanelProps {
@@ -15,6 +16,11 @@ export interface DisclosurePanelProps {
   children: ReactNode;
   /** Tailwind classes for the padded body wrapper around `children`. */
   panelBodyClassName?: string;
+  /**
+   * `labeled` — text + chevron action row (default, home/tools).
+   * `chevron` — title-row chevron only; labels stay in aria-label for a11y.
+   */
+  actionMode?: 'labeled' | 'chevron';
 }
 
 const defaultPanelBodyClassName = 'space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400';
@@ -32,10 +38,12 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   collapsedHint,
   children,
   panelBodyClassName = defaultPanelBodyClassName,
+  actionMode = 'labeled',
 }) => {
   const toggleId = `${instanceId}-toggle`;
   const panelId = `${instanceId}-panel`;
   const actionLabel = expanded ? toggleCollapseLabel : toggleExpandLabel;
+  const chevronOnly = actionMode === 'chevron';
 
   return (
     <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
@@ -49,17 +57,22 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
         onClick={onToggle}
         onKeyDown={(e) => onCollapsibleToggleKeyDown(e, onToggle)}
       >
-        <span className="font-medium text-zinc-200">{title}</span>
+        <span className="flex w-full items-center justify-between gap-3">
+          <span className="min-w-0 font-medium text-zinc-200">{title}</span>
+          {chevronOnly ? <CollapsibleChevron expanded={expanded} /> : null}
+        </span>
         {!expanded && collapsedHint ? (
           <p className="text-xs leading-relaxed text-zinc-500">{collapsedHint}</p>
         ) : null}
-        <CollapsibleActionRow
-          expanded={expanded}
-          expandLabel={toggleExpandLabel}
-          collapseLabel={toggleCollapseLabel}
-          showDivider={!expanded}
-          dividerClassName="border-zinc-700/60"
-        />
+        {!chevronOnly ? (
+          <CollapsibleActionRow
+            expanded={expanded}
+            expandLabel={toggleExpandLabel}
+            collapseLabel={toggleCollapseLabel}
+            showDivider={!expanded}
+            dividerClassName="border-zinc-700/60"
+          />
+        ) : null}
       </button>
       <div
         id={panelId}

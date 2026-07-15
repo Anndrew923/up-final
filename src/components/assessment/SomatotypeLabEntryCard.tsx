@@ -36,9 +36,6 @@ export const SomatotypeLabEntryCard: FC = () => {
           {t('tools.somatotypeLab.kicker')}
         </p>
         <h2 className="text-sm font-semibold tracking-tight text-zinc-100 sm:text-base">{title}</h2>
-        <p className="text-[11px] leading-relaxed text-zinc-400 sm:text-xs">
-          {t('tools.somatotypeLab.entry.subtitle')}
-        </p>
       </div>
     </Link>
   );
