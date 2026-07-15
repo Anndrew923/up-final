@@ -225,6 +225,40 @@
         "beyondTitle_female": "👑 檢測到極致幾何維度 / Peak Physique Horizon",
         "beyondBody_female": "「您當前的肉體幾何已完美登頂該性別的自然幾何天花板！形態學實驗室已將您的數據定錨為【史詩級極致體貌】。在當前維度下，常規幾何指南已不再適用，您已主裝該改裝廠的極限比例！」"
       },
+      "help": {
+        "dismiss": "了解",
+        "closeAria": "關閉說明",
+        "somatotype": {
+          "infoAria": "開啟胚型說明",
+          "title": "什麼是人體幾何胚型？",
+          "intro": "本系統採用經典的 Heath-Carter 胚型學進行肉體幾何定錨。人體結構由三種原生維度交叉組成：",
+          "endoLabel": "內胚層 (Endomorphy)",
+          "endoBody": "儲能與組織飽滿度。",
+          "mesoLabel": "中胚層 (Mesomorphy)",
+          "mesoBody": "骨骼肌、關節與運動天賦比例。",
+          "ectoLabel": "外胚層 (Ectomorphy)",
+          "ectoBody": "修長、骨架線性度與視覺比例。",
+          "outro": "系統透過您的身高、體重與骨架數據，精準定位您的幾何代號，協助您導航最科學的身體改裝動線。"
+        },
+        "goldenRatio": {
+          "infoAria": "開啟黃金比例說明",
+          "title": "黃金比例天賦如何計算？",
+          "intro": "專為【極致視覺美學與精緻衣架子體態】量身訂製的專屬賽道，核心公式基於頂尖美學與運動生理學定錨：",
+          "colMetric": "項目",
+          "colMale": "男性",
+          "colFemale": "女性",
+          "rowWeight": "黃金體重",
+          "maleWeight": "BMI 23.0 · 精壯倒三角",
+          "femaleWeight": "BMI 19.5 · 高質感名模",
+          "rowBf": "黃金體脂",
+          "maleBf": "11.0% · 雕刻級六塊肌",
+          "femaleBf": "20.0% · 緊緻飽滿馬甲線",
+          "rowSmm": "黃金肌肉",
+          "maleSmm": "57% FFM · 除脂體重佔比",
+          "femaleSmm": "55% FFM · 除脂體重佔比",
+          "outro": "旨在引導您在不顯臃腫、不顯乾扁的前提下，解鎖穿衣顯瘦、脫衣精雕的終極幾何比例。"
+        }
+      },
       "appendix": {
         "title": "形態學演算法底層說明",
         "heathCarter": "本評測系統底層採用經典的希斯-卡特（Heath-Carter）人體形態學模型。唯經典公式需包含多處皮褶厚度與雙關節骨寬等繁瑣臨床量測，本專案為優化實戰體驗，將其簡化解耦，改以「手腕圍」結合身體組成數據作為核心骨架結構之代數推導基準。此簡化可能導入 ±2% ~ ±4% 之推估殘差，特此說明。",

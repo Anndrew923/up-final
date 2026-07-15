@@ -4,6 +4,8 @@ export const Z_INDEX_CLASS = {
   dynoIntelSheet: 'z-[220]',
   performanceBreakthroughModal: 'z-[240]',
   toolResultModal: 'z-[240]',
+  /** Nested science/help sheet above somatotype report modal. */
+  somatotypeScienceHelpSheet: 'z-[250]',
   ladderFilterSheet: 'z-[230]',
   optionSelectSheet: 'z-[260]',
   /** Boot narrative / profile gate — sheets opened from inside must sit above this. */

@@ -225,6 +225,40 @@
         "beyondTitle_female": "👑 Peak Physique Horizon Detected / Peak Physique Horizon",
         "beyondBody_female": "\"Your physique geometry has perfectly topped this gender's natural geometric ceiling. Morphology Lab anchors your data as Epic Apex Physique. At this dimension, conventional geometry guides no longer apply — you now own this workshop's limit proportions.\""
       },
+      "help": {
+        "dismiss": "Got it",
+        "closeAria": "Close guide",
+        "somatotype": {
+          "infoAria": "Open somatotype guide",
+          "title": "What is physique geometry?",
+          "intro": "This system anchors body geometry with classic Heath–Carter somatotyping. Structure is a cross of three native dimensions:",
+          "endoLabel": "Endomorphy",
+          "endoBody": "Energy storage and tissue fullness.",
+          "mesoLabel": "Mesomorphy",
+          "mesoBody": "Skeletal muscle, joints, and athletic proportion.",
+          "ectoLabel": "Ectomorphy",
+          "ectoBody": "Linearity, frame elongation, and visual proportion.",
+          "outro": "Using your height, weight, and bone-frame inputs, the lab places your geometry ID and charts the most scientific remodel path."
+        },
+        "goldenRatio": {
+          "infoAria": "Open Golden Ratio guide",
+          "title": "How is Golden Ratio talent calculated?",
+          "intro": "A dedicated track for extreme visual aesthetics and crisp hanger physique — formulas anchored in elite aesthetics and exercise physiology:",
+          "colMetric": "Metric",
+          "colMale": "Male",
+          "colFemale": "Female",
+          "rowWeight": "Golden weight",
+          "maleWeight": "BMI 23.0 · sharp V-taper",
+          "femaleWeight": "BMI 19.5 · high-fashion line",
+          "rowBf": "Golden body fat",
+          "maleBf": "11.0% · carved abs",
+          "femaleBf": "20.0% · firm corset waist",
+          "rowSmm": "Golden muscle",
+          "maleSmm": "57% FFM · of fat-free mass",
+          "femaleSmm": "55% FFM · of fat-free mass",
+          "outro": "Guides you to the ultimate clothes-hanger geometry — lean without looking flat, full without looking bulky."
+        }
+      },
       "appendix": {
         "title": "Morphology Algorithm Notes",
         "heathCarter": "This assessment is built on the classic Heath–Carter somatotype model. The full clinical formula requires multiple skinfolds and biepicondylar bone breadths; to keep field measurement practical, this app decouples that path and uses wrist girth plus body-composition inputs as the algebraic proxy for skeletal frame. That simplification may introduce roughly ±2% to ±4% estimation residual.",

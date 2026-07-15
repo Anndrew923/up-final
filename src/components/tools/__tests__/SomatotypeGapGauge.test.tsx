@@ -30,6 +30,8 @@ vi.mock('react-i18next', () => ({
         'tools.somatotypeLab.gap.upgradeGuideLimit_female': `升級指南：【極限天賦挑戰】尚需增肌 ${opts?.smmGap ?? ''}kg、提升臂圍 ${opts?.armGap ?? ''}cm。`,
         'tools.somatotypeLab.gap.goldenLabel': '✨ 黃金比例天賦 / Golden Ratio',
         'tools.somatotypeLab.gap.goldenValue': `GOLDEN ${opts?.weight}/${opts?.bodyFat}/${opts?.arm}/${opts?.smm}`,
+        'tools.somatotypeLab.help.somatotype.infoAria': '開啟胚型說明',
+        'tools.somatotypeLab.help.goldenRatio.infoAria': '開啟黃金比例說明',
       };
       if (map[key]) return map[key];
       if (key === 'tools.somatotypeLab.gap.title') return `ID ${opts?.height}/${opts?.wrist}`;
@@ -51,6 +53,8 @@ function renderGauge(props: {
     armGirthCm: number;
     smmKg: number;
   } | null;
+  onOpenSomatotypeHelp?: () => void;
+  onOpenGoldenRatioHelp?: () => void;
 }): {
   container: HTMLDivElement;
   unmount: () => void;
@@ -79,6 +83,8 @@ function renderGauge(props: {
         guideMode={props.guideMode ?? 'pushToLimit'}
         fatToLoseKg={props.fatToLoseKg ?? 0}
         goldenRatio={props.goldenRatio ?? null}
+        onOpenSomatotypeHelp={props.onOpenSomatotypeHelp}
+        onOpenGoldenRatioHelp={props.onOpenGoldenRatioHelp}
       />
     );
   });
@@ -176,6 +182,42 @@ describe('SomatotypeGapGauge beyondHumanLimits', () => {
     expect(container.textContent).toContain('3.1cm');
     expect(container.textContent).not.toContain('【降噪減脂】');
     expect(container.textContent).not.toContain('【黃金比例目標】');
+    unmount();
+  });
+
+  it('fires help callbacks from geometry and golden (i) buttons', () => {
+    const onOpenSomatotypeHelp = vi.fn();
+    const onOpenGoldenRatioHelp = vi.fn();
+    const { container, unmount } = renderGauge({
+      goldenRatio: { weightKg: 75.3, bodyFatPct: 11, armGirthCm: 37.2, smmKg: 38.2 },
+      onOpenSomatotypeHelp,
+      onOpenGoldenRatioHelp,
+    });
+    const somatotypeBtn = container.querySelector(
+      'button[aria-label="開啟胚型說明"]'
+    ) as HTMLButtonElement | null;
+    const goldenBtn = container.querySelector(
+      'button[aria-label="開啟黃金比例說明"]'
+    ) as HTMLButtonElement | null;
+    expect(somatotypeBtn).not.toBeNull();
+    expect(goldenBtn).not.toBeNull();
+    act(() => {
+      somatotypeBtn?.click();
+      goldenBtn?.click();
+    });
+    expect(onOpenSomatotypeHelp).toHaveBeenCalledTimes(1);
+    expect(onOpenGoldenRatioHelp).toHaveBeenCalledTimes(1);
+    unmount();
+  });
+
+  it('hides golden help button when goldenRatio is null', () => {
+    const { container, unmount } = renderGauge({
+      goldenRatio: null,
+      onOpenSomatotypeHelp: vi.fn(),
+      onOpenGoldenRatioHelp: vi.fn(),
+    });
+    expect(container.querySelector('button[aria-label="開啟胚型說明"]')).not.toBeNull();
+    expect(container.querySelector('button[aria-label="開啟黃金比例說明"]')).toBeNull();
     unmount();
   });
 });

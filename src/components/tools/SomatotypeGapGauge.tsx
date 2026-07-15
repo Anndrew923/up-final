@@ -35,6 +35,10 @@ export interface SomatotypeGapGaugeProps {
   guideMode?: SomatotypeGuideMode;
   /** Cut-mode adipose mass to shed (1dp). */
   fatToLoseKg?: number;
+  /** Opens Heath–Carter somatotype science help. */
+  onOpenSomatotypeHelp?: () => void;
+  /** Opens Golden Ratio formula help (only when golden row is shown). */
+  onOpenGoldenRatioHelp?: () => void;
 }
 
 function resolveUpgradeGuideKey(
@@ -50,6 +54,9 @@ function resolveUpgradeGuideKey(
   }
   return `tools.somatotypeLab.gap.upgradeGuideLimit_${suffix}`;
 }
+
+const helpBtnClass =
+  'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-600/90 bg-zinc-900/70 text-[11px] leading-none text-zinc-300 transition hover:border-zinc-400 hover:text-zinc-50';
 
 /**
  * Pure numeric gap panel — height/wrist geometry ID only; no vehicle naming.
@@ -73,6 +80,8 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   goldenRatio = null,
   guideMode = 'pushToLimit',
   fatToLoseKg = 0,
+  onOpenSomatotypeHelp,
+  onOpenGoldenRatioHelp,
 }) => {
   const { t } = useTranslation('common');
   const fmt = (n: number, digits = 1) =>
@@ -91,12 +100,24 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
 
   return (
     <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-950/80 p-4 font-mono text-sm text-zinc-200">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-primary">
-        {t('tools.somatotypeLab.gap.title', {
-          height: fmt(heightCm, 0),
-          wrist: fmt(wristCm, 1),
-        })}
-      </h3>
+      <div className="flex items-center gap-2">
+        <h3 className="min-w-0 flex-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent-primary">
+          {t('tools.somatotypeLab.gap.title', {
+            height: fmt(heightCm, 0),
+            wrist: fmt(wristCm, 1),
+          })}
+        </h3>
+        {onOpenSomatotypeHelp ? (
+          <button
+            type="button"
+            className={helpBtnClass}
+            aria-label={t('tools.somatotypeLab.help.somatotype.infoAria')}
+            onClick={onOpenSomatotypeHelp}
+          >
+            ⓘ
+          </button>
+        ) : null}
+      </div>
 
       <dl className="grid gap-2 text-[13px] leading-relaxed">
         <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 border-b border-zinc-900 pb-2">
@@ -112,7 +133,19 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
         </div>
         {showGolden ? (
           <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 border-b border-zinc-900 pb-2">
-            <dt className="text-amber-300/90">{t('tools.somatotypeLab.gap.goldenLabel')}</dt>
+            <dt className="flex min-w-0 items-center gap-2 text-amber-300/90">
+              <span className="min-w-0">{t('tools.somatotypeLab.gap.goldenLabel')}</span>
+              {onOpenGoldenRatioHelp ? (
+                <button
+                  type="button"
+                  className={helpBtnClass}
+                  aria-label={t('tools.somatotypeLab.help.goldenRatio.infoAria')}
+                  onClick={onOpenGoldenRatioHelp}
+                >
+                  ⓘ
+                </button>
+              ) : null}
+            </dt>
             <dd className="text-amber-100/90">
               {t('tools.somatotypeLab.gap.goldenValue', {
                 weight: fmt(goldenRatio.weightKg, 1),
