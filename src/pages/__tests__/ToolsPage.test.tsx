@@ -54,7 +54,7 @@ vi.mock('react-i18next', () => ({
           'tools.calculators.title': 'Training Calculators',
           'tools.calculators.oneRm.title': '1RM Calculator',
           'tools.calculators.plates.title': 'Plate Calculator',
-          'tools.somatotypeLab.entry.title': 'Unlock Your Somatochart',
+          'tools.somatotypeLab.title': 'Somatochart',
           'tools.codex.panelTitle': 'Vehicle Codex',
           'assessment.referenceInfo.toggleExpand': 'Expand',
           'assessment.referenceInfo.toggleCollapse': 'Collapse',
@@ -104,6 +104,8 @@ describe('ToolsPage cloud sync card', () => {
 
     expect(toggle).not.toBeNull();
     expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle?.getAttribute('aria-label')).toBe('Show sync details');
+    expect(container.textContent).not.toContain('Show sync details');
     expect(panel).not.toBeNull();
     expect(panel?.hasAttribute('hidden')).toBe(true);
 

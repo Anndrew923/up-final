@@ -5,8 +5,8 @@ import { ROUTES } from '../../config/routes';
 
 /**
  * Assessment-lobby portal into the somatotype lab.
- * WHY: Inclusive “all-gender” acquisition CTA on the Dyno assessment page —
- * cold geometric chrome, no hardcore / ladder coupling.
+ * WHY: Inclusive acquisition CTA on the Dyno assessment page (verb-led unlock
+ * copy). Tools lobby uses the noun lab title instead — no hardcore / ladder coupling.
  */
 export const SomatotypeLabEntryCard: FC = () => {
   const { t } = useTranslation('common');

@@ -15,7 +15,7 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'tools.somatotypeLab.kicker': 'MORPHOLOGY LAB',
-        'tools.somatotypeLab.entry.title': 'Unlock Your Somatochart',
+        'tools.somatotypeLab.entry.title': 'Unlock Somatochart',
       };
       return map[key] ?? key;
     },
@@ -54,8 +54,9 @@ describe('SomatotypeLabEntryCard', () => {
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
     expect(link?.getAttribute('href')).toBe(ROUTES.somatotypeLab);
-    expect(link?.getAttribute('aria-label')).toBe('Unlock Your Somatochart');
-    expect(container.textContent).toContain('Unlock Your Somatochart');
+    expect(link?.getAttribute('aria-label')).toBe('Unlock Somatochart');
+    expect(container.textContent).toContain('Unlock Somatochart');
+    expect(container.textContent).not.toContain('Unlock Your Somatochart');
     expect(container.textContent).not.toContain('Discover your frame genetics.');
     unmount();
   });

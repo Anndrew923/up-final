@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { CollapsibleActionRow } from '../CollapsibleActionRow';
+import { CollapsibleChevron } from '../CollapsibleChevron';
 import { onCollapsibleToggleKeyDown } from '../../lib/collapsibleKeyboard';
 
 export interface HomeCollapsibleCardProps {
@@ -15,6 +16,11 @@ export interface HomeCollapsibleCardProps {
   summarySlot?: ReactNode;
   toggleExpandLabel: string;
   toggleCollapseLabel: string;
+  /**
+   * `labeled` — text + chevron action row (legacy).
+   * `chevron` — title-row chevron only; labels stay in aria-label for a11y.
+   */
+  actionMode?: 'labeled' | 'chevron';
   children: ReactNode;
 }
 
@@ -32,25 +38,32 @@ export const HomeCollapsibleCard: FC<HomeCollapsibleCardProps> = ({
   summarySlot,
   toggleExpandLabel,
   toggleCollapseLabel,
+  actionMode = 'chevron',
   children,
 }) => {
   const toggleId = `${instanceId}-toggle`;
   const panelId = `${instanceId}-panel`;
   const actionLabel = expanded ? toggleCollapseLabel : toggleExpandLabel;
+  const chevronOnly = actionMode === 'chevron';
 
   const headerInner = (
     <div className="space-y-2 pb-1">
-      <div className="min-w-0 space-y-1">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
-          {kicker}
-        </p>
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">{title}</h2>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent-info">
+            {kicker}
+          </p>
+          <h2 className="text-lg font-semibold tracking-tight text-zinc-100">{title}</h2>
+        </div>
+        {canCollapse && chevronOnly ? (
+          <CollapsibleChevron expanded={expanded} className="mt-1 h-4 w-4 shrink-0 text-accent-primary/90" />
+        ) : null}
       </div>
       {statusSlot}
       {!expanded && summarySlot ? (
         <div className="pt-0.5 text-sm text-zinc-300">{summarySlot}</div>
       ) : null}
-      {canCollapse ? (
+      {canCollapse && !chevronOnly ? (
         <CollapsibleActionRow
           expanded={expanded}
           expandLabel={toggleExpandLabel}

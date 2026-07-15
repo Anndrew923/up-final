@@ -118,11 +118,11 @@ export default function ToolsPage() {
             </Link>
             <Link
               to={ROUTES.somatotypeLab}
-              aria-label={t('tools.somatotypeLab.entry.title', { ns: 'common' })}
+              aria-label={t('tools.somatotypeLab.title', { ns: 'common' })}
               className="group rounded-xl border border-accent-primary/25 bg-black/25 p-4 transition hover:border-accent-primary/45 hover:bg-black/40 sm:col-span-2"
             >
               <p className="text-sm font-semibold text-zinc-100">
-                {t('tools.somatotypeLab.entry.title', { ns: 'common' })}
+                {t('tools.somatotypeLab.title', { ns: 'common' })}
               </p>
             </Link>
           </div>
@@ -136,6 +136,7 @@ export default function ToolsPage() {
             title={t('tools.codex.panelTitle', { ns: 'common' })}
             toggleExpandLabel={t('assessment.referenceInfo.toggleExpand', { ns: 'common' })}
             toggleCollapseLabel={t('assessment.referenceInfo.toggleCollapse', { ns: 'common' })}
+            actionMode="chevron"
             panelBodyClassName="space-y-3 px-0 pb-2 pt-2"
           >
             <VehicleSpecificationCodex currentScores={codexScores} />
@@ -156,6 +157,7 @@ export default function ToolsPage() {
             title={t('tools.syncInfo.panelTitle', { ns: 'common' })}
             toggleExpandLabel={t('tools.syncInfo.toggleExpand', { ns: 'common' })}
             toggleCollapseLabel={t('tools.syncInfo.toggleCollapse', { ns: 'common' })}
+            actionMode="chevron"
             panelBodyClassName="space-y-3 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400"
           >
             <p>{t('tools.syncInfo.intro', { ns: 'common' })}</p>

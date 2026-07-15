@@ -135,7 +135,7 @@
       "kicker": "Morphology Lab",
       "title": "Somatochart",
       "entry": {
-        "title": "📋 Unlock Your Somatochart"
+        "title": "📋 Unlock Somatochart"
       },
       "emptyHint": "Fill all fields within range, then run analysis.",
       "atypicalWarning": "Height–weight ratio is outside the usual band (HWR < 35 or > 50). Chart still renders — treat coordinates as approximate.",

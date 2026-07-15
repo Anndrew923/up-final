@@ -224,6 +224,7 @@ export default function HomeProfileForm() {
           collapsedHint={profileCopy('advancedCollapsedHint')}
           toggleExpandLabel={profileCopy('advancedExpand')}
           toggleCollapseLabel={profileCopy('advancedCollapse')}
+          actionMode="chevron"
           panelBodyClassName="space-y-4 px-4 pb-4 pt-3"
         >
           <div className="grid gap-4 sm:grid-cols-2">
