@@ -3,14 +3,54 @@
  *
  * WHY: Home UX cannot require calipers; wrist + height + BF% + flexed arm girth
  * approximate the ISAK ten-metric path while staying deterministic and UI-free.
- * IMPACT: Pure logic for somatochart dual-point gap (current vs max-tuned physique).
+ * IMPACT: Pure logic for somatochart points (current vs max-tuned) plus
+ * gender-tuned golden-ratio mid-targets with gapBenchmark-switched upgrade gaps.
  */
 
 export type PhysiqueTier = 'athletic' | 'elite' | 'apex';
 export type SomatotypeGender = 'male' | 'female';
+/** Dual-track: upgrade gaps subtract vs golden line or Hesket max-tuned ceiling. */
+export type SomatotypeGapBenchmark = 'golden' | 'maxTuned';
 
 export const PHYSIQUE_TIERS = ['athletic', 'elite', 'apex'] as const;
 export const SOMATOTYPE_GENDERS = ['male', 'female'] as const;
+
+/**
+ * Female golden-ratio BMI / composition anchors (aesthetic practical line).
+ * WHY: Dual-track — golden for usable line guidance; maxTuned for Hesket ceiling.
+ */
+export const SOMATOTYPE_FEMALE_GOLDEN_BMI = 19.5;
+export const SOMATOTYPE_FEMALE_GOLDEN_BODY_FAT_PCT = 20;
+/** Lean fraction at female golden BF — single-sourced so BF% edits cannot desync FFM share. */
+export const SOMATOTYPE_FEMALE_GOLDEN_FFM_FRACTION =
+  1 - SOMATOTYPE_FEMALE_GOLDEN_BODY_FAT_PCT / 100;
+/**
+ * Female golden SMM as a share of FFM: FFM × 0.55.
+ * WHY: Prior 0.46-on-FFM under-stated aesthetic lean mass (~20.7 kg at 170 cm);
+ * exercise-physiology 55% of FFM lands ~24.8 kg — firm without pathology.
+ */
+export const SOMATOTYPE_FEMALE_GOLDEN_SMM_FFM_RATIO = 0.55;
+export const SOMATOTYPE_FEMALE_GOLDEN_ARM_MIN_CM = 26;
+export const SOMATOTYPE_FEMALE_GOLDEN_ARM_MAX_CM = 28;
+/** Female linear arm map intercept / wrist & SMM slopes before 26–28 clamp. */
+export const SOMATOTYPE_FEMALE_GOLDEN_ARM_BASE_CM = 19;
+export const SOMATOTYPE_FEMALE_GOLDEN_ARM_WRIST_FACTOR = 0.3;
+export const SOMATOTYPE_FEMALE_GOLDEN_ARM_SMM_FACTOR = 0.18;
+
+/**
+ * Male golden-ratio anchors — 「穿衣顯壯、脫衣精雕」clothes-hanger mid-target.
+ * BMI 23 fills sleeves without drifting into Olympia bulk.
+ */
+export const SOMATOTYPE_MALE_GOLDEN_BMI = 23;
+export const SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT = 11;
+export const SOMATOTYPE_MALE_GOLDEN_FFM_FRACTION =
+  1 - SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT / 100;
+export const SOMATOTYPE_MALE_GOLDEN_ARM_MIN_CM = 36;
+export const SOMATOTYPE_MALE_GOLDEN_ARM_MAX_CM = 38;
+/** Male linear arm map before 36–38 clamp (fuller bi/tri silhouette). */
+export const SOMATOTYPE_MALE_GOLDEN_ARM_BASE_CM = 20;
+export const SOMATOTYPE_MALE_GOLDEN_ARM_WRIST_FACTOR = 0.4;
+export const SOMATOTYPE_MALE_GOLDEN_ARM_SMM_FACTOR = 0.28;
 
 /** Male target body-fat anchors (hardcore track). */
 export const PHYSIQUE_TIER_TARGET_BF_PCT: Readonly<Record<PhysiqueTier, number>> = {
@@ -68,6 +108,11 @@ export const SOMATOTYPE_VETERAN_HUMERUS_FACTOR = 1.05;
 export const SOMATOTYPE_ELITE_HEADROOM = 1.05;
 /** FFM → skeletal muscle mass (InBody BIA field alignment; not textbook ~0.54). */
 export const SOMATOTYPE_SMM_FFM_RATIO = 0.57;
+/**
+ * Male golden SMM share of FFM — single-sourced from the InBody BIA constant
+ * so clothes-hanger mid-target cannot drift from live SMM estimation.
+ */
+export const SOMATOTYPE_MALE_GOLDEN_SMM_FFM_RATIO = SOMATOTYPE_SMM_FFM_RATIO;
 /**
  * Arm-girth share of SMM growth (cm per kg ΔSMM).
  * Second calibration: 0.48 so ~12.2 kg lean gain unlocks ~5.9 cm arm headroom
@@ -159,6 +204,15 @@ export interface MaxTunedPhysiqueParams {
   gender?: SomatotypeGender;
 }
 
+export interface GoldenRatioPhysiqueSpec {
+  weightKg: number;
+  bodyFatPct: number;
+  smmKg: number;
+  armGirthCm: number;
+  somatotype: HeathCarterSomatotype;
+  coordinates: SomatochartPoint;
+}
+
 export interface SomatotypeLabSnapshot {
   /** Normalized metrics that produced this snapshot (single source for UI gauges). */
   metrics: Readonly<Required<SomatotypeMetrics>>;
@@ -168,6 +222,15 @@ export interface SomatotypeLabSnapshot {
   current: HeathCarterSomatotype;
   currentPoint: SomatochartPoint;
   maxTuned: MaxTunedPhysiqueSpec;
+  /**
+   * Gender-tuned golden-ratio mid-target (male BMI 23 / female BMI 19.5 aesthetic line).
+   */
+  goldenRatio: GoldenRatioPhysiqueSpec | null;
+  /**
+   * Which target the non-beyond upgrade gaps subtract against.
+   * `'golden'` until SMM+arm+BF clear the golden line; then `'maxTuned'`.
+   */
+  gapBenchmark: SomatotypeGapBenchmark;
   /**
    * True when live metrics tear past the gender-calibrated civilian ceiling
    * (negative growth residue and/or female Olympia absolute thresholds).
@@ -606,6 +669,171 @@ export interface BuildSomatotypeLabSnapshotInput extends SomatotypeMetrics {
   gender?: SomatotypeGender;
 }
 
+/**
+ * Gender-tuned elegant / clothes-hanger golden arm girth (female 26–28, male 36–38).
+ * WHY: Aesthetic mid-target must stay below Hesket extreme arm ceilings.
+ */
+export function resolveGoldenArmGirthCm(
+  goldenSmmKg: number,
+  wristCm: number,
+  gender: SomatotypeGender
+): number {
+  const smm = sanitizePositive(goldenSmmKg);
+  const wrist = sanitizePositive(wristCm);
+  const isMale = resolveSomatotypeGender(gender) === 'male';
+  const minCm = isMale ? SOMATOTYPE_MALE_GOLDEN_ARM_MIN_CM : SOMATOTYPE_FEMALE_GOLDEN_ARM_MIN_CM;
+  const maxCm = isMale ? SOMATOTYPE_MALE_GOLDEN_ARM_MAX_CM : SOMATOTYPE_FEMALE_GOLDEN_ARM_MAX_CM;
+  if (smm <= 0 || wrist <= 0) return minCm;
+  const unclamped = isMale
+    ? SOMATOTYPE_MALE_GOLDEN_ARM_BASE_CM +
+      SOMATOTYPE_MALE_GOLDEN_ARM_WRIST_FACTOR * wrist +
+      SOMATOTYPE_MALE_GOLDEN_ARM_SMM_FACTOR * smm
+    : SOMATOTYPE_FEMALE_GOLDEN_ARM_BASE_CM +
+      SOMATOTYPE_FEMALE_GOLDEN_ARM_WRIST_FACTOR * wrist +
+      SOMATOTYPE_FEMALE_GOLDEN_ARM_SMM_FACTOR * smm;
+  return round1(Math.min(maxCm, Math.max(minCm, unclamped)));
+}
+
+interface GoldenRatioAnchors {
+  gender: SomatotypeGender;
+  bmi: number;
+  bodyFatPct: number;
+  ffmFraction: number;
+  smmFfmRatio: number;
+}
+
+function buildGoldenRatioPhysique(
+  heightCm: number,
+  wristCm: number,
+  anchors: GoldenRatioAnchors,
+  isVeteran = false
+): GoldenRatioPhysiqueSpec | null {
+  const height = sanitizePositive(heightCm);
+  const wrist = sanitizePositive(wristCm);
+  if (height <= 0 || wrist <= 0) return null;
+
+  const heightM = height / 100;
+  const weightRaw = anchors.bmi * heightM * heightM;
+  const weightKg = round1(weightRaw);
+  const bodyFatPct = anchors.bodyFatPct;
+  // goldenSmm = weight × FFM_fraction × SMM/FFM — no double discount on body-fat share.
+  const smmKg = round1(weightRaw * anchors.ffmFraction * anchors.smmFfmRatio);
+  const armGirthCm = resolveGoldenArmGirthCm(smmKg, wrist, anchors.gender);
+
+  const somatotype = calculateHeathCarterSomatotype({
+    heightCm: height,
+    weightKg,
+    bodyFatPct,
+    wristCm: wrist,
+    flexedArmGirthCm: armGirthCm,
+    isVeteran,
+  });
+  if (!somatotype) return null;
+
+  return {
+    weightKg,
+    bodyFatPct,
+    smmKg,
+    armGirthCm,
+    somatotype,
+    coordinates: convertToSomatochartCoordinates(
+      somatotype.endomorphy,
+      somatotype.mesomorphy,
+      somatotype.ectomorphy
+    ),
+  };
+}
+
+/**
+ * Female golden-ratio physique anchors (BMI 19.5 / BF 20% aesthetic line).
+ * IMPACT: Chart gold point + pre-ceiling upgrade gaps before Hesket maxTuned takes over.
+ */
+export function calculateFemaleGoldenRatio(
+  heightCm: number,
+  wristCm: number,
+  isVeteran = false
+): GoldenRatioPhysiqueSpec | null {
+  return buildGoldenRatioPhysique(
+    heightCm,
+    wristCm,
+    {
+      gender: 'female',
+      bmi: SOMATOTYPE_FEMALE_GOLDEN_BMI,
+      bodyFatPct: SOMATOTYPE_FEMALE_GOLDEN_BODY_FAT_PCT,
+      ffmFraction: SOMATOTYPE_FEMALE_GOLDEN_FFM_FRACTION,
+      smmFfmRatio: SOMATOTYPE_FEMALE_GOLDEN_SMM_FFM_RATIO,
+    },
+    isVeteran
+  );
+}
+
+/**
+ * Male golden-ratio physique anchors (BMI 23 / BF 11% — clothes-hanger athletic line).
+ * IMPACT: 181 cm → ~75.3 kg / ~38.2 kg SMM with fuller 36–38 cm arm silhouette.
+ */
+export function calculateMaleGoldenRatio(
+  heightCm: number,
+  wristCm: number,
+  isVeteran = false
+): GoldenRatioPhysiqueSpec | null {
+  return buildGoldenRatioPhysique(
+    heightCm,
+    wristCm,
+    {
+      gender: 'male',
+      bmi: SOMATOTYPE_MALE_GOLDEN_BMI,
+      bodyFatPct: SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT,
+      ffmFraction: SOMATOTYPE_MALE_GOLDEN_FFM_FRACTION,
+      smmFfmRatio: SOMATOTYPE_MALE_GOLDEN_SMM_FFM_RATIO,
+    },
+    isVeteran
+  );
+}
+
+/** Gender dispatcher for golden-ratio mid-targets. */
+export function calculateGoldenRatio(
+  heightCm: number,
+  wristCm: number,
+  gender: SomatotypeGender | undefined = DEFAULT_SOMATOTYPE_GENDER,
+  isVeteran = false
+): GoldenRatioPhysiqueSpec | null {
+  return resolveSomatotypeGender(gender) === 'female'
+    ? calculateFemaleGoldenRatio(heightCm, wristCm, isVeteran)
+    : calculateMaleGoldenRatio(heightCm, wristCm, isVeteran);
+}
+
+/**
+ * True when live metrics have cleared the golden mid-target (SMM + arm + BF ceiling).
+ * BF gate uses the golden object's own BF so male (11%) and female (20%) stay consistent.
+ */
+export function hasReachedGoldenRatio(params: {
+  currentSmmKg: number;
+  currentArmGirthCm: number;
+  currentBodyFatPct: number;
+  golden: GoldenRatioPhysiqueSpec;
+}): boolean {
+  return (
+    params.currentSmmKg >= params.golden.smmKg &&
+    params.currentArmGirthCm >= params.golden.armGirthCm &&
+    params.currentBodyFatPct <= params.golden.bodyFatPct
+  );
+}
+
+/** Flat gauge payload for presentational GapGauge (keeps UI free of full Heath–Carter payload). */
+export function toGoldenRatioGaugeValues(golden: GoldenRatioPhysiqueSpec): {
+  weightKg: number;
+  bodyFatPct: number;
+  armGirthCm: number;
+  smmKg: number;
+} {
+  return {
+    weightKg: golden.weightKg,
+    bodyFatPct: golden.bodyFatPct,
+    armGirthCm: golden.armGirthCm,
+    smmKg: golden.smmKg,
+  };
+}
+
 /** Full dual-point lab snapshot for chart + gap gauge. */
 export function buildSomatotypeLabSnapshot(
   metrics: BuildSomatotypeLabSnapshotInput
@@ -652,26 +880,34 @@ export function buildSomatotypeLabSnapshot(
   const currentSmmKg = estimateSkeletalMuscleMassKg(currentFfmKg);
   const computedMaxSmmKg = estimateSkeletalMuscleMassKg(computedMax.ffmMaxKg);
 
-  const rawArmGapCm = round3(computedMax.armGirthMaxCm - normalized.flexedArmGirthCm);
-  const rawSmmGapKg = round1(computedMaxSmmKg - currentSmmKg);
-  const rawWeightGapKg = round1(computedMax.maxTotalWeightKg - normalized.weightKg);
+  const goldenRatio = calculateGoldenRatio(
+    normalized.heightCm,
+    normalized.wristCm,
+    gender,
+    effectiveVeteran
+  );
+
+  const rawArmGapVsMaxCm = round3(computedMax.armGirthMaxCm - normalized.flexedArmGirthCm);
+  const rawSmmGapVsMaxKg = round1(computedMaxSmmKg - currentSmmKg);
+  const rawWeightGapVsMaxKg = round1(computedMax.maxTotalWeightKg - normalized.weightKg);
 
   const beyondHumanLimits = resolveBeyondHumanLimits({
     gender,
     currentArmGirthCm: normalized.flexedArmGirthCm,
     currentSmmKg,
-    rawArmGapCm,
-    rawSmmGapKg,
+    rawArmGapCm: rawArmGapVsMaxCm,
+    rawSmmGapKg: rawSmmGapVsMaxKg,
   });
 
   // Beyond: force Point B ↔ Point A co-tuning so “no upgrade guide” matches the readout.
   // WHY: Legendary ×1.05 headroom otherwise leaves max > current while the easter egg claims ceiling.
   let maxTuned: MaxTunedPhysiqueSpec = computedMax;
   let maxSmmKg = computedMaxSmmKg;
+  let gapBenchmark: SomatotypeGapBenchmark = 'maxTuned';
   let bodyFatGapPct = round3(normalized.bodyFatPct - computedMax.bodyFatPct);
-  let armGapCm = Math.max(0, rawArmGapCm);
-  let smmGapKg = Math.max(0, rawSmmGapKg);
-  let weightGapKg = Math.max(0, rawWeightGapKg);
+  let armGapCm = Math.max(0, rawArmGapVsMaxCm);
+  let smmGapKg = Math.max(0, rawSmmGapVsMaxKg);
+  let weightGapKg = Math.max(0, rawWeightGapVsMaxKg);
 
   if (beyondHumanLimits) {
     maxTuned = {
@@ -686,10 +922,26 @@ export function buildSomatotypeLabSnapshot(
       coordinates: currentPoint,
     };
     maxSmmKg = currentSmmKg;
+    gapBenchmark = 'maxTuned';
     bodyFatGapPct = 0;
     armGapCm = 0;
     smmGapKg = 0;
     weightGapKg = 0;
+  } else if (
+    goldenRatio &&
+    !hasReachedGoldenRatio({
+      currentSmmKg,
+      currentArmGirthCm: normalized.flexedArmGirthCm,
+      currentBodyFatPct: normalized.bodyFatPct,
+      golden: goldenRatio,
+    })
+  ) {
+    // Practical aesthetic guide — subtract vs golden until the lean line is cleared.
+    gapBenchmark = 'golden';
+    armGapCm = Math.max(0, round3(goldenRatio.armGirthCm - normalized.flexedArmGirthCm));
+    smmGapKg = Math.max(0, round1(goldenRatio.smmKg - currentSmmKg));
+    weightGapKg = Math.max(0, round1(goldenRatio.weightKg - normalized.weightKg));
+    bodyFatGapPct = Math.max(0, round3(normalized.bodyFatPct - goldenRatio.bodyFatPct));
   }
 
   return {
@@ -699,6 +951,8 @@ export function buildSomatotypeLabSnapshot(
     current,
     currentPoint,
     maxTuned,
+    goldenRatio,
+    gapBenchmark,
     beyondHumanLimits,
     armGapCm: round3(armGapCm),
     bodyFatGapPct,

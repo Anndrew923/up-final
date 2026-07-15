@@ -198,20 +198,26 @@
       },
       "chart": {
         "aria": "Heath–Carter somatochart: red current point, green max-tuned point",
+        "ariaWithGolden": "Heath–Carter somatochart: red current, gold golden-ratio, green max-tuned",
         "meso": "Meso · Rigid",
         "endo": "Endo · Storage",
         "ecto": "Ecto · Linear",
         "legendA": "● Point A current",
+        "legendGolden": "● Golden Ratio",
         "legendB": "● Point B max"
       },
       "gap": {
         "title": "Geometry ID: {{height}}cm / {{wrist}}cm",
         "currentLabel": "Current",
         "currentValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
+        "goldenLabel": "✨ Golden Ratio Talent / Golden Ratio",
+        "goldenValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "maxLabel": "Max-tuned",
         "maxValue": "Weight {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "upgradeGuide": "Upgrade guide: You still have {{armGap}}cm of arm girth headroom, {{smmGap}}kg of pure skeletal-muscle growth potential, and {{weightGap}}kg of body-weight adjustment room to your physical ceiling.",
         "upgradeGuideAtCeiling": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with your current physical ceiling.",
+        "upgradeGuideGolden": "Upgrade guide: Toward your Golden Ratio talent, you still have {{armGap}}cm of arm girth headroom, {{smmGap}}kg of pure skeletal-muscle growth potential, and {{weightGap}}kg of body-weight adjustment room.",
+        "upgradeGuideAtGolden": "Upgrade guide: Weight, arm girth, skeletal muscle, and body-fat targets are aligned with Golden Ratio talent.",
         "beyondTitle_male": "👑 Peak Physique Horizon Detected / Peak Physique Horizon",
         "beyondBody_male": "\"Your physique geometry has perfectly topped this gender's natural geometric ceiling. Morphology Lab anchors your data as Legendary Peak Physique. At this dimension, conventional physical guides no longer apply — hold your summit and command this workshop.\"",
         "beyondTitle_female": "👑 Peak Physique Horizon Detected / Peak Physique Horizon",
@@ -220,7 +226,7 @@
       "appendix": {
         "title": "Morphology Algorithm Notes",
         "heathCarter": "This assessment is built on the classic Heath–Carter somatotype model. The full clinical formula requires multiple skinfolds and biepicondylar bone breadths; to keep field measurement practical, this app decouples that path and uses wrist girth plus body-composition inputs as the algebraic proxy for skeletal frame. That simplification may introduce roughly ±2% to ±4% estimation residual.",
-        "genderTracks": "[Gender Dual-Track] Male anchors use BF 12% / 9% / 7% with ΔSMM×0.48 arm volume weighting. The female public-health elegant-line track uses BF 24% / 21% / 18%, applies a 0.85 morphology residual on FFM, and prices arm girth with a dedicated ΔSMM×0.28 factor (no double suppression). If live lean mass already exceeds the gender-scaled skeletal ceiling, Legendary Defense still expands point B so it never shrinks inward of current status.",
+        "genderTracks": "[Gender Dual-Track] Male anchors use BF 12% / 9% / 7% with ΔSMM×0.48 arm volume weighting. The female public-health elegant-line track uses BF 24% / 21% / 18%, applies a 0.85 morphology residual on FFM, and prices arm girth with a dedicated ΔSMM×0.28 factor (no double suppression). Both sexes mount a Golden Ratio mid-target: male BMI 23 / BF 11% / SMM = FFM×0.57 (clothes-hanger athletic); female BMI 19.5 / BF 20% / SMM = FFM×55%. Upgrade gaps track golden until cleared, then switch to Hesket max-tuned. If live lean mass already exceeds the gender-scaled skeletal ceiling, Legendary Defense still expands point B so it never shrinks inward of current status.",
         "legendaryDefense": "[Extreme Morphotype Correction] The default theoretical ceiling reflects the upper bound of lean tissue under a population-normal genetic distribution. When long-term high-intensity strength training has already pushed measured muscle mass and arm girth beyond that civilian estimate, the system activates Legendary Physique Defense: it re-anchors and dynamically expands the ceiling from the athlete’s live metrics to honor physiological supercompensation.",
         "biaDisclaimer": "[Measurement Error & Variability] Skeletal-muscle conversion is aligned to the commercial high-end BIA convention of 0.57 × FFM. Because BIA and this model are sensitive to body-water status, readings taken during high-carbohydrate loading, post-pump states, creatine use, or inflammatory fluid retention may swing by roughly ±3% to ±5%. All values are for physique tracking and scientific reference only and do not constitute medical diagnosis."
       }

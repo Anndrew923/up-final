@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
-import type { SomatotypeLabSnapshot } from '../../logic/core/somatotypeLab';
+import {
+  toGoldenRatioGaugeValues,
+  type SomatotypeLabSnapshot,
+} from '../../logic/core/somatotypeLab';
 import SomatochartView from './SomatochartView';
 import SomatotypeGapGauge from './SomatotypeGapGauge';
 
@@ -102,6 +105,8 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
               key={animationKey}
               pointA={snap.currentPoint}
               pointB={snap.maxTuned.coordinates}
+              pointGolden={snap.goldenRatio?.coordinates ?? null}
+              gapBenchmark={snap.gapBenchmark}
             />
           </div>
 
@@ -122,6 +127,10 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
             weightGapKg={snap.weightGapKg}
             beyondHumanLimits={snap.beyondHumanLimits}
             gender={snap.gender}
+            gapBenchmark={snap.gapBenchmark}
+            goldenRatio={
+              snap.goldenRatio ? toGoldenRatioGaugeValues(snap.goldenRatio) : null
+            }
           />
         </div>
 

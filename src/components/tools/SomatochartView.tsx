@@ -1,10 +1,19 @@
 import { useId, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { SomatochartPoint } from '../../logic/core/somatotypeLab';
+import type {
+  SomatotypeGapBenchmark,
+  SomatochartPoint,
+} from '../../logic/core/somatotypeLab';
 
 export interface SomatochartViewProps {
   pointA: SomatochartPoint;
   pointB: SomatochartPoint;
+  /** Optional female golden-ratio anchor on the shield. */
+  pointGolden?: SomatochartPoint | null;
+  /**
+   * When `'golden'`, the primary dashed link runs A→gold so visual cue matches upgrade gaps.
+   */
+  gapBenchmark?: SomatotypeGapBenchmark;
   className?: string;
 }
 
@@ -15,12 +24,18 @@ const BASE_SCALE = 7.2;
 /** Keep extreme meso athletes inside the shield viewport (report: no hard Y lock). */
 const FIT_RADIUS = 72;
 
-function resolveScale(a: SomatochartPoint, b: SomatochartPoint): number {
+function resolveScale(
+  a: SomatochartPoint,
+  b: SomatochartPoint,
+  golden?: SomatochartPoint | null
+): number {
   const maxAbs = Math.max(
     Math.abs(a.x),
     Math.abs(a.y),
     Math.abs(b.x),
     Math.abs(b.y),
+    golden ? Math.abs(golden.x) : 0,
+    golden ? Math.abs(golden.y) : 0,
     1
   );
   return Math.min(BASE_SCALE, FIT_RADIUS / maxAbs);
@@ -37,14 +52,26 @@ function toSvg(p: SomatochartPoint, scale: number): { x: number; y: number } {
  * Presentational Reuleaux-style somatochart shield.
  * Vertices: top = meso, bottom-left = endo, bottom-right = ecto.
  */
-export const SomatochartView: FC<SomatochartViewProps> = ({ pointA, pointB, className }) => {
+export const SomatochartView: FC<SomatochartViewProps> = ({
+  pointA,
+  pointB,
+  pointGolden = null,
+  gapBenchmark = 'maxTuned',
+  className,
+}) => {
   const { t } = useTranslation('common');
   const animId = useId().replace(/:/g, '_');
   const glowId = useId().replace(/:/g, '_');
 
-  const scale = resolveScale(pointA, pointB);
+  const hasGolden = Boolean(pointGolden);
+  const scale = resolveScale(pointA, pointB, pointGolden);
   const a = toSvg(pointA, scale);
   const b = toSvg(pointB, scale);
+  const g = pointGolden ? toSvg(pointGolden, scale) : null;
+  // Align dashed cue with the active upgrade benchmark (gold line vs Hesket ceiling).
+  const linkTarget = gapBenchmark === 'golden' && g != null ? g : b;
+  const linkStrokeClass =
+    gapBenchmark === 'golden' && g != null ? 'stroke-amber-400' : 'stroke-amber-300';
 
   const meso = { x: CX, y: 28 };
   const endo = { x: 38, y: 188 };
@@ -56,7 +83,11 @@ export const SomatochartView: FC<SomatochartViewProps> = ({ pointA, pointB, clas
       viewBox={`0 0 ${VIEW} ${VIEW}`}
       className={className ?? 'h-auto w-full max-w-md'}
       role="img"
-      aria-label={t('tools.somatotypeLab.chart.aria')}
+      aria-label={t(
+        hasGolden
+          ? 'tools.somatotypeLab.chart.ariaWithGolden'
+          : 'tools.somatotypeLab.chart.aria'
+      )}
     >
       <defs>
         <filter id={`gap-glow-${glowId}`} x="-40%" y="-40%" width="180%" height="180%">
@@ -138,11 +169,11 @@ export const SomatochartView: FC<SomatochartViewProps> = ({ pointA, pointB, clas
       <circle cx={CX} cy={CY} r="2.2" className="fill-zinc-600" />
 
       <line
-        className={`somato-gap-${animId} stroke-amber-300`}
+        className={`somato-gap-${animId} ${linkStrokeClass}`}
         x1={a.x}
         y1={a.y}
-        x2={b.x}
-        y2={b.y}
+        x2={linkTarget.x}
+        y2={linkTarget.y}
         strokeWidth="1.6"
         strokeDasharray="4 3"
         filter={`url(#gap-glow-${glowId})`}
@@ -157,6 +188,15 @@ export const SomatochartView: FC<SomatochartViewProps> = ({ pointA, pointB, clas
           strokeWidth="1.2"
         />
       </g>
+      {g ? (
+        <circle
+          cx={g.x}
+          cy={g.y}
+          r="3.6"
+          className="fill-amber-400 stroke-amber-100"
+          strokeWidth="1"
+        />
+      ) : null}
       <circle
         cx={b.x}
         cy={b.y}
@@ -169,7 +209,12 @@ export const SomatochartView: FC<SomatochartViewProps> = ({ pointA, pointB, clas
         <text x={12} y={16} className="fill-red-400">
           {t('tools.somatotypeLab.chart.legendA')}
         </text>
-        <text x={12} y={28} className="fill-emerald-400">
+        {hasGolden ? (
+          <text x={12} y={28} className="fill-amber-300">
+            {t('tools.somatotypeLab.chart.legendGolden')}
+          </text>
+        ) : null}
+        <text x={12} y={hasGolden ? 40 : 28} className="fill-emerald-400">
           {t('tools.somatotypeLab.chart.legendB')}
         </text>
       </g>
