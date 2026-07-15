@@ -4,13 +4,19 @@
  * WHY: Home UX cannot require calipers; wrist + height + BF% + flexed arm girth
  * approximate the ISAK ten-metric path while staying deterministic and UI-free.
  * IMPACT: Pure logic for somatochart points (current vs max-tuned) plus
- * gender-tuned golden-ratio mid-targets with gapBenchmark-switched upgrade gaps.
+ * gender-tuned golden-ratio mid-targets and three-stage upgrade guides
+ * (cut / bulkToGolden / pushToLimit).
  */
 
 export type PhysiqueTier = 'athletic' | 'elite' | 'apex';
 export type SomatotypeGender = 'male' | 'female';
-/** Dual-track: upgrade gaps subtract vs golden line or Hesket max-tuned ceiling. */
+/** Dual-track: which physique anchor the numeric gaps subtract against. */
 export type SomatotypeGapBenchmark = 'golden' | 'maxTuned';
+/**
+ * Three-stage upgrade guide — muscle-first smart fork (not BF veto alone).
+ * cut → need fat loss; bulkToGolden → lean but under golden mass; pushToLimit → chase Hesket.
+ */
+export type SomatotypeGuideMode = 'cut' | 'bulkToGolden' | 'pushToLimit';
 
 export const PHYSIQUE_TIERS = ['athletic', 'elite', 'apex'] as const;
 export const SOMATOTYPE_GENDERS = ['male', 'female'] as const;
@@ -51,6 +57,14 @@ export const SOMATOTYPE_MALE_GOLDEN_ARM_MAX_CM = 38;
 export const SOMATOTYPE_MALE_GOLDEN_ARM_BASE_CM = 20;
 export const SOMATOTYPE_MALE_GOLDEN_ARM_WRIST_FACTOR = 0.4;
 export const SOMATOTYPE_MALE_GOLDEN_ARM_SMM_FACTOR = 0.28;
+
+/**
+ * Healthy bulk BF ceilings — when golden mass is already cleared, BF at/under these
+ * still routes to pushToLimit (legendary bulk) instead of a impractical golden-BF cut.
+ * WHY: Heavy lifters at ~15% male / ~24% female can stay in hypertrophy without stage-cut veto.
+ */
+export const SOMATOTYPE_MALE_BULK_BODY_FAT_CAP_PCT = 16;
+export const SOMATOTYPE_FEMALE_BULK_BODY_FAT_CAP_PCT = 25;
 
 /** Male target body-fat anchors (hardcore track). */
 export const PHYSIQUE_TIER_TARGET_BF_PCT: Readonly<Record<PhysiqueTier, number>> = {
@@ -227,10 +241,19 @@ export interface SomatotypeLabSnapshot {
    */
   goldenRatio: GoldenRatioPhysiqueSpec | null;
   /**
-   * Which target the non-beyond upgrade gaps subtract against.
-   * `'golden'` until SMM+arm+BF clear the golden line; then `'maxTuned'`.
+   * Which physique anchor the numeric gaps subtract against (chart dashed cue).
+   * Aligned with guideMode: cut/bulk → golden; pushToLimit → maxTuned.
    */
   gapBenchmark: SomatotypeGapBenchmark;
+  /**
+   * Three-stage upgrade guide mode for presentational copy (never all-zero nonsense).
+   */
+  guideMode: SomatotypeGuideMode;
+  /**
+   * Estimated adipose mass to shed to reach golden BF% (1dp). Non-zero only in `cut` mode.
+   * Formula: weight × (currentBF − goldenBF) / 100.
+   */
+  fatToLoseKg: number;
   /**
    * True when live metrics tear past the gender-calibrated civilian ceiling
    * (negative growth residue and/or female Olympia absolute thresholds).
@@ -802,21 +825,90 @@ export function calculateGoldenRatio(
     : calculateMaleGoldenRatio(heightCm, wristCm, isVeteran);
 }
 
+/** Gender-tuned healthy bulk BF ceiling (16% male / 25% female). */
+export function resolveBulkBodyFatCapPct(gender: SomatotypeGender): number {
+  return gender === 'female'
+    ? SOMATOTYPE_FEMALE_BULK_BODY_FAT_CAP_PCT
+    : SOMATOTYPE_MALE_BULK_BODY_FAT_CAP_PCT;
+}
+
 /**
- * True when live metrics have cleared the golden mid-target (SMM + arm + BF ceiling).
- * BF gate uses the golden object's own BF so male (11%) and female (20%) stay consistent.
+ * True when live SMM + arm have cleared the golden mid-target (BF ignored).
+ * WHY: Mass-first fork — stage-lean BF gates must not veto already-muscular bulkers.
  */
-export function hasReachedGoldenRatio(params: {
+export function hasClearedGoldenMass(params: {
   currentSmmKg: number;
   currentArmGirthCm: number;
-  currentBodyFatPct: number;
   golden: GoldenRatioPhysiqueSpec;
 }): boolean {
   return (
     params.currentSmmKg >= params.golden.smmKg &&
-    params.currentArmGirthCm >= params.golden.armGirthCm &&
-    params.currentBodyFatPct <= params.golden.bodyFatPct
+    params.currentArmGirthCm >= params.golden.armGirthCm
   );
+}
+
+/**
+ * Adipose mass to shed toward a BF% target (1dp).
+ * Cut path may aim at golden BF (under-mass) or bulk health cap (mass cleared).
+ */
+export function calculateFatToLoseKg(
+  weightKg: number,
+  currentBodyFatPct: number,
+  targetBodyFatPct: number
+): number {
+  const weight = sanitizePositive(weightKg);
+  if (
+    weight <= 0 ||
+    !Number.isFinite(currentBodyFatPct) ||
+    !Number.isFinite(targetBodyFatPct) ||
+    currentBodyFatPct <= targetBodyFatPct
+  ) {
+    return 0;
+  }
+  return round1(weight * ((currentBodyFatPct - targetBodyFatPct) / 100));
+}
+
+/**
+ * Resolve cut BF% target: bulk health cap when mass is already golden-cleared;
+ * otherwise golden stage-lean BF (under-mass noise cut).
+ */
+export function resolveCutBodyFatTargetPct(
+  gender: SomatotypeGender,
+  golden: GoldenRatioPhysiqueSpec,
+  massCleared: boolean
+): number {
+  return massCleared ? resolveBulkBodyFatCapPct(gender) : golden.bodyFatPct;
+}
+
+/**
+ * Muscle-first three-stage guide:
+ * 1) Mass cleared → pushToLimit while BF ≤ bulk cap; else cut toward bulk cap.
+ * 2) Mass under golden → cut if BF > golden; else bulkToGolden.
+ */
+export function resolveSomatotypeGuideMode(params: {
+  currentSmmKg: number;
+  currentArmGirthCm: number;
+  currentBodyFatPct: number;
+  golden: GoldenRatioPhysiqueSpec | null;
+  gender: SomatotypeGender;
+}): SomatotypeGuideMode {
+  const { golden } = params;
+  if (!golden) return 'pushToLimit';
+
+  const massCleared = hasClearedGoldenMass({
+    currentSmmKg: params.currentSmmKg,
+    currentArmGirthCm: params.currentArmGirthCm,
+    golden,
+  });
+
+  if (massCleared) {
+    return params.currentBodyFatPct > resolveBulkBodyFatCapPct(params.gender)
+      ? 'cut'
+      : 'pushToLimit';
+  }
+
+  if (params.currentBodyFatPct > golden.bodyFatPct) return 'cut';
+  return 'bulkToGolden';
 }
 
 /** Flat gauge payload for presentational GapGauge (keeps UI free of full Heath–Carter payload). */
@@ -904,6 +996,8 @@ export function buildSomatotypeLabSnapshot(
   let maxTuned: MaxTunedPhysiqueSpec = computedMax;
   let maxSmmKg = computedMaxSmmKg;
   let gapBenchmark: SomatotypeGapBenchmark = 'maxTuned';
+  let guideMode: SomatotypeGuideMode = 'pushToLimit';
+  let fatToLoseKg = 0;
   let bodyFatGapPct = round3(normalized.bodyFatPct - computedMax.bodyFatPct);
   let armGapCm = Math.max(0, rawArmGapVsMaxCm);
   let smmGapKg = Math.max(0, rawSmmGapVsMaxKg);
@@ -923,25 +1017,55 @@ export function buildSomatotypeLabSnapshot(
     };
     maxSmmKg = currentSmmKg;
     gapBenchmark = 'maxTuned';
+    guideMode = 'pushToLimit';
+    fatToLoseKg = 0;
     bodyFatGapPct = 0;
     armGapCm = 0;
     smmGapKg = 0;
     weightGapKg = 0;
-  } else if (
-    goldenRatio &&
-    !hasReachedGoldenRatio({
+  } else if (goldenRatio) {
+    const massCleared = hasClearedGoldenMass({
+      currentSmmKg,
+      currentArmGirthCm: normalized.flexedArmGirthCm,
+      golden: goldenRatio,
+    });
+    guideMode = resolveSomatotypeGuideMode({
       currentSmmKg,
       currentArmGirthCm: normalized.flexedArmGirthCm,
       currentBodyFatPct: normalized.bodyFatPct,
       golden: goldenRatio,
-    })
-  ) {
-    // Practical aesthetic guide — subtract vs golden until the lean line is cleared.
-    gapBenchmark = 'golden';
-    armGapCm = Math.max(0, round3(goldenRatio.armGirthCm - normalized.flexedArmGirthCm));
-    smmGapKg = Math.max(0, round1(goldenRatio.smmKg - currentSmmKg));
-    weightGapKg = Math.max(0, round1(goldenRatio.weightKg - normalized.weightKg));
-    bodyFatGapPct = Math.max(0, round3(normalized.bodyFatPct - goldenRatio.bodyFatPct));
+      gender,
+    });
+
+    if (guideMode === 'cut') {
+      // Zero growth gaps; fatToLose aims bulk cap (mass cleared) or golden BF (under-mass).
+      const cutTargetBf = resolveCutBodyFatTargetPct(gender, goldenRatio, massCleared);
+      gapBenchmark = 'golden';
+      fatToLoseKg = calculateFatToLoseKg(
+        normalized.weightKg,
+        normalized.bodyFatPct,
+        cutTargetBf
+      );
+      bodyFatGapPct = Math.max(0, round3(normalized.bodyFatPct - cutTargetBf));
+      armGapCm = 0;
+      smmGapKg = 0;
+      weightGapKg = 0;
+    } else if (guideMode === 'bulkToGolden') {
+      gapBenchmark = 'golden';
+      fatToLoseKg = 0;
+      armGapCm = Math.max(0, round3(goldenRatio.armGirthCm - normalized.flexedArmGirthCm));
+      smmGapKg = Math.max(0, round1(goldenRatio.smmKg - currentSmmKg));
+      weightGapKg = Math.max(0, round1(goldenRatio.weightKg - normalized.weightKg));
+      bodyFatGapPct = Math.max(0, round3(normalized.bodyFatPct - goldenRatio.bodyFatPct));
+    } else {
+      // pushToLimit — chase Hesket maxTuned ceiling.
+      gapBenchmark = 'maxTuned';
+      fatToLoseKg = 0;
+      armGapCm = Math.max(0, rawArmGapVsMaxCm);
+      smmGapKg = Math.max(0, rawSmmGapVsMaxKg);
+      weightGapKg = Math.max(0, rawWeightGapVsMaxKg);
+      bodyFatGapPct = Math.max(0, round3(normalized.bodyFatPct - computedMax.bodyFatPct));
+    }
   }
 
   return {
@@ -953,6 +1077,8 @@ export function buildSomatotypeLabSnapshot(
     maxTuned,
     goldenRatio,
     gapBenchmark,
+    guideMode,
+    fatToLoseKg,
     beyondHumanLimits,
     armGapCm: round3(armGapCm),
     bodyFatGapPct,

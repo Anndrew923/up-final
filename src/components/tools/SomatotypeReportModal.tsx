@@ -122,12 +122,12 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
             maxArmGirthCm={snap.maxTuned.armGirthMaxCm}
             maxSmmKg={snap.maxSmmKg}
             armGapCm={snap.armGapCm}
-            bodyFatGapPct={snap.bodyFatGapPct}
             smmGapKg={snap.smmGapKg}
             weightGapKg={snap.weightGapKg}
             beyondHumanLimits={snap.beyondHumanLimits}
             gender={snap.gender}
-            gapBenchmark={snap.gapBenchmark}
+            guideMode={snap.guideMode}
+            fatToLoseKg={snap.fatToLoseKg}
             goldenRatio={
               snap.goldenRatio ? toGoldenRatioGaugeValues(snap.goldenRatio) : null
             }

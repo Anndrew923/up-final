@@ -15,6 +15,8 @@ import {
   SOMATOTYPE_MALE_GOLDEN_BMI,
   SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT,
   SOMATOTYPE_MALE_GOLDEN_SMM_FFM_RATIO,
+  SOMATOTYPE_MALE_BULK_BODY_FAT_CAP_PCT,
+  SOMATOTYPE_FEMALE_BULK_BODY_FAT_CAP_PCT,
   SOMATOTYPE_HWR_MID,
   SOMATOTYPE_ARM_SMM_VOLUME_FACTOR,
   SOMATOTYPE_ARM_SMM_VOLUME_FACTOR_FEMALE,
@@ -285,9 +287,11 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.maxTuned.bodyFatPct).toBe(SOMATOTYPE_BF_MAX_TUNED_PCT);
     expect(snap.goldenRatio).not.toBeNull();
     expect(snap.gapBenchmark).toBe('golden');
-    expect(snap.weightGapKg).toBe(
-      Math.max(0, Math.round((snap.goldenRatio!.weightKg - 85) * 10) / 10)
-    );
+    expect(snap.guideMode).toBe('cut'); // BF 20% > male golden 11%
+    expect(snap.fatToLoseKg).toBe(Math.round((85 * ((20 - 11) / 100)) * 10) / 10);
+    expect(snap.weightGapKg).toBe(0); // cut mode zeros growth gaps
+    expect(snap.armGapCm).toBe(0);
+    expect(snap.smmGapKg).toBe(0);
     expect(snap.currentPoint).toEqual(
       convertToSomatochartCoordinates(
         snap.current.endomorphy,
@@ -302,13 +306,9 @@ describe('max tuned physique + lab snapshot', () => {
         snap.maxTuned.somatotype.ectomorphy
       )
     );
-    expect(snap.armGapCm).toBeCloseTo(snap.goldenRatio!.armGirthCm - 32, 3);
     expect(snap.bodyFatGapPct).toBeCloseTo(20 - snap.goldenRatio!.bodyFatPct, 3);
-    expect(snap.armGapCm).toBeGreaterThan(0);
     expect(snap.bodyFatGapPct).toBeGreaterThan(0);
     expect(snap.maxTuned.legendaryArmMode).toBe(false);
-    expect(snap.goldenRatio).not.toBeNull();
-    expect(snap.gapBenchmark).toBe('golden');
     // Volume parity: max arm exceeds pure skeletal wrist lock when ΔSMM > 0.
     const skeletalOnly = 17 * 1.6 + (snap.maxTuned.ffmMaxKg / 180) * 15;
     expect(snap.maxTuned.armGirthMaxCm).toBeGreaterThan(skeletalOnly);
@@ -316,9 +316,6 @@ describe('max tuned physique + lab snapshot', () => {
       estimateSkeletalMuscleMassKg(calculateFatFreeMassKg(85, 20))
     );
     expect(snap.maxSmmKg).toBe(estimateSkeletalMuscleMassKg(snap.maxTuned.ffmMaxKg));
-    expect(snap.smmGapKg).toBe(
-      Math.max(0, Math.round((snap.goldenRatio!.smmKg - snap.currentSmmKg) * 10) / 10)
-    );
   });
 
   it('should handle elite athlete metrics properly without regression', () => {
@@ -350,6 +347,8 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.metrics.isVeteran).toBe(false); // veteran forced off under legendary mode
     expect(snap.armGapCm).toBeGreaterThan(0);
     expect(snap.bodyFatGapPct).toBe(0);
+    expect(snap.guideMode).toBe('pushToLimit');
+    expect(snap.gapBenchmark).toBe('maxTuned');
     expect(snap.currentSmmKg).toBe(expectedCurrentSmm);
     expect(snap.maxSmmKg).toBe(expectedMaxSmm);
     expect(snap.smmGapKg).toBe(Math.round((expectedMaxSmm - expectedCurrentSmm) * 10) / 10);
@@ -748,17 +747,121 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.goldenRatio!.weightKg).toBe(75.4);
     expect(snap.goldenRatio!.smmKg).toBe(38.2);
     expect(snap.gapBenchmark).toBe('golden');
+    expect(snap.guideMode).toBe('cut'); // BF 16% > male golden 11%
   });
 
-  it('exposes golden upgrade-guide i18n keys so GapGauge never renders raw key paths', () => {
-    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideGolden).toContain('黃金比例');
-    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideAtGolden).toContain('黃金比例');
-    expect(enTools.tools.somatotypeLab.gap.upgradeGuideGolden.toLowerCase()).toContain('golden');
-    expect(enTools.tools.somatotypeLab.gap.upgradeGuideAtGolden.toLowerCase()).toContain('golden');
+  it('exposes three-stage upgrade-guide i18n keys so GapGauge never renders raw key paths', () => {
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideCut_male).toContain('{{fatToLoseKg}}');
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideCut_female).toContain('【降噪減脂】');
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideGolden_male).toContain('【黃金比例目標】');
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideGolden_female).toContain('{{smmGap}}');
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideLimit_male).toContain('【極限天賦挑戰】');
+    expect(zhTools.tools.somatotypeLab.gap.upgradeGuideLimit_female).toContain('{{armGap}}');
+    expect(enTools.tools.somatotypeLab.gap.upgradeGuideCut_male).toContain('{{fatToLoseKg}}');
+    expect(enTools.tools.somatotypeLab.gap.upgradeGuideLimit_female.toLowerCase()).toContain(
+      'max-tuned'
+    );
     expect(zhTools.tools.somatotypeLab.gap.goldenLabel).toContain('Golden Ratio');
   });
 
-  it('uses golden gap benchmark when female has not cleared golden SMM+arm+BF≤20', () => {
+  it('guideMode A — mass cleared + BF above bulk health cap → cut toward bulk cap', () => {
+    // Muscle/arm already above female golden; BF 28% > 25% bulk cap → cut, never all-zero growth copy.
+    const weightKg = 60;
+    const bodyFatPct = 28;
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 165,
+      weightKg,
+      bodyFatPct,
+      wristCm: 14,
+      flexedArmGirthCm: 30,
+      gender: 'female',
+      physiqueTier: 'athletic',
+    })!;
+
+    expect(snap.currentSmmKg).toBeGreaterThanOrEqual(snap.goldenRatio!.smmKg);
+    expect(snap.guideMode).toBe('cut');
+    expect(snap.gapBenchmark).toBe('golden');
+    expect(snap.fatToLoseKg).toBe(
+      Math.round(
+        weightKg * ((bodyFatPct - SOMATOTYPE_FEMALE_BULK_BODY_FAT_CAP_PCT) / 100) * 10
+      ) / 10
+    );
+    expect(snap.fatToLoseKg).toBe(1.8); // 60 × 0.03
+    expect(snap.armGapCm).toBe(0);
+    expect(snap.smmGapKg).toBe(0);
+    expect(snap.weightGapKg).toBe(0);
+  });
+
+  it('guideMode B — low BF + low muscle → bulkToGolden with positive mass gaps', () => {
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 165,
+      weightKg: 48,
+      bodyFatPct: 18,
+      wristCm: 14,
+      flexedArmGirthCm: 24,
+      gender: 'female',
+      physiqueTier: 'athletic',
+    })!;
+
+    expect(snap.guideMode).toBe('bulkToGolden');
+    expect(snap.gapBenchmark).toBe('golden');
+    expect(snap.fatToLoseKg).toBe(0);
+    expect(snap.armGapCm).toBeGreaterThan(0);
+    expect(snap.smmGapKg).toBeGreaterThan(0);
+  });
+
+  it('guideMode C — low BF + high muscle → pushToLimit vs maxTuned', () => {
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 165,
+      weightKg: 54,
+      bodyFatPct: 18,
+      wristCm: 14,
+      flexedArmGirthCm: 28,
+      gender: 'female',
+      physiqueTier: 'elite',
+    })!;
+
+    expect(snap.guideMode).toBe('pushToLimit');
+    expect(snap.gapBenchmark).toBe('maxTuned');
+    expect(snap.fatToLoseKg).toBe(0);
+    expect(snap.armGapCm).toBe(
+      Math.max(0, Math.round((snap.maxTuned.armGirthMaxCm - 28) * 1000) / 1000)
+    );
+  });
+
+  it('Boss pressure — male 181cm / 93kg / 15% BF / ~45.1kg SMM stays pushToLimit vs maxTuned', () => {
+    // Mass already clears golden; 15% ≤ male bulk health cap 16% → legendary bulk, not cut-to-11%.
+    const snap = buildSomatotypeLabSnapshot({
+      heightCm: 181,
+      weightKg: 93,
+      bodyFatPct: 15,
+      wristCm: 17.5,
+      flexedArmGirthCm: 42,
+      gender: 'male',
+      physiqueTier: 'athletic',
+    })!;
+
+    expect(snap.currentSmmKg).toBeCloseTo(45.1, 1);
+    expect(snap.currentSmmKg).toBeGreaterThanOrEqual(snap.goldenRatio!.smmKg);
+    expect(snap.metrics.flexedArmGirthCm).toBeGreaterThanOrEqual(snap.goldenRatio!.armGirthCm);
+    expect(snap.metrics.bodyFatPct).toBeLessThanOrEqual(SOMATOTYPE_MALE_BULK_BODY_FAT_CAP_PCT);
+    expect(snap.metrics.bodyFatPct).toBeGreaterThan(SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT);
+    expect(snap.beyondHumanLimits).toBe(false);
+    expect(snap.guideMode).toBe('pushToLimit');
+    expect(snap.gapBenchmark).toBe('maxTuned');
+    expect(snap.fatToLoseKg).toBe(0);
+    expect(snap.armGapCm).toBe(
+      Math.max(0, Math.round((snap.maxTuned.armGirthMaxCm - 42) * 1000) / 1000)
+    );
+    expect(snap.smmGapKg).toBe(
+      Math.max(0, Math.round((snap.maxSmmKg - snap.currentSmmKg) * 10) / 10)
+    );
+    expect(snap.weightGapKg).toBe(
+      Math.max(0, Math.round((snap.maxTuned.maxTotalWeightKg - 93) * 10) / 10)
+    );
+  });
+
+  it('uses cut guide when female BF is high even if mass is also under golden', () => {
     const snap = buildSomatotypeLabSnapshot({
       heightCm: 165,
       weightKg: 45,
@@ -769,19 +872,11 @@ describe('max tuned physique + lab snapshot', () => {
       physiqueTier: 'athletic',
     })!;
 
-    expect(snap.goldenRatio).not.toBeNull();
-    expect(snap.maxTuned).toBeTruthy();
+    expect(snap.guideMode).toBe('cut');
     expect(snap.gapBenchmark).toBe('golden');
-
-    const golden = snap.goldenRatio!;
-    expect(snap.armGapCm).toBe(
-      Math.max(0, Math.round((golden.armGirthCm - 24) * 1000) / 1000)
-    );
-    expect(snap.smmGapKg).toBe(Math.max(0, Math.round((golden.smmKg - snap.currentSmmKg) * 10) / 10));
-    expect(snap.weightGapKg).toBe(Math.max(0, Math.round((golden.weightKg - 45) * 10) / 10));
-    expect(snap.bodyFatGapPct).toBeCloseTo(28 - SOMATOTYPE_FEMALE_GOLDEN_BODY_FAT_PCT, 3);
-    expect(snap.armGapCm).toBeGreaterThan(0);
-    expect(snap.smmGapKg).toBeGreaterThan(0);
+    expect(snap.fatToLoseKg).toBeGreaterThan(0);
+    expect(snap.armGapCm).toBe(0);
+    expect(snap.smmGapKg).toBe(0);
   });
 
   it('switches to maxTuned gaps once female clears golden SMM+arm+BF≤20', () => {
@@ -801,6 +896,7 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.metrics.bodyFatPct).toBeLessThanOrEqual(SOMATOTYPE_FEMALE_GOLDEN_BODY_FAT_PCT);
     expect(snap.beyondHumanLimits).toBe(false);
     expect(snap.gapBenchmark).toBe('maxTuned');
+    expect(snap.guideMode).toBe('pushToLimit');
 
     expect(snap.armGapCm).toBe(
       Math.max(0, Math.round((snap.maxTuned.armGirthMaxCm - 28) * 1000) / 1000)
@@ -814,7 +910,7 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.bodyFatGapPct).toBeCloseTo(18 - snap.maxTuned.bodyFatPct, 3);
   });
 
-  it('switches to maxTuned gaps once male clears golden SMM+arm+BF≤11', () => {
+  it('switches to maxTuned gaps once male clears golden SMM+arm within bulk BF cap', () => {
     const snap = buildSomatotypeLabSnapshot({
       heightCm: 181,
       weightKg: 78,
@@ -828,9 +924,10 @@ describe('max tuned physique + lab snapshot', () => {
     expect(snap.goldenRatio).not.toBeNull();
     expect(snap.currentSmmKg).toBeGreaterThanOrEqual(snap.goldenRatio!.smmKg);
     expect(snap.metrics.flexedArmGirthCm).toBeGreaterThanOrEqual(snap.goldenRatio!.armGirthCm);
-    expect(snap.metrics.bodyFatPct).toBeLessThanOrEqual(SOMATOTYPE_MALE_GOLDEN_BODY_FAT_PCT);
+    expect(snap.metrics.bodyFatPct).toBeLessThanOrEqual(SOMATOTYPE_MALE_BULK_BODY_FAT_CAP_PCT);
     expect(snap.beyondHumanLimits).toBe(false);
     expect(snap.gapBenchmark).toBe('maxTuned');
+    expect(snap.guideMode).toBe('pushToLimit');
     expect(snap.armGapCm).toBe(
       Math.max(0, Math.round((snap.maxTuned.armGirthMaxCm - 38) * 1000) / 1000)
     );

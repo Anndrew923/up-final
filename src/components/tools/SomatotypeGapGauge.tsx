@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import type {
-  SomatotypeGapBenchmark,
   SomatotypeGender,
+  SomatotypeGuideMode,
 } from '../../logic/core/somatotypeLab';
 
 export interface SomatotypeGoldenRatioGaugeValues {
@@ -24,7 +24,6 @@ export interface SomatotypeGapGaugeProps {
   maxArmGirthCm: number;
   maxSmmKg: number;
   armGapCm: number;
-  bodyFatGapPct: number;
   smmGapKg: number;
   weightGapKg: number;
   /** Peak-horizon transcendence — swaps upgrade guide for gender-tuned easter-egg copy. */
@@ -32,11 +31,24 @@ export interface SomatotypeGapGaugeProps {
   gender?: SomatotypeGender;
   /** Dual-track golden-ratio mid-target row between current and max-tuned. */
   goldenRatio?: SomatotypeGoldenRatioGaugeValues | null;
-  /**
-   * Which target the upgrade gaps subtract against.
-   * WHY: Copy must name「黃金比例」vs「物理天花板」so UI and logic stay aligned.
-   */
-  gapBenchmark?: SomatotypeGapBenchmark;
+  /** Three-stage guide: cut / bulkToGolden / pushToLimit. */
+  guideMode?: SomatotypeGuideMode;
+  /** Cut-mode adipose mass to shed (1dp). */
+  fatToLoseKg?: number;
+}
+
+function resolveUpgradeGuideKey(
+  guideMode: SomatotypeGuideMode,
+  gender: SomatotypeGender
+): string {
+  const suffix = gender === 'female' ? 'female' : 'male';
+  if (guideMode === 'cut') {
+    return `tools.somatotypeLab.gap.upgradeGuideCut_${suffix}`;
+  }
+  if (guideMode === 'bulkToGolden') {
+    return `tools.somatotypeLab.gap.upgradeGuideGolden_${suffix}`;
+  }
+  return `tools.somatotypeLab.gap.upgradeGuideLimit_${suffix}`;
 }
 
 /**
@@ -54,33 +66,20 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
   maxArmGirthCm,
   maxSmmKg,
   armGapCm,
-  bodyFatGapPct,
   smmGapKg,
   weightGapKg,
   beyondHumanLimits = false,
   gender = 'male',
   goldenRatio = null,
-  gapBenchmark = 'maxTuned',
+  guideMode = 'pushToLimit',
+  fatToLoseKg = 0,
 }) => {
   const { t } = useTranslation('common');
   const fmt = (n: number, digits = 1) =>
     Number.isFinite(n) ? n.toFixed(digits) : '—';
 
   const showGolden = goldenRatio != null;
-  const hasArmHeadroom = armGapCm > 0.05;
-  const hasSmmHeadroom = smmGapKg > 0.05;
-  const hasBfCutRoom = bodyFatGapPct > 0.05;
-  const hasWeightRoom = weightGapKg > 0.05;
-  const hasHeadroom =
-    hasArmHeadroom || hasSmmHeadroom || hasBfCutRoom || hasWeightRoom;
-  const upgradeKey =
-    gapBenchmark === 'golden'
-      ? hasHeadroom
-        ? 'tools.somatotypeLab.gap.upgradeGuideGolden'
-        : 'tools.somatotypeLab.gap.upgradeGuideAtGolden'
-      : hasHeadroom
-        ? 'tools.somatotypeLab.gap.upgradeGuide'
-        : 'tools.somatotypeLab.gap.upgradeGuideAtCeiling';
+  const upgradeKey = resolveUpgradeGuideKey(guideMode, gender);
   const beyondTitleKey =
     gender === 'female'
       ? 'tools.somatotypeLab.gap.beyondTitle_female'
@@ -145,6 +144,7 @@ export const SomatotypeGapGauge: FC<SomatotypeGapGaugeProps> = ({
       ) : (
         <p className="text-[13px] leading-relaxed text-zinc-300">
           {t(upgradeKey, {
+            fatToLoseKg: fmt(fatToLoseKg, 1),
             armGap: fmt(armGapCm, 1),
             smmGap: fmt(smmGapKg, 1),
             weightGap: fmt(weightGapKg, 1),
