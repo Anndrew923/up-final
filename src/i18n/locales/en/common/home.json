@@ -2,9 +2,9 @@
   "home": {
     "profile": {
       "kicker": "Body baseline",
-      "title": "Physical profile",
-      "completeBadge": "Baseline locked. Ready for height, weight, age, and gender inputs.",
-      "incompleteHint": "Add your body data so later assessments can convert real metrics to scores.",
+      "title": "Body Profile",
+      "completeBadge": "Baseline locked.",
+      "incompleteHint": "Add body data so assessments can score your metrics.",
       "gender": "Gender",
       "age": "Age (years)",
       "height": "Height",
@@ -24,7 +24,7 @@
       "district": "District",
       "districtSheetTitle": "Choose district",
       "selectDistrict": "Select district",
-      "isAnonymousInLadder": "Hide my identity on ladder (anonymous mode)",
+      "isAnonymousInLadder": "Hide identity on ladder",
       "selectOptional": "Optional",
       "selectGender": "Select",
       "genderSheetTitle": "Choose gender",
@@ -68,24 +68,24 @@
       "toggleExpand": "Tap to edit",
       "toggleCollapse": "Tap to collapse",
       "collapsedSummary": "{{gender}} · {{age}} yrs · {{height}} cm · {{weight}} kg",
-      "advancedTitle": "Additional details",
-      "advancedCollapsedHint": "Job, training, region, and ladder anonymity (all optional)",
-      "advancedExpand": "Tap to show more fields",
-      "advancedCollapse": "Tap to hide extra fields",
+      "advancedTitle": "More details",
+      "advancedCollapsedHint": "Job, training, region, ladder anonymity (optional)",
+      "advancedExpand": "Show more fields",
+      "advancedCollapse": "Hide extra fields",
       "save": "Save profile",
       "saving": "Saving…",
       "saved": "Profile saved.",
       "errors": {
-        "required-gender": "Please select a gender.",
-        "required-age": "Please enter your age.",
-        "required-height": "Please enter your height (cm).",
-        "required-weight": "Please enter your weight (kg).",
+        "required-gender": "Select a gender.",
+        "required-age": "Enter your age.",
+        "required-height": "Enter height (cm).",
+        "required-weight": "Enter weight (kg).",
         "invalid-gender": "Gender must be male or female.",
-        "invalid-age": "Age must be between 13 and 90.",
-        "invalid-height": "Height must be between 120 and 230 cm.",
-        "invalid-weight": "Weight must be between 35 and 250 kg.",
-        "invalid-city": "For Taiwan, please choose a valid city.",
-        "invalid-district": "District must belong to the selected city."
+        "invalid-age": "Age must be 13–90.",
+        "invalid-height": "Height must be 120–230 cm.",
+        "invalid-weight": "Weight must be 35–250 kg.",
+        "invalid-city": "Choose a valid Taiwan city.",
+        "invalid-district": "District must match the selected city."
       }
     },
     "ladderIdentity": {
@@ -100,14 +100,14 @@
       "toggleExpand": "Tap to edit",
       "toggleCollapse": "Tap to collapse",
       "collapsedEmpty": "No display name yet",
-      "save": "Save arena identity",
+      "save": "Save identity",
       "saving": "Saving…",
-      "saved": "Arena identity saved.",
+      "saved": "Identity saved.",
       "errorEmptyName": "Enter a display name.",
-      "errorProfanity": "This name violates arena rules. Choose a different display name.",
-      "errorImage": "Could not process this image. Try another file or a smaller photo.",
-      "errorImageTooLarge": "Image is still too large after compression. Try a smaller original file.",
-      "errorSave": "Could not save. Please try again."
+      "errorProfanity": "Name violates arena rules. Pick another.",
+      "errorImage": "Could not process this image. Try another file.",
+      "errorImageTooLarge": "Image still too large after compression. Try a smaller file.",
+      "errorSave": "Could not save. Try again."
     },
     "consoleKicker": "Main console",
     "radarOverview": "Performance dashboard",
@@ -116,7 +116,7 @@
     "diagnostics": {
       "kicker": "Identity archetype",
       "panelTitle": "Full Spec Diagnostics",
-      "archetypeHint": "Homologation profile derived from your six-axis performance map.",
+      "archetypeHint": "Built from your six-axis performance map.",
       "cta": "Full Spec Diagnostics",
       "ctaSub": "DIAGNOSTICS"
     },
@@ -130,14 +130,14 @@
       "phase": {
         "boot": "Chassis power-on…",
         "charge": "Six-axis charge…",
-        "count": "Performance index calibrating…",
+        "count": "Calibrating index…",
         "reveal": "Homologation readout"
       }
     },
     "overallAverage": "Performance Index",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE",
-      "viewDetailHint": "Tap to view homologation grade details",
+      "viewDetailHint": "Tap for grade details",
       "carSpecLabel": "Chassis Code",
       "priceLabel": "Est. Value",
       "BASE": {
@@ -148,7 +148,7 @@
       },
       "TIER_40": {
         "name": "STREET MODIFIED",
-        "desc": "Entry street tune. Driveline efficiency and throttle response up.",
+        "desc": "Entry street tune — sharper throttle and driveline response.",
         "representativeCar": "STOCK · Factory Baseline Chassis (Street Tune)",
         "carPrice": "~$63K Street Hot Hatch"
       },
@@ -160,72 +160,72 @@
       },
       "TIER_60": {
         "name": "CLUB TRACK SPEC",
-        "desc": "Club track build. Chassis rigidity beyond stock norms.",
+        "desc": "Club track build. Chassis rigidity beyond stock.",
         "representativeCar": "Inline-4 Turbo · Street FWD Hatch (Stage 1)",
         "carPrice": "~$95K AWD Chassis Class"
       },
       "TIER_70": {
         "name": "TRACKDAY ENTHUSIAST",
-        "desc": "Weekend hot-lap spec. Control and heat-soak resistance elevated.",
+        "desc": "Weekend hot-lap spec. Stronger control and heat resistance.",
         "representativeCar": "Mid-Engine · Geometric Streamline Complete (Street)",
         "carPrice": "~$125K RWD Sports Coupe"
       },
       "TIER_80": {
         "name": "AMATEUR TIME ATTACK",
-        "desc": "Amateur time-attack class. High fill-rate under real track pressure.",
+        "desc": "Amateur time-attack. High fill-rate under track pressure.",
         "representativeCar": "Mid-Engine · Geometric Streamline Complete (Track)",
         "carPrice": "~$140K Two-Door Coupe"
       },
       "TIER_90": {
         "name": "UNLIMITED ATTACK",
-        "desc": "Unlimited time-attack ruleset. Peak power and grip in perfect mesh.",
+        "desc": "Unlimited time-attack. Peak power and grip locked in mesh.",
         "representativeCar": "Flat-6 NA · High-Rev Track Rigid Axle (Club)",
         "carPrice": "~$190K Mid-Engine Flagship"
       },
       "TIER_100": {
         "name": "REGIONAL CHAMPIONSHIP",
-        "desc": "Regional championship homologation. Driveline efficiency at podium threshold.",
+        "desc": "Regional championship homologation. Podium-threshold efficiency.",
         "representativeCar": "Flat-6 NA · High-Rev Track Rigid Axle (Championship)",
         "carPrice": "~$470K NA Track Ceiling"
       },
       "TIER_110": {
         "name": "STAGE 2 COMPETITION",
-        "desc": "Elite international Stage 2. High torque and max aero aligned.",
+        "desc": "Elite Stage 2. High torque and max aero aligned.",
         "representativeCar": "V8-TwinTurbo · Stage 2 Forced Induction Heavy",
         "carPrice": "~$780K Elite Factory Race Block"
       },
       "TIER_120": {
         "name": "PRO ENDURANCE SPEC",
-        "desc": "Pro endurance class. Dominant efficiency under extreme sustained load.",
+        "desc": "Pro endurance. Dominant efficiency under sustained load.",
         "representativeCar": "V8-TwinTurbo · Stage 2 Forced Induction Heavy (Endurance)",
         "carPrice": "~$1.4M Pro Endurance Tier"
       },
       "TIER_130": {
         "name": "FACTORY PROTOTYPE",
-        "desc": "Factory prototype racer. Perfect mechanics at full-load high pressure.",
+        "desc": "Factory prototype. Full-load mechanics under pressure.",
         "representativeCar": "V8-TwinTurbo · Stage 3 Track Apex",
         "carPrice": "~$3M+ Factory Prototype"
       },
       "TIER_140": {
         "name": "STAGE 3 APEX",
-        "desc": "Top Stage 3 apex class. Unbelievable transient launch reserve.",
+        "desc": "Stage 3 apex. Extreme transient launch reserve.",
         "representativeCar": "V8-TwinTurbo · Stage 3 Track Apex (Apex)",
         "carPrice": "~$4.7M Apex Concept"
       },
       "LEGEND": {
         "name": "LEGENDARY MONSTER",
-        "desc": "Legendary build monster. Ultimate crystallization of pure mechanical will.",
+        "desc": "Legendary build. Pure mechanical will crystallized.",
         "representativeCar": "PANTHEON · Ultimate Starship Concept (Legend)",
         "carPrice": "$10M+ Immortal Legend Tier"
       },
       "PANTHEON": {
         "name": "PANTHEON EXPERIMENTAL",
-        "desc": "Pantheon experimental. Beyond normal definition—spec archived to the Pantheon.",
+        "desc": "Beyond normal definition — archived to the Pantheon.",
         "representativeCar": "PANTHEON · Ultimate Starship Concept",
         "carPrice": "Priceless // Pantheon Archive"
       }
     },
-    "overallFormula": "Sum of six core scores ÷ 6 (arm circumference excluded).",
+    "overallFormula": "Sum of six core scores ÷ 6 (arm excluded).",
     "radar": {
       "axis": {
         "strength": "Horsepower",

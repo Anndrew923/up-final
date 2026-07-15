@@ -10,55 +10,55 @@
     "quotaLabel": "Daily uplink {{remaining}}/{{limit}}",
     "close": "Close",
     "send": "Send",
-    "inputPlaceholder": "Ask a diagnostic question…",
+    "inputPlaceholder": "Ask a diagnostic…",
     "suggestions": {
       "ariaLabel": "DYNO INTEL suggestion shortcuts",
       "overall": {
-        "label": "My overall performance review",
-        "query": "How is my overall score right now?"
+        "label": "Overall score review",
+        "query": "How is my overall score?"
       },
       "axis": {
-        "label": "Analyze my weakest metric",
-        "queryTemplate": "How is my {{axisLabel}} performance?"
+        "label": "My weakest metric",
+        "queryTemplate": "How is my {{axisLabel}}?"
       },
       "methodology": {
-        "label": "How are my scores calculated?",
+        "label": "How are scores calculated?",
         "query": "How are my scores calculated?"
       }
     },
     "welcomeIntroduction": {
-      "line1Prefix": "Welcome to the command deck. I'm your ",
-      "line1Highlight": "DYNO INTEL data core",
+      "line1Prefix": "Welcome aboard. I'm your ",
+      "line1Highlight": "DYNO INTEL core",
       "line1Suffix": ".",
-      "line2": "Horsepower, torque, and FFMI core metrics are fully synced.",
-      "line3Prefix": "Enter a diagnostic question to run a ",
+      "line2": "Six-axis metrics synced.",
+      "line3Prefix": "Ask a question to run a ",
       "line3Highlight": "full-spec analysis",
       "line3Suffix": ".",
-      "line4": "Six-axis telemetry and your tier decode only — general training encyclopedia is out of scope."
+      "line4": "Six-axis scores and tier decode only — general training tips are out of scope."
     },
-    "loading": "Decoding telemetry…",
+    "loading": "Decoding…",
     "displayCard": {
       "scoreLabel": "{{score}} pts",
       "overallScoreLabel": "Overall {{score}}",
       "tierPrefix": "Tier"
     },
-    "replyAssessmentDeepDiveNudge": "Each assessment page includes fuller scoring notes and norm context — open that page and expand the info section for the complete picture.",
+    "replyAssessmentDeepDiveNudge": "Each assessment page has fuller scoring notes — open it and expand Info for the full picture.",
     "replyClosingCue": {
-      "default": "Uplink complete. This telemetry is logged on the host — come back and track your own progress curve; I'll be here.",
-      "questionFocus": "{{axisLabel}} holds at {{score}} pts{{tierSuffix}} — the host has locked this read; worth revisiting on your next uplink.",
+      "default": "Uplink done. Logged locally — come back to track your curve.",
+      "questionFocus": "{{axisLabel}} at {{score}} pts{{tierSuffix}} — locked; check again next uplink.",
       "questionFocusTierSuffix": ", tier [{{tierTitle}}]",
-      "chassisBalance": "Chassis weakest on {{weakestLabel}} ({{weakestScore}} pts), strongest on {{strongestLabel}} ({{strongestScore}} pts) — balance beats a single-axis spike for the next tier.",
-      "momentumUp": "Since your last uplink, {{axisLabel}} moved up {{delta}} points — the host remembers that rhythm; log it.",
-      "highTier": "[{{tierTitle}}] tier locked on the host — rare spec worth revisiting on every uplink.",
-      "weakestCompanion": "Weakest link: {{axisLabel}} — the next tier waits on the assessment page; I'll stay on this host while you fill the gap."
+      "chassisBalance": "Weakest: {{weakestLabel}} ({{weakestScore}} pts). Strongest: {{strongestLabel}} ({{strongestScore}} pts) — balance beats a single spike.",
+      "momentumUp": "{{axisLabel}} up {{delta}} pts since last uplink — log that rhythm.",
+      "highTier": "[{{tierTitle}}] locked — rare spec; revisit each uplink.",
+      "weakestCompanion": "Weakest: {{axisLabel}} — fill the gap on the assessment page."
     },
     "closingBeatSecondLine": {
-      "passionClose0": "Score {{axisScore}} — logged on the host; don't let this spec live only on screen.",
-      "passionClose1": "The host remembers the {{axisScore}}-pt curve — next uplink, compare against yourself, not others.",
-      "passionClose2": "This tier band isn't decoration — it's your physique's signature on this host; sign it again.",
-      "returnRitual0": "Uplink closed. Come back — I'll match your progress curve on this same host.",
-      "returnRitual1": "Telemetry archived. Return with fresh scores — I'll be here.",
-      "returnRitual2": "This read is on the host. Next time, we track only your tier curve."
+      "passionClose0": "Score {{axisScore}} logged — don't leave it on screen only.",
+      "passionClose1": "{{axisScore}}-pt curve saved — next uplink, compare against you.",
+      "passionClose2": "This tier is your signature — sign it again next time.",
+      "returnRitual0": "Uplink closed. Come back — I'll match your curve.",
+      "returnRitual1": "Archived. Return with fresh scores — I'll be here.",
+      "returnRitual2": "Logged. Next time we track only your tier curve."
     },
     "console": {
       "home": "CONSOLE: HOME",
@@ -77,56 +77,56 @@
     },
     "gate": {
       "authDescription": "Sign in with Google to power on DYNO INTEL.",
-      "coreDescription": "Core local assessment, radar, and history ship with the download; DYNO INTEL is a Pro channel.",
-      "proDescription": "DYNO INTEL is Pro-only — smart analysis, global ladder, and cloud backup in one membership.",
-      "quotaDescription": "Daily uplink exhausted. Try again tomorrow or confirm your Pro subscription."
+      "coreDescription": "Local assessment, radar, and history ship with Core; DYNO INTEL is Pro.",
+      "proDescription": "DYNO INTEL is Pro-only — analysis, ladder, and cloud backup in one plan.",
+      "quotaDescription": "Daily uplink used up. Try tomorrow, or confirm Pro."
     },
     "paywall": {
       "badge": "Console integrity error",
       "title": {
-        "pro-required": "15x Computing Overclock Available",
-        "quota-exhausted": "Daily Free Quota Exhausted"
+        "pro-required": "15x Overclock Available",
+        "quota-exhausted": "Daily Free Quota Used"
       },
       "body": {
-        "pro-required": "Ignite Pro Tier for an instant <cyan>15x power surge</cyan>. Unlock <cyan>30 daily queries</cyan> for absolute strength decodes and Pantheon access with zero friction.",
-        "quota-exhausted": "Your <bold>2 daily queries</bold> have expired. Upgrade to Pro now for <cyan>30 high-voltage decodes</cyan> and complete sovereignty over your data."
+        "pro-required": "Ignite Pro for a <cyan>15x surge</cyan>. Unlock <cyan>30 daily queries</cyan> for strength decodes and Pantheon access.",
+        "quota-exhausted": "Your <bold>2 free queries</bold> are used. Upgrade to Pro for <cyan>30 daily decodes</cyan> and full data control."
       },
       "featuresTitle": "Pro essentials",
       "features": {
         "ladder": {
           "title": "Live global ladder",
-          "body": "Unlock multi-metric rankings with near-instant sync—chase the peak seats."
+          "body": "Multi-metric rankings with fast sync — chase the peak seats."
         },
         "cloud": {
-          "title": "Unlimited cloud escort",
-          "body": "Steel-guard your training history; assessments and logs stay sealed in a permanent vault."
+          "title": "Cloud backup",
+          "body": "Keep assessments and logs backed up in the vault."
         },
         "dyno": {
           "title": "DYNO INTEL analyst",
-          "body": "Full Pro uplink—smart telemetry, deep briefings, and cross-axis diagnostics."
+          "body": "Pro uplink — deep briefings and cross-axis diagnostics."
         }
       },
       "price": "NT$ 30 / mo ($1.00 USD)",
       "cta": "⚡ Ignite Pro Pass (NT$ 30 / mo)",
       "dismiss": "Return to console",
-      "busy": "Authorizing payment…",
-      "billingFail": "Billing link failed — try again or restore purchases in Settings."
+      "busy": "Authorizing…",
+      "billingFail": "Billing failed — retry or restore purchases in Settings."
     },
     "error": {
-      "network": "Telemetry link lost — try again shortly.",
-      "geminiNotConfigured": "Gemini uplink offline — set GEMINI_API_KEY in functions/.env.local and restart npm run dev:dyno.",
-      "geminiQuotaExhausted": "Gemini API prepay credits depleted — top up in AI Studio or switch to a valid API key.",
-      "invalidContext": "Diagnostic context incomplete — complete Home radar/body data first.",
-      "inferenceMalformed": "AI decode output malformed — shorten your question or retry shortly.",
-      "inferenceFailed": "AI telemetry inference failed — try again shortly.",
-      "weightProfileMissing": "Complete your body profile on Home before running weight simulation.",
-      "quotaExhaustedPro": "Daily uplink cap reached (30/day) — return after reset."
+      "network": "Link lost — try again shortly.",
+      "geminiNotConfigured": "Gemini offline — set GEMINI_API_KEY in functions/.env.local and restart npm run dev:dyno.",
+      "geminiQuotaExhausted": "Gemini credits depleted — top up in AI Studio or switch API key.",
+      "invalidContext": "Context incomplete — finish Home radar / body data first.",
+      "inferenceMalformed": "AI output malformed — shorten the question or retry.",
+      "inferenceFailed": "AI inference failed — try again shortly.",
+      "weightProfileMissing": "Complete Home body profile before weight simulation.",
+      "quotaExhaustedPro": "Daily cap reached (30/day) — return after reset."
     },
     "telemetryLog": {
-      "title": "Telemetry evolution logs",
+      "title": "Uplink logs",
       "subtitleCore": "{{count}}/{{cap}} local uplinks archived",
       "subtitlePro": "{{count}} local uplinks archived",
-      "empty": "No prior uplinks on this host.",
+      "empty": "No prior uplinks.",
       "entryAxis": "Focus: {{axis}}",
       "entryTime": "{{date}}",
       "expand": "Expand",
@@ -136,10 +136,10 @@
     },
     "localTelemetry": {
       "title": "DYNO INTEL TELEMETRY",
-      "subtitle": "Local uplink telemetry — scannable Client / Emulator / Auth readiness.",
+      "subtitle": "Local readiness — Client / Emulator / Auth.",
       "statusOn": "Online",
       "statusOff": "Tripped",
-      "serverNote": "Server bypass and GEMINI_API_KEY live in functions/.env.local; launch with npm run dev:dyno. If Callable still returns pro-required, check Emulator Functions logs first.",
+      "serverNote": "Bypass and GEMINI_API_KEY live in functions/.env.local; use npm run dev:dyno. If Callable returns pro-required, check Emulator Functions logs.",
       "rows": {
         "clientDev": "Vite DEV mode",
         "clientBypass": "Client Pro bypass",
@@ -149,13 +149,13 @@
       }
     },
     "humanBrief": {
-      "prPercentileFallback": "【Global Peer PR Percentile Data Is Actively Being Gathered】\nWhen sufficient data is accumulated, this feature will unlock via a backend sync. We sincerely invite you to recruit new players to accelerate the calibration of this ultimate coordinate of human physical limits!",
-      "hallOfFameSentence": "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}."
+      "prPercentileFallback": "【Global Peer PR Percentile — Collecting】\nThis unlocks when enough peer data arrives. Invite others to speed up calibration of the human-limit coordinate.",
+      "hallOfFameSentence": "In the Hall of Fame, you share a throne with {{names}}."
     },
     "hallOfFame": {
-      "legalShield": "All athletic performance metrics of world-class athletes and celebrities stored in this matrix represent their career-peak states, compiled from verified global public archives and official event chronicles. Any unpublished or missing dimensions are calculated via high-precision predictive models by the Dyno Intel Sports Science Research Center, based on cross-disciplinary physiological norms, muscle fiber recruitment ratios, and biomechanical traits. This matrix is not a clinical or sanctioned sporting certification. Data is not 100% absolute and is provided solely for leaderboard simulation, cross-era benchmarking, and entertainment purposes.",
-      "blockedReply": "In the deepest sanctum of the Dyno Intel Pantheon, this tier has officially crossed into the echelon of elite genetic outliers and peak human godhood. Your current aggregate physical capacity has not yet unlocked this gravitational field. Train harder, leave everything on the gym floor, and return with new numbers. When you push your metrics to the absolute threshold, the Core Mind will unlock the gateway for a direct, cross-era benchmarking session with the legends of this tier in your exclusive briefing.",
-      "guidedReply": "Which axis of the Pantheon do you want to explore? Try asking: \"Who else is at 120 explosive power?\" or \"Which legends sit at 130 cardio?\""
+      "legalShield": "Athlete and celebrity metrics here reflect career-peak estimates from public archives and official events. Missing dimensions use Dyno Intel predictive models from physiological norms — not clinical or sanctioned certification. For leaderboard simulation and entertainment only; figures are not absolute.",
+      "blockedReply": "This Pantheon tier sits with genetic outliers. Your total score has not unlocked it yet. Train hard, return with new numbers — when you hit the threshold, Core Mind opens a cross-era briefing with legends at this tier.",
+      "guidedReply": "Which Pantheon axis? Try: \"Who else is at 120 explosive?\" or \"Which legends sit at 130 cardio?\""
     },
     "humanPraise": {
       "byDecade": {

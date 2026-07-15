@@ -34,7 +34,7 @@ vi.mock('../../components/ladder/LeaderboardGateSheet', () => ({
 }));
 
 const SYNC_RESTORE_WARNING =
-  'Restore from Cloud overwrites local scores and history with the cloud snapshot — confirm before proceeding.';
+  '"Restore" overwrites local scores and history — confirm first.';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -46,8 +46,8 @@ vi.mock('react-i18next', () => ({
           'tools.syncInfo.toggleExpand': 'Show sync details',
           'tools.syncInfo.toggleCollapse': 'Hide sync details',
           'tools.syncInfo.restoreWarning': SYNC_RESTORE_WARNING,
-          'tools.syncBackup': 'Backup to Cloud Now',
-          'tools.syncRestore': 'Restore from Cloud',
+          'tools.syncBackup': 'Backup Now',
+          'tools.syncRestore': 'Restore',
           'tools.syncUpgrade': 'Unlock Pro',
           'tools.kicker': 'Utility Deck',
           'tools.title': 'Tools & Cloud Sync',
@@ -148,8 +148,11 @@ describe('ToolsPage cloud sync card', () => {
 
     const { container, unmount } = renderPage();
 
-    expect(container.textContent).toContain('Backup to Cloud Now');
-    expect(container.textContent).toContain('Restore from Cloud');
+    const buttonLabels = Array.from(container.querySelectorAll('button')).map(
+      (el) => el.textContent
+    );
+    expect(buttonLabels).toContain('Backup Now');
+    expect(buttonLabels).toContain('Restore');
 
     unmount();
   });
