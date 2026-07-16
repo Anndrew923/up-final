@@ -3,7 +3,6 @@ import type { EntitlementState } from '../../types/entitlement';
 import type { UiGateJoinArenaFrom } from '../../types/uiGate';
 import {
   type AuthStatus,
-  hasCoreAccess,
   hasProAccess,
   isGoogleLinkedAuth,
   type UiGateResult,
@@ -80,10 +79,8 @@ export function canUseDynoIntelTrial(
   isAnonymous: boolean,
   now: Date = new Date()
 ): boolean {
-  if (!isGoogleLinkedAuth(authStatus, isAnonymous)) return false;
-  if (isDynoIntelProBypassActive()) return true;
-  void now;
-  return hasCoreAccess(ent);
+  // WHY: Single decision tree — avoid drifting from resolveDynoIntelAccess / resolveUiGate.
+  return resolveDynoIntelAccess('cross-axis', ent, authStatus, isAnonymous, now).allowed;
 }
 
 export function canUseDynoIntelFull(

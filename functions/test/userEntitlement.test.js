@@ -9,6 +9,13 @@ describe("userEntitlement", () => {
     assert.equal(hasCoreFromUserDoc({ purchaseStatus: "none" }), false);
   });
 
+  it("defaults missing purchaseStatus to owned (download-includes-Core)", () => {
+    assert.equal(hasCoreFromUserDoc(undefined), true);
+    assert.equal(hasCoreFromUserDoc({}), true);
+    assert.equal(hasCoreFromUserDoc({ purchaseStatus: null }), true);
+    assert.equal(hasCoreFromUserDoc({ purchase_status: "" }), true);
+  });
+
   it("mirrors client pro grace rules", () => {
     const now = new Date("2026-06-12T10:00:00.000Z");
     assert.equal(

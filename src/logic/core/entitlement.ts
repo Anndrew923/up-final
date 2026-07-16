@@ -50,12 +50,9 @@ function requiresProForFeature(
   if (feature === 'cloud-sync') {
     return !hasProAccess(ent, now);
   }
-  // WHY: Full Dyno (weight-sim / unlimited Pro path) stays Pro-gated; trial is Core-only above.
+  // WHY: Full Dyno (weight-sim / Pro quota path) stays Pro-gated; trial Core gate is above.
   if (feature === 'dyno-intel-full') {
     return !hasProAccess(ent, now);
-  }
-  if (feature === 'dyno-intel-trial') {
-    return false;
   }
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
     return false;

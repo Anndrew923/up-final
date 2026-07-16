@@ -16,4 +16,10 @@ describe('uiGateNavigation', () => {
   it('keeps auth choice for auth gates', () => {
     expect(uiGateNextRoute({ kind: 'auth' }, ROUTES.home)).toBe(ROUTES.authChoice);
   });
+
+  it('routes core gates to Join Arena like Pro', () => {
+    expect(
+      uiGateNextRoute({ kind: 'core', joinArenaFrom: 'dyno-intel' }, ROUTES.home)
+    ).toBe(joinArenaPath('dyno-intel', ROUTES.home));
+  });
 });

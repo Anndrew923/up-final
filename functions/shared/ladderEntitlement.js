@@ -1,5 +1,5 @@
 import { db } from "./admin.js";
-import { hasProFromUserDoc } from "./userEntitlement.js";
+import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
 
 /**
  * Server Pro gate — mirrors `hasProAccess` + `canUploadLeaderboard` when paywall is on.
@@ -32,7 +32,7 @@ export async function assertLadderReportAllowed(uid, authToken) {
 
   const snap = await db.collection("users").doc(uid).get();
   const data = snap.data();
-  if (data?.purchaseStatus !== "owned" && data?.purchase_status !== "owned") {
+  if (!hasCoreFromUserDoc(data)) {
     const err = new Error("core-required");
     err.code = "permission-denied";
     throw err;

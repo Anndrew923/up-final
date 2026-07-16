@@ -11,7 +11,7 @@ import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoIntelSuggestions } from '../../hooks/useDynoIntelSuggestions';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
-import { resolveDynoIntelSheetEntry } from '../../logic/core/dynoIntelGates';
+import { resolveDynoIntelSheetEntry, canUseDynoIntelFull } from '../../logic/core/dynoIntelGates';
 import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import { hasProAccess } from '../../logic/core/entitlement';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
@@ -154,6 +154,14 @@ const DynoIntelConsole = () => {
       openPaywall('pro-required');
       return;
     }
+    // WHY: After server sync, exhausted trial should open the 15x paywall — not an empty chat.
+    if (
+      quota.remaining <= 0 &&
+      !canUseDynoIntelFull(entitlement, authStatus, isAnonymous)
+    ) {
+      openPaywall('quota-exhausted');
+      return;
+    }
     setSheetView('chat');
     restoreLatestLog();
     sheet.openSheet();
@@ -163,6 +171,7 @@ const DynoIntelConsole = () => {
     handleAuthBlocked,
     isAnonymous,
     openPaywall,
+    quota.remaining,
     restoreLatestLog,
     sheet,
   ]);

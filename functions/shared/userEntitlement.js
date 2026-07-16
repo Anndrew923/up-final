@@ -11,6 +11,9 @@ function safeDate(input) {
 
 export function hasCoreFromUserDoc(data) {
   const purchaseStatus = data?.purchaseStatus ?? data?.purchase_status;
+  // WHY: Download-includes-Core — client always normalizes to owned; missing Firestore
+  // field on free Google users must not block Dyno trial (2/day) with core-required.
+  if (purchaseStatus == null || purchaseStatus === "") return true;
   return purchaseStatus === "owned";
 }
 

@@ -6,7 +6,8 @@ import type { UiGateResult } from '../logic/core/entitlement';
 /** Resolves navigation targets from a pure UI gate decision. */
 export function uiGateNextRoute(gate: UiGateResult, returnTo?: string): string | undefined {
   if (gate.kind === 'auth') return ROUTES.authChoice;
-  if (gate.kind === 'pro' && gate.joinArenaFrom) {
+  // WHY: Core gate is rare (download-includes-Core) but must still route to Join Arena funnel.
+  if ((gate.kind === 'pro' || gate.kind === 'core') && gate.joinArenaFrom) {
     // WHY: Pro funnel must carry allowlisted returnTo so backup/dyno don't hard-dump onto ladder.
     return joinArenaPath(gate.joinArenaFrom, returnTo);
   }
