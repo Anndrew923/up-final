@@ -37,6 +37,11 @@ function joinArenaFromForFeature(feature: GateFeature): UiGateJoinArenaFrom {
   return 'ladder';
 }
 
+function requiresCoreForFeature(feature: GateFeature, ent: EntitlementState): boolean {
+  // WHY: Free Dyno trial (2/day) is Core + Google — not Pro. Missing Core still blocks inference.
+  return feature === 'dyno-intel-trial' && !hasCoreAccess(ent);
+}
+
 function requiresProForFeature(
   feature: GateFeature,
   ent: EntitlementState,
@@ -45,9 +50,12 @@ function requiresProForFeature(
   if (feature === 'cloud-sync') {
     return !hasProAccess(ent, now);
   }
-  // WHY: Commercial constitution — Dyno Intel (trial + full) is Pro-only with Google auth.
-  if (feature === 'dyno-intel-full' || feature === 'dyno-intel-trial') {
+  // WHY: Full Dyno (weight-sim / unlimited Pro path) stays Pro-gated; trial is Core-only above.
+  if (feature === 'dyno-intel-full') {
     return !hasProAccess(ent, now);
+  }
+  if (feature === 'dyno-intel-trial') {
+    return false;
   }
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
     return false;
@@ -58,10 +66,9 @@ function requiresProForFeature(
 /**
  * Single source of truth for auth vs Pro UI gates across ladder, upload, cloud sync, and Dyno.
  *
- * Design intent (WHY): Beta ladder open-access and Pro-only cloud/Dyno previously diverged
- * in scattered checks — one decision tree keeps modal copy and navigation predictable.
- * Core is download-included (`owned`); `kind: 'core'` is unused by resolveUiGate
- * but retained on UiGateKind for upload-gate Exclude<> compatibility.
+ * Design intent (WHY): Trial Dyno (Core + Google, 2/day) and Pro-only full Dyno / cloud
+ * must diverge in one tree so paywall copy stays predictable. `kind: 'core'` surfaces
+ * missing Core for trial; ladder still collapses Core into Pro when paywall is on.
  * Route materialization stays in `uiGateNavigation` to keep logic/core framework-free.
  */
 export function resolveUiGate(
@@ -77,6 +84,13 @@ export function resolveUiGate(
 
   if (!isGoogleLinkedAuth(authStatus, isAnonymous)) {
     return { kind: 'auth' };
+  }
+
+  if (requiresCoreForFeature(feature, ent)) {
+    return {
+      kind: 'core',
+      joinArenaFrom: joinArenaFromForFeature(feature),
+    };
   }
 
   if (!requiresProForFeature(feature, ent, now)) {

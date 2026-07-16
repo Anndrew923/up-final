@@ -63,10 +63,12 @@ describe('entitlement core guards', () => {
     expect(canAccessLeaderboard(grace, now)).toBe(true);
   });
 
-  it('dyno-intel requires Pro for all modes when signed in', () => {
+  it('dyno-intel-trial allows Core free users; full still requires Pro', () => {
     const free = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
+    const noCore = buildEntitlement({ purchaseStatus: 'none', subscriptionStatus: 'free' });
     const pro = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'pro' });
-    expect(resolveUiGate('dyno-intel-trial', free, 'signed-in', false).kind).toBe('pro');
+    expect(resolveUiGate('dyno-intel-trial', free, 'signed-in', false).kind).toBe('none');
+    expect(resolveUiGate('dyno-intel-trial', noCore, 'signed-in', false).kind).toBe('core');
     expect(resolveUiGate('dyno-intel-full', free, 'signed-in', false).kind).toBe('pro');
     expect(resolveUiGate('dyno-intel-trial', pro, 'signed-in', false).kind).toBe('none');
     expect(resolveUiGate('dyno-intel-full', pro, 'signed-in', false).kind).toBe('none');

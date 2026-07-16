@@ -3,6 +3,7 @@ import type { EntitlementState } from '../../types/entitlement';
 import type { UiGateJoinArenaFrom } from '../../types/uiGate';
 import {
   type AuthStatus,
+  hasCoreAccess,
   hasProAccess,
   isGoogleLinkedAuth,
   type UiGateResult,
@@ -25,7 +26,7 @@ export interface DynoIntelAccessResult {
 function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
   if (gate.kind === 'none') return { allowed: true };
   if (gate.kind === 'auth') return { allowed: false, blockReason: 'auth' };
-  // WHY: `core` is legacy-only (download-includes-Core); collapse into Pro paywall context.
+  // WHY: Missing Core (or Pro) collapses to Pro paywall — Core is download-included for installers.
   return {
     allowed: false,
     blockReason: 'pro-required',
@@ -34,8 +35,8 @@ function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
 }
 
 /**
- * Maps DYNO INTEL diagnostic mode to auth / Pro gates.
- * WHY: Commercial constitution — Dyno Intel is Pro-only; Core buyout is assumed for all installers.
+ * Maps DYNO INTEL diagnostic mode to auth / trial / Pro gates.
+ * WHY: Core + Google unlocks trial (2/day) on single/cross-axis; weight-sim stays Pro-only.
  */
 export function resolveDynoIntelAccess(
   mode: DynoIntelMode,
@@ -52,11 +53,9 @@ export function resolveDynoIntelAccess(
     return { allowed: true };
   }
 
-  // WHY: Mode no longer splits trial vs full — all inference paths share the Pro gate.
-  void mode;
-  return mapUiGateToDynoAccess(
-    resolveUiGate('dyno-intel-full', ent, authStatus, isAnonymous, now)
-  );
+  // WHY: Server assertDynoIntelModeAllowed — weight-simulation requires Pro; trial modes do not.
+  const gateFeature = mode === 'weight-simulation' ? 'dyno-intel-full' : 'dyno-intel-trial';
+  return mapUiGateToDynoAccess(resolveUiGate(gateFeature, ent, authStatus, isAnonymous, now));
 }
 
 /**
@@ -74,14 +73,17 @@ export function resolveDynoIntelSheetEntry(
   return { openMode: suggestedMode, access };
 }
 
-/** @deprecated Prefer `canUseDynoIntelFull` — trial is no longer a separate entitlement tier. */
+/** Core + Google trial path (daily quota enforced server-side / client remaining). */
 export function canUseDynoIntelTrial(
   ent: EntitlementState,
   authStatus: AuthStatus,
   isAnonymous: boolean,
   now: Date = new Date()
 ): boolean {
-  return canUseDynoIntelFull(ent, authStatus, isAnonymous, now);
+  if (!isGoogleLinkedAuth(authStatus, isAnonymous)) return false;
+  if (isDynoIntelProBypassActive()) return true;
+  void now;
+  return hasCoreAccess(ent);
 }
 
 export function canUseDynoIntelFull(

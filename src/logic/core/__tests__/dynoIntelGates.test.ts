@@ -39,21 +39,26 @@ describe('dynoIntelGates', () => {
     expect(access.blockReason).toBe('auth');
   });
 
-  it('requires Pro for signed-in free users on all Dyno modes', () => {
+  it('allows signed-in Core free users on trial modes within daily quota path', () => {
     const access = resolveDynoIntelAccess('single-axis', buildEntitlement(), 'signed-in', false);
-    expect(access.allowed).toBe(false);
-    expect(access.blockReason).toBe('pro-required');
-    expect(access.joinArenaFrom).toBe('dyno-intel');
-    expect(canUseDynoIntelTrial(buildEntitlement(), 'signed-in', false)).toBe(false);
+    expect(access.allowed).toBe(true);
+    expect(canUseDynoIntelTrial(buildEntitlement(), 'signed-in', false)).toBe(true);
   });
 
-  it('requires Pro for cross-axis mode when not subscribed', () => {
+  it('allows cross-axis trial for Core free users without Pro', () => {
     const ent = buildEntitlement({ subscriptionStatus: 'free' });
+    const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
+    expect(access.allowed).toBe(true);
+    expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(false);
+    expect(canUseDynoIntelMode('cross-axis', ent, 'signed-in', false)).toBe(true);
+  });
+
+  it('blocks trial modes when Core is not owned', () => {
+    const ent = buildEntitlement({ purchaseStatus: 'none', subscriptionStatus: 'free' });
     const access = resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false);
     expect(access.allowed).toBe(false);
     expect(access.blockReason).toBe('pro-required');
-    expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(false);
-    expect(canUseDynoIntelMode('cross-axis', ent, 'signed-in', false)).toBe(false);
+    expect(canUseDynoIntelTrial(ent, 'signed-in', false)).toBe(false);
   });
 
   it('requires pro for weight-simulation mode', () => {
@@ -74,12 +79,11 @@ describe('dynoIntelGates', () => {
     expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
   });
 
-  it('blocks sheet entry for free users on lobby surfaces', () => {
+  it('opens sheet entry for Core free users on lobby surfaces', () => {
     const ent = buildEntitlement();
     const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
     expect(entry.openMode).toBe('cross-axis');
-    expect(entry.access.allowed).toBe(false);
-    expect(entry.access.blockReason).toBe('pro-required');
+    expect(entry.access.allowed).toBe(true);
   });
 
   it('keeps cross-axis for pro users on lobby surfaces', () => {
@@ -114,7 +118,7 @@ describe('dynoIntelGates', () => {
       expect(canUseDynoIntelFull(buildEntitlement(), 'signed-in', true)).toBe(false);
     });
 
-    it('blocks free users when bypass is inactive', () => {
+    it('allows Core free users on trial path when bypass is inactive', () => {
       mockIsDynoIntelProBypassActive.mockReturnValue(false);
       const access = resolveDynoIntelAccess(
         'cross-axis',
@@ -122,8 +126,7 @@ describe('dynoIntelGates', () => {
         'signed-in',
         false
       );
-      expect(access.allowed).toBe(false);
-      expect(access.blockReason).toBe('pro-required');
+      expect(access.allowed).toBe(true);
     });
   });
 });
