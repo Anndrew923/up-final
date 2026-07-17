@@ -149,13 +149,13 @@
       }
     },
     "humanBrief": {
-      "prPercentileFallback": "【Global Peer PR Percentile — Collecting】\nThis unlocks when enough peer data arrives. Invite others to speed up calibration of the human-limit coordinate.",
-      "hallOfFameSentence": "In the Hall of Fame, you share a throne with {{names}}."
+      "prPercentileFallback": "【Global Peer PR Percentile Data Is Actively Being Gathered】\nWhen sufficient data is accumulated, this feature will unlock via a backend sync. We sincerely invite you to recruit new players to accelerate the calibration of this ultimate coordinate of human physical limits!",
+      "hallOfFameSentence": "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}."
     },
     "hallOfFame": {
-      "legalShield": "Athlete and celebrity metrics here reflect career-peak estimates from public archives and official events. Missing dimensions use Dyno Intel predictive models from physiological norms — not clinical or sanctioned certification. For leaderboard simulation and entertainment only; figures are not absolute.",
-      "blockedReply": "This Pantheon tier sits with genetic outliers. Your total score has not unlocked it yet. Train hard, return with new numbers — when you hit the threshold, Core Mind opens a cross-era briefing with legends at this tier.",
-      "guidedReply": "Which Pantheon axis? Try: \"Who else is at 120 explosive?\" or \"Which legends sit at 130 cardio?\""
+      "legalShield": "All athletic performance metrics of world-class athletes and celebrities stored in this matrix represent their career-peak states, compiled from verified global public archives and official event chronicles. Any unpublished or missing dimensions are calculated via high-precision predictive models by the Dyno Intel Sports Science Research Center, based on cross-disciplinary physiological norms, muscle fiber recruitment ratios, and biomechanical traits. This matrix is not a clinical or sanctioned sporting certification. Data is not 100% absolute and is provided solely for leaderboard simulation, cross-era benchmarking, and entertainment purposes.",
+      "blockedReply": "In the deepest sanctum of the Dyno Intel Pantheon, this tier has officially crossed into the echelon of elite genetic outliers and peak human godhood. Your current aggregate physical capacity has not yet unlocked this gravitational field. Train harder, leave everything on the gym floor, and return with new numbers. When you push your metrics to the absolute threshold, the Core Mind will unlock the gateway for a direct, cross-era benchmarking session with the legends of this tier in your exclusive briefing.",
+      "guidedReply": "Which axis of the Pantheon do you want to explore? Try asking: \"Who else is at 120 explosive power?\" or \"Which legends sit at 130 cardio?\""
     },
     "humanPraise": {
       "byDecade": {
