@@ -36,8 +36,8 @@ export function getMuscleAgeRange(age: number | string | null | undefined): Musc
 }
 
 /** SMM (kg) ceiling — above this we do not score or merge (fantasy-proofing). Keep i18n preamble {{maleMax}}/{{femaleMax}} in sync. */
-export const SMM_KG_CEILING_MALE = 90;
-export const SMM_KG_CEILING_FEMALE = 60;
+export const SMM_KG_CEILING_MALE = 100;
+export const SMM_KG_CEILING_FEMALE = 67;
 
 export function getSmmKgCeilingForGender(gender: string | null | undefined): number {
   return normalizeGenderForNormTables(gender) === 'female'

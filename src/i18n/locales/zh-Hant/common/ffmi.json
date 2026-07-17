@@ -17,10 +17,10 @@
     "resultScoreUncapped": "公式原始分（封頂前）",
     "resultFfmiCapped": "用於給分之 FFMI",
     "categoryLabel": "區間",
-    "worldRecordLockTitle": "紀錄級 FFMI 上限",
-    "worldRecordLockIntro": "目前調整後 FFMI 超過文獻級／紀錄級錨點，為避免雷達尺度失真，暫無法寫入雷達；請調整體脂率或身體資料至上限內後再儲存。",
-    "anchorMale": "男性紀錄級錨點（FFMI {{value}}）。",
-    "anchorFemale": "女性紀錄級錨點（FFMI {{value}}）。",
+    "worldRecordLockTitle": "人體極限 FFMI 上限",
+    "worldRecordLockIntro": "目前調整後 FFMI 超過人體極限錨點，為避免雷達尺度失真，暫無法寫入雷達；請調整體脂率或身體資料至上限內後再儲存。",
+    "anchorMale": "男性人體極限錨點（FFMI {{value}}）。",
+    "anchorFemale": "女性人體極限錨點（FFMI {{value}}）。",
     "submitRadar": "寫入雷達（引擎排量軸）",
     "submitDone": "已寫入本機 — 首頁雷達將更新。",
     "ctaProfile": "前往首頁填寫身體資料",
@@ -29,7 +29,7 @@
       "missing-body-fat": "請填寫體脂率。",
       "invalid-body-fat": "體脂率需介於 3 與 60%。",
       "need-calculate": "請先按「計算」再儲存。",
-      "world-record-lock": "調整後 FFMI 超過紀錄級錨點 — 請先調整體脂或身體資料後再寫入雷達。"
+      "world-record-lock": "調整後 FFMI 超過人體極限錨點 — 請先調整體脂或身體資料後再寫入雷達。"
     },
     "info": {
       "whatIsTitle": "FFMI 是什麼？",

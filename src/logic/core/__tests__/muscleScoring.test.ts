@@ -117,9 +117,9 @@ describe('beast-mode composite scoring', () => {
 });
 
 describe('SMM ceiling', () => {
-  it('returns male cap 90 and female cap 60', () => {
-    expect(getSmmKgCeilingForGender('male')).toBe(90);
-    expect(getSmmKgCeilingForGender('female')).toBe(60);
+  it('returns male cap 100 and female cap 67', () => {
+    expect(getSmmKgCeilingForGender('male')).toBe(100);
+    expect(getSmmKgCeilingForGender('female')).toBe(67);
   });
 
   it('tryCompute rejects SMM above ceiling for male', () => {
@@ -127,11 +127,11 @@ describe('SMM ceiling', () => {
       gender: 'male',
       age: 30,
       heightCm: 178,
-      weightKg: 90,
+      weightKg: 100,
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '90.1',
+      smmInput: '100.1',
       profile,
       profileReady: true,
     });
@@ -144,11 +144,11 @@ describe('SMM ceiling', () => {
       gender: 'female',
       age: 28,
       heightCm: 165,
-      weightKg: 60,
+      weightKg: 67,
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '60.1',
+      smmInput: '67.1',
       profile,
       profileReady: true,
     });
@@ -161,11 +161,11 @@ describe('SMM ceiling', () => {
       gender: 'male',
       age: 30,
       heightCm: 178,
-      weightKg: 120,
+      weightKg: 130,
       updatedAt: '',
     };
     const r = tryComputeMuscleAssessmentScore({
-      smmInput: '90',
+      smmInput: '100',
       profile,
       profileReady: true,
     });
@@ -178,11 +178,11 @@ describe('SMM ceiling', () => {
       gender: 'male',
       age: 25,
       heightCm: 178,
-      weightKg: 100,
+      weightKg: 110,
       updatedAt: '',
     };
     const merged = mergeScoreMapWithResolvedMuscle(scores, profile, {
-      muscle: { smmKg: 90.1 },
+      muscle: { smmKg: 100.1 },
     });
     expect(merged.muscleMass).toBe(55);
   });

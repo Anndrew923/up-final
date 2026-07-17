@@ -81,8 +81,8 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(muscle?.body).toMatch(/Ronnie Coleman|羅尼/);
     expect(muscle?.body).toMatch(/Nataliya|俄羅斯亞馬遜/);
     expect(muscle?.body).toMatch(/Iris Kyle|艾瑞斯/);
-    expect(muscle?.body).toMatch(/90/);
-    expect(muscle?.body).toMatch(/60/);
+    expect(muscle?.body).toMatch(/100 kg/);
+    expect(muscle?.body).toMatch(/67 kg/);
     expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 
@@ -105,8 +105,8 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(muscle?.body).toMatch(/Ronnie Coleman/);
     expect(muscle?.body).toMatch(/Nataliya Kuznetsova/i);
     expect(muscle?.body).toMatch(/Iris Kyle/i);
-    expect(muscle?.body).toMatch(/90/);
-    expect(muscle?.body).toMatch(/60/);
+    expect(muscle?.body).toMatch(/100 kg/);
+    expect(muscle?.body).toMatch(/67 kg/);
     expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 });

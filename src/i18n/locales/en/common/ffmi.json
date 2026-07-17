@@ -17,10 +17,10 @@
     "resultScoreUncapped": "Formula Score Before Cap",
     "resultFfmiCapped": "FFMI Used for Radar Score",
     "categoryLabel": "Band",
-    "worldRecordLockTitle": "World-Record FFMI Ceiling",
-    "worldRecordLockIntro": "Adjusted FFMI exceeds elite-record anchor for your sex. Adjust body fat or profile before saving to radar.",
-    "anchorMale": "Male world-record anchor (FFMI {{value}}).",
-    "anchorFemale": "Female world-record anchor (FFMI {{value}}).",
+    "worldRecordLockTitle": "Human-Limit FFMI Ceiling",
+    "worldRecordLockIntro": "Adjusted FFMI exceeds the human-limit anchor for your sex. Adjust body fat or profile before saving to radar.",
+    "anchorMale": "Male human-limit anchor (FFMI {{value}}).",
+    "anchorFemale": "Female human-limit anchor (FFMI {{value}}).",
     "submitRadar": "Write Score to Radar (Displacement Axis)",
     "submitDone": "Stored locally — Home radar updated.",
     "ctaProfile": "Fill Physical Profile on Home",
@@ -29,7 +29,7 @@
       "missing-body-fat": "Enter body fat percentage.",
       "invalid-body-fat": "Body fat must be 3–60%.",
       "need-calculate": "Calculate once before saving.",
-      "world-record-lock": "FFMI above world-record anchor — adjust body fat or profile before saving."
+      "world-record-lock": "FFMI above human-limit anchor — adjust body fat or profile before saving."
     },
     "info": {
       "whatIsTitle": "What Is FFMI?",

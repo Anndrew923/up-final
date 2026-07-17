@@ -1,11 +1,11 @@
 /**
  * FFMI scoring — piecewise curve aligned with legacy fitness reference.
- * World-record FFMI anchors (38 male / 30 female): when raw adjusted FFMI exceeds
+ * Human-limit FFMI anchors (42 male / 34 female): when raw adjusted FFMI exceeds
  * the anchor, {@link FfmiScoringBreakdown.allowsRadarSubmit} is false — do not write to radar.
  */
 
-export const FFMI_HUMAN_CAP_MALE = 40;
-export const FFMI_HUMAN_CAP_FEMALE = 32;
+export const FFMI_HUMAN_CAP_MALE = 42;
+export const FFMI_HUMAN_CAP_FEMALE = 34;
 
 /** Aligned with FFMI page validation — single source for bounds checks. */
 export const FFMI_BODY_FAT_INPUT_MIN_PCT = 3;
@@ -74,7 +74,7 @@ export interface FfmiScoringBreakdown {
   uncappedScore: number;
   submittedScore: number;
   limitedByHumanCap: boolean;
-  /** False when raw FFMI exceeds the sex-specific world-record anchor — must not write to radar. */
+  /** False when raw FFMI exceeds the sex-specific human-limit anchor — must not write to radar. */
   allowsRadarSubmit: boolean;
 }
 

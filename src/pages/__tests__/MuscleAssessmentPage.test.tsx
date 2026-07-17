@@ -65,8 +65,8 @@ vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
   default: () => null,
 }));
 
-const SMM_CEILING_COPY = 'Scoring SMM cap: 90 kg for your sex';
-const SMM_PREAMBLE_COPY = 'Ceiling 90/60';
+const SMM_CEILING_COPY = 'Scoring SMM cap: 100 kg for your sex';
+const SMM_PREAMBLE_COPY = 'Ceiling 100/67';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -101,7 +101,7 @@ function baseHookReturn() {
     calculate: vi.fn(),
     persistToDashboard: vi.fn(),
     submitToRadar: vi.fn(),
-    smmCeilingKg: 90,
+    smmCeilingKg: 100,
     scoreLocked: false,
   };
 }
