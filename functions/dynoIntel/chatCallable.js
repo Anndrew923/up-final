@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import { CALLABLE_OPTS } from "../shared/constants.js";
 import { db } from "../shared/admin.js";
 import {
@@ -25,6 +26,13 @@ import {
 import { buildDynoIntelInferenceContext } from "./pruneScoringMethodologyBriefs.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { validateDynoIntelContext } from "./validateContext.js";
+
+/**
+ * WHY: Gemini inference credential lives in Secret Manager, never plaintext env.
+ * Bound only to this Callable so no other function receives the key; the runtime
+ * injects the resolved value into process.env.GEMINI_API_KEY, so gemini.js reads it unchanged.
+ */
+const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 function isAnonymousProvider(request) {
   const provider = request.auth?.token?.firebase?.sign_in_provider;
@@ -76,7 +84,9 @@ async function consumeDynoQuota(uid, isPro, now) {
   });
 }
 
-export const dynoIntelChat = onCall(CALLABLE_OPTS, async (request) => {
+export const dynoIntelChat = onCall(
+  { ...CALLABLE_OPTS, secrets: [geminiApiKey] },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid || isAnonymousProvider(request)) {
     throw new HttpsError("unauthenticated", "Google sign-in required");
