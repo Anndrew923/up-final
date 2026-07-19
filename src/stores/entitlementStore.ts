@@ -10,6 +10,7 @@ import {
   logInRevenueCatUser,
   type RevenueCatEntitlementSnapshot,
 } from '../services/revenueCatService';
+import { syncProEntitlementToServer } from '../services/subscriptionSyncService';
 import { useAuthStore } from './authStore';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
@@ -26,6 +27,7 @@ export interface EntitlementStore extends EntitlementState {
    * Debug / legacy setter — `none` is coerced to `owned` in normalize (download-includes-Core).
    */
   setPurchaseStatus(status: PurchaseStatus): void;
+  /** Debug-only status setter; production activation must use RevenueCat snapshots. */
   setSubscriptionStatus(status: SubscriptionStatus): void;
   setProExpiry(iso: string | null): void;
   refreshEntitlement(): Promise<void>;
@@ -41,9 +43,11 @@ const defaultState: EntitlementState = {
   planId: null,
   lastCheckedAt: null,
 };
+const DEBUG_PRO_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Tracks which uid the in-memory subscription cache belongs to. */
 let boundSessionUid: string | null = null;
+let expiryTimer: number | null = null;
 
 /**
  * WHY: Legacy caches / debug toggles may still write `purchaseStatus: 'none'`.
@@ -51,7 +55,7 @@ let boundSessionUid: string | null = null;
  */
 function normalizeEntitlementState(state: EntitlementState): EntitlementState {
   return syncProFlag(
-    normalizeGraceExpiry({
+    normalizeProExpiry({
       ...state,
       purchaseStatus: 'owned',
     })
@@ -72,12 +76,42 @@ function syncProFlag(state: EntitlementState): EntitlementState {
   return { ...state, isPro: hasProAccess(state) };
 }
 
-/** After grace window, fold subscription to expired so UI and guards stay consistent. */
-function normalizeGraceExpiry(state: EntitlementState): EntitlementState {
-  if (state.subscriptionStatus !== 'grace' || !state.proExpiresAt) return state;
+/** Fold missing/elapsed paid expiry to expired so UI and guards stay consistent. */
+function normalizeProExpiry(state: EntitlementState): EntitlementState {
+  if (state.subscriptionStatus !== 'pro' && state.subscriptionStatus !== 'grace') return state;
+  if (!state.proExpiresAt) return { ...state, subscriptionStatus: 'expired' };
   const exp = new Date(state.proExpiresAt).getTime();
-  if (Number.isNaN(exp) || exp >= Date.now()) return state;
+  if (!Number.isNaN(exp) && exp >= Date.now()) return state;
   return { ...state, subscriptionStatus: 'expired' };
+}
+
+function scheduleEntitlementExpiry(state: EntitlementState): void {
+  if (expiryTimer) {
+    clearTimeout(expiryTimer);
+    expiryTimer = null;
+  }
+  if (
+    typeof window === 'undefined' ||
+    (state.subscriptionStatus !== 'pro' && state.subscriptionStatus !== 'grace') ||
+    !state.proExpiresAt
+  ) {
+    return;
+  }
+  const expiresAtMs = Date.parse(state.proExpiresAt);
+  if (!Number.isFinite(expiresAtMs)) return;
+  const delay = Math.max(0, expiresAtMs - Date.now() + 1);
+  expiryTimer = window.setTimeout(
+    () => {
+      const current = useEntitlementStore.getState();
+      const normalized = normalizeEntitlementState(current);
+      if (normalized.subscriptionStatus === current.subscriptionStatus) {
+        scheduleEntitlementExpiry(current);
+        return;
+      }
+      useEntitlementStore.setState(normalized);
+    },
+    Math.min(delay, 2_147_483_647)
+  );
 }
 
 function snapshotToEntitlementPatch(
@@ -152,13 +186,20 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     );
   },
   setSubscriptionStatus(status) {
-    set((state) =>
-      normalizeEntitlementState({
+    set((state) => {
+      const currentExpiryMs = state.proExpiresAt ? Date.parse(state.proExpiresAt) : Number.NaN;
+      const needsDebugExpiry =
+        (status === 'pro' || status === 'grace') &&
+        (!Number.isFinite(currentExpiryMs) || currentExpiryMs <= Date.now());
+      return normalizeEntitlementState({
         ...state,
         subscriptionStatus: status,
+        proExpiresAt: needsDebugExpiry
+          ? new Date(Date.now() + DEBUG_PRO_DURATION_MS).toISOString()
+          : state.proExpiresAt,
         lastCheckedAt: new Date().toISOString(),
-      })
-    );
+      });
+    });
   },
   setProExpiry(iso) {
     set((state) =>
@@ -176,7 +217,19 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
         await logInRevenueCatUser(userId);
         const snapshot = await fetchRevenueCatEntitlement(userId);
         if (snapshot) {
+          const previous = useEntitlementStore.getState();
+          const shouldSyncServer =
+            snapshot.active ||
+            previous.subscriptionStatus === 'pro' ||
+            previous.subscriptionStatus === 'grace' ||
+            previous.subscriptionStatus === 'expired' ||
+            previous.isPro;
           useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+          // WHY: Boot refresh also migrates legacy/missing server expiry and
+          // propagates inactive revocation without charging every free boot.
+          if (shouldSyncServer) {
+            await syncProEntitlementToServer({ source: 'revenuecat', snapshot });
+          }
           return;
         }
       } catch {
@@ -197,7 +250,10 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
 }));
 
 useEntitlementStore.subscribe((state) => {
+  scheduleEntitlementExpiry(state);
   const uid = useAuthStore.getState().uid;
   if (!uid) return;
   savePersistedEntitlement(state, uid);
 });
+
+scheduleEntitlementExpiry(useEntitlementStore.getState());

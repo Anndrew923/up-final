@@ -18,13 +18,9 @@ export type DynoAgeBucket =
   | 'unknown';
 
 export type DynoIntelMode = 'single-axis' | 'cross-axis' | 'weight-simulation';
+export type DynoIntelQuotaTier = 'trial' | 'pro';
 
-export type DynoQuestionIntent =
-  | 'methodology'
-  | 'progress'
-  | 'status'
-  | 'general'
-  | 'coaching';
+export type DynoQuestionIntent = 'methodology' | 'progress' | 'status' | 'general' | 'coaching';
 
 export type DynoClosingBeatKind = 'methodology-nudge' | 'passion-close' | 'return-ritual';
 
@@ -186,6 +182,8 @@ export interface DynoIntelPriorTurnV1 {
 }
 
 export interface DynoIntelChatRequestV1 {
+  /** Idempotency/reservation key for one logical inference attempt. */
+  requestId?: string;
   context: DynoIntelContextV1;
   promptTemplateId: string;
   userQuestion: string;

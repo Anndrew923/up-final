@@ -1,5 +1,9 @@
 import { httpsCallable } from 'firebase/functions';
-import type { DynoIntelChatRequestV1, DynoIntelChatResponseV1 } from '../logic/core/dynoIntelTypes';
+import type {
+  DynoIntelChatRequestV1,
+  DynoIntelChatResponseV1,
+  DynoIntelQuotaTier,
+} from '../logic/core/dynoIntelTypes';
 import { getFirebaseFunctions } from './firebaseClient';
 
 export type DynoIntelChatResult =
@@ -8,6 +12,7 @@ export type DynoIntelChatResult =
       fromCache: boolean;
       remaining: number;
       limit: number;
+      quotaTier: DynoIntelQuotaTier;
       resetAt: string;
       reply: DynoIntelChatResponseV1;
     }
@@ -16,11 +21,13 @@ export type DynoIntelChatResult =
       reason: 'pro-required' | 'core-required' | 'quota-exhausted';
       remaining?: number;
       limit?: number;
+      quotaTier?: DynoIntelQuotaTier;
       resetAt?: string;
     };
 
-let dynoIntelChatFn: ReturnType<typeof httpsCallable<DynoIntelChatRequestV1, DynoIntelChatResult>> | null =
-  null;
+let dynoIntelChatFn: ReturnType<
+  typeof httpsCallable<DynoIntelChatRequestV1, DynoIntelChatResult>
+> | null = null;
 
 function getDynoIntelChatCallable() {
   if (!dynoIntelChatFn) {
@@ -87,8 +94,12 @@ export async function requestDynoIntelChat(
   payload: DynoIntelChatRequestV1
 ): Promise<DynoIntelChatResult> {
   const callable = getDynoIntelChatCallable();
+  const requestId =
+    payload.requestId ??
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
   try {
-    const result = await callable(payload);
+    const result = await callable({ ...payload, requestId });
     return result.data;
   } catch (error) {
     const messageKey = mapDynoIntelCallableErrorToMessageKey(error);

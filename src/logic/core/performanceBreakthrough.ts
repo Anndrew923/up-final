@@ -1,13 +1,7 @@
 import type { TFunction } from 'i18next';
-import { getGripRankMetadata } from './gripStrength';
 import { resolvePerformanceAuraForMetric, type PerformanceAuraKey } from './performanceAura';
 import { translateScoreBandMeaning } from './scoreMeaningCopy';
-import {
-  getBandMeaningI18nPrefix,
-  resolveScoreMeaningBand,
-  resolveScoreMeaningMilestone,
-  type ScoreMeaningBandMetric,
-} from './scoreMeaningCatalog';
+import { resolveScoreMeaningMilestone, type ScoreMeaningBandMetric } from './scoreMeaningCatalog';
 
 export type BreakthroughMetric = ScoreMeaningBandMetric;
 
@@ -26,7 +20,6 @@ export interface PerformanceBreakthroughPayload {
   summary: string;
   auraKey: PerformanceAuraKey;
   auraLabel: string;
-  rankLabel: string;
   milestone: PerformanceBreakthroughMilestone;
 }
 
@@ -39,18 +32,6 @@ export function computeMilestoneProgress(
   const span = nextMin - currentMin;
   if (span <= 0) return 1;
   return Math.min(1, Math.max(0, (score - currentMin) / span));
-}
-
-function resolveRankLabel(t: TFunction, metric: BreakthroughMetric, score: number): string {
-  const band = resolveScoreMeaningBand(metric, score);
-  if (metric === 'gripStrength') {
-    const rank = getGripRankMetadata(score);
-    const label = t(`grip.ranks.${rank.rankKey}`);
-    return label === `grip.ranks.${rank.rankKey}` ? band.id : label;
-  }
-  const prefix = getBandMeaningI18nPrefix(metric, band.id);
-  const label = t(`${prefix}.title`);
-  return label === `${prefix}.title` ? band.id : label;
 }
 
 export function buildPerformanceBreakthroughPayload(
@@ -78,7 +59,6 @@ export function buildPerformanceBreakthroughPayload(
     summary: meaning.summary,
     auraKey,
     auraLabel: resolvedAura,
-    rankLabel: resolveRankLabel(t, metric, safeScore),
     milestone: {
       currentMin: currentBand.min,
       nextMin: nextMilestone,

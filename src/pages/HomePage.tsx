@@ -15,6 +15,7 @@ export default function HomePage() {
   const access = useLeaderboardAccess();
   const setPurchaseStatus = useEntitlementStore((state) => state.setPurchaseStatus);
   const setSubscriptionStatus = useEntitlementStore((state) => state.setSubscriptionStatus);
+  const debugEnabled = import.meta.env.DEV;
 
   return (
     <main className="ui-shell max-w-4xl space-y-8 pb-6 md:space-y-10 md:pb-10">
@@ -35,30 +36,40 @@ export default function HomePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="ui-btn" onClick={() => setPurchaseStatus('owned')}>
-            {t('setCoreOwned', { ns: 'common' })}
-          </button>
-          <button type="button" className="ui-btn" onClick={() => setSubscriptionStatus('free')}>
-            {t('setFree', { ns: 'common' })}
-          </button>
-          <button
-            type="button"
-            className="ui-btn ui-btn-primary"
-            onClick={() => setSubscriptionStatus('pro')}
-          >
-            {t('setPro', { ns: 'common' })}
-          </button>
+          {debugEnabled ? (
+            <>
+              <button type="button" className="ui-btn" onClick={() => setPurchaseStatus('owned')}>
+                {t('setCoreOwned', { ns: 'common' })}
+              </button>
+              <button
+                type="button"
+                className="ui-btn"
+                onClick={() => setSubscriptionStatus('free')}
+              >
+                {t('setFree', { ns: 'common' })}
+              </button>
+              <button
+                type="button"
+                className="ui-btn ui-btn-primary"
+                onClick={() => setSubscriptionStatus('pro')}
+              >
+                {t('setPro', { ns: 'common' })}
+              </button>
+            </>
+          ) : null}
           <ProBadge />
         </div>
 
-        <div className="grid gap-1 text-sm md:grid-cols-2">
-          <p className="ui-kv">
-            {t('canEnter', { ns: 'common' })}: {String(access.canEnter)}
-          </p>
-          <p className="ui-kv">
-            {t('reason', { ns: 'common' })}: {access.reason}
-          </p>
-        </div>
+        {debugEnabled ? (
+          <div className="grid gap-1 text-sm md:grid-cols-2">
+            <p className="ui-kv">
+              {t('canEnter', { ns: 'common' })}: {String(access.canEnter)}
+            </p>
+            <p className="ui-kv">
+              {t('reason', { ns: 'common' })}: {access.reason}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-1 flex flex-wrap gap-2">
           <button
@@ -82,13 +93,15 @@ export default function HomePage() {
           >
             {t('enterLeaderboard', { ns: 'common' })}
           </button>
-          <button
-            type="button"
-            className="ui-btn"
-            onClick={() => navigate(ROUTES.leaderboardDebug)}
-          >
-            {t('openDebugPanel', { ns: 'common' })}
-          </button>
+          {debugEnabled ? (
+            <button
+              type="button"
+              className="ui-btn"
+              onClick={() => navigate(ROUTES.leaderboardDebug)}
+            >
+              {t('openDebugPanel', { ns: 'common' })}
+            </button>
+          ) : null}
         </div>
       </section>
     </main>

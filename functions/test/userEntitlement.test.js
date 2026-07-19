@@ -22,6 +22,17 @@ describe("userEntitlement", () => {
       hasProFromUserDoc(
         {
           purchaseStatus: "owned",
+          subscriptionStatus: "pro",
+          proExpiresAt: "2026-06-12T12:00:00.000Z",
+        },
+        now
+      ),
+      true
+    );
+    assert.equal(
+      hasProFromUserDoc(
+        {
+          purchaseStatus: "owned",
           subscriptionStatus: "grace",
           proExpiresAt: "2026-06-12T12:00:00.000Z",
         },
@@ -40,4 +51,24 @@ describe("userEntitlement", () => {
       false
     );
   });
+
+  it("denies expired or missing Pro expiry", () => {
+    const now = new Date("2026-06-12T10:00:00.000Z");
+    assert.equal(
+      hasProFromUserDoc(
+        {
+          purchaseStatus: "owned",
+          subscriptionStatus: "pro",
+          proExpiresAt: "2026-06-12T09:59:59.000Z",
+        },
+        now
+      ),
+      false
+    );
+    assert.equal(
+      hasProFromUserDoc({ purchaseStatus: "owned", subscriptionStatus: "pro" }, now),
+      false
+    );
+  });
+
 });

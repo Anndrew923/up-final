@@ -5,8 +5,6 @@ import {
   GRIP_BASE_WEIGHT_KG_FEMALE,
   GRIP_BASE_WEIGHT_KG_MALE,
   GRIP_MAX_PEAK_KG,
-  getGripRankMetadata,
-  resolveGripAuraFromBandId,
   resolveGripBaseWeightKg,
   resolveGripStrengthScoreFromInputs,
   resolveGripWeightFactor,
@@ -71,7 +69,6 @@ describe('calculateGripStrengthScore', () => {
 
   it('dampens female heavyweight frames without over-penalizing (70 kg / 48 kg peak)', () => {
     expect(calculateGripStrengthScore(48, 70, 'female')).toBe(99.2);
-    expect(getGripRankMetadata(99.2).rankKey).toBe('TIER_90');
   });
 
   it('boosts lighter male athletes relative to anchor', () => {
@@ -80,12 +77,10 @@ describe('calculateGripStrengthScore', () => {
 
   it('dampens heavyweight absolute grip inflation (Hafthor-class)', () => {
     expect(calculateGripStrengthScore(140, 200, 'male')).toBe(141.3);
-    expect(getGripRankMetadata(141.3).rankKey).toBe('TIER_140');
   });
 
-  it('dampens Shaq-class heavy frames while preserving elite tier', () => {
+  it('dampens Shaq-class heavy frames to the calibrated score', () => {
     expect(calculateGripStrengthScore(110, 150, 'male')).toBe(122.2);
-    expect(getGripRankMetadata(122.2).rankKey).toBe('TIER_120');
   });
 
   it('scores higher grip at same peak when body weight is lighter', () => {
@@ -96,10 +91,10 @@ describe('calculateGripStrengthScore', () => {
 
   it('locks scoring at 160kg model cap regardless of body weight', () => {
     expect(calculateGripStrengthScore(180, MALE_ANCHOR, 'male')).toBe(
-      calculateGripStrengthScore(160, MALE_ANCHOR, 'male'),
+      calculateGripStrengthScore(160, MALE_ANCHOR, 'male')
     );
     expect(calculateGripStrengthScore(180, 200, 'female')).toBe(
-      calculateGripStrengthScore(160, 200, 'female'),
+      calculateGripStrengthScore(160, 200, 'female')
     );
   });
 });
@@ -122,70 +117,6 @@ describe('applyGripPeakCap', () => {
   });
 });
 
-describe('resolveGripAuraFromBandId', () => {
-  it('maps decade grip bands to aura tiers', () => {
-    expect(resolveGripAuraFromBandId('BASE')).toBe('none');
-    expect(resolveGripAuraFromBandId('TIER_50')).toBe('none');
-    expect(resolveGripAuraFromBandId('TIER_60')).toBe('pulse');
-    expect(resolveGripAuraFromBandId('TIER_80')).toBe('flow');
-    expect(resolveGripAuraFromBandId('TIER_90')).toBe('shimmer');
-    expect(resolveGripAuraFromBandId('TIER_100')).toBe('shimmer');
-    expect(resolveGripAuraFromBandId('TIER_110')).toBe('lightning');
-    expect(resolveGripAuraFromBandId('TIER_130')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('TIER_140')).toBe('void_flame');
-    expect(resolveGripAuraFromBandId('LEGEND')).toBe('divine_light');
-    expect(resolveGripAuraFromBandId('PANTHEON')).toBe('divine_light');
-  });
-});
-
-describe('getGripRankMetadata', () => {
-  it('derives rankKey from decade score bands', () => {
-    expect(getGripRankMetadata(63)).toEqual({
-      rankKey: 'TIER_60',
-      color: 'green',
-      aura: 'pulse',
-    });
-    expect(getGripRankMetadata(92)).toEqual({
-      rankKey: 'TIER_90',
-      color: 'purple',
-      aura: 'shimmer',
-    });
-    expect(getGripRankMetadata(135)).toEqual({
-      rankKey: 'TIER_130',
-      color: 'black',
-      aura: 'void_flame',
-    });
-    expect(getGripRankMetadata(145)).toEqual({
-      rankKey: 'TIER_140',
-      color: 'black',
-      aura: 'void_flame',
-    });
-    expect(getGripRankMetadata(150)).toEqual({
-      rankKey: 'LEGEND',
-      color: 'gold',
-      aura: 'divine_light',
-    });
-  });
-
-  it('returns PANTHEON with divine_light for scores at or above 160', () => {
-    expect(getGripRankMetadata(160)).toEqual({
-      rankKey: 'PANTHEON',
-      color: 'gold',
-      aura: 'divine_light',
-    });
-    expect(getGripRankMetadata(185)).toEqual({
-      rankKey: 'PANTHEON',
-      color: 'gold',
-      aura: 'divine_light',
-    });
-    expect(getGripRankMetadata(224)).toEqual({
-      rankKey: 'PANTHEON',
-      color: 'gold',
-      aura: 'divine_light',
-    });
-  });
-});
-
 describe('resolveGripStrengthScoreFromInputs', () => {
   it('returns null when profile incomplete', () => {
     expect(resolveGripStrengthScoreFromInputs(null, { peakKg: 50 })).toBeNull();
@@ -200,7 +131,7 @@ describe('resolveGripStrengthScoreFromInputs', () => {
         weightKg: MALE_ANCHOR,
         updatedAt: '',
       },
-      { peakKg: 180 },
+      { peakKg: 180 }
     );
     expect(score).toBe(200);
   });
@@ -214,7 +145,7 @@ describe('resolveGripStrengthScoreFromInputs', () => {
         weightKg: 200,
         updatedAt: '',
       },
-      { peakKg: 140 },
+      { peakKg: 140 }
     );
     expect(score).toBe(141.3);
   });
@@ -228,7 +159,7 @@ describe('resolveGripStrengthScoreFromInputs', () => {
         weightKg: FEMALE_ANCHOR,
         updatedAt: '',
       },
-      { peakKg: 45 },
+      { peakKg: 45 }
     );
     expect(score).toBe(100.8);
   });

@@ -180,7 +180,7 @@ export async function runLadderSyncBatch(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid, request.auth.token);
+  await assertLadderUploadAllowed(uid);
 
   const data = request.data || {};
   const nameResult = tryNormalizeDisplayName(data.displayName);

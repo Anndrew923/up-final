@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "lint": "node --check index.js && node --check ladder/submitShardCore.js"
+    "lint": "node --check index.js && node --check ladder/submitShardCore.js",
+    "migrate:pro-expiries": "node scripts/backfillProEntitlements.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",

@@ -49,7 +49,7 @@ async function activateProOnServer(
   snapshot: RevenueCatEntitlementSnapshot | null
 ): Promise<boolean> {
   const sync = await syncProEntitlementToServer({ source, snapshot });
-  return sync.ok;
+  return sync.ok && sync.active === Boolean(snapshot?.active);
 }
 
 /**
@@ -123,8 +123,11 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
         return { restored: false, hadSnapshot: false, proActive: false };
       }
       useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-      if (snapshot.active) {
-        await activateProOnServer('revenuecat', snapshot);
+      // WHY: An inactive restore is also authoritative and must reach the
+      // server so stale Firestore/custom-claim Pro access is revoked.
+      const reconciled = await activateProOnServer('revenuecat', snapshot);
+      if (!reconciled) {
+        return { restored: false, hadSnapshot: true, proActive: snapshot.active };
       }
       return {
         restored: true,

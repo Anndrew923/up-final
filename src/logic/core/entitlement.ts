@@ -105,8 +105,7 @@ export function hasCoreAccess(ent: EntitlementState): boolean {
 }
 
 export function hasProAccess(ent: EntitlementState, now: Date = new Date()): boolean {
-  if (ent.subscriptionStatus === 'pro') return true;
-  if (ent.subscriptionStatus !== 'grace') return false;
+  if (ent.subscriptionStatus !== 'pro' && ent.subscriptionStatus !== 'grace') return false;
 
   const expiresAt = safeDate(ent.proExpiresAt);
   if (!expiresAt) return false;
@@ -164,4 +163,3 @@ export function resolveLeaderboardAccessReason(
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) return 'open-access';
   return 'ok';
 }
-

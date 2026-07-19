@@ -49,7 +49,6 @@ vi.mock('react-i18next', () => ({
       if (key.startsWith('scoreMeaning.bands.gripStrength.')) {
         return key.endsWith('.title') ? 'Elite grip' : 'Strong hold';
       }
-      if (key.startsWith('grip.ranks.')) return 'Sport elite';
       if (key.startsWith('assessment.auras.')) return 'Shimmer';
       return key;
     },

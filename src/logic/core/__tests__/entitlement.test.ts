@@ -51,7 +51,10 @@ describe('entitlement core guards', () => {
 
   it('allows leaderboard when subscription is pro/grace', () => {
     const now = new Date('2026-01-01T00:00:00.000Z');
-    const pro = buildEntitlement({ subscriptionStatus: 'pro' });
+    const pro = buildEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2026-01-01T12:00:00.000Z',
+    });
     const grace = buildEntitlement({
       subscriptionStatus: 'grace',
       proExpiresAt: '2026-01-01T12:00:00.000Z',
@@ -63,10 +66,28 @@ describe('entitlement core guards', () => {
     expect(canAccessLeaderboard(grace, now)).toBe(true);
   });
 
+  it('denies Pro when its required expiry is missing or elapsed', () => {
+    const now = new Date('2026-01-01T00:00:00.000Z');
+    expect(hasProAccess(buildEntitlement({ subscriptionStatus: 'pro' }), now)).toBe(false);
+    expect(
+      hasProAccess(
+        buildEntitlement({
+          subscriptionStatus: 'pro',
+          proExpiresAt: '2025-12-31T23:59:59.000Z',
+        }),
+        now
+      )
+    ).toBe(false);
+  });
+
   it('dyno-intel-trial allows Core free users; full still requires Pro', () => {
     const free = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'free' });
     const noCore = buildEntitlement({ purchaseStatus: 'none', subscriptionStatus: 'free' });
-    const pro = buildEntitlement({ purchaseStatus: 'owned', subscriptionStatus: 'pro' });
+    const pro = buildEntitlement({
+      purchaseStatus: 'owned',
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+    });
     expect(resolveUiGate('dyno-intel-trial', free, 'signed-in', false).kind).toBe('none');
     expect(resolveUiGate('dyno-intel-trial', noCore, 'signed-in', false).kind).toBe('core');
     expect(resolveUiGate('dyno-intel-full', free, 'signed-in', false).kind).toBe('pro');
@@ -78,9 +99,14 @@ describe('entitlement core guards', () => {
     expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'free' }))).toBe(
       true
     );
-    expect(shouldBlockStructuredUserSync(buildEntitlement({ subscriptionStatus: 'pro' }))).toBe(
-      false
-    );
+    expect(
+      shouldBlockStructuredUserSync(
+        buildEntitlement({
+          subscriptionStatus: 'pro',
+          proExpiresAt: '2099-01-01T00:00:00.000Z',
+        })
+      )
+    ).toBe(false);
   });
 });
 

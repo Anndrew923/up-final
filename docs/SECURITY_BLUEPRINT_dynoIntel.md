@@ -10,10 +10,10 @@
 
 ## 0. 目標與風險對應
 
-| 風險 | 對策 |
-|---|---|
+| 風險                               | 對策                                               |
+| ---------------------------------- | -------------------------------------------------- |
 | Risk A：繞過 App 直接呼叫 Callable | **P0-A** `enforceAppCheck` + 前端 App Check 初始化 |
-| Risk B：同機切換多帳號重刷免費額度 | **P0-B** 裝置指紋（deviceId 雜湊）維度每日上限 |
+| Risk B：同機切換多帳號重刷免費額度 | **P0-B** 裝置指紋（deviceId 雜湊）維度每日上限     |
 
 **設計原則（遵 up-final `.cursorrules`）**
 
@@ -50,21 +50,21 @@ VITE_APP_CHECK_DEBUG_TOKEN=<本機 debug token，僅 .env.local，不進版控>
 
 ## 2. 檔案修改預算表 (File Diff Budget)
 
-| 階段 | 類型 | 檔案 | 核心改動 |
-|---|---|---|---|
-| P0-A | 改 | `src/services/firebaseClient.ts` | 新增 App Check 初始化（reCaptcha Enterprise + native skip + localhost debug token + autoRefresh）|
-| P0-A | 改 | `functions/dynoIntel/chatCallable.js` | onCall 選項加 `enforceAppCheck: true` |
-| P0-A | 改 | `functions/shared/constants.js` | `CALLABLE_OPTS` 不動；加註解說明 App Check 為 per-callable 決策 |
-| P0-A | 新（選配）| `src/services/appCheckClient.ts` | 封裝 `ensureFreshAppCheckToken()`，發 dynoIntelChat 前強制刷 token |
-| P0-A | 改 | `.env` / `.env.example` | `VITE_APP_CHECK_SITE_KEY` 等 |
-| P0-B | 新 | `functions/dynoIntel/dynoSecurity.js` | `hashDeviceMaterial()` + 裝置維度每日配額 Transaction（先讀後寫）|
-| P0-B | 改 | `functions/dynoIntel/chatCallable.js` | 綁 `DYNO_FINGERPRINT_PEPPER` secret；在 `consumeDynoQuota` 前後併入裝置閘門 |
-| P0-B | 改 | `functions/dynoIntel/rateLimits.js` | 抽出/複用「日曆日 dayKey + 歸零」邏輯給裝置維度共用 |
-| P0-B | 改 | `functions/shared/constants.js` | `DYNO_INTEL_DEVICE_PER_DAY`（新，如 4）、`DYNO_INTEL_DEVICE_RATE_COLLECTION` |
-| P0-B | 改 | `src/services/dynoIntelService.ts` | 送出 deviceId（Capacitor `Device.getId()`）+ 取不到時 fallback |
-| P0-B | 改 | `functions/dynoIntel/validateContext.js` | 允許/驗證 `payload.deviceId`（選配、寬鬆）|
-| P0-B | 新 | `functions/test/dynoSecurity.test.js` | 裝置雜湊 + 配額純函數單元測試 |
-| P0-B | 改 | `src/i18n/locales/*/common/*.json` | 新增 device-quota 超限的錯誤文案 key |
+| 階段 | 類型       | 檔案                                     | 核心改動                                                                                          |
+| ---- | ---------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| P0-A | 改         | `src/services/firebaseClient.ts`         | 新增 App Check 初始化（reCaptcha Enterprise + native skip + localhost debug token + autoRefresh） |
+| P0-A | 改         | `functions/dynoIntel/chatCallable.js`    | onCall 選項加 `enforceAppCheck: true`                                                             |
+| P0-A | 改         | `functions/shared/constants.js`          | `CALLABLE_OPTS` 不動；加註解說明 App Check 為 per-callable 決策                                   |
+| P0-A | 新（選配） | `src/services/appCheckClient.ts`         | 封裝 `ensureFreshAppCheckToken()`，發 dynoIntelChat 前強制刷 token                                |
+| P0-A | 改         | `.env` / `.env.example`                  | `VITE_APP_CHECK_SITE_KEY` 等                                                                      |
+| P0-B | 新         | `functions/dynoIntel/dynoSecurity.js`    | `hashDeviceMaterial()` + 裝置維度每日配額 Transaction（先讀後寫）                                 |
+| P0-B | 改         | `functions/dynoIntel/chatCallable.js`    | 綁 `DYNO_FINGERPRINT_PEPPER` secret；在 `consumeDynoQuota` 前後併入裝置閘門                       |
+| P0-B | 改         | `functions/dynoIntel/rateLimits.js`      | 抽出/複用「日曆日 dayKey + 歸零」邏輯給裝置維度共用                                               |
+| P0-B | 改         | `functions/shared/constants.js`          | `DYNO_INTEL_DEVICE_PER_DAY`（新，如 4）、`DYNO_INTEL_DEVICE_RATE_COLLECTION`                      |
+| P0-B | 改         | `src/services/dynoIntelService.ts`       | 送出 deviceId（Capacitor `Device.getId()`）+ 取不到時 fallback                                    |
+| P0-B | 改         | `functions/dynoIntel/validateContext.js` | 允許/驗證 `payload.deviceId`（選配、寬鬆）                                                        |
+| P0-B | 新         | `functions/test/dynoSecurity.test.js`    | 裝置雜湊 + 配額純函數單元測試                                                                     |
+| P0-B | 改         | `src/i18n/locales/*/common/*.json`       | 新增 device-quota 超限的錯誤文案 key                                                              |
 
 ---
 
@@ -146,7 +146,7 @@ await db.runTransaction(tx =>
    devGate = await enforceDeviceDailyQuota(tx, devHash, now)  # 新：裝置維度
    if !uidGate.allowed:  return quota-exhausted (reason: 'quota-exhausted')
    if !devGate.allowed:  return quota-exhausted (reason: 'device-quota-exhausted')  # 新 reason
-   recordDynoIntelUsage(...)                                  # 寫 uid
+   reserveDynoIntelUsage(..., requestId)                      # 建立短租約；成功後 finalize
    commitDeviceUsage(tx, devGate)                             # 寫 device
 )
 # 註：Pro 用戶可考慮豁免裝置維度（isPro → skip devGate），避免付費用戶多裝置被誤傷

@@ -20,8 +20,7 @@ export function hasCoreFromUserDoc(data) {
 export function hasProFromUserDoc(data, now = new Date()) {
   if (!hasCoreFromUserDoc(data)) return false;
   const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status;
-  if (subscriptionStatus === "pro") return true;
-  if (subscriptionStatus !== "grace") return false;
+  if (subscriptionStatus !== "pro" && subscriptionStatus !== "grace") return false;
   const expiresAt = safeDate(data?.proExpiresAt ?? data?.pro_expires_at);
   if (!expiresAt) return false;
   return expiresAt.getTime() >= now.getTime();

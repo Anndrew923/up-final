@@ -79,10 +79,13 @@
       "authDescription": "DYNO INTEL 需要 Google 登入後才能通電遙測。",
       "coreDescription": "Core 本機評測、雷達與歷史已隨下載解鎖；DYNO INTEL 為 Pro 頻道。",
       "proDescription": "DYNO INTEL 為 Pro 專屬 — 智能分析通電、全球天梯與雲端備份一次解鎖。",
-      "quotaDescription": "今日通電額度已耗盡。明日再來，或確認 Pro 訂閱狀態。"
+      "quotaDescription": "今日通電額度已耗盡。額度於台北時間 00:00 重置，或確認 Pro 訂閱狀態。"
     },
     "paywall": {
-      "badge": "行車電腦完整性錯誤",
+      "badge": {
+        "pro-required": "PRO 頻道待解鎖",
+        "quota-exhausted": "今日免費額度已用盡"
+      },
       "title": {
         "pro-required": "解鎖智庫完全體：15倍算力大點火",
         "quota-exhausted": "每日免費額度已熔斷"
@@ -114,13 +117,13 @@
     },
     "error": {
       "network": "遙測鏈路中斷 — 稍後再試。",
-      "geminiNotConfigured": "Gemini 遙測核心未通電 — 請在 functions/.env.local 設定 GEMINI_API_KEY，並重啟 npm run dev:dyno。",
-      "geminiQuotaExhausted": "Gemini API 預付額度已耗盡 — 請至 AI Studio 充值或更換有效 API Key 後重試。",
+      "geminiNotConfigured": "智慧分析服務暫時無法使用 — 請稍後再試。",
+      "geminiQuotaExhausted": "智慧分析服務目前繁忙 — 請稍後再試。",
       "invalidContext": "診斷上下文不完整 — 請先在首頁完成雷達／身體資料後再試。",
       "inferenceMalformed": "AI 解碼輸出異常 — 請縮短問題或稍後再試。",
       "inferenceFailed": "AI 遙測推理失敗 — 稍後再試。",
       "weightProfileMissing": "請先在首頁完成身體資料，才能啟動體重模擬。",
-      "quotaExhaustedPro": "今日 Pro 通電額度已用盡（30 次/日）— 請待明日重置後再試。"
+      "quotaExhaustedPro": "今日 Pro 通電額度已用盡（30 次/日）— 請待台北時間 00:00 重置後再試。"
     },
     "telemetryLog": {
       "title": "歷史遙測日誌",

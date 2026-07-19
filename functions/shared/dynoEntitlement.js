@@ -1,9 +1,9 @@
 import { db } from "./admin.js";
 import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
 
-function isDynoIntelEntitlementBypassActive() {
+export function isDynoIntelEntitlementBypassActive() {
   return (
-    process.env.DYNO_INTEL_DEV_BYPASS === "true" ||
+    (process.env.FUNCTIONS_EMULATOR === "true" && process.env.DYNO_INTEL_DEV_BYPASS === "true") ||
     process.env.DYNO_INTEL_BETA_FREE === "true"
   );
 }
@@ -12,20 +12,21 @@ function isDynoIntelEntitlementBypassActive() {
  * Resolves Core / Pro for Callable gates.
  * WHY: Client bypass flags must mirror these env vars or cross-axis calls still return pro-required.
  */
-export async function resolveDynoIntelEntitlement(uid, authToken, now = new Date()) {
+export async function resolveDynoIntelEntitlement(uid, now = new Date()) {
   if (isDynoIntelEntitlementBypassActive()) {
-    return { isPro: true, hasCore: true };
+    // Bypass unlocks diagnostic modes for testing, not the paid quota bucket.
+    return { isPro: true, hasCore: true, hasProQuota: false };
   }
 
-  if (authToken?.pro === true) {
-    return { isPro: true, hasCore: true };
-  }
-
+  // Firestore is authoritative. ID tokens can outlive an early refund or
+  // revocation, so a cached Pro claim must never bypass this document check.
   const snap = await db.collection("users").doc(uid).get();
   const data = snap.data();
+  const isPro = hasProFromUserDoc(data, now);
   return {
-    isPro: hasProFromUserDoc(data, now),
+    isPro,
     hasCore: hasCoreFromUserDoc(data),
+    hasProQuota: isPro,
   };
 }
 

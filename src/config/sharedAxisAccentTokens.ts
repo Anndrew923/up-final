@@ -14,6 +14,7 @@ export interface AxisAccentRgb {
 export interface AxisAccentToken {
   lobbyBgClass: string;
   lobbyGlowRgba: string;
+  lobbyShadowClass: string;
   stroke: string;
   reactorCore: string;
 }
@@ -31,7 +32,9 @@ function rgba({ r, g, b }: AxisAccentRgb, alpha: number): string {
 }
 
 export function formatLobbyStatusBarClass(token: AxisAccentToken): string {
-  return `${token.lobbyBgClass} shadow-[0_0_14px_${token.lobbyGlowRgba}]`;
+  // Tailwind must see complete class literals at build time; interpolating the
+  // rgba fragment emits a broken `${token...}` CSS rule in production.
+  return `${token.lobbyBgClass} ${token.lobbyShadowClass}`;
 }
 
 function buildRadarPalette(token: AxisAccentToken, rgb: AxisAccentRgb): AxisRadarPalette {
@@ -52,36 +55,42 @@ export const SIX_AXIS_ACCENT_TOKENS: Record<SixAxisMetric, AxisAccentToken> = {
   strength: {
     lobbyBgClass: 'bg-amber-500',
     lobbyGlowRgba: 'rgba(245,158,11,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(245,158,11,0.6)]',
     stroke: '#f59e0b',
     reactorCore: '#fbbf24',
   },
   gripStrength: {
     lobbyBgClass: 'bg-lime-400',
     lobbyGlowRgba: 'rgba(163,230,53,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(163,230,53,0.6)]',
     stroke: '#a3e635',
     reactorCore: '#bef264',
   },
   bodyFat: {
     lobbyBgClass: 'bg-sky-400',
     lobbyGlowRgba: 'rgba(56,189,248,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(56,189,248,0.6)]',
     stroke: '#38bdf8',
     reactorCore: '#7dd3fc',
   },
   explosivePower: {
     lobbyBgClass: 'bg-red-500',
     lobbyGlowRgba: 'rgba(239,68,68,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(239,68,68,0.6)]',
     stroke: '#ef4444',
     reactorCore: '#f87171',
   },
   cardio: {
     lobbyBgClass: 'bg-teal-400',
     lobbyGlowRgba: 'rgba(45,212,191,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(45,212,191,0.6)]',
     stroke: '#2dd4bf',
     reactorCore: '#5eead4',
   },
   muscleMass: {
     lobbyBgClass: 'bg-fuchsia-500',
     lobbyGlowRgba: 'rgba(217,70,239,0.6)',
+    lobbyShadowClass: 'shadow-[0_0_14px_rgba(217,70,239,0.6)]',
     stroke: '#d946ef',
     reactorCore: '#e879f9',
   },

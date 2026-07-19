@@ -72,7 +72,7 @@ export async function runLadderSubmitShard(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid, request.auth.token);
+  await assertLadderUploadAllowed(uid);
 
   const data = request.data || {};
   const metric = data.metric;
@@ -272,7 +272,7 @@ export async function runLadderSyncPreview(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid, request.auth.token);
+  await assertLadderUploadAllowed(uid);
 
   const data = request.data || {};
   const previewNameResult = tryNormalizeDisplayName(data.displayName);

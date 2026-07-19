@@ -20,6 +20,22 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
+    function entitlementFields() {
+      // Billing state is server-authoritative; clients may never self-grant Core or Pro.
+      return [
+        'purchaseStatus',
+        'purchase_status',
+        'subscriptionStatus',
+        'subscription_status',
+        'isPro',
+        'is_pro',
+        'proExpiresAt',
+        'pro_expires_at',
+        'planId',
+        'plan_id',
+        'entitlementVerifiedAtMs'
+      ];
+    }
 
     // users：登入者可讀（顯示暱稱/頭像/排行榜等），僅本人可寫
     // ✅ 新增：允許登入用戶更新其他用戶的點讚相關字段
@@ -27,14 +43,17 @@ service cloud.firestore {
       allow read: if signedIn();
 
       // 僅本人可創建/刪除自己的文檔
-      allow create, delete: if isOwner(userId)
+      allow create: if isOwner(userId)
         && request.resource.data.userId == userId
-        && !('isAdmin' in request.resource.data);
+        && !('isAdmin' in request.resource.data)
+        && !request.resource.data.keys().hasAny(entitlementFields());
+      allow delete: if isOwner(userId) && resource.data.userId == userId;
 
       // 本人可更新自己的文檔（原有規則）
       // ✅ 修改：允許部分更新（merge）天梯相關欄位，並允許清除認證狀態
       allow update: if isOwner(userId)
         && resource.data.userId == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(entitlementFields())
         && (
           // 如果只更新天梯相關欄位，允許（merge 模式）
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ladderScore', 'lastLadderSubmission', 'updatedAt']) ||

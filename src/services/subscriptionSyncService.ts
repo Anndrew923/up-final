@@ -5,7 +5,13 @@ import { getFirebaseAuth, getFirebaseFunctions } from './firebaseClient';
 export type SyncProEntitlementSource = 'revenuecat' | 'client-simulation';
 
 export type SyncProEntitlementResult =
-  | { ok: true; proExpiresAt: string | null; planId: string }
+  | {
+      ok: true;
+      active: boolean;
+      subscriptionStatus: 'pro' | 'grace' | 'free';
+      proExpiresAt: string | null;
+      planId: string | null;
+    }
   | {
       ok: false;
       reason:
@@ -29,7 +35,13 @@ let syncProFn: ReturnType<
       proExpiresAt?: string | null;
       planId?: string | null;
     },
-    { ok: boolean; proExpiresAt?: string | null; planId?: string }
+    {
+      ok: boolean;
+      active?: boolean;
+      subscriptionStatus?: 'pro' | 'grace' | 'free';
+      proExpiresAt?: string | null;
+      planId?: string | null;
+    }
   >
 > | null = null;
 
@@ -43,7 +55,7 @@ function getSyncProCallable() {
 }
 
 /**
- * Writes Pro entitlement to Firestore + custom claims via Callable.
+ * Writes the authoritative Pro entitlement to Firestore via Callable.
  * WHY: Local RC snapshot alone cannot satisfy dynoIntelChat server gates.
  */
 export async function syncProEntitlementToServer(
@@ -67,14 +79,24 @@ export async function syncProEntitlementToServer(
       planId: input.snapshot?.productIdentifier ?? null,
     });
     const data = result.data;
-    if (!data?.ok) {
+    if (
+      !data?.ok ||
+      typeof data.active !== 'boolean' ||
+      (data.subscriptionStatus !== 'pro' &&
+        data.subscriptionStatus !== 'grace' &&
+        data.subscriptionStatus !== 'free')
+    ) {
       return { ok: false, reason: 'verification-failed' };
     }
-    await auth.currentUser?.getIdToken(true);
+    if (data.active && (typeof data.proExpiresAt !== 'string' || !data.proExpiresAt)) {
+      return { ok: false, reason: 'verification-failed' };
+    }
     return {
       ok: true,
+      active: data.active,
+      subscriptionStatus: data.subscriptionStatus,
       proExpiresAt: data.proExpiresAt ?? null,
-      planId: data.planId ?? 'pro_monthly',
+      planId: data.planId ?? null,
     };
   } catch (err: unknown) {
     const code =
@@ -87,7 +109,11 @@ export async function syncProEntitlementToServer(
     if (code.includes('core-required')) {
       return { ok: false, reason: 'core-required' };
     }
-    if (code.includes('pro-not-active') || code.includes('revenuecat-verification')) {
+    if (
+      code.includes('pro-not-active') ||
+      code.includes('revenuecat-verification') ||
+      code.includes('failed-precondition')
+    ) {
       return { ok: false, reason: 'verification-failed' };
     }
     return { ok: false, reason: 'network' };

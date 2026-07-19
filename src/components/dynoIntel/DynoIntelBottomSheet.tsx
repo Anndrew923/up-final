@@ -38,6 +38,7 @@ export interface DynoIntelBottomSheetProps {
   consoleLabel: string;
   remaining: number;
   limit: number;
+  quotaKnown: boolean;
   commentary: string;
   displayMeta?: DynoIntelDisplayMeta | null;
   status: DynoIntelChatStatus;
@@ -64,6 +65,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   consoleLabel,
   remaining,
   limit,
+  quotaKnown,
   commentary,
   displayMeta = null,
   status,
@@ -112,7 +114,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
     setVisible(false);
     const timer = window.setTimeout(
       () => setMounted(false),
-      reducedMotion ? 0 : DYNO_INTEL_SHEET_SLIDE_MS,
+      reducedMotion ? 0 : DYNO_INTEL_SHEET_SLIDE_MS
     );
     return () => window.clearTimeout(timer);
   }, [open, reducedMotion]);
@@ -144,10 +146,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
 
   return createPortal(
     <div
-      className={cn(
-        'fixed inset-0 flex flex-col justify-end',
-        Z_INDEX_CLASS.dynoIntelSheet,
-      )}
+      className={cn('fixed inset-0 flex flex-col justify-end', Z_INDEX_CLASS.dynoIntelSheet)}
       role="presentation"
     >
       <button
@@ -156,7 +155,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
           'absolute inset-0 bg-black/70 backdrop-blur-md',
           DYNO_INTEL_SHEET_SCRIM_TRANSITION,
           dynoIntelSheetScrimVisible(visible),
-          !visible && 'pointer-events-none',
+          !visible && 'pointer-events-none'
         )}
         aria-label={t('dynoIntel.close')}
         onClick={view === 'paywall' ? onPaywallDismiss : onClose}
@@ -169,7 +168,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
           'relative z-10 flex w-full flex-col overflow-hidden rounded-t-2xl border border-cyan-500/25 bg-zinc-950/92 shadow-[0_-12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl',
           DYNO_INTEL_SHEET_PANEL_HEIGHT_CLASS,
           DYNO_INTEL_SHEET_PANEL_TRANSITION,
-          dynoIntelSheetPanelVisible(visible),
+          dynoIntelSheetPanelVisible(visible)
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -183,7 +182,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                 {t('dynoIntel.sheetTitle')}
               </h2>
             </div>
-            {view === 'chat' ? (
+            {view === 'chat' && quotaKnown ? (
               <p className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900/80 px-2.5 py-1 font-mono text-[10px] text-zinc-300">
                 {t('dynoIntel.quotaLabel', { remaining, limit })}
               </p>

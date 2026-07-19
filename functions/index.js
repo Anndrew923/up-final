@@ -16,3 +16,4 @@ export { ladderSyncBatch } from "./ladder/syncBatchCallable.js";
 export { ladderReportUser } from "./ladder/reportUserCallable.js";
 export { dynoIntelChat } from "./dynoIntel/chatCallable.js";
 export { syncProSubscription } from "./subscription/syncProCallable.js";
+export { revenueCatWebhook } from "./subscription/revenueCatWebhook.js";

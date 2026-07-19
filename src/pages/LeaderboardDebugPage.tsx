@@ -147,8 +147,8 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
               type="button"
               className="ui-btn"
               onClick={() => {
-                setSubscriptionStatus('grace');
                 setProExpiry(new Date(Date.now() + 1000 * 60 * 30).toISOString());
+                setSubscriptionStatus('grace');
               }}
             >
               {t('debugSetGrace', { ns: 'common' })}

@@ -13,7 +13,9 @@ vi.mock('../hapticService', () => ({
 
 const syncProEntitlementToServer = vi.fn().mockResolvedValue({
   ok: true,
-  proExpiresAt: null,
+  active: true,
+  subscriptionStatus: 'pro',
+  proExpiresAt: '2099-01-01T00:00:00.000Z',
   planId: 'pro_monthly',
 });
 
@@ -44,7 +46,9 @@ describe('subscription service', () => {
     syncProEntitlementToServer.mockReset();
     syncProEntitlementToServer.mockResolvedValue({
       ok: true,
-      proExpiresAt: null,
+      active: true,
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'pro_monthly',
     });
   });

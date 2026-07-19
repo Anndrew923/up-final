@@ -13,7 +13,6 @@ import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardS
 import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
 import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
-import { AURA_THEME } from './auraThemeTokens';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 
@@ -62,8 +61,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const isDashboardSyncing = syncing || syncPending;
   const isArenaSyncing = arenaSync?.busy ?? false;
   const isPipelineRunning = pipelineBusy || isArenaSyncing;
-  const showDashboardThenArena =
-    onPersistToDashboard != null && arenaSync != null;
+  const showDashboardThenArena = onPersistToDashboard != null && arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
@@ -106,13 +104,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     } finally {
       setPipelineBusy(false);
     }
-  }, [
-    arenaSync,
-    isDashboardSyncing,
-    isPipelineRunning,
-    onPersistToDashboard,
-    tryOpenGateSheet,
-  ]);
+  }, [arenaSync, isDashboardSyncing, isPipelineRunning, onPersistToDashboard, tryOpenGateSheet]);
 
   useEffect(() => {
     if (!open) {
@@ -139,7 +131,6 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
   if (!open || !payload || typeof document === 'undefined') return null;
 
-  const theme = AURA_THEME[payload.auraKey];
   const hasActions = showDashboardSync || showDashboardThenArena;
   const actionsBusy = isDashboardSyncing || isPipelineRunning;
 
@@ -167,11 +158,6 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-500">
               {t('assessment.breakthrough.kicker')}
             </p>
-            {payload.rankLabel !== payload.title ? (
-              <p className={`text-xs font-semibold tracking-wide text-aura-neon ${theme.text}`}>
-                {payload.rankLabel}
-              </p>
-            ) : null}
             <h2 id={titleId} className="text-xl font-bold tracking-tight text-zinc-50">
               {payload.title}
             </h2>
@@ -229,9 +215,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
               {pipelineBanner !== 'none' ? (
                 <p
                   className={`mt-3 text-sm ${
-                    pipelineBanner === 'full-success'
-                      ? 'text-emerald-400/90'
-                      : 'text-amber-300/90'
+                    pipelineBanner === 'full-success' ? 'text-emerald-400/90' : 'text-amber-300/90'
                   }`}
                   role="status"
                 >

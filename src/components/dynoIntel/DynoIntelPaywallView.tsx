@@ -41,7 +41,7 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-950/40 px-3 py-1">
           <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
           <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-cyan-200">
-            {t('dynoIntel.paywall.badge')}
+            {t(`dynoIntel.paywall.badge.${reason}`)}
           </span>
         </div>
 
@@ -64,7 +64,10 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
           <ul className="mt-3 space-y-3">
             {FEATURE_ROWS.map((row) => (
               <li key={row.key} className="flex gap-2.5">
-                <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${row.dot}`} aria-hidden />
+                <span
+                  className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${row.dot}`}
+                  aria-hidden
+                />
                 <div className="min-w-0 space-y-0.5">
                   <p className="text-sm font-semibold tracking-tight text-zinc-50 text-pretty">
                     {t(`dynoIntel.paywall.features.${row.key}.title`)}

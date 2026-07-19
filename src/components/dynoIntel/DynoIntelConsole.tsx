@@ -59,20 +59,18 @@ const DynoIntelConsole = () => {
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
 
   const resolveBaseContext = useCallback(() => {
-      const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
-      const snapshot = buildRadarInput();
-      return buildDynoIntelContext({
-        radarInput: snapshot,
-        historyRecords: snapshot.historyRecords,
-        liveScoreOverrides: snapshot.liveScoreOverrides,
-        locale,
-        mode: DYNO_INFERENCE_MODE,
-        focusAxis: null,
-        focusSupplemental: null,
-      });
-    },
-    [buildRadarInput, i18n.language]
-  );
+    const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
+    const snapshot = buildRadarInput();
+    return buildDynoIntelContext({
+      radarInput: snapshot,
+      historyRecords: snapshot.historyRecords,
+      liveScoreOverrides: snapshot.liveScoreOverrides,
+      locale,
+      mode: DYNO_INFERENCE_MODE,
+      focusAxis: null,
+      focusSupplemental: null,
+    });
+  }, [buildRadarInput, i18n.language]);
 
   const enrichContext = useCallback(
     (base: ReturnType<typeof buildDynoIntelContext>, userQuestion: string) =>
@@ -123,6 +121,7 @@ const DynoIntelConsole = () => {
     onPaywallRequest: openPaywall,
     onAuthBlocked: handleAuthBlocked,
   });
+  const sendQuestion = chat.sendQuestion;
 
   const { restoreFromLog, clearChat } = chat;
 
@@ -156,6 +155,7 @@ const DynoIntelConsole = () => {
     }
     // WHY: After server sync, exhausted trial should open the 15x paywall — not an empty chat.
     if (
+      quota.isSynced &&
       quota.remaining <= 0 &&
       !canUseDynoIntelFull(entitlement, authStatus, isAnonymous)
     ) {
@@ -172,6 +172,7 @@ const DynoIntelConsole = () => {
     isAnonymous,
     openPaywall,
     quota.remaining,
+    quota.isSynced,
     restoreLatestLog,
     sheet,
   ]);
@@ -213,9 +214,9 @@ const DynoIntelConsole = () => {
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
-      void chat.sendQuestion(question);
+      void sendQuestion(question);
     },
-    [chat.sendQuestion]
+    [sendQuestion]
   );
 
   useEffect(() => {
@@ -255,6 +256,7 @@ const DynoIntelConsole = () => {
         consoleLabel={consoleLabel}
         remaining={quota.remaining}
         limit={quota.limit}
+        quotaKnown={quota.isSynced}
         commentary={chat.visibleText}
         displayMeta={chat.lastDisplayMeta}
         status={chat.status}

@@ -5,15 +5,13 @@ import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
  * Server Pro gate — mirrors `hasProAccess` + `canUploadLeaderboard` when paywall is on.
  * Set `LEADERBOARD_PAYWALL_ENABLED=true` on the Functions runtime to enforce.
  */
-export async function assertLadderUploadAllowed(uid, authToken) {
+export async function assertLadderUploadAllowed(uid, now = new Date()) {
   const paywallEnabled =
     String(process.env.LEADERBOARD_PAYWALL_ENABLED || "").toLowerCase() === "true";
   if (!paywallEnabled) return;
 
-  if (authToken?.pro === true) return;
-
   const snap = await db.collection("users").doc(uid).get();
-  if (hasProFromUserDoc(snap.data())) return;
+  if (hasProFromUserDoc(snap.data(), now)) return;
 
   const err = new Error("pro-required");
   err.code = "pro-required";
@@ -23,12 +21,10 @@ export async function assertLadderUploadAllowed(uid, authToken) {
 /**
  * Report gate mirrors client `canAccessLeaderboard` when paywall is on (read path).
  */
-export async function assertLadderReportAllowed(uid, authToken) {
+export async function assertLadderReportAllowed(uid, now = new Date()) {
   const paywallEnabled =
     String(process.env.LEADERBOARD_PAYWALL_ENABLED || "").toLowerCase() === "true";
   if (!paywallEnabled) return;
-
-  if (authToken?.pro === true) return;
 
   const snap = await db.collection("users").doc(uid).get();
   const data = snap.data();
@@ -37,7 +33,7 @@ export async function assertLadderReportAllowed(uid, authToken) {
     err.code = "permission-denied";
     throw err;
   }
-  if (hasProFromUserDoc(data)) return;
+  if (hasProFromUserDoc(data, now)) return;
 
   const err = new Error("pro-required");
   err.code = "permission-denied";

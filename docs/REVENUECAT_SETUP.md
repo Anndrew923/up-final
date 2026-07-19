@@ -33,6 +33,18 @@ RevenueCat integration is already wired in code and ready to activate when you s
      - `VITE_RC_API_KEY_ANDROID`
      - `VITE_RC_ENTITLEMENT_ID` (if not `pro`)
      - `VITE_RC_PACKAGE_ID` (if not `$rc_monthly`)
+   - Store backend credentials in Secret Manager (never in `.env` committed to source):
+     - `firebase functions:secrets:set REVENUECAT_SECRET_API_KEY`
+     - `firebase functions:secrets:set REVENUECAT_WEBHOOK_AUTH`
+   - In RevenueCat, configure the webhook URL as
+     `https://<region>-<project-id>.cloudfunctions.net/revenueCatWebhook` and set its
+     `Authorization` header to the exact `REVENUECAT_WEBHOOK_AUTH` value.
+   - Before deploying strict expiry enforcement over legacy user documents, run the idempotent
+     backfill with production Application Default Credentials:
+     - `gcloud auth application-default login`
+     - `GCLOUD_PROJECT=<project-id> REVENUECAT_SECRET_API_KEY="$(firebase functions:secrets:access REVENUECAT_SECRET_API_KEY)" npm run --prefix functions migrate:pro-expiries`
+   - Deploy `syncProSubscription`, `revenueCatWebhook`, and the strict entitlement gates only
+     after the backfill completes successfully.
 
 4. **Native sync**
    - After dependency/env updates, from repo root:
@@ -63,3 +75,5 @@ No additional routing or entitlement refactor should be needed.
    - Restore updates entitlement and re-enables leaderboard
 3. Error path:
    - Broken RC key shows billing unavailable banner on Join Arena
+   - RevenueCat 429/5xx preserves the last verified entitlement
+   - Expiration/refund webhook revokes Pro without requiring the app to reopen

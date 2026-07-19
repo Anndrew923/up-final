@@ -1,8 +1,39 @@
 /**
- * Authoritative Pro activation — Firestore user doc + Firebase Auth custom claims.
- * WHY: Callable fast-path (`authToken.pro`) and user-doc checks must stay in lockstep after purchase.
+ * Authoritative Pro activation in the Firestore user document.
+ * WHY: A mutable subscription must be checked against one revocable source;
+ * ID-token custom claims can remain stale until token refresh.
  */
-import { admin, db } from "./admin.js";
+import { db } from "./admin.js";
+
+function entitlementResult(data, applied) {
+  const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status ?? "free";
+  return {
+    applied,
+    subscriptionStatus,
+    proExpiresAt: data?.proExpiresAt ?? data?.pro_expires_at ?? null,
+    planId: data?.planId ?? data?.plan_id ?? null,
+  };
+}
+
+async function writeEntitlementIfFresh(uid, patch, verifiedAtMs) {
+  const incomingVersion = Number.isFinite(verifiedAtMs) ? verifiedAtMs : Date.now();
+  const ref = db.collection("users").doc(uid);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.data() ?? {};
+    const currentVersion = Number(current.entitlementVerifiedAtMs) || 0;
+    if (currentVersion > incomingVersion) {
+      return entitlementResult(current, false);
+    }
+    const next = {
+      ...patch,
+      entitlementVerifiedAtMs: incomingVersion,
+      updatedAt: new Date().toISOString(),
+    };
+    tx.set(ref, next, { merge: true });
+    return entitlementResult({ ...current, ...next }, true);
+  });
+}
 
 /**
  * @param {string} uid
@@ -10,6 +41,7 @@ import { admin, db } from "./admin.js";
  *   subscriptionStatus?: string;
  *   proExpiresAt?: string | null;
  *   planId?: string | null;
+ *   verifiedAtMs?: number;
  * }} payload
  */
 export async function applyProEntitlementToUser(uid, payload = {}) {
@@ -20,51 +52,41 @@ export async function applyProEntitlementToUser(uid, payload = {}) {
   const subscriptionStatus = payload.subscriptionStatus ?? "pro";
   const proExpiresAt = payload.proExpiresAt ?? null;
   const planId = payload.planId ?? "pro_monthly";
+  const expiryMs = proExpiresAt ? Date.parse(proExpiresAt) : Number.NaN;
+  if (
+    (subscriptionStatus === "pro" || subscriptionStatus === "grace") &&
+    (!Number.isFinite(expiryMs) || expiryMs <= Date.now())
+  ) {
+    throw new Error("valid-pro-expiry-required");
+  }
 
-  await db
-    .collection("users")
-    .doc(uid)
-    .set(
-      {
-        subscriptionStatus,
-        proExpiresAt,
-        planId,
-        isPro: subscriptionStatus === "pro" || subscriptionStatus === "grace",
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
-
-  const authUser = await admin.auth().getUser(uid);
-  const existingClaims = authUser.customClaims ?? {};
-  await admin.auth().setCustomUserClaims(uid, { ...existingClaims, pro: true });
-
-  return {
-    subscriptionStatus,
-    proExpiresAt,
-    planId,
-  };
+  return writeEntitlementIfFresh(
+    uid,
+    {
+      subscriptionStatus,
+      proExpiresAt,
+      planId,
+      isPro: subscriptionStatus === "pro" || subscriptionStatus === "grace",
+    },
+    payload.verifiedAtMs
+  );
 }
 
 /**
- * Clears Pro custom claim when subscription lapses (webhook / restore path).
+ * Clears Pro when subscription lapses (webhook / restore path).
  * @param {string} uid
+ * @param {{ verifiedAtMs?: number }} options
  */
-export async function clearProEntitlementFromUser(uid) {
-  if (!uid) return;
-  await db
-    .collection("users")
-    .doc(uid)
-    .set(
-      {
-        subscriptionStatus: "free",
-        isPro: false,
-        proExpiresAt: null,
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
-  const authUser = await admin.auth().getUser(uid);
-  const existingClaims = authUser.customClaims ?? {};
-  await admin.auth().setCustomUserClaims(uid, { ...existingClaims, pro: false });
+export async function clearProEntitlementFromUser(uid, options = {}) {
+  if (!uid) return null;
+  return writeEntitlementIfFresh(
+    uid,
+    {
+      subscriptionStatus: "free",
+      isPro: false,
+      proExpiresAt: null,
+      planId: null,
+    },
+    options.verifiedAtMs
+  );
 }

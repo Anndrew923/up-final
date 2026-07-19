@@ -93,6 +93,9 @@ function PrivacyPolicyRoute() {
 
 function LeaderboardDebugRoute() {
   const navigate = useNavigate();
+  if (!import.meta.env.DEV) {
+    return <Navigate to={ROUTES.home} replace />;
+  }
   return withRouteSuspense(<LeaderboardDebugPage onBack={() => navigate(-1)} />);
 }
 

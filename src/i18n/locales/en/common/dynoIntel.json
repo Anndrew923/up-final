@@ -79,10 +79,13 @@
       "authDescription": "Sign in with Google to power on DYNO INTEL.",
       "coreDescription": "Local assessment, radar, and history ship with Core; DYNO INTEL is Pro.",
       "proDescription": "DYNO INTEL is Pro-only — analysis, ladder, and cloud backup in one plan.",
-      "quotaDescription": "Daily uplink used up. Try tomorrow, or confirm Pro."
+      "quotaDescription": "Daily uplink used up. Quota resets at 00:00 Asia/Taipei, or confirm Pro."
     },
     "paywall": {
-      "badge": "Console integrity error",
+      "badge": {
+        "pro-required": "PRO CHANNEL LOCKED",
+        "quota-exhausted": "TODAY'S FREE QUOTA USED"
+      },
       "title": {
         "pro-required": "15x Overclock Available",
         "quota-exhausted": "Daily Free Quota Used"
@@ -114,13 +117,13 @@
     },
     "error": {
       "network": "Link lost — try again shortly.",
-      "geminiNotConfigured": "Gemini offline — set GEMINI_API_KEY in functions/.env.local and restart npm run dev:dyno.",
-      "geminiQuotaExhausted": "Gemini credits depleted — top up in AI Studio or switch API key.",
+      "geminiNotConfigured": "Smart analysis is temporarily unavailable — try again later.",
+      "geminiQuotaExhausted": "Smart analysis is currently busy — try again later.",
       "invalidContext": "Context incomplete — finish Home radar / body data first.",
       "inferenceMalformed": "AI output malformed — shorten the question or retry.",
       "inferenceFailed": "AI inference failed — try again shortly.",
       "weightProfileMissing": "Complete Home body profile before weight simulation.",
-      "quotaExhaustedPro": "Today's Pro uplink is used up (30/day) — return after tomorrow's reset."
+      "quotaExhaustedPro": "Today's Pro uplink is used up (30/day) — resets at 00:00 Asia/Taipei."
     },
     "telemetryLog": {
       "title": "Uplink logs",

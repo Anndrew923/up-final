@@ -106,7 +106,7 @@ export async function runLadderReportUser(request) {
   }
 
   const reporterUid = request.auth.uid;
-  await assertLadderReportAllowed(reporterUid, request.auth.token);
+  await assertLadderReportAllowed(reporterUid);
 
   const validated = validateReportPayload(request.data || {});
   if (!validated.ok) {

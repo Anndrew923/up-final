@@ -71,11 +71,12 @@ describe('dynoIntelGates', () => {
   });
 
   it('allows pro user for all Dyno modes', () => {
-    const ent = buildEntitlement({ subscriptionStatus: 'pro' });
+    const ent = buildEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+    });
     expect(resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false).allowed).toBe(true);
-    expect(resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false).allowed).toBe(
-      true
-    );
+    expect(resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false).allowed).toBe(true);
     expect(canUseDynoIntelFull(ent, 'signed-in', false)).toBe(true);
   });
 
