@@ -146,6 +146,7 @@ export function detectQuestionFocusAxis(
   userQuestion: string,
   _context?: Pick<DynoIntelContextV1, 'focusAxis' | 'mode' | 'focusAxisLexicon'>
 ): SixAxisMetric | null {
+  void _context;
   const q = normalizeQuestion(userQuestion);
 
   for (const entry of AXIS_QUESTION_PATTERNS) {

@@ -45,6 +45,7 @@ import {
   FIREBASE_EMULATOR_PORTS,
   isFirebaseEmulatorEnabled,
 } from '../config/firebaseEmulator';
+import { initializeFirebaseAppCheck } from './firebaseAppCheck';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -154,9 +155,12 @@ export function initFirebase(config: FirebaseConfig): void {
   };
 
   firebaseApp = getApps().length ? getApp() : initializeApp(opts);
+  const appCheckReady = initializeFirebaseAppCheck(firebaseApp);
   firestoreDb = initFirestoreForApp(firebaseApp);
   firebaseAuth = initFirebaseAuthForApp(firebaseApp);
-  firebaseFunctions = getFunctions(firebaseApp, getLadderFunctionsRegion());
+  firebaseFunctions = appCheckReady
+    ? getFunctions(firebaseApp, getLadderFunctionsRegion())
+    : null;
   firebaseStorage = storageBucket ? getStorage(firebaseApp, storageBucket) : getStorage(firebaseApp);
   connectFirebaseEmulatorsIfEnabled();
 

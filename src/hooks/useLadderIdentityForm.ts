@@ -9,7 +9,6 @@ import {
   loadProfile,
 } from '../services/localStorageService';
 import {
-  normalizeLadderDisplayName,
   saveLadderIdentity,
   sanitizeAvatarUrlForLeaderboard,
 } from '../services/ladderIdentityService';

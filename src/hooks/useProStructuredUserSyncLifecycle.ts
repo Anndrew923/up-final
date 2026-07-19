@@ -11,6 +11,7 @@ import {
   mergeRemoteProfileIfNewer,
   tryApplyRemoteProfileFromSnapshot,
 } from '../services/userStructuredSyncService';
+import { captureStructuredSyncSession } from '../services/structuredSyncSession';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
@@ -21,15 +22,18 @@ const SNAPSHOT_DEBOUNCE_MS = 1200;
  */
 export function useProStructuredUserSyncLifecycle(): void {
   const authStatus = useAuthStore((s) => s.status);
+  const authUid = useAuthStore((s) => s.uid);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const isPro = useEntitlementStore((s) => s.isPro);
 
   useEffect(() => {
     const db = getFirestoreDb();
     const user = getCurrentFirebaseUser();
-    if (!db || !user || user.isAnonymous || authStatus !== 'signed-in') {
+    if (!db || !user || user.uid !== authUid || user.isAnonymous || authStatus !== 'signed-in') {
       return;
     }
+    const session = captureStructuredSyncSession();
+    if (!session || session.uid !== user.uid) return;
 
     const ent = useEntitlementStore.getState();
     if (!canRunStructuredUserSync(ent)) {
@@ -62,7 +66,7 @@ export function useProStructuredUserSyncLifecycle(): void {
           if (cancelled) return;
           const entNow = useEntitlementStore.getState();
           if (!canRunStructuredUserSync(entNow)) return;
-          tryApplyRemoteProfileFromSnapshot(entNow, snap);
+          tryApplyRemoteProfileFromSnapshot(entNow, snap, session);
         }, SNAPSHOT_DEBOUNCE_MS);
       },
       (err) => {
@@ -88,5 +92,5 @@ export function useProStructuredUserSyncLifecycle(): void {
       if (snapshotDebounce) clearTimeout(snapshotDebounce);
       unsub();
     };
-  }, [authStatus, isAnonymous, isPro]);
+  }, [authStatus, authUid, isAnonymous, isPro]);
 }

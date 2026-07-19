@@ -11,17 +11,17 @@ import {
 
 export function useDynoRouteContext(): DynoRouteContext {
   const { pathname } = useLocation();
-  const [cardioTabEpoch, setCardioTabEpoch] = useState(0);
+  const [cardioActiveTab, setCardioActiveTab] = useState(loadCardioActiveTab);
 
   useEffect(() => {
-    return subscribeCardioActiveTab(() => setCardioTabEpoch((n) => n + 1));
+    return subscribeCardioActiveTab(() => setCardioActiveTab(loadCardioActiveTab()));
   }, []);
 
   return useMemo(
     () =>
       resolveDynoRouteContext(pathname, {
-        cardioActiveTab: loadCardioActiveTab(),
+        cardioActiveTab,
       }),
-    [cardioTabEpoch, pathname]
+    [cardioActiveTab, pathname]
   );
 }

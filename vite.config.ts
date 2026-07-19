@@ -23,6 +23,9 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   build: {
+    // Firebase's modular SDK shares an internal dependency graph; keeping it together avoids
+    // circular vendor chunks. The emitted chunk remains ~167 kB gzip, below our 200 kB budget.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {

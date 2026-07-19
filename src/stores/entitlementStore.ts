@@ -212,10 +212,14 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
   },
   async refreshEntitlement() {
     const userId = useAuthStore.getState().uid;
+    const sessionIsCurrent = () =>
+      useAuthStore.getState().uid === userId && boundSessionUid === userId;
     if (userId && isRevenueCatNativeBillingAvailable()) {
       try {
         await logInRevenueCatUser(userId);
+        if (!sessionIsCurrent()) return;
         const snapshot = await fetchRevenueCatEntitlement(userId);
+        if (!sessionIsCurrent()) return;
         if (snapshot) {
           const previous = useEntitlementStore.getState();
           const shouldSyncServer =
@@ -229,13 +233,16 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           // propagates inactive revocation without charging every free boot.
           if (shouldSyncServer) {
             await syncProEntitlementToServer({ source: 'revenuecat', snapshot });
+            if (!sessionIsCurrent()) return;
           }
           return;
         }
       } catch {
+        if (!sessionIsCurrent()) return;
         // Keep uid-scoped local cache if provider sync fails.
       }
     }
+    if (userId && !sessionIsCurrent()) return;
     set((state) =>
       normalizeEntitlementState({
         ...state,

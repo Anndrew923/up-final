@@ -183,7 +183,8 @@ export function finalizeDynoIntelCallableReply(reply, context, userQuestion = ""
   const finalized = finalizeDynoIntelReply(reply, resolvedLocale);
   const railed = enforceOnTopicRail(finalized, context, userQuestion);
   const repaired = enforceCommentaryBeatContract(railed, context);
-  const { hallOfFameConsultReply: _consultMarker, ...clientReply } = repaired;
+  const clientReply = { ...repaired };
+  delete clientReply.hallOfFameConsultReply;
   return {
     ...clientReply,
     commentary: stripTechnicalLeakage(clientReply.commentary, resolvedLocale).trim(),
@@ -323,7 +324,6 @@ async function invokeGeminiOnce({
   context,
   userQuestion,
   promptTemplateId,
-  locale,
   cachedContentName = null,
 }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;

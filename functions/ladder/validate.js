@@ -3,6 +3,17 @@ import { containsProfanity } from "./profanity.js";
 
 const DISPLAY_NAME_MAX = 64;
 const AVATAR_URL_MAX = 250_000;
+const NORMALIZED_SCORE_MAX = 200;
+
+/**
+ * Server-owned physical ceilings. Most shards store normalized 0–200 scores;
+ * `strength` is the only raw SBD total (kg), while login days is a lifetime count.
+ * These are abuse bounds, not performance standards.
+ */
+const SHARD_SCORE_MAX = new Map([
+  ["strength", 2_000],
+  ["totalLoginDays", 36_500],
+]);
 
 export function isValidShardId(metric) {
   return typeof metric === "string" && KNOWN_LEADERBOARD_SHARD_IDS.has(metric);
@@ -40,8 +51,14 @@ export function sanitizeAvatarUrl(raw) {
   return trimmed;
 }
 
-export function validateScore(score) {
-  return Number.isFinite(score) && score >= 0;
+export function getShardScoreMax(metric) {
+  return SHARD_SCORE_MAX.get(metric) ?? NORMALIZED_SCORE_MAX;
+}
+
+export function validateScore(metric, score) {
+  if (!isValidShardId(metric) || !Number.isFinite(score) || score < 0) return false;
+  if (metric === "totalLoginDays" && !Number.isInteger(score)) return false;
+  return score <= getShardScoreMax(metric);
 }
 
 export function sanitizeProfile(profile) {

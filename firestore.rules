@@ -20,62 +20,24 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
-    function entitlementFields() {
-      // Billing state is server-authoritative; clients may never self-grant Core or Pro.
-      return [
-        'purchaseStatus',
-        'purchase_status',
-        'subscriptionStatus',
-        'subscription_status',
-        'isPro',
-        'is_pro',
-        'proExpiresAt',
-        'pro_expires_at',
-        'planId',
-        'plan_id',
-        'entitlementVerifiedAtMs'
-      ];
-    }
-
-    // users：登入者可讀（顯示暱稱/頭像/排行榜等），僅本人可寫
-    // ✅ 新增：允許登入用戶更新其他用戶的點讚相關字段
-    match /users/{userId} {
-      allow read: if signedIn();
-
-      // 僅本人可創建/刪除自己的文檔
-      allow create: if isOwner(userId)
-        && request.resource.data.userId == userId
-        && !('isAdmin' in request.resource.data)
-        && !request.resource.data.keys().hasAny(entitlementFields());
-      allow delete: if isOwner(userId) && resource.data.userId == userId;
-
-      // 本人可更新自己的文檔（原有規則）
-      // ✅ 修改：允許部分更新（merge）天梯相關欄位，並允許清除認證狀態
-      allow update: if isOwner(userId)
-        && resource.data.userId == userId
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(entitlementFields())
+    function hasValidPro(uid) {
+      let userData = get(/databases/$(database)/documents/users/$(uid)).data;
+      return isOwner(uid)
         && (
-          // 如果只更新天梯相關欄位，允許（merge 模式）
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ladderScore', 'lastLadderSubmission', 'updatedAt']) ||
-          // 如果更新天梯分數並清除認證欄位，允許（重新提交分數後認證失效）
-          (request.resource.data.diff(resource.data).affectedKeys().hasAll(['ladderScore', 'lastLadderSubmission', 'updatedAt']) &&
-           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ladderScore', 'lastLadderSubmission', 'updatedAt', 'isVerified', 'verifiedLadderScore', 'verificationStatus', 'verifiedAt', 'verificationExpiredAt', 'verificationRequestId']) &&
-           request.resource.data.isVerified == false) ||
-          // 或者完整更新時，檢查 request.resource.data.userId 且不能修改 userId
-          (request.resource.data.userId != null && request.resource.data.userId == userId)
+          ('purchaseStatus' in userData && userData.purchaseStatus == 'owned') ||
+          !('purchaseStatus' in userData)
         )
-        && (
-          // 如果文檔中沒有 isAdmin 欄位，不允許添加
-          (!('isAdmin' in resource.data) && !('isAdmin' in request.resource.data)) ||
-          // 如果文檔中有 isAdmin 欄位，不允許修改它的值
-          ('isAdmin' in resource.data &&
-           (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin))
-        );
-
-      // ✅ 新增：允許登入用戶更新其他用戶的點讚相關字段
-      allow update: if signedIn()
-        && onlyMutate(['ladderLikes', 'ladderLikeCount'])
-        && request.resource.data.userId == resource.data.userId; // 確保不能修改 userId
+        && 'subscriptionStatus' in userData
+        && userData.subscriptionStatus in ['pro', 'grace']
+        && 'proExpiresAtMs' in userData
+        && userData.proExpiresAtMs is int
+        && userData.proExpiresAtMs >= request.time.toMillis();
+    }
+    // Billing/verification state is server-authoritative. Public ladder identity
+    // lives in leaderboard summary docs, so user documents are private.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update, delete: if false;
 
       // ✅ 新增：允許管理員更新認證相關字段
       allow update: if isAdmin()
@@ -93,72 +55,45 @@ service cloud.firestore {
 
       // UP Final：雲端備份 users/{uid}/artifacts/{artifactId}（例如 up_cloud_sync_v1）
       match /artifacts/{artifactId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if hasValidPro(userId);
       }
 
       // UP Final：Pro 結構化同步（單一 baseline + 每筆歷史獨立文件，避免單一 JSON 1MB 上限）
       match /profile/{docId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if hasValidPro(userId);
       }
       match /history/{recordId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if hasValidPro(userId);
       }
     }
 
-    // friendInvitations：僅參與雙方可讀；from 可建；參與雙方可改狀態
+    // Retired social collections are server-only until a Callable contract ships.
     match /friendInvitations/{inviteId} {
-      allow read: if signedIn() && (
-        resource.data.fromUserId == request.auth.uid ||
-        resource.data.toUserId == request.auth.uid
-      );
-      allow create: if signedIn()
-        && request.resource.data.fromUserId == request.auth.uid
-        && request.resource.data.toUserId is string
-        && request.resource.data.toUserId != request.auth.uid;
-      // 僅修改狀態/時間等安全欄位
-      allow update: if signedIn()
-        && (resource.data.fromUserId == request.auth.uid ||
-            resource.data.toUserId == request.auth.uid)
-        && onlyMutate(['status','updatedAt']);
-      allow delete: if false;
+      allow read, write: if false;
     }
 
-    // communityPosts：登入者可讀；作者可改文章；他人僅能改 likes/comments
     match /communityPosts/{postId} {
-      allow read: if signedIn();
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
-      // 作者可改內容/隱私；其他登入者僅能改 likes/comments
-      allow update: if signedIn() && (
-        (resource.data.userId == request.auth.uid) ||
-        (onlyMutate(['likes','comments']))
-      );
-      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow read, write: if false;
     }
 
-    // assessments：僅本人可 CRUD
     match /assessments/{assessmentId} {
-      allow read, update, delete: if signedIn() && resource.data.userId == request.auth.uid;
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, write: if false;
     }
 
-    // ladderRankings：登入者可讀；本人可 CRUD 自己的排名紀錄
     match /ladderRankings/{rankingId} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      allow read, write: if false;
     }
 
     // leaderboards：leaderboards/{metric}/entries/{uid}
     // P2: client writes denied — use Callable `ladderSubmitShard` / `ladderSyncBatch` (Admin SDK).
     match /leaderboards/{metric}/entries/{uid} {
-      allow read: if signedIn();
+      allow read: if signedIn() && hasValidPro(request.auth.uid);
       allow create, update, delete: if false;
     }
 
     // leaderboard_previews/{uid} — P2: writes via Callable `ladderSyncPreview` / batch preview only.
     match /leaderboard_previews/{uid} {
-      allow read: if signedIn();
+      allow read: if signedIn() && hasValidPro(request.auth.uid);
       allow create, update, delete: if false;
     }
 
@@ -183,15 +118,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // history：僅本人可 CRUD
     match /history/{historyId} {
-      allow read, update, delete: if signedIn() && resource.data.userId == request.auth.uid;
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, write: if false;
     }
 
-    // userSettings：docId 必須是 uid，僅本人可 CRUD
     match /userSettings/{settingId} {
-      allow read, create, update, delete: if isOwner(settingId);
+      allow read, write: if false;
     }
 
     // systemConfig：僅讀（無人可寫）
@@ -200,32 +132,8 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ✅ 新增：verificationRequests 集合
-    // 用戶可建立自己的申請；管理員可讀寫所有申請
     match /verificationRequests/{requestId} {
-      // 用戶可讀取自己的申請，管理員可讀取所有申請
-      allow read: if signedIn() && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
-
-      // 用戶可建立自己的申請
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'pending'
-        && request.resource.data.applicationNumber is string
-        && request.resource.data.requestedItems is list
-        && request.resource.data.socialAccount is map;
-
-      // 管理員可更新所有申請（審核）
-      allow update: if isAdmin()
-        && (
-          onlyMutate(['status', 'reviewedAt', 'reviewedBy', 'rejectionReason', 'notes', 'updatedAt']) ||
-          (resource.data.status == 'pending' &&
-           request.resource.data.status in ['approved', 'rejected'])
-        );
-
-      // 不允許刪除申請（保留記錄）
-      allow delete: if false;
+      allow read, write: if false;
     }
 
     // ✅ 新增：adminActions 集合
@@ -241,50 +149,18 @@ service cloud.firestore {
       allow update, delete: if false; // 不允許修改或刪除記錄
     }
 
-    // ✅ 新增：verificationSequences 集合
-    // 用於生成唯一的申請編號，已登入用戶可讀寫
+    // Global sequence is server-authoritative to prevent collisions and tampering.
     match /verificationSequences/{dateStr} {
-      // 已登入用戶可讀取（用於獲取當前序號）
       allow read: if signedIn();
-
-      // 已登入用戶可寫入（用於更新序號，通過 transaction 確保唯一性）
-      allow write: if signedIn()
-        && request.resource.data.lastSequence is int
-        && request.resource.data.updatedAt is string;
+      allow write: if false;
     }
 
-    // ✅ 新增：reports 集合
-    // 用戶可建立自己的舉報；管理員可讀寫所有舉報
     match /reports/{reportId} {
-      // 用戶可讀取自己的舉報，管理員可讀取所有舉報
-      allow read: if signedIn() && (
-        resource.data.reporterId == request.auth.uid || isAdmin()
-      );
-
-      // 用戶可建立自己的舉報
-      allow create: if signedIn()
-        && request.resource.data.reporterId == request.auth.uid
-        && request.resource.data.reportedUserId is string
-        && request.resource.data.reportedUserId != request.auth.uid
-        && request.resource.data.reportType is string
-        && request.resource.data.reason is string
-        && request.resource.data.status == 'pending'
-        && request.resource.data.createdAt is string
-        && request.resource.data.updatedAt is string;
-
-      // 管理員可更新舉報狀態（審核）
-      allow update: if isAdmin()
-        && onlyMutate(['status', 'reviewedAt', 'reviewedBy', 'notes', 'updatedAt']);
-
-      // 不允許刪除舉報（保留記錄）
-      allow delete: if false;
+      allow read, write: if false;
     }
 
-    // ✅ 新增：notifications 集合
-    // 用戶可讀取自己的通知；允許登入用戶寫入（例如標記已讀、刪除或前端觸發通知）
     match /notifications/{notificationId} {
-      allow read: if signedIn() && resource.data.userId == request.auth.uid;
-      allow write: if signedIn();
+      allow read, write: if false;
     }
   }
 }

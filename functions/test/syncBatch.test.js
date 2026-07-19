@@ -1,6 +1,27 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { createEmptySummary, shouldSyncBatchPreview } from "../ladder/syncBatch.js";
+import {
+  createEmptySummary,
+  normalizeBatchTargets,
+  shouldSyncBatchPreview,
+} from "../ladder/syncBatch.js";
+
+describe("normalizeBatchTargets", () => {
+  it("deduplicates repeated shard writes using the last value", () => {
+    assert.deepEqual(
+      normalizeBatchTargets([
+        { metric: "strength", score: 10 },
+        { metric: "strength", score: 20 },
+      ]),
+      [{ metric: "strength", score: 20 }]
+    );
+  });
+
+  it("rejects oversized batches before any shard write", () => {
+    const oversized = Array.from({ length: 100 }, () => ({ metric: "strength", score: 10 }));
+    assert.equal(normalizeBatchTargets(oversized), null);
+  });
+});
 
 describe("shouldSyncBatchPreview", () => {
   const mergedScores = {
@@ -59,7 +80,7 @@ describe("shouldSyncBatchPreview", () => {
     );
   });
 
-  it("syncs when only avatar patched on extra shards", () => {
+  it("syncs when the batch only patched an avatar", () => {
     const tally = createEmptySummary();
     tally.attempted = 1;
     tally.unchanged = 1;

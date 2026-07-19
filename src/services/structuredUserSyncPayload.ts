@@ -11,6 +11,7 @@ import type { StrengthInputsPersisted } from '../types/strengthInputs';
 import type { GripInputsPersisted } from '../types/gripInputs';
 import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { FfmiDraft, LocalHistoryRecord, LocalProfile } from './localStorageService';
+import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
 
 export const STRUCTURED_PROFILE_SCHEMA_VERSION = 1 as const;
 
@@ -55,10 +56,6 @@ export function historyRecordToFirestore(
   };
 }
 
-function isScoreMapLike(value: unknown): value is ScoreMap {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /**
  * Validates Firestore history doc before merging into local restore.
  * Unknown `schemaVersion` is accepted for forward compatibility; mismatched numeric version is rejected.
@@ -68,16 +65,12 @@ export function parseFirestoreHistoryDoc(raw: unknown): LocalHistoryRecord | nul
   const d = raw as Record<string, unknown>;
   if (d.schemaVersion !== undefined && d.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION)
     return null;
-  if (typeof d.id !== 'string' || !d.id) return null;
-  if (typeof d.createdAt !== 'string' || !d.createdAt) return null;
-  if (typeof d.overallScore !== 'number' || !Number.isFinite(d.overallScore)) return null;
-  if (!isScoreMapLike(d.scores)) return null;
   const rec: LocalHistoryRecord = {
-    id: d.id,
-    createdAt: d.createdAt,
+    id: d.id as string,
+    createdAt: d.createdAt as string,
     scores: d.scores as ScoreMap,
-    overallScore: d.overallScore,
+    overallScore: d.overallScore as number,
   };
   if (typeof d.note === 'string') rec.note = d.note;
-  return rec;
+  return isLocalHistoryRecord(rec) ? rec : null;
 }

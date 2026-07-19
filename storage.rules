@@ -3,10 +3,20 @@ rules_version = '2';
 // Ladder display avatars — Pro sync uploads from client; reads for signed-in leaderboard viewers.
 service firebase.storage {
   match /b/{bucket}/o {
-    match /ladder-avatars/{uid}/avatar.jpg {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
+    function hasValidPro(uid) {
+      let userData = firestore.get(/databases/(default)/documents/users/$(uid)).data;
+      return request.auth != null
         && request.auth.uid == uid
+        && 'subscriptionStatus' in userData
+        && userData.subscriptionStatus in ['pro', 'grace']
+        && 'proExpiresAtMs' in userData
+        && userData.proExpiresAtMs is int
+        && userData.proExpiresAtMs >= request.time.toMillis();
+    }
+
+    match /ladder-avatars/{uid}/avatar.jpg {
+      allow read: if request.auth != null && hasValidPro(request.auth.uid);
+      allow write: if hasValidPro(uid)
         && request.resource.size < 512 * 1024
         && request.resource.contentType.matches('image/.*');
       allow delete: if request.auth != null && request.auth.uid == uid;

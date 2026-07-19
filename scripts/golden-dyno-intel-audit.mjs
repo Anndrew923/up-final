@@ -505,7 +505,7 @@ function buildContext(testCase) {
 }
 
 /** v3.0 — paragraph contract for on-topic replies. */
-function expectedParagraphCount(testCase, inferenceContext) {
+function expectedParagraphCount(testCase) {
   if (testCase.expectOffTopic) return null;
   if (Array.isArray(testCase.gaps) && testCase.gaps.length > 0) return 2;
   return 1;
@@ -531,7 +531,7 @@ function auditReply(testCase, reply, inferenceContext, routedModel) {
 
   const commentary = String(reply.commentary ?? "");
   const paragraphs = commentary.split(/\n\n+/).filter(Boolean);
-  const expectedCount = expectedParagraphCount(testCase, inferenceContext);
+  const expectedCount = expectedParagraphCount(testCase);
 
   if (expectedCount != null && paragraphs.length !== expectedCount) {
     issues.push(`v3.0 expected ${expectedCount} paragraph(s), got ${paragraphs.length}`);

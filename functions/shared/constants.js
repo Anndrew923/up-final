@@ -59,6 +59,8 @@ export const CALLABLE_OPTS = {
   region: process.env.FUNCTIONS_REGION || "us-central1",
   memory: "512MiB",
   timeoutSeconds: 120,
+  // Emulator traffic has no attestation provider; every deployed Callable fails closed.
+  enforceAppCheck: process.env.FUNCTIONS_EMULATOR !== "true",
 };
 
 /** DYNO INTEL — keep in sync with product quotas. */

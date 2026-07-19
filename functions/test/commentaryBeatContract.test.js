@@ -507,7 +507,6 @@ describe("enforceCommentaryBeatContract v3", () => {
   });
 
   it("drops paraphrased AI extension and generic ritual closers (anchor-only)", () => {
-    const fullBrief = resolveHumanBrief(strengthStatusContext);
     const enriched = injectChassisBeatsIntoContext(strengthStatusContext);
     const segment1 = enriched.chassisBeats.p1Official;
     const reply = {

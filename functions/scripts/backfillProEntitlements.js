@@ -6,6 +6,7 @@ import {
 import { verifyRevenueCatProEntitlement } from "../subscription/verifyRevenueCat.js";
 
 const apiKey = (process.env.REVENUECAT_SECRET_API_KEY || "").trim();
+const applyWrites = process.argv.includes("--apply");
 if (!apiKey) {
   throw new Error("REVENUECAT_SECRET_API_KEY is required");
 }
@@ -23,25 +24,35 @@ for (const snapshot of snapshots) {
 
 let activated = 0;
 let revoked = 0;
+let failed = 0;
 for (const uid of users.keys()) {
-  const verifiedAtMs = Date.now();
-  const verified = await verifyRevenueCatProEntitlement(uid, apiKey);
-  if (!verified) throw new Error("RevenueCat verification is unavailable");
+  try {
+    const verifiedAtMs = Date.now();
+    const verified = await verifyRevenueCatProEntitlement(uid, apiKey);
+    if (!verified) throw new Error("RevenueCat verification is unavailable");
 
-  if (verified.active) {
-    await applyProEntitlementToUser(uid, {
-      subscriptionStatus: verified.subscriptionStatus,
-      proExpiresAt: verified.expiresDate,
-      planId: verified.productIdentifier,
-      verifiedAtMs,
-    });
-    activated += 1;
-  } else {
-    await clearProEntitlementFromUser(uid, { verifiedAtMs });
-    revoked += 1;
+    if (verified.active) {
+      if (applyWrites) {
+        await applyProEntitlementToUser(uid, {
+          subscriptionStatus: verified.subscriptionStatus,
+          proExpiresAt: verified.expiresDate,
+          planId: verified.productIdentifier,
+          verifiedAtMs,
+        });
+      }
+      activated += 1;
+    } else {
+      if (applyWrites) {
+        await clearProEntitlementFromUser(uid, { verifiedAtMs });
+      }
+      revoked += 1;
+    }
+  } catch {
+    failed += 1;
   }
 }
 
 console.info(
-  `[backfillProEntitlements] complete: ${activated} active, ${revoked} revoked, ${users.size} total`
+  `[backfillProEntitlements] ${applyWrites ? "applied" : "dry-run"}: ${activated} active, ${revoked} revoked, ${failed} failed, ${users.size} total`
 );
+if (failed > 0) process.exitCode = 1;

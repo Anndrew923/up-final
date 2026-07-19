@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Washes DynoIntel hall-of-fame matrix (xlsx/csv) into sparse hallOfFameMatrix.v1.json.
+ * Washes DynoIntel hall-of-fame CSV into sparse hallOfFameMatrix.v1.json.
  * Run: node scripts/import-hall-of-fame-matrix.mjs [optional-input-path]
  *
  * DESIGN INTENT:
@@ -13,11 +13,9 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { basename, dirname, join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
-import XLSX from "xlsx";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultCsv = join(root, "docs/data/DynoIntel_v4.0_名人堂聖殿矩陣.csv");
-const defaultXlsx = join(root, "docs/data/DynoIntel_v4.0_名人堂聖殿矩陣.xlsx");
 const outputPath = join(root, "functions/dynoIntel/data/hallOfFameMatrix.v1.json");
 
 const COLUMN_AXIS_MAP = {
@@ -35,9 +33,7 @@ const COLUMN_AXIS_MAP = {
 const MAX_DISPLAY_NAMES = 3;
 
 function resolveDefaultInput() {
-  // Prefer latest CSV Boss drops; fall back to legacy xlsx.
-  if (existsSync(defaultCsv)) return defaultCsv;
-  return defaultXlsx;
+  return defaultCsv;
 }
 
 function slugifyId(name) {
@@ -73,7 +69,7 @@ function stripDisplayName(raw) {
   name = name.replace(/\(\d+(?:\.\d+)?\)/g, "").trim();
   name = name
     .replace(/（[^）]*）/g, (m) => {
-      if (/^\（\d+(?:\.\d+)?\）$/.test(m)) return "";
+      if (/^（\d+(?:\.\d+)?）$/.test(m)) return "";
       return m;
     })
     .trim();
@@ -115,20 +111,46 @@ function parseAnchors(cell) {
   return anchors.length ? anchors : null;
 }
 
-function readWorkbook(inputPath) {
-  const ext = extname(inputPath).toLowerCase();
-  // WHY: XLSX.readFile mis-detects UTF-8 CJK CSV headers as Latin-1 → only FFMI column matched.
-  if (ext === ".csv") {
-    const text = readFileSync(inputPath, "utf8");
-    return XLSX.read(text, { type: "string", FS: "," });
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === '"') {
+      if (quoted && text[index + 1] === '"') {
+        field += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (char === "," && !quoted) {
+      row.push(field);
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
   }
-  return XLSX.readFile(inputPath);
+  if (field || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
 }
 
 function importMatrix(inputPath = resolveDefaultInput()) {
-  const wb = readWorkbook(inputPath);
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+  if (extname(inputPath).toLowerCase() !== ".csv") {
+    throw new Error("Hall-of-fame import accepts UTF-8 CSV only.");
+  }
+  const rows = parseCsv(readFileSync(inputPath, "utf8"));
 
   const header = rows[0] ?? [];
   const columnAxes = header

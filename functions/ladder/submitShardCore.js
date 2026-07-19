@@ -101,7 +101,7 @@ export async function runLadderSubmitShard(request) {
       submittedScore: null,
     };
   }
-  if (!validateScore(score)) {
+  if (!validateScore(metric, score)) {
     return {
       ok: false,
       reason: "invalid-input",
@@ -131,13 +131,23 @@ export async function runLadderSubmitShard(request) {
       const quota = checkShardRateLimit(rateDoc, rateKey, nowMs);
       const storedAvatar = sanitizeAvatarUrl(entrySnap.data()?.avatarUrl);
       if (avatarUrl && avatarUrl !== storedAvatar && entrySnap.exists) {
+        if (!quota.allowed) {
+          return {
+            outcome: "rate-limited",
+            previousScore,
+            submittedScore: null,
+            quota,
+          };
+        }
         const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
         tx.set(entryRef(metric, uid), payload, { merge: true });
+        const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
+        tx.set(rateRef, rateDoc, { merge: true });
         return {
           outcome: "avatar-patched",
           previousScore,
           submittedScore: score,
-          quota,
+          quota: quotaAfter,
         };
       }
       return {

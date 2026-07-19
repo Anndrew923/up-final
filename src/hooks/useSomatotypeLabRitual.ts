@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { prefersReducedMotion } from '../lib/motionPreference';
 import type { SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
 import { hapticService } from '../services/hapticService';
+import { saveSomatotypeLabDraftFromSnapshot } from '../services/localStorageService';
 
 export type SomatotypeAnalysisState = 'idle' | 'analyzing' | 'completed';
 
@@ -77,6 +78,10 @@ export function useSomatotypeLabRitual(
 
     busyRef.current = true;
     clearTimers();
+
+    // WHY: Lock lab-local draft on successful CTA only — never pollute physicalProfile.
+    saveSomatotypeLabDraftFromSnapshot(liveSnapshot);
+
     setReportSnapshot(liveSnapshot);
     setReportSessionId((n) => n + 1);
     setAnalysisState('analyzing');

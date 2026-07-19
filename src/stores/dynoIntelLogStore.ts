@@ -7,8 +7,6 @@ import {
 } from '../logic/core/dynoIntelLogLimits';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { loadDynoIntelLogs, saveDynoIntelLogs } from '../services/dynoIntelLogPersistence';
-import { scheduleDynoIntelLogCloudSync } from '../services/dynoIntelLogCloudSync';
-import { readEntitlementSnapshot } from './entitlementSelectors';
 
 export interface DynoIntelLogStore {
   entries: DynoIntelLogEntry[];
@@ -90,11 +88,9 @@ export const useDynoIntelLogStore = create<DynoIntelLogStore>((set, get) => ({
       timestamp,
     };
 
-    const ent = readEntitlementSnapshot();
     const next = appendDynoIntelLogEntry(entries, entry);
     const persisted = saveDynoIntelLogs(sessionUid, next);
     set({ entries: next, hydrated: true, storageError: !persisted });
-    scheduleDynoIntelLogCloudSync(ent, entry);
   },
 
   getMostRecent() {

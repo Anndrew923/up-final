@@ -642,7 +642,6 @@ export function calculateMaxTunedPhysique(
   const maxTotalWeightKg = resolveMaxTotalWeightKg(ffmMaxKg, targetBf);
   if (maxTotalWeightKg <= 0) return null;
 
-  const maxSmmKg = estimateSkeletalMuscleMassKg(ffmMaxKg);
   const armMaxSmmKg = estimateSkeletalMuscleMassKg(armFfmMaxKg);
   const armResolved = resolveMaxArmCircumferenceCm({
     heightCm: height,

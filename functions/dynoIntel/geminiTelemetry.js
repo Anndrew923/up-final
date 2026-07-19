@@ -1,7 +1,25 @@
+import { createHash } from "node:crypto";
 import { DYNO_INTEL_GEMINI_MODEL_METHODOLOGY } from "../shared/constants.js";
 
 /** @type {Record<string, unknown> | null} */
 export let lastDynoIntelGeminiTelemetry = null;
+
+function privacySafeTelemetry(record) {
+  const payload = { ...record };
+  const uid = typeof payload.uid === "string" ? payload.uid : "";
+  const question = typeof payload.userQuestion === "string" ? payload.userQuestion : "";
+  delete payload.uid;
+  delete payload.userQuestion;
+
+  if (question) {
+    payload.questionLength = question.length;
+    payload.requestHash = createHash("sha256")
+      .update(`${uid}:${question}`)
+      .digest("hex")
+      .slice(0, 24);
+  }
+  return payload;
+}
 
 /** Maps resolved model id to stable telemetry route labels. */
 export function resolveGeminiTelemetryRoute(model) {
@@ -19,7 +37,7 @@ export function resolveGeminiTelemetryRoute(model) {
 export function recordDynoIntelGeminiTelemetry(record) {
   const payload = {
     recordedAt: new Date().toISOString(),
-    ...record,
+    ...privacySafeTelemetry(record),
   };
   lastDynoIntelGeminiTelemetry = payload;
   console.info("[dynoIntel:gemini-telemetry]", JSON.stringify(payload));
@@ -29,7 +47,7 @@ export function recordDynoIntelGeminiTelemetry(record) {
 export function recordDynoIntelRouteTelemetry(record) {
   const payload = {
     recordedAt: new Date().toISOString(),
-    ...record,
+    ...privacySafeTelemetry(record),
   };
   console.info("[dynoIntel:route-telemetry]", JSON.stringify(payload));
   return payload;

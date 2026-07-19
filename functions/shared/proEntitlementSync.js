@@ -3,7 +3,16 @@
  * WHY: A mutable subscription must be checked against one revocable source;
  * ID-token custom claims can remain stale until token refresh.
  */
-import { db } from "./admin.js";
+import { db, FieldValue } from "./admin.js";
+
+const legacyAliasCleanup = {
+  purchase_status: FieldValue.delete(),
+  subscription_status: FieldValue.delete(),
+  is_pro: FieldValue.delete(),
+  pro_expires_at: FieldValue.delete(),
+  pro_expires_at_ms: FieldValue.delete(),
+  plan_id: FieldValue.delete(),
+};
 
 function entitlementResult(data, applied) {
   const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status ?? "free";
@@ -11,6 +20,7 @@ function entitlementResult(data, applied) {
     applied,
     subscriptionStatus,
     proExpiresAt: data?.proExpiresAt ?? data?.pro_expires_at ?? null,
+    proExpiresAtMs: data?.proExpiresAtMs ?? data?.pro_expires_at_ms ?? null,
     planId: data?.planId ?? data?.plan_id ?? null,
   };
 }
@@ -26,6 +36,9 @@ async function writeEntitlementIfFresh(uid, patch, verifiedAtMs) {
       return entitlementResult(current, false);
     }
     const next = {
+      // Entitlement webhooks may arrive before any client profile write. Keep
+      // the canonical identity invariant so later rules never see a partial user doc.
+      userId: uid,
       ...patch,
       entitlementVerifiedAtMs: incomingVersion,
       updatedAt: new Date().toISOString(),
@@ -50,6 +63,9 @@ export async function applyProEntitlementToUser(uid, payload = {}) {
   }
 
   const subscriptionStatus = payload.subscriptionStatus ?? "pro";
+  if (subscriptionStatus !== "pro" && subscriptionStatus !== "grace") {
+    throw new Error("active-pro-status-required");
+  }
   const proExpiresAt = payload.proExpiresAt ?? null;
   const planId = payload.planId ?? "pro_monthly";
   const expiryMs = proExpiresAt ? Date.parse(proExpiresAt) : Number.NaN;
@@ -65,8 +81,10 @@ export async function applyProEntitlementToUser(uid, payload = {}) {
     {
       subscriptionStatus,
       proExpiresAt,
+      proExpiresAtMs: expiryMs,
       planId,
-      isPro: subscriptionStatus === "pro" || subscriptionStatus === "grace",
+      isPro: true,
+      ...legacyAliasCleanup,
     },
     payload.verifiedAtMs
   );
@@ -85,7 +103,9 @@ export async function clearProEntitlementFromUser(uid, options = {}) {
       subscriptionStatus: "free",
       isPro: false,
       proExpiresAt: null,
+      proExpiresAtMs: null,
       planId: null,
+      ...legacyAliasCleanup,
     },
     options.verifiedAtMs
   );

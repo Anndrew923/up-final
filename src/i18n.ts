@@ -59,17 +59,11 @@ i18n.on('languageChanged', (lng) => {
 });
 
 /** Dev-only: re-merge locale JSON without Vite full-page reload (see `vite/i18nLocaleHmr.ts`). */
-async function reloadLocaleResourceBundles(): Promise<void> {
-  const [commonMod, enArenaMod, zhArenaMod] = await Promise.all([
-    import('./i18n/locales/common'),
-    import('./i18n/locales/en/arena.json'),
-    import('./i18n/locales/zh-Hant/arena.json'),
-  ]);
-
-  i18n.addResourceBundle('en', 'common', commonMod.enCommon, true, true);
-  i18n.addResourceBundle('zh-Hant', 'common', commonMod.zhHantCommon, true, true);
-  i18n.addResourceBundle('en', 'arena', enArenaMod.default, true, true);
-  i18n.addResourceBundle('zh-Hant', 'arena', zhArenaMod.default, true, true);
+function reloadLocaleResourceBundles(): void {
+  i18n.addResourceBundle('en', 'common', enCommon, true, true);
+  i18n.addResourceBundle('zh-Hant', 'common', zhHantCommon, true, true);
+  i18n.addResourceBundle('en', 'arena', enArena, true, true);
+  i18n.addResourceBundle('zh-Hant', 'arena', zhArena, true, true);
 
   const lng = i18n.resolvedLanguage ?? i18n.language;
   if (lng) {
@@ -84,7 +78,7 @@ if (import.meta.hot) {
     if (localeReloadTimer) clearTimeout(localeReloadTimer);
     localeReloadTimer = setTimeout(() => {
       localeReloadTimer = null;
-      void reloadLocaleResourceBundles();
+      reloadLocaleResourceBundles();
     }, 120);
   });
 }

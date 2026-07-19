@@ -43,7 +43,6 @@ describe('resolveDynoIntelClosingBeatKind', () => {
 
   it('uses passion-close or return-ritual for status questions', async () => {
     await i18n.changeLanguage('zh-Hant');
-    const t = i18n.t.bind(i18n);
     const generatedAt = '2026-06-14T12:00:00.000Z';
 
     const kind = resolveDynoIntelClosingBeatKind('我的 FFMI 狀態如何？', { generatedAt });

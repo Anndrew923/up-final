@@ -9,10 +9,14 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "lint": "node --check index.js && node --check ladder/submitShardCore.js",
-    "migrate:pro-expiries": "node scripts/backfillProEntitlements.js"
+    "migrate:pro-expiries": "node scripts/backfillProEntitlements.js",
+    "migrate:pro-expiries:apply": "node scripts/backfillProEntitlements.js --apply"
   },
   "dependencies": {
-    "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.3.2"
+    "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }

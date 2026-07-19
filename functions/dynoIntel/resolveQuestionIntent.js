@@ -116,6 +116,7 @@ export function detectQuestionFocusSupplemental(userQuestion) {
 
 /** v2.4.2 — axis lock from question keywords only; context ignored (signature kept for stability). */
 export function detectQuestionFocusAxis(userQuestion, _context) {
+  void _context;
   const q = normalizeDynoIntelQuestion(userQuestion);
 
   for (const entry of AXIS_QUESTION_PATTERNS) {

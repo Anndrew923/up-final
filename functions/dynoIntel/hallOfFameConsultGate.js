@@ -448,14 +448,10 @@ export function resolveHallOfFameConsultReply(context, userQuestion, priorTurn =
    * - No axis + decade from THIS sentence → aggregate overall (legacy peer band asks).
    * - No axis after anaphora inherit attempt → guided (do not invent overall unlock).
    */
-  let unlockScore = Number.NaN;
-  if (axis) {
-    unlockScore = resolveAxisScore(context, axis);
-  } else if (tierFromCurrent) {
-    unlockScore = resolveAxisScore(context, "overall");
-  } else {
+  if (!axis && !tierFromCurrent) {
     return buildGuidedConsultReply(context);
   }
+  const unlockScore = resolveAxisScore(context, axis || "overall");
 
   if (!Number.isFinite(unlockScore) || unlockScore < Number(tier.decadeKey)) {
     return buildBlockedConsultReply(context);

@@ -66,11 +66,19 @@ import {
 } from './structuredUserSyncPayload';
 import { safeGetItem, safeSetItem } from '../lib/safeLocalStorage';
 import { useEntitlementStore } from '../stores/entitlementStore';
-import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
 import type { ScoreMap } from '../types/scoring';
+import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
+import {
+  captureStructuredSyncSession,
+  isStructuredSyncSessionCurrent,
+  registerStructuredSyncTimer,
+  releaseStructuredSyncTimer,
+  type StructuredSyncSession,
+} from './structuredSyncSession';
 
-const WATERMARK_KEY = 'up.structuredSync.lastAppliedRemoteProfileUpdatedAt';
+const WATERMARK_KEY_PREFIX = 'up.structuredSync.lastAppliedRemoteProfileUpdatedAt';
+const watermarkKey = (uid: string) => `${WATERMARK_KEY_PREFIX}:${uid}`;
 const HISTORY_BATCH_SIZE = 400;
 
 function requireNonAnonymousUid(): string {
@@ -177,20 +185,24 @@ export function applyStructuredProfileToLocal(data: StructuredProfileFirestoreV1
   }
 }
 
-function readWatermark(): string | null {
-  return safeGetItem(WATERMARK_KEY);
+function readWatermark(uid: string): string | null {
+  return safeGetItem(watermarkKey(uid));
 }
 
-function writeWatermark(iso: string): void {
-  safeSetItem(WATERMARK_KEY, iso);
+function writeWatermark(uid: string, iso: string): void {
+  safeSetItem(watermarkKey(uid), iso);
 }
 
 async function commitHistoryBatchWrites(
   db: Firestore,
   uid: string,
-  entries: Array<{ record: LocalHistoryRecord; cloudAt: string }>
+  entries: Array<{ record: LocalHistoryRecord; cloudAt: string }>,
+  expectedSession?: StructuredSyncSession
 ): Promise<void> {
   for (let i = 0; i < entries.length; i += HISTORY_BATCH_SIZE) {
+    if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) {
+      throw new Error('structured-sync-session-changed');
+    }
     const slice = entries.slice(i, i + HISTORY_BATCH_SIZE);
     const batch = writeBatch(db);
     for (const { record, cloudAt } of slice) {
@@ -208,11 +220,18 @@ async function commitHistoryBatchWrites(
 export async function migrateLegacyBlobToStructuredIfPresent(
   ent: EntitlementState,
   db: Firestore,
-  uid: string
+  uid: string,
+  expectedSession?: StructuredSyncSession
 ): Promise<void> {
   if (shouldBlockStructuredUserSync(ent)) return;
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) {
+    throw new Error('structured-sync-session-changed');
+  }
 
   const legacySnap = await getDoc(legacyBlobRef(db, uid));
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) {
+    throw new Error('structured-sync-session-changed');
+  }
   if (!legacySnap.exists()) return;
 
   const raw = legacySnap.data() as { json?: unknown };
@@ -238,51 +257,65 @@ export async function migrateLegacyBlobToStructuredIfPresent(
   const hist = Array.isArray(parsed.history) ? parsed.history : [];
   const batchEntries: Array<{ record: LocalHistoryRecord; cloudAt: string }> = [];
   for (const row of hist) {
-    if (!row?.id || typeof row.createdAt !== 'string') continue;
+    if (!isLocalHistoryRecord(row)) continue;
     batchEntries.push({
-      record: {
-        id: String(row.id),
-        createdAt: row.createdAt,
-        scores: (row.scores && typeof row.scores === 'object' ? row.scores : {}) as ScoreMap,
-        overallScore: typeof row.overallScore === 'number' ? row.overallScore : 0,
-        ...(typeof row.note === 'string' ? { note: row.note } : {}),
-      },
+      record: row,
       cloudAt: migratedAt,
     });
   }
-  await commitHistoryBatchWrites(db, uid, batchEntries);
+  await commitHistoryBatchWrites(db, uid, batchEntries, expectedSession);
 }
 
-export async function pushStructuredProfileFromLocal(ent: EntitlementState): Promise<void> {
+export async function pushStructuredProfileFromLocal(
+  ent: EntitlementState,
+  expectedSession?: StructuredSyncSession
+): Promise<void> {
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return;
   if (!canRunStructuredUserSync(ent)) return;
   const db = getFirestoreDb();
   if (!db) return;
   const uid = requireNonAnonymousUid();
+  if (expectedSession && uid !== expectedSession.uid) return;
   const payload = buildStructuredProfileFromLocal(new Date().toISOString());
   await setDoc(profileRef(db, uid), payload, { merge: true });
   // WHY: Skip echo apply of our own push (stripped ladderProfile would merge away data URL avatars).
-  writeWatermark(payload.updatedAt);
+  if (!expectedSession || isStructuredSyncSessionCurrent(expectedSession)) {
+    writeWatermark(uid, payload.updatedAt);
+  }
 }
 
-export async function pushAllStructuredHistoryFromLocal(ent: EntitlementState): Promise<void> {
+export async function pushAllStructuredHistoryFromLocal(
+  ent: EntitlementState,
+  expectedSession?: StructuredSyncSession
+): Promise<void> {
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return;
   if (!canRunStructuredUserSync(ent)) return;
   const db = getFirestoreDb();
   if (!db) return;
   const uid = requireNonAnonymousUid();
+  if (expectedSession && uid !== expectedSession.uid) return;
   const now = new Date().toISOString();
   const entries = loadHistory().map((record) => ({ record, cloudAt: now }));
-  await commitHistoryBatchWrites(db, uid, entries);
+  await commitHistoryBatchWrites(db, uid, entries, expectedSession);
 }
 
 export async function pushStructuredHistoryRecord(
   ent: EntitlementState,
-  record: LocalHistoryRecord
+  record: LocalHistoryRecord,
+  expectedSession?: StructuredSyncSession
 ): Promise<void> {
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return;
   if (!canRunStructuredUserSync(ent)) return;
   const db = getFirestoreDb();
   if (!db) return;
   const uid = requireNonAnonymousUid();
-  await commitHistoryBatchWrites(db, uid, [{ record, cloudAt: new Date().toISOString() }]);
+  if (expectedSession && uid !== expectedSession.uid) return;
+  await commitHistoryBatchWrites(
+    db,
+    uid,
+    [{ record, cloudAt: new Date().toISOString() }],
+    expectedSession
+  );
 }
 
 /**
@@ -294,11 +327,23 @@ export async function runStructuredBackup(ent: EntitlementState): Promise<void> 
   }
   const db = getFirestoreDb();
   if (!db) throw new Error('structured-sync-blocked');
+  const session = captureStructuredSyncSession();
+  if (!session) throw new Error('structured-sync-blocked');
   const uid = requireNonAnonymousUid();
+  if (uid !== session.uid) throw new Error('structured-sync-session-changed');
 
-  await migrateLegacyBlobToStructuredIfPresent(ent, db, uid);
-  await pushStructuredProfileFromLocal(ent);
-  await pushAllStructuredHistoryFromLocal(ent);
+  await migrateLegacyBlobToStructuredIfPresent(ent, db, uid, session);
+  if (!isStructuredSyncSessionCurrent(session)) {
+    throw new Error('structured-sync-session-changed');
+  }
+  await pushStructuredProfileFromLocal(ent, session);
+  if (!isStructuredSyncSessionCurrent(session)) {
+    throw new Error('structured-sync-session-changed');
+  }
+  await pushAllStructuredHistoryFromLocal(ent, session);
+  if (!isStructuredSyncSessionCurrent(session)) {
+    throw new Error('structured-sync-session-changed');
+  }
 }
 
 /**
@@ -308,11 +353,17 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
   if (!canRunStructuredUserSync(ent)) {
     throw new Error('structured-sync-blocked');
   }
+  const session = captureStructuredSyncSession();
+  if (!session) throw new Error('structured-sync-blocked');
   const db = getFirestoreDb();
   if (!db) throw new Error('structured-sync-blocked');
   const uid = requireNonAnonymousUid();
+  if (uid !== session.uid) throw new Error('structured-sync-session-changed');
 
   const profileSnap = await getDoc(profileRef(db, uid));
+  if (!isStructuredSyncSessionCurrent(session)) {
+    throw new Error('structured-sync-session-changed');
+  }
   if (!profileSnap.exists()) {
     return false;
   }
@@ -325,10 +376,11 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
     return false;
   }
 
-  applyStructuredProfileToLocal(data);
-
   const histCol = collection(db, USER_CLOUD_COLLECTION, uid, USER_HISTORY_SUBCOLLECTION);
   const histSnap = await getDocs(histCol);
+  if (!isStructuredSyncSessionCurrent(session)) {
+    throw new Error('structured-sync-session-changed');
+  }
   const merged: LocalHistoryRecord[] = [];
   histSnap.forEach((d) => {
     const parsed = parseFirestoreHistoryDoc(d.data());
@@ -337,9 +389,9 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
 
   merged.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const capped = merged.slice(0, 200);
+  applyStructuredProfileToLocal(data);
   saveHistory(capped);
-  useHistoryStore.getState().loadLocalHistory();
-  writeWatermark(data.updatedAt);
+  writeWatermark(uid, data.updatedAt);
   return true;
 }
 
@@ -348,12 +400,16 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
  */
 export async function mergeRemoteProfileIfNewer(ent: EntitlementState): Promise<boolean> {
   if (!canRunStructuredUserSync(ent)) return false;
+  const session = captureStructuredSyncSession();
+  if (!session) return false;
   const db = getFirestoreDb();
   if (!db) return false;
   const uid = requireNonAnonymousUid();
+  if (uid !== session.uid) return false;
   const snap = await getDoc(profileRef(db, uid));
+  if (!isStructuredSyncSessionCurrent(session)) return false;
   if (!snap.exists()) return false;
-  return tryApplyRemoteProfileFromSnapshot(ent, snap);
+  return tryApplyRemoteProfileFromSnapshot(ent, snap, session);
 }
 
 /**
@@ -361,9 +417,13 @@ export async function mergeRemoteProfileIfNewer(ent: EntitlementState): Promise<
  */
 export function tryApplyRemoteProfileFromSnapshot(
   ent: EntitlementState,
-  snap: DocumentSnapshot
+  snap: DocumentSnapshot,
+  expectedSession?: StructuredSyncSession
 ): boolean {
+  if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return false;
   if (!canRunStructuredUserSync(ent) || !snap.exists()) return false;
+  const uid = expectedSession?.uid ?? getCurrentFirebaseUser()?.uid;
+  if (!uid) return false;
   const data = snap.data() as StructuredProfileFirestoreV1;
   if (
     data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
@@ -371,12 +431,12 @@ export function tryApplyRemoteProfileFromSnapshot(
   ) {
     return false;
   }
-  const localMark = readWatermark();
+  const localMark = readWatermark(uid);
   if (!isRemoteNewer(data.updatedAt, localMark)) {
     return false;
   }
   applyStructuredProfileToLocal(data);
-  writeWatermark(data.updatedAt);
+  writeWatermark(uid, data.updatedAt);
   return true;
 }
 
@@ -385,17 +445,28 @@ let profilePushTimer: ReturnType<typeof setTimeout> | null = null;
 /** Debounced profile push after radar submits (coalesces rapid writes). */
 export function queueStructuredProfilePushDebounced(ent: EntitlementState, delayMs = 800): void {
   if (!canRunStructuredUserSync(ent)) return;
-  if (profilePushTimer) clearTimeout(profilePushTimer);
+  const session = captureStructuredSyncSession();
+  if (!session) return;
+  if (profilePushTimer) {
+    clearTimeout(profilePushTimer);
+    releaseStructuredSyncTimer(profilePushTimer);
+  }
   profilePushTimer = setTimeout(() => {
+    const timer = profilePushTimer;
     profilePushTimer = null;
+    if (timer) releaseStructuredSyncTimer(timer);
+    if (!isStructuredSyncSessionCurrent(session)) return;
     const ent = useEntitlementStore.getState();
     if (!canRunStructuredUserSync(ent)) return;
+    const currentUid = requireNonAnonymousUid();
+    if (currentUid !== session.uid) return;
     void pushStructuredProfileFromLocal(ent).catch((err) => {
       if (import.meta.env.DEV) {
         console.warn('[structured-sync] debounced profile push failed', err);
       }
     });
   }, delayMs);
+  registerStructuredSyncTimer(profilePushTimer);
 }
 
 export function queueStructuredProfilePushFromCurrentEntitlement(delayMs = 800): void {

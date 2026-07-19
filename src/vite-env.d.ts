@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID?: string;
   readonly VITE_FIREBASE_USE_EMULATORS?: string;
   readonly VITE_FIREBASE_FUNCTIONS_REGION?: string;
+  readonly VITE_APP_CHECK_SITE_KEY?: string;
+  readonly VITE_APP_CHECK_DEBUG_TOKEN?: string;
   readonly VITE_LADDER_CALLABLE_WRITES?: string;
   readonly VITE_RC_API_KEY_IOS?: string;
   /** Empty until `.env` is filled; runtime code must tolerate missing keys (web dev). */

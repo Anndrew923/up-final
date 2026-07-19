@@ -7,6 +7,7 @@ import {
 import {
   readLastGeminiUsageMetadata,
   recordDynoIntelGeminiTelemetry,
+  recordDynoIntelRouteTelemetry,
   resetDynoIntelGeminiTelemetryForTests,
   resolveGeminiTelemetryRoute,
 } from "../dynoIntel/geminiTelemetry.js";
@@ -32,5 +33,19 @@ describe("recordDynoIntelGeminiTelemetry", () => {
       candidatesTokenCount: 12,
     });
     resetDynoIntelGeminiTelemetryForTests();
+  });
+
+  it("redacts uid and question text from route telemetry", () => {
+    const payload = recordDynoIntelRouteTelemetry({
+      route: "gemini-lite",
+      intent: "status",
+      uid: "private-user-id",
+      userQuestion: "private health question",
+    });
+    assert.equal("uid" in payload, false);
+    assert.equal("userQuestion" in payload, false);
+    assert.equal(payload.questionLength, 23);
+    assert.match(payload.requestHash, /^[a-f0-9]{24}$/);
+    assert.equal(payload.intent, "status");
   });
 });

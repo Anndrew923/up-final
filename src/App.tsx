@@ -26,7 +26,6 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const LeaderboardDebugPage = lazy(() => import('./pages/LeaderboardDebugPage'));
-const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
 const FfmiPage = lazy(() => import('./pages/FfmiPage'));
 const CardioAssessmentPage = lazy(() => import('./pages/CardioAssessmentPage'));
@@ -39,7 +38,7 @@ const OneRmCalculatorPage = lazy(() => import('./pages/OneRmCalculatorPage'));
 const PlateCalculatorPage = lazy(() => import('./pages/PlateCalculatorPage'));
 const SomatotypeLabPage = lazy(() => import('./pages/SomatotypeLabPage'));
 
-const NAV_TAB_PAGE: Partial<Record<NavItemKey, ComponentType>> = {
+const NAV_TAB_PAGE: Record<NavItemKey, ComponentType> = {
   home: HomePage,
   assessment: AssessmentPage,
   ladder: LadderPage,
@@ -198,7 +197,7 @@ export default function App() {
               <Route
                 key={item.key}
                 path={toRelativeRoutePath(item.path)}
-                element={withRouteSuspense(Tab ? <Tab /> : <PlaceholderPage />)}
+                element={withRouteSuspense(<Tab />)}
               />
             );
           })}

@@ -1,39 +1,11 @@
-import { deleteUser } from 'firebase/auth';
-import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { clearLocalData } from './localStorageService';
 import {
-  ENTRIES_SUBCOLLECTION,
-  LEADERBOARDS_COLLECTION,
-  USER_ARTIFACTS_COLLECTION,
-  USER_CLOUD_COLLECTION,
-  USER_CLOUD_DOC_ID,
-  USER_HISTORY_SUBCOLLECTION,
-  USER_PROFILE_BASELINE_DOC_ID,
-  USER_PROFILE_SUBCOLLECTION,
-} from './firestorePaths';
-import {
   getCurrentFirebaseUser,
-  getFirestoreDb,
   reauthenticateCurrentGoogleUserWeb,
+  signOutFirebase,
 } from './firebaseClient';
 import { useEntitlementStore } from '../stores/entitlementStore';
-
-const LEADERBOARD_METRICS = [
-  'strength',
-  'explosivePower',
-  'explosive_composite',
-  'explosive_vertical',
-  'explosive_broad',
-  'explosive_sprint',
-  'cardio',
-  'muscleMass',
-  'muscleMass_weightKg',
-  'muscleMass_ratio',
-  'bodyFat',
-  'bodyFat_ffmi',
-  'armSize',
-  'gripStrength',
-] as const;
+import { deleteAccountOnServer } from './accountDeletionCallableService';
 
 export const ACCOUNT_DELETION_ERROR_CODES = {
   requiresRecentLogin: 'auth/requires-recent-login',
@@ -91,53 +63,26 @@ export async function deleteSignedInAccount(): Promise<DeleteAccountResult> {
     return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.reauthFail };
   }
 
-  const db = getFirestoreDb();
-  let cloudDeletePartial = false;
-  if (db) {
-    const histSnap = await getDocs(
-      collection(db, USER_CLOUD_COLLECTION, user.uid, USER_HISTORY_SUBCOLLECTION)
-    );
-    const deleteTasks: Promise<unknown>[] = [
-      deleteDoc(
-        doc(db, USER_CLOUD_COLLECTION, user.uid, USER_ARTIFACTS_COLLECTION, USER_CLOUD_DOC_ID)
-      ),
-      deleteDoc(
-        doc(
-          db,
-          USER_CLOUD_COLLECTION,
-          user.uid,
-          USER_PROFILE_SUBCOLLECTION,
-          USER_PROFILE_BASELINE_DOC_ID
-        )
-      ),
-      ...histSnap.docs.map((d) => deleteDoc(d.ref)),
-      ...LEADERBOARD_METRICS.map((metric) =>
-        deleteDoc(doc(db, LEADERBOARDS_COLLECTION, metric, ENTRIES_SUBCOLLECTION, user.uid))
-      ),
-    ];
-
-    const settled = await Promise.allSettled(deleteTasks);
-    cloudDeletePartial = settled.some((item) => item.status === 'rejected');
-  }
-
   try {
-    await deleteUser(user);
+    await user.getIdToken(true);
+    await deleteAccountOnServer();
   } catch (error) {
-    if (isFirebaseErrorCode(error, ACCOUNT_DELETION_ERROR_CODES.requiresRecentLogin)) {
+    if (
+      isFirebaseErrorCode(error, 'functions/failed-precondition') ||
+      isFirebaseErrorCode(error, ACCOUNT_DELETION_ERROR_CODES.requiresRecentLogin)
+    ) {
       return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.requiresRecentLogin };
     }
-    return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.authDeleteFail };
+    return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.cloudDeletePartial };
   }
 
+  // Server already removed Firebase Auth; sign-out only clears local JS/native SDK sessions.
+  await signOutFirebase().catch(() => undefined);
   try {
     clearLocalData();
     useEntitlementStore.getState().resetEntitlement();
   } catch {
     return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.localCleanupFail };
-  }
-
-  if (cloudDeletePartial) {
-    return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.cloudDeletePartial };
   }
 
   return { ok: true, cloudDeletePartial: false };

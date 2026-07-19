@@ -1,12 +1,12 @@
 /**
  * Firebase Admin singleton — all ladder callables import `db` from here.
  */
-import admin from "firebase-admin";
+import { getApps, initializeApp } from "firebase-admin/app";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 
-if (!admin.apps.length) {
-  admin.initializeApp();
+if (getApps().length === 0) {
+  initializeApp();
 }
 
-export const db = admin.firestore();
-export const FieldValue = admin.firestore.FieldValue;
-export { admin };
+export const db = getFirestore();
+export { FieldValue };

@@ -53,7 +53,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   onClose,
   onBlocked,
 }) => {
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
   const blockUid = useLadderBlockStore((s) => s.block);
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
 
@@ -86,7 +86,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
         ...point,
         label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
       })),
-    [i18n.resolvedLanguage, radarPoints, t]
+    [radarPoints, t]
   );
 
   const scaleMax = useMemo(() => radarDisplayScaleMax(radarPoints), [radarPoints]);

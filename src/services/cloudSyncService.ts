@@ -1,4 +1,5 @@
 import { useEntitlementStore } from '../stores/entitlementStore';
+import { useHistoryStore } from '../stores/historyStore';
 import {
   canRunStructuredUserSync,
   runStructuredBackup,
@@ -21,7 +22,10 @@ function firebaseErrorCode(error: unknown): string | null {
 }
 
 function mapCloudSyncError(error: unknown): CloudSyncErrorReason {
-  if (error instanceof Error && error.message === 'cloud-auth-required') {
+  if (
+    error instanceof Error &&
+    (error.message === 'cloud-auth-required' || error.message === 'structured-sync-session-changed')
+  ) {
     return 'auth-failed';
   }
   if (error instanceof Error && error.message === 'structured-sync-blocked') {
@@ -63,6 +67,7 @@ export async function restoreCloudToLocal(): Promise<CloudSyncOutcome> {
     if (!restored) {
       return { ok: false, reason: 'empty-restore' };
     }
+    useHistoryStore.getState().loadLocalHistory();
     return { ok: true };
   } catch (error) {
     return { ok: false, reason: mapCloudSyncError(error) };

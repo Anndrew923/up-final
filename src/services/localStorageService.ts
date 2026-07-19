@@ -6,9 +6,17 @@ import type { PowerInputsPersisted } from '../types/powerInputs';
 import type { StrengthInputsPersisted } from '../types/strengthInputs';
 import type { GripInputsPersisted } from '../types/gripInputs';
 import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
+import type { SomatotypeLabInputsPersisted } from '../types/somatotypeLabInputs';
 import type { PhysicalProfile } from '../types/userProfile';
+import type { SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
+import {
+  isLocalHistoryRecord,
+  type LocalHistoryRecord,
+} from '../logic/core/localHistoryRecord';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 import { clearAllDynoIntelLogs } from './dynoIntelLogPersistence';
+
+export { isLocalHistoryRecord, type LocalHistoryRecord } from '../logic/core/localHistoryRecord';
 
 const STORAGE_KEYS = {
   profile: 'up.profile',
@@ -23,6 +31,7 @@ const STORAGE_KEYS = {
   strengthInputs: 'up.strengthInputs',
   gripInputs: 'up.gripInputs',
   armSizeInputs: 'up.armSizeInputs',
+  somatotypeLabInputs: 'up.somatotypeLabInputs',
   bootSequenceCompleted: 'up:completed-boot-sequence',
 } as const;
 
@@ -58,6 +67,8 @@ export const LOCAL_GRIP_INPUTS_CHANGED_EVENT = 'up-final-grip-inputs-changed';
 
 export const ARM_SIZE_INPUTS_STORAGE_KEY = STORAGE_KEYS.armSizeInputs;
 export const LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT = 'up-final-arm-size-inputs-changed';
+
+export const SOMATOTYPE_LAB_INPUTS_STORAGE_KEY = STORAGE_KEYS.somatotypeLabInputs;
 
 function notifyProfileObservers(): void {
   if (typeof window === 'undefined') return;
@@ -107,13 +118,7 @@ export interface LocalProfile {
   updatedAt: string;
 }
 
-export interface LocalHistoryRecord {
-  id: string;
-  createdAt: string;
-  scores: ScoreMap;
-  overallScore: number;
-  note?: string;
-}
+const LOCAL_HISTORY_MAX_RECORDS = 200;
 
 function safeParse<T>(value: string | null, fallback: T): T {
   if (!value) return fallback;
@@ -273,6 +278,38 @@ export function subscribeArmSizeInputs(onChange: () => void): () => void {
   return () => window.removeEventListener(LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT, onChange);
 }
 
+/**
+ * Lab-local draft only.
+ * WHY: Must not write back into physicalProfile / armSizeInputs — preserves trial/sandbox UX.
+ */
+export function saveSomatotypeLabInputs(inputs: SomatotypeLabInputsPersisted): void {
+  safeSetItem(STORAGE_KEYS.somatotypeLabInputs, JSON.stringify(inputs));
+}
+
+export function loadSomatotypeLabInputs(): SomatotypeLabInputsPersisted | null {
+  return safeParse<SomatotypeLabInputsPersisted | null>(
+    safeGetItem(STORAGE_KEYS.somatotypeLabInputs),
+    null
+  );
+}
+
+/**
+ * Persist a validated analysis snapshot into the lab-local draft box.
+ * WHY: Keep snapshot→draft mapping in the service layer so ceremony hooks stay thin.
+ */
+export function saveSomatotypeLabDraftFromSnapshot(snapshot: SomatotypeLabSnapshot): void {
+  saveSomatotypeLabInputs({
+    heightCm: snapshot.metrics.heightCm,
+    weightKg: snapshot.metrics.weightKg,
+    bodyFatPct: snapshot.metrics.bodyFatPct,
+    wristCm: snapshot.metrics.wristCm,
+    flexedArmGirthCm: snapshot.metrics.flexedArmGirthCm,
+    gender: snapshot.gender,
+    isVeteran: snapshot.metrics.isVeteran,
+    physiqueTier: snapshot.physiqueTier,
+  });
+}
+
 export function saveScores(scores: ScoreMap): void {
   safeSetItem(STORAGE_KEYS.scores, JSON.stringify(scores));
 }
@@ -286,12 +323,18 @@ export function saveHistory(records: LocalHistoryRecord[]): void {
 }
 
 export function loadHistory(): LocalHistoryRecord[] {
-  return safeParse<LocalHistoryRecord[]>(safeGetItem(STORAGE_KEYS.history), []);
+  const parsed = safeParse<unknown>(safeGetItem(STORAGE_KEYS.history), []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(isLocalHistoryRecord).slice(0, LOCAL_HISTORY_MAX_RECORDS);
 }
 
-export function appendHistory(record: LocalHistoryRecord, maxRecords = 200): LocalHistoryRecord[] {
+export function appendHistory(
+  record: LocalHistoryRecord,
+  maxRecords = LOCAL_HISTORY_MAX_RECORDS
+): LocalHistoryRecord[] {
   const current = loadHistory();
-  const next = [record, ...current].slice(0, maxRecords);
+  const safeMax = Math.max(0, Math.min(maxRecords, LOCAL_HISTORY_MAX_RECORDS));
+  const next = [record, ...current].filter(isLocalHistoryRecord).slice(0, safeMax);
   saveHistory(next);
   return next;
 }

@@ -26,7 +26,7 @@ export function parseJoinArenaFrom(search: string): JoinArenaFrom | null {
 export function parseJoinArenaReturnTo(search: string): RoutePath | null {
   const raw = new URLSearchParams(search).get('returnTo');
   if (!raw) return null;
-  let decoded = raw;
+  let decoded: string;
   try {
     decoded = decodeURIComponent(raw);
   } catch {

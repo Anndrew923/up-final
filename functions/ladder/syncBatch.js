@@ -5,22 +5,13 @@ import {
   loadRateLimitDoc,
   recordFullSyncSuccess,
 } from "./rateLimits.js";
-import {
-  buildEntryPayload,
-  runLadderSubmitShard,
-  runLadderSyncPreview,
-} from "./submitShardCore.js";
+import { runLadderSubmitShard, runLadderSyncPreview } from "./submitShardCore.js";
 import {
   isValidShardId,
   tryNormalizeDisplayName,
-  sanitizeAvatarUrl,
-  sanitizeProfile,
   validateScore,
 } from "./validate.js";
-import {
-  ENTRIES_SUBCOLLECTION,
-  LEADERBOARDS_COLLECTION,
-} from "../shared/constants.js";
+import { KNOWN_LEADERBOARD_SHARD_IDS } from "../shared/constants.js";
 import {
   applyFailureReasonToTally,
   mapLadderShardSubmitError,
@@ -86,76 +77,6 @@ function applyShardResult(tally, failures, metric, result) {
 }
 
 /**
- * Patches portrait on shards the user can see but did not upload this batch (e.g. `ladderScore`).
- * WHY: Assessment page sync may only target `bodyFat_ffmi` while the ladder UI shows the overall board.
- */
-async function propagateAvatarToExtraShards(uid, data, displayName, targets, tally, failures) {
-  const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
-  if (!avatarUrl) return;
-
-  const extra =
-    Array.isArray(data.propagateAvatarShards) && data.propagateAvatarShards.length > 0
-      ? data.propagateAvatarShards
-      : ["ladderScore"];
-
-  const batchMetrics = new Set(
-    targets
-      .map((t) => t?.metric)
-      .filter((m) => typeof m === "string" && isValidShardId(m))
-  );
-
-  const seen = new Set();
-  for (const metric of extra) {
-    if (!metric || seen.has(metric) || !isValidShardId(metric)) continue;
-    if (batchMetrics.has(metric)) continue;
-    seen.add(metric);
-
-    const ref = db
-      .collection(LEADERBOARDS_COLLECTION)
-      .doc(metric)
-      .collection(ENTRIES_SUBCOLLECTION)
-      .doc(uid);
-    let snap;
-    try {
-      snap = await ref.get();
-    } catch (err) {
-      recordLadderSyncFailure(
-        failures,
-        metric,
-        "internal",
-        err?.message ?? "Avatar propagate read failed"
-      );
-      continue;
-    }
-    if (!snap.exists) continue;
-
-    const score = Number(snap.data()?.scoreBest);
-    if (!validateScore(score)) continue;
-
-    const storedAvatar = sanitizeAvatarUrl(snap.data()?.avatarUrl);
-    if (storedAvatar === avatarUrl) continue;
-
-    try {
-      const payload = buildEntryPayload({
-        displayName,
-        score,
-        profile: sanitizeProfile(data.profile),
-        avatarUrl,
-      });
-      await ref.set(payload, { merge: true });
-      tally.avatarPatched += 1;
-    } catch (err) {
-      recordLadderSyncFailure(
-        failures,
-        metric,
-        "internal",
-        err?.message ?? "Avatar propagate write failed"
-      );
-    }
-  }
-}
-
-/**
  * WHY: Preview must stay in sync with batch profile/radar even without HTTPS avatar or unchanged scores.
  * Avatar is optional on `leaderboard_previews/{uid}`.
  * Keep in parity with client `batchSummaryWarrantsPreviewSync` in ladderBatchPostUploadPolicy.ts.
@@ -166,6 +87,32 @@ export function shouldSyncBatchPreview(preview, tally) {
   }
   if (tally.attempted <= 0) return false;
   return tally.updated > 0 || tally.avatarPatched > 0 || tally.unchanged > 0;
+}
+
+export function normalizeBatchTargets(targets) {
+  if (!Array.isArray(targets) || targets.length > KNOWN_LEADERBOARD_SHARD_IDS.size) return null;
+  const deduped = new Map();
+  const malformed = [];
+  for (const target of targets) {
+    if (typeof target?.metric !== "string") {
+      malformed.push(target);
+      continue;
+    }
+    deduped.set(target.metric, target);
+  }
+  return [...malformed, ...deduped.values()];
+}
+
+async function reserveFullSyncQuota(uid, now) {
+  return db.runTransaction(async (tx) => {
+    const { ref, data } = await loadRateLimitDoc(uid, tx);
+    const gate = checkFullSyncRateLimit(data, now);
+    if (!gate.allowed) return gate;
+    // Reserve before shard writes so concurrent requests cannot all pass the same quota snapshot.
+    recordFullSyncSuccess(data, now);
+    tx.set(ref, data, { merge: true });
+    return gate;
+  });
 }
 
 /**
@@ -198,6 +145,15 @@ export async function runLadderSyncBatch(request) {
   if (preview?.mergedScores) {
     targets = coupleBatchTargetsWithOverall(targets, preview.mergedScores);
   }
+  targets = normalizeBatchTargets(targets);
+  if (!targets) {
+    return {
+      ok: false,
+      reason: "invalid-input",
+      summary: createEmptySummary(),
+      failures: [{ metric: "batch", reason: "invalid-input", message: "Too many targets" }],
+    };
+  }
   const fullSync = data.fullSync === true;
   const failures = /** @type {LadderSyncShardFailure[]} */ ([]);
 
@@ -208,8 +164,7 @@ export async function runLadderSyncBatch(request) {
   const now = new Date();
 
   if (fullSync) {
-    const { data: rateDoc } = await loadRateLimitDoc(uid);
-    const gate = checkFullSyncRateLimit(rateDoc, now);
+    const gate = await reserveFullSyncQuota(uid, now);
     if (!gate.allowed) {
       return {
         ok: false,
@@ -240,9 +195,14 @@ export async function runLadderSyncBatch(request) {
       continue;
     }
 
-    if (!validateScore(score)) {
+    if (!validateScore(metric, score)) {
       tally.attempted += 1;
-      recordLadderSyncFailure(failures, metric, "invalid-input", "Score must be a finite number >= 0");
+      recordLadderSyncFailure(
+        failures,
+        metric,
+        "invalid-input",
+        "Score is outside the server-approved shard range"
+      );
       applyFailureReasonToTally(tally, "invalid-input");
       continue;
     }
@@ -278,8 +238,6 @@ export async function runLadderSyncBatch(request) {
     }
   }
 
-  await propagateAvatarToExtraShards(uid, data, batchDisplayName, targets, tally, failures);
-
   if (shouldSyncBatchPreview(preview, tally)) {
     try {
       await runLadderSyncPreview({
@@ -300,14 +258,6 @@ export async function runLadderSyncBatch(request) {
         err?.message ?? "Full radar preview sync failed"
       );
     }
-  }
-
-  if (fullSync && tally.updated > 0) {
-    await db.runTransaction(async (tx) => {
-      const { ref: rateRef, data: rateDoc } = await loadRateLimitDoc(uid, tx);
-      recordFullSyncSuccess(rateDoc, now);
-      tx.set(rateRef, rateDoc, { merge: true });
-    });
   }
 
   console.info("[ladderSyncBatch]", { uid, fullSync, tally, failureCount: failures.length });

@@ -2,12 +2,12 @@ import { db } from "./admin.js";
 import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
 
 /**
- * Server Pro gate — mirrors `hasProAccess` + `canUploadLeaderboard` when paywall is on.
- * Set `LEADERBOARD_PAYWALL_ENABLED=true` on the Functions runtime to enforce.
+ * Server Pro gate — production-safe by default. Only an explicit `false` may
+ * open emulator/beta flows; a missing deployment variable must never unlock writes.
  */
 export async function assertLadderUploadAllowed(uid, now = new Date()) {
   const paywallEnabled =
-    String(process.env.LEADERBOARD_PAYWALL_ENABLED || "").toLowerCase() === "true";
+    String(process.env.LEADERBOARD_PAYWALL_ENABLED ?? "true").toLowerCase() !== "false";
   if (!paywallEnabled) return;
 
   const snap = await db.collection("users").doc(uid).get();
@@ -23,7 +23,7 @@ export async function assertLadderUploadAllowed(uid, now = new Date()) {
  */
 export async function assertLadderReportAllowed(uid, now = new Date()) {
   const paywallEnabled =
-    String(process.env.LEADERBOARD_PAYWALL_ENABLED || "").toLowerCase() === "true";
+    String(process.env.LEADERBOARD_PAYWALL_ENABLED ?? "true").toLowerCase() !== "false";
   if (!paywallEnabled) return;
 
   const snap = await db.collection("users").doc(uid).get();

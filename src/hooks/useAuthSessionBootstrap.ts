@@ -4,6 +4,7 @@ import {
   isGoogleRedirectPending,
   onFirebaseAuthStateChanged,
 } from '../services/firebaseClient';
+import { bindStructuredSyncSession } from '../services/structuredSyncSession';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
@@ -39,11 +40,13 @@ export function useAuthSessionBootstrap(): void {
             setLoading();
             return;
           }
+          bindStructuredSyncSession(null);
           setSignedOut();
           bindEntitlementSession(null);
           bindDynoIntelLogSession(null);
           return;
         }
+        bindStructuredSyncSession(user.uid);
         setFromUser(user);
         bindEntitlementSession(user.uid);
         bindDynoIntelLogSession(user.uid);

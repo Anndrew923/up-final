@@ -230,7 +230,12 @@ export const dynoIntelChat = onCall(
         };
       }
       try {
-        recordDynoIntelRouteTelemetry({ route: "firestore-cache", uid, userQuestion });
+        recordDynoIntelRouteTelemetry({
+          route: "firestore-cache",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
         return completeDynoChatSuccess(
           uid,
           hasProQuota,
@@ -264,7 +269,12 @@ export const dynoIntelChat = onCall(
           userQuestion
         );
         await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
-        recordDynoIntelRouteTelemetry({ route: "gaps-deterministic", uid, userQuestion });
+        recordDynoIntelRouteTelemetry({
+          route: "gaps-deterministic",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
         return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
       }
 
@@ -274,7 +284,12 @@ export const dynoIntelChat = onCall(
           inferenceContext,
           userQuestion
         );
-        recordDynoIntelRouteTelemetry({ route: "coaching-deterministic", uid, userQuestion });
+        recordDynoIntelRouteTelemetry({
+          route: "coaching-deterministic",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
         return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
       }
 
@@ -284,7 +299,12 @@ export const dynoIntelChat = onCall(
           inferenceContext,
           userQuestion
         );
-        recordDynoIntelRouteTelemetry({ route: "off-topic-preempt", uid, userQuestion });
+        recordDynoIntelRouteTelemetry({
+          route: "off-topic-preempt",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
         return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
       }
 
@@ -300,7 +320,12 @@ export const dynoIntelChat = onCall(
           userQuestion
         );
         // WHY: Never persist shuffled pantheon consult copy — each ask must re-sample.
-        recordDynoIntelRouteTelemetry({ route: "hall-of-fame", uid, userQuestion });
+        recordDynoIntelRouteTelemetry({
+          route: "hall-of-fame",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
         return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
       }
 
@@ -322,6 +347,7 @@ export const dynoIntelChat = onCall(
             inferenceRoute = "deterministic-fallback";
             recordDynoIntelRouteTelemetry({
               route: inferenceRoute,
+              intent: inferenceContext.intent,
               uid,
               userQuestion,
               fallbackReason: String(err?.message ?? "unknown"),
@@ -344,7 +370,12 @@ export const dynoIntelChat = onCall(
         throw new HttpsError("internal", "DYNO INTEL inference failed");
       }
 
-      recordDynoIntelRouteTelemetry({ route: inferenceRoute, uid, userQuestion });
+      recordDynoIntelRouteTelemetry({
+        route: inferenceRoute,
+        intent: inferenceContext.intent,
+        uid,
+        userQuestion,
+      });
       await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
       return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
     } catch (error) {

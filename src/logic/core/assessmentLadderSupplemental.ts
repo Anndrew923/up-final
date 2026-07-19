@@ -14,7 +14,6 @@ import {
 } from './assessmentLeaderboardShards';
 import type { FfmiScoringBreakdown } from './ffmiScoring';
 import { resolvePreviewRadarMetric } from './leaderboardPreviewContract';
-import type { LeaderboardShardId } from './ladderShards';
 import { resolveMuscleLadderScoreBundle, tryComputeMuscleAssessmentScore } from './muscleScoring';
 import { resolveExplosiveLadderScoreBundle, tryComputeExplosiveAssessmentScore } from './powerScoring';
 import {

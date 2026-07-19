@@ -12,7 +12,8 @@ export function buildGeminiInferencePayload(context) {
 
   const p1Official = enriched.chassisBeats.p1Official ?? null;
   if (!p1Official) {
-    const { chassisBeats: _removed, ...rest } = enriched;
+    const rest = { ...enriched };
+    delete rest.chassisBeats;
     return rest;
   }
 
