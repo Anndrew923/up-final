@@ -127,15 +127,21 @@
     },
     "telemetryLog": {
       "title": "Uplink logs",
-      "subtitleCore": "{{count}}/{{cap}} local uplinks archived",
-      "subtitlePro": "{{count}} local uplinks archived",
+      "subtitle": "{{count}}/{{cap}} local uplinks archived",
       "empty": "No prior uplinks.",
       "entryAxis": "Focus: {{axis}}",
       "entryTime": "{{date}}",
       "expand": "Expand",
       "collapse": "Collapse",
       "crossAxis": "Cross-axis",
-      "unknownAxis": "Unscoped"
+      "unknownAxis": "Unscoped",
+      "clearAction": "Clear Local History",
+      "clearKicker": "Local data control",
+      "clearTitle": "Clear local history?",
+      "clearDescription": "Are you sure you want to clear all history on this device? This action cannot be undone.",
+      "clearCancel": "Cancel",
+      "clearConfirm": "Clear History",
+      "storageError": "Local history could not be saved. Free device storage or allow local storage, then try again."
     },
     "localTelemetry": {
       "title": "DYNO INTEL TELEMETRY",

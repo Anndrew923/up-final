@@ -2,6 +2,7 @@ export const Z_INDEX_CLASS = {
   topProgressBar: 'z-[42]',
   dynoIntelTrigger: 'z-[55]',
   dynoIntelSheet: 'z-[220]',
+  dynoIntelClearHistoryDialog: 'z-[250]',
   performanceBreakthroughModal: 'z-[240]',
   toolResultModal: 'z-[240]',
   /** Nested science/help sheet above somatotype report modal. */

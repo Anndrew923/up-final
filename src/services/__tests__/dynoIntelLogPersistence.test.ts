@@ -8,11 +8,11 @@ import {
 } from '../dynoIntelLogPersistence';
 import type { DynoIntelLogEntry } from '../../logic/core/dynoIntelLogTypes';
 
-function makeEntry(uid: string): DynoIntelLogEntry {
+function makeEntry(uid: string, timestamp = 1): DynoIntelLogEntry {
   return {
-    id: 'log-1',
+    id: `log-${timestamp}`,
     uid,
-    timestamp: 1,
+    timestamp,
     focusAxis: 'strength',
     userQuestion: 'q',
     commentary: 'c',
@@ -28,6 +28,7 @@ describe('dynoIntelLogPersistence', () => {
     vi.spyOn(safeLocalStorage, 'safeGetItem').mockImplementation((key) => memory[key] ?? null);
     vi.spyOn(safeLocalStorage, 'safeSetItem').mockImplementation((key, value) => {
       memory[key] = value;
+      return true;
     });
     vi.spyOn(safeLocalStorage, 'safeRemoveItem').mockImplementation((key) => {
       delete memory[key];
@@ -52,6 +53,16 @@ describe('dynoIntelLogPersistence', () => {
       { ...makeEntry('user-a'), id: 'bad', closingBeatKind: 'invalid-kind' },
     ]);
     expect(loadDynoIntelLogs('user-a')).toHaveLength(1);
+  });
+
+  it('defensively caps direct persistence writes at 100 newest entries', () => {
+    const entries = Array.from({ length: 101 }, (_, index) => makeEntry('user-a', index + 1));
+    expect(saveDynoIntelLogs('user-a', entries)).toBe(true);
+
+    const saved = loadDynoIntelLogs('user-a');
+    expect(saved).toHaveLength(100);
+    expect(saved[0]?.timestamp).toBe(101);
+    expect(saved.at(-1)?.timestamp).toBe(2);
   });
 
   it('clearAllDynoIntelLogs removes every uid shard', () => {

@@ -2,14 +2,11 @@ import { create } from 'zustand';
 import { buildDynoIntelLogId } from '../logic/core/buildDynoIntelLogId';
 import {
   appendDynoIntelLogEntry,
+  enforceDynoIntelLogCap,
   sortDynoIntelLogsNewestFirst,
 } from '../logic/core/dynoIntelLogLimits';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
-import { hasProAccess } from '../logic/core/entitlement';
-import {
-  loadDynoIntelLogs,
-  saveDynoIntelLogs,
-} from '../services/dynoIntelLogPersistence';
+import { loadDynoIntelLogs, saveDynoIntelLogs } from '../services/dynoIntelLogPersistence';
 import { scheduleDynoIntelLogCloudSync } from '../services/dynoIntelLogCloudSync';
 import { readEntitlementSnapshot } from './entitlementSelectors';
 
@@ -17,19 +14,15 @@ export interface DynoIntelLogStore {
   entries: DynoIntelLogEntry[];
   boundUid: string | null;
   hydrated: boolean;
+  storageError: boolean;
   bindSession(uid: string | null): void;
   loadLocalLogs(): void;
-  appendLog(
-    input: Omit<DynoIntelLogEntry, 'id' | 'timestamp'> & { timestamp?: number }
-  ): void;
+  appendLog(input: Omit<DynoIntelLogEntry, 'id' | 'timestamp'> & { timestamp?: number }): void;
   getMostRecent(): DynoIntelLogEntry | null;
   clearLocalLogs(): void;
 }
 
-function resolveSessionUid(
-  boundUid: string | null,
-  inputUid: string
-): string | null {
+function resolveSessionUid(boundUid: string | null, inputUid: string): string | null {
   if (!inputUid) return null;
   if (!boundUid) return inputUid;
   if (boundUid !== inputUid) return null;
@@ -52,27 +45,29 @@ export const useDynoIntelLogStore = create<DynoIntelLogStore>((set, get) => ({
   entries: [],
   boundUid: null,
   hydrated: false,
+  storageError: false,
 
   bindSession(uid) {
     if (uid === get().boundUid) return;
     if (!uid) {
-      set({ boundUid: null, entries: [], hydrated: true });
+      set({ boundUid: null, entries: [], hydrated: true, storageError: false });
       return;
     }
-    set({ boundUid: uid, entries: [], hydrated: false });
+    set({ boundUid: uid, entries: [], hydrated: false, storageError: false });
     get().loadLocalLogs();
   },
 
   loadLocalLogs() {
     const uid = get().boundUid;
     if (!uid) {
-      set({ entries: [], hydrated: true });
+      set({ entries: [], hydrated: true, storageError: false });
       return;
     }
-    const entries = sortDynoIntelLogsNewestFirst(
-      loadDynoIntelLogs(uid).filter((row) => row.uid === uid)
-    );
-    set({ entries, hydrated: true });
+    const loaded = loadDynoIntelLogs(uid).filter((row) => row.uid === uid);
+    const entries = enforceDynoIntelLogCap(loaded);
+    const pruned = loaded.length > entries.length;
+    const storageError = pruned && !saveDynoIntelLogs(uid, entries);
+    set({ entries, hydrated: true, storageError });
   },
 
   appendLog(input) {
@@ -87,11 +82,7 @@ export const useDynoIntelLogStore = create<DynoIntelLogStore>((set, get) => ({
       set({ boundUid: sessionUid, entries });
     }
 
-    const timestamp = ensureUniqueTimestamp(
-      sessionUid,
-      entries,
-      input.timestamp ?? Date.now()
-    );
+    const timestamp = ensureUniqueTimestamp(sessionUid, entries, input.timestamp ?? Date.now());
     const entry: DynoIntelLogEntry = {
       ...input,
       uid: sessionUid,
@@ -100,10 +91,9 @@ export const useDynoIntelLogStore = create<DynoIntelLogStore>((set, get) => ({
     };
 
     const ent = readEntitlementSnapshot();
-    const isPro = hasProAccess(ent);
-    const next = appendDynoIntelLogEntry(entries, entry, isPro);
-    saveDynoIntelLogs(sessionUid, next);
-    set({ entries: next, hydrated: true });
+    const next = appendDynoIntelLogEntry(entries, entry);
+    const persisted = saveDynoIntelLogs(sessionUid, next);
+    set({ entries: next, hydrated: true, storageError: !persisted });
     scheduleDynoIntelLogCloudSync(ent, entry);
   },
 
@@ -114,7 +104,7 @@ export const useDynoIntelLogStore = create<DynoIntelLogStore>((set, get) => ({
 
   clearLocalLogs() {
     const uid = get().boundUid;
-    if (uid) saveDynoIntelLogs(uid, []);
-    set({ entries: [], hydrated: true });
+    const persisted = uid ? saveDynoIntelLogs(uid, []) : true;
+    set({ entries: [], hydrated: true, storageError: !persisted });
   },
 }));

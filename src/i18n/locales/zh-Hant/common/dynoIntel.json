@@ -127,15 +127,21 @@
     },
     "telemetryLog": {
       "title": "歷史遙測日誌",
-      "subtitleCore": "本地已封存 {{count}}/{{cap}} 則通電紀錄",
-      "subtitlePro": "本地已封存 {{count}} 則通電紀錄",
+      "subtitle": "本地已封存 {{count}}/{{cap}} 則通電紀錄",
       "empty": "此主機尚無歷史通電紀錄。",
       "entryAxis": "聚焦：{{axis}}",
       "entryTime": "{{date}}",
       "expand": "展開",
       "collapse": "收合",
       "crossAxis": "跨軸診斷",
-      "unknownAxis": "未標定軸向"
+      "unknownAxis": "未標定軸向",
+      "clearAction": "清除本機紀錄",
+      "clearKicker": "本機資料控制",
+      "clearTitle": "清除本機紀錄？",
+      "clearDescription": "確定要清除此裝置上的所有歷史紀錄嗎？此操作無法復原。",
+      "clearCancel": "取消",
+      "clearConfirm": "清除紀錄",
+      "storageError": "本機歷史紀錄無法儲存。請釋放裝置空間或允許本機儲存後再試。"
     },
     "localTelemetry": {
       "title": "DYNO INTEL TELEMETRY",

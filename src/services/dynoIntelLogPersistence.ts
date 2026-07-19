@@ -1,4 +1,5 @@
 import { listStorageKeys, safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
+import { enforceDynoIntelLogCap } from '../logic/core/dynoIntelLogLimits';
 import type { DynoClosingBeatKind } from '../logic/core/dynoIntelTypes';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 
@@ -49,9 +50,9 @@ export function loadDynoIntelLogs(uid: string): DynoIntelLogEntry[] {
   return safeParseLogs(safeGetItem(storageKeyForUid(uid)));
 }
 
-export function saveDynoIntelLogs(uid: string, entries: DynoIntelLogEntry[]): void {
-  if (!uid) return;
-  safeSetItem(storageKeyForUid(uid), JSON.stringify(entries));
+export function saveDynoIntelLogs(uid: string, entries: DynoIntelLogEntry[]): boolean {
+  if (!uid) return false;
+  return safeSetItem(storageKeyForUid(uid), JSON.stringify(enforceDynoIntelLogCap(entries)));
 }
 
 /** Removes all per-uid dyno intel log shards — used on account/local wipe. */

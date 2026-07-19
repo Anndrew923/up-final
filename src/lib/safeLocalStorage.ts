@@ -22,13 +22,14 @@ export function safeGetItem(key: string): string | null {
   }
 }
 
-export function safeSetItem(key: string, value: string): void {
+export function safeSetItem(key: string, value: string): boolean {
   const storage = getStorage();
-  if (!storage) return;
+  if (!storage) return false;
   try {
     storage.setItem(key, value);
+    return true;
   } catch {
-    // quota exceeded or blocked
+    return false;
   }
 }
 

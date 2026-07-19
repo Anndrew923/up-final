@@ -12,8 +12,7 @@ import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoIntelSuggestions } from '../../hooks/useDynoIntelSuggestions';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
 import { resolveDynoIntelSheetEntry, canUseDynoIntelFull } from '../../logic/core/dynoIntelGates';
-import { DYNO_INTEL_CORE_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
-import { hasProAccess } from '../../logic/core/entitlement';
+import { DYNO_INTEL_LOCAL_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
@@ -50,6 +49,8 @@ const DynoIntelConsole = () => {
   const logEntries = useDynoIntelLogStore((s) => s.entries);
   const loadLocalLogs = useDynoIntelLogStore((s) => s.loadLocalLogs);
   const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
+  const clearLocalLogs = useDynoIntelLogStore((s) => s.clearLocalLogs);
+  const logStorageError = useDynoIntelLogStore((s) => s.storageError);
 
   const [sheetView, setSheetView] = useState<DynoIntelSheetView>('chat');
   const [paywallReason, setPaywallReason] = useState<DynoIntelPaywallReason>('pro-required');
@@ -234,8 +235,6 @@ const DynoIntelConsole = () => {
     chat.status !== 'typing';
 
   const hideTrigger = isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname);
-  const isProTelemetry = hasProAccess(entitlement);
-
   return (
     <>
       <DynoActiveTrigger
@@ -267,8 +266,9 @@ const DynoIntelConsole = () => {
         suggestionGroupAriaLabel={t('dynoIntel.suggestions.ariaLabel')}
         onSuggestionSelect={handleSubmitQuestion}
         telemetryLogs={logEntries}
-        telemetryLogCap={isProTelemetry ? null : DYNO_INTEL_CORE_LOG_CAP}
-        isProTelemetry={isProTelemetry}
+        telemetryLogCap={DYNO_INTEL_LOCAL_LOG_CAP}
+        telemetryStorageError={logStorageError}
+        onClearTelemetryLogs={clearLocalLogs}
       />
       <LeaderboardGateSheet
         open={authGateOpen}

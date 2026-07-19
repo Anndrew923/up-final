@@ -23,6 +23,7 @@ describe('dynoIntelLogStore', () => {
       entries: [],
       boundUid: null,
       hydrated: false,
+      storageError: false,
     });
     useEntitlementStore.setState({
       purchaseStatus: 'owned',
@@ -51,13 +52,27 @@ describe('dynoIntelLogStore', () => {
     expect(useDynoIntelLogStore.getState().entries[0]?.timestamp).toBe(200);
   });
 
-  it('appendLog enforces Core cap of 5 and persists', () => {
-    const saveSpy = vi.spyOn(persistence, 'saveDynoIntelLogs').mockImplementation(() => {});
+  it('bindSession prunes legacy oversized shards to the shared cap', () => {
+    const loaded = Array.from({ length: 101 }, (_, index) => makeEntry('user-a', index + 1));
+    vi.spyOn(persistence, 'loadDynoIntelLogs').mockReturnValue(loaded);
+    const saveSpy = vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
+
+    useDynoIntelLogStore.getState().bindSession('user-a');
+
+    const entries = useDynoIntelLogStore.getState().entries;
+    expect(entries).toHaveLength(100);
+    expect(entries[0]?.timestamp).toBe(101);
+    expect(entries.at(-1)?.timestamp).toBe(2);
+    expect(saveSpy).toHaveBeenCalledWith('user-a', entries);
+  });
+
+  it('appendLog enforces the shared 100-entry cap and persists newest first', () => {
+    const saveSpy = vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
     vi.spyOn(persistence, 'loadDynoIntelLogs').mockReturnValue([]);
 
     useDynoIntelLogStore.getState().bindSession('core-user');
 
-    for (let index = 1; index <= 6; index += 1) {
+    for (let index = 1; index <= 101; index += 1) {
       useDynoIntelLogStore.getState().appendLog({
         uid: 'core-user',
         timestamp: index,
@@ -69,11 +84,12 @@ describe('dynoIntelLogStore', () => {
     }
 
     const { entries } = useDynoIntelLogStore.getState();
-    expect(entries).toHaveLength(5);
-    expect(entries.map((row) => row.timestamp)).toEqual([6, 5, 4, 3, 2]);
+    expect(entries).toHaveLength(100);
+    expect(entries[0]?.timestamp).toBe(101);
+    expect(entries.at(-1)?.timestamp).toBe(2);
     expect(saveSpy).toHaveBeenCalled();
     const lastSave = saveSpy.mock.calls.at(-1)?.[1] as DynoIntelLogEntry[];
-    expect(lastSave).toHaveLength(5);
+    expect(lastSave).toHaveLength(100);
   });
 
   it('getMostRecent returns newest timestamp entry for restore rewind', () => {
@@ -88,7 +104,7 @@ describe('dynoIntelLogStore', () => {
     expect(latest?.commentary).toBe('commentary-50');
   });
 
-  it('Pro appendLog keeps more than 5 entries', () => {
+  it('Pro appendLog uses the same 100-entry device cap', () => {
     useEntitlementStore.setState({
       purchaseStatus: 'owned',
       subscriptionStatus: 'pro',
@@ -97,10 +113,10 @@ describe('dynoIntelLogStore', () => {
       planId: 'pro',
       lastCheckedAt: null,
     });
-    vi.spyOn(persistence, 'saveDynoIntelLogs').mockImplementation(() => {});
+    vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
     useDynoIntelLogStore.getState().bindSession('pro-user');
 
-    for (let index = 1; index <= 6; index += 1) {
+    for (let index = 1; index <= 101; index += 1) {
       useDynoIntelLogStore.getState().appendLog({
         uid: 'pro-user',
         timestamp: index,
@@ -111,7 +127,10 @@ describe('dynoIntelLogStore', () => {
       });
     }
 
-    expect(useDynoIntelLogStore.getState().entries).toHaveLength(6);
+    const entries = useDynoIntelLogStore.getState().entries;
+    expect(entries).toHaveLength(100);
+    expect(entries[0]?.timestamp).toBe(101);
+    expect(entries.at(-1)?.timestamp).toBe(2);
   });
 
   it('bindSession(null) clears in-memory logs and marks hydrated', () => {
@@ -131,7 +150,7 @@ describe('dynoIntelLogStore', () => {
 
   it('appendLog hydrates session when bootstrap has not bound yet', () => {
     vi.spyOn(persistence, 'loadDynoIntelLogs').mockReturnValue([makeEntry('late-user', 5)]);
-    vi.spyOn(persistence, 'saveDynoIntelLogs').mockImplementation(() => {});
+    vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
 
     useDynoIntelLogStore.getState().appendLog({
       uid: 'late-user',
@@ -148,35 +167,41 @@ describe('dynoIntelLogStore', () => {
     expect(state.entries[0]?.timestamp).toBe(10);
   });
 
-  it('grace-period Pro keeps unlimited local logs via hasProAccess', () => {
-    const future = new Date(Date.now() + 86_400_000).toISOString();
-    useEntitlementStore.setState({
-      purchaseStatus: 'owned',
-      subscriptionStatus: 'grace',
-      isPro: false,
-      proExpiresAt: future,
-      planId: 'pro',
-      lastCheckedAt: null,
+  it('clearLocalLogs removes the bound UID history after confirmation', () => {
+    const saveSpy = vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
+    useDynoIntelLogStore.setState({
+      boundUid: 'user-a',
+      hydrated: true,
+      storageError: false,
+      entries: [makeEntry('user-a', 1)],
     });
-    vi.spyOn(persistence, 'saveDynoIntelLogs').mockImplementation(() => {});
-    useDynoIntelLogStore.getState().bindSession('grace-user');
 
-    for (let index = 1; index <= 6; index += 1) {
-      useDynoIntelLogStore.getState().appendLog({
-        uid: 'grace-user',
-        timestamp: index,
-        focusAxis: 'strength',
-        userQuestion: `q-${index}`,
-        commentary: `c-${index}`,
-        closingBeatKind: 'return-ritual',
-      });
-    }
+    useDynoIntelLogStore.getState().clearLocalLogs();
 
-    expect(useDynoIntelLogStore.getState().entries).toHaveLength(6);
+    expect(saveSpy).toHaveBeenCalledWith('user-a', []);
+    expect(useDynoIntelLogStore.getState().entries).toEqual([]);
+    expect(useDynoIntelLogStore.getState().storageError).toBe(false);
+  });
+
+  it('surfaces storage failure instead of silently reporting persistence', () => {
+    vi.spyOn(persistence, 'loadDynoIntelLogs').mockReturnValue([]);
+    vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(false);
+    useDynoIntelLogStore.getState().bindSession('user-a');
+
+    useDynoIntelLogStore.getState().appendLog({
+      uid: 'user-a',
+      timestamp: 1,
+      focusAxis: 'strength',
+      userQuestion: 'q',
+      commentary: 'c',
+      closingBeatKind: 'return-ritual',
+    });
+
+    expect(useDynoIntelLogStore.getState().storageError).toBe(true);
   });
 
   it('rejects append when uid does not match bound session', () => {
-    vi.spyOn(persistence, 'saveDynoIntelLogs').mockImplementation(() => {});
+    vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
     useDynoIntelLogStore.getState().bindSession('user-a');
 
     useDynoIntelLogStore.getState().appendLog({

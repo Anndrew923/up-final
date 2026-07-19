@@ -49,8 +49,9 @@ export interface DynoIntelBottomSheetProps {
   suggestionGroupAriaLabel?: string;
   onSuggestionSelect?: (question: string) => void;
   telemetryLogs: DynoIntelLogEntry[];
-  telemetryLogCap: number | null;
-  isProTelemetry: boolean;
+  telemetryLogCap: number;
+  telemetryStorageError: boolean;
+  onClearTelemetryLogs: () => void;
 }
 
 const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
@@ -77,7 +78,8 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   onSuggestionSelect,
   telemetryLogs,
   telemetryLogCap,
-  isProTelemetry,
+  telemetryStorageError,
+  onClearTelemetryLogs,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
@@ -240,7 +242,8 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
               <DynoIntelTelemetryLogAccordion
                 entries={telemetryLogs}
                 logCap={telemetryLogCap}
-                isPro={isProTelemetry}
+                storageError={telemetryStorageError}
+                onClear={onClearTelemetryLogs}
               />
             </div>
 
