@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DYNO_INTEL_PRO_DAILY, DYNO_INTEL_TRIAL_DAILY } from '../config/dynoIntel';
-import { canUseDynoIntelFull } from '../logic/core/dynoIntelGates';
+import { hasProAccess } from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { selectEntitlementState } from '../stores/entitlementSelectors';
@@ -21,19 +21,32 @@ export function useDynoIntelQuota(): DynoIntelQuotaState {
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const isPro = canUseDynoIntelFull(entitlement, authStatus, isAnonymous);
+  // WHY: A dev/beta access bypass is not proof of a Pro quota. Until the server
+  // responds, only a real signed-in Pro entitlement may advertise 30/day.
+  const isPro = authStatus === 'signed-in' && !isAnonymous && hasProAccess(entitlement);
   const defaultLimit = isPro ? DYNO_INTEL_PRO_DAILY : DYNO_INTEL_TRIAL_DAILY;
 
   const [remaining, setRemaining] = useState(defaultLimit);
   const [limit, setLimit] = useState(defaultLimit);
   const [resetAt, setResetAt] = useState<string | null>(null);
   const [syncedFromServer, setSyncedFromServer] = useState(false);
+  const previousIsPro = useRef(isPro);
 
   useEffect(() => {
+    if (previousIsPro.current !== isPro) {
+      // WHY: A subscription upgrade/downgrade starts a different server quota
+      // bucket. Never let a synced 0/2 trial block the first Pro request.
+      previousIsPro.current = isPro;
+      setSyncedFromServer(false);
+      setRemaining(defaultLimit);
+      setLimit(defaultLimit);
+      setResetAt(null);
+      return;
+    }
     if (syncedFromServer) return;
     setRemaining(defaultLimit);
     setLimit(defaultLimit);
-  }, [defaultLimit, syncedFromServer]);
+  }, [defaultLimit, isPro, syncedFromServer]);
 
   const applyServerQuota = useCallback(
     (payload: { remaining: number; limit: number; resetAt: string }) => {

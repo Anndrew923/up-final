@@ -120,7 +120,7 @@
       "inferenceMalformed": "AI output malformed — shorten the question or retry.",
       "inferenceFailed": "AI inference failed — try again shortly.",
       "weightProfileMissing": "Complete Home body profile before weight simulation.",
-      "quotaExhaustedPro": "Daily cap reached (30/day) — return after reset."
+      "quotaExhaustedPro": "Today's Pro uplink is used up (30/day) — return after tomorrow's reset."
     },
     "telemetryLog": {
       "title": "Uplink logs",

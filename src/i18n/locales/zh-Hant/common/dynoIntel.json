@@ -120,7 +120,7 @@
       "inferenceMalformed": "AI 解碼輸出異常 — 請縮短問題或稍後再試。",
       "inferenceFailed": "AI 遙測推理失敗 — 稍後再試。",
       "weightProfileMissing": "請先在首頁完成身體資料，才能啟動體重模擬。",
-      "quotaExhaustedPro": "今日通電額度已滿（30 次/日）— 請待重置後再試。"
+      "quotaExhaustedPro": "今日 Pro 通電額度已用盡（30 次/日）— 請待明日重置後再試。"
     },
     "telemetryLog": {
       "title": "歷史遙測日誌",

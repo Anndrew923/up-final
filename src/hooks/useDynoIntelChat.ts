@@ -1,11 +1,15 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID } from '../config/dynoIntel';
-import { canUseDynoIntelFull, resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
+import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID, DYNO_INTEL_PRO_DAILY } from '../config/dynoIntel';
+import { resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
 import { resolveDynoIntelPriorTurnFromLog } from '../logic/core/resolveDynoIntelPriorTurnFromLog';
-import type { DynoIntelChatResponseV1, DynoIntelContextV1, DynoIntelMode } from '../logic/core/dynoIntelTypes';
+import type {
+  DynoIntelChatResponseV1,
+  DynoIntelContextV1,
+  DynoIntelMode,
+} from '../logic/core/dynoIntelTypes';
 import {
   resolveDynoIntelDisplayMeta,
   type DynoIntelDisplayMeta,
@@ -25,7 +29,7 @@ export interface UseDynoIntelChatInput {
   mode: DynoIntelMode;
   resolveContext: (mode: DynoIntelMode) => DynoIntelContextV1;
   enrichContext: (base: DynoIntelContextV1, userQuestion: string) => DynoIntelContextV1;
-  quota: Pick<DynoIntelQuotaState, 'applyServerQuota' | 'remaining'>;
+  quota: Pick<DynoIntelQuotaState, 'applyServerQuota' | 'remaining' | 'limit'>;
   onPaywallRequest: (reason: DynoIntelPaywallReason) => void;
   onAuthBlocked: () => void;
 }
@@ -53,12 +57,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       modeOverride?: DynoIntelMode
     ) => {
       const effectiveMode = modeOverride ?? input.mode;
-      const access = resolveDynoIntelAccess(
-        effectiveMode,
-        entitlement,
-        authStatus,
-        isAnonymous
-      );
+      const access = resolveDynoIntelAccess(effectiveMode, entitlement, authStatus, isAnonymous);
 
       if (!access.allowed) {
         if (access.blockReason === 'auth') {
@@ -70,7 +69,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       }
 
       if (input.quota.remaining <= 0) {
-        if (canUseDynoIntelFull(entitlement, authStatus, isAnonymous)) {
+        if (input.quota.limit === DYNO_INTEL_PRO_DAILY) {
           setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
           setStatus('error');
           return;
@@ -110,7 +109,10 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
                 resetAt: result.resetAt,
               });
             }
-            if (canUseDynoIntelFull(entitlement, authStatus, isAnonymous)) {
+            // WHY: The server-returned quota tier is authoritative. Client
+            // entitlement/bypass state can be stale and previously paired 0/2
+            // with the Pro-only 30/day message.
+            if (result.limit === DYNO_INTEL_PRO_DAILY) {
               setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
               setStatus('error');
             } else {
