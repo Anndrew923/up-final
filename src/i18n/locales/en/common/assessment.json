@@ -3,7 +3,7 @@
     "title": "Performance Dyno",
     "localFirstNote": "Core-only: scores stay on device — no Firebase here.",
     "referenceInfo": {
-      "title": "Assessment References",
+      "title": "Scoring Guide",
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References"
     },
@@ -45,11 +45,11 @@
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip Assessment (Traction // GRIP)"
+      "title": "Grip Test (Traction // GRIP)"
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm Size Assessment (Forged Rims)"
+      "title": "Arm Size Test (Forged Rims)"
     },
     "auras": {
       "none": "None",

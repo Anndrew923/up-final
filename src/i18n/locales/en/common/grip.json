@@ -1,14 +1,14 @@
 {
   "grip": {
     "kicker": "Grip",
-    "title": "Grip Strength Assessment",
+    "title": "Grip Strength Test",
     "subtitle": "Enter peak grip. Save to traction axis.",
     "peakLabel": "Peak Grip (kg)",
     "peakPlaceholder": "e.g. 65",
     "referenceInfo": {
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References",
-      "title": "Assessment References",
+      "title": "Scoring Guide",
       "p1": "Formula: score = peakKg × 1.4 × W_factor (female: × 1.6 more). Dual golden anchors by sex: male 75 kg, female 55 kg. If weight ≤ anchor, W_factor = (anchor ÷ weight)^0.5; if weight > anchor, W_factor = (anchor ÷ weight)^0.33. One decimal; may exceed 100.",
       "p2": "Model cap: 160 kg. Inputs above cap clamp for scoring and storage to avoid extreme values distorting the scale.",
       "p3": "Source authority: norm distribution and ceiling reference IronMind Captains of Crush (CoC) elite-qualifier data, cross-checked against World’s Strongest Man (WSM) historical record literature.",

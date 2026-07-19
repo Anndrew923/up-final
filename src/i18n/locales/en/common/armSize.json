@@ -1,7 +1,7 @@
 {
   "armSize": {
     "kicker": "Circumference",
-    "title": "Arm Size Assessment",
+    "title": "Arm Size Test",
     "subtitle": "Enter arm size and body fat. Upload to arm leaderboard.",
     "armLabel": "Upper-Arm Circumference (cm)",
     "armPlaceholder": "e.g. 42",
@@ -10,7 +10,7 @@
     "referenceInfo": {
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References",
-      "title": "Assessment References",
+      "title": "Scoring Guide",
       "p1": "Accepted: arm 1–70 cm, body fat 3–50%. Out-of-range blocked.",
       "p2": "Formula: score = (arm / benchmark cm) × (1 + (base BF% − body fat) / 100) × 100, 2 decimals. From Home sex: male 50 cm / 20% = 100; female 35 cm / 18% = 100. Missing sex defaults to male norms.",
       "p3": "Arm-size leaderboard only — excluded from six-axis radar and Home overall."

@@ -1,7 +1,7 @@
 {
   "strength": {
     "kicker": "Strength",
-    "title": "Strength Assessment",
+    "title": "Strength Test",
     "subtitle": "Enter weight and reps. Merge into strength axis.",
     "weightLabel": "Weight (kg)",
     "weightPlaceholder": "e.g. 100",

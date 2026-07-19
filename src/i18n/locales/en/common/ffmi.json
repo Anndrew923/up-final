@@ -1,7 +1,7 @@
 {
   "ffmi": {
     "kicker": "Body Composition",
-    "title": "FFMI Assessment",
+    "title": "FFMI Test",
     "subtitle": "Enter body fat %. Save to displacement axis.",
     "bodyFatLabel": "Body Fat Percentage",
     "bodyFatPlaceholder": "e.g. 15",
