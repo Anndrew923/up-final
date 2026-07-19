@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
 export interface SettingsPageProps {
@@ -11,6 +12,7 @@ const RESTORE_TOAST_MS = 3500;
 const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const [restoreToastVisible, setRestoreToastVisible] = useState(false);
+  const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const {
     authStatus,
     displayName,
@@ -25,6 +27,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     canSignOut,
     canDeleteAccount,
     canRestorePurchases,
+    dynoIntelLogCount,
     goToAbout,
     goToContact,
     goToPrivacyPolicy,
@@ -36,6 +39,7 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
     signInGoogle,
     signOut,
     restorePurchases,
+    clearDynoIntelHistory,
   } = useSettingsPage();
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
 
@@ -97,6 +101,28 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           </div>
         </section>
       ) : null}
+
+      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          {t('settings.localDataSection')}
+        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-4">
+          <div>
+            <p className="text-sm text-zinc-200">{t('settings.clearDynoHistoryTitle')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+              {t('settings.clearDynoHistoryHint', { count: dynoIntelLogCount })}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="ui-btn shrink-0 border-red-400/35 text-red-200 hover:bg-red-950/35 disabled:opacity-40"
+            disabled={dynoIntelLogCount === 0}
+            onClick={() => setClearHistoryDialogOpen(true)}
+          >
+            {t('settings.clearDynoHistoryAction')}
+          </button>
+        </div>
+      </section>
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -256,6 +282,14 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
           {t('settings.restorePurchasesSuccess')}
         </div>
       ) : null}
+      <DynoIntelClearHistoryDialog
+        open={clearHistoryDialogOpen}
+        onCancel={() => setClearHistoryDialogOpen(false)}
+        onConfirm={() => {
+          clearDynoIntelHistory();
+          setClearHistoryDialogOpen(false);
+        }}
+      />
     </main>
   );
 };

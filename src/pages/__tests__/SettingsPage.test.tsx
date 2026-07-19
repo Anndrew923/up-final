@@ -40,6 +40,7 @@ function baseSettingsState() {
     canSignOut: false,
     canDeleteAccount: false,
     canRestorePurchases: true,
+    dynoIntelLogCount: 0,
     goToAbout: vi.fn(),
     goToContact: vi.fn(),
     goToPrivacyPolicy: vi.fn(),
@@ -50,6 +51,7 @@ function baseSettingsState() {
     signInGoogle: vi.fn(),
     signOut: vi.fn(),
     restorePurchases: vi.fn(),
+    clearDynoIntelHistory: vi.fn(),
     deleteAccount: vi.fn(),
   };
 }
@@ -133,6 +135,39 @@ describe('SettingsPage re-calibrate control', () => {
       calibrateBtn?.click();
     });
     expect(reCalibrateBoot).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+});
+
+describe('SettingsPage local history control', () => {
+  afterEach(() => {
+    mockUseSettingsPage.mockReset();
+    document.body.innerHTML = '';
+  });
+
+  it('keeps clear history behind the shared confirmation dialog', () => {
+    const clearDynoIntelHistory = vi.fn();
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      dynoIntelLogCount: 3,
+      clearDynoIntelHistory,
+    });
+
+    const { container, unmount } = renderPage();
+    const clearAction = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('settings.clearDynoHistoryAction')
+    );
+    expect(clearAction).toBeDefined();
+
+    act(() => clearAction?.click());
+    expect(clearDynoIntelHistory).not.toHaveBeenCalled();
+
+    const confirm = Array.from(document.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('dynoIntel.telemetryLog.clearConfirm')
+    );
+    act(() => confirm?.click());
+    expect(clearDynoIntelHistory).toHaveBeenCalledTimes(1);
 
     unmount();
   });

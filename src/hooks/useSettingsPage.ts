@@ -13,6 +13,7 @@ import { useAuthStore } from '../stores/authStore';
 import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { sensoryPreferences } from '../services/sensoryPreferences';
 import { soundService } from '../services/soundService';
+import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 
 export type SettingsBanner =
   | 'idle'
@@ -51,6 +52,7 @@ export interface SettingsPageState {
   canSignOut: boolean;
   canDeleteAccount: boolean;
   canRestorePurchases: boolean;
+  dynoIntelLogCount: number;
   goToAbout(): void;
   goToContact(): void;
   goToPrivacyPolicy(): void;
@@ -62,6 +64,7 @@ export interface SettingsPageState {
   signOut(): Promise<void>;
   restorePurchases(): Promise<void>;
   deleteAccount(): Promise<void>;
+  clearDynoIntelHistory(): void;
 }
 
 export function useSettingsPage(): SettingsPageState {
@@ -72,6 +75,8 @@ export function useSettingsPage(): SettingsPageState {
   const displayName = useAuthStore((s) => s.displayName);
   const email = useAuthStore((s) => s.email);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const dynoIntelLogCount = useDynoIntelLogStore((s) => s.entries.length);
+  const clearDynoIntelHistory = useDynoIntelLogStore((s) => s.clearLocalLogs);
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
   const [banner, setBanner] = useState<SettingsBanner>('idle');
   const [soundEnabled, setSoundEnabled] = useState(() => sensoryPreferences.isSoundEnabled());
@@ -107,6 +112,7 @@ export function useSettingsPage(): SettingsPageState {
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
+      dynoIntelLogCount,
       goToAbout() {
         navigate(ROUTES.about);
       },
@@ -130,6 +136,7 @@ export function useSettingsPage(): SettingsPageState {
         void i18n.changeLanguage(next);
       },
       toggleSound,
+      clearDynoIntelHistory,
       async signInGoogle() {
         if (!canSignIn) return;
         setBanner('idle');
@@ -233,6 +240,8 @@ export function useSettingsPage(): SettingsPageState {
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
+      dynoIntelLogCount,
+      clearDynoIntelHistory,
       toggleSound,
       t,
       navigate,
