@@ -38,9 +38,9 @@
   "googleLoginSuccess": "Google 登入完成（{{name}}）。",
   "googleLoginFail": "請先完成 Google 登入再繼續。若登入視窗沒有出現，請允許瀏覽器彈出視窗後再試一次。",
   "billingUnavailable": "訂閱通道暫時離線，請稍後再試。",
-  "betaOpenAccess": "Beta 模式：排行榜全面開放，此期間免 Pro 訂閱。",
-  "identityOptionalBeta": "Beta 全開期間不需訂閱，但仍需 Google 登入後才能進入排行榜。",
-  "betaEnterLeaderboard": "登入並進入排行榜（Beta 期間免 PRO）",
+  "betaOpenAccess": "創世早鳥開放中：前 {{count}} 名登錄學員於開放期間享有全球天梯免費通行（DYNO INTEL 等 Pro 功能仍需訂閱）。",
+  "identityOptionalBeta": "早鳥全開期間天梯免 Pro，但仍需 Google 登入後才能進入排行榜。",
+  "betaEnterLeaderboard": "登入並進入排行榜（早鳥期間免 PRO）",
   "enterLeaderboard": "進入排行榜",
   "unlockProCloudSync": "解鎖 PRO 啟動雲端備份",
   "returnToCloudSync": "返回雲端備份",
@@ -48,5 +48,20 @@
   "featuresTitle": "戰場套件",
   "disclaimer": "當前為測試基地通訊模式。正式上線將連線 App Store / Google Play 官方安全驗證，全面守護您的帳戶權益。",
   "coreGateBody": "須先解鎖 Core — 評測、雷達與歷史維持本機優先，無需戰場月費。",
-  "coreGateCta": "回到主控台"
+  "coreGateCta": "回到主控台",
+  "subscriptionResult": {
+    "successKicker": "Pro 殿堂 · 權限突破",
+    "successTitle": "權限已突破！歡迎加入 Pro 殿堂",
+    "successBody": "訂閱通道已確認。全球天梯、雲端備份與 DYNO INTEL 全量通道現已對你敞開。",
+    "successCta": "進入 Pro 殿堂",
+    "failKicker": "訂閱通道異常",
+    "failTitle": "連線異常 · 通道暫時離線",
+    "failBody": "訂閱通道暫時無法接通（商店或網路異常）。請稍後重新嘗試，或先逛逛其他本機功能。",
+    "authFailBody": "尚未完成 Google 登入驗證。請允許彈出視窗後再試，或先返回主控台。",
+    "retryCta": "重新嘗試連線",
+    "browseCta": "先去逛逛",
+    "coreFailKicker": "Core 授權",
+    "coreFailTitle": "尚未解鎖 Core",
+    "coreFailBody": "訂閱前需先具備 Core 買斷授權。評測、雷達與歷史維持本機可用；完成 Core 後再回來解鎖 Pro。"
+  }
 }

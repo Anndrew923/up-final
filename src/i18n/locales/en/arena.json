@@ -38,9 +38,9 @@
   "googleLoginSuccess": "Google sign-in complete ({{name}}).",
   "googleLoginFail": "Sign in with Google to continue. Allow pop-ups if needed.",
   "billingUnavailable": "Subscriptions unavailable. Try again soon.",
-  "betaOpenAccess": "Beta mode: leaderboard is fully open — no Pro subscription required during beta.",
-  "identityOptionalBeta": "Beta: free access. Google sign-in still required for the ladder.",
-  "betaEnterLeaderboard": "Sign in and enter leaderboard (Pro free during beta)",
+  "betaOpenAccess": "Genesis early bird: the first {{count}} signed-in pilots get free ladder access during open access (Pro features like DYNO INTEL still need a subscription).",
+  "identityOptionalBeta": "Early bird: free ladder access. Google sign-in still required.",
+  "betaEnterLeaderboard": "Sign in and enter leaderboard (Pro free during early bird)",
   "enterLeaderboard": "Enter Leaderboard",
   "unlockProCloudSync": "UNLOCK PRO FOR CLOUD SYNC",
   "returnToCloudSync": "Return to Cloud Backup",
@@ -48,5 +48,20 @@
   "featuresTitle": "Arena Kit",
   "disclaimer": "Beta mode. At launch, billing runs through App Store / Google Play.",
   "coreGateBody": "Unlock Core first—assessment, radar, and history stay local. No Arena fee.",
-  "coreGateCta": "Return to Console"
+  "coreGateCta": "Return to Console",
+  "subscriptionResult": {
+    "successKicker": "Pro Hall · Breach Confirmed",
+    "successTitle": "Access breached! Welcome to the Pro Hall",
+    "successBody": "Subscription confirmed. Ladder, cloud backup, and full DYNO INTEL channels are now open.",
+    "successCta": "Enter Pro Hall",
+    "failKicker": "Subscription Channel Fault",
+    "failTitle": "Connection fault · channel offline",
+    "failBody": "The billing channel is temporarily unreachable (store or network). Retry shortly, or browse local features first.",
+    "authFailBody": "Google sign-in is incomplete. Allow pop-ups and retry, or return to the console.",
+    "retryCta": "Retry connection",
+    "browseCta": "Browse for now",
+    "coreFailKicker": "Core License",
+    "coreFailTitle": "Core not unlocked",
+    "coreFailBody": "Pro checkout requires Core ownership first. Assessment, radar, and history stay local — unlock Core, then return for Pro."
+  }
 }

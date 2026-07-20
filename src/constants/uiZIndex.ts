@@ -14,4 +14,7 @@ export const Z_INDEX_CLASS = {
   genderSelectSheet: 'z-[320]',
   /** Native back-press exit confirm — above boot overlay so shutdown is always reachable. */
   exitConfirmModal: 'z-[330]',
+  /** Genesis early-bird / Pro subscription ceremony overlays. */
+  ladderGenesisModal: 'z-[340]',
+  proSubscriptionResultModal: 'z-[340]',
 } as const;

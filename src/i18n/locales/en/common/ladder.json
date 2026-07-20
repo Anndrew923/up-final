@@ -1,13 +1,21 @@
 {
   "ladder": {
     "redirecting": "Redirecting to Join Arena…",
+    "genesisEarlyBird": {
+      "kicker": "Genesis · Early Bird Seats",
+      "title": "⚡ Genesis Ladder: early-bird seats open",
+      "body": "The first {{count}} signed-in pilots get free global ladder access during genesis open access. After the target, ladder becomes Pro-only; early-bird grandfathering ships before that cutover.",
+      "proNote": "Note: Pro features such as DYNO INTEL still require a subscription.",
+      "dontShowAgain": "Got it — don't show again",
+      "enterCta": "Enter ladder (join the fight)"
+    },
     "kicker": "Global Arena",
     "title": "Live Ladder",
     "liveSubtitle": "Live Leaderboard",
     "body": "Core + Pro active. Rankings load via leaderboard service.",
     "bodyRemote": "Firestore connected — summary rows, client cache, hourly upload limits.",
     "bodyLocalMock": "Firebase env unset — in-memory mock data for development.",
-    "noNetworkNote": "Non-Pro accounts never hit Firestore on this route.",
+    "noNetworkNote": "Signed-out or gated sessions never hit Firestore on this route.",
     "cacheHit": "Serving from session cache (TTL applies).",
     "cacheMiss": "Fresh fetch — cache updated.",
     "loadError": "Could not load rankings. Check Firebase rules and indexes.",
@@ -115,7 +123,7 @@
       "sectionTitle": "Arena Upload",
       "infoButtonAria": "View upload limit details",
       "advancedTitle": "Upload Limits",
-      "advancedTip": "Sync uploads every eligible shard in sequence with these limits:\n\n- Up to {{limit}} counted writes per shard per hour (rolling 60 minutes).\n- When the score matches the cloud value, no write occurs and no quota is used.\n- When the score changes (higher or lower), the row is updated and 1 write is counted.\n- Full sync itself has cooldown: roughly once every 90 minutes, up to 3 times per day.\n- Shards with incomplete tests, no radar value, or Non‑Pro access are skipped or blocked.",
+      "advancedTip": "Sync uploads every eligible shard in sequence with these limits:\n\n- Up to {{limit}} counted writes per shard per hour (rolling 60 minutes).\n- When the score matches the cloud value, no write occurs and no quota is used.\n- When the score changes (higher or lower), the row is updated and 1 write is counted.\n- Full sync itself has cooldown: roughly once every 90 minutes, up to 3 times per day.\n- Shards with incomplete tests, no radar value, or a failed auth gate are skipped or blocked.",
       "noTargets": "No scores ready — complete assessments or save to radar first.",
       "button": "⚡ Sync Global Ladder",
       "buttonSetupIdentity": "⚡ Set arena identity to climb",

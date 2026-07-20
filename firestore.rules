@@ -86,14 +86,16 @@ service cloud.firestore {
 
     // leaderboards：leaderboards/{metric}/entries/{uid}
     // P2: client writes denied — use Callable `ladderSubmitShard` / `ladderSyncBatch` (Admin SDK).
+    // WHY (genesis open access): any signed-in user may read; writes stay server-only.
+    // Re-add hasValidPro when converting ladder to Pro-only (~2,000 early-bird seats filled).
     match /leaderboards/{metric}/entries/{uid} {
-      allow read: if signedIn() && hasValidPro(request.auth.uid);
+      allow read: if signedIn();
       allow create, update, delete: if false;
     }
 
     // leaderboard_previews/{uid} — P2: writes via Callable `ladderSyncPreview` / batch preview only.
     match /leaderboard_previews/{uid} {
-      allow read: if signedIn() && hasValidPro(request.auth.uid);
+      allow read: if signedIn();
       allow create, update, delete: if false;
     }
 

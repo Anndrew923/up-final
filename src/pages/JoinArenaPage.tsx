@@ -4,6 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
+import ProSubscriptionResultModal, {
+  type ProSubscriptionFailureReason,
+  type ProSubscriptionResultKind,
+} from '../components/arena/ProSubscriptionResultModal';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { hasCoreAccess } from '../logic/core/entitlement';
 import { useUiGate } from '../hooks/useUiGate';
@@ -26,6 +30,14 @@ export interface JoinArenaPageProps {
   onBack?: () => void;
 }
 
+type ResultModalState =
+  | { open: false }
+  | {
+      open: true;
+      kind: ProSubscriptionResultKind;
+      failureReason?: ProSubscriptionFailureReason;
+    };
+
 const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
@@ -41,7 +53,8 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
   const isDynoFunnel = joinFrom === 'dyno-intel';
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
-  const [banner, setBanner] = useState<'idle' | 'auth-ok' | 'auth-fail' | 'billing-fail'>('idle');
+  const [banner, setBanner] = useState<'idle' | 'auth-ok'>('idle');
+  const [resultModal, setResultModal] = useState<ResultModalState>({ open: false });
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
 
@@ -68,9 +81,33 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
         setBanner('auth-ok');
       }
     } catch {
-      setBanner('auth-fail');
+      setResultModal({ open: true, kind: 'failure', failureReason: 'auth' });
     } finally {
       setAuthBusy(false);
+    }
+  };
+
+  const runPurchase = async () => {
+    setBillingBusy(true);
+    try {
+      // WHY: Download-includes-Core — client always owns Core; keep assert for defense in depth.
+      if (!coreOwned) {
+        setResultModal({ open: true, kind: 'failure', failureReason: 'core' });
+        return;
+      }
+      hapticService.triggerProPurchaseIntent();
+      const result = await purchaseProSubscription();
+      if (!result.ok) {
+        if (result.reason === 'auth-required') {
+          setResultModal({ open: true, kind: 'failure', failureReason: 'auth' });
+        } else {
+          setResultModal({ open: true, kind: 'failure', failureReason: 'billing' });
+        }
+        return;
+      }
+      setResultModal({ open: true, kind: 'success' });
+    } finally {
+      setBillingBusy(false);
     }
   };
 
@@ -87,27 +124,7 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
       return;
     }
 
-    setBillingBusy(true);
-    try {
-      // WHY: Download-includes-Core — client always owns Core; keep assert for defense in depth.
-      if (!coreOwned) {
-        setBanner('billing-fail');
-        return;
-      }
-      hapticService.triggerProPurchaseIntent();
-      const result = await purchaseProSubscription();
-      if (!result.ok) {
-        if (result.reason === 'auth-required') {
-          setBanner('auth-fail');
-        } else {
-          setBanner('billing-fail');
-        }
-        return;
-      }
-      navigate(returnTo);
-    } finally {
-      setBillingBusy(false);
-    }
+    await runPurchase();
   };
 
   const subscribeDisabled =
@@ -187,22 +204,12 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           {t('googleLoginSuccess', { name: signedInDisplayName })}
         </p>
       ) : null}
-      {banner === 'auth-fail' ? (
-        <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {t('googleLoginFail')}
-        </p>
-      ) : null}
-      {banner === 'billing-fail' ? (
-        <p className="rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-          {t('billingUnavailable')}
-        </p>
-      ) : null}
       {showLadderBetaBanner ? (
         <p
           role="status"
           className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
         >
-          {t('betaOpenAccess')}
+          {t('betaOpenAccess', { count: MONETIZATION_CONFIG.genesisEarlyBirdSeatLimit })}
         </p>
       ) : null}
 
@@ -264,6 +271,29 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           <span className="relative z-[1]">{primaryCtaLabel}</span>
         </button>
       </section>
+
+      <ProSubscriptionResultModal
+        open={resultModal.open}
+        kind={resultModal.open ? resultModal.kind : 'failure'}
+        failureReason={resultModal.open ? resultModal.failureReason : 'billing'}
+        onRetry={() => {
+          const reason = resultModal.open ? resultModal.failureReason : 'billing';
+          setResultModal({ open: false });
+          if (reason === 'auth') {
+            void handleGoogleSignIn();
+            return;
+          }
+          void runPurchase();
+        }}
+        onBrowse={() => {
+          setResultModal({ open: false });
+          navigate(returnTo);
+        }}
+        onSuccessContinue={() => {
+          setResultModal({ open: false });
+          navigate(returnTo);
+        }}
+      />
     </main>
   );
 };

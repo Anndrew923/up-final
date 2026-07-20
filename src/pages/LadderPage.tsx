@@ -6,7 +6,10 @@ import LadderUserPreviewModal from '../components/ladder/LadderUserPreviewModal'
 import LadderFloatingRankBar from '../components/ladder/LadderFloatingRankBar';
 import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import LadderFilterSheet from '../components/ladder/LadderFilterSheet';
+import LadderGenesisEarlyBirdModal from '../components/ladder/LadderGenesisEarlyBirdModal';
+import { MONETIZATION_CONFIG } from '../config/monetization';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
+import { shouldShowLadderGenesisEarlyBird } from '../services/ladderGenesisPrefService';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
 import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
@@ -93,6 +96,7 @@ export default function LadderPage() {
   const promotionBanner = useLeaderboardCeremonyStore((state) => state.pendingPromotion);
   const [ladderRefreshNonce, setLadderRefreshNonce] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [genesisModalOpen, setGenesisModalOpen] = useState(false);
   const pageSize = 25;
   const previousRankRef = useRef<number | null>(null);
   const pendingScrollUidRef = useRef<string | null>(null);
@@ -359,6 +363,14 @@ export default function LadderPage() {
       navigate(joinArenaPath('ladder'), { replace: true });
     }
   }, [canEnter, navigate]);
+
+  // WHY: Genesis early-bird announcement on first ladder entry during open-access era.
+  useEffect(() => {
+    if (!canEnter) return;
+    if (MONETIZATION_CONFIG.leaderboardPaywallEnabled) return;
+    if (!shouldShowLadderGenesisEarlyBird()) return;
+    setGenesisModalOpen(true);
+  }, [canEnter]);
 
   useEffect(() => {
     const event = detectPromotion(previousRankRef.current, myRank);
@@ -777,6 +789,10 @@ export default function LadderPage() {
         ladderEntryScoreBest={previewEntryScoreBest}
         onClose={closePreviewModal}
         onBlocked={bumpLadderRefresh}
+      />
+      <LadderGenesisEarlyBirdModal
+        open={genesisModalOpen}
+        onEnter={() => setGenesisModalOpen(false)}
       />
     </main>
   );

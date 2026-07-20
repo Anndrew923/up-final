@@ -3,7 +3,9 @@ import { hasCoreFromUserDoc, hasProFromUserDoc } from "./userEntitlement.js";
 
 /**
  * Server Pro gate — production-safe by default. Only an explicit `false` may
- * open emulator/beta flows; a missing deployment variable must never unlock writes.
+ * open emulator/beta/genesis flows; a missing deployment variable must never unlock writes.
+ *
+ * Genesis open access: set LEADERBOARD_PAYWALL_ENABLED=false in functions/.env (deployed dotenv).
  */
 export async function assertLadderUploadAllowed(uid, now = new Date()) {
   const paywallEnabled =
