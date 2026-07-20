@@ -51,7 +51,10 @@ describe('firebaseNativeAuth', () => {
     const auth = {} as import('firebase/auth').Auth;
     const user = await signInWithGoogleNative(auth);
 
-    expect(signInWithGoogle).toHaveBeenCalledWith({ skipNativeAuth: true });
+    expect(signInWithGoogle).toHaveBeenCalledWith({
+      skipNativeAuth: true,
+      customParameters: [{ key: 'prompt', value: 'select_account' }],
+    });
     expect(signInWithCredential).toHaveBeenCalled();
     expect(user.uid).toBe('uid-1');
   });

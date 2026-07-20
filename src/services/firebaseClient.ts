@@ -46,6 +46,7 @@ import {
   isFirebaseEmulatorEnabled,
 } from '../config/firebaseEmulator';
 import { initializeFirebaseAppCheck } from './firebaseAppCheck';
+import { createGoogleAuthProvider } from './googleAuthProviderConfig';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -330,7 +331,7 @@ export async function consumeFirebaseRedirectResult(): Promise<UserCredential | 
         });
       }
       await signOut(firebaseAuth);
-      const provider = new GoogleAuthProvider();
+      const provider = createGoogleAuthProvider();
       await startGoogleRedirect(firebaseAuth, provider);
       return null;
     }
@@ -382,7 +383,7 @@ export async function signInWithGoogleWeb(): Promise<User | null> {
     return user;
   }
 
-  const provider = new GoogleAuthProvider();
+  const provider = createGoogleAuthProvider();
 
   try {
     if (import.meta.env.DEV) {
@@ -446,7 +447,7 @@ export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
     await reauthenticateWithGoogleNative(firebaseAuth);
     return;
   }
-  const provider = new GoogleAuthProvider();
+  const provider = createGoogleAuthProvider();
   await reauthenticateWithPopup(user, provider);
 }
 

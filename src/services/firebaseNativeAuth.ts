@@ -1,5 +1,6 @@
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { GOOGLE_SIGN_IN_ACCOUNT_PICKER_CUSTOM_PARAMETERS } from './googleAuthProviderConfig';
 import {
   GoogleAuthProvider,
   signInWithCredential,
@@ -16,6 +17,9 @@ function requireIdToken(idToken: string | null | undefined): string {
 export async function signInWithGoogleNative(auth: Auth): Promise<User> {
   const result = await FirebaseAuthentication.signInWithGoogle({
     skipNativeAuth: true,
+    // Android Credential Manager / iOS GIDSignIn already surface account UI;
+    // keep OAuth parity for any web-layer fallbacks inside the plugin.
+    customParameters: [...GOOGLE_SIGN_IN_ACCOUNT_PICKER_CUSTOM_PARAMETERS],
   });
   const idToken = requireIdToken(result.credential?.idToken);
   const credential = GoogleAuthProvider.credential(idToken);
