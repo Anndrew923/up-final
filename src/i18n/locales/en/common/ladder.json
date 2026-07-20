@@ -4,7 +4,7 @@
     "genesisEarlyBird": {
       "kicker": "Genesis · Early Bird Seats",
       "title": "⚡ Genesis Ladder: early-bird seats open",
-      "body": "The first {{count}} signed-in pilots get free global ladder access during genesis open access. After the target, ladder becomes Pro-only; early-bird grandfathering ships before that cutover.",
+      "body": "Free access to the \"Global Leaderboard\" for the first {{count}} registered athletes during the genesis launch. The leaderboard will become Pro-exclusive once reached; early participants will retain priority access.",
       "proNote": "Note: Pro features such as DYNO INTEL still require a subscription.",
       "dontShowAgain": "Got it — don't show again",
       "enterCta": "Enter ladder (join the fight)"
