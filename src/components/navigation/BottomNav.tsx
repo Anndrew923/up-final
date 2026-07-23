@@ -26,7 +26,8 @@ const NAV_LABEL_INSET = 'px-0.5';
  *
  * Layout: inner row uses `flex-1 min-w-0 basis-0` so five tabs share viewport width on narrow phones.
  * Do NOT set `overflow-hidden` on `<nav>` — center assessment hex uses `-translate-y-4` and must paint above the bar.
- * Floating chrome clearance lives in `constants/bottomChrome.ts` (`BOTTOM_CHROME_STACK_PX`).
+ * Floating chrome clearance lives in `constants/bottomChrome.ts`
+ * (`BOTTOM_CHROME_STACK_PX` / `LADDER_BRIDGE_BOTTOM_PX`).
  */
 export default function BottomNav() {
   const { t } = useTranslation();
