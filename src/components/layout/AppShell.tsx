@@ -4,7 +4,12 @@ import BootSequenceOverlay from '../onboarding/BootSequenceOverlay';
 import BottomNav from '../navigation/BottomNav';
 import ShellAnimatedOutlet from '../navigation/ShellAnimatedOutlet';
 import TopProgressBar from '../navigation/TopProgressBar';
-import { ROUTES, isCompactShellRoutePath } from '../../config/routes';
+import {
+  APP_SHELL_SCROLL_BOTTOM_PX,
+  LADDER_SCROLL_BOTTOM_INSET_PX,
+  bottomChromeCalc,
+} from '../../constants/bottomChrome';
+import { ROUTES, isCompactShellRoutePath, isLadderRoutePath } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
@@ -29,6 +34,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   useNavSensoryFeedback();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
+  // WHY: Ladder floating rank sits above the raised DYNO hex — needs a taller scroll inset than other tabs.
+  const scrollBottomInsetPx = isLadderRoutePath(location.pathname)
+    ? LADDER_SCROLL_BOTTOM_INSET_PX
+    : APP_SHELL_SCROLL_BOTTOM_PX;
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">
@@ -44,7 +53,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       */}
       <div
         id={SHELL_SCROLL_ID}
-        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pb-[calc(96px+env(safe-area-inset-bottom,0px))] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        style={{
+          paddingBottom: bottomChromeCalc(scrollBottomInsetPx),
+        }}
       >
         {children ?? <ShellAnimatedOutlet />}
       </div>

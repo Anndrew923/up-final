@@ -8,6 +8,7 @@ import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import LadderFilterSheet from '../components/ladder/LadderFilterSheet';
 import LadderGenesisEarlyBirdModal from '../components/ladder/LadderGenesisEarlyBirdModal';
 import { MONETIZATION_CONFIG } from '../config/monetization';
+import { LADDER_SCROLL_BOTTOM_INSET_PX } from '../constants/bottomChrome';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { shouldShowLadderGenesisEarlyBird } from '../services/ladderGenesisPrefService';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
@@ -268,7 +269,7 @@ export default function LadderPage() {
 
   /**
    * WHY: Rank may live on the current page but below the fold (e.g. #9 on page 1).
-   * rootMargin shrinks the root so rows behind BottomNav + safe-area are not "visible".
+   * rootMargin shrinks the root so rows behind floating rank + BottomNav are not "visible".
    */
   useEffect(() => {
     if (!authUid || loading) {
@@ -287,7 +288,7 @@ export default function LadderPage() {
       {
         root: null,
         threshold: 0.2,
-        rootMargin: '0px 0px -100px 0px',
+        rootMargin: `0px 0px -${LADDER_SCROLL_BOTTOM_INSET_PX}px 0px`,
       }
     );
     observer.observe(el);
@@ -495,7 +496,7 @@ export default function LadderPage() {
   }
 
   return (
-    <main className="ui-shell-compact relative z-10 max-w-3xl space-y-4 bg-[#090b0e] pb-28">
+    <main className="ui-shell-compact relative z-10 max-w-3xl space-y-4 bg-[#090b0e]">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <div
           className="absolute inset-0 opacity-[0.03] mix-blend-overlay [transform:translateZ(0)]"

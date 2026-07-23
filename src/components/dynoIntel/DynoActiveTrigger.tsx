@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BOTTOM_CHROME_STACK_PX, bottomChromeCalc } from '../../constants/bottomChrome';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import {
   DYNO_INTEL_TRIGGER_TICKER_INTERVAL_MS,
@@ -102,10 +103,12 @@ const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
       className={cn(
         'pointer-events-none fixed inset-x-0 bottom-0 flex justify-end px-4',
         Z_INDEX_CLASS.dynoIntelTrigger,
-        'pb-[calc(94px+env(safe-area-inset-bottom,0px))]',
         DYNO_INTEL_TRIGGER_SINK_TRANSITION,
         sink.wrapper,
       )}
+      style={{
+        paddingBottom: bottomChromeCalc(BOTTOM_CHROME_STACK_PX),
+      }}
     >
       <div className="flex h-9 w-28 justify-end">
         <button
