@@ -108,7 +108,11 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   if (!open || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[220] flex items-end justify-center bg-black/70 p-3 backdrop-blur-[2px] sm:items-center">
+    <div
+      // WHY: z-220 covers BottomNav — only system nav needs clearance. Safe-area once on
+      // the shell (not again on the card) avoids double inset. sm: uniform p-3 when centered.
+      className="fixed inset-0 z-[220] flex items-end justify-center bg-black/70 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] backdrop-blur-[2px] sm:items-center sm:p-3"
+    >
       <button
         type="button"
         className="absolute inset-0"
