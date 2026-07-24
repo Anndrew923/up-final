@@ -49,7 +49,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       {/*
         Single scroll outlet — block flow only (no flex-col) to avoid nested flex + overflow-hidden traps.
-        Top inset: `pt-shell-top` (default) or `pt-shell-top-compact` on home / ladder / join-arena / tools.
+        Top inset: `pt-shell-top` (default) or `pt-shell-top-compact` on home / ladder / join-arena / tools tab.
       */}
       <div
         id={SHELL_SCROLL_ID}

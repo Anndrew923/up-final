@@ -33,7 +33,7 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
   const chartRemountKey = `report-${ritual.reportSessionId}`;
 
   return (
-    <main className="ui-shell-compact relative max-w-3xl space-y-6 text-zinc-100">
+    <main className="ui-shell relative max-w-3xl space-y-6 text-zinc-100">
       <DiagnosticOverlay
         open={ritual.isAnalyzing}
         statusLine={ritual.statusLine}

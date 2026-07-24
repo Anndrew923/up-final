@@ -5,6 +5,7 @@ import {
   isHomeRoutePath,
   isLadderRoutePath,
   isToolsDeckRoutePath,
+  isToolsTabRoutePath,
 } from '../routes';
 
 describe('isLadderRoutePath', () => {
@@ -33,6 +34,18 @@ describe('isHomeRoutePath', () => {
   });
 });
 
+describe('isToolsTabRoutePath', () => {
+  it('matches tools tab only', () => {
+    expect(isToolsTabRoutePath(ROUTES.tools)).toBe(true);
+  });
+
+  it('excludes calculator subpages', () => {
+    expect(isToolsTabRoutePath(ROUTES.oneRmCalculator)).toBe(false);
+    expect(isToolsTabRoutePath(ROUTES.plateCalculator)).toBe(false);
+    expect(isToolsTabRoutePath(ROUTES.somatotypeLab)).toBe(false);
+  });
+});
+
 describe('isToolsDeckRoutePath', () => {
   it('matches tools tab and calculator nest', () => {
     expect(isToolsDeckRoutePath(ROUTES.tools)).toBe(true);
@@ -49,12 +62,17 @@ describe('isToolsDeckRoutePath', () => {
 });
 
 describe('isCompactShellRoutePath', () => {
-  it('includes home, ladder, join-arena, and tools deck', () => {
+  it('includes home, ladder, join-arena, and tools tab only', () => {
     expect(isCompactShellRoutePath(ROUTES.home)).toBe(true);
     expect(isCompactShellRoutePath(ROUTES.ladder)).toBe(true);
     expect(isCompactShellRoutePath(ROUTES.joinArena)).toBe(true);
     expect(isCompactShellRoutePath(ROUTES.tools)).toBe(true);
-    expect(isCompactShellRoutePath(ROUTES.oneRmCalculator)).toBe(true);
+  });
+
+  it('keeps calculator subpages on full shell so back clears HUD', () => {
+    expect(isCompactShellRoutePath(ROUTES.oneRmCalculator)).toBe(false);
+    expect(isCompactShellRoutePath(ROUTES.plateCalculator)).toBe(false);
+    expect(isCompactShellRoutePath(ROUTES.somatotypeLab)).toBe(false);
   });
 
   it('rejects other primary tabs', () => {

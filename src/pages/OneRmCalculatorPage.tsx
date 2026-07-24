@@ -57,7 +57,7 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
   }, [closeModal]);
 
   return (
-    <main className="ui-shell-compact relative max-w-3xl space-y-8 text-zinc-100">
+    <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
       <AssessmentAmbientGlow />
 
       <header className="flex flex-wrap items-start justify-between gap-4">

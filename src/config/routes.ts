@@ -35,7 +35,7 @@ export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 
 /**
  * Nested training-tool calculator routes (`/tools/one-rm`, …) — distinct from tab `ROUTES.tools`
- * (`/training-tools`). Keep as a single prefix so shell / Dyno Intel stay aligned.
+ * (`/training-tools`). Used by Dyno Intel / deck context (`isToolsDeckRoutePath`); not by compact shell.
  */
 export const TOOLS_CALCULATOR_PATH_PREFIX = '/tools' as const;
 
@@ -44,14 +44,14 @@ export function isLadderRoutePath(pathname: string): boolean {
   return pathname === ROUTES.ladder || pathname.startsWith(`${ROUTES.ladder}/`);
 }
 
-/** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / arena / tools). */
+/** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / arena / tools tab). */
 export function isCompactShellRoutePath(pathname: string): boolean {
   return (
     isHomeRoutePath(pathname) ||
     isLadderRoutePath(pathname) ||
     pathname === ROUTES.joinArena ||
     pathname.startsWith(`${ROUTES.joinArena}/`) ||
-    isToolsDeckRoutePath(pathname)
+    isToolsTabRoutePath(pathname)
   );
 }
 
@@ -61,13 +61,21 @@ export function isHomeRoutePath(pathname: string): boolean {
 }
 
 /**
- * Tools deck tab (`/training-tools`) and nested calculator routes under `/tools/…`.
- * WHY: Same compact HUD clearance as ladder — avoids a tall black band above the tool deck title.
+ * Tools deck **tab only** (`/training-tools`).
+ * WHY: Compact HUD clearance for the deck list. Calculator subpages keep full `shell-top`
+ * so their top-right「返回」clears the fixed HUD avatar row (no overlap).
+ */
+export function isToolsTabRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.tools || pathname.startsWith(`${ROUTES.tools}/`);
+}
+
+/**
+ * Tools deck tab + nested calculator routes under `/tools/…` (Dyno Intel / tooling context).
+ * Not the same as compact-shell eligibility — see `isToolsTabRoutePath`.
  */
 export function isToolsDeckRoutePath(pathname: string): boolean {
   return (
-    pathname === ROUTES.tools ||
-    pathname.startsWith(`${ROUTES.tools}/`) ||
+    isToolsTabRoutePath(pathname) ||
     pathname === TOOLS_CALCULATOR_PATH_PREFIX ||
     pathname.startsWith(`${TOOLS_CALCULATOR_PATH_PREFIX}/`)
   );
