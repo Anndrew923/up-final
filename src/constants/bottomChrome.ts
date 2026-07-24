@@ -4,7 +4,7 @@
  * WHY: BottomNav shell is 78px + safe-area, but the center DYNO hex uses
  * `-translate-y-4` (~16px). Floating chrome that only clears 72–78px will
  * collide with the hex. Keep stack math in one place so Ladder floating rank,
- * Dyno Intel trigger, and scroll insets stay aligned.
+ * filter pill, Dyno Intel trigger, and scroll insets stay aligned.
  */
 
 /** Matches `BottomNav` `h-[calc(78px+env(safe-area-inset-bottom))]`. */
@@ -58,15 +58,23 @@ export const LADDER_FLOATING_RANK_BAR_PX = 56;
  * Ladder list scroll / IO inset so the last rows clear bridge + bottom chrome
  * (excludes safe-area — add at use site when needed).
  */
-export const LADDER_SCROLL_BOTTOM_INSET_PX =
-  LADDER_BRIDGE_BOTTOM_PX + LADDER_FLOATING_RANK_BAR_PX; // 142
+export const LADDER_SCROLL_BOTTOM_INSET_PX = LADDER_BRIDGE_BOTTOM_PX + LADDER_FLOATING_RANK_BAR_PX; // 142
+
+/**
+ * Ladder floating filter pill bottom offset (excludes safe-area).
+ * WHY: Magic `bottom-24` ignored safe-area and collided with Dyno Intel (right) + bridge bar.
+ * Same stack as scroll inset + air — clears hex, Dyno chip, and bridge when present.
+ */
+export const LADDER_FILTER_PILL_AIR_GAP_PX = 12;
+
+export const LADDER_FILTER_PILL_BOTTOM_PX =
+  LADDER_SCROLL_BOTTOM_INSET_PX + LADDER_FILTER_PILL_AIR_GAP_PX; // 154
 
 /**
  * Default AppShell scroll bottom inset when Dyno Intel trigger is visible.
  * WHY: Trigger bottom sits at `BOTTOM_CHROME_STACK_PX`; its top is stack + chip height.
  */
-export const APP_SHELL_SCROLL_BOTTOM_PX =
-  BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 142
+export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 142
 
 /** CSS `calc` bottom / padding-bottom that clears chrome + device safe-area. */
 export function bottomChromeCalc(offsetPx: number): string {
