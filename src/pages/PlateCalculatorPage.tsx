@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import ToolResultModal, {
   type ToolResultModalPlatesPayload,
 } from '../components/tools/ToolResultModal';
@@ -105,27 +106,12 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
     <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
       <AssessmentAmbientGlow />
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-            {t('tools.calculators.plates.kicker')}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50">
-            {t('tools.calculators.plates.title')}
-          </h1>
-          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">
-            {t('tools.calculators.plates.subtitle')}
-          </p>
-        </div>
-        <button
-          type="button"
-          className="ui-btn"
-          onClick={onBack ?? (() => navigate(-1))}
-          disabled={isBlocking}
-        >
-          {t('back')}
-        </button>
-      </header>
+      <AssessmentPageHeader
+        kicker={t('tools.calculators.plates.kicker')}
+        title={t('tools.calculators.plates.title')}
+        backDisabled={isBlocking}
+        onBack={onBack ?? (() => navigate(-1))}
+      />
 
       <fieldset disabled={isBlocking} className="min-w-0 border-0 p-0">
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">

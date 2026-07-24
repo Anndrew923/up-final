@@ -81,7 +81,10 @@ export default function ToolsPage() {
 
   return (
     <main className="ui-shell-compact relative max-w-3xl space-y-4 text-zinc-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+      <div
+        className="shell-absolute-layer pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        aria-hidden
+      >
         <div className="ui-tools-backdrop absolute inset-0 opacity-[0.05]" />
       </div>
 

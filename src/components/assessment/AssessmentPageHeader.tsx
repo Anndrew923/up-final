@@ -6,17 +6,20 @@ export interface AssessmentPageHeaderProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  /** Disables the back control (ceremony / ritual lock). */
+  backDisabled?: boolean;
 }
 
 /**
- * Shared assessment page title row — grid keeps the back control pinned top-right
- * (matches Strength assessment) even when kicker/title/subtitle wrap on narrow viewports.
+ * Shared page title row — grid keeps the back control pinned top-right
+ * even when kicker/title/subtitle wrap on narrow viewports.
  */
 export const AssessmentPageHeader: FC<AssessmentPageHeaderProps> = ({
   kicker,
   title,
   subtitle,
   onBack,
+  backDisabled = false,
 }) => {
   const { t } = useTranslation('common');
 
@@ -32,7 +35,12 @@ export const AssessmentPageHeader: FC<AssessmentPageHeaderProps> = ({
         ) : null}
       </div>
       {onBack ? (
-        <button type="button" className="ui-btn shrink-0 self-start" onClick={onBack}>
+        <button
+          type="button"
+          className="ui-btn shrink-0 self-start"
+          disabled={backDisabled}
+          onClick={onBack}
+        >
           {t('back')}
         </button>
       ) : null}

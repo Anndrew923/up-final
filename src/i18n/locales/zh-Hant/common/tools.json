@@ -38,7 +38,6 @@
       "oneRm": {
         "kicker": "力量工具",
         "title": "1RM 計算機",
-        "subtitle": "輸入重量與次數，估算單次最大重量（1RM）。",
         "weightLabel": "重量（kg）",
         "weightPlaceholder": "例如 100",
         "repsLabel": "次數（reps）",
@@ -60,7 +59,6 @@
       "plates": {
         "kicker": "力量工具",
         "title": "槓片計算器",
-        "subtitle": "輸入總重量與槓鈴重量，計算每邊建議槓片配置。",
         "unitLabel": "單位制",
         "unitSheetTitle": "選擇單位制",
         "unitOptions": {

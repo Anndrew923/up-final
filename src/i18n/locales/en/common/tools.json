@@ -38,7 +38,6 @@
       "oneRm": {
         "kicker": "Strength Tool",
         "title": "1RM Calculator",
-        "subtitle": "Enter weight and reps. Estimate 1RM.",
         "weightLabel": "Weight (kg)",
         "weightPlaceholder": "e.g. 100",
         "repsLabel": "Reps",
@@ -60,7 +59,6 @@
       "plates": {
         "kicker": "Strength Tool",
         "title": "Plate Calculator",
-        "subtitle": "Target total + bar → per-side plates.",
         "unitLabel": "Unit",
         "unitSheetTitle": "Choose Unit",
         "unitOptions": {

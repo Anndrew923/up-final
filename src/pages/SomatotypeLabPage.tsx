@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DiagnosticOverlay from '../components/assessment/DiagnosticOverlay';
+import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import SomatotypeReportModal from '../components/tools/SomatotypeReportModal';
 import SomatotypeScientificAppendix from '../components/tools/SomatotypeScientificAppendix';
 import { useSomatotypeLab } from '../hooks/useSomatotypeLab';
@@ -49,24 +50,12 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
         animationKey={chartRemountKey}
       />
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
-            {t('tools.somatotypeLab.kicker')}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl">
-            {t('tools.somatotypeLab.title')}
-          </h1>
-        </div>
-        <button
-          type="button"
-          className="ui-btn"
-          disabled={formLocked}
-          onClick={onBack ?? (() => navigate(-1))}
-        >
-          {t('back')}
-        </button>
-      </header>
+      <AssessmentPageHeader
+        kicker={t('tools.somatotypeLab.kicker')}
+        title={t('tools.somatotypeLab.title')}
+        backDisabled={formLocked}
+        onBack={onBack ?? (() => navigate(-1))}
+      />
 
       <fieldset
         disabled={formLocked}

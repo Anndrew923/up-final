@@ -85,12 +85,12 @@
   }
 
   /**
-   * Absolute ambient glow is a DOM sibling under `space-y-*`, so Tailwind would
-   * push the following header by 2rem. Zero that one margin only — later sections
-   * still stack normally from the header.
+   * Absolute decorative layers still count as `space-y-*` siblings and would push
+   * the next in-flow child. Zero that one margin only — later sections still stack.
    */
-  .space-y-8 > .assessment-ambient-glow + *,
-  .space-y-6 > .assessment-ambient-glow + * {
+  .space-y-8 > .shell-absolute-layer + *,
+  .space-y-6 > .shell-absolute-layer + *,
+  .space-y-4 > .shell-absolute-layer + * {
     margin-top: 0 !important;
   }
 

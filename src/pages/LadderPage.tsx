@@ -497,7 +497,14 @@ export default function LadderPage() {
 
   return (
     <main className="ui-shell-compact relative z-10 max-w-3xl space-y-4 bg-[#090b0e]">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+      {/*
+        WHY shell-absolute-layer: absolute wash still participates in space-y sibling
+        selectors — CSS zeros the next child’s margin so the sticky title sits flush under HUD.
+      */}
+      <div
+        className="shell-absolute-layer pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        aria-hidden
+      >
         <div
           className="absolute inset-0 opacity-[0.03] mix-blend-overlay [transform:translateZ(0)]"
           style={{
