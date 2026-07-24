@@ -36,10 +36,6 @@
     "moreFilters": "更多篩選",
     "hideFilters": "收合篩選",
     "activeFilterCount": "已選 {{count}} 項",
-    "rankings": {
-      "kicker": "即時榜單",
-      "title": "排名"
-    },
     "floatingRank": {
       "filteredRankShort": "子榜 #{{rank}}",
       "notRankedUnderFilters": "當前篩選條件下未入榜",

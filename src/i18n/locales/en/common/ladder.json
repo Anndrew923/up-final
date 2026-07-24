@@ -36,10 +36,6 @@
     "moreFilters": "More Filters",
     "hideFilters": "Hide Filters",
     "activeFilterCount": "{{count}} active",
-    "rankings": {
-      "kicker": "Live Rankings",
-      "title": "Leaderboard"
-    },
     "floatingRank": {
       "filteredRankShort": "Filtered #{{rank}}",
       "notRankedUnderFilters": "Not ranked under current filters",
