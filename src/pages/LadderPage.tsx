@@ -587,9 +587,11 @@ export default function LadderPage() {
           Integrated sticky header (WHY): Title row lives inside the list card so we drop the
           duplicate「排名」block. Compose card chrome without ui-card (its p-4 would gap the
           title under the radius). Do NOT use overflow-hidden here (breaks position:sticky).
+          Sticky uses `top-shell-sticky-ladder` (< compact shell padding) so WebView does not
+          “stick downward” over rank #1 at rest.
         */}
         <section className="relative z-0 min-h-[50vh] rounded-2xl border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
-          <header className="sticky top-shell-top-compact z-20 rounded-t-2xl border-b border-slate-800/60 bg-slate-900/90 px-4 py-2.5 backdrop-blur-md">
+          <header className="sticky top-shell-sticky-ladder z-20 rounded-t-2xl border-b border-slate-800/60 bg-slate-950/95 px-4 py-2.5 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.85)] backdrop-blur-md">
             <div className="relative">
               <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
               <div className="relative z-10 flex items-center justify-between gap-3">
@@ -620,7 +622,8 @@ export default function LadderPage() {
             </div>
           </header>
 
-          <div className="p-4 pt-2">
+          {/* pt-4 (WHY): Clear gap under sticky title so rank #1 never tucks under the header band. */}
+          <div className="p-4 pt-4">
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (

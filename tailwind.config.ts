@@ -25,9 +25,16 @@ export default {
          * Compact scroll/sticky offset for home + ladder + join-arena + tools tab (WHY): Denser than `shell-top`;
          * targets ~4–6px under the HUD icon row. AppShell: `pt-shell-top-compact`.
          * Calculator `/tools/*` subpages keep full `shell-top` so top-right back clears HUD.
-         * Ladder sticky: `top-shell-top-compact`. Re-QA on notched devices if this value changes.
+         * Re-QA on notched devices if this value changes.
          */
         'shell-top-compact': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
+        /**
+         * Ladder integrated sticky title (WHY): Must stay *below* `shell-top-compact`.
+         * If sticky `top` ≥ AppShell compact padding, WebView treats the title as already past the
+         * threshold at scrollY≈0 and “sticks downward” over rank #1 (clipped first row). Keep a
+         * ~0.5rem slack so the header stays in normal flow until the user actually scrolls.
+         */
+        'shell-sticky-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.25rem)',
         /** @deprecated Use `shell-top-compact` — alias kept for existing class names during migration. */
         'shell-top-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
       },
