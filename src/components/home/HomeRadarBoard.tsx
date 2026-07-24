@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
-import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
+import { SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
 import { formatOverallResonanceScore } from '../../logic/core/scoring';
@@ -23,7 +23,7 @@ import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
  */
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation('common');
-  const { radarPoints, overallScore, scaleMax, completionCount } = useCoreSixRadar();
+  const { radarPoints, overallScore, scaleMax } = useCoreSixRadar();
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
     loadPhysicalProfile()
   );
@@ -104,13 +104,6 @@ export const HomeRadarBoard: FC = () => {
           <h2 className="text-center font-semibold tracking-tight text-zinc-100">
             {t('home.radarOverview', { ns: 'common' })}
           </h2>
-          <p className="mt-1 text-center text-xs text-zinc-500">
-            {t('home.radarCompletion', {
-              ns: 'common',
-              count: completionCount,
-              total: SIX_AXIS_COUNT,
-            })}
-          </p>
 
           <div className="mt-3 flex flex-col items-center gap-4">
             <div

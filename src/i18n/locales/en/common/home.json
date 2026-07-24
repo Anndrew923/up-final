@@ -111,14 +111,12 @@
     },
     "consoleKicker": "Main console",
     "radarOverview": "Performance dashboard",
-    "radarCompletion": "Progress: {{count}} / {{total}} axes",
     "radarAria": "Six-axis hex radar chart",
     "diagnostics": {
       "kicker": "Identity archetype",
       "panelTitle": "Full Spec Diagnostics",
       "archetypeHint": "Built from your six-axis performance map.",
-      "cta": "Full Spec Diagnostics",
-      "ctaSub": "DIAGNOSTICS"
+      "cta": "Full Spec Diagnostics"
     },
     "resonance": {
       "overlayAria": "Global spec diagnostics readout",

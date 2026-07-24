@@ -39,7 +39,6 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
 }) => {
   const { t, i18n } = useTranslation('common');
   const ctaLabel = resolveHomeSectionString(t, 'diagnostics', 'cta');
-  const ctaSub = resolveHomeSectionString(t, 'diagnostics', 'ctaSub');
   const ctaLabelClass =
     i18n.language === 'zh-Hant'
       ? 'whitespace-nowrap text-xs font-semibold leading-none tracking-tight text-zinc-100'
@@ -47,38 +46,27 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
 
   return (
     <div className="flex w-full justify-center">
-      <div className="relative w-[72%] min-w-[200px] max-w-[280px] pt-4">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-label={ctaLabel}
+        onClick={onStartDiagnostics}
+        className="ui-btn-diagnostics group flex w-[72%] min-w-[200px] max-w-[280px] min-h-12 items-center justify-between gap-3 rounded-lg border border-[#FF9500] px-4 py-3.5 text-left will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9500]/70 motion-safe:transition-[transform,border-color] motion-safe:duration-150 motion-safe:active:scale-[0.98] motion-safe:active:border-[#FFB84D] motion-safe:hover:border-[#FFAA33] disabled:pointer-events-none disabled:opacity-40"
+      >
         <span
-          className="pointer-events-none absolute left-0 top-0 z-10 font-mono text-[11px] font-normal uppercase tracking-[0.15em] text-[#A0A0A0]"
+          className="ui-btn-diagnostics-glow motion-reduce:animate-none motion-safe:animate-track-mode-glow"
           aria-hidden
-        >
-          {ctaSub}
-        </span>
-
-        <button
-          type="button"
-          disabled={disabled}
-          aria-label={ctaLabel}
-          onClick={onStartDiagnostics}
-          className="ui-btn-diagnostics group flex w-full min-h-12 items-center justify-between gap-3 rounded-lg border border-[#FF9500] px-4 py-3.5 text-left will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9500]/70 motion-safe:transition-[transform,border-color] motion-safe:duration-150 motion-safe:active:scale-[0.98] motion-safe:active:border-[#FFB84D] motion-safe:hover:border-[#FFAA33] disabled:pointer-events-none disabled:opacity-40"
-        >
-          <span
-            className="ui-btn-diagnostics-glow motion-reduce:animate-none motion-safe:animate-track-mode-glow"
-            aria-hidden
-          />
-          <span className="ui-btn-diagnostics-glass motion-reduce:will-change-auto" aria-hidden />
-          <span className="ui-btn-diagnostics-noise" aria-hidden />
-          <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
-          <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
-            <span
-              className={`${ctaLabelClass} min-w-0 flex-1 overflow-hidden text-ellipsis`}
-            >
-              {ctaLabel}
-            </span>
-            <DiagnosticsArrowIcon />
+        />
+        <span className="ui-btn-diagnostics-glass motion-reduce:will-change-auto" aria-hidden />
+        <span className="ui-btn-diagnostics-noise" aria-hidden />
+        <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
+        <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
+          <span className={`${ctaLabelClass} min-w-0 flex-1 overflow-hidden text-ellipsis`}>
+            {ctaLabel}
           </span>
-        </button>
-      </div>
+          <DiagnosticsArrowIcon />
+        </span>
+      </button>
     </div>
   );
 };
