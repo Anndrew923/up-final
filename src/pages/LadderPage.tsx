@@ -584,46 +584,40 @@ export default function LadderPage() {
         ) : null}
 
         {/*
-          Integrated sticky header (WHY): Title row lives inside the list card so we drop the
-          duplicate「排名」block. Compose card chrome without ui-card (its p-4 would gap the
-          title under the radius). Do NOT use overflow-hidden here (breaks position:sticky).
-          Sticky uses `top-shell-sticky-ladder` (< compact shell padding) so WebView does not
-          “stick downward” over rank #1 at rest.
+          Decoupled sticky title (WHY): Sticky inside a rounded list card caused Android WebView
+          to paint the title over rank #1 (double radius + buried #1). Keep sticky as a shell
+          sibling with opaque page chrome; list lives in its own card below.
         */}
-        <section className="relative z-0 min-h-[50vh] rounded-2xl border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
-          <header className="sticky top-shell-sticky-ladder z-20 rounded-t-2xl border-b border-slate-800/60 bg-slate-950/95 px-4 py-2.5 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.85)] backdrop-blur-md">
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-px bg-gradient-to-r from-transparent via-cyan-500/35 to-transparent" />
-              <div className="relative z-10 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-                  <div className="flex min-w-0 flex-col">
-                    <h1 className="truncate bg-gradient-to-r from-zinc-50 via-slate-100 to-slate-300 bg-clip-text text-xl font-black tracking-wide text-transparent md:text-2xl">
-                      {t('ladder.title', { ns: 'common' })}
-                    </h1>
-                    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-400/60">
-                      {t('ladder.liveSubtitle', { ns: 'common' })}
-                    </span>
-                  </div>
+        <div className="min-w-0">
+          <header className="sticky top-shell-top-compact z-20 border-b border-white/5 bg-[#090b0e]/95 px-1 py-3 backdrop-blur-md">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="h-6 w-1.5 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                <div className="flex min-w-0 flex-col">
+                  <h1 className="truncate bg-gradient-to-r from-zinc-50 via-slate-100 to-slate-300 bg-clip-text text-xl font-black tracking-wide text-transparent md:text-2xl">
+                    {t('ladder.title', { ns: 'common' })}
+                  </h1>
+                  <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-cyan-400/60">
+                    {t('ladder.liveSubtitle', { ns: 'common' })}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
-                  onClick={openSheet}
-                >
-                  {t('ladder.moreFilters', { ns: 'common' })}
-                  {activeAppliedFilterCount > 0 ? (
-                    <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
-                      {activeAppliedFilterCount}
-                    </span>
-                  ) : null}
-                </button>
               </div>
+              <button
+                type="button"
+                className="inline-flex items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
+                onClick={openSheet}
+              >
+                {t('ladder.moreFilters', { ns: 'common' })}
+                {activeAppliedFilterCount > 0 ? (
+                  <span className="ml-1.5 rounded-full border border-cyan-400/50 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
+                    {activeAppliedFilterCount}
+                  </span>
+                ) : null}
+              </button>
             </div>
           </header>
 
-          {/* pt-4 (WHY): Clear gap under sticky title so rank #1 never tucks under the header band. */}
-          <div className="p-4 pt-4">
+          <section className="ui-card mt-2 min-h-[50vh] space-y-3 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -748,7 +742,7 @@ export default function LadderPage() {
               </ul>
             )}
 
-            <footer className="mt-4 flex items-center justify-between gap-3 border-t border-zinc-800/80 pt-3">
+            <footer className="flex items-center justify-between gap-3 border-t border-zinc-800/80 pt-3">
               <button
                 type="button"
                 className="ui-btn py-1.5 text-xs disabled:opacity-50"
@@ -769,8 +763,8 @@ export default function LadderPage() {
                 {t('ladder.pagination.next', { ns: 'common' })}
               </button>
             </footer>
-          </div>
-        </section>
+          </section>
+        </div>
       </ShellFlowStack>
 
       {showFloatingRankBar && myEntry && myRank !== null ? (
