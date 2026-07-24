@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
@@ -81,7 +82,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const scoreMeaning = useScoreMeaning('armSize', heroScore);
 
   return (
-    <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
+    <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="armSize" />
       <PerformanceBreakthroughModal
         open={modalOpen}
@@ -92,144 +93,147 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         arenaSync={ladderSync}
       />
       <AssessmentAmbientGlow />
-      <AssessmentPageHeader
-        kicker={t('armSize.kicker')}
-        title={t('armSize.title')}
-        subtitle={t('armSize.subtitle')}
-        onBack={onBack}
-      />
 
-      <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-cm">
-          <span className="font-medium text-zinc-200">{t('armSize.armLabel')}</span>
-          <input
-            id="arm-cm"
-            type="number"
-            inputMode="decimal"
-            min={1}
-            max={70}
-            step={0.1}
-            className="ui-input max-w-xs"
-            placeholder={t('armSize.armPlaceholder')}
-            value={armCircumferenceInput}
-            onChange={(e) => {
-              clearError();
-              setArmCircumferenceInput(e.target.value);
-            }}
-            aria-label={t('armSize.armLabel')}
-          />
-        </label>
+      <ShellFlowStack gapClassName="space-y-8">
+        <AssessmentPageHeader
+          kicker={t('armSize.kicker')}
+          title={t('armSize.title')}
+          subtitle={t('armSize.subtitle')}
+          onBack={onBack}
+        />
 
-        <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-body-fat">
-          <span className="font-medium text-zinc-200">{t('armSize.bodyFatLabel')}</span>
-          <input
-            id="arm-body-fat"
-            type="number"
-            inputMode="decimal"
-            min={3}
-            max={50}
-            step={0.1}
-            className="ui-input max-w-xs"
-            placeholder={t('armSize.bodyFatPlaceholder')}
-            value={bodyFatInput}
-            onChange={(e) => {
-              clearError();
-              setBodyFatInput(e.target.value);
-            }}
-            aria-label={t('armSize.bodyFatLabel')}
-          />
-        </label>
-
-        {limitedByAxisCap ? (
-          <div
-            className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/95"
-            role="status"
-          >
-            <p className="font-medium text-amber-50">{t('armSize.capNoticeTitle')}</p>
-            <p className="leading-relaxed">{t('armSize.capNoticeBody')}</p>
-          </div>
-        ) : null}
-
-        {errorKey ? (
-          <p className="text-sm text-red-400" role="alert">
-            {t(`armSize.errors.${errorKey}`)}
-          </p>
-        ) : null}
-
-        {heroScore !== null ? (
-          <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-              {t('armSize.previewLabel')}
-            </p>
-            <p className="font-mono text-2xl tabular-nums text-accent-info">
-              {heroScore.toFixed(2)}
-            </p>
-            {submittedScore !== null && submittedScore !== previewScore ? (
-              <p className="text-sm text-zinc-300">
-                {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-
-        {heroScore !== null && scoreMeaning ? (
-          <AssessmentScoreMeaningPanel
-            tone="slate"
-            headerLabel={t('armSize.performanceSpecHeader')}
-            meaning={scoreMeaning}
-            milestoneHintLabel={
-              scoreMeaning.remainingPoints != null
-                ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
-                : null
-            }
-          />
-        ) : null}
-
-        <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-          <button
-            type="button"
-            className="ui-btn ui-btn-primary"
-            disabled={revealBlocking}
-            onClick={() => {
-              void revealCalculate();
-            }}
-          >
-            {t('armSize.calculate')}
-          </button>
-          <button
-            type="button"
-            className="ui-btn"
-            disabled={revealBlocking}
-            onClick={persistToDashboard}
-          >
-            {t('armSize.saveLeaderboard')}
-          </button>
-          <Link className="ui-btn inline-flex" to={ROUTES.home}>
-            {t('assessment.viewHomeRadar')}
-          </Link>
-        </div>
-
-        {submitDone ? (
-          <p className="text-sm text-accent-info" role="status">
-            {t('armSize.submitDone')}
-          </p>
-        ) : null}
-
-        <LeaderboardAssessmentSyncBar syncController={ladderSync} />
-
-        <AssessmentReferenceFooter>
-          <AssessmentReferenceDisclosure
-            instanceId="arm-size-reference-info"
-            expanded={referenceOpen}
-            onToggle={() => setReferenceOpen((v) => !v)}
-          >
-            <ReferenceSimpleCopy
-              paragraphs={[t('armSize.referenceInfo.p1'), t('armSize.referenceInfo.p2')]}
-              footnote={t('armSize.referenceInfo.p3')}
+        <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-cm">
+            <span className="font-medium text-zinc-200">{t('armSize.armLabel')}</span>
+            <input
+              id="arm-cm"
+              type="number"
+              inputMode="decimal"
+              min={1}
+              max={70}
+              step={0.1}
+              className="ui-input max-w-xs"
+              placeholder={t('armSize.armPlaceholder')}
+              value={armCircumferenceInput}
+              onChange={(e) => {
+                clearError();
+                setArmCircumferenceInput(e.target.value);
+              }}
+              aria-label={t('armSize.armLabel')}
             />
-          </AssessmentReferenceDisclosure>
-        </AssessmentReferenceFooter>
-      </section>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-body-fat">
+            <span className="font-medium text-zinc-200">{t('armSize.bodyFatLabel')}</span>
+            <input
+              id="arm-body-fat"
+              type="number"
+              inputMode="decimal"
+              min={3}
+              max={50}
+              step={0.1}
+              className="ui-input max-w-xs"
+              placeholder={t('armSize.bodyFatPlaceholder')}
+              value={bodyFatInput}
+              onChange={(e) => {
+                clearError();
+                setBodyFatInput(e.target.value);
+              }}
+              aria-label={t('armSize.bodyFatLabel')}
+            />
+          </label>
+
+          {limitedByAxisCap ? (
+            <div
+              className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/95"
+              role="status"
+            >
+              <p className="font-medium text-amber-50">{t('armSize.capNoticeTitle')}</p>
+              <p className="leading-relaxed">{t('armSize.capNoticeBody')}</p>
+            </div>
+          ) : null}
+
+          {errorKey ? (
+            <p className="text-sm text-red-400" role="alert">
+              {t(`armSize.errors.${errorKey}`)}
+            </p>
+          ) : null}
+
+          {heroScore !== null ? (
+            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                {t('armSize.previewLabel')}
+              </p>
+              <p className="font-mono text-2xl tabular-nums text-accent-info">
+                {heroScore.toFixed(2)}
+              </p>
+              {submittedScore !== null && submittedScore !== previewScore ? (
+                <p className="text-sm text-zinc-300">
+                  {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {heroScore !== null && scoreMeaning ? (
+            <AssessmentScoreMeaningPanel
+              tone="slate"
+              headerLabel={t('armSize.performanceSpecHeader')}
+              meaning={scoreMeaning}
+              milestoneHintLabel={
+                scoreMeaning.remainingPoints != null
+                  ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
+                  : null
+              }
+            />
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              disabled={revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+            >
+              {t('armSize.calculate')}
+            </button>
+            <button
+              type="button"
+              className="ui-btn"
+              disabled={revealBlocking}
+              onClick={persistToDashboard}
+            >
+              {t('armSize.saveLeaderboard')}
+            </button>
+            <Link className="ui-btn inline-flex" to={ROUTES.home}>
+              {t('assessment.viewHomeRadar')}
+            </Link>
+          </div>
+
+          {submitDone ? (
+            <p className="text-sm text-accent-info" role="status">
+              {t('armSize.submitDone')}
+            </p>
+          ) : null}
+
+          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
+
+          <AssessmentReferenceFooter>
+            <AssessmentReferenceDisclosure
+              instanceId="arm-size-reference-info"
+              expanded={referenceOpen}
+              onToggle={() => setReferenceOpen((v) => !v)}
+            >
+              <ReferenceSimpleCopy
+                paragraphs={[t('armSize.referenceInfo.p1'), t('armSize.referenceInfo.p2')]}
+                footnote={t('armSize.referenceInfo.p3')}
+              />
+            </AssessmentReferenceDisclosure>
+          </AssessmentReferenceFooter>
+        </section>
+      </ShellFlowStack>
     </main>
   );
 };
