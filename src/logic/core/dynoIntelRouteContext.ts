@@ -1,6 +1,6 @@
 import { ASSESSMENT_LOBBY_SIX_AXIS_MAP } from '../../config/assessmentLobby';
 import { DYNO_INTEL_AXIS_ASSESSMENT_ROUTE } from '../../config/dynoIntelAxisRoutes';
-import { ROUTES, type RoutePath } from '../../config/routes';
+import { ROUTES, isToolsDeckRoutePath, type RoutePath } from '../../config/routes';
 import type { CardioAssessmentTab } from './cardioScoring';
 import type { DynoSupplementalMetricId } from './dynoIntelTypes';
 import type { SixAxisMetric } from '../../types/scoring';
@@ -105,7 +105,7 @@ export function resolveDynoRouteContext(
       suggestedMode: 'cross-axis',
     };
   }
-  if (pathname === ROUTES.tools || pathname.startsWith('/training-tools')) {
+  if (isToolsDeckRoutePath(pathname)) {
     return {
       consoleLabelKey: 'tools',
       focusAxis: null,

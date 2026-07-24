@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
@@ -82,12 +83,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
         syncDisabled={!breakdown?.allowsRadarSubmit}
         arenaSync={ladderSync}
       />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-[0.05]"
-        aria-hidden
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
-      </div>
+      <AssessmentAmbientGlow />
 
       <AssessmentPageHeader
         kicker={t('ffmi.kicker')}

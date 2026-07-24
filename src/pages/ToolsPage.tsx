@@ -80,12 +80,12 @@ export default function ToolsPage() {
   };
 
   return (
-    <main className="ui-shell relative max-w-3xl space-y-6 text-zinc-100">
+    <main className="ui-shell-compact relative max-w-3xl space-y-4 text-zinc-100">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <div className="ui-tools-backdrop absolute inset-0 opacity-[0.05]" />
       </div>
 
-      <header className="space-y-2">
+      <header className="space-y-1">
         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-primary">
           {t('tools.kicker', { ns: 'common' })}
         </p>
@@ -94,7 +94,7 @@ export default function ToolsPage() {
         </h1>
       </header>
 
-      <section className="grid gap-6">
+      <section className="grid gap-4">
         <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-400">
             {t('tools.calculators.title', { ns: 'common' })}

@@ -18,8 +18,8 @@ export default function HomePage() {
   const debugEnabled = import.meta.env.DEV;
 
   return (
-    <main className="ui-shell max-w-4xl space-y-8 pb-6 md:space-y-10 md:pb-10">
-      {/* No extra section padding — `ui-shell` + `HomeRadarBoard` control vertical rhythm. */}
+    <main className="ui-shell-compact max-w-4xl space-y-4 pb-6 md:pb-8">
+      {/* Compact shell + tighter section rhythm — radar board owns the first viewport. */}
       <section>
         <HomeRadarBoard />
       </section>

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
+import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import ToolResultModal, {
   type ToolResultModalOneRmPayload,
 } from '../components/tools/ToolResultModal';
@@ -56,13 +57,8 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
   }, [closeModal]);
 
   return (
-    <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-[0.05]"
-        aria-hidden
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/20 via-transparent to-transparent" />
-      </div>
+    <main className="ui-shell-compact relative max-w-3xl space-y-8 text-zinc-100">
+      <AssessmentAmbientGlow />
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">

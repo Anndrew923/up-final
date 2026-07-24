@@ -39,4 +39,9 @@ describe('resolveDynoRouteContext', () => {
     const ctx = resolveDynoRouteContext(ROUTES.home);
     expect(ctx.consoleLabelKey).toBe('home');
   });
+
+  it('maps tools deck and calculator routes to tools console', () => {
+    expect(resolveDynoRouteContext(ROUTES.tools).consoleLabelKey).toBe('tools');
+    expect(resolveDynoRouteContext(ROUTES.oneRmCalculator).consoleLabelKey).toBe('tools');
+  });
 });

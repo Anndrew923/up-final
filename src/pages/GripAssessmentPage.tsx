@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -88,6 +89,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
       />
+      <AssessmentAmbientGlow />
       <AssessmentPageHeader
         kicker={t('grip.kicker')}
         title={t('grip.title')}

@@ -16,12 +16,12 @@ export default {
        * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
        * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
        * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so scroll content clears the HUD
-       * slot. Ladder / join-arena use `shell-top-compact` instead (denser arena layout).
+       * slot. Home / ladder / join-arena / tools use `shell-top-compact` instead (denser layout).
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
         /**
-         * Compact scroll/sticky offset for ladder + join-arena (WHY): Denser than `shell-top`;
+         * Compact scroll/sticky offset for home + ladder + join-arena + tools (WHY): Denser than `shell-top`;
          * targets ~4–6px under the HUD icon row. AppShell: `pt-shell-top-compact`.
          * Ladder sticky: `top-shell-top-compact`. Re-QA on notched devices if this value changes.
          */

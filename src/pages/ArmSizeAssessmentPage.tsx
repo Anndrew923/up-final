@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
+import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
@@ -90,6 +91,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         onPersistToDashboard={persistToDashboard}
         arenaSync={ladderSync}
       />
+      <AssessmentAmbientGlow />
       <AssessmentPageHeader
         kicker={t('armSize.kicker')}
         title={t('armSize.title')}
