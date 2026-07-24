@@ -136,7 +136,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.performanceBreakthroughModal} flex items-center justify-center px-4`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.performanceBreakthroughModal} flex items-center justify-center ui-modal-safe-shell`}
       role="presentation"
     >
       <button

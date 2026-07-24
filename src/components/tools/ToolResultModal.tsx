@@ -233,7 +233,7 @@ const ToolResultModal: FC<ToolResultModalProps> = (props) => {
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex items-center justify-center px-4`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex items-center justify-center ui-modal-safe-shell`}
       role="presentation"
     >
       <button

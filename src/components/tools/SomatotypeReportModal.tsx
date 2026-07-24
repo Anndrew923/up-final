@@ -63,7 +63,7 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
   return createPortal(
     <>
       <div
-        className={`fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex items-end justify-center sm:items-center sm:px-4`}
+        className={`fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex items-end justify-center pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:items-center sm:px-4 sm:pt-[max(1rem,env(safe-area-inset-top,0px))] sm:pb-[max(1rem,env(safe-area-inset-bottom,0px))]`}
         role="presentation"
       >
         <button
@@ -154,7 +154,8 @@ export const SomatotypeReportModal: FC<SomatotypeReportModalProps> = ({
             />
           </div>
 
-          <div className="shrink-0 border-t border-zinc-800 px-5 py-4">
+          {/* Mobile: footer owns bottom inset. sm+: shell owns it — avoid double safe-area. */}
+          <div className="ui-modal-safe-footer shrink-0 border-t border-zinc-800 px-5 sm:pb-4">
             <button type="button" className="ui-btn ui-btn-primary w-full" onClick={onClose}>
               {t('tools.somatotypeLab.report.dismiss')}
             </button>

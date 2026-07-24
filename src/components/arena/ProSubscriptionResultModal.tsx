@@ -94,7 +94,7 @@ const ProSubscriptionResultModal: FC<ProSubscriptionResultModalProps> = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.proSubscriptionResultModal} flex items-center justify-center px-4`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.proSubscriptionResultModal} flex items-center justify-center ui-modal-safe-shell`}
       role="presentation"
     >
       <div className="absolute inset-0 bg-black/90 backdrop-blur-md" aria-hidden />

@@ -59,7 +59,7 @@ const LadderGenesisEarlyBirdModal: FC<LadderGenesisEarlyBirdModalProps> = ({ ope
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderGenesisModal} flex items-center justify-center px-4`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderGenesisModal} flex items-center justify-center ui-modal-safe-shell`}
       role="presentation"
     >
       <div className="absolute inset-0 bg-black/88 backdrop-blur-md" aria-hidden />
