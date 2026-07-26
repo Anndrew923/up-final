@@ -37,7 +37,7 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
   // WHY: Resolve success/failure from summary — never treat "finished running" as synced.
   useEffect(() => {
     if (!summary) return;
-    const key = `${summary.attempted}:${summary.updated}:${summary.skipped}:${failures.length}`;
+    const key = `${summary.attempted}:${summary.updated}:${summary.unchanged}:${failures.length}`;
     if (handledSummaryRef.current === key) return;
     handledSummaryRef.current = key;
 
@@ -108,7 +108,7 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
           {hint}
         </p>
       ) : null}
-      {showFeedback ? (
+      {showFeedback && summary ? (
         <LadderSyncSummaryStatus summary={summary} failures={failures} variant="syncAll" />
       ) : null}
       <div className="flex flex-col gap-2">
