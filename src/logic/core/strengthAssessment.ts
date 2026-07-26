@@ -20,6 +20,12 @@ import { STRENGTH_LIFT_KEYS } from '../../types/strengthInputs';
 import { isPhysicalProfileComplete } from './physicalProfile';
 import { calculateStrengthScore, clampScoreMapValue, type ExerciseType } from './scoring';
 import { clampStrengthWeightKg } from './strengthWeightLimits';
+import {
+  formatWeightInput,
+  parseInputToMetric,
+  reprojectDisplayInput,
+  type UnitSystem,
+} from './unitConverters';
 
 /** Fixed denominator for strength composite / five-lift ladder (always divide by 5, missing lift = 0). */
 export const STRENGTH_COMPOSITE_FIXED_DENOMINATOR = 5 as const;
@@ -152,15 +158,64 @@ function isRowPartial(weightStr: string, repsStr: string): boolean {
 export type StrengthFormRow = { weight: string; reps: string };
 export type StrengthFormStrings = Record<StrengthLiftKey, StrengthFormRow>;
 
+/**
+ * Hydrate UI form strings from persisted kg.
+ * WHY: Display may be imperial; scoring callers that omit `unitSystem` stay metric (legacy).
+ */
 export function strengthFormFromPersisted(
-  persisted: StrengthInputsPersisted | null | undefined
+  persisted: StrengthInputsPersisted | null | undefined,
+  unitSystem: UnitSystem = 'metric'
 ): StrengthFormStrings {
   const lifts = persisted?.lifts ?? {};
   return STRENGTH_LIFT_KEYS.reduce((acc, key) => {
     const v = lifts[key];
     acc[key] = {
-      weight: v?.weightKg != null && Number.isFinite(v.weightKg) ? String(v.weightKg) : '',
+      weight:
+        v?.weightKg != null && Number.isFinite(v.weightKg)
+          ? formatWeightInput(v.weightKg, unitSystem)
+          : '',
       reps: v?.reps != null && Number.isFinite(v.reps) ? String(v.reps) : '',
+    };
+    return acc;
+  }, {} as StrengthFormStrings);
+}
+
+/**
+ * Project display-unit weight fields back to kg strings for scoring / persistence parsers.
+ * Empty stays empty; invalid stays as-is so validators keep the right error path.
+ */
+export function strengthFormToMetric(
+  form: StrengthFormStrings,
+  unitSystem: UnitSystem
+): StrengthFormStrings {
+  if (unitSystem === 'metric') return form;
+  return STRENGTH_LIFT_KEYS.reduce((acc, key) => {
+    const raw = form[key].weight;
+    const trimmed = raw.trim();
+    if (trimmed === '') {
+      acc[key] = { weight: '', reps: form[key].reps };
+      return acc;
+    }
+    const kg = parseInputToMetric(trimmed, 'weight', unitSystem);
+    acc[key] = {
+      weight: kg === null ? raw : String(kg),
+      reps: form[key].reps,
+    };
+    return acc;
+  }, {} as StrengthFormStrings);
+}
+
+/** Re-project all lift weight fields when the user toggles unit systems mid-edit. */
+export function reprojectStrengthFormWeights(
+  form: StrengthFormStrings,
+  from: UnitSystem,
+  to: UnitSystem
+): StrengthFormStrings {
+  if (from === to) return form;
+  return STRENGTH_LIFT_KEYS.reduce((acc, key) => {
+    acc[key] = {
+      weight: reprojectDisplayInput(form[key].weight, 'weight', from, to),
+      reps: form[key].reps,
     };
     return acc;
   }, {} as StrengthFormStrings);

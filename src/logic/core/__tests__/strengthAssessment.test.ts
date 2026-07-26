@@ -7,8 +7,10 @@ import {
   persistedFromStrengthForm,
   resolveStrengthLadderWeightKgSummary,
   resolveStrengthScoreFromInputs,
+  reprojectStrengthFormWeights,
   shouldShowStrengthRepsAccuracyNudge,
   strengthFormFromPersisted,
+  strengthFormToMetric,
   tryComputeSingleLiftStrength,
   tryComputeStrengthAssessmentScore,
 } from '../strengthAssessment';
@@ -156,6 +158,28 @@ describe('tryComputeSingleLiftStrength', () => {
       expect(r.weightCapped).toBe(false);
       expect(r.weightUsedKg).toBe(300);
       expect(r.modelMaxKg).toBe(300);
+    }
+  });
+
+  it('does not false-cap after imperial 1-decimal round-trip at model ceiling', () => {
+    const persisted = {
+      lifts: {
+        latPulldown: { weightKg: STRENGTH_WEIGHT_LIMIT_KG.latPulldown, reps: 5 },
+      },
+      bodyWeightKgSnapshot: 80,
+    };
+    const display = strengthFormFromPersisted(persisted, 'imperial');
+    const metric = strengthFormToMetric(display, 'imperial');
+    const r = tryComputeSingleLiftStrength({
+      lift: 'latPulldown',
+      form: metric,
+      profile: baseProfile,
+      profileReady: true,
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.weightCapped).toBe(false);
+      expect(r.weightUsedKg).toBe(STRENGTH_WEIGHT_LIMIT_KG.latPulldown);
     }
   });
 
@@ -371,6 +395,42 @@ describe('strengthFormFromPersisted', () => {
     );
     const form = strengthFormFromPersisted(persisted);
     expect(form.deadlift).toEqual({ weight: '180', reps: '3' });
+  });
+
+  it('hydrates imperial display strings from persisted kg', () => {
+    const form = strengthFormFromPersisted(
+      {
+        lifts: { deadlift: { weightKg: 100, reps: 5 } },
+        bodyWeightKgSnapshot: 80,
+      },
+      'imperial'
+    );
+    expect(form.deadlift.weight).toBe('220.5');
+    expect(form.deadlift.reps).toBe('5');
+  });
+});
+
+describe('strengthFormToMetric / reprojectStrengthFormWeights', () => {
+  it('converts imperial display lbs back to kg strings for scoring', () => {
+    const display = {
+      ...emptyForm(),
+      benchPress: { weight: '220.5', reps: '5' },
+    };
+    const metric = strengthFormToMetric(display, 'imperial');
+    // 220.5 lb ↔ kg has display-digit round-trip noise; scoring uses parseInputToMetric on save.
+    expect(Number(metric.benchPress.weight)).toBeCloseTo(100, 1);
+    expect(metric.benchPress.reps).toBe('5');
+  });
+
+  it('reprojects display weights through metric on unit toggle', () => {
+    const metricForm = {
+      ...emptyForm(),
+      squat: { weight: '100', reps: '3' },
+    };
+    const imperial = reprojectStrengthFormWeights(metricForm, 'metric', 'imperial');
+    expect(imperial.squat.weight).toBe('220.5');
+    const back = reprojectStrengthFormWeights(imperial, 'imperial', 'metric');
+    expect(Number(back.squat.weight)).toBeCloseTo(100, 1);
   });
 });
 

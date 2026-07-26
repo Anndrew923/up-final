@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
+  reprojectStrengthFormWeights,
   strengthFormFromPersisted,
+  strengthFormToMetric,
   tryComputeSingleLiftStrength,
   tryComputeStrengthAssessmentScore,
   type StrengthAssessmentBreakdown,
@@ -11,6 +13,7 @@ import {
   type StrengthFormStrings,
   type StrengthSingleLiftError,
 } from '../logic/core/strengthAssessment';
+import type { UnitSystem } from '../logic/core/unitConverters';
 import {
   loadPhysicalProfile,
   loadStrengthInputs,
@@ -24,6 +27,7 @@ import type { PhysicalProfile } from '../types/userProfile';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 import { useScoreStore } from '../stores/scoreStore';
 import { useDynoIntelScoreDraftStore } from '../stores/dynoIntelScoreDraftStore';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 
 export type PerLiftScore = {
   oneRepMax: number;
@@ -49,7 +53,13 @@ export interface StrengthSubmitNotice {
 export interface UseStrengthAssessmentPageResult {
   profile: PhysicalProfile | null;
   profileReady: boolean;
+  /** Display-unit form strings (may be lb when imperial). */
   form: StrengthFormStrings;
+  /**
+   * Metric (kg) form for scoring / ladder supplemental builders.
+   * WHY: UI may show lbs; core formulas and Firestore summaries stay kg-only.
+   */
+  metricForm: StrengthFormStrings;
   setWeight: (lift: StrengthLiftKey, value: string) => void;
   setReps: (lift: StrengthLiftKey, value: string) => void;
   perLiftResult: Partial<Record<StrengthLiftKey, PerLiftScore>>;
@@ -67,8 +77,8 @@ export interface UseStrengthAssessmentPageResult {
   submitToRadar: () => Promise<void>;
 }
 
-function readInitialForm(): StrengthFormStrings {
-  return strengthFormFromPersisted(loadStrengthInputs());
+function readInitialForm(unitSystem: UnitSystem): StrengthFormStrings {
+  return strengthFormFromPersisted(loadStrengthInputs(), unitSystem);
 }
 
 export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
@@ -77,8 +87,12 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const setStoreScore = useScoreStore((s) => s.setScore);
   const setLiveStrengthScore = useDynoIntelScoreDraftStore((s) => s.setLiveScore);
   const clearLiveStrengthScore = useDynoIntelScoreDraftStore((s) => s.clearLiveScore);
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const prevUnitSystemRef = useRef(unitSystem);
+  const unitSystemRef = useRef(unitSystem);
+  unitSystemRef.current = unitSystem;
   const [profile, setProfile] = useState(loadPhysicalProfile);
-  const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm());
+  const [form, setForm] = useState<StrengthFormStrings>(() => readInitialForm(unitSystem));
 
   const [perLiftResult, setPerLiftResult] = useState<
     Partial<Record<StrengthLiftKey, PerLiftScore>>
@@ -118,6 +132,12 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     setCombinedError(null);
   }, []);
 
+  const clearAllComputed = useCallback(() => {
+    setPerLiftResult({});
+    setPerLiftError({});
+    clearCombined();
+  }, [clearCombined]);
+
   useEffect(() => {
     if (!submitNotice) return;
     const timer = window.setTimeout(() => {
@@ -126,6 +146,15 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     }, 2600);
     return () => window.clearTimeout(timer);
   }, [submitNotice]);
+
+  // WHY: Toggle reprojects display lbs↔kg via metric — never display→display.
+  useEffect(() => {
+    const prev = prevUnitSystemRef.current;
+    if (prev === unitSystem) return;
+    prevUnitSystemRef.current = unitSystem;
+    setForm((f) => reprojectStrengthFormWeights(f, prev, unitSystem));
+    queueMicrotask(() => clearAllComputed());
+  }, [unitSystem, clearAllComputed]);
 
   const setWeight = useCallback(
     (lift: StrengthLiftKey, value: string) => {
@@ -147,13 +176,16 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
 
   const profileReady = isPhysicalProfileComplete(profile);
 
+  const metricForm = useMemo(
+    () => strengthFormToMetric(form, unitSystem),
+    [form, unitSystem]
+  );
+
   useEffect(() => {
     queueMicrotask(() => {
-      setPerLiftResult({});
-      setPerLiftError({});
-      clearCombined();
+      clearAllComputed();
     });
-  }, [profile, clearCombined]);
+  }, [profile, clearAllComputed]);
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -162,23 +194,20 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
 
   useEffect(() => {
     const sync = () => {
-      setForm(strengthFormFromPersisted(loadStrengthInputs()));
-      queueMicrotask(() => {
-        setPerLiftResult({});
-        setPerLiftError({});
-        clearCombined();
-      });
+      // Ref keeps storage hydrate on the active display system without re-binding the listener.
+      setForm(strengthFormFromPersisted(loadStrengthInputs(), unitSystemRef.current));
+      queueMicrotask(() => clearAllComputed());
     };
     return subscribeStrengthInputs(sync);
-  }, [clearCombined]);
+  }, [clearAllComputed]);
 
   const computeArgs = useMemo(
     () => ({
-      form,
+      form: metricForm,
       profile,
       profileReady,
     }),
-    [form, profile, profileReady]
+    [metricForm, profile, profileReady]
   );
 
   const livePreviewScore = useMemo(() => {
@@ -203,7 +232,12 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
         delete next[lift];
         return next;
       });
-      const res = tryComputeSingleLiftStrength({ lift, form, profile, profileReady });
+      const res = tryComputeSingleLiftStrength({
+        lift,
+        form: metricForm,
+        profile,
+        profileReady,
+      });
       if (!res.ok) {
         setPerLiftResult((r) => {
           const next = { ...r };
@@ -225,7 +259,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
         },
       }));
     },
-    [form, profile, profileReady, clearCombined]
+    [metricForm, profile, profileReady, clearCombined]
   );
 
   const strengthRadarPoints = useMemo<StrengthRadarPoint[]>(() => {
@@ -236,7 +270,12 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
 
     const liveScoreByLift = new Map<StrengthLiftKey, number>();
     for (const lift of STRENGTH_LIFT_KEYS) {
-      const live = tryComputeSingleLiftStrength({ lift, form, profile, profileReady });
+      const live = tryComputeSingleLiftStrength({
+        lift,
+        form: metricForm,
+        profile,
+        profileReady,
+      });
       if (live.ok) {
         liveScoreByLift.set(lift, live.finalScore);
       }
@@ -251,7 +290,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
         perLiftResult[lift]?.finalScore ??
         0,
     }));
-  }, [combinedBreakdown?.branches, form, perLiftResult, profile, profileReady, t]);
+  }, [combinedBreakdown?.branches, metricForm, perLiftResult, profile, profileReady, t]);
 
   const applyCombinedComputeResult = useCallback(
     (
@@ -325,6 +364,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     profile,
     profileReady,
     form,
+    metricForm,
     setWeight,
     setReps,
     perLiftResult,

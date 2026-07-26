@@ -9,6 +9,7 @@ import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenc
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import HexRadarChart from '../components/radar/HexRadarChart';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
@@ -19,12 +20,14 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
+import { useUnit } from '../hooks/useUnit';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import {
   shouldShowStrengthRepsAccuracyNudge,
   STRENGTH_ASSESSMENT_MAX_REPS,
   type StrengthSingleLiftError,
 } from '../logic/core/strengthAssessment';
+import type { FormatUnitOptions } from '../logic/core/unitConverters';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
 export interface StrengthAssessmentPageProps {
@@ -33,24 +36,29 @@ export interface StrengthAssessmentPageProps {
 
 function fmtBranchLine(
   t: (key: string, opts?: Record<string, string | number>) => string,
-  b: { weightKg: number; reps: number; oneRepMax: number; finalScore: number }
+  b: { weightKg: number; reps: number; oneRepMax: number; finalScore: number },
+  formatWeight: (kg: number, options?: FormatUnitOptions) => string,
+  unit: string
 ): string {
   return t('strength.branchLine', {
-    weight: b.weightKg,
+    weight: formatWeight(b.weightKg, { includeUnit: false, digits: 1 }),
     reps: b.reps,
-    oneRm: b.oneRepMax.toFixed(2),
+    oneRm: formatWeight(b.oneRepMax, { includeUnit: false, digits: 1 }),
     score: b.finalScore.toFixed(2),
+    unit,
   });
 }
 
 const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const { labels, formatWeight, unitSystem, setUnitSystem } = useUnit();
   const [howToOpen, setHowToOpen] = useState(false);
   const [combinedDetailsOpen, setCombinedDetailsOpen] = useState(false);
   const {
     profile,
     profileReady,
     form,
+    metricForm,
     setWeight,
     setReps,
     perLiftResult,
@@ -91,16 +99,17 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       ? t('home.profile.female')
       : t('home.profile.male');
 
-  const singleErr = (code: StrengthSingleLiftError) => t(`strength.singleErrors.${code}`);
+  const singleErr = (code: StrengthSingleLiftError) =>
+    t(`strength.singleErrors.${code}`, { unit: labels.weight });
   const ladderUploadBundle = useMemo(
     () =>
       buildStrengthAssessmentSupplementalTargets({
-        form,
+        form: metricForm,
         profile,
         profileReady,
         combinedScore,
       }),
-    [form, profile, profileReady, combinedScore]
+    [metricForm, profile, profileReady, combinedScore]
   );
 
   const ladderSync = useLeaderboardSyncAssessmentPage({
@@ -152,20 +161,29 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
 
         {profileReady && profile ? (
           <p className="text-xs text-zinc-500">
-            <span className="mr-3">{t('strength.metaWeight', { value: profile.weightKg })}</span>
+            <span className="mr-3">
+              {t('strength.metaWeight', {
+                value: formatWeight(profile.weightKg, { includeUnit: false, digits: 1 }),
+                unit: labels.weight,
+              })}
+            </span>
             <span className="mr-3">{t('strength.metaAge', { value: profile.age })}</span>
             <span>{t('strength.metaGender', { value: genderLabel })}</span>
           </p>
         ) : null}
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <div className="flex justify-end">
+            <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
+          </div>
           <div className="grid gap-6">
             {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
               const rowResult = perLiftResult[lift];
               const rowErr = perLiftError[lift];
+              // WHY: Nudge parser expects kg-like weight; display form may be lbs.
               const showRepsAccuracyNudge = shouldShowStrengthRepsAccuracyNudge(
-                form[lift].weight,
-                form[lift].reps
+                metricForm[lift].weight,
+                metricForm[lift].reps
               );
               const repsAccuracyNudgeId = `strength-reps-accuracy-${lift}`;
               return (
@@ -181,7 +199,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                       className="flex flex-col gap-1 text-xs text-zinc-400"
                       htmlFor={`st-w-${lift}`}
                     >
-                      <span>{t('strength.weightLabel')}</span>
+                      <span>{t('strength.weightLabel', { unit: labels.weight })}</span>
                       <input
                         id={`st-w-${lift}`}
                         type="number"
@@ -193,7 +211,10 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                         value={form[lift].weight}
                         onChange={(e) => setWeight(lift, e.target.value)}
                         disabled={revealBlocking}
-                        aria-label={t('strength.weightAria', { lift: t(`strength.lifts.${lift}`) })}
+                        aria-label={t('strength.weightAria', {
+                          lift: t(`strength.lifts.${lift}`),
+                          unit: labels.weight,
+                        })}
                       />
                     </label>
                     <label
@@ -255,8 +276,15 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                           >
                             {t('strength.capWeightNotice', {
                               lift: t(`strength.lifts.${lift}`),
-                              input: rowResult.weightInputKg,
-                              max: rowResult.modelMaxKg,
+                              input: formatWeight(rowResult.weightInputKg, {
+                                includeUnit: false,
+                                digits: 1,
+                              }),
+                              max: formatWeight(rowResult.modelMaxKg, {
+                                includeUnit: false,
+                                digits: 1,
+                              }),
+                              unit: labels.weight,
                             })}
                           </p>
                         ) : null}
@@ -264,7 +292,11 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                           <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
                           <span className="text-zinc-100">
                             {t('strength.singleOneRmValue', {
-                              value: rowResult.oneRepMax.toFixed(2),
+                              value: formatWeight(rowResult.oneRepMax, {
+                                includeUnit: false,
+                                digits: 1,
+                              }),
+                              unit: labels.weight,
                             })}
                           </span>
                         </p>
@@ -287,7 +319,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
 
             {combinedError ? (
               <p className="text-sm text-red-400" role="alert">
-                {t(`strength.errors.${combinedError}`)}
+                {t(`strength.errors.${combinedError}`, { unit: labels.weight })}
               </p>
             ) : null}
 
@@ -341,14 +373,21 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                               <p className="text-[11px] leading-relaxed text-amber-100/90">
                                 {t('strength.capWeightNotice', {
                                   lift: t(`strength.lifts.${b.lift}`),
-                                  input: b.inputWeightKg,
-                                  max: b.modelMaxKg,
+                                  input: formatWeight(b.inputWeightKg, {
+                                    includeUnit: false,
+                                    digits: 1,
+                                  }),
+                                  max: formatWeight(b.modelMaxKg, {
+                                    includeUnit: false,
+                                    digits: 1,
+                                  }),
+                                  unit: labels.weight,
                                 })}
                               </p>
                             ) : null}
                           </div>
                           <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
-                            {fmtBranchLine(t, b)}
+                            {fmtBranchLine(t, b, formatWeight, labels.weight)}
                           </span>
                         </li>
                       ))}
@@ -419,7 +458,9 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
                 role="status"
               >
                 {t('strength.submitFailedWithReason', {
-                  reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`),
+                  reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`, {
+                    unit: labels.weight,
+                  }),
                 })}
               </p>
             ) : null}

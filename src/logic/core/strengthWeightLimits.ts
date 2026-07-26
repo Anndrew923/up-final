@@ -13,6 +13,7 @@
  * - Lat pulldown: stack-machine elite context extended to 300 kg product ceiling
  */
 import type { StrengthLiftKey } from '../../types/strengthInputs';
+import { snapNearMetricLimit } from './unitConverters';
 
 export const STRENGTH_WEIGHT_LIMIT_KG = {
   benchPress: 370,
@@ -22,6 +23,12 @@ export const STRENGTH_WEIGHT_LIMIT_KG = {
   latPulldown: 300,
 } as const satisfies Record<StrengthLiftKey, number>;
 
+/**
+ * WHY: 1-decimal lb display round-trips (300 kg → 661.4 lb → ~300.017 kg) must not
+ * false-trigger model-ceiling notices after a valid imperial toggle.
+ */
+export const STRENGTH_WEIGHT_CEILING_EPSILON_KG = 0.05;
+
 export function clampStrengthWeightKg(
   lift: StrengthLiftKey,
   weightKg: number
@@ -30,8 +37,9 @@ export function clampStrengthWeightKg(
   if (!Number.isFinite(weightKg) || weightKg <= 0) {
     return { usedKg: weightKg, capped: false, maxKg };
   }
-  if (weightKg > maxKg) {
+  const snapped = snapNearMetricLimit(weightKg, maxKg, STRENGTH_WEIGHT_CEILING_EPSILON_KG);
+  if (snapped > maxKg) {
     return { usedKg: maxKg, capped: true, maxKg };
   }
-  return { usedKg: weightKg, capped: false, maxKg };
+  return { usedKg: snapped, capped: false, maxKg };
 }
