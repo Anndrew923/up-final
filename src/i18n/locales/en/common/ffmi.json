@@ -6,7 +6,6 @@
     "bodyFatLabel": "Body Fat Percentage",
     "bodyFatPlaceholder": "e.g. 15",
     "bodyFatUnit": "%",
-    "bodyFatHint": "Typical range 3–60%. Uses height, weight, and gender from Home.",
     "calculate": "Calculate",
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "DISPLACEMENT SPEC / FFMI",

@@ -122,7 +122,6 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
                 />
                 <span className="text-sm text-zinc-500">{t('ffmi.bodyFatUnit')}</span>
               </div>
-              <p className="text-xs text-zinc-500">{t('ffmi.bodyFatHint')}</p>
             </div>
 
             <div className="flex flex-wrap gap-3">

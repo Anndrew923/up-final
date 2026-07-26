@@ -28,6 +28,7 @@ export interface CardioAssessmentPageProps {
 const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const [cooperInfoOpen, setCooperInfoOpen] = useState(false);
+  const [run5kmInfoOpen, setRun5kmInfoOpen] = useState(false);
   const {
     profileReady,
     cooperDistanceOverCap,
@@ -245,7 +246,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 />
               </label>
             </div>
-            <p className="text-xs leading-relaxed text-zinc-500">{t('cardio.run5kmHint')}</p>
           </div>
 
           {errorKey ? (
@@ -315,8 +315,8 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
 
           <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
-          {activeTab === 'cooper' ? (
-            <AssessmentReferenceFooter>
+          <AssessmentReferenceFooter>
+            {activeTab === 'cooper' ? (
               <AssessmentReferenceDisclosure
                 instanceId="cooper-info"
                 expanded={cooperInfoOpen}
@@ -332,8 +332,23 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   footnote={t('cardio.cooperInfo.p5')}
                 />
               </AssessmentReferenceDisclosure>
-            </AssessmentReferenceFooter>
-          ) : null}
+            ) : (
+              <AssessmentReferenceDisclosure
+                instanceId="run5km-info"
+                expanded={run5kmInfoOpen}
+                onToggle={() => setRun5kmInfoOpen((v) => !v)}
+              >
+                <ReferenceSimpleCopy
+                  paragraphs={[
+                    t('cardio.run5kmInfo.p1'),
+                    t('cardio.run5kmInfo.p2'),
+                    t('cardio.run5kmInfo.p3'),
+                  ]}
+                  footnote={t('cardio.run5kmInfo.p4')}
+                />
+              </AssessmentReferenceDisclosure>
+            )}
+          </AssessmentReferenceFooter>
         </section>
       </ShellFlowStack>
     </main>

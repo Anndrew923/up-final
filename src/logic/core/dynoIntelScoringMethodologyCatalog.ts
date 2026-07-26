@@ -33,7 +33,7 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
   {
     metric: 'cardio',
     titleKey: 'cardio.title',
-    bodyKeys: ['cardio.subtitle', 'cardio.cooperInfo.p3', 'cardio.run5kmHint'],
+    bodyKeys: ['cardio.subtitle', 'cardio.cooperInfo.p3', 'cardio.run5kmInfo.p2'],
   },
   {
     metric: 'muscleMass',
@@ -79,8 +79,8 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
   },
   {
     metric: '5km',
-    titleKey: 'cardio.tab5km',
-    bodyKeys: ['cardio.run5kmHint', 'cardio.subtitle'],
+    titleKey: 'cardio.run5kmInfo.title',
+    bodyKeys: ['cardio.run5kmInfo.p2', 'cardio.run5kmInfo.p3', 'cardio.subtitle'],
   },
 ] as const;
 
