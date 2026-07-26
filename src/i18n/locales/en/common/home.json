@@ -76,7 +76,7 @@
       "advancedCollapse": "Hide extra fields",
       "ladderTagsPrompt": {
         "title": "Add ladder tags",
-        "body": "Job and country help filter peers on the ladder. You can skip and add these later on Home.",
+        "body": "Job, country, and region help filter peers on the ladder. You can skip and add these later on Home.",
         "save": "Save tags",
         "skip": "Skip"
       },
