@@ -21,6 +21,7 @@ import {
   resolveHallOfFameConsultReply,
   isHallOfFameConsultQuestion,
 } from "./hallOfFameConsultGate.js";
+import { loadHallOfFameMatrix } from "./hallOfFameMatrixLoader.js";
 import { buildPreemptiveOffTopicReply, shouldPreemptOffTopic } from "./offTopicPreempt.js";
 import {
   finalizeDynoQuotaReservation,
@@ -187,6 +188,9 @@ export const dynoIntelChat = onCall(
       }
       throw err;
     }
+
+    // WHY: Pantheon roster is ops-editable in Firestore; warm TTL cache before consult/status.
+    await loadHallOfFameMatrix();
 
     const inferenceContext = buildDynoIntelInferenceContext(context, userQuestion);
 

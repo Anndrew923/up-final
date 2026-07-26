@@ -98,8 +98,13 @@ export interface SubmitLeaderboardResult {
     | 'unknown'
     | 'unchanged'
     | 'avatar-patched'
+    | 'identity-patched'
     | 'avatar-upload-failed';
   updated?: boolean;
+  /** Portrait merge on score-equal (server). */
+  avatarPatched?: boolean;
+  /** Nickname / anonymous fan-out on score-equal (server). */
+  identityPatched?: boolean;
   /** Prior `scoreBest` when known (read-before-write or memory store). */
   previousScore?: number | null;
   /** Score written to the ladder row (`scoreBest` field in Firestore). */
@@ -881,19 +886,11 @@ export async function submitLeaderboardScore(params: {
     };
   }
 
+  // WHY: Never hard-block score writes on Storage avatar failure — degrade portrait only.
   let ensuredAvatarUrl: string | undefined;
   if (!options?.skipAvatarStorageEnsure) {
     const avatarEnsure = await ensureLadderAvatarHttpsForProSync(entitlement);
-    if (!avatarEnsure.ok) {
-      return {
-        ok: false,
-        reason: 'avatar-upload-failed',
-        updated: false,
-        previousScore: null,
-        submittedScore: null,
-      };
-    }
-    ensuredAvatarUrl = avatarEnsure.avatarUrl;
+    ensuredAvatarUrl = avatarEnsure.ok ? avatarEnsure.avatarUrl : undefined;
   }
 
   const identity = getLeaderboardIdentityPayload();
@@ -943,7 +940,13 @@ export async function submitLeaderboardScore(params: {
           options,
         });
         if (callableResult) {
-          if (callableResult.updated) {
+          if (
+            callableResult.updated ||
+            callableResult.avatarPatched ||
+            callableResult.identityPatched ||
+            callableResult.reason === 'avatar-patched' ||
+            callableResult.reason === 'identity-patched'
+          ) {
             clearLeaderboardCache(mergedForWrite.metric);
           }
           return callableResult;

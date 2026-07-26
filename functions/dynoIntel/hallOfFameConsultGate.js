@@ -1,4 +1,3 @@
-import matrixDoc from "./data/hallOfFameMatrix.v1.json" with { type: "json" };
 import {
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN,
   DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH,
@@ -13,6 +12,7 @@ import {
   isChassisMacroQuestion,
 } from "./resolveQuestionIntent.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
+import { getHallOfFameMatrix } from "./hallOfFameMatrixLoader.js";
 import { resolveHallOfFameDisplayNames, sampleHallOfFameNames } from "./hallOfFameResolver.js";
 import { resolveReplyLocale } from "./beatTemplates.js";
 
@@ -358,7 +358,8 @@ function collectAggregateTierNamePool(decadeKey) {
   const seen = new Set();
   const pool = [];
 
-  for (const entry of matrixDoc.entries ?? []) {
+  // WHY: Live cache (Firestore TTL or bundled fallback) — never re-import static JSON here.
+  for (const entry of getHallOfFameMatrix().entries ?? []) {
     if (entry?.decadeKey !== decadeKey) continue;
     for (const anchor of entry.anchors ?? []) {
       const name = String(anchor?.displayZh ?? "").trim();

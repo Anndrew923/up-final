@@ -131,6 +131,7 @@ function normalizeBatchSummary(raw: LeaderboardSyncRunSummary | undefined): Lead
     invalidInput: base.invalidInput ?? 0,
     internal: base.internal ?? 0,
     avatarPatched: base.avatarPatched ?? 0,
+    identityPatched: base.identityPatched ?? 0,
     errors: base.errors ?? (base.invalidInput ?? 0) + (base.internal ?? 0),
   };
 }

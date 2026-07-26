@@ -27,14 +27,20 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
   const { t } = useTranslation('common');
 
   const avatarBlocked = summary.attempted === 0 && hasAvatarUploadSyncFailure(failures);
+  const avatarSoftFail = summary.attempted > 0 && hasAvatarUploadSyncFailure(failures);
+  const identityOnlySuccess =
+    summary.updated === 0 &&
+    (summary.identityPatched ?? 0) > 0 &&
+    (summary.avatarPatched ?? 0) === 0 &&
+    !avatarBlocked;
   const avatarOnlySuccess =
     summary.updated === 0 && (summary.avatarPatched ?? 0) > 0 && !avatarBlocked;
   const tone =
     summary.updated > 0
       ? 'text-emerald-400/90'
-      : avatarOnlySuccess
+      : avatarOnlySuccess || identityOnlySuccess
         ? 'text-emerald-400/90'
-        : avatarBlocked
+        : avatarBlocked || avatarSoftFail
           ? 'text-amber-400/90'
           : summary.unchanged === summary.attempted && summary.attempted > 0
             ? 'text-zinc-300'
@@ -50,6 +56,10 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
         <p className={`text-sm ${tone}`} role="status">
           {t('ladder.syncAll.avatarPortraitUpdated')}
         </p>
+      ) : identityOnlySuccess ? (
+        <p className={`text-sm ${tone}`} role="status">
+          {t('ladder.syncAll.identityPatched')}
+        </p>
       ) : summary.attempted > 0 ? (
         <p className={`text-sm ${tone}`} role="status">
           {variant === 'assessment' && summary.updated > 0
@@ -59,6 +69,7 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
                 updated: summary.updated,
                 unchanged: summary.unchanged,
                 avatarPatched: summary.avatarPatched ?? 0,
+                identityPatched: summary.identityPatched ?? 0,
                 rateLimited: summary.rateLimited,
                 proRequired: summary.proRequired,
                 invalidInput: summary.invalidInput,

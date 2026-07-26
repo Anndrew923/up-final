@@ -9,6 +9,8 @@ export interface LeaderboardSubmitTallyInput {
   updated?: boolean;
   reason?: string;
   message?: string;
+  avatarPatched?: boolean;
+  identityPatched?: boolean;
 }
 
 export interface ApplyLeaderboardSubmitToSyncSummaryOptions {
@@ -62,10 +64,18 @@ export function applyLeaderboardSubmitToSyncSummary(
     tally.updated += 1;
     return;
   }
-  if (result.ok && (result.reason === 'unchanged' || result.reason === 'avatar-patched')) {
+  if (
+    result.ok &&
+    (result.reason === 'unchanged' ||
+      result.reason === 'avatar-patched' ||
+      result.reason === 'identity-patched')
+  ) {
     tally.unchanged += 1;
-    if (result.reason === 'avatar-patched') {
+    if (result.avatarPatched || result.reason === 'avatar-patched') {
       tally.avatarPatched = (tally.avatarPatched ?? 0) + 1;
+    }
+    if (result.identityPatched || result.reason === 'identity-patched') {
+      tally.identityPatched = (tally.identityPatched ?? 0) + 1;
     }
     return;
   }

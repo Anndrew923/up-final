@@ -8,6 +8,7 @@ export interface LeaderboardUploadHapticInput {
     | 'unknown'
     | 'unchanged'
     | 'avatar-patched'
+    | 'identity-patched'
     | 'avatar-upload-failed';
   updated?: boolean;
 }
@@ -23,7 +24,7 @@ export function resolveLeaderboardUploadHapticPreset(
 ): LeaderboardUploadHapticPreset | null {
   if (result.updated) return 'success';
   if (result.reason === 'unchanged') return 'ack';
-  if (result.reason === 'avatar-patched') return 'success';
+  if (result.reason === 'avatar-patched' || result.reason === 'identity-patched') return 'success';
   if (result.reason === 'rate-limited') return 'warning';
   if (!result.ok) return 'error';
   if (

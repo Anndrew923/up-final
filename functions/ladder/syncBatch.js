@@ -27,6 +27,7 @@ export function createEmptySummary() {
     updated: 0,
     unchanged: 0,
     avatarPatched: 0,
+    identityPatched: 0,
     errors: 0,
     invalidInput: 0,
     internal: 0,
@@ -64,10 +65,17 @@ function applyShardResult(tally, failures, metric, result) {
     applyFailureReasonToTally(tally, reason);
     return;
   }
-  if (result.reason === "unchanged" || result.reason === "avatar-patched") {
+  if (
+    result.reason === "unchanged" ||
+    result.reason === "avatar-patched" ||
+    result.reason === "identity-patched"
+  ) {
     tally.unchanged += 1;
     if (result.avatarPatched || result.reason === "avatar-patched") {
       tally.avatarPatched += 1;
+    }
+    if (result.identityPatched || result.reason === "identity-patched") {
+      tally.identityPatched += 1;
     }
     return;
   }
@@ -86,7 +94,12 @@ export function shouldSyncBatchPreview(preview, tally) {
     return false;
   }
   if (tally.attempted <= 0) return false;
-  return tally.updated > 0 || tally.avatarPatched > 0 || tally.unchanged > 0;
+  return (
+    tally.updated > 0 ||
+    tally.avatarPatched > 0 ||
+    tally.identityPatched > 0 ||
+    tally.unchanged > 0
+  );
 }
 
 export function normalizeBatchTargets(targets) {

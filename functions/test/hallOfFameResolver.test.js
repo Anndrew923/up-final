@@ -1,17 +1,17 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
-  HALL_OF_FAME_MAX_DISPLAY_NAMES,
   resolveHallOfFameDisplayNames,
   resolveHallOfFameSentence,
   sampleHallOfFameNames,
 } from "../dynoIntel/hallOfFameResolver.js";
+import { getHallOfFameMaxDisplayNames } from "../dynoIntel/hallOfFameMatrixLoader.js";
 import matrixDoc from "../dynoIntel/data/hallOfFameMatrix.v1.json" with { type: "json" };
 
 describe("hallOfFameResolver v5.0", () => {
   it("loads sparse matrix with 71 populated cells (9 intentional blanks omitted)", () => {
     assert.equal(matrixDoc.entries.length, 71);
-    assert.equal(HALL_OF_FAME_MAX_DISPLAY_NAMES, 3);
+    assert.equal(getHallOfFameMaxDisplayNames(), 3);
   });
 
   it("v5.10 — persists full cell rosters beyond the runtime display cap", () => {

@@ -109,6 +109,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // DYNO INTEL — Hall of Fame matrix (ops edit in Console; Functions Admin SDK reads).
+    // WHY: Zero-redeploy pantheon roster updates; clients must never read/write this doc.
+    match /dyno_intel_config/{docId} {
+      allow read, write: if false;
+    }
+
     // DYNO INTEL — daily quota counters; doc id is uid (dayKey lives inside the doc).
     match /dyno_intel_rate_limits/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;

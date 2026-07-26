@@ -17,6 +17,7 @@ import {
   ladderPreviewProfileFields,
   resolvePreviewRadarMetric,
 } from "./preview.js";
+import { resolveScoreEqualEntryPatch } from "./entryIdentityPatch.js";
 import { scoresEqualForLadderWrite } from "./scoreCompare.js";
 import {
   isValidShardId,
@@ -129,27 +130,50 @@ export async function runLadderSubmitShard(request) {
       scoresEqualForLadderWrite(previousScore, score)
     ) {
       const quota = checkShardRateLimit(rateDoc, rateKey, nowMs);
-      const storedAvatar = sanitizeAvatarUrl(entrySnap.data()?.avatarUrl);
-      if (avatarUrl && avatarUrl !== storedAvatar && entrySnap.exists) {
-        if (!quota.allowed) {
+      const patch = entrySnap.exists
+        ? resolveScoreEqualEntryPatch(entrySnap.data(), {
+            displayName,
+            profile,
+            avatarUrl,
+          })
+        : { needsPatch: false, identityChanged: false, avatarChanged: false };
+
+      if (patch.needsPatch && entrySnap.exists) {
+        // WHY: Avatar uploads stay rate-limited (storage + bandwidth). Pure nickname /
+        // anonymous identity fan-out must not burn the hourly shard quota or renames stall.
+        if (patch.avatarChanged) {
+          if (!quota.allowed) {
+            return {
+              outcome: "rate-limited",
+              previousScore,
+              submittedScore: null,
+              quota,
+            };
+          }
+          const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+          tx.set(entryRef(metric, uid), payload, { merge: true });
+          const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
+          tx.set(rateRef, rateDoc, { merge: true });
           return {
-            outcome: "rate-limited",
+            outcome: "avatar-patched",
+            identityPatched: patch.identityChanged,
             previousScore,
-            submittedScore: null,
-            quota,
+            submittedScore: score,
+            quota: quotaAfter,
           };
         }
+
         const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
         tx.set(entryRef(metric, uid), payload, { merge: true });
-        const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
-        tx.set(rateRef, rateDoc, { merge: true });
         return {
-          outcome: "avatar-patched",
+          outcome: "identity-patched",
+          identityPatched: true,
           previousScore,
           submittedScore: score,
-          quota: quotaAfter,
+          quota,
         };
       }
+
       return {
         outcome: "unchanged",
         previousScore,
@@ -187,12 +211,25 @@ export async function runLadderSubmitShard(request) {
     };
   });
 
-  if (result.outcome === "unchanged" || result.outcome === "avatar-patched") {
+  if (
+    result.outcome === "unchanged" ||
+    result.outcome === "avatar-patched" ||
+    result.outcome === "identity-patched"
+  ) {
+    const avatarPatched = result.outcome === "avatar-patched";
+    const identityPatched =
+      result.outcome === "identity-patched" || result.identityPatched === true;
     return {
       ok: true,
-      reason: result.outcome === "avatar-patched" ? "avatar-patched" : "unchanged",
+      reason:
+        result.outcome === "avatar-patched"
+          ? "avatar-patched"
+          : result.outcome === "identity-patched"
+            ? "identity-patched"
+            : "unchanged",
       updated: false,
-      avatarPatched: result.outcome === "avatar-patched",
+      avatarPatched,
+      identityPatched,
       previousScore: result.previousScore,
       submittedScore: result.submittedScore,
       improved: false,

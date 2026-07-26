@@ -38,6 +38,7 @@ describe('applyLeaderboardSubmitToSyncSummary', () => {
       updated: 1,
       unchanged: 2,
       avatarPatched: 1,
+      identityPatched: 0,
       rateLimited: 1,
       proRequired: 0,
       invalidInput: 1,
@@ -47,6 +48,19 @@ describe('applyLeaderboardSubmitToSyncSummary', () => {
     expect(failures).toHaveLength(2);
     expect(failures[0]).toMatchObject({ metric: 'strength_bench', reason: 'invalid-input' });
     expect(failures[1]).toMatchObject({ metric: 'cardio', reason: 'unknown' });
+  });
+
+  it('counts identity-patched as unchanged + identityPatched', () => {
+    const tally = createEmptyLeaderboardSyncRunSummary();
+    applyLeaderboardSubmitToSyncSummary(tally, {
+      ok: true,
+      reason: 'identity-patched',
+      updated: false,
+      identityPatched: true,
+    });
+    expect(tally.unchanged).toBe(1);
+    expect(tally.identityPatched).toBe(1);
+    expect(tally.avatarPatched).toBe(0);
   });
 
   it('recordLadderSyncShardFailure appends structured rows', () => {

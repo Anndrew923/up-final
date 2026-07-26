@@ -12,6 +12,8 @@ describe('ladder upload i18n', () => {
       attempted: 20,
       updated: 1,
       unchanged: 19,
+      avatarPatched: 0,
+      identityPatched: 2,
       rateLimited: 0,
       proRequired: 0,
       invalidInput: 0,
@@ -20,6 +22,7 @@ describe('ladder upload i18n', () => {
     });
     expect(summary).not.toBe('ladder.syncAll.summary');
     expect(summary).toContain('20');
+    expect(summary).toContain('暱稱同步');
 
     const unchanged = i18n.t('ladder.upload.resultUnchanged', { ns: 'common' });
     expect(unchanged).not.toBe('ladder.upload.resultUnchanged');
@@ -33,6 +36,10 @@ describe('ladder upload i18n', () => {
       ns: 'common',
     });
     expect(avatarReason).not.toBe('ladder.syncAll.failureReason.avatar-upload-failed');
+
+    const appCheckReason = i18n.t('ladder.syncAll.failureReason.app-check', { ns: 'common' });
+    expect(appCheckReason).not.toBe('ladder.syncAll.failureReason.app-check');
+    expect(appCheckReason).toContain('App Check');
 
     const cooldown = i18n.t('ladder.syncAll.fullSyncCooldown', {
       ns: 'common',

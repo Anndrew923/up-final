@@ -3,6 +3,7 @@ import type {
   LeaderboardSyncRunSummary,
   LeaderboardSyncTarget,
 } from '../logic/core/leaderboardSyncTargets';
+import { mapLadderBatchCallableError } from '../logic/core/ladderBatchCallableError';
 import {
   applyLeaderboardSubmitToSyncSummary,
   recordLadderSyncShardFailure,
@@ -63,27 +64,28 @@ export async function runLeaderboardBatchUpload(options: {
   } = options;
 
   const empty = createEmptyLeaderboardSyncRunSummary();
-  const emptyFailures: LadderSyncShardFailure[] = [];
 
+  // WHY: Avatar Storage failure must never block score / identity shard writes (APK genesis).
+  const preflightFailures: LadderSyncShardFailure[] = [];
   let resolvedAvatarUrl = previewSnapshot?.avatarUrl ?? undefined;
   if (targets.length > 0) {
     const avatarEnsure = await ensureLadderAvatarHttpsForProSync(entitlement);
     if (!avatarEnsure.ok) {
-      return {
-        summary: empty,
-        failures: [
-          {
-            metric: 'avatar',
-            reason: 'avatar-upload-failed',
-            message: avatarEnsure.message,
-          },
-        ],
-      };
+      preflightFailures.push({
+        metric: 'avatar',
+        reason: 'avatar-upload-failed',
+        message: avatarEnsure.message,
+      });
+      resolvedAvatarUrl = resolveLeaderboardAvatarUrlForCloud(
+        previewSnapshot?.avatarUrl,
+        undefined
+      );
+    } else {
+      resolvedAvatarUrl = resolveLeaderboardAvatarUrlForCloud(
+        previewSnapshot?.avatarUrl,
+        avatarEnsure.avatarUrl
+      );
     }
-    resolvedAvatarUrl = resolveLeaderboardAvatarUrlForCloud(
-      previewSnapshot?.avatarUrl,
-      avatarEnsure.avatarUrl
-    );
   }
 
   const callableWrites = isLadderCallableWritesEnabled();
@@ -113,22 +115,24 @@ export async function runLeaderboardBatchUpload(options: {
       });
       if (batch) {
         if (!batch.ok) {
+          const failures = [...preflightFailures, ...batch.failures];
           if (
             batch.reason === 'full-sync-cooldown' ||
             batch.reason === 'full-sync-daily-cap'
           ) {
             return {
               summary: empty,
-              failures: batch.failures,
+              failures,
               fullSyncBlock: {
                 reason: batch.reason,
                 nextAllowedAt: batch.nextAllowedAt,
               },
             };
           }
-          return { summary: empty, failures: batch.failures };
+          return { summary: empty, failures };
         }
-        const result = { summary: batch.summary, failures: batch.failures };
+        const failures = [...preflightFailures, ...batch.failures];
+        const result = { summary: batch.summary, failures };
         await runLeaderboardBatchPostUpload({
           entitlement,
           uid,
@@ -142,18 +146,37 @@ export async function runLeaderboardBatchUpload(options: {
                 profile: previewSnapshot.profile,
               }
             : undefined,
-          batchFailures: batch.failures,
+          batchFailures: failures,
         });
         return result;
       }
     } catch (err) {
+      // WHY: App Check / auth failures must surface in UI — empty failures look like a silent no-op on APK.
       logLadderCallableError('runLeaderboardBatchUpload/ladderSyncBatch', err);
-      return { summary: empty, failures: emptyFailures };
+      const mapped = mapLadderBatchCallableError(err);
+      console.error('[ladder] ladderSyncBatch callable failed', mapped);
+      const failures: LadderSyncShardFailure[] = [
+        ...preflightFailures,
+        {
+          metric: 'batch',
+          reason: mapped.reason,
+          message: mapped.message,
+        },
+      ];
+      return {
+        summary: {
+          ...empty,
+          attempted: targets.length,
+          internal: targets.length,
+          errors: targets.length,
+        },
+        failures,
+      };
     }
   }
 
   const tally = createEmptyLeaderboardSyncRunSummary();
-  const failures: LadderSyncShardFailure[] = [];
+  const failures: LadderSyncShardFailure[] = [...preflightFailures];
 
   for (const { metric, score } of targets) {
     tally.attempted += 1;

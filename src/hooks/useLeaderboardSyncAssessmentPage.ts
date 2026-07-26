@@ -181,7 +181,11 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         summary: batch.summary,
         failures: batch.failures,
       });
-      if (batch.summary.updated > 0) {
+      if (
+        batch.summary.updated > 0 ||
+        (batch.summary.avatarPatched ?? 0) > 0 ||
+        (batch.summary.identityPatched ?? 0) > 0
+      ) {
         void hapticService.trigger('success');
       } else if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
         hapticService.fireLeaderboardUploadResult({

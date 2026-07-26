@@ -2,17 +2,14 @@
  * v5.0 — Hall of Fame matrix resolver (sparse JSON from xlsx/csv wash).
  * WHY: Decouple celebrity anchors from praise copy; zh-only UI display names.
  * Matrix cells store FULL rosters; maxDisplayNames is per-reply sample size only.
+ *
+ * v5.11 — Matrix source is Firestore-first via hallOfFameMatrixLoader (bundled JSON fail-safe).
+ * Call loadHallOfFameMatrix() at Callable entry before resolving names.
  */
-import matrixDoc from "./data/hallOfFameMatrix.v1.json" with { type: "json" };
-
-const INDEX = new Map(
-  (matrixDoc.entries ?? []).map((entry) => [
-    `${entry.decadeKey}:${entry.axisId}`,
-    entry.anchors ?? [],
-  ])
-);
-
-const MAX_DISPLAY_NAMES = matrixDoc.maxDisplayNames ?? 3;
+import {
+  getHallOfFameIndex,
+  getHallOfFameMaxDisplayNames,
+} from "./hallOfFameMatrixLoader.js";
 
 /**
  * Fisher–Yates sample without mutating the source pool.
@@ -38,18 +35,23 @@ export function sampleHallOfFameNames(pool, limit) {
  * @param {string} axisId
  * @param {string} decadeKey
  * @param {number} [limit]
- * @param {{ shuffle?: boolean }} [options]
+ * @param {{ shuffle?: boolean, preferLatin?: boolean }} [options]
  * @returns {string[]}
  */
-export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DISPLAY_NAMES, options = {}) {
+export function resolveHallOfFameDisplayNames(
+  axisId,
+  decadeKey,
+  limit = getHallOfFameMaxDisplayNames(),
+  options = {}
+) {
   const decade = Number(decadeKey);
   if (!Number.isFinite(decade) || decade < 60) return [];
 
-  const anchors = INDEX.get(`${decadeKey}:${axisId}`);
+  const anchors = getHallOfFameIndex().get(`${decadeKey}:${axisId}`);
   if (!Array.isArray(anchors) || anchors.length === 0) return [];
 
   let pool = anchors
-    .map((anchor) => String(anchor.displayZh ?? "").trim())
+    .map((anchor) => String(anchor?.displayZh ?? "").trim())
     .filter(Boolean);
 
   // WHY: Matrix cells may mix Latin + CJK labels; EN replies must not leak CJK into segment1.
@@ -69,12 +71,12 @@ export function resolveHallOfFameDisplayNames(axisId, decadeKey, limit = MAX_DIS
  * @param {string} axisId
  * @param {string} decadeKey
  * @param {string} sentenceTemplate — must include {{names}}
- * @param {{ limit?: number, nameGlue?: string } | number} [options]
+ * @param {{ limit?: number, nameGlue?: string, shuffle?: boolean, preferLatin?: boolean } | number} [options]
  * @returns {string | null}
  */
 export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, options = {}) {
   const resolved = typeof options === "number" ? { limit: options } : options;
-  const limit = resolved.limit ?? MAX_DISPLAY_NAMES;
+  const limit = resolved.limit ?? getHallOfFameMaxDisplayNames();
   const nameGlue = resolved.nameGlue ?? "、";
   const shuffle = resolved.shuffle !== false;
   const preferLatin = resolved.preferLatin === true;
@@ -83,5 +85,3 @@ export function resolveHallOfFameSentence(axisId, decadeKey, sentenceTemplate, o
   if (!names.length) return null;
   return String(sentenceTemplate ?? "").replace("{{names}}", names.join(nameGlue));
 }
-
-export { MAX_DISPLAY_NAMES as HALL_OF_FAME_MAX_DISPLAY_NAMES };

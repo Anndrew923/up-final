@@ -29,7 +29,7 @@
     "signedInAs": "Signed in as {{name}}",
     "signInGoogle": "Sign in with Google",
     "signInBusy": "Signing in...",
-    "signInFail": "Sign-in failed. Allow pop-ups and check your network, then retry.",
+    "signInFail": "Google sign-in didn’t finish. Check your network and complete the account prompt, then try again.",
     "signOut": "Sign out",
     "signOutBusy": "Signing out...",
     "signOutOk": "Signed out successfully.",
@@ -47,7 +47,7 @@
     "deleteConfirm": "Delete account now? This cannot be undone.",
     "deleteSuccess": "Account deleted successfully.",
     "deleteRequiresRecentLogin": "Sign in again before deleting your account.",
-    "deleteReauthFail": "Re-authentication failed. Allow the Google prompt and retry.",
+    "deleteReauthFail": "Re-authentication didn’t finish. Complete the Google account prompt, then try again.",
     "deleteCloudPartial": "Account deleted; cloud cleanup continues in background.",
     "deleteAuthFail": "Unable to delete account. Try again later.",
     "deleteNotAllowed": "Only signed-in Google accounts can delete."

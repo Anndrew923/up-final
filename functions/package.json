@@ -10,7 +10,8 @@
     "test": "node --test test/*.test.js",
     "lint": "node --check index.js && node --check ladder/submitShardCore.js",
     "migrate:pro-expiries": "node scripts/backfillProEntitlements.js",
-    "migrate:pro-expiries:apply": "node scripts/backfillProEntitlements.js --apply"
+    "migrate:pro-expiries:apply": "node scripts/backfillProEntitlements.js --apply",
+    "seed:hall-of-fame": "node scripts/seedHallOfFameMatrix.js"
   },
   "dependencies": {
     "firebase-admin": "^14.2.0",

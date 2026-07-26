@@ -25,7 +25,7 @@ describe('ladderBatchPostUploadPolicy', () => {
     expect(shouldInvalidateLadderCacheAfterBatch(summary)).toBe(false);
   });
 
-  it('shouldInvalidateLadderCacheAfterBatch is true after score or avatar writes', () => {
+  it('shouldInvalidateLadderCacheAfterBatch is true after score, avatar, or identity writes', () => {
     const updated = createEmptyLeaderboardSyncRunSummary();
     updated.updated = 1;
     expect(shouldInvalidateLadderCacheAfterBatch(updated)).toBe(true);
@@ -33,6 +33,10 @@ describe('ladderBatchPostUploadPolicy', () => {
     const avatar = createEmptyLeaderboardSyncRunSummary();
     avatar.avatarPatched = 1;
     expect(shouldInvalidateLadderCacheAfterBatch(avatar)).toBe(true);
+
+    const identity = createEmptyLeaderboardSyncRunSummary();
+    identity.identityPatched = 1;
+    expect(shouldInvalidateLadderCacheAfterBatch(identity)).toBe(true);
   });
 
   it('shouldRunClientPreviewFallback does not require https avatar', () => {

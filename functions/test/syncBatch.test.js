@@ -90,4 +90,15 @@ describe("shouldSyncBatchPreview", () => {
       true
     );
   });
+
+  it("syncs when the batch only patched identity (nickname fan-out)", () => {
+    const tally = createEmptySummary();
+    tally.attempted = 2;
+    tally.unchanged = 2;
+    tally.identityPatched = 2;
+    assert.equal(
+      shouldSyncBatchPreview({ mergedScores }, tally),
+      true
+    );
+  });
 });

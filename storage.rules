@@ -1,25 +1,29 @@
 rules_version = '2';
 
-// Ladder display avatars — Pro sync uploads from client; reads for signed-in leaderboard viewers.
+// Ladder display avatars — client uploads for signed-in owners; reads for signed-in viewers.
+//
+// WHY (genesis open access): Keep in lockstep with client `MONETIZATION_CONFIG.leaderboardPaywallEnabled`
+// and Functions `LEADERBOARD_PAYWALL_ENABLED`. While genesis is open, owner write must not require
+// Firestore Pro fields — otherwise `data:` avatar upload blocks the whole sync path on APK.
+// Cutover back to Pro: re-wrap write/read with `hasValidPro` (see monetization.ts comment).
 service firebase.storage {
   match /b/{bucket}/o {
-    function hasValidPro(uid) {
-      let userData = firestore.get(/databases/(default)/documents/users/$(uid)).data;
-      return request.auth != null
-        && request.auth.uid == uid
-        && 'subscriptionStatus' in userData
-        && userData.subscriptionStatus in ['pro', 'grace']
-        && 'proExpiresAtMs' in userData
-        && userData.proExpiresAtMs is int
-        && userData.proExpiresAtMs >= request.time.toMillis();
+    function isLadderAvatarOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isValidLadderAvatarUpload() {
+      return request.resource.size < 512 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
     match /ladder-avatars/{uid}/avatar.jpg {
-      allow read: if request.auth != null && hasValidPro(request.auth.uid);
-      allow write: if hasValidPro(uid)
-        && request.resource.size < 512 * 1024
-        && request.resource.contentType.matches('image/.*');
-      allow delete: if request.auth != null && request.auth.uid == uid;
+      // Genesis: any signed-in viewer can load ladder portraits.
+      // Cutover to Pro: gate read/write with Firestore users/{uid} Pro fields
+      // (subscriptionStatus in [pro,grace] + proExpiresAtMs).
+      allow read: if request.auth != null;
+      allow write: if isLadderAvatarOwner(uid) && isValidLadderAvatarUpload();
+      allow delete: if isLadderAvatarOwner(uid);
     }
 
     match /{allPaths=**} {

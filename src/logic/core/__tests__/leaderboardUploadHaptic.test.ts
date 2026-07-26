@@ -12,12 +12,19 @@ describe('resolveLeaderboardUploadHapticPreset', () => {
     ).toBe('ack');
   });
 
-  it('returns success for avatar-only patch', () => {
+  it('returns success for avatar-only or identity-only patch', () => {
     expect(
       resolveLeaderboardUploadHapticPreset({
         ok: true,
         updated: false,
         reason: 'avatar-patched',
+      })
+    ).toBe('success');
+    expect(
+      resolveLeaderboardUploadHapticPreset({
+        ok: true,
+        updated: false,
+        reason: 'identity-patched',
       })
     ).toBe('success');
   });

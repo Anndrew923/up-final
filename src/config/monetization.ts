@@ -2,10 +2,11 @@
  * Central feature flags for monetization rollouts.
  *
  * WHY (genesis open access): Ladder read/upload is free while the arena grows toward
- * `genesisEarlyBirdSeatLimit`. Keep these three surfaces in lockstep when cutting over:
+ * `genesisEarlyBirdSeatLimit`. Keep these four surfaces in lockstep when cutting over:
  * 1) this flag → true
  * 2) Functions `LEADERBOARD_PAYWALL_ENABLED=true` (see `functions/.env.<projectId>`)
  * 3) Firestore leaderboard read rules → re-add `hasValidPro`
+ * 4) Storage `ladder-avatars` rules → re-wrap write/read with `hasValidPro`
  *
  * Cutover MUST ship a grandfather path before promising "permanent" free seats —
  * seat limit today is ops messaging only (not an enforced counter).

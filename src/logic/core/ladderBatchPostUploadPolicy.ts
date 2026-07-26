@@ -26,13 +26,22 @@ export function collectLadderCacheMetricsToClear(
 export function shouldInvalidateLadderCacheAfterBatch(
   summary: LeaderboardSyncRunSummary
 ): boolean {
-  return summary.updated > 0 || (summary.avatarPatched ?? 0) > 0;
+  return (
+    summary.updated > 0 ||
+    (summary.avatarPatched ?? 0) > 0 ||
+    (summary.identityPatched ?? 0) > 0
+  );
 }
 
 /** Mirrors server `shouldSyncBatchPreview` — avatar is optional for preview refresh. */
 export function batchSummaryWarrantsPreviewSync(summary: LeaderboardSyncRunSummary): boolean {
   if (summary.attempted <= 0) return false;
-  return summary.updated > 0 || (summary.avatarPatched ?? 0) > 0 || summary.unchanged > 0;
+  return (
+    summary.updated > 0 ||
+    (summary.avatarPatched ?? 0) > 0 ||
+    (summary.identityPatched ?? 0) > 0 ||
+    summary.unchanged > 0
+  );
 }
 
 /**

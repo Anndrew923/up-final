@@ -7,7 +7,7 @@
     "googleBusy": "Signing in...",
     "guest": "Continue as Guest",
     "guestBusy": "Preparing...",
-    "fail": "Step failed. Allow pop-ups and check network, then retry.",
+    "fail": "Google sign-in didn’t finish. Check your network and complete the account prompt, then try again.",
     "note": "Start as guest — link Google account later.",
     "continue": "Continue"
   }

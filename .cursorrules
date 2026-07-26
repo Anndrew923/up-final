@@ -57,6 +57,26 @@ Deep_Documentation_Standard:
 Structural_Review_Trigger:
   - If any single feature, bug, or calculation function undergoes more than 3 consecutive hotfixes or demonstrates architectural divergence, stop immediately and flag for a full refactoring audit.
 
+UI_RWD_SafeArea_Guardrails:
+  Header_Flex_Wrap_Ban:
+    - NEVER use `flex flex-wrap` on headers containing page titles and action/back buttons.
+    - Always enforce a rigid 2-column Grid layout to prevent back buttons from wrapping down on narrow mobile screens:
+      `grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4`
+  
+  SpaceY_Decorator_Shield:
+    - Absolutely FORBID placing absolute/decorative background glows (`absolute`, `-z-10`) as the first direct child inside a `space-y-*` container.
+    - Wrap or move decorative overlays outside `space-y` elements or apply `!mt-0` (or use `AssessmentAmbientGlow`) to eliminate unintended 16-32px top gutters.
+
+  Android15_EdgeToEdge_Protection:
+    - All bottom-anchored Modals, Sheets, and Footers MUST apply dynamic safe-area insets:
+      `pb-[max(1rem,env(safe-area-inset-bottom,0px))]`
+    - Standardize modal shells and footers using designated tokens: `.ui-modal-safe-shell` and `.ui-modal-safe-footer`.
+    - Always specify CSS Fallback defaults (e.g., `env(safe-area-inset-bottom, 24px)`) to ensure 1:1 fidelity during PC DevTools testing.
+
+  Shell_Compactness_HUD_Conflict_Rule:
+    - Sub-tool pages or calculators containing top-right back buttons MUST NOT be set to `compact` shell (`isCompactShellRoutePath`).
+    - Keep sub-pages on standard `ui-shell` height to prevent overlap with the fixed top-right AppShell HUD (settings/avatar).
+
 # ------------------------------------------------------------------------------
 # SECTION 5: EVOLUTIONARY ROADMAP (計分與雷達演進)
 # ------------------------------------------------------------------------------

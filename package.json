@@ -25,6 +25,7 @@
     "icons": "node scripts/generate-android-icons.cjs",
     "icons:android": "npm run icons",
     "dyno:import-hall-of-fame": "node scripts/import-hall-of-fame-matrix.mjs",
+    "dyno:seed-hall-of-fame": "npm run seed:hall-of-fame --prefix functions",
     "dyno:sync-human-praise": "node scripts/sync-dyno-intel-human-praise.mjs"
   },
   "dependencies": {
