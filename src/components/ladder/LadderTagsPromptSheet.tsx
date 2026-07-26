@@ -23,9 +23,12 @@ import {
   getTaiwanDistrictLabel,
 } from '../../utils/taiwanDistricts';
 import OptionSelectSheet from '../home/OptionSelectSheet';
+import LadderTagsSyncOffer from './LadderTagsSyncOffer';
 
 /** `entry` = first ladder visit; `filter` =「更多篩選」soft nudge (independent dismiss). */
 export type LadderTagsPromptVariant = 'entry' | 'filter';
+
+type PromptPhase = 'edit' | 'saved';
 
 export interface LadderTagsPromptSheetProps {
   open: boolean;
@@ -79,6 +82,7 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
   const [region, setRegion] = useState('');
   const [city, setCityState] = useState('');
   const [district, setDistrict] = useState('');
+  const [phase, setPhase] = useState<PromptPhase>('edit');
   /** WHY: Skip / backdrop / Escape can fire together — only one dismiss + onFinished chain. */
   const finishLockedRef = useRef(false);
 
@@ -87,6 +91,7 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
   useEffect(() => {
     if (!open) return;
     finishLockedRef.current = false;
+    setPhase('edit');
     const profile = loadPhysicalProfile();
     setJobCategory(readJobCategory(profile?.jobCategory));
     setCountryCodeState(readCountryCode(profile?.countryCode));
@@ -122,7 +127,10 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') finish();
+      if (e.key === 'Escape') {
+        // WHY: Escape always exits without force-sync; dismiss flags still apply via finish().
+        finish();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -154,8 +162,9 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
     // WHY: Failed validation must not burn the dismiss flag or drop user edits.
     if (!result.ok) return;
     savePhysicalProfile(result.profile);
-    finish();
-  }, [city, countryCode, district, finish, jobCategory, region]);
+    // WHY: Offer Local→Cloud sync before closing — Save alone never writes shard tags.
+    setPhase('saved');
+  }, [city, countryCode, district, jobCategory, region]);
 
   const isTaiwan = countryCode === 'TW';
   const jobOptions = LADDER_JOB_CATEGORIES.map((value) => ({
@@ -204,82 +213,90 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
             {t('home.profile.ladderTagsPrompt.body')}
           </p>
 
-          <div className="mt-5 grid gap-4">
-            <label className="flex flex-col gap-1 text-xs text-zinc-400">
-              <span className="font-medium text-zinc-300">{t('home.profile.jobCategory')}</span>
-              <OptionSelectSheet
-                value={jobCategory}
-                onChange={setJobCategory}
-                placeholder={t('home.profile.selectOptional')}
-                title={t('home.profile.jobSheetTitle')}
-                options={jobOptions}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-zinc-400">
-              <span className="font-medium text-zinc-300">{t('home.profile.countryCode')}</span>
-              <OptionSelectSheet
-                value={countryCode}
-                onChange={setCountryCode}
-                placeholder={t('home.profile.selectOptional')}
-                title={t('home.profile.countrySheetTitle')}
-                options={countryOptions}
-              />
-            </label>
-
-            {/* WHY: Locality cascade only after country is chosen — empty country must not show a stray region field. */}
-            {isTaiwan ? (
-              <>
+          {phase === 'edit' ? (
+            <>
+              <div className="mt-5 grid gap-4">
                 <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                  <span className="font-medium text-zinc-300">{t('home.profile.city')}</span>
+                  <span className="font-medium text-zinc-300">{t('home.profile.jobCategory')}</span>
                   <OptionSelectSheet
-                    value={city}
-                    onChange={setCity}
-                    placeholder={t('home.profile.selectCity')}
-                    title={t('home.profile.citySheetTitle')}
-                    options={taiwanCityOptions}
+                    value={jobCategory}
+                    onChange={setJobCategory}
+                    placeholder={t('home.profile.selectOptional')}
+                    title={t('home.profile.jobSheetTitle')}
+                    options={jobOptions}
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                  <span className="font-medium text-zinc-300">{t('home.profile.district')}</span>
+                  <span className="font-medium text-zinc-300">{t('home.profile.countryCode')}</span>
                   <OptionSelectSheet
-                    value={district}
-                    onChange={setDistrict}
-                    placeholder={t('home.profile.selectDistrict')}
-                    title={t('home.profile.districtSheetTitle')}
-                    options={taiwanDistrictOptions}
+                    value={countryCode}
+                    onChange={setCountryCode}
+                    placeholder={t('home.profile.selectOptional')}
+                    title={t('home.profile.countrySheetTitle')}
+                    options={countryOptions}
                   />
                 </label>
-              </>
-            ) : countryCode ? (
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
-                <span className="font-medium text-zinc-300">{t('home.profile.region')}</span>
-                <input
-                  type="text"
-                  className="ui-input"
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  aria-label={t('home.profile.region')}
-                />
-              </label>
-            ) : null}
-          </div>
 
-          <div className="mt-5 flex flex-col gap-2">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary min-h-12 w-full text-sm"
-              onClick={handleSave}
-            >
-              {t('home.profile.ladderTagsPrompt.save')}
-            </button>
-            <button
-              type="button"
-              className="min-h-12 w-full rounded-xl border border-zinc-600 bg-transparent text-sm font-semibold text-zinc-200 hover:bg-zinc-800/80"
-              onClick={finish}
-            >
-              {t('home.profile.ladderTagsPrompt.skip')}
-            </button>
-          </div>
+                {/* WHY: Locality cascade only after country is chosen — empty country must not show a stray region field. */}
+                {isTaiwan ? (
+                  <>
+                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                      <span className="font-medium text-zinc-300">{t('home.profile.city')}</span>
+                      <OptionSelectSheet
+                        value={city}
+                        onChange={setCity}
+                        placeholder={t('home.profile.selectCity')}
+                        title={t('home.profile.citySheetTitle')}
+                        options={taiwanCityOptions}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                      <span className="font-medium text-zinc-300">{t('home.profile.district')}</span>
+                      <OptionSelectSheet
+                        value={district}
+                        onChange={setDistrict}
+                        placeholder={t('home.profile.selectDistrict')}
+                        title={t('home.profile.districtSheetTitle')}
+                        options={taiwanDistrictOptions}
+                      />
+                    </label>
+                  </>
+                ) : countryCode ? (
+                  <label className="flex flex-col gap-1 text-xs text-zinc-400">
+                    <span className="font-medium text-zinc-300">{t('home.profile.region')}</span>
+                    <input
+                      type="text"
+                      className="ui-input"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      aria-label={t('home.profile.region')}
+                    />
+                  </label>
+                ) : null}
+              </div>
+
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  className="ui-btn ui-btn-primary min-h-12 w-full text-sm"
+                  onClick={handleSave}
+                >
+                  {t('home.profile.ladderTagsPrompt.save')}
+                </button>
+                <button
+                  type="button"
+                  className="min-h-12 w-full rounded-xl border border-zinc-600 bg-transparent text-sm font-semibold text-zinc-200 hover:bg-zinc-800/80"
+                  onClick={finish}
+                >
+                  {t('home.profile.ladderTagsPrompt.skip')}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="mt-5">
+              <LadderTagsSyncOffer onSynced={finish} onContinueWithoutSync={finish} />
+            </div>
+          )}
         </div>
       </div>
     </div>,

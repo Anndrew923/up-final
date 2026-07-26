@@ -35,6 +35,16 @@
     "shardLabel": "Shard: {{shardId}}",
     "moreFilters": "More Filters",
     "hideFilters": "Hide Filters",
+    "tagsSync": {
+      "syncCta": "Tags saved! Sync to Ladder now →",
+      "continueWithoutSync": "Continue without syncing",
+      "filterHint": "Note: Local tags need to be synced to appear in this filtered ranking.",
+      "rateLimited": "Full sync is cooling down. Try again later from the filter sheet.",
+      "syncFailed": "Sync did not update the ladder. Check the details below, or continue and retry from Filters.",
+      "syncNoOp": "No shard writes were needed. If rankings still look stale, open Filters and sync again later."
+    },
+
+
     "activeFilterCount": "{{count}} active",
     "floatingRank": {
       "filteredRankShort": "Filtered #{{rank}}",

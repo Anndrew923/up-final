@@ -20,6 +20,11 @@ import {
   shouldShowLadderFilterTagsNudge,
   shouldShowLadderTagsPrompt,
 } from '../services/ladderTagsPromptPrefService';
+import { loadPhysicalProfile } from '../services/localStorageService';
+import {
+  isLadderSegmentFilterActive,
+  ladderTagsNeedCloudSync,
+} from '../logic/core/ladderTagsCloudSync';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
 import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
@@ -535,6 +540,12 @@ export default function LadderPage() {
   const canPrevPage = currentPage > 1;
   const canNextPage = hasNextPage;
 
+  // WHY: Segment filters read cloud shard tags — tip when local profile is ahead of myEntry.
+  const showTagsSyncFilterHint = useMemo(() => {
+    if (!isLadderSegmentFilterActive(initialFilters)) return false;
+    return ladderTagsNeedCloudSync(loadPhysicalProfile(), myEntry);
+  }, [initialFilters, myEntry, ladderRefreshNonce]);
+
   if (!canEnter) {
     return (
       <main className="ui-shell max-w-xl">
@@ -661,6 +672,15 @@ export default function LadderPage() {
               ) : null}
             </button>
           </div>
+
+          {showTagsSyncFilterHint ? (
+            <p
+              role="status"
+              className="rounded-xl border border-amber-400/35 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/95"
+            >
+              {t('ladder.tagsSync.filterHint', { ns: 'common' })}
+            </p>
+          ) : null}
 
           {loading ? (
             <div className="space-y-2">

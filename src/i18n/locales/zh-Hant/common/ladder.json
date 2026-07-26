@@ -35,6 +35,16 @@
     "shardLabel": "分片：{{shardId}}",
     "moreFilters": "更多篩選",
     "hideFilters": "收合篩選",
+    "tagsSync": {
+      "syncCta": "標籤已儲存！立即同步至天梯 →",
+      "continueWithoutSync": "先不同步，繼續",
+      "filterHint": "提示：本機標籤需完成天梯同步後，才會出現在此細分排名中。",
+      "rateLimited": "全量同步冷卻中，請稍後在篩選面板再試。",
+      "syncFailed": "同步未更新天梯。請查看下方說明，或先繼續、稍後在篩選面板重試。",
+      "syncNoOp": "這次沒有需要寫入的分片。若排名仍偏舊，可稍後在篩選面板再同步。"
+    },
+
+
     "activeFilterCount": "已選 {{count}} 項",
     "floatingRank": {
       "filteredRankShort": "子榜 #{{rank}}",

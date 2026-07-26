@@ -5,13 +5,16 @@ import HomeCollapsibleCard from './HomeCollapsibleCard';
 import GenderSelectSheet from './GenderSelectSheet';
 import LadderTagsStatusPill from './LadderTagsStatusPill';
 import OptionSelectSheet from './OptionSelectSheet';
+import LadderTagsSyncOffer from '../ladder/LadderTagsSyncOffer';
 import { isPhysicalProfileAdvancedError } from '../../logic/core/homeProfileForm';
 import { countLadderTags } from '../../logic/core/ladderTags';
+import { hasLocalLadderTags } from '../../logic/core/ladderTagsCloudSync';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
 import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
 import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../../types/ladderProfile';
+import { loadPhysicalProfile } from '../../services/localStorageService';
 import {
   getAllTaiwanCities,
   getDistrictsByCity,
@@ -67,6 +70,8 @@ export default function HomeProfileForm() {
   });
 
   const [advancedExpanded, setAdvancedExpanded] = useState(false);
+  /** WHY: justSaved toast is ~2.4s; sync CTA must stay until user acts or dismisses. */
+  const [tagsSyncOfferOpen, setTagsSyncOfferOpen] = useState(false);
 
   // WHY: Older builds persisted force-open into sessionStorage. Clear sticky open once on mount
   // so returning users with a complete baseline land on a collapsed profile card (radar-first).
@@ -88,6 +93,12 @@ export default function HomeProfileForm() {
       setAdvancedExpanded(true);
     }
   }, [errorCode]);
+
+  useEffect(() => {
+    if (justSaved && hasLocalLadderTags(loadPhysicalProfile())) {
+      setTagsSyncOfferOpen(true);
+    }
+  }, [justSaved]);
 
   const ladderTagCount = countLadderTags({
     jobCategory,
@@ -369,7 +380,12 @@ export default function HomeProfileForm() {
           </p>
         ) : null}
 
-        {justSaved ? (
+        {tagsSyncOfferOpen ? (
+          <LadderTagsSyncOffer
+            onSynced={() => setTagsSyncOfferOpen(false)}
+            onContinueWithoutSync={() => setTagsSyncOfferOpen(false)}
+          />
+        ) : justSaved ? (
           <p className="text-sm font-medium text-emerald-400/90">
             {t('home.profile.saved', { ns: 'common' })}
           </p>
