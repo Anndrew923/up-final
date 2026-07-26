@@ -7,14 +7,14 @@ export interface TabRouteTransitionStore {
   /** Monotonic id — listeners fire once per tab transition cycle. */
   generation: number;
   startSprint: () => void;
-  /** Called when ShellAnimatedOutlet 150ms crossfade completes (central clock). */
+  /** Called when ShellAnimatedOutlet enter window completes (central clock). */
   completeSettle: () => void;
   finish: () => void;
   cancel: () => void;
 }
 
 /**
- * Central motion clock for tab crossfade (WHY: TopProgressBar + PDK Ack share one timeline).
+ * Central motion clock for tab enter (WHY: TopProgressBar + PDK Ack share one timeline).
  */
 export const useTabRouteTransitionStore = create<TabRouteTransitionStore>((set) => ({
   phase: 'idle',

@@ -6,6 +6,7 @@ import {
   TAB_ROUTE_PROGRESS_SPRINT_SCALE,
   TAB_ROUTE_PROGRESS_TOP,
   TAB_ROUTE_PROGRESS_TRANSITION,
+  TAB_ROUTE_SHOW_PROGRESS_BAR,
 } from '../../lib/tabRouteSensoryMotion';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import { useTabRouteTransitionStore } from '../../stores/tabRouteTransitionStore';
@@ -13,8 +14,15 @@ import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 
 /**
  * GPU-only tab switch progress strip — driven by central tab transition clock.
+ * WHY: Hidden by default (`TAB_ROUTE_SHOW_PROGRESS_BAR`) — strip outlived page enter and read as lag.
+ * Timeline tokens stay ≤120ms if re-enabled. Gate before store subscribe to avoid wasted renders.
  */
 const TopProgressBar: FC = () => {
+  if (!TAB_ROUTE_SHOW_PROGRESS_BAR) return null;
+  return <TopProgressBarActive />;
+};
+
+const TopProgressBarActive: FC = () => {
   const reducedMotion = usePrefersReducedMotion();
   const phase = useTabRouteTransitionStore((state) => state.phase);
   const generation = useTabRouteTransitionStore((state) => state.generation);
@@ -94,7 +102,8 @@ const TopProgressBar: FC = () => {
           'h-full w-full origin-left bg-[#DFFF00]',
           TAB_ROUTE_PROGRESS_TRANSITION,
           compositorHint ? 'will-change-[transform,opacity]' : '',
-          phase === 'sprint' ? 'duration-[90ms]' : 'duration-[120ms]',
+          // Static class strings — Tailwind cannot see runtime template literals.
+          phase === 'sprint' ? 'duration-[70ms]' : 'duration-[30ms]',
         )}
         style={{ transform: `scaleX(${scaleX})`, opacity }}
       />

@@ -30,9 +30,10 @@ describe('routeTransitionKind', () => {
     expect(isTabRouteTransition(ROUTES.home, ROUTES.settings)).toBe(false);
   });
 
-  it('classifies tab-to-tab as crossfade and skips reduced motion (Strategy A)', () => {
-    expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.ladder, false)).toBe('tab-crossfade');
+  it('classifies tab-to-tab as fade-in and skips reduced motion / instant', () => {
+    expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.ladder, false)).toBe('tab-fade-in');
     expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.ladder, true)).toBe('none');
+    expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.ladder, false, true)).toBe('none');
     expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.settings, false)).toBe('none');
     expect(resolveRouteTransitionKind(ROUTES.strength, ROUTES.home, false)).toBe('none');
     expect(resolveRouteTransitionKind(ROUTES.home, ROUTES.home, false)).toBe('none');

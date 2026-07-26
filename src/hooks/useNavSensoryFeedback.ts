@@ -3,7 +3,7 @@ import { useTabRouteTransitionStore } from '../stores/tabRouteTransitionStore';
 import { hapticService } from '../services/hapticService';
 
 /**
- * Fires PDK Ack when the central tab crossfade clock completes (150ms settle phase).
+ * Fires PDK Ack when the central tab enter clock completes (settle phase).
  * Tick is handled on BottomNav press — WHY: 0ms卡榫 must align with finger down, not pathname.
  */
 export function useNavSensoryFeedback(): void {

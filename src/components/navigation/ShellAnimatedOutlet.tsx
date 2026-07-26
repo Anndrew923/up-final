@@ -1,19 +1,23 @@
-import { useLayoutEffect, useRef, useState, type FC, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type FC } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
 import { cn } from '../../lib/cn';
 import {
   GLOBAL_TAB_ROUTE_DURATION_MS,
   GLOBAL_TAB_ROUTE_TRANSITION,
+  TAB_ROUTE_INSTANT,
   globalTabRouteEnterVisible,
-  globalTabRouteExitVisible,
   globalTabRouteWillChange,
 } from '../../lib/globalRouteMotion';
+import { TAB_ROUTE_SHOW_PROGRESS_BAR } from '../../lib/tabRouteSensoryMotion';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import { resolveRouteTransitionKind, isTabRouteTransition } from '../../logic/core/routeTransitionKind';
 import { useTabRouteTransitionStore } from '../../stores/tabRouteTransitionStore';
 
 /**
- * AppShell route outlet with bottom-tab crossfade (WHY: single gate — pages stay transition-free).
+ * AppShell route outlet — single-mount tab enter fade.
+ * WHY: Dual-mount crossfade (exiting + entering) forced heavy pages to paint twice;
+ * opacity-only enter on the new outlet keeps GPU cost and lag feel down.
+ * Flip `TAB_ROUTE_INSTANT` for 0ms hard swap.
  */
 const ShellAnimatedOutlet: FC = () => {
   const location = useLocation();
@@ -21,51 +25,44 @@ const ShellAnimatedOutlet: FC = () => {
   const reducedMotion = usePrefersReducedMotion();
   const startSprint = useTabRouteTransitionStore((state) => state.startSprint);
   const completeSettle = useTabRouteTransitionStore((state) => state.completeSettle);
+  const finish = useTabRouteTransitionStore((state) => state.finish);
   const cancelTransition = useTabRouteTransitionStore((state) => state.cancel);
   const prevPathRef = useRef(location.pathname);
-  const prevOutletRef = useRef(outlet);
-  const [exitingOutlet, setExitingOutlet] = useState<ReactNode | null>(null);
   const [entered, setEntered] = useState(true);
   const [compositorHint, setCompositorHint] = useState(false);
 
   useLayoutEffect(() => {
     const fromPath = prevPathRef.current;
     const toPath = location.pathname;
-    const previousOutlet = prevOutletRef.current;
-    const kind = resolveRouteTransitionKind(fromPath, toPath, reducedMotion);
+    const kind = resolveRouteTransitionKind(fromPath, toPath, reducedMotion, TAB_ROUTE_INSTANT);
     const tabSwitch = isTabRouteTransition(fromPath, toPath);
 
     if (!tabSwitch) {
       cancelTransition();
-      setExitingOutlet(null);
       setEntered(true);
       setCompositorHint(false);
       prevPathRef.current = toPath;
-      prevOutletRef.current = outlet;
       return;
     }
 
-    // Central 150ms clock — drives PDK Ack even when Strategy A skips crossfade visuals.
+    // Central clock — drives PDK Ack even when fade / progress visuals are off.
     startSprint();
 
-    const crossfade = kind === 'tab-crossfade';
+    const fadeIn = kind === 'tab-fade-in';
 
-    if (crossfade) {
-      setExitingOutlet(previousOutlet);
+    if (fadeIn) {
       setEntered(false);
       setCompositorHint(true);
     } else {
-      setExitingOutlet(null);
       setEntered(true);
       setCompositorHint(false);
     }
 
     prevPathRef.current = toPath;
-    prevOutletRef.current = outlet;
 
     let cancelled = false;
     let raf = 0;
-    if (crossfade) {
+    if (fadeIn) {
       raf = window.requestAnimationFrame(() => {
         window.requestAnimationFrame(() => {
           if (!cancelled) setEntered(true);
@@ -73,53 +70,45 @@ const ShellAnimatedOutlet: FC = () => {
       });
     }
 
-    const timer = window.setTimeout(() => {
+    // Instant / reduced-motion: settle immediately so haptic ack is not artificially delayed.
+    const settleMs = fadeIn ? GLOBAL_TAB_ROUTE_DURATION_MS : 0;
+    // Mutable bag so cleanup always sees the nested finish timer after settle fires.
+    const timers = { settle: 0, finish: 0 };
+    timers.settle = window.setTimeout(() => {
       completeSettle();
-      if (crossfade) {
-        setExitingOutlet(null);
-        setCompositorHint(false);
+      if (fadeIn) setCompositorHint(false);
+      // WHY: Progress bar normally calls finish(). Defer so settle paints for PDK Ack
+      // (same-tick finish would batch away `phase: 'settle'` under React 18).
+      if (!TAB_ROUTE_SHOW_PROGRESS_BAR) {
+        timers.finish = window.setTimeout(() => finish(), 0);
       }
-    }, GLOBAL_TAB_ROUTE_DURATION_MS);
+    }, settleMs);
 
     return () => {
       cancelled = true;
-      if (crossfade) window.cancelAnimationFrame(raf);
-      window.clearTimeout(timer);
+      if (fadeIn) window.cancelAnimationFrame(raf);
+      window.clearTimeout(timers.settle);
+      window.clearTimeout(timers.finish);
     };
   }, [
     cancelTransition,
     completeSettle,
+    finish,
     location.pathname,
-    outlet,
     reducedMotion,
     startSprint,
   ]);
 
   return (
-    <div className="relative">
-      {exitingOutlet != null ? (
-        <div
-          className={cn(
-            'pointer-events-none absolute inset-x-0 top-0 z-0',
-            GLOBAL_TAB_ROUTE_TRANSITION,
-            globalTabRouteWillChange(compositorHint),
-            globalTabRouteExitVisible(entered),
-          )}
-          aria-hidden
-        >
-          {exitingOutlet}
-        </div>
-      ) : null}
-      <div
-        className={cn(
-          'relative z-[1]',
-          compositorHint && GLOBAL_TAB_ROUTE_TRANSITION,
-          compositorHint && globalTabRouteWillChange(compositorHint),
-          compositorHint ? globalTabRouteEnterVisible(entered) : '',
-        )}
-      >
-        {outlet}
-      </div>
+    <div
+      className={cn(
+        'relative',
+        compositorHint && GLOBAL_TAB_ROUTE_TRANSITION,
+        compositorHint && globalTabRouteWillChange(compositorHint),
+        compositorHint ? globalTabRouteEnterVisible(entered) : '',
+      )}
+    >
+      {outlet}
     </div>
   );
 };

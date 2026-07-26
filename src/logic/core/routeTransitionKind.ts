@@ -5,7 +5,7 @@ export const TAB_ROUTE_PATHS: readonly string[] = NAV_ITEMS.map((item) => item.p
 
 const TAB_ROUTE_PATH_SET = new Set<string>(TAB_ROUTE_PATHS);
 
-export type RouteTransitionKind = 'none' | 'tab-crossfade';
+export type RouteTransitionKind = 'none' | 'tab-fade-in';
 
 export function isTabRoutePath(pathname: string): boolean {
   return TAB_ROUTE_PATH_SET.has(pathname);
@@ -23,16 +23,17 @@ export function resolveTabRouteIndex(pathname: string): number | null {
 }
 
 /**
- * Pure transition classifier — only bottom-tab ↔ bottom-tab switches animate in P1.
- * Reduced motion (Strategy A): instant swap, no fade.
+ * Pure transition classifier — only bottom-tab ↔ bottom-tab switches animate.
+ * `instant` / reduced motion: hard swap, no fade (Strategy A + `TAB_ROUTE_INSTANT`).
  */
 export function resolveRouteTransitionKind(
   fromPath: string,
   toPath: string,
   reducedMotion: boolean,
+  instant = false,
 ): RouteTransitionKind {
-  if (reducedMotion) return 'none';
+  if (instant || reducedMotion) return 'none';
   if (fromPath === toPath) return 'none';
   if (!isTabRoutePath(fromPath) || !isTabRoutePath(toPath)) return 'none';
-  return 'tab-crossfade';
+  return 'tab-fade-in';
 }
