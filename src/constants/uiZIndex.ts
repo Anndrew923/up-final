@@ -2,6 +2,8 @@ export const Z_INDEX_CLASS = {
   topProgressBar: 'z-[42]',
   /** Join Arena sticky enter CTA — below BottomNav (`z-50`), above scroll content. */
   joinArenaFloatingCta: 'z-[45]',
+  /** Tools calculator floating primary CTA (1RM / plates) — same band as Join Arena dock. */
+  toolFloatingCta: 'z-[45]',
   dynoIntelTrigger: 'z-[55]',
   dynoIntelSheet: 'z-[220]',
   dynoIntelClearHistoryDialog: 'z-[250]',

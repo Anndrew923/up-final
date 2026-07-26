@@ -13,11 +13,13 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { useUnit } from '../hooks/useUnit';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
 export interface ExplosiveAssessmentPageProps {
@@ -37,6 +39,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     setStandingLongJumpInput,
     sprintInput,
     setSprintInput,
+    metricScoringInputs,
     previewScore,
     previewBreakdown,
     capNoticeInterpolation,
@@ -48,6 +51,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
     persistToDashboard,
     submitToRadar,
   } = useExplosiveAssessmentPage();
+  const { labels, unitSystem, setUnitSystem, displayLength } = useUnit();
 
   const anchorsFallback = useMemo(() => {
     if (powerNormAnchors) return null;
@@ -57,13 +61,13 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
   const ladderUploadBundle = useMemo(
     () =>
       buildExplosiveAssessmentSupplementalTargets({
-        verticalJumpInput,
-        standingLongJumpInput,
-        sprintInput,
+        verticalJumpInput: metricScoringInputs.verticalJumpInput,
+        standingLongJumpInput: metricScoringInputs.standingLongJumpInput,
+        sprintInput: metricScoringInputs.sprintInput,
         profile,
         profileReady,
       }),
-    [verticalJumpInput, standingLongJumpInput, sprintInput, profile, profileReady]
+    [metricScoringInputs, profile, profileReady]
   );
 
   const ladderSync = useLeaderboardSyncAssessmentPage({
@@ -146,9 +150,14 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
         ) : null}
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <div className="flex justify-end">
+            <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
+          </div>
           <div className="grid gap-5">
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-vj">
-              <span className="font-medium text-zinc-200">{t('explosive.verticalJumpLabel')}</span>
+              <span className="font-medium text-zinc-200">
+                {t('explosive.verticalJumpLabel', { unit: labels.length })}
+              </span>
               <input
                 id="exp-vj"
                 type="number"
@@ -162,12 +171,12 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
                   clearError();
                   setVerticalJumpInput(e.target.value);
                 }}
-                aria-label={t('explosive.verticalJumpLabel')}
+                aria-label={t('explosive.verticalJumpLabel', { unit: labels.length })}
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-slj">
               <span className="font-medium text-zinc-200">
-                {t('explosive.standingLongJumpLabel')}
+                {t('explosive.standingLongJumpLabel', { unit: labels.length })}
               </span>
               <input
                 id="exp-slj"
@@ -182,7 +191,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
                   clearError();
                   setStandingLongJumpInput(e.target.value);
                 }}
-                aria-label={t('explosive.standingLongJumpLabel')}
+                aria-label={t('explosive.standingLongJumpLabel', { unit: labels.length })}
               />
             </label>
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-sprint">
@@ -213,14 +222,18 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
               {capNoticeInterpolation.maxVerticalJumpCm != null ? (
                 <p className="leading-relaxed">
                   {t('explosive.capVerticalJump', {
-                    max: capNoticeInterpolation.maxVerticalJumpCm,
+                    max: Number(displayLength(capNoticeInterpolation.maxVerticalJumpCm).toFixed(1)),
+                    unit: labels.length,
                   })}
                 </p>
               ) : null}
               {capNoticeInterpolation.maxStandingLongJumpCm != null ? (
                 <p className="leading-relaxed">
                   {t('explosive.capStandingLongJump', {
-                    max: capNoticeInterpolation.maxStandingLongJumpCm,
+                    max: Number(
+                      displayLength(capNoticeInterpolation.maxStandingLongJumpCm).toFixed(1)
+                    ),
+                    unit: labels.length,
                   })}
                 </p>
               ) : null}
@@ -236,7 +249,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
 
           {errorKey ? (
             <p className="text-sm text-red-400" role="alert">
-              {t(`explosive.errors.${errorKey}`)}
+              {t(`explosive.errors.${errorKey}`, { unit: labels.length })}
             </p>
           ) : null}
 

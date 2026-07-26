@@ -1,6 +1,23 @@
 {
   "back": "Back",
   "cancel": "Cancel",
+  "units": {
+    "system": {
+      "aria": "Unit system",
+      "metric": "Metric (kg/cm)",
+      "imperial": "Imperial (lbs/in)",
+      "metricShort": "Metric",
+      "imperialShort": "Imperial"
+    },
+    "weight": {
+      "kg": "kg",
+      "lb": "lb"
+    },
+    "length": {
+      "cm": "cm",
+      "in": "in"
+    }
+  },
   "exitModalKicker": "SYSTEM / POWER",
   "exitModalTitle": "TERMINATE CONNECTION?",
   "exitModalMessage": "Press back again or click below to shutdown systems and exit Ultimate Physique.",
@@ -563,6 +580,5 @@
   "shellAvatarFallback": "Guest",
   "shellAvatarAria": "User avatar, initial {{initial}}",
   "shellSettingsAria": "Open settings",
-  "shellTitle": "Ultimate Physique",
-  "shellSubtitle": "Core access and leaderboard guard check"
+  "shellTitle": "Ultimate Physique"
 }

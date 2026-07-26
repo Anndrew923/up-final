@@ -4,6 +4,8 @@ import { normalizeLadderDisplayName } from '../../services/ladderIdentityService
 import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { useLadderIdentityForm } from '../../hooks/useLadderIdentityForm';
+import { useEntitlementStore } from '../../stores/entitlementStore';
+import ProBadge from '../ProBadge';
 import HomeCollapsibleCard from './HomeCollapsibleCard';
 
 export default function HomeLadderIdentitySection() {
@@ -12,6 +14,7 @@ export default function HomeLadderIdentitySection() {
   const nameFieldId = `${formId}-displayName`;
   const fileInputId = `${formId}-avatarFile`;
   const ladderCopy = useHomeFormCopy('ladderIdentity');
+  const isPro = useEntitlementStore((state) => state.isPro);
   const {
     t,
     displayName,
@@ -70,6 +73,13 @@ export default function HomeLadderIdentitySection() {
       canCollapse={canCollapse}
       kicker={ladderCopy('kicker')}
       title={ladderCopy('title')}
+      statusSlot={
+        isPro ? (
+          <div className="pt-0.5">
+            <ProBadge size="sm" />
+          </div>
+        ) : null
+      }
       summarySlot={collapsedSummary}
       toggleExpandLabel={ladderCopy('toggleExpand')}
       toggleCollapseLabel={ladderCopy('toggleCollapse')}

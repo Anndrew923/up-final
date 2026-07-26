@@ -2,17 +2,48 @@ import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   isPhysicalProfileComplete,
+  PHYSICAL_LIMITS,
   validatePhysicalProfile,
   type PhysicalProfileValidationErrorCode,
 } from '../logic/core/physicalProfile';
+import {
+  formatLengthInput,
+  formatWeightInput,
+  parseInputToMetric,
+  reprojectDisplayInput,
+  snapNearMetricLimit,
+  type UnitSystem,
+} from '../logic/core/unitConverters';
 import {
   LOCAL_PHYSICAL_PROFILE_CHANGED_EVENT,
   loadPhysicalProfile,
   savePhysicalProfile,
 } from '../services/localStorageService';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../types/ladderProfile';
 
-function readFormFieldsFromStorage(): {
+/** Epsilon covers 1-decimal inch/lb display round-trip into cm/kg limits. */
+const HEIGHT_LIMIT_EPSILON_CM = 0.15;
+const WEIGHT_LIMIT_EPSILON_KG = 0.05;
+
+function normalizeMetricForProfileLimits(
+  heightMetric: number | null,
+  weightMetric: number | null
+): { heightCm: number | null; weightKg: number | null } {
+  let heightCm = heightMetric;
+  let weightKg = weightMetric;
+  if (heightCm !== null) {
+    heightCm = snapNearMetricLimit(heightCm, PHYSICAL_LIMITS.heightCmMin, HEIGHT_LIMIT_EPSILON_CM);
+    heightCm = snapNearMetricLimit(heightCm, PHYSICAL_LIMITS.heightCmMax, HEIGHT_LIMIT_EPSILON_CM);
+  }
+  if (weightKg !== null) {
+    weightKg = snapNearMetricLimit(weightKg, PHYSICAL_LIMITS.weightKgMin, WEIGHT_LIMIT_EPSILON_KG);
+    weightKg = snapNearMetricLimit(weightKg, PHYSICAL_LIMITS.weightKgMax, WEIGHT_LIMIT_EPSILON_KG);
+  }
+  return { heightCm, weightKg };
+}
+
+function readFormFieldsFromStorage(unitSystem: UnitSystem): {
   gender: string;
   age: string;
   heightCm: string;
@@ -46,8 +77,9 @@ function readFormFieldsFromStorage(): {
   return {
     gender: p.gender,
     age: String(p.age),
-    heightCm: String(p.heightCm),
-    weightKg: String(p.weightKg),
+    // WHY: Form fields are display strings — project from metric storage for the active system.
+    heightCm: formatLengthInput(p.heightCm, unitSystem),
+    weightKg: formatWeightInput(p.weightKg, unitSystem),
     jobCategory:
       typeof p.jobCategory === 'string' &&
       LADDER_JOB_CATEGORIES.includes(p.jobCategory as (typeof LADDER_JOB_CATEGORIES)[number])
@@ -75,7 +107,8 @@ export interface UsePhysicalProfileFormOptions {
 
 export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = {}) {
   const { onSaveSuccess } = options;
-  const initial = readFormFieldsFromStorage();
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const initial = readFormFieldsFromStorage(unitSystem);
   const [gender, setGender] = useState(initial.gender);
   const [age, setAge] = useState(initial.age);
   const [heightCm, setHeightCm] = useState(initial.heightCm);
@@ -96,11 +129,12 @@ export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = 
   const [, setSyncGeneration] = useState(0);
   /** Browser timer id — avoid `ReturnType<typeof setTimeout>` (pulls Node `Timeout` under some TS configs). */
   const saveToastTimerRef = useRef<number | null>(null);
+  const prevUnitSystemRef = useRef(unitSystem);
 
   const baselineComplete = isPhysicalProfileComplete(loadPhysicalProfile());
 
   const reloadFromStorage = useCallback(() => {
-    const next = readFormFieldsFromStorage();
+    const next = readFormFieldsFromStorage(useUnitPreferenceStore.getState().unitSystem);
     setGender(next.gender);
     setAge(next.age);
     setHeightCm(next.heightCm);
@@ -115,6 +149,15 @@ export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = 
     setIsAnonymousInLadder(next.isAnonymousInLadder);
     setSyncGeneration((g) => g + 1); // refreshes baselineComplete when another tab/device writes storage
   }, []);
+
+  // WHY: Toggle projects display strings from current inputs via metric — never display→display.
+  useEffect(() => {
+    const prev = prevUnitSystemRef.current;
+    if (prev === unitSystem) return;
+    prevUnitSystemRef.current = unitSystem;
+    setHeightCm((raw) => reprojectDisplayInput(raw, 'length', prev, unitSystem));
+    setWeightKg((raw) => reprojectDisplayInput(raw, 'weight', prev, unitSystem));
+  }, [unitSystem]);
 
   const setCountryCode = useCallback((next: string) => {
     setCountryCodeState(next);
@@ -167,11 +210,17 @@ export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = 
       setErrorCode(null);
       setLoading(true);
 
+      // WHY: Form fields are display strings (may be in/lb); validate + persist metric only.
+      const parsed = normalizeMetricForProfileLimits(
+        parseInputToMetric(heightCm, 'length', unitSystem),
+        parseInputToMetric(weightKg, 'weight', unitSystem)
+      );
+
       const result = validatePhysicalProfile({
         gender: gender === '' ? '' : gender,
         age,
-        heightCm,
-        weightKg,
+        heightCm: parsed.heightCm === null ? heightCm : parsed.heightCm,
+        weightKg: parsed.weightKg === null ? weightKg : parsed.weightKg,
         jobCategory,
         weeklyTrainingHours,
         trainingYears,
@@ -207,6 +256,7 @@ export function usePhysicalProfileForm(options: UsePhysicalProfileFormOptions = 
       age,
       heightCm,
       weightKg,
+      unitSystem,
       jobCategory,
       weeklyTrainingHours,
       trainingYears,

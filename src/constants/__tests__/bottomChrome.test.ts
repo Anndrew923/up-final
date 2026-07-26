@@ -17,6 +17,9 @@ import {
   LADDER_FILTER_PILL_BOTTOM_PX,
   LADDER_FLOATING_RANK_BAR_PX,
   LADDER_SCROLL_BOTTOM_INSET_PX,
+  TOOL_FLOATING_CTA_BAR_PX,
+  TOOL_FLOATING_CTA_BOTTOM_PX,
+  TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX,
   bottomChromeCalc,
 } from '../bottomChrome';
 
@@ -69,5 +72,15 @@ describe('bottomChrome', () => {
     expect(JOIN_ARENA_CTA_BOTTOM_PX).toBe(BOTTOM_CHROME_STACK_PX);
     expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBe(JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX);
     expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBeGreaterThan(APP_SHELL_SCROLL_BOTTOM_PX);
+  });
+
+  it('shares Dyno-hidden dock stack between Join Arena and tools calculators', () => {
+    expect(TOOL_FLOATING_CTA_BOTTOM_PX).toBe(JOIN_ARENA_CTA_BOTTOM_PX);
+    expect(TOOL_FLOATING_CTA_BAR_PX).toBe(JOIN_ARENA_CTA_BAR_PX);
+    expect(TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX).toBe(JOIN_ARENA_SCROLL_BOTTOM_PX);
+    expect(TOOL_FLOATING_CTA_BOTTOM_PX).toBe(BOTTOM_CHROME_STACK_PX);
+    expect(bottomChromeCalc(TOOL_FLOATING_CTA_BOTTOM_PX)).toContain(
+      'env(safe-area-inset-bottom, 0px)'
+    );
   });
 });

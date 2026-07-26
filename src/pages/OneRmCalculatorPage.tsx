@@ -5,11 +5,14 @@ import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import ToolFloatingCalculateCta from '../components/tools/ToolFloatingCalculateCta';
 import ToolResultModal, {
   type ToolResultModalOneRmPayload,
 } from '../components/tools/ToolResultModal';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useOneRmCalculatorPage } from '../hooks/useOneRmCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
+import { useUnit } from '../hooks/useUnit';
 
 export interface OneRmCalculatorPageProps {
   onBack?: () => void;
@@ -18,6 +21,7 @@ export interface OneRmCalculatorPageProps {
 const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const { unitSystem, setUnitSystem, labels, displayWeight } = useUnit();
   const {
     weightInput,
     repsInput,
@@ -26,6 +30,7 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
     setRepsInput,
     setMethod,
     estimatedOneRmKg,
+    estimatedOneRmDisplay,
   } = useOneRmCalculatorPage();
   const { displayValue, isBlocking, modalOpen, reveal, closeModal } = useToolResultReveal({
     haptic: 'medium',
@@ -33,7 +38,8 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
   const [modalPayload, setModalPayload] = useState<ToolResultModalOneRmPayload | null>(null);
 
   const canCalculate = estimatedOneRmKg > 0;
-  const previewKg = displayValue ?? estimatedOneRmKg;
+  const previewDisplay =
+    displayValue !== null ? displayWeight(displayValue) : estimatedOneRmDisplay;
 
   const methodOptions = useMemo(
     () =>
@@ -72,10 +78,21 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
 
         <fieldset disabled={isBlocking} className="min-w-0 border-0 p-0">
           <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t('tools.calculators.plates.unitLabel')}
+              </span>
+              <UnitSystemToggle
+                value={unitSystem}
+                onChange={setUnitSystem}
+                compact
+              />
+            </div>
+
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="space-y-2 text-sm text-zinc-300">
                 <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {t('tools.calculators.oneRm.weightLabel')}
+                  {t('tools.calculators.oneRm.weightLabel', { unit: labels.weight })}
                 </span>
                 <input
                   type="number"
@@ -125,26 +142,26 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
                   isBlocking && !modalOpen ? 'text-4xl sm:text-5xl' : 'text-3xl'
                 }`}
               >
-                {previewKg > 0
-                  ? t('tools.calculators.oneRm.resultValue', { value: previewKg.toFixed(1) })
+                {previewDisplay > 0
+                  ? t('tools.calculators.oneRm.resultValue', {
+                      value: previewDisplay.toFixed(1),
+                      unit: labels.weight,
+                    })
                   : t('tools.calculators.oneRm.resultEmpty')}
               </p>
               <p className="mt-3 text-xs leading-relaxed text-zinc-500">
                 {t('tools.calculators.oneRm.hint')}
               </p>
             </div>
-
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary w-full min-h-12 text-base font-semibold"
-              disabled={!canCalculate || isBlocking}
-              onClick={() => void handleCalculate()}
-            >
-              {t('tools.calculators.oneRm.calculate')}
-            </button>
           </section>
         </fieldset>
       </ShellFlowStack>
+
+      <ToolFloatingCalculateCta
+        label={t('tools.calculators.oneRm.calculate')}
+        disabled={!canCalculate || isBlocking}
+        onClick={() => void handleCalculate()}
+      />
 
       <ToolResultModal
         variant="oneRm"

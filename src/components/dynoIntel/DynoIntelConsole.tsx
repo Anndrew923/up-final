@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { isLadderRoutePath, ROUTES } from '../../config/routes';
+import { isLadderRoutePath, isToolsFloatingCtaRoutePath, ROUTES } from '../../config/routes';
 import { buildDynoIntelContext } from '../../logic/core/buildDynoIntelContext';
 import { enrichDynoIntelContextCardCopy } from '../../logic/core/enrichDynoIntelContextCardCopy';
 import { resolveDynoPaywallWeakestBrief } from '../../logic/core/dynoIntelPaywallBrief';
@@ -234,9 +234,13 @@ const DynoIntelConsole = () => {
     chat.status !== 'loading' &&
     chat.status !== 'typing';
 
-  // WHY: Ladder floating rank uses the same bottom band; hide Dyno Intel chip to keep score readable.
+  // WHY: Ladder floating rank / Join Arena / training calculators own the bottom band —
+  // hide Dyno Intel chip only (BottomNav + center hex stay).
   const hideTrigger =
-    isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
+    isShellBlocked ||
+    HIDDEN_TRIGGER_ROUTES.has(pathname) ||
+    isLadderRoutePath(pathname) ||
+    isToolsFloatingCtaRoutePath(pathname);
   return (
     <>
       <DynoActiveTrigger

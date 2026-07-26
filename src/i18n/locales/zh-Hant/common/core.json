@@ -1,6 +1,23 @@
 {
   "back": "返回",
   "cancel": "關閉",
+  "units": {
+    "system": {
+      "aria": "單位系統",
+      "metric": "公制 (kg/cm)",
+      "imperial": "英制 (lbs/in)",
+      "metricShort": "公制",
+      "imperialShort": "英制"
+    },
+    "weight": {
+      "kg": "kg",
+      "lb": "lb"
+    },
+    "length": {
+      "cm": "cm",
+      "in": "in"
+    }
+  },
   "exitModalKicker": "系統 / 通電",
   "exitModalTitle": "斷開通電協議？",
   "exitModalMessage": "再按一次返回鍵，或點擊下方按鈕，系統載具將執行熄火並離開最強肉體。",
@@ -563,6 +580,5 @@
   "shellAvatarFallback": "訪客",
   "shellAvatarAria": "使用者頭像，縮寫 {{initial}}",
   "shellSettingsAria": "開啟設定",
-  "shellTitle": "最強肉體",
-  "shellSubtitle": "Core 權限與排行榜守門檢查"
+  "shellTitle": "最強肉體"
 }

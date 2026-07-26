@@ -13,8 +13,11 @@ import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physic
 import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
+import { useUnit } from '../../hooks/useUnit';
+import { PHYSICAL_LIMITS } from '../../logic/core/physicalProfile';
 import { LADDER_COUNTRY_CODES, LADDER_JOB_CATEGORIES } from '../../types/ladderProfile';
 import { loadPhysicalProfile } from '../../services/localStorageService';
+import UnitSystemToggle from '../units/UnitSystemToggle';
 import {
   getAllTaiwanCities,
   getDistrictsByCity,
@@ -29,6 +32,11 @@ function errorTranslationKey(code: PhysicalProfileValidationErrorCode): string {
 export default function HomeProfileForm() {
   const { t, i18n } = useTranslation();
   const profileCopy = useHomeFormCopy('profile');
+  const { unitSystem, setUnitSystem, labels, displayLength, displayWeight } = useUnit();
+  const heightMin = displayLength(PHYSICAL_LIMITS.heightCmMin);
+  const heightMax = displayLength(PHYSICAL_LIMITS.heightCmMax);
+  const weightMin = displayWeight(PHYSICAL_LIMITS.weightKgMin);
+  const weightMax = displayWeight(PHYSICAL_LIMITS.weightKgMax);
   const {
     gender,
     setGender,
@@ -145,8 +153,34 @@ export default function HomeProfileForm() {
       age,
       height: heightCm,
       weight: weightKg,
+      heightUnit: labels.length,
+      weightUnit: labels.weight,
     });
-  }, [age, baselineComplete, gender, heightCm, profileCopy, weightKg]);
+  }, [age, baselineComplete, gender, heightCm, labels.length, labels.weight, profileCopy, weightKg]);
+
+  const profileErrorParams = useMemo(() => {
+    if (
+      errorCode === 'required-height' ||
+      errorCode === 'invalid-height'
+    ) {
+      return {
+        unit: labels.length,
+        min: Number(heightMin.toFixed(1)),
+        max: Number(heightMax.toFixed(1)),
+      };
+    }
+    if (
+      errorCode === 'required-weight' ||
+      errorCode === 'invalid-weight'
+    ) {
+      return {
+        unit: labels.weight,
+        min: Number(weightMin.toFixed(1)),
+        max: Number(weightMax.toFixed(1)),
+      };
+    }
+    return {};
+  }, [errorCode, heightMax, heightMin, labels.length, labels.weight, weightMax, weightMin]);
 
   const statusSlot = baselineComplete ? (
     <p className="text-xs font-medium text-emerald-400/90">{profileCopy('completeBadge')}</p>
@@ -168,6 +202,9 @@ export default function HomeProfileForm() {
       toggleCollapseLabel={profileCopy('toggleCollapse')}
     >
       <form className="space-y-5 border-t border-zinc-800/90 pt-4" onSubmit={handleSubmit} noValidate>
+        <div className="flex justify-end">
+          <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs text-zinc-400">
             <span className="font-medium text-zinc-300">
@@ -202,14 +239,13 @@ export default function HomeProfileForm() {
 
           <label className="flex flex-col gap-1 text-xs text-zinc-400">
             <span className="font-medium text-zinc-300">
-              {t('home.profile.height', { ns: 'common' })} (
-              {t('home.profile.heightUnit', { ns: 'common' })})
+              {t('home.profile.height', { ns: 'common' })} ({labels.length})
             </span>
             <input
               type="number"
               inputMode="decimal"
-              min={120}
-              max={230}
+              min={heightMin}
+              max={heightMax}
               step={0.1}
               className="ui-input"
               value={heightCm}
@@ -223,14 +259,13 @@ export default function HomeProfileForm() {
 
           <label className="flex flex-col gap-1 text-xs text-zinc-400">
             <span className="font-medium text-zinc-300">
-              {t('home.profile.weight', { ns: 'common' })} (
-              {t('home.profile.weightUnit', { ns: 'common' })})
+              {t('home.profile.weight', { ns: 'common' })} ({labels.weight})
             </span>
             <input
               type="number"
               inputMode="decimal"
-              min={35}
-              max={250}
+              min={weightMin}
+              max={weightMax}
               step={0.1}
               className="ui-input"
               value={weightKg}
@@ -376,7 +411,7 @@ export default function HomeProfileForm() {
             className="rounded-lg border border-rose-500/35 bg-rose-950/40 px-3 py-2 text-sm text-rose-100"
             role="alert"
           >
-            {t(errorTranslationKey(errorCode), { ns: 'common' })}
+            {t(errorTranslationKey(errorCode), { ns: 'common', ...profileErrorParams })}
           </p>
         ) : null}
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BARBELL_WEIGHT_PRESETS_KG,
   BARBELL_WEIGHT_PRESETS_LB,
@@ -9,25 +9,26 @@ import {
   planBarbellPlates,
   type TrainingUnit,
 } from '../logic/core/trainingTools';
+import {
+  reprojectDisplayInput,
+  trainingUnitToUnitSystem,
+  unitSystemToTrainingUnit,
+} from '../logic/core/unitConverters';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 import type { PlateDisplayPick } from '../types/trainingToolsDisplay';
-
-export type BarbellPreset = 'olympic' | 'women' | 'technique' | 'custom';
-export type PlateSetPreset = 'commercial' | 'competition' | 'homeBasic';
 
 export type { PlateDisplayPick };
 
+/** Product path: commercial gym plate inventory only (no UI preset picker). */
+const DEFAULT_PLATE_SET = 'commercial' as const;
+
 export interface PlateCalculatorState {
+  /** Derived from global unit preference (`metric`→kg, `imperial`→lb). */
   unit: TrainingUnit;
-  barbellPreset: BarbellPreset;
-  plateSetPreset: PlateSetPreset;
   targetTotalInput: string;
   barWeightInput: string;
-  setUnit(value: TrainingUnit): void;
-  setBarbellPreset(value: BarbellPreset): void;
-  setPlateSetPreset(value: PlateSetPreset): void;
   setTargetTotalInput(value: string): void;
   setBarWeightInput(value: string): void;
-  usesCustomBarWeight: boolean;
   resolvedBarWeightDisplay: number;
   picksDisplay: PlateDisplayPick[];
   perSideDisplay: number;
@@ -47,31 +48,47 @@ function parseNonNegativeInput(raw: string): number {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 }
 
+function defaultBarWeightInput(unit: TrainingUnit): string {
+  return unit === 'kg'
+    ? String(BARBELL_WEIGHT_PRESETS_KG.olympic20)
+    : String(BARBELL_WEIGHT_PRESETS_LB.olympic45);
+}
+
+/** Round display plate values to inventory-friendly 2dp (avoids 44.99 lb ghosts). */
+function roundPlateDisplay(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export function usePlateCalculatorPage(): PlateCalculatorState {
-  const [unit, setUnit] = useState<TrainingUnit>('kg');
-  const [barbellPreset, setBarbellPreset] = useState<BarbellPreset>('olympic');
-  const [plateSetPreset, setPlateSetPreset] = useState<PlateSetPreset>('commercial');
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const unit = unitSystemToTrainingUnit(unitSystem);
+  const prevUnitRef = useRef(unit);
+
   const [targetTotalInput, setTargetTotalInput] = useState('');
-  const [barWeightInput, setBarWeightInput] = useState('20');
+  const [barWeightInput, setBarWeightInput] = useState(() =>
+    defaultBarWeightInput(unitSystemToTrainingUnit(unitSystem))
+  );
 
-  const usesCustomBarWeight = barbellPreset === 'custom';
+  // WHY: Reproject target mass; bar snaps to olympic stock for the new system (20 kg / 45 lb).
+  useEffect(() => {
+    const prev = prevUnitRef.current;
+    if (prev === unit) return;
+    prevUnitRef.current = unit;
+    const from = trainingUnitToUnitSystem(prev);
+    const to = trainingUnitToUnitSystem(unit);
+    setTargetTotalInput((raw) => reprojectDisplayInput(raw, 'weight', from, to, 2));
+    setBarWeightInput(defaultBarWeightInput(unit));
+  }, [unit]);
 
-  const resolvedBarWeightDisplay = useMemo(() => {
-    if (usesCustomBarWeight) return parseNonNegativeInput(barWeightInput);
-    if (unit === 'kg') {
-      if (barbellPreset === 'women') return BARBELL_WEIGHT_PRESETS_KG.womens15;
-      if (barbellPreset === 'technique') return BARBELL_WEIGHT_PRESETS_KG.technique10;
-      return BARBELL_WEIGHT_PRESETS_KG.olympic20;
-    }
-    if (barbellPreset === 'women') return BARBELL_WEIGHT_PRESETS_LB.technique35;
-    if (barbellPreset === 'technique') return BARBELL_WEIGHT_PRESETS_LB.technique35;
-    return BARBELL_WEIGHT_PRESETS_LB.olympic45;
-  }, [barWeightInput, barbellPreset, unit, usesCustomBarWeight]);
+  const resolvedBarWeightDisplay = useMemo(
+    () => parseNonNegativeInput(barWeightInput),
+    [barWeightInput]
+  );
 
   const activePlateSetDisplay = useMemo(() => {
-    if (unit === 'kg') return PLATE_SET_PRESETS_KG[plateSetPreset];
-    return PLATE_SET_PRESETS_LB[plateSetPreset];
-  }, [plateSetPreset, unit]);
+    if (unit === 'kg') return PLATE_SET_PRESETS_KG[DEFAULT_PLATE_SET];
+    return PLATE_SET_PRESETS_LB[DEFAULT_PLATE_SET];
+  }, [unit]);
 
   const plan = useMemo(() => {
     const targetTotalDisplay = parsePositiveInput(targetTotalInput);
@@ -90,28 +107,25 @@ export function usePlateCalculatorPage(): PlateCalculatorState {
   const picksDisplay = useMemo(
     () =>
       plan.picks.map((pick) => ({
-        plateValue: unit === 'kg' ? pick.plateKg : convertKgToLb(pick.plateKg),
+        plateValue:
+          unit === 'kg' ? pick.plateKg : roundPlateDisplay(convertKgToLb(pick.plateKg)),
         count: pick.count,
       })),
     [plan.picks, unit]
   );
 
-  const perSideDisplay = unit === 'kg' ? plan.perSideKg : convertKgToLb(plan.perSideKg);
-  const leftoverDisplay = unit === 'kg' ? plan.leftoverKg : convertKgToLb(plan.leftoverKg);
+  const perSideDisplay =
+    unit === 'kg' ? plan.perSideKg : roundPlateDisplay(convertKgToLb(plan.perSideKg));
+  const leftoverDisplay =
+    unit === 'kg' ? plan.leftoverKg : roundPlateDisplay(convertKgToLb(plan.leftoverKg));
   const hasResult = picksDisplay.length > 0;
 
   return {
     unit,
-    barbellPreset,
-    plateSetPreset,
     targetTotalInput,
     barWeightInput,
-    setUnit,
-    setBarbellPreset,
-    setPlateSetPreset,
     setTargetTotalInput,
     setBarWeightInput,
-    usesCustomBarWeight,
     resolvedBarWeightDisplay,
     picksDisplay,
     perSideDisplay,

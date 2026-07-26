@@ -3,7 +3,7 @@
     "kicker": "Circumference",
     "title": "Arm Size Test",
     "subtitle": "Enter arm size and body fat. Upload to arm leaderboard.",
-    "armLabel": "Upper-Arm Circumference (cm)",
+    "armLabel": "Upper-Arm Circumference ({{unit}})",
     "armPlaceholder": "e.g. 42",
     "bodyFatLabel": "Body-Fat Percentage (%)",
     "bodyFatPlaceholder": "e.g. 18",
@@ -25,8 +25,8 @@
     "saveLeaderboard": "Save Leaderboard Score (Arm Size)",
     "submitDone": "Saved. Switch leaderboard metric to Arm size to view ranking.",
     "errors": {
-      "invalid-arm-cm": "Enter positive upper-arm circumference in cm.",
-      "arm-exceeds-max": "Upper-arm circumference cannot exceed 70 cm.",
+      "invalid-arm-cm": "Enter positive upper-arm circumference in {{unit}}.",
+      "arm-exceeds-max": "Upper-arm circumference cannot exceed {{max}} {{unit}}.",
       "invalid-body-fat": "Enter valid body-fat percentage.",
       "body-fat-out-of-range": "Body fat must be 3–50%."
     }

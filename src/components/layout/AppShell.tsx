@@ -8,6 +8,7 @@ import {
   APP_SHELL_SCROLL_BOTTOM_PX,
   JOIN_ARENA_SCROLL_BOTTOM_PX,
   LADDER_SCROLL_BOTTOM_INSET_PX,
+  TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX,
   bottomChromeCalc,
 } from '../../constants/bottomChrome';
 import {
@@ -15,6 +16,7 @@ import {
   isCompactShellRoutePath,
   isJoinArenaRoutePath,
   isLadderRoutePath,
+  isToolsFloatingCtaRoutePath,
 } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
@@ -40,12 +42,14 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   useNavSensoryFeedback();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
-  // WHY: Ladder bridge / Join Arena CTA sit above BottomNav — each route owns a taller scroll inset.
+  // WHY: Ladder bridge / Join Arena / tools floating CTA sit above BottomNav — each route owns a taller scroll inset.
   const scrollBottomInsetPx = isLadderRoutePath(location.pathname)
     ? LADDER_SCROLL_BOTTOM_INSET_PX
     : isJoinArenaRoutePath(location.pathname)
       ? JOIN_ARENA_SCROLL_BOTTOM_PX
-      : APP_SHELL_SCROLL_BOTTOM_PX;
+      : isToolsFloatingCtaRoutePath(location.pathname)
+        ? TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX
+        : APP_SHELL_SCROLL_BOTTOM_PX;
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import {
@@ -8,6 +8,12 @@ import {
   evaluateArmSizeScore,
 } from '../logic/core/armSizeScoring';
 import {
+  formatLengthInput,
+  parseInputToMetric,
+  reprojectDisplayInput,
+  type UnitSystem,
+} from '../logic/core/unitConverters';
+import {
   loadArmSizeInputs,
   loadPhysicalProfile,
   saveArmSizeInputs,
@@ -15,6 +21,7 @@ import {
 } from '../services/localStorageService';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 
 export type ArmSizeAssessmentError =
   | 'invalid-arm-cm'
@@ -44,14 +51,21 @@ function parsePositiveNumber(raw: string): number | null {
   return n;
 }
 
+function readArmDisplayInput(unitSystem: UnitSystem): string {
+  const saved = loadArmSizeInputs()?.armCircumferenceCm;
+  if (!Number.isFinite(saved) || (saved ?? 0) <= 0) return '';
+  return formatLengthInput(saved as number, unitSystem);
+}
+
 export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const prevUnitSystemRef = useRef(unitSystem);
   const [profile, setProfile] = useState(loadPhysicalProfile);
-  const [armCircumferenceInput, setArmCircumferenceInput] = useState(() => {
-    const saved = loadArmSizeInputs()?.armCircumferenceCm;
-    return Number.isFinite(saved) && (saved ?? 0) > 0 ? String(saved) : '';
-  });
+  const [armCircumferenceInput, setArmCircumferenceInput] = useState(() =>
+    readArmDisplayInput(unitSystem)
+  );
   const [bodyFatInput, setBodyFatInput] = useState(() => {
     const saved = loadArmSizeInputs()?.bodyFatPct;
     return Number.isFinite(saved) && (saved ?? 0) > 0 ? String(saved) : '20';
@@ -68,6 +82,13 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   }, []);
 
   useEffect(() => {
+    const prev = prevUnitSystemRef.current;
+    if (prev === unitSystem) return;
+    prevUnitSystemRef.current = unitSystem;
+    setArmCircumferenceInput((raw) => reprojectDisplayInput(raw, 'length', prev, unitSystem));
+  }, [unitSystem]);
+
+  useEffect(() => {
     queueMicrotask(() => {
       setPreviewScore(null);
       setSubmittedScore(null);
@@ -79,8 +100,8 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
   const clearError = useCallback(() => setErrorKey(null), []);
 
   const evaluateFromInputs = useCallback(() => {
-    const armCm = parsePositiveNumber(armCircumferenceInput);
-    if (armCm === null) {
+    const armCm = parseInputToMetric(armCircumferenceInput, 'length', unitSystem);
+    if (armCm === null || armCm <= 0) {
       return { ok: false as const, error: 'invalid-arm-cm' as const };
     }
     if (armCm > ARM_SIZE_MAX_CM) {
@@ -102,7 +123,7 @@ export function useArmSizeAssessmentPage(): UseArmSizeAssessmentPageResult {
       return { ok: false as const, error: 'invalid-arm-cm' as const };
     }
     return { ok: true as const, armCm, bodyFatPct, result };
-  }, [armCircumferenceInput, bodyFatInput, profile?.gender]);
+  }, [armCircumferenceInput, bodyFatInput, profile?.gender, unitSystem]);
 
   const calculate = useCallback(() => {
     setSubmitDone(false);

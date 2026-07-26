@@ -77,21 +77,24 @@ export const LADDER_FILTER_PILL_BOTTOM_PX =
 export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 142
 
 /**
- * Join Arena floating CTA dock height (glass pad + primary button).
- * WHY: Primary enter CTA must stay reachable while scrolling; geometry shares chrome math.
- * Dyno Intel trigger is hidden on `/join-arena`, so dock shares the chrome stack only.
+ * Floating CTA dock geometry when Dyno Intel chip is hidden (Join Arena + tools calculators).
+ * WHY: Single stack clears BottomNav + center hex only; safe-area via `bottomChromeCalc`.
+ * Semantic aliases below keep call-site intent readable without drifting numbers.
  */
-export const JOIN_ARENA_CTA_BAR_PX = 72;
+export const DYNO_HIDDEN_FLOATING_CTA_BAR_PX = 72;
+export const DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX = BOTTOM_CHROME_STACK_PX; // 106
+export const DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX =
+  DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX + DYNO_HIDDEN_FLOATING_CTA_BAR_PX; // 178
 
-/** Distance from physical bottom to the *bottom* of the Join Arena CTA dock (excludes safe-area). */
-export const JOIN_ARENA_CTA_BOTTOM_PX = BOTTOM_CHROME_STACK_PX; // 106
+/** Join Arena floating CTA — aliases shared Dyno-hidden dock stack. */
+export const JOIN_ARENA_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
+export const JOIN_ARENA_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
+export const JOIN_ARENA_SCROLL_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX;
 
-/**
- * AppShell scroll bottom inset on Join Arena — clears floating CTA dock + BottomNav/hex.
- * WHY: Own the inset in the shell (same pattern as ladder) so the page does not
- * compute fragile deltas against `APP_SHELL_SCROLL_BOTTOM_PX`.
- */
-export const JOIN_ARENA_SCROLL_BOTTOM_PX = JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX; // 178
+/** Tools calculator floating CTA (1RM / plates) — aliases shared Dyno-hidden dock stack. */
+export const TOOL_FLOATING_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
+export const TOOL_FLOATING_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
+export const TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX;
 
 /** CSS `calc` bottom / padding-bottom that clears chrome + device safe-area. */
 export function bottomChromeCalc(offsetPx: number): string {

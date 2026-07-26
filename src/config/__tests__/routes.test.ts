@@ -5,6 +5,9 @@ import {
   isHomeRoutePath,
   isJoinArenaRoutePath,
   isLadderRoutePath,
+  isOneRmCalculatorRoutePath,
+  isPlateCalculatorRoutePath,
+  isToolsFloatingCtaRoutePath,
   isToolsDeckRoutePath,
   isToolsTabRoutePath,
 } from '../routes';
@@ -71,6 +74,39 @@ describe('isToolsDeckRoutePath', () => {
     expect(isToolsDeckRoutePath('/training-toolbox')).toBe(false);
     expect(isToolsDeckRoutePath('/toolshed')).toBe(false);
     expect(isToolsDeckRoutePath(ROUTES.home)).toBe(false);
+  });
+});
+
+describe('isPlateCalculatorRoutePath', () => {
+  it('matches plate calculator root and nested paths', () => {
+    expect(isPlateCalculatorRoutePath(ROUTES.plateCalculator)).toBe(true);
+    expect(isPlateCalculatorRoutePath(`${ROUTES.plateCalculator}/extra`)).toBe(true);
+  });
+
+  it('rejects sibling tool routes', () => {
+    expect(isPlateCalculatorRoutePath(ROUTES.oneRmCalculator)).toBe(false);
+    expect(isPlateCalculatorRoutePath(ROUTES.tools)).toBe(false);
+  });
+});
+
+describe('isOneRmCalculatorRoutePath', () => {
+  it('matches 1RM calculator root and nested paths', () => {
+    expect(isOneRmCalculatorRoutePath(ROUTES.oneRmCalculator)).toBe(true);
+    expect(isOneRmCalculatorRoutePath(`${ROUTES.oneRmCalculator}/extra`)).toBe(true);
+  });
+
+  it('rejects sibling tool routes', () => {
+    expect(isOneRmCalculatorRoutePath(ROUTES.plateCalculator)).toBe(false);
+    expect(isOneRmCalculatorRoutePath(ROUTES.tools)).toBe(false);
+  });
+});
+
+describe('isToolsFloatingCtaRoutePath', () => {
+  it('covers plate + 1RM (floating CTA inset + Dyno chip hide)', () => {
+    expect(isToolsFloatingCtaRoutePath(ROUTES.plateCalculator)).toBe(true);
+    expect(isToolsFloatingCtaRoutePath(ROUTES.oneRmCalculator)).toBe(true);
+    expect(isToolsFloatingCtaRoutePath(ROUTES.tools)).toBe(false);
+    expect(isToolsFloatingCtaRoutePath(ROUTES.somatotypeLab)).toBe(false);
   });
 });
 

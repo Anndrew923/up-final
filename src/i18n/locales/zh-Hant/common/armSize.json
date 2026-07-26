@@ -3,7 +3,7 @@
     "kicker": "圍度",
     "title": "臂圍評測",
     "subtitle": "填入臂圍與體脂，寫入臂圍榜。",
-    "armLabel": "上臂圍（cm）",
+    "armLabel": "上臂圍（{{unit}}）",
     "armPlaceholder": "例如 42",
     "bodyFatLabel": "體脂率（%）",
     "bodyFatPlaceholder": "例如 18",
@@ -25,8 +25,8 @@
     "saveLeaderboard": "儲存排行榜分數（臂圍）",
     "submitDone": "已儲存臂圍分數，可在排行榜切換到「臂圍」查看。",
     "errors": {
-      "invalid-arm-cm": "請輸入大於 0 的上臂圍（cm）。",
-      "arm-exceeds-max": "上臂圍不可超過 70 cm。",
+      "invalid-arm-cm": "請輸入大於 0 的上臂圍（{{unit}}）。",
+      "arm-exceeds-max": "上臂圍不可超過 {{max}} {{unit}}。",
       "invalid-body-fat": "請輸入有效的體脂率數字（%）。",
       "body-fat-out-of-range": "體脂率須介於 3% 與 50% 之間。"
     }

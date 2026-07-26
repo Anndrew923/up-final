@@ -1,15 +1,17 @@
-import { useCallback, useMemo, useState, type FC } from 'react';
+import { useCallback, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import ToolFloatingCalculateCta from '../components/tools/ToolFloatingCalculateCta';
 import ToolResultModal, {
   type ToolResultModalPlatesPayload,
 } from '../components/tools/ToolResultModal';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { usePlateCalculatorPage } from '../hooks/usePlateCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
+import { useUnit } from '../hooks/useUnit';
 
 export interface PlateCalculatorPageProps {
   onBack?: () => void;
@@ -18,18 +20,12 @@ export interface PlateCalculatorPageProps {
 const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
+  const { unitSystem, setUnitSystem, labels } = useUnit();
   const {
-    unit,
-    barbellPreset,
-    plateSetPreset,
     targetTotalInput,
     barWeightInput,
-    setUnit,
-    setBarbellPreset,
-    setPlateSetPreset,
     setTargetTotalInput,
     setBarWeightInput,
-    usesCustomBarWeight,
     resolvedBarWeightDisplay,
     picksDisplay,
     perSideDisplay,
@@ -43,37 +39,9 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
   });
   const [modalPayload, setModalPayload] = useState<ToolResultModalPlatesPayload | null>(null);
 
-  const unitLabel = t(`tools.calculators.plates.unitOptions.${unit}`);
+  const unitLabel = labels.weight;
   const canCalculate = hasResult;
   const previewPerSide = displayValue ?? perSideDisplay;
-
-  const unitOptions = useMemo(
-    () =>
-      [
-        { value: 'kg', label: t('tools.calculators.plates.unitOptions.kg') },
-        { value: 'lb', label: t('tools.calculators.plates.unitOptions.lb') },
-      ] as const,
-    [t]
-  );
-  const barbellPresetOptions = useMemo(
-    () =>
-      [
-        { value: 'olympic', label: t('tools.calculators.plates.barbellOptions.olympic') },
-        { value: 'women', label: t('tools.calculators.plates.barbellOptions.women') },
-        { value: 'technique', label: t('tools.calculators.plates.barbellOptions.technique') },
-        { value: 'custom', label: t('tools.calculators.plates.barbellOptions.custom') },
-      ] as const,
-    [t]
-  );
-  const plateSetPresetOptions = useMemo(
-    () =>
-      [
-        { value: 'commercial', label: t('tools.calculators.plates.plateSetOptions.commercial') },
-        { value: 'competition', label: t('tools.calculators.plates.plateSetOptions.competition') },
-        { value: 'homeBasic', label: t('tools.calculators.plates.plateSetOptions.homeBasic') },
-      ] as const,
-    [t]
-  );
 
   const handleCalculate = useCallback(async () => {
     if (!canCalculate) return;
@@ -117,94 +85,40 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
 
         <fieldset disabled={isBlocking} className="min-w-0 border-0 p-0">
           <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {t('tools.calculators.plates.unitLabel')}
-                </span>
-                <OptionSelectSheet
-                  value={unit}
-                  onChange={(next) => setUnit((next || 'kg') as typeof unit)}
-                  placeholder={t('tools.calculators.plates.unitOptions.kg')}
-                  title={t('tools.calculators.plates.unitSheetTitle')}
-                  options={unitOptions}
-                  allowEmpty={false}
-                />
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {t('tools.calculators.plates.plateSetLabel')}
-                </span>
-                <OptionSelectSheet
-                  value={plateSetPreset}
-                  onChange={(next) =>
-                    setPlateSetPreset((next || 'commercial') as typeof plateSetPreset)
-                  }
-                  placeholder={t('tools.calculators.plates.plateSetOptions.commercial')}
-                  title={t('tools.calculators.plates.plateSetSheetTitle')}
-                  options={plateSetPresetOptions}
-                  allowEmpty={false}
-                />
-              </label>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t('tools.calculators.plates.unitLabel')}
+              </span>
+              <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
             </div>
 
-            <label className="space-y-2 text-sm text-zinc-300">
+            <label className="block space-y-2 text-sm text-zinc-300">
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {t('tools.calculators.plates.barbellTypeLabel')}
+                {t('tools.calculators.plates.targetLabel', { unit: unitLabel })}
               </span>
-              <OptionSelectSheet
-                value={barbellPreset}
-                onChange={(next) => setBarbellPreset((next || 'olympic') as typeof barbellPreset)}
-                placeholder={t('tools.calculators.plates.barbellOptions.olympic')}
-                title={t('tools.calculators.plates.barbellSheetTitle')}
-                options={barbellPresetOptions}
-                allowEmpty={false}
+              <input
+                type="number"
+                inputMode="decimal"
+                className="ui-input"
+                value={targetTotalInput}
+                onChange={(event) => setTargetTotalInput(event.target.value)}
+                placeholder={t('tools.calculators.plates.targetPlaceholder')}
               />
             </label>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  {t('tools.calculators.plates.targetLabel', { unit: unitLabel })}
-                </span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  className="ui-input"
-                  value={targetTotalInput}
-                  onChange={(event) => setTargetTotalInput(event.target.value)}
-                  placeholder={t('tools.calculators.plates.targetPlaceholder')}
-                />
-              </label>
-
-              {usesCustomBarWeight ? (
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                    {t('tools.calculators.plates.barLabel', { unit: unitLabel })}
-                  </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    className="ui-input"
-                    value={barWeightInput}
-                    onChange={(event) => setBarWeightInput(event.target.value)}
-                    placeholder={t('tools.calculators.plates.barPlaceholder')}
-                  />
-                </label>
-              ) : (
-                <div className="space-y-2 text-sm text-zinc-300">
-                  <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                    {t('tools.calculators.plates.barResolvedLabel')}
-                  </span>
-                  <div className="ui-input flex min-h-[2.75rem] items-center text-zinc-100">
-                    {t('tools.calculators.plates.barResolvedValue', {
-                      value: resolvedBarWeightDisplay.toFixed(2),
-                      unit: unitLabel,
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+            <label className="block space-y-2 text-sm text-zinc-300">
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                {t('tools.calculators.plates.barLabel', { unit: unitLabel })}
+              </span>
+              <input
+                type="number"
+                inputMode="decimal"
+                className="ui-input"
+                value={barWeightInput}
+                onChange={(event) => setBarWeightInput(event.target.value)}
+                placeholder={t('tools.calculators.plates.barPlaceholder')}
+              />
+            </label>
 
             <div className="rounded-xl border border-accent-primary/25 bg-gradient-to-br from-bg-panel to-bg-card px-4 py-5">
               <p className="text-xs uppercase tracking-wide text-zinc-500">
@@ -262,18 +176,15 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
                 })}
               </p>
             </div>
-
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary w-full min-h-12 text-base font-semibold"
-              disabled={!canCalculate || isBlocking}
-              onClick={() => void handleCalculate()}
-            >
-              {t('tools.calculators.plates.calculate')}
-            </button>
           </section>
         </fieldset>
       </ShellFlowStack>
+
+      <ToolFloatingCalculateCta
+        label={t('tools.calculators.plates.calculate')}
+        disabled={!canCalculate || isBlocking}
+        onClick={() => void handleCalculate()}
+      />
 
       <ToolResultModal
         variant="plates"

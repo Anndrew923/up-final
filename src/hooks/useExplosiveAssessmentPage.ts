@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getExplosiveCapNoticeInterpolation,
@@ -15,6 +15,12 @@ import {
 } from '../logic/core/powerScoring';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
+  formatLengthInput,
+  parseInputToMetric,
+  reprojectDisplayInput,
+  type UnitSystem,
+} from '../logic/core/unitConverters';
+import {
   loadPhysicalProfile,
   loadPowerInputs,
   savePowerInputs,
@@ -25,6 +31,7 @@ import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSy
 import type { PhysicalProfile } from '../types/userProfile';
 import type { PowerInputsPersisted } from '../types/powerInputs';
 import { useScoreStore } from '../stores/scoreStore';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 
 export type { ExplosiveCapNoticeInterpolation };
 export type { ExplosivePowerNormAnchors };
@@ -40,6 +47,15 @@ export interface UseExplosiveAssessmentPageResult {
   setStandingLongJumpInput: (v: string) => void;
   sprintInput: string;
   setSprintInput: (v: string) => void;
+  /**
+   * Metric (cm / s) strings for scoring + ladder supplemental builders.
+   * WHY: UI may show inches; core formulas and Firestore summaries stay metric-only.
+   */
+  metricScoringInputs: {
+    verticalJumpInput: string;
+    standingLongJumpInput: string;
+    sprintInput: string;
+  };
   previewScore: number | null;
   previewBreakdown: ExplosivePowerBreakdown | null;
   /** Present after successful compute/submit when any input hit an elite model cap/floor — for i18n only. */
@@ -66,7 +82,16 @@ function mergePersisted(): PowerInputsPersisted {
   return loadPowerInputs() ?? {};
 }
 
-function readInitialForm(): {
+/** Empty stays empty; invalid stays as-is so core validators surface the right error. */
+function toMetricLengthField(raw: string, unitSystem: UnitSystem): string {
+  const trimmed = raw.trim();
+  if (trimmed === '') return '';
+  const cm = parseInputToMetric(trimmed, 'length', unitSystem);
+  if (cm === null) return raw;
+  return String(cm);
+}
+
+function readInitialForm(unitSystem: UnitSystem): {
   verticalJump: string;
   standingLongJump: string;
   sprint: string;
@@ -75,11 +100,11 @@ function readInitialForm(): {
   return {
     verticalJump:
       raw?.verticalJumpCm !== undefined && raw.verticalJumpCm !== null
-        ? String(raw.verticalJumpCm)
+        ? formatLengthInput(raw.verticalJumpCm, unitSystem)
         : '',
     standingLongJump:
       raw?.standingLongJumpCm !== undefined && raw.standingLongJumpCm !== null
-        ? String(raw.standingLongJumpCm)
+        ? formatLengthInput(raw.standingLongJumpCm, unitSystem)
         : '',
     sprint:
       raw?.sprintSeconds !== undefined && raw.sprintSeconds !== null
@@ -91,8 +116,10 @@ function readInitialForm(): {
 export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const prevUnitSystemRef = useRef(unitSystem);
   const [profile, setProfile] = useState(loadPhysicalProfile);
-  const [form, setForm] = useState(() => readInitialForm());
+  const [form, setForm] = useState(() => readInitialForm(unitSystem));
   const verticalJumpInput = form.verticalJump;
   const standingLongJumpInput = form.standingLongJump;
   const sprintInput = form.sprint;
@@ -115,10 +142,30 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
 
   const profileReady = isPhysicalProfileComplete(profile);
 
+  const metricScoringInputs = useMemo(
+    () => ({
+      verticalJumpInput: toMetricLengthField(verticalJumpInput, unitSystem),
+      standingLongJumpInput: toMetricLengthField(standingLongJumpInput, unitSystem),
+      sprintInput,
+    }),
+    [sprintInput, standingLongJumpInput, unitSystem, verticalJumpInput]
+  );
+
   const powerNormAnchors = useMemo((): ExplosivePowerNormAnchors | null => {
     if (!profileReady || !profile) return null;
     return getPowerStandardsForProfile(profile);
   }, [profile, profileReady]);
+
+  useEffect(() => {
+    const prev = prevUnitSystemRef.current;
+    if (prev === unitSystem) return;
+    prevUnitSystemRef.current = unitSystem;
+    setForm((f) => ({
+      ...f,
+      verticalJump: reprojectDisplayInput(f.verticalJump, 'length', prev, unitSystem),
+      standingLongJump: reprojectDisplayInput(f.standingLongJump, 'length', prev, unitSystem),
+    }));
+  }, [unitSystem]);
 
   /** Inputs or baseline (age/sex/height/weight) change → prior preview is no longer valid. */
   useEffect(() => {
@@ -129,7 +176,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       setSubmitDone(false);
       setErrorKey(null);
     });
-  }, [verticalJumpInput, standingLongJumpInput, sprintInput, profile]);
+  }, [verticalJumpInput, standingLongJumpInput, sprintInput, profile, unitSystem]);
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -155,9 +202,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     setSubmitDone(false);
     setErrorKey(null);
     const result = tryComputeExplosiveAssessmentScore({
-      verticalJumpInput,
-      standingLongJumpInput,
-      sprintInput,
+      ...metricScoringInputs,
       profile,
       profileReady,
     });
@@ -169,22 +214,13 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       return;
     }
     applySuccessfulExplosivePreview(result);
-  }, [
-    verticalJumpInput,
-    standingLongJumpInput,
-    sprintInput,
-    profile,
-    profileReady,
-    applySuccessfulExplosivePreview,
-  ]);
+  }, [metricScoringInputs, profile, profileReady, applySuccessfulExplosivePreview]);
 
   const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
     setErrorKey(null);
     const result = tryComputeExplosiveAssessmentScore({
-      verticalJumpInput,
-      standingLongJumpInput,
-      sprintInput,
+      ...metricScoringInputs,
       profile,
       profileReady,
     });
@@ -208,12 +244,10 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     return true;
   }, [
     applySuccessfulExplosivePreview,
+    metricScoringInputs,
     profile,
     profileReady,
     setStoreScore,
-    sprintInput,
-    standingLongJumpInput,
-    verticalJumpInput,
   ]);
 
   const submitToRadar = useCallback(() => {
@@ -230,6 +264,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     setStandingLongJumpInput,
     sprintInput,
     setSprintInput,
+    metricScoringInputs,
     previewScore,
     previewBreakdown,
     capNoticeInterpolation,

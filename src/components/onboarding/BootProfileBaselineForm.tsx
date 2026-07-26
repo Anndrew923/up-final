@@ -1,9 +1,13 @@
 import type { FC } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import GenderSelectSheet from '../home/GenderSelectSheet';
+import UnitSystemToggle from '../units/UnitSystemToggle';
 import UnifiedDynoProtocolPanel from './UnifiedDynoProtocolPanel';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
+import { PHYSICAL_LIMITS } from '../../logic/core/physicalProfile';
 import { usePhysicalProfileForm } from '../../hooks/usePhysicalProfileForm';
+import { useUnit } from '../../hooks/useUnit';
 
 export interface BootProfileBaselineFormProps {
   onSaved?: () => void;
@@ -23,6 +27,11 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
   showComplete = false,
 }) => {
   const { t } = useTranslation();
+  const { unitSystem, setUnitSystem, labels, displayLength, displayWeight } = useUnit();
+  const heightMin = displayLength(PHYSICAL_LIMITS.heightCmMin);
+  const heightMax = displayLength(PHYSICAL_LIMITS.heightCmMax);
+  const weightMin = displayWeight(PHYSICAL_LIMITS.weightKgMin);
+  const weightMax = displayWeight(PHYSICAL_LIMITS.weightKgMax);
   const {
     gender,
     setGender,
@@ -37,11 +46,32 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
     handleSubmit,
   } = usePhysicalProfileForm({ onSaveSuccess: onSaved });
 
+  const profileErrorParams = useMemo(() => {
+    if (errorCode === 'required-height' || errorCode === 'invalid-height') {
+      return {
+        unit: labels.length,
+        min: Number(heightMin.toFixed(1)),
+        max: Number(heightMax.toFixed(1)),
+      };
+    }
+    if (errorCode === 'required-weight' || errorCode === 'invalid-weight') {
+      return {
+        unit: labels.weight,
+        min: Number(weightMin.toFixed(1)),
+        max: Number(weightMax.toFixed(1)),
+      };
+    }
+    return {};
+  }, [errorCode, heightMax, heightMin, labels.length, labels.weight, weightMax, weightMin]);
+
   return (
     <div className="mt-4 space-y-3 border-t border-zinc-800/80 pt-4">
       <UnifiedDynoProtocolPanel />
 
       <form className="space-y-3" onSubmit={handleSubmit} noValidate>
+      <div className="flex justify-end">
+        <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-xs text-zinc-400 sm:col-span-2">
           <span className="font-medium text-zinc-300">
@@ -75,14 +105,13 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
 
         <label className="flex flex-col gap-1 text-xs text-zinc-400">
           <span className="font-medium text-zinc-300">
-            {t('home.profile.height', { ns: 'common' })} (
-            {t('home.profile.heightUnit', { ns: 'common' })})
+            {t('home.profile.height', { ns: 'common' })} ({labels.length})
           </span>
           <input
             type="number"
             inputMode="decimal"
-            min={120}
-            max={230}
+            min={heightMin}
+            max={heightMax}
             step={0.1}
             className="ui-input"
             value={heightCm}
@@ -95,14 +124,13 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
 
         <label className="flex flex-col gap-1 text-xs text-zinc-400 sm:col-span-2">
           <span className="font-medium text-zinc-300">
-            {t('home.profile.weight', { ns: 'common' })} (
-            {t('home.profile.weightUnit', { ns: 'common' })})
+            {t('home.profile.weight', { ns: 'common' })} ({labels.weight})
           </span>
           <input
             type="number"
             inputMode="decimal"
-            min={35}
-            max={250}
+            min={weightMin}
+            max={weightMax}
             step={0.1}
             className="ui-input"
             value={weightKg}
@@ -116,7 +144,7 @@ const BootProfileBaselineForm: FC<BootProfileBaselineFormProps> = ({
 
       {errorCode ? (
         <p className="text-xs text-rose-400" role="alert">
-          {t(errorTranslationKey(errorCode), { ns: 'common' })}
+          {t(errorTranslationKey(errorCode), { ns: 'common', ...profileErrorParams })}
         </p>
       ) : null}
 

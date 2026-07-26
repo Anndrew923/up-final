@@ -38,7 +38,7 @@
       "oneRm": {
         "kicker": "Strength Tool",
         "title": "1RM Calculator",
-        "weightLabel": "Weight (kg)",
+        "weightLabel": "Weight ({{unit}})",
         "weightPlaceholder": "e.g. 100",
         "repsLabel": "Reps",
         "repsPlaceholder": "e.g. 5",
@@ -51,7 +51,7 @@
           "lombardi": "Lombardi"
         },
         "resultLabel": "Estimated 1RM",
-        "resultValue": "{{value}} kg",
+        "resultValue": "{{value}} {{unit}}",
         "resultEmpty": "—",
         "hint": "Lower-rep near-failure sets estimate better than high-rep sets.",
         "calculate": "Calculate 1RM"
@@ -65,27 +65,10 @@
           "kg": "Kilograms (kg)",
           "lb": "Pounds (lb)"
         },
-        "plateSetLabel": "Plate Set",
-        "plateSetSheetTitle": "Choose Plate Set",
-        "plateSetOptions": {
-          "commercial": "Commercial Gym",
-          "competition": "Competition Set",
-          "homeBasic": "Home Basic"
-        },
-        "barbellTypeLabel": "Barbell Type",
-        "barbellSheetTitle": "Choose Barbell Type",
-        "barbellOptions": {
-          "olympic": "Standard Barbell",
-          "women": "Women's Barbell",
-          "technique": "Technique Bar",
-          "custom": "Custom Bar Weight"
-        },
         "targetLabel": "Target Total ({{unit}})",
         "targetPlaceholder": "e.g. 140",
         "barLabel": "Bar Weight ({{unit}})",
         "barPlaceholder": "e.g. 20",
-        "barResolvedLabel": "Applied Bar Weight",
-        "barResolvedValue": "{{value}} {{unit}}",
         "perSideLabel": "Per-Side Target",
         "perSideValue": "{{value}} {{unit}} / side",
         "plateRow": "{{value}} {{unit}}",
@@ -101,10 +84,10 @@
         "oneRm": {
           "kicker": "1RM Report",
           "title": "Estimated 1RM",
-          "heroValue": "{{value}} kg",
+          "heroValue": "{{value}} {{unit}}",
           "loadSpecLabel": "LOAD SPEC",
-          "loadSpecRowAria": "{{percent}} percent, {{value}} kg",
-          "weightKgLine": "{{value}} kg"
+          "loadSpecRowAria": "{{percent}} percent, {{value}} {{unit}}",
+          "weightLine": "{{value}} {{unit}}"
         },
         "plates": {
           "kicker": "Loading Blueprint",

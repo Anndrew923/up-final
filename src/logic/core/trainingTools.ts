@@ -6,6 +6,8 @@
  * - Reuse in pages, hooks, and future tests without coupling to React.
  */
 
+import { kgToLb, lbToKg } from './unitConverters';
+
 export type OneRmMethod = 'average' | 'epley' | 'brzycki' | 'lombardi';
 export type TrainingUnit = 'kg' | 'lb';
 
@@ -22,7 +24,9 @@ export interface PlatePlan {
 }
 
 const DEFAULT_PLATE_SET_KG: readonly number[] = [25, 20, 15, 10, 5, 2.5, 1.25];
-const KG_TO_LB = 2.2046226218;
+
+/** Prefer `kgToLb` / `lbToKg` from `unitConverters` — aliases keep existing call sites stable. */
+export { kgToLb as convertKgToLb, lbToKg as convertLbToKg };
 
 export const BARBELL_WEIGHT_PRESETS_KG = {
   olympic20: 20,
@@ -140,10 +144,3 @@ export function planBarbellPlates(
   };
 }
 
-export function convertKgToLb(valueKg: number): number {
-  return sanitizeNonNegative(valueKg) * KG_TO_LB;
-}
-
-export function convertLbToKg(valueLb: number): number {
-  return sanitizeNonNegative(valueLb) / KG_TO_LB;
-}

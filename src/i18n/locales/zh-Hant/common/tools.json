@@ -38,7 +38,7 @@
       "oneRm": {
         "kicker": "力量工具",
         "title": "1RM 計算機",
-        "weightLabel": "重量（kg）",
+        "weightLabel": "重量（{{unit}}）",
         "weightPlaceholder": "例如 100",
         "repsLabel": "次數（reps）",
         "repsPlaceholder": "例如 5",
@@ -51,7 +51,7 @@
           "lombardi": "Lombardi"
         },
         "resultLabel": "估算 1RM",
-        "resultValue": "{{value}} kg",
+        "resultValue": "{{value}} {{unit}}",
         "resultEmpty": "—",
         "hint": "提示：次數越高通常誤差越大；若有低次數、接近力竭的組數，建議優先輸入該組。",
         "calculate": "計算 1RM"
@@ -65,27 +65,10 @@
           "kg": "公斤（kg）",
           "lb": "磅（lb）"
         },
-        "plateSetLabel": "槓片組",
-        "plateSetSheetTitle": "選擇槓片組",
-        "plateSetOptions": {
-          "commercial": "商用健身房",
-          "competition": "比賽規格",
-          "homeBasic": "居家基礎"
-        },
-        "barbellTypeLabel": "槓鈴規格",
-        "barbellSheetTitle": "選擇槓鈴規格",
-        "barbellOptions": {
-          "olympic": "標準槓鈴",
-          "women": "女性槓鈴",
-          "technique": "技術槓",
-          "custom": "自訂槓重"
-        },
         "targetLabel": "目標總重量（{{unit}}）",
         "targetPlaceholder": "例如 140",
         "barLabel": "槓鈴重量（{{unit}}）",
         "barPlaceholder": "例如 20",
-        "barResolvedLabel": "套用槓鈴重量",
-        "barResolvedValue": "{{value}} {{unit}}",
         "perSideLabel": "每邊目標重量",
         "perSideValue": "{{value}} {{unit}} / side",
         "plateRow": "{{value}} {{unit}}",
@@ -101,10 +84,10 @@
         "oneRm": {
           "kicker": "1RM 預測報告",
           "title": "估算單次最大重量",
-          "heroValue": "{{value}} kg",
+          "heroValue": "{{value}} {{unit}}",
           "loadSpecLabel": "輸出負荷對照 // LOAD SPEC",
-          "loadSpecRowAria": "{{percent}}%，{{value}} 公斤",
-          "weightKgLine": "{{value}} kg"
+          "loadSpecRowAria": "{{percent}}%，{{value}} {{unit}}",
+          "weightLine": "{{value}} {{unit}}"
         },
         "plates": {
           "kicker": "槓片裝載藍圖",

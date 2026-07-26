@@ -18,7 +18,10 @@ import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { useUnit } from '../hooks/useUnit';
 import { buildArmSizeAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { ARM_SIZE_MAX_CM } from '../logic/core/armSizeScoring';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useScoreStore } from '../stores/scoreStore';
 
 export interface ArmSizeAssessmentPageProps {
@@ -27,6 +30,9 @@ export interface ArmSizeAssessmentPageProps {
 
 const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
+  const { labels, unitSystem, setUnitSystem, displayLength } = useUnit();
+  const armMaxDisplay = Number(displayLength(ARM_SIZE_MAX_CM).toFixed(1));
+  const armMinDisplay = Number(displayLength(1).toFixed(1));
   const [referenceOpen, setReferenceOpen] = useState(false);
   const persistedArmSizeScore = useScoreStore((s) => s.scores.armSize);
   const {
@@ -102,14 +108,19 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         />
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <div className="flex justify-end">
+            <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
+          </div>
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="arm-cm">
-            <span className="font-medium text-zinc-200">{t('armSize.armLabel')}</span>
+            <span className="font-medium text-zinc-200">
+              {t('armSize.armLabel', { unit: labels.length })}
+            </span>
             <input
               id="arm-cm"
               type="number"
               inputMode="decimal"
-              min={1}
-              max={70}
+              min={armMinDisplay}
+              max={armMaxDisplay}
               step={0.1}
               className="ui-input max-w-xs"
               placeholder={t('armSize.armPlaceholder')}
@@ -118,7 +129,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
                 clearError();
                 setArmCircumferenceInput(e.target.value);
               }}
-              aria-label={t('armSize.armLabel')}
+              aria-label={t('armSize.armLabel', { unit: labels.length })}
             />
           </label>
 
@@ -154,7 +165,10 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
 
           {errorKey ? (
             <p className="text-sm text-red-400" role="alert">
-              {t(`armSize.errors.${errorKey}`)}
+              {t(`armSize.errors.${errorKey}`, {
+                unit: labels.length,
+                max: armMaxDisplay,
+              })}
             </p>
           ) : null}
 

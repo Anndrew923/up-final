@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import { useUnit } from '../../hooks/useUnit';
 import { resolvePerformanceAura } from '../../logic/core/performanceAura';
 import type { PlateDisplayPick } from '../../types/trainingToolsDisplay';
 import { AURA_THEME, auraNeonCssVars } from '../assessment/auraThemeTokens';
@@ -62,6 +63,7 @@ interface OneRmResultBodyProps {
 
 function OneRmResultBody({ titleId, oneRmKg, strengthAuraStyle }: OneRmResultBodyProps) {
   const { t } = useTranslation('common');
+  const { labels, formatWeight } = useUnit();
   const percentRows = buildTrainingPercentRows(oneRmKg);
 
   return (
@@ -78,7 +80,8 @@ function OneRmResultBody({ titleId, oneRmKg, strengthAuraStyle }: OneRmResultBod
           style={strengthAuraStyle}
         >
           {t('tools.calculators.resultModal.oneRm.heroValue', {
-            value: oneRmKg.toFixed(1),
+            value: formatWeight(oneRmKg, { includeUnit: false, digits: 1 }),
+            unit: labels.weight,
           })}
         </p>
       </header>
@@ -91,25 +94,30 @@ function OneRmResultBody({ titleId, oneRmKg, strengthAuraStyle }: OneRmResultBod
           className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4"
           aria-label={t('tools.calculators.resultModal.oneRm.loadSpecLabel')}
         >
-          {percentRows.map((row) => (
-            <li
-              key={row.percent}
-              className="flex flex-col items-center justify-center rounded-lg border border-zinc-800/90 bg-black/25 p-3 text-center"
-              aria-label={t('tools.calculators.resultModal.oneRm.loadSpecRowAria', {
-                percent: row.percent,
-                value: row.weightKg.toFixed(1),
-              })}
-            >
-              <span className="whitespace-nowrap text-sm font-semibold text-zinc-100 md:text-base">
-                {row.percent}%
-              </span>
-              <span className="mt-1 whitespace-nowrap font-mono text-xs text-zinc-400 md:text-sm">
-                {t('tools.calculators.resultModal.oneRm.weightKgLine', {
-                  value: row.weightKg.toFixed(1),
+          {percentRows.map((row) => {
+            const displayValue = formatWeight(row.weightKg, { includeUnit: false, digits: 1 });
+            return (
+              <li
+                key={row.percent}
+                className="flex flex-col items-center justify-center rounded-lg border border-zinc-800/90 bg-black/25 p-3 text-center"
+                aria-label={t('tools.calculators.resultModal.oneRm.loadSpecRowAria', {
+                  percent: row.percent,
+                  value: displayValue,
+                  unit: labels.weight,
                 })}
-              </span>
-            </li>
-          ))}
+              >
+                <span className="whitespace-nowrap text-sm font-semibold text-zinc-100 md:text-base">
+                  {row.percent}%
+                </span>
+                <span className="mt-1 whitespace-nowrap font-mono text-xs text-zinc-400 md:text-sm">
+                  {t('tools.calculators.resultModal.oneRm.weightLine', {
+                    value: displayValue,
+                    unit: labels.weight,
+                  })}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </>
