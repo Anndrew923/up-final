@@ -8,9 +8,11 @@
     "tabsAria": "心肺測驗方式",
     "cooperDistanceLabel": "12 分鐘跑距離（公尺）",
     "cooperPlaceholder": "例如 2600",
-    "cooperHint": "建議在操場或具 GPS 的場地測量。計分表與參考專案相同。比照田徑長距離世界級表現之上限：男性 {{maleCap}} m、女性 {{femaleCap}} m；超過時分數將鎖在此上限。",
     "cooperWorldRecordCapHint": "輸入距離超過比照 5000 m 級世界紀錄情境之模型上限（{{capMeters}} m）。已改以該距離計分並鎖定最高分。",
     "cooperInfo": {
+      "infoButtonAria": "Cooper 測驗說明",
+      "bubbleTip": "固定跑滿 12 分鐘，記錄總距離（公尺）。建議在操場或具 GPS 的場地測量。",
+      "bubbleReferenceHint": "完整說明請見底部「{{title}}」",
       "toggleExpand": "展開說明",
       "toggleCollapse": "收合說明",
       "title": "Cooper 12 分鐘跑步測驗",

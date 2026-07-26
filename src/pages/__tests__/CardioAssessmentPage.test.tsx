@@ -215,4 +215,41 @@ describe('CardioAssessmentPage', () => {
 
     unmount();
   });
+
+  it('exposes Cooper field hint control on cooper tab', () => {
+    mockUseCardioAssessmentPage.mockReturnValue({
+      profileReady: true,
+      cooperDistanceOverCap: false,
+      cooperCapMeters: null,
+      activeTab: 'cooper',
+      setActiveTab: vi.fn(),
+      distanceInput: '2800',
+      setDistanceInput: vi.fn(),
+      runMinutesInput: '',
+      setRunMinutesInput: vi.fn(),
+      runSecondsInput: '',
+      setRunSecondsInput: vi.fn(),
+      previewScore: 88.5,
+      submitDone: false,
+      errorKey: null,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue(null);
+
+    const { container, unmount } = renderPage();
+    const hint = container.querySelector(
+      'button[aria-label="cardio.cooperInfo.infoButtonAria"]'
+    );
+    expect(hint).toBeTruthy();
+
+    act(() => {
+      hint!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(container.textContent).toContain('cardio.cooperInfo.bubbleTip');
+    expect(container.textContent).toContain('cardio.cooperInfo.bubbleReferenceHint');
+
+    unmount();
+  });
 });

@@ -139,22 +139,6 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
             placeholder={t('tools.somatotypeLab.placeholders.arm')}
           />
         </label>
-        <div className="space-y-2 sm:col-span-2">
-          <label
-            className={`flex items-center gap-2 text-sm ${
-              lab.veteranCalibrationLocked ? 'cursor-not-allowed text-zinc-500' : 'text-zinc-300'
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={lab.isVeteran}
-              disabled={lab.veteranCalibrationLocked || formLocked}
-              onChange={(e) => lab.setIsVeteran(e.target.checked)}
-              className="size-4 rounded border-zinc-600 bg-zinc-900 accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            {t('tools.somatotypeLab.fields.veteran')}
-          </label>
-        </div>
 
         <div className="space-y-2 sm:col-span-2">
           <p className="text-xs font-medium tracking-wide text-zinc-400">

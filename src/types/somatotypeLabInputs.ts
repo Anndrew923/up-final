@@ -12,6 +12,5 @@ export interface SomatotypeLabInputsPersisted {
   wristCm?: number;
   flexedArmGirthCm?: number;
   gender?: SomatotypeGender;
-  isVeteran?: boolean;
   physiqueTier?: PhysiqueTier;
 }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import AssessmentFieldHintBubble from '../components/assessment/AssessmentFieldHintBubble';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
@@ -175,9 +176,19 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             className="space-y-5"
           >
             <div className="space-y-3">
-              <label className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {t('cardio.cooperDistanceLabel')}
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="min-w-0 flex-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  {t('cardio.cooperDistanceLabel')}
+                </label>
+                <AssessmentFieldHintBubble
+                  active={activeTab === 'cooper'}
+                  ariaLabel={t('cardio.cooperInfo.infoButtonAria')}
+                  tip={t('cardio.cooperInfo.bubbleTip')}
+                  footer={t('cardio.cooperInfo.bubbleReferenceHint', {
+                    title: t('assessment.referenceInfo.title'),
+                  })}
+                />
+              </div>
               <input
                 type="number"
                 inputMode="decimal"

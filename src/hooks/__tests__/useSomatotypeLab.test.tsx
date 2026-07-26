@@ -121,7 +121,6 @@ describe('readLabPrefill / somatotype lab draft', () => {
       wristCm: 17,
       flexedArmGirthCm: 45,
       gender: 'male',
-      isVeteran: true,
       physiqueTier: 'elite',
     });
 
@@ -134,7 +133,6 @@ describe('readLabPrefill / somatotype lab draft', () => {
       wristInput: '17',
       armGirthInput: '45',
       gender: 'male',
-      isVeteran: true,
       physiqueTier: 'elite',
     });
   });
@@ -195,7 +193,6 @@ describe('runAnalysis persists lab-local draft', () => {
       wristCm: snap!.metrics.wristCm,
       flexedArmGirthCm: snap!.metrics.flexedArmGirthCm,
       gender: snap!.gender,
-      isVeteran: snap!.metrics.isVeteran,
       physiqueTier: snap!.physiqueTier,
     });
     expect(saved?.wristCm).toBe(17.5);
@@ -247,6 +244,45 @@ describe('runAnalysis persists lab-local draft', () => {
     expect(latest!.bodyFatInput).toBe('13');
     expect(latest!.armGirthInput).toBe('45');
     expect(latest!.snapshot).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('ignores legacy draft isVeteran and keeps product path off', () => {
+    // Legacy drafts may still contain isVeteran — product UI no longer rehydrates it.
+    memory.set(
+      SOMATOTYPE_LAB_INPUTS_STORAGE_KEY,
+      JSON.stringify({
+        heightCm: 173,
+        weightKg: 95,
+        bodyFatPct: 13,
+        wristCm: 17,
+        flexedArmGirthCm: 38,
+        gender: 'male',
+        isVeteran: true,
+        physiqueTier: 'athletic',
+      })
+    );
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    let latest: ReturnType<typeof useSomatotypeLab> | null = null;
+
+    function Harness() {
+      latest = useSomatotypeLab();
+      return null;
+    }
+
+    act(() => {
+      root.render(<Harness />);
+    });
+
+    expect(latest!.snapshot).not.toBeNull();
+    expect(latest!.snapshot!.metrics.isVeteran).toBe(false);
 
     act(() => {
       root.unmount();

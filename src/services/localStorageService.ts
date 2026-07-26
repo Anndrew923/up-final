@@ -305,7 +305,6 @@ export function saveSomatotypeLabDraftFromSnapshot(snapshot: SomatotypeLabSnapsh
     wristCm: snapshot.metrics.wristCm,
     flexedArmGirthCm: snapshot.metrics.flexedArmGirthCm,
     gender: snapshot.gender,
-    isVeteran: snapshot.metrics.isVeteran,
     physiqueTier: snapshot.physiqueTier,
   });
 }

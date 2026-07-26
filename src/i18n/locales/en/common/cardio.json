@@ -8,9 +8,11 @@
     "tabsAria": "Cardio test type",
     "cooperDistanceLabel": "12-Minute Run Distance (meters)",
     "cooperPlaceholder": "e.g. 2600",
-    "cooperHint": "Track or GPS. Model ceiling: {{maleCap}} m (male), {{femaleCap}} m (female); scores cap above.",
     "cooperWorldRecordCapHint": "Distance exceeds model ceiling ({{capMeters}} m for your profile). Scoring uses capped distance.",
     "cooperInfo": {
+      "infoButtonAria": "Cooper test details",
+      "bubbleTip": "Run hard for 12 minutes and log total distance (meters). Prefer a track or GPS route.",
+      "bubbleReferenceHint": "Full details are in “{{title}}” at the bottom.",
       "toggleExpand": "Show Details",
       "toggleCollapse": "Hide Details",
       "title": "Cooper 12-Minute Run Test",

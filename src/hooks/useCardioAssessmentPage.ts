@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  COOPER_MAX_DISTANCE_FEMALE_METERS,
-  COOPER_MAX_DISTANCE_MALE_METERS,
   getCooperMaxDistanceMetersForGender,
   parse5KmFieldSplit,
   parseCooperDistanceMeters,
@@ -33,7 +31,6 @@ export interface UseCardioAssessmentPageResult {
   /** Cooper tab only: parsed distance exceeds world-record-aligned model ceiling. */
   cooperDistanceOverCap: boolean;
   cooperCapMeters: number | null;
-  cooperHintCaps: { maleCap: number; femaleCap: number };
   activeTab: CardioTab;
   setActiveTab: (t: CardioTab) => void;
   distanceInput: string;
@@ -207,10 +204,6 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
-    cooperHintCaps: {
-      maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
-      femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
-    },
     activeTab,
     setActiveTab,
     distanceInput,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   DEFAULT_PHYSIQUE_TIER,
   DEFAULT_SOMATOTYPE_GENDER,
@@ -22,17 +22,13 @@ export interface SomatotypeLabFormState {
   bodyFatInput: string;
   wristInput: string;
   armGirthInput: string;
-  isVeteran: boolean;
   gender: SomatotypeGender;
   physiqueTier: PhysiqueTier;
-  /** True when legendary arm mode locks the veteran calibration control. */
-  veteranCalibrationLocked: boolean;
   setHeightInput(value: string): void;
   setWeightInput(value: string): void;
   setBodyFatInput(value: string): void;
   setWristInput(value: string): void;
   setArmGirthInput(value: string): void;
-  setIsVeteran(value: boolean): void;
   setGender(value: SomatotypeGender): void;
   setPhysiqueTier(value: PhysiqueTier): void;
   snapshot: SomatotypeLabSnapshot | null;
@@ -45,7 +41,6 @@ export interface SomatotypeLabPrefill {
   wristInput: string;
   armGirthInput: string;
   gender: SomatotypeGender;
-  isVeteran: boolean;
   physiqueTier: PhysiqueTier;
 }
 
@@ -112,7 +107,6 @@ export function readLabPrefill(): SomatotypeLabPrefill {
     wristInput: wristFromLab,
     armGirthInput: armFromLab || armFromArmDraft,
     gender: genderFromLab ?? genderFromProfile ?? DEFAULT_SOMATOTYPE_GENDER,
-    isVeteran: Boolean(lab?.isVeteran),
     physiqueTier: isPhysiqueTier(lab?.physiqueTier) ? lab.physiqueTier : DEFAULT_PHYSIQUE_TIER,
   };
 }
@@ -129,7 +123,6 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
   const [bodyFatInput, setBodyFatInput] = useState(seed.bodyFatInput);
   const [wristInput, setWristInput] = useState(seed.wristInput);
   const [armGirthInput, setArmGirthInput] = useState(seed.armGirthInput);
-  const [isVeteran, setIsVeteran] = useState(seed.isVeteran);
   const [gender, setGender] = useState<SomatotypeGender>(seed.gender);
   const [physiqueTier, setPhysiqueTier] = useState<PhysiqueTier>(seed.physiqueTier);
 
@@ -154,7 +147,6 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
       bodyFatPct,
       wristCm,
       flexedArmGirthCm,
-      isVeteran,
       physiqueTier,
       gender,
     });
@@ -163,20 +155,10 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
     bodyFatInput,
     gender,
     heightInput,
-    isVeteran,
     physiqueTier,
     weightInput,
     wristInput,
   ]);
-
-  const veteranCalibrationLocked = Boolean(snapshot?.maxTuned.legendaryArmMode);
-
-  // WHY: Clear stale checkmarks so UI matches forced-off science path under legendary mode.
-  useEffect(() => {
-    if (veteranCalibrationLocked && isVeteran) {
-      setIsVeteran(false);
-    }
-  }, [isVeteran, veteranCalibrationLocked]);
 
   return {
     heightInput,
@@ -184,16 +166,13 @@ export function useSomatotypeLab(): SomatotypeLabFormState {
     bodyFatInput,
     wristInput,
     armGirthInput,
-    isVeteran: veteranCalibrationLocked ? false : isVeteran,
     gender,
     physiqueTier,
-    veteranCalibrationLocked,
     setHeightInput,
     setWeightInput,
     setBodyFatInput,
     setWristInput,
     setArmGirthInput,
-    setIsVeteran,
     setGender,
     setPhysiqueTier,
     snapshot,

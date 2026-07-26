@@ -167,7 +167,7 @@ export interface SomatotypeMetrics {
   bodyFatPct: number;
   wristCm: number;
   flexedArmGirthCm: number;
-  /** Veteran bone-density residual compensation (+5% humerus). */
+  /** Optional engine flag: +5% humerus residual (product UI removed; default off). */
   isVeteran?: boolean;
 }
 
@@ -317,7 +317,7 @@ export function estimateSkeletalMuscleMassKg(ffmKg: number): number {
 
 /**
  * Grant Index MLR: height + wrist → humerus / femur biepicondylar breadth.
- * Veteran checkbox applies +5% residual compensation on humerus only.
+ * Optional `isVeteran` applies +5% residual compensation on humerus only (engine default: off).
  */
 export function calculateGrantIndex(
   heightCm: number,
@@ -946,7 +946,7 @@ export function buildSomatotypeLabSnapshot(
   });
   if (!computedMax) return null;
 
-  // Lock veteran off when legendary arm mode fires — bone +5% no longer has scientific meaning.
+  // Ignore veteran residual when legendary arm mode already models breakthrough hypertrophy.
   const effectiveVeteran = computedMax.legendaryArmMode ? false : Boolean(metrics.isVeteran);
 
   const normalized: Required<SomatotypeMetrics> = {

@@ -142,8 +142,7 @@
         "weight": "Weight (kg)",
         "bodyFat": "Body fat (%)",
         "wrist": "Wrist (cm)",
-        "arm": "Flexed arm (cm)",
-        "veteran": "Veteran bone correction (+5% humerus residual)"
+        "arm": "Flexed arm (cm)"
       },
       "gender": {
         "label": "Gender",
@@ -167,7 +166,7 @@
           "apex": "Apex Line (BF 18%)"
         }
       },
-      "legendaryNotice": "Your development already exceeds the skeletal estimate. Legendary mode is on — manual calibration is redundant.",
+      "legendaryNotice": "Your development already exceeds the skeletal estimate. Legendary mode is on.",
       "ritual": {
         "cta": "Run Analysis",
         "ctaBusy": "Scanning…",
