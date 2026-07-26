@@ -116,7 +116,6 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('muscle.kicker')}
           title={t('muscle.title')}
-          subtitle={t('muscle.subtitle')}
           onBack={onBack}
         />
 

@@ -123,7 +123,6 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
         <AssessmentPageHeader
           kicker={t('explosive.kicker')}
           title={t('explosive.title')}
-          subtitle={t('explosive.subtitle')}
           onBack={onBack}
         />
 

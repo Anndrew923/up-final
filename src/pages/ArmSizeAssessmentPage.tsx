@@ -98,7 +98,6 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('armSize.kicker')}
           title={t('armSize.title')}
-          subtitle={t('armSize.subtitle')}
           onBack={onBack}
         />
 

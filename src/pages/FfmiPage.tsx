@@ -90,7 +90,6 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('ffmi.kicker')}
           title={t('ffmi.title')}
-          subtitle={t('ffmi.subtitle')}
           onBack={onBack ?? goHome}
         />
 

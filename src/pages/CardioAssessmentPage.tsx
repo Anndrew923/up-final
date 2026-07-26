@@ -108,7 +108,6 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('cardio.kicker')}
           title={t('cardio.title')}
-          subtitle={t('cardio.subtitle')}
           onBack={onBack}
         />
 

@@ -135,7 +135,6 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
         <AssessmentPageHeader
           kicker={t('strength.kicker')}
           title={t('strength.title')}
-          subtitle={t('strength.subtitle')}
           onBack={onBack}
         />
 

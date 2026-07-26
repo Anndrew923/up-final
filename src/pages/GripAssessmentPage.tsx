@@ -96,7 +96,6 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('grip.kicker')}
           title={t('grip.title')}
-          subtitle={t('grip.subtitle')}
           onBack={onBack}
         />
 
