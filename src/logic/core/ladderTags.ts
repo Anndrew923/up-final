@@ -47,14 +47,47 @@ export function countLadderTags(input: LadderTagsFields): number {
   return count;
 }
 
+/** True when either high-value ladder tag (job / country) is present. */
+export function hasHighValueLadderTags(
+  input: Pick<LadderTagsFields, 'jobCategory' | 'countryCode'> | null | undefined
+): boolean {
+  if (!input) return false;
+  return hasNonEmptyString(input.jobCategory) || hasNonEmptyString(input.countryCode);
+}
+
 /**
  * Soft prompt when the two highest-value tags are both missing and user has not dismissed.
  * WHY: No local profile → nothing to merge; skip the sheet (caller should finish baseline first).
+ * NOTE: Local-only gate — prefer `resolveLadderTagsLocalCloudDecision` when cloud `myEntry` is available.
  */
 export function shouldPromptForLadderTags(
   input: Pick<LadderTagsFields, 'jobCategory' | 'countryCode'> | null | undefined,
   dismissed: boolean
 ): boolean {
   if (dismissed || !input) return false;
-  return !hasNonEmptyString(input.jobCategory) && !hasNonEmptyString(input.countryCode);
+  return !hasHighValueLadderTags(input);
+}
+
+/** Dual-source soft-prompt outcome after comparing local profile vs cloud myEntry. */
+export type LadderTagsLocalCloudDecision = 'prompt' | 'rehydrate' | 'none';
+
+/**
+ * Local ↔ cloud decision for ladder tags soft UX.
+ * - both empty → prompt
+ * - cloud has Job/Country, local empty → silent rehydrate (never prompt)
+ * - local already has high-value tags → none (local→cloud sync is a separate path)
+ *
+ * WHY: New device / cleared storage must not false-trigger「未填寫」when shard already has tags.
+ * Dismiss only suppresses prompt — never blocks rehydrate.
+ */
+export function resolveLadderTagsLocalCloudDecision(
+  local: Pick<LadderTagsFields, 'jobCategory' | 'countryCode'> | null | undefined,
+  cloud: Pick<LadderTagsFields, 'jobCategory' | 'countryCode'> | null | undefined,
+  dismissed: boolean
+): LadderTagsLocalCloudDecision {
+  if (!local) return 'none';
+  if (hasHighValueLadderTags(local)) return 'none';
+  if (hasHighValueLadderTags(cloud)) return 'rehydrate';
+  if (dismissed) return 'none';
+  return 'prompt';
 }

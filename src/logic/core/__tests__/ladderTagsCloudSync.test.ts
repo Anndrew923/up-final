@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildLadderTagsRehydrateAttempts,
   hasLocalLadderTags,
   isLadderSegmentFilterActive,
   ladderTagsNeedCloudSync,
@@ -60,6 +61,30 @@ describe('ladderTagsNeedCloudSync', () => {
         district: 'Xinyi',
       })
     ).toBe(false);
+  });
+});
+
+describe('buildLadderTagsRehydrateAttempts', () => {
+  it('includes a Job/Country-only fallback when TW locality is present', () => {
+    const attempts = buildLadderTagsRehydrateAttempts(baseProfile, {
+      jobCategory: 'engineering',
+      countryCode: 'TW',
+      city: '台北市',
+      district: '大安區',
+    });
+    expect(attempts).toHaveLength(2);
+    expect(attempts[0].city).toBe('台北市');
+    expect(attempts[1].city).toBe('');
+    expect(attempts[1].jobCategory).toBe('engineering');
+  });
+
+  it('returns a single attempt when there is no locality to fall back from', () => {
+    const attempts = buildLadderTagsRehydrateAttempts(baseProfile, {
+      jobCategory: 'coach',
+      countryCode: 'JP',
+    });
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0].countryCode).toBe('JP');
   });
 });
 

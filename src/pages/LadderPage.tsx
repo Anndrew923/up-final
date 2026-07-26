@@ -17,8 +17,9 @@ import { LADDER_SCROLL_BOTTOM_INSET_PX } from '../constants/bottomChrome';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { shouldShowLadderGenesisEarlyBird } from '../services/ladderGenesisPrefService';
 import {
-  shouldShowLadderFilterTagsNudge,
-  shouldShowLadderTagsPrompt,
+  hasDismissedFilterTagNudge,
+  hasDismissedLadderTagsPrompt,
+  settleLadderTagsWithCloud,
 } from '../services/ladderTagsPromptPrefService';
 import { loadPhysicalProfile } from '../services/localStorageService';
 import {
@@ -228,6 +229,7 @@ export default function LadderPage() {
     loading,
     error,
     myEntry,
+    myEntryReady,
     myRank,
     isFilterActive,
     myFilteredRank,
@@ -392,19 +394,24 @@ export default function LadderPage() {
   }, [canEnter]);
 
   // WHY: Soft ladder-tags prompt after genesis (or immediately when genesis is not shown).
+  // Gate on myEntryReady (not list loading) so a still-in-flight myEntry never false-triggers prompt.
   // Skip / successful save permanently dismisses — never blocks arena entry.
   useEffect(() => {
-    if (!canEnter || genesisModalOpen) return;
+    if (!canEnter || genesisModalOpen || !myEntryReady) return;
     // Wait for the genesis modal effect to claim first paint when it still should show.
     if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled && shouldShowLadderGenesisEarlyBird()) {
       return;
     }
     if (entryTagsPromptAttemptedRef.current) return;
-    if (!shouldShowLadderTagsPrompt()) return;
+
+    const settled = settleLadderTagsWithCloud(myEntry ?? null, {
+      dismissed: hasDismissedLadderTagsPrompt(),
+    });
     entryTagsPromptAttemptedRef.current = true;
+    if (settled !== 'prompt') return;
     setTagsPromptVariant('entry');
     setTagsPromptOpen(true);
-  }, [canEnter, genesisModalOpen]);
+  }, [canEnter, genesisModalOpen, myEntry, myEntryReady]);
 
   /**
    * Unified filter entry (title bar + floating pill).
@@ -414,13 +421,21 @@ export default function LadderPage() {
   const handleOpenFilters = useCallback(() => {
     // WHY: Do not stack over genesis / an already-open tags sheet (variant race).
     if (genesisModalOpen || tagsPromptOpen) return;
-    if (shouldShowLadderFilterTagsNudge()) {
+    // WHY: Until myEntry settles, skip soft nudge (open filters) to avoid false「未填寫」.
+    if (!myEntryReady) {
+      openSheet();
+      return;
+    }
+    const settled = settleLadderTagsWithCloud(myEntry ?? null, {
+      dismissed: hasDismissedFilterTagNudge(),
+    });
+    if (settled === 'prompt') {
       setTagsPromptVariant('filter');
       setTagsPromptOpen(true);
       return;
     }
     openSheet();
-  }, [genesisModalOpen, openSheet, tagsPromptOpen]);
+  }, [genesisModalOpen, myEntry, myEntryReady, openSheet, tagsPromptOpen]);
 
   const handleFilterTagsPromptFinished = useCallback(() => {
     openSheet();

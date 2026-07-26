@@ -39,6 +39,8 @@ export interface LadderLeaderboardState {
   page: number;
   pageSize: number;
   myEntry: LeaderboardEntry | null;
+  /** Settled flag for the myEntry fetch (independent of list `loading`). */
+  myEntryReady: boolean;
   myRank: number | null;
   isFilterActive: boolean;
   myFilteredRank: number | null;
@@ -90,6 +92,11 @@ export function useLadderLeaderboard(
   const [error, setError] = useState(false);
   const [fromCache, setFromCache] = useState(false);
   const [myEntry, setMyEntry] = useState<LeaderboardEntry | null>(null);
+  /**
+   * True after the current-deps `getMyLeaderboardEntry` fetch settles (ok or fail).
+   * WHY: List `loading` is a separate path — soft tags prompt/rehydrate must not run on a stale null myEntry.
+   */
+  const [myEntryReady, setMyEntryReady] = useState(false);
   const [myRank, setMyRank] = useState<number | null>(null);
   const catalogLoadedKeyRef = useRef<string | null>(null);
   const authUid = useAuthStore((state) => state.uid);
@@ -218,6 +225,7 @@ export function useLadderLeaderboard(
 
   useEffect(() => {
     let cancelled = false;
+    setMyEntryReady(false);
 
     void (async () => {
       await Promise.resolve();
@@ -226,6 +234,7 @@ export function useLadderLeaderboard(
       if (!authUid) {
         setMyEntry(null);
         setMyRank(null);
+        setMyEntryReady(true);
         return;
       }
 
@@ -238,11 +247,13 @@ export function useLadderLeaderboard(
       if (!entryResult.ok) {
         setMyEntry(null);
         setMyRank(null);
+        setMyEntryReady(true);
         return;
       }
 
       const entry = entryResult.item ?? null;
       setMyEntry(entry);
+      setMyEntryReady(true);
       if (!entry || !Number.isFinite(entry.scoreBest) || entry.scoreBest <= 0) {
         setMyRank(null);
         return;
@@ -276,6 +287,7 @@ export function useLadderLeaderboard(
     page,
     pageSize,
     myEntry,
+    myEntryReady,
     myRank,
     isFilterActive,
     myFilteredRank,
