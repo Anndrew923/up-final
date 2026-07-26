@@ -7,7 +7,7 @@ import LadderReportSheet from './LadderReportSheet';
 import { useLadderBlockStore } from '../../stores/ladderBlockStore';
 import HexRadarChart from '../radar/HexRadarChart';
 import type { LadderUserPreview } from '../../services/leaderboardPreviewService';
-import { isLadderOverallEntryDriftFromPreview } from '../../logic/core/ladderScoreCompare';
+import { resolveLadderEntryPreviewDrift } from '../../logic/core/ladderScoreCompare';
 import {
   buildSixAxisRadarData,
   calculateSixAxisOverall,
@@ -31,9 +31,9 @@ export interface LadderUserPreviewModalProps {
   targetUid?: string | null;
   /** Signed-in viewer uid — hides moderation actions for self. */
   viewerUid?: string | null;
-  /** Active leaderboard shard — drift guard only applies on composite `ladderScore`. */
+  /** Active leaderboard shard — drift compares list `scoreBest` to preview when shard is composite-comparable. */
   viewingShardId?: LeaderboardShardId;
-  /** Row `scoreBest` from the list tap; compared to preview six-axis average on overall board. */
+  /** Row `scoreBest` from the list tap; compared to preview overall avg or matching radar axis. */
   ladderEntryScoreBest?: number | null;
   onClose: () => void;
   /** Called after a successful local block so the parent can refresh the list. */
@@ -97,13 +97,22 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   }, [user]);
 
   /**
-   * Safety net: list row uses `leaderboardScore.scoreBest`; modal average is recomputed from
-   * `leaderboard_previews.radarScores`. After legacy partial syncs they can diverge until re-sync.
+   * Safety net: list row uses shard `scoreBest`; modal reads `leaderboard_previews.radarScores`
+   * (or six-axis average on overall). Branch shards are excluded — only composite-comparable shards.
    */
-  const showOverallDriftGuard = useMemo(() => {
-    if (viewingShardId !== 'ladderScore') return false;
-    return isLadderOverallEntryDriftFromPreview(ladderEntryScoreBest, overallScore);
-  }, [viewingShardId, ladderEntryScoreBest, overallScore]);
+  const entryPreviewDrift = useMemo(
+    () =>
+      resolveLadderEntryPreviewDrift({
+        shardId: viewingShardId,
+        entryScoreBest: ladderEntryScoreBest,
+        previewOverall: overallScore,
+        previewRadarScores: user?.radarScores,
+      }),
+    [viewingShardId, ladderEntryScoreBest, overallScore, user?.radarScores]
+  );
+  const showDriftGuard = entryPreviewDrift.drifted;
+  const driftedAxisMetric =
+    entryPreviewDrift.comparable?.kind === 'axis' ? entryPreviewDrift.comparable.metric : null;
 
   if (!open || typeof document === 'undefined') return null;
 
@@ -249,17 +258,24 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                       />
                     </div>
 
-                    {showOverallDriftGuard ? (
+                    {showDriftGuard ? (
                       <aside
                         className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-3 text-sm leading-relaxed text-amber-100/90"
                         role="note"
                       >
                         <p>
-                          {t('ladder.userPreview.driftWarning', {
-                            ns: 'common',
-                            listed: formatOverallResonanceScore(ladderEntryScoreBest),
-                            preview: formatOverallResonanceScore(overallScore),
-                          })}
+                          {t(
+                            entryPreviewDrift.comparable?.kind === 'axis'
+                              ? 'ladder.userPreview.shardDriftWarning'
+                              : 'ladder.userPreview.driftWarning',
+                            {
+                              ns: 'common',
+                              listed: formatOverallResonanceScore(ladderEntryScoreBest),
+                              preview: formatOverallResonanceScore(
+                                entryPreviewDrift.previewScore
+                              ),
+                            }
+                          )}
                         </p>
                       </aside>
                     ) : null}
@@ -269,7 +285,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                           {t('ladder.userPreview.overallAverage', { ns: 'common' })}
                         </p>
-                        {showOverallDriftGuard &&
+                        {showDriftGuard &&
+                        entryPreviewDrift.comparable?.kind === 'overall' &&
                         ladderEntryScoreBest != null &&
                         Number.isFinite(ladderEntryScoreBest) ? (
                           <p className="mt-1 font-mono text-xs tabular-nums text-zinc-500">
@@ -287,15 +304,32 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                       {SIX_AXIS_METRICS.map((key) => {
                         const v = clampScoreMapValue(user.radarScores?.[key] ?? 0);
                         const show = v > 0;
+                        const axisDrifted = showDriftGuard && driftedAxisMetric === key;
                         return (
                           <li
                             key={key}
-                            className="rounded-md border border-zinc-800/70 bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400"
+                            className={`rounded-md border px-2 py-1.5 text-center ${
+                              axisDrifted
+                                ? 'border-amber-500/40 bg-amber-500/10 text-amber-100/90'
+                                : 'border-zinc-800/70 bg-bg-panel/40 text-zinc-400'
+                            }`}
                           >
                             <SixAxisDataGridLabel metric={key} />
+                            {axisDrifted &&
+                            ladderEntryScoreBest != null &&
+                            Number.isFinite(ladderEntryScoreBest) ? (
+                              <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-amber-200/80">
+                                {t('ladder.userPreview.listedShardScore', { ns: 'common' })}:{' '}
+                                {formatOverallResonanceScore(ladderEntryScoreBest)}
+                              </span>
+                            ) : null}
                             <span
                               className={`mt-0.5 block font-mono tabular-nums ${
-                                show && v > 100 ? 'text-accent-info' : 'text-zinc-200'
+                                axisDrifted
+                                  ? 'text-amber-50'
+                                  : show && v > 100
+                                    ? 'text-accent-info'
+                                    : 'text-zinc-200'
                               }`}
                             >
                               {show ? v : dash}

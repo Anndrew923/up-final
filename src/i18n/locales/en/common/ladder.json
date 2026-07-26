@@ -64,9 +64,11 @@
       "radarCompletion": "Axes with data: {{count}} / {{total}}",
       "overallAverage": "Six-Axis Average",
       "listedOverallScore": "Listed score",
+      "listedShardScore": "Listed on this board",
       "entryFallbackNotice": "Full profile is syncing — showing ladder summary for now.",
       "entryFallbackRadarPending": "Six-axis radar data is updating…",
-      "driftWarning": "Listed score ({{listed}}) does not match the public six-axis average ({{preview}}). Run Sync to Ladder again to refresh your overall entry."
+      "driftWarning": "Listed score ({{listed}}) does not match the public six-axis average ({{preview}}). Run Sync to Ladder again to refresh your overall entry.",
+      "shardDriftWarning": "Listed score on this board ({{listed}}) does not match the public profile axis ({{preview}}). Run Sync to Ladder again to align the list and profile."
     },
     "moderation": {
       "block": "Block",

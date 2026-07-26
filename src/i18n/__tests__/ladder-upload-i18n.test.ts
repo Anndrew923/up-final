@@ -66,5 +66,14 @@ describe('ladder upload i18n', () => {
     });
     expect(radarPending).not.toBe('ladder.userPreview.entryFallbackRadarPending');
     expect(radarPending.length).toBeGreaterThan(4);
+
+    const shardDrift = i18n.t('ladder.userPreview.shardDriftWarning', {
+      ns: 'common',
+      listed: '116.91',
+      preview: '91.62',
+    });
+    expect(shardDrift).not.toBe('ladder.userPreview.shardDriftWarning');
+    expect(shardDrift).toContain('116.91');
+    expect(shardDrift).toContain('91.62');
   });
 });
