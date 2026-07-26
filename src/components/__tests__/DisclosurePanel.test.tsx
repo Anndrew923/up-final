@@ -62,4 +62,31 @@ describe('DisclosurePanel actionMode', () => {
     expect(container.querySelector('svg')).not.toBeNull();
     unmount();
   });
+
+  it('renders optional headerAccessory beside the title', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    act(() => {
+      root.render(
+        <DisclosurePanel
+          instanceId="test-accessory"
+          expanded={false}
+          onToggle={vi.fn()}
+          title="Ladder Tags"
+          headerAccessory={<span data-testid="pill">+ Add</span>}
+          toggleExpandLabel="Expand"
+          toggleCollapseLabel="Collapse"
+          actionMode="chevron"
+        >
+          <p>body</p>
+        </DisclosurePanel>
+      );
+    });
+    expect(container.textContent).toContain('+ Add');
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

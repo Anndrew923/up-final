@@ -1,0 +1,57 @@
+import { describe, expect, it } from 'vitest';
+import { countLadderTags, shouldPromptForLadderTags } from '../ladderTags';
+
+describe('countLadderTags', () => {
+  it('returns 0 when all optional tags are empty', () => {
+    expect(countLadderTags({})).toBe(0);
+    expect(
+      countLadderTags({
+        jobCategory: '',
+        weeklyTrainingHours: '',
+        trainingYears: null,
+        countryCode: '',
+        region: '',
+      })
+    ).toBe(0);
+  });
+
+  it('counts job, training, country, and region tags', () => {
+    expect(
+      countLadderTags({
+        jobCategory: 'engineering',
+        weeklyTrainingHours: 5,
+        trainingYears: '2',
+        countryCode: 'US',
+        region: 'CA',
+      })
+    ).toBe(5);
+  });
+
+  it('counts TW city/district as the region tag', () => {
+    expect(
+      countLadderTags({
+        countryCode: 'TW',
+        city: 'Taipei',
+        district: '',
+      })
+    ).toBe(2);
+  });
+});
+
+describe('shouldPromptForLadderTags', () => {
+  it('is false when permanently dismissed', () => {
+    expect(shouldPromptForLadderTags({ jobCategory: '', countryCode: '' }, true)).toBe(false);
+  });
+
+  it('is true when both high-value tags are empty', () => {
+    expect(shouldPromptForLadderTags({ jobCategory: '', countryCode: '' }, false)).toBe(true);
+  });
+
+  it('is false when profile is missing or a high-value tag is already set', () => {
+    expect(shouldPromptForLadderTags(null, false)).toBe(false);
+    expect(
+      shouldPromptForLadderTags({ jobCategory: 'engineering', countryCode: '' }, false)
+    ).toBe(false);
+    expect(shouldPromptForLadderTags({ jobCategory: '', countryCode: 'TW' }, false)).toBe(false);
+  });
+});

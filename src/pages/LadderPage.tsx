@@ -8,11 +8,18 @@ import LeaderboardSyncAllBar from '../components/ladder/LeaderboardSyncAllBar';
 import LadderFilterSheet from '../components/ladder/LadderFilterSheet';
 import LadderGenesisEarlyBirdModal from '../components/ladder/LadderGenesisEarlyBirdModal';
 import LadderFloatingFilterPill from '../components/ladder/LadderFloatingFilterPill';
+import LadderTagsPromptSheet, {
+  type LadderTagsPromptVariant,
+} from '../components/ladder/LadderTagsPromptSheet';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { LADDER_SCROLL_BOTTOM_INSET_PX } from '../constants/bottomChrome';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { shouldShowLadderGenesisEarlyBird } from '../services/ladderGenesisPrefService';
+import {
+  shouldShowLadderFilterTagsNudge,
+  shouldShowLadderTagsPrompt,
+} from '../services/ladderTagsPromptPrefService';
 import { useDopamineFeedback } from '../hooks/useDopamineFeedback';
 import { useLadderFilterSheetOptions } from '../hooks/useLadderFilterSheetOptions';
 import { isLadderCountryCode, type LadderCountryCode } from '../types/ladderProfile';
@@ -100,6 +107,10 @@ export default function LadderPage() {
   const [ladderRefreshNonce, setLadderRefreshNonce] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [genesisModalOpen, setGenesisModalOpen] = useState(false);
+  const [tagsPromptOpen, setTagsPromptOpen] = useState(false);
+  const [tagsPromptVariant, setTagsPromptVariant] = useState<LadderTagsPromptVariant>('entry');
+  /** WHY: Entry prompt is one-shot per mount — must not re-steal an open filter-nudge session. */
+  const entryTagsPromptAttemptedRef = useRef(false);
   const pageSize = 25;
   const previousRankRef = useRef<number | null>(null);
   const pendingScrollUidRef = useRef<string | null>(null);
@@ -375,6 +386,41 @@ export default function LadderPage() {
     setGenesisModalOpen(true);
   }, [canEnter]);
 
+  // WHY: Soft ladder-tags prompt after genesis (or immediately when genesis is not shown).
+  // Skip / successful save permanently dismisses — never blocks arena entry.
+  useEffect(() => {
+    if (!canEnter || genesisModalOpen) return;
+    // Wait for the genesis modal effect to claim first paint when it still should show.
+    if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled && shouldShowLadderGenesisEarlyBird()) {
+      return;
+    }
+    if (entryTagsPromptAttemptedRef.current) return;
+    if (!shouldShowLadderTagsPrompt()) return;
+    entryTagsPromptAttemptedRef.current = true;
+    setTagsPromptVariant('entry');
+    setTagsPromptOpen(true);
+  }, [canEnter, genesisModalOpen]);
+
+  /**
+   * Unified filter entry (title bar + floating pill).
+   * WHY: Strategy B — filter nudge uses an independent dismiss flag from entry Skip,
+   * then chains into the real filter sheet so intent is never blocked.
+   */
+  const handleOpenFilters = useCallback(() => {
+    // WHY: Do not stack over genesis / an already-open tags sheet (variant race).
+    if (genesisModalOpen || tagsPromptOpen) return;
+    if (shouldShowLadderFilterTagsNudge()) {
+      setTagsPromptVariant('filter');
+      setTagsPromptOpen(true);
+      return;
+    }
+    openSheet();
+  }, [genesisModalOpen, openSheet, tagsPromptOpen]);
+
+  const handleFilterTagsPromptFinished = useCallback(() => {
+    openSheet();
+  }, [openSheet]);
+
   useEffect(() => {
     const event = detectPromotion(previousRankRef.current, myRank);
     previousRankRef.current = myRank;
@@ -605,7 +651,7 @@ export default function LadderPage() {
             <button
               type="button"
               className="inline-flex shrink-0 items-center rounded-xl border border-slate-700/60 bg-slate-800/45 px-3 py-1.5 text-xs font-semibold tracking-wide text-slate-300 transition-all duration-200 hover:border-cyan-500/45 hover:text-cyan-300 active:scale-95"
-              onClick={openSheet}
+              onClick={handleOpenFilters}
             >
               {t('ladder.moreFilters', { ns: 'common' })}
               {activeAppliedFilterCount > 0 ? (
@@ -765,7 +811,10 @@ export default function LadderPage() {
       </ShellFlowStack>
 
       {!sheetOpen ? (
-        <LadderFloatingFilterPill activeFilterCount={activeAppliedFilterCount} onOpen={openSheet} />
+        <LadderFloatingFilterPill
+          activeFilterCount={activeAppliedFilterCount}
+          onOpen={handleOpenFilters}
+        />
       ) : null}
 
       {showFloatingRankBar && myEntry && myRank !== null ? (
@@ -799,6 +848,14 @@ export default function LadderPage() {
       <LadderGenesisEarlyBirdModal
         open={genesisModalOpen}
         onEnter={() => setGenesisModalOpen(false)}
+      />
+      <LadderTagsPromptSheet
+        open={tagsPromptOpen}
+        variant={tagsPromptVariant}
+        onClose={() => setTagsPromptOpen(false)}
+        onFinished={
+          tagsPromptVariant === 'filter' ? handleFilterTagsPromptFinished : undefined
+        }
       />
     </main>
   );

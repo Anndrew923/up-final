@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { DisclosurePanel } from '../DisclosurePanel';
 import HomeCollapsibleCard from './HomeCollapsibleCard';
 import GenderSelectSheet from './GenderSelectSheet';
+import LadderTagsStatusPill from './LadderTagsStatusPill';
 import OptionSelectSheet from './OptionSelectSheet';
 import { isPhysicalProfileAdvancedError } from '../../logic/core/homeProfileForm';
+import { countLadderTags } from '../../logic/core/ladderTags';
 import type { PhysicalProfileValidationErrorCode } from '../../logic/core/physicalProfile';
 import { useHomeFormCopy } from '../../hooks/useHomeFormCopy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
@@ -86,6 +88,20 @@ export default function HomeProfileForm() {
       setAdvancedExpanded(true);
     }
   }, [errorCode]);
+
+  const ladderTagCount = countLadderTags({
+    jobCategory,
+    weeklyTrainingHours,
+    trainingYears,
+    countryCode,
+    region,
+    city,
+    district,
+  });
+  const ladderTagsPillLabel =
+    ladderTagCount <= 0
+      ? t('home.profile.ladderTagsPillEmpty', { ns: 'common' })
+      : t('home.profile.ladderTagsPillActive', { ns: 'common', count: ladderTagCount });
 
   const jobOptions = LADDER_JOB_CATEGORIES.map((value) => ({
     value,
@@ -222,6 +238,8 @@ export default function HomeProfileForm() {
           onToggle={() => setAdvancedExpanded((open) => !open)}
           title={profileCopy('advancedTitle')}
           collapsedHint={profileCopy('advancedCollapsedHint')}
+          headerAccessory={<LadderTagsStatusPill tagCount={ladderTagCount} />}
+          headerAccessoryLabel={ladderTagsPillLabel}
           toggleExpandLabel={profileCopy('advancedExpand')}
           toggleCollapseLabel={profileCopy('advancedCollapse')}
           actionMode="chevron"

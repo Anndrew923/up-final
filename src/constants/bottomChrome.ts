@@ -4,7 +4,7 @@
  * WHY: BottomNav shell is 78px + safe-area, but the center DYNO hex uses
  * `-translate-y-4` (~16px). Floating chrome that only clears 72–78px will
  * collide with the hex. Keep stack math in one place so Ladder floating rank,
- * filter pill, Dyno Intel trigger, and scroll insets stay aligned.
+ * filter pill, Dyno Intel trigger, Join Arena CTA, and scroll insets stay aligned.
  */
 
 /** Matches `BottomNav` `h-[calc(78px+env(safe-area-inset-bottom))]`. */
@@ -75,6 +75,23 @@ export const LADDER_FILTER_PILL_BOTTOM_PX =
  * WHY: Trigger bottom sits at `BOTTOM_CHROME_STACK_PX`; its top is stack + chip height.
  */
 export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 142
+
+/**
+ * Join Arena floating CTA dock height (glass pad + primary button).
+ * WHY: Primary enter CTA must stay reachable while scrolling; geometry shares chrome math.
+ * Dyno Intel trigger is hidden on `/join-arena`, so dock shares the chrome stack only.
+ */
+export const JOIN_ARENA_CTA_BAR_PX = 72;
+
+/** Distance from physical bottom to the *bottom* of the Join Arena CTA dock (excludes safe-area). */
+export const JOIN_ARENA_CTA_BOTTOM_PX = BOTTOM_CHROME_STACK_PX; // 106
+
+/**
+ * AppShell scroll bottom inset on Join Arena — clears floating CTA dock + BottomNav/hex.
+ * WHY: Own the inset in the shell (same pattern as ladder) so the page does not
+ * compute fragile deltas against `APP_SHELL_SCROLL_BOTTOM_PX`.
+ */
+export const JOIN_ARENA_SCROLL_BOTTOM_PX = JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX; // 178
 
 /** CSS `calc` bottom / padding-bottom that clears chrome + device safe-area. */
 export function bottomChromeCalc(offsetPx: number): string {

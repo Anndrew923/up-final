@@ -27,7 +27,11 @@ describe('resolveHomeBundleCopy', () => {
     const t = i18n.t.bind(i18n);
     expect(resolveHomeSubsectionString(t, 'profile', 'toggleCollapse')).toBe('點擊收合');
     expect(resolveHomeSubsectionString(t, 'profile', 'advancedExpand')).toBe('點擊展開進階欄位');
-    expect(resolveHomeSubsectionString(t, 'profile', 'advancedCollapsedHint')).toContain('可選');
+    expect(resolveHomeSubsectionString(t, 'profile', 'advancedTitle')).toContain('天梯細分標籤');
+    expect(resolveHomeSubsectionString(t, 'profile', 'advancedCollapsedHint')).toContain(
+      '同儕篩選'
+    );
+    expect(resolveHomeSubsectionString(t, 'profile', 'ladderTagsPillEmpty')).toContain('職業');
     expect(resolveHomeSubsectionString(t, 'ladderIdentity', 'toggleExpand')).toBe('點擊展開編輯');
     expect(
       resolveHomeSubsectionString(t, 'profile', 'collapsedSummary', {

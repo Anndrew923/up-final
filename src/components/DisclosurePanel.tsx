@@ -13,6 +13,13 @@ export interface DisclosurePanelProps {
   toggleCollapseLabel: string;
   /** Optional one-line hint shown only when collapsed (e.g. what fields live inside). */
   collapsedHint?: string;
+  /**
+   * Optional status chip beside the title (e.g. ladder-tags pill).
+   * WHY: Keep presentational — callers own content; hit target stays the full header button.
+   */
+  headerAccessory?: ReactNode;
+  /** Screen-reader fragment for `headerAccessory` (pill is usually aria-hidden). */
+  headerAccessoryLabel?: string;
   children: ReactNode;
   /** Tailwind classes for the padded body wrapper around `children`. */
   panelBodyClassName?: string;
@@ -36,6 +43,8 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   toggleExpandLabel,
   toggleCollapseLabel,
   collapsedHint,
+  headerAccessory,
+  headerAccessoryLabel,
   children,
   panelBodyClassName = defaultPanelBodyClassName,
   actionMode = 'labeled',
@@ -44,6 +53,9 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   const panelId = `${instanceId}-panel`;
   const actionLabel = expanded ? toggleCollapseLabel : toggleExpandLabel;
   const chevronOnly = actionMode === 'chevron';
+  const ariaLabel = [actionLabel, !expanded ? collapsedHint : null, headerAccessoryLabel]
+    .filter((part): part is string => Boolean(part && part.trim()))
+    .join('. ');
 
   return (
     <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
@@ -52,13 +64,16 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
         className="flex w-full flex-col gap-2 px-4 py-3 text-left text-sm text-zinc-300 transition-colors hover:bg-zinc-800/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60"
         aria-expanded={expanded}
         aria-controls={panelId}
-        aria-label={collapsedHint && !expanded ? `${actionLabel}. ${collapsedHint}` : actionLabel}
+        aria-label={ariaLabel}
         id={toggleId}
         onClick={onToggle}
         onKeyDown={(e) => onCollapsibleToggleKeyDown(e, onToggle)}
       >
         <span className="flex w-full items-center justify-between gap-3">
-          <span className="min-w-0 font-medium text-zinc-200">{title}</span>
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="min-w-0 truncate font-medium text-zinc-200">{title}</span>
+            {headerAccessory}
+          </span>
           {chevronOnly ? <CollapsibleChevron expanded={expanded} /> : null}
         </span>
         {!expanded && collapsedHint ? (

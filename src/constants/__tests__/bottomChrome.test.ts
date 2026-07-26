@@ -7,6 +7,9 @@ import {
   BOTTOM_HEX_TOP_PX,
   BOTTOM_NAV_SHELL_PX,
   DYNO_INTEL_TRIGGER_HEIGHT_PX,
+  JOIN_ARENA_CTA_BAR_PX,
+  JOIN_ARENA_CTA_BOTTOM_PX,
+  JOIN_ARENA_SCROLL_BOTTOM_PX,
   LADDER_BRIDGE_AIR_GAP_PX,
   LADDER_BRIDGE_ARCH_DEPTH_PX,
   LADDER_BRIDGE_BOTTOM_PX,
@@ -60,5 +63,11 @@ describe('bottomChrome', () => {
     expect(bottomChromeCalc(BOTTOM_CHROME_STACK_PX)).toBe(
       `calc(${BOTTOM_CHROME_STACK_PX}px + env(safe-area-inset-bottom, 0px))`
     );
+  });
+
+  it('clears Join Arena floating CTA for AppShell scroll inset', () => {
+    expect(JOIN_ARENA_CTA_BOTTOM_PX).toBe(BOTTOM_CHROME_STACK_PX);
+    expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBe(JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX);
+    expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBeGreaterThan(APP_SHELL_SCROLL_BOTTOM_PX);
   });
 });

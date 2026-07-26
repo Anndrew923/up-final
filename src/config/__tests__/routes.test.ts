@@ -3,6 +3,7 @@ import {
   ROUTES,
   isCompactShellRoutePath,
   isHomeRoutePath,
+  isJoinArenaRoutePath,
   isLadderRoutePath,
   isToolsDeckRoutePath,
   isToolsTabRoutePath,
@@ -31,6 +32,18 @@ describe('isHomeRoutePath', () => {
   it('rejects other tabs', () => {
     expect(isHomeRoutePath(ROUTES.tools)).toBe(false);
     expect(isHomeRoutePath(ROUTES.ladder)).toBe(false);
+  });
+});
+
+describe('isJoinArenaRoutePath', () => {
+  it('matches join-arena root and nested paths', () => {
+    expect(isJoinArenaRoutePath(ROUTES.joinArena)).toBe(true);
+    expect(isJoinArenaRoutePath(`${ROUTES.joinArena}/extra`)).toBe(true);
+  });
+
+  it('rejects other routes', () => {
+    expect(isJoinArenaRoutePath(ROUTES.ladder)).toBe(false);
+    expect(isJoinArenaRoutePath('/join-arenaish')).toBe(false);
   });
 });
 

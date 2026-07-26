@@ -1,5 +1,7 @@
 export const Z_INDEX_CLASS = {
   topProgressBar: 'z-[42]',
+  /** Join Arena sticky enter CTA — below BottomNav (`z-50`), above scroll content. */
+  joinArenaFloatingCta: 'z-[45]',
   dynoIntelTrigger: 'z-[55]',
   dynoIntelSheet: 'z-[220]',
   dynoIntelClearHistoryDialog: 'z-[250]',
@@ -8,6 +10,10 @@ export const Z_INDEX_CLASS = {
   /** Nested science/help sheet above somatotype report modal. */
   somatotypeScienceHelpSheet: 'z-[250]',
   ladderFilterSheet: 'z-[230]',
+  /**
+   * Soft ladder-tags prompt — below `optionSelectSheet` so nested job/country sheets stay on top.
+   */
+  ladderTagsPromptSheet: 'z-[250]',
   optionSelectSheet: 'z-[260]',
   /** Boot narrative / profile gate — sheets opened from inside must sit above this. */
   bootSequenceOverlay: 'z-[300]',

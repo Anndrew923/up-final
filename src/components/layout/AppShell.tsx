@@ -6,10 +6,16 @@ import ShellAnimatedOutlet from '../navigation/ShellAnimatedOutlet';
 import TopProgressBar from '../navigation/TopProgressBar';
 import {
   APP_SHELL_SCROLL_BOTTOM_PX,
+  JOIN_ARENA_SCROLL_BOTTOM_PX,
   LADDER_SCROLL_BOTTOM_INSET_PX,
   bottomChromeCalc,
 } from '../../constants/bottomChrome';
-import { ROUTES, isCompactShellRoutePath, isLadderRoutePath } from '../../config/routes';
+import {
+  ROUTES,
+  isCompactShellRoutePath,
+  isJoinArenaRoutePath,
+  isLadderRoutePath,
+} from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
@@ -34,10 +40,12 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   useNavSensoryFeedback();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
-  // WHY: Ladder floating rank sits above the raised DYNO hex — needs a taller scroll inset than other tabs.
+  // WHY: Ladder bridge / Join Arena CTA sit above BottomNav — each route owns a taller scroll inset.
   const scrollBottomInsetPx = isLadderRoutePath(location.pathname)
     ? LADDER_SCROLL_BOTTOM_INSET_PX
-    : APP_SHELL_SCROLL_BOTTOM_PX;
+    : isJoinArenaRoutePath(location.pathname)
+      ? JOIN_ARENA_SCROLL_BOTTOM_PX
+      : APP_SHELL_SCROLL_BOTTOM_PX;
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">

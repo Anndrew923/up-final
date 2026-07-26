@@ -44,13 +44,17 @@ export function isLadderRoutePath(pathname: string): boolean {
   return pathname === ROUTES.ladder || pathname.startsWith(`${ROUTES.ladder}/`);
 }
 
+/** True for `/join-arena` and nested join-arena paths. */
+export function isJoinArenaRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.joinArena || pathname.startsWith(`${ROUTES.joinArena}/`);
+}
+
 /** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / arena / tools tab). */
 export function isCompactShellRoutePath(pathname: string): boolean {
   return (
     isHomeRoutePath(pathname) ||
     isLadderRoutePath(pathname) ||
-    pathname === ROUTES.joinArena ||
-    pathname.startsWith(`${ROUTES.joinArena}/`) ||
+    isJoinArenaRoutePath(pathname) ||
     isToolsTabRoutePath(pathname)
   );
 }
