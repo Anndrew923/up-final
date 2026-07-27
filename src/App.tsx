@@ -9,14 +9,15 @@ import { useAndroidBackButton } from './hooks/useAndroidBackButton';
 import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
 import { useProStructuredUserSyncLifecycle } from './hooks/useProStructuredUserSyncLifecycle';
 import {
-  shouldForceAuthChoice as resolveShouldForceAuthChoice,
-  shouldShowAuthBootstrapFallback as resolveShouldShowAuthBootstrapFallback,
+  canMountAppShell as resolveCanMountAppShell,
+  shouldHoldAuthBootstrapSplash as resolveShouldHoldAuthBootstrapSplash,
 } from './logic/core/authGate';
 import { isFirestoreConfigured } from './services/firebaseClient';
 import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
 import { useAuthStore } from './stores/authStore';
+// WHY: Eager import — lazy AuthChoice + Suspense fallback paints shell-like chrome between splash and modal.
+import AuthChoicePage from './pages/AuthChoicePage';
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
-const AuthChoicePage = lazy(() => import('./pages/AuthChoicePage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LadderPage = lazy(() => import('./pages/LadderPage'));
@@ -52,11 +53,14 @@ function RouteFallback() {
   );
 }
 
-function AuthBootstrapFallback() {
+/** Pure dark hold — no shell chrome, no pulse cards (those read as Dashboard FOUC). */
+function AuthBootstrapSplash() {
   return (
-    <main className="ui-shell min-h-[40vh]">
-      <div className="min-h-[40vh] animate-pulse rounded-xl bg-bg-card/40" aria-hidden />
-    </main>
+    <div
+      className="fixed inset-0 z-[300] bg-bg-base"
+      aria-busy="true"
+      aria-live="polite"
+    />
   );
 }
 
@@ -148,6 +152,73 @@ function SomatotypeLabRoute() {
   return withRouteSuspense(<SomatotypeLabPage onBack={() => navigate(-1)} />);
 }
 
+function AuthChoiceOnlyRoutes() {
+  return (
+    <Routes>
+      <Route path={toRelativeRoutePath(ROUTES.authChoice)} element={<AuthChoicePage />} />
+      <Route path="*" element={<Navigate to={ROUTES.authChoice} replace />} />
+    </Routes>
+  );
+}
+
+function MainAppRoutes({ isGoogleSignedIn }: { isGoogleSignedIn: boolean }) {
+  return (
+    <Routes>
+      <Route
+        path={toRelativeRoutePath(ROUTES.authChoice)}
+        element={
+          isGoogleSignedIn ? <Navigate to={ROUTES.home} replace /> : <AuthChoicePage />
+        }
+      />
+      <Route path="/" element={<AppShell />}>
+        <Route index element={<Navigate to={ROUTES.home} replace />} />
+        {NAV_ITEMS.map((item) => {
+          const Tab = NAV_TAB_PAGE[item.key];
+          return (
+            <Route
+              key={item.key}
+              path={toRelativeRoutePath(item.path)}
+              element={withRouteSuspense(<Tab />)}
+            />
+          );
+        })}
+        <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.privacyPolicy)}
+          element={<PrivacyPolicyRoute />}
+        />
+        <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
+          element={<LeaderboardDebugRoute />}
+        />
+        <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.oneRmCalculator)}
+          element={<OneRmCalculatorRoute />}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.plateCalculator)}
+          element={<PlateCalculatorRoute />}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.somatotypeLab)}
+          element={<SomatotypeLabRoute />}
+        />
+        <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
 export default function App() {
   useAuthSessionBootstrap();
   useProStructuredUserSyncLifecycle();
@@ -163,78 +234,21 @@ export default function App() {
     isAnonymous,
     hasOnboarding,
   };
-  const shouldForceAuthChoice = resolveShouldForceAuthChoice(gateInput);
-  const shouldShowAuthBootstrapFallback = resolveShouldShowAuthBootstrapFallback(gateInput);
+  const shouldHoldSplash = resolveShouldHoldAuthBootstrapSplash(gateInput);
+  const canMountShell = resolveCanMountAppShell(gateInput);
+
+  // WHY: Hard gate — never mount AppShell under splash/auth choice (overlay-only leaked boot UI).
+  const gatedTree = canMountShell ? (
+    <MainAppRoutes isGoogleSignedIn={isGoogleSignedIn} />
+  ) : shouldHoldSplash ? (
+    <AuthBootstrapSplash />
+  ) : (
+    <AuthChoiceOnlyRoutes />
+  );
 
   return (
     <>
-      {shouldShowAuthBootstrapFallback ? (
-        <div className="fixed inset-0 z-[300] bg-bg-base" aria-busy="true" aria-live="polite">
-          <AuthBootstrapFallback />
-        </div>
-      ) : null}
-      <Routes>
-        <Route
-          path={toRelativeRoutePath(ROUTES.authChoice)}
-          element={
-            shouldForceAuthChoice || !isGoogleSignedIn ? (
-              withRouteSuspense(<AuthChoicePage />)
-            ) : (
-              <Navigate to={ROUTES.home} replace />
-            )
-          }
-        />
-        <Route
-          path="/"
-          element={
-            shouldForceAuthChoice ? <Navigate to={ROUTES.authChoice} replace /> : <AppShell />
-          }
-        >
-          <Route index element={<Navigate to={ROUTES.home} replace />} />
-          {NAV_ITEMS.map((item) => {
-            const Tab = NAV_TAB_PAGE[item.key];
-            return (
-              <Route
-                key={item.key}
-                path={toRelativeRoutePath(item.path)}
-                element={withRouteSuspense(<Tab />)}
-              />
-            );
-          })}
-          <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
-          <Route
-            path={toRelativeRoutePath(ROUTES.privacyPolicy)}
-            element={<PrivacyPolicyRoute />}
-          />
-          <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
-          <Route
-            path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
-            element={<LeaderboardDebugRoute />}
-          />
-          <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
-          <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
-          <Route
-            path={toRelativeRoutePath(ROUTES.oneRmCalculator)}
-            element={<OneRmCalculatorRoute />}
-          />
-          <Route
-            path={toRelativeRoutePath(ROUTES.plateCalculator)}
-            element={<PlateCalculatorRoute />}
-          />
-          <Route
-            path={toRelativeRoutePath(ROUTES.somatotypeLab)}
-            element={<SomatotypeLabRoute />}
-          />
-          <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
-        </Route>
-      </Routes>
+      {gatedTree}
       <ExitConfirmModal open={exitModalOpen} onClose={closeExitModal} />
     </>
   );

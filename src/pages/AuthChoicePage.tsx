@@ -58,7 +58,7 @@ const AuthChoicePage: FC = () => {
   };
 
   return (
-    <main className="ui-shell relative flex min-h-screen max-w-xl items-center text-zinc-100">
+    <main className="ui-shell relative flex min-h-screen max-w-xl items-center bg-bg-base text-zinc-100 motion-safe:animate-auth-choice-enter">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <div className="absolute -left-20 top-20 h-64 w-64 rounded-full bg-accent-primary/20 blur-[90px]" />
         <div className="absolute -right-20 bottom-20 h-64 w-64 rounded-full bg-accent-info/15 blur-[90px]" />

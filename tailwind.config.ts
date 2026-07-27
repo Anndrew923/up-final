@@ -68,6 +68,11 @@ export default {
           '0%': { opacity: '0', transform: 'scale3d(0.92, 0.92, 1)' },
           '100%': { opacity: '1', transform: 'scale3d(1, 1, 1)' },
         },
+        /** Auth choice gate — fade from splash without flashing shell chrome. */
+        'auth-choice-enter': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
         'aura-bleed-enter': {
           '0%': { opacity: '0', transform: 'scale3d(0.78, 0.78, 1)' },
           '100%': { opacity: '1', transform: 'scale3d(1, 1, 1)' },
@@ -142,6 +147,7 @@ export default {
         'diagnostic-scan': 'diagnostic-scan 1.75s linear infinite',
         'diagnostic-grid-breathe': 'diagnostic-grid-breathe 2.5s ease-in-out infinite',
         'breakthrough-enter': 'breakthrough-enter 420ms ease-out forwards',
+        'auth-choice-enter': 'auth-choice-enter 220ms ease-out forwards',
         'aura-bleed-enter': 'aura-bleed-enter 520ms ease-out forwards',
         'tachometer-glow-pulse': 'tachometer-glow-pulse 2s ease-in-out infinite',
         'aura-pulse': 'aura-pulse 2.4s ease-in-out infinite',
