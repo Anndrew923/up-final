@@ -436,9 +436,6 @@ const StrengthAssessmentPage: FC = () => {
               >
                 {submitBusy ? t('strength.submitRadarBusy') : t('strength.submitRadar')}
               </button>
-              <Link className="ui-btn inline-flex" to={ROUTES.home}>
-                {t('assessment.viewHomeRadar')}
-              </Link>
             </div>
 
             {submitNotice?.kind === 'success' && submitDone ? (

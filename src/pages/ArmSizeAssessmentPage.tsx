@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
@@ -14,7 +13,6 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
-import { ROUTES } from '../config/routes';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -212,9 +210,6 @@ const ArmSizeAssessmentPage: FC = () => {
             >
               {t('armSize.saveLeaderboard')}
             </button>
-            <Link className="ui-btn inline-flex" to={ROUTES.home}>
-              {t('assessment.viewHomeRadar')}
-            </Link>
           </div>
 
           {submitDone ? (

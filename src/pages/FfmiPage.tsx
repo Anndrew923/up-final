@@ -232,9 +232,6 @@ const FfmiPage: FC = () => {
                   >
                     {t('ffmi.submitRadar')}
                   </button>
-                  <Link className="ui-btn inline-flex" to={ROUTES.home}>
-                    {t('assessment.viewHomeRadar')}
-                  </Link>
                 </div>
                 {submitDone ? (
                   <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>

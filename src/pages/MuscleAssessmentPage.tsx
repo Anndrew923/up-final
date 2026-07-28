@@ -230,9 +230,6 @@ const MuscleAssessmentPage: FC = () => {
             >
               {t('muscle.submitRadar')}
             </button>
-            <Link className="ui-btn inline-flex" to={ROUTES.home}>
-              {t('assessment.viewHomeRadar')}
-            </Link>
           </div>
 
           {submitDone ? (
