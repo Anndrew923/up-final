@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getCooperMaxDistanceMetersForGender,
   parse5KmFieldSplit,
   parseCooperDistanceMeters,
+  resolveCardioScoreForDisplay,
   tryComputeCardioAssessmentScore,
   type CardioAssessmentComputeError,
+  type CardioAssessmentTab,
 } from '../logic/core/cardioScoring';
 import { clampScoreMapValue } from '../logic/core/scoring';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
@@ -22,7 +24,8 @@ import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSy
 import type { CardioInputsPersisted } from '../types/cardioInputs';
 import { useScoreStore } from '../stores/scoreStore';
 
-export type CardioTab = 'cooper' | '5km';
+/** Page/hook alias — same union as `CardioAssessmentTab` in scoring core. */
+export type CardioTab = CardioAssessmentTab;
 
 export type CardioPageErrorKey = CardioAssessmentComputeError | null;
 
@@ -45,7 +48,11 @@ export interface UseCardioAssessmentPageResult {
   clearError: () => void;
   calculate: () => void;
   persistToDashboard: () => boolean;
-  submitToRadar: () => void;
+  /**
+   * Persist active tab (Cooper → radar axis + home resonance; 5 km → specialty only).
+   * WHY: Name reflects tab-scoped submit, not “always write radar”.
+   */
+  submitAssessment: () => void;
 }
 
 function mergePersisted(): CardioInputsPersisted {
@@ -87,6 +94,8 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
   const [previewScore, setPreviewScore] = useState<number | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
   const [errorKey, setErrorKey] = useState<CardioPageErrorKey>(null);
+  /** Specialty 5 km must not trigger home radar resonance. */
+  const lastPersistWroteRadarAxisRef = useRef(false);
 
   const profileReady = isPhysicalProfileComplete(profile);
 
@@ -169,6 +178,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
         cardio: { distance: savedDistance },
       });
       setStoreScore('cardio', scoreToSave);
+      lastPersistWroteRadarAxisRef.current = true;
       setSubmitDone(true);
       queueStructuredProfileAfterRadarSubmit();
       return true;
@@ -180,7 +190,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       return false;
     }
     const paceInSeconds = Math.round(split.totalSeconds / 5);
-    saveCardioInputs({
+    const nextInputs: CardioInputsPersisted = {
       ...prev,
       run_5km: {
         minutes: split.minutes,
@@ -188,15 +198,20 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
         totalSeconds: split.totalSeconds,
         paceInSeconds,
       },
-    });
-    setStoreScore('cardio', scoreToSave);
+    };
+    saveCardioInputs(nextInputs);
+    // WHY: 5 km is specialty-only — keep Cooper-derived axis if present, else clear stale fallback.
+    const axis = resolveCardioScoreForDisplay(profile, nextInputs);
+    setStoreScore('cardio', axis != null ? clampScoreMapValue(axis) : 0);
+    lastPersistWroteRadarAxisRef.current = false;
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
     return true;
   }, [activeTab, distanceInput, profile, profileReady, runMinutesInput, runSecondsInput, setStoreScore]);
 
-  const submitToRadar = useCallback(() => {
+  const submitAssessment = useCallback(() => {
     if (!persistToDashboard()) return;
+    if (!lastPersistWroteRadarAxisRef.current) return;
     navigateHomeWithResonance(navigate);
   }, [navigate, persistToDashboard]);
 
@@ -218,6 +233,6 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     clearError,
     calculate,
     persistToDashboard,
-    submitToRadar,
+    submitAssessment,
   };
 }

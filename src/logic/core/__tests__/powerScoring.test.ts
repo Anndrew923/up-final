@@ -156,7 +156,7 @@ describe('calculateScoreDecreasing', () => {
     expect(clampScoreMapValue(raw)).toBeLessThanOrEqual(200);
   });
 
-  it('floors sub-record sprint input before scoring; ladder sprint shard clamps at 200', () => {
+  it('floors sub-record sprint input; sprint-only writes specialty shard, not radar composite', () => {
     const profile: PhysicalProfile = {
       gender: 'male',
       age: 25,
@@ -176,14 +176,15 @@ describe('calculateScoreDecreasing', () => {
     expect(r.persisted.sprintSeconds).toBe(EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS.male);
     expect(r.capApplied.sprint).toBe(true);
     expect(r.breakdown.sprintRaw).toBe(210.64);
-    // Radar explosive axis = fixed /3 composite when only sprint is filled.
-    expect(r.score).toBe(70.21);
+    expect(r.breakdown.averageRaw).toBeNull();
+    expect(r.writesRadarAxis).toBe(false);
+    expect(r.score).toBeNull();
 
     const ladder = resolveExplosiveLadderScoreBundle(profile, {
       explosivePower: { sprintSeconds: r.persisted.sprintSeconds },
     });
     expect(ladder.sprint).toBe(200);
-    expect(ladder.composite).toBe(70.21);
+    expect(ladder.composite).toBeNull();
   });
 });
 
@@ -196,7 +197,7 @@ describe('calculateExplosivePowerFinalRaw', () => {
     updatedAt: '',
   };
 
-  it('uses fixed /3 composite (only vertical: raw / 3)', () => {
+  it('uses fixed /2 jump composite (only vertical: raw / 2); sprint excluded', () => {
     const stdRow = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
     const vjOnly = calculateVjumpScore(50, stdRow);
     const r = calculateExplosivePowerFinalRaw({
@@ -205,11 +206,11 @@ describe('calculateExplosivePowerFinalRaw', () => {
       sprintSeconds: null,
       profile: male25,
     });
-    const expected = Math.round((vjOnly / 3) * 100) / 100;
+    const expected = Math.round((vjOnly / 2) * 100) / 100;
     expect(r).toBe(expected);
   });
 
-  it('breakdown lists null for skipped branches', () => {
+  it('breakdown lists null for skipped branches; averageRaw ignores sprint', () => {
     const b = calculateExplosivePowerBreakdown({
       verticalJumpCm: 50,
       standingLongJumpCm: null,
@@ -222,8 +223,45 @@ describe('calculateExplosivePowerFinalRaw', () => {
     expect(b.standingLongJumpRaw).toBeNull();
     expect(b.sprintRaw).toBeNull();
     expect(b.averageRaw).toBe(
-      b.verticalJumpRaw != null ? Math.round((b.verticalJumpRaw / 3) * 100) / 100 : 0
+      b.verticalJumpRaw != null ? Math.round((b.verticalJumpRaw / 2) * 100) / 100 : null
     );
+  });
+
+  it('sprint alone yields breakdown with null averageRaw (no radar axis)', () => {
+    const b = calculateExplosivePowerBreakdown({
+      verticalJumpCm: null,
+      standingLongJumpCm: null,
+      sprintSeconds: 14,
+      profile: male25,
+    });
+    expect(b).not.toBeNull();
+    if (!b) return;
+    expect(b.sprintRaw).toBeGreaterThan(0);
+    expect(b.averageRaw).toBeNull();
+    expect(
+      calculateExplosivePowerFinalRaw({
+        verticalJumpCm: null,
+        standingLongJumpCm: null,
+        sprintSeconds: 14,
+        profile: male25,
+      })
+    ).toBeNull();
+  });
+
+  it('averages both jumps /2 and ignores sprint in composite', () => {
+    const b = calculateExplosivePowerBreakdown({
+      verticalJumpCm: 50,
+      standingLongJumpCm: 220,
+      sprintSeconds: 11,
+      profile: male25,
+    });
+    expect(b).not.toBeNull();
+    if (!b) return;
+    expect(b.sprintRaw).toBeGreaterThan(0);
+    expect(b.verticalJumpRaw).toBeGreaterThan(0);
+    expect(b.standingLongJumpRaw).toBeGreaterThan(0);
+    const expected = Math.round(((b.verticalJumpRaw! + b.standingLongJumpRaw!) / 2) * 100) / 100;
+    expect(b.averageRaw).toBe(expected);
   });
 
   it('returns null when no positive inputs', () => {
@@ -281,13 +319,14 @@ describe('tryComputeExplosiveAssessmentScore', () => {
     });
     expect(r.ok).toBe(true);
     if (r.ok) {
+      expect(r.writesRadarAxis).toBe(true);
       expect(r.score).toBeGreaterThan(0);
       expect(r.persisted).toEqual({ verticalJumpCm: 50 });
       expect(r.breakdown.verticalJumpRaw).toBeGreaterThan(0);
       expect(r.breakdown.standingLongJumpRaw).toBeNull();
       expect(r.breakdown.sprintRaw).toBeNull();
       expect(r.breakdown.averageRaw).toBe(
-        Math.round((r.breakdown.verticalJumpRaw! / 3) * 100) / 100
+        Math.round((r.breakdown.verticalJumpRaw! / 2) * 100) / 100
       );
       expect(r.capApplied.verticalJump).toBe(false);
     }
@@ -326,6 +365,13 @@ describe('mergeScoreMapWithResolvedExplosivePower', () => {
     expect(merged.explosivePower).toBeGreaterThan(0);
   });
 
+  it('clears stale axis when only specialty sprint remains', () => {
+    const merged = mergeScoreMapWithResolvedExplosivePower({ explosivePower: 77 }, profile, {
+      explosivePower: { sprintSeconds: 14 },
+    });
+    expect(merged.explosivePower).toBe(0);
+  });
+
   it('leaves scores when no inputs', () => {
     const merged = mergeScoreMapWithResolvedExplosivePower({ explosivePower: 77 }, profile, {});
     expect(merged.explosivePower).toBe(77);
@@ -337,6 +383,21 @@ describe('resolveExplosivePowerScoreForDisplay', () => {
     expect(
       resolveExplosivePowerScoreForDisplay(null, {
         explosivePower: { verticalJumpCm: 50 },
+      })
+    ).toBeNull();
+  });
+
+  it('returns null for sprint-only specialty (no radar fallback)', () => {
+    const profile: PhysicalProfile = {
+      gender: 'male',
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    };
+    expect(
+      resolveExplosivePowerScoreForDisplay(profile, {
+        explosivePower: { sprintSeconds: 12 },
       })
     ).toBeNull();
   });
@@ -359,7 +420,7 @@ describe('resolveExplosiveLadderScoreBundle', () => {
     expect(b.broad).not.toBeNull();
     expect(b.broad).toBeGreaterThan(0);
     expect(b.sprint).toBeNull();
-    const expectedComposite = b.broad != null ? Math.round((b.broad / 3) * 100) / 100 : 0;
+    const expectedComposite = b.broad != null ? Math.round((b.broad / 2) * 100) / 100 : 0;
     expect(b.composite).toBeCloseTo(expectedComposite, 5);
   });
 

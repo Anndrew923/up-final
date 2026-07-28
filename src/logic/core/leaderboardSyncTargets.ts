@@ -70,9 +70,9 @@ function appendPerLiftStrengthLeaderboardTargets(
 }
 
 /**
- * Cooper / 5 km each get their own shard when structured inputs produce a positive score.
+ * Cooper and 5 km each get their own shard when structured inputs produce a positive score.
  * When neither path yields a shard but `mergedScores.cardio` is set (e.g. legacy manual write),
- * falls back to the default Cooper shard so at least one cardio ladder can receive the value.
+ * falls back to the Cooper shard only — never promote specialty 5 km into the radar axis.
  */
 export function appendCardioLeaderboardTargets(
   targets: LeaderboardSyncTarget[],
@@ -130,9 +130,19 @@ function appendExplosiveLeaderboardTargets(
   mergedExplosiveAxis: number | undefined
 ): void {
   const b = resolveExplosiveLadderScoreBundle(profile, powerInputs);
+  const hasStructuredExplosive = Boolean(
+    powerInputs?.explosivePower &&
+      (Number(powerInputs.explosivePower.verticalJumpCm) > 0 ||
+        Number(powerInputs.explosivePower.standingLongJumpCm) > 0 ||
+        Number(powerInputs.explosivePower.sprintSeconds) > 0)
+  );
+  // WHY: Structured specialty-only (sprint) must not resurrect a stale store composite via fallback.
   const composite =
     b.composite ??
-    (mergedExplosiveAxis != null && Number.isFinite(mergedExplosiveAxis) && mergedExplosiveAxis > 0
+    (!hasStructuredExplosive &&
+    mergedExplosiveAxis != null &&
+    Number.isFinite(mergedExplosiveAxis) &&
+    mergedExplosiveAxis > 0
       ? mergedExplosiveAxis
       : undefined);
   pushIfPositive(targets, 'explosive_composite', composite);

@@ -36,7 +36,18 @@ describe('applySupplementalTargetsToMergedScores', () => {
 });
 
 describe('mergeMergedScoresForAssessmentUpload', () => {
-  it('applies mergedOverrides then supplemental axis overlay', () => {
+  it('applies mergedOverrides then Cooper supplemental axis overlay', () => {
+    const merged = mergeMergedScoresForAssessmentUpload(
+      { bodyFat: 80, cardio: 70 },
+      {
+        supplemental: [{ metric: 'cardio', score: 82 }],
+        mergedOverrides: { cardio: 90 },
+      }
+    );
+    expect(merged.cardio).toBe(82);
+  });
+
+  it('does not overlay specialty cardio_5km onto radar cardio', () => {
     const merged = mergeMergedScoresForAssessmentUpload(
       { bodyFat: 80, cardio: 70 },
       {
@@ -44,7 +55,8 @@ describe('mergeMergedScoresForAssessmentUpload', () => {
         mergedOverrides: { cardio: 90 },
       }
     );
-    expect(merged.cardio).toBe(82);
+    expect(merged.cardio).toBe(90);
+    expect(merged.bodyFat).toBe(80);
   });
 });
 
@@ -87,6 +99,21 @@ describe('buildCardioAssessmentSupplementalTargets', () => {
     expect(bundle.supplemental).toHaveLength(1);
     expect(bundle.supplemental[0]?.metric).toBe('cardio');
     expect(bundle.mergedOverrides?.cardio).toBeGreaterThan(0);
+  });
+
+  it('5 km specialty uploads shard without radar mergedOverrides', () => {
+    const bundle = buildCardioAssessmentSupplementalTargets({
+      tab: '5km',
+      distanceInput: '',
+      runMinutesInput: '25',
+      runSecondsInput: '0',
+      profile: maleProfile30,
+      profileReady: true,
+    });
+    expect(bundle.supplemental).toEqual([
+      expect.objectContaining({ metric: 'cardio_5km' }),
+    ]);
+    expect(bundle.mergedOverrides).toBeUndefined();
   });
 });
 
@@ -139,6 +166,20 @@ describe('buildExplosiveAssessmentSupplementalTargets', () => {
     const composite = bundle.supplemental.find((t) => t.metric === 'explosive_composite');
     expect(composite?.score).toBeGreaterThan(0);
     expect(bundle.mergedOverrides?.explosivePower).toBe(composite?.score);
+  });
+
+  it('sprint-only uploads specialty shard without radar mergedOverrides', () => {
+    const bundle = buildExplosiveAssessmentSupplementalTargets({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '14',
+      profile: maleProfile30,
+      profileReady: true,
+    });
+    expect(bundle.mergedOverrides).toBeUndefined();
+    expect(bundle.supplemental.some((t) => t.metric === 'explosive_composite')).toBe(false);
+    const sprint = bundle.supplemental.find((t) => t.metric === 'explosive_sprint');
+    expect(sprint?.score).toBeGreaterThan(0);
   });
 });
 

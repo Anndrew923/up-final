@@ -80,6 +80,23 @@ describe('buildLeaderboardSyncTargets', () => {
     expect(byMetric.explosive_sprint).toBeGreaterThan(0);
   });
 
+  it('sprint-only specialty does not fall back to stale merged explosivePower composite', () => {
+    const targets = buildLeaderboardSyncTargets({
+      mergedScores: { explosivePower: 70 },
+      overallScore: 0,
+      profile: maleProfile30,
+      cardioInputs: null,
+      powerInputs: {
+        explosivePower: { sprintSeconds: 14 },
+      },
+    });
+    const byMetric = Object.fromEntries(targets.map((t) => [t.metric, t.score]));
+    expect(byMetric.explosive_composite).toBeUndefined();
+    expect(byMetric.explosive_vertical).toBeUndefined();
+    expect(byMetric.explosive_broad).toBeUndefined();
+    expect(byMetric.explosive_sprint).toBeGreaterThan(0);
+  });
+
   it('adds Cooper cardio shard when distance inputs are valid', () => {
     const targets = buildLeaderboardSyncTargets({
       mergedScores: {},

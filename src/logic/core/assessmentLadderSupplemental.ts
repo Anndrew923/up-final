@@ -117,8 +117,15 @@ export function buildCardioAssessmentSupplementalTargets(args: {
   }
   const score = clampScoreMapValue(result.score);
   const tabKey = args.tab === 'cooper' ? 'cooper' : '5km';
+  const supplemental: LeaderboardSyncTarget[] = [
+    { metric: leaderboardShardForCardioTab(tabKey), score },
+  ];
+  // WHY: 5 km is specialty-only — upload cardio_5km without touching radar mergedOverrides.
+  if (args.tab === '5km') {
+    return { supplemental };
+  }
   return {
-    supplemental: [{ metric: leaderboardShardForCardioTab(tabKey), score }],
+    supplemental,
     mergedOverrides: { cardio: score },
   };
 }
@@ -179,10 +186,14 @@ export function buildExplosiveAssessmentSupplementalTargets(args: {
   pushLeaderboardSyncTargetIfPositive(supplemental, 'explosive_broad', ladder.broad);
   pushLeaderboardSyncTargetIfPositive(supplemental, 'explosive_sprint', ladder.sprint);
 
-  const axisScore = ladder.composite ?? result.score;
+  // WHY: Sprint-only specialty must upload explosive_sprint without touching radar mergedOverrides.
+  if (!result.writesRadarAxis || ladder.composite == null) {
+    return { supplemental };
+  }
+
   return {
     supplemental,
-    mergedOverrides: { explosivePower: clampScoreMapValue(axisScore) },
+    mergedOverrides: { explosivePower: clampScoreMapValue(ladder.composite) },
   };
 }
 

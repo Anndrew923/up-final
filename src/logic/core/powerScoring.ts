@@ -1,8 +1,10 @@
 /**
- * Explosive power (vertical jump / standing long jump / sprint) — norm tables align with
- * reference-app `assessmentStandards.js`; sprint overflow above T100 uses a 4th-power warp
- * (`SPRINT_OVERFLOW_*`); standing long jump uses meter-based `INCREASING_OVERFLOW_*`;
- * vertical jump uses cm-based `VJUMP_OVERFLOW_*` (metric-decoupled warp).
+ * Explosive power — radar axis = vertical jump + standing long jump only (fixed /2).
+ * 100 m sprint is specialty-only: scored for ladder shard + local persist, never enters
+ * the six-axis composite (aligned with cardio Cooper-only / no 5km radar fallback).
+ * Norm tables align with reference-app `assessmentStandards.js`; sprint overflow above T100
+ * uses a 4th-power warp (`SPRINT_OVERFLOW_*`); standing long jump uses meter-based
+ * `INCREASING_OVERFLOW_*`; vertical jump uses cm-based `VJUMP_OVERFLOW_*`.
  */
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
@@ -104,8 +106,11 @@ export function calculateScoreIncreasing(value: number, standard: PowerStandardR
   return calculateSljScore(value, standard);
 }
 
-/** Fixed denominator for explosive composite (vertical / broad jump / sprint; missing = 0). */
-export const EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR = 3 as const;
+/**
+ * Fixed denominator for radar explosive composite (vertical + standing long jump; missing = 0).
+ * WHY: Sprint is specialty-only — never dilutes or fills the six-axis torque score.
+ */
+export const EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR = 2 as const;
 
 export type PowerAgeBucket =
   | '12-15'
@@ -253,13 +258,16 @@ export function calculateScoreDecreasing(value: number, standard: PowerStandardR
   return round2(50 + ((standard[50] - v) / denomLow) * 50);
 }
 
-/** Per-metric raw scores (may exceed 100) plus fixed-denominator composite (sum / 3, missing = 0). */
+/**
+ * Per-metric raw scores (may exceed 100).
+ * `averageRaw` is radar composite only — null when neither jump is filled (sprint never enters).
+ */
 export interface ExplosivePowerBreakdown {
   verticalJumpRaw: number | null;
   standingLongJumpRaw: number | null;
   sprintRaw: number | null;
-  /** `(vj + slj + sprint) / 3` with null branches as 0, `round2` — same value fed into radar clamp. */
-  averageRaw: number;
+  /** `(vj + slj) / 2` with null jumps as 0; null when no jump branch — never includes sprint. */
+  averageRaw: number | null;
 }
 
 export function calculateExplosivePowerBreakdown(input: {
@@ -288,11 +296,13 @@ export function calculateExplosivePowerBreakdown(input: {
     verticalJumpRaw !== null || standingLongJumpRaw !== null || sprintRaw !== null;
   if (!hasAnyBranch) return null;
 
+  const hasJumpBranch = verticalJumpRaw !== null || standingLongJumpRaw !== null;
   const vj = verticalJumpRaw !== null && Number.isFinite(verticalJumpRaw) ? verticalJumpRaw : 0;
   const slj =
     standingLongJumpRaw !== null && Number.isFinite(standingLongJumpRaw) ? standingLongJumpRaw : 0;
-  const sp = sprintRaw !== null && Number.isFinite(sprintRaw) ? sprintRaw : 0;
-  const averageRaw = round2((vj + slj + sp) / EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR);
+  const averageRaw = hasJumpBranch
+    ? round2((vj + slj) / EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR)
+    : null;
   return { verticalJumpRaw, standingLongJumpRaw, sprintRaw, averageRaw };
 }
 
@@ -314,8 +324,8 @@ function persistedNumber(v: unknown): number | null {
 }
 
 /**
- * When saved explosive inputs + complete profile produce a score, override stored `explosivePower` for display
- * (same idea as Cooper for cardio).
+ * When saved jump inputs + complete profile produce a score, override stored `explosivePower` for display.
+ * Sprint-only specialty records never resolve an axis score (aligned with Cooper-only cardio).
  */
 export function resolveExplosivePowerScoreForDisplay(
   profile: PhysicalProfile | null | undefined,
@@ -328,7 +338,8 @@ export function resolveExplosivePowerScoreForDisplay(
   const verticalJumpCm = persistedNumber(block.verticalJumpCm);
   const standingLongJumpCm = persistedNumber(block.standingLongJumpCm);
   const sprintSeconds = persistedNumber(block.sprintSeconds);
-  if (verticalJumpCm === null && standingLongJumpCm === null && sprintSeconds === null) return null;
+  // WHY: Axis requires at least one jump — sprint alone must not fill explosivePower.
+  if (verticalJumpCm === null && standingLongJumpCm === null) return null;
 
   const capped = applyExplosiveInputCapsForProfile(profile, {
     verticalJumpCm,
@@ -346,14 +357,29 @@ export function resolveExplosivePowerScoreForDisplay(
   return clampScoreMapValue(raw);
 }
 
+function explosiveBlockHasSprintOnly(
+  block: ExplosivePowerRawPersisted | null | undefined
+): boolean {
+  if (!block) return false;
+  const hasJump =
+    persistedNumber(block.verticalJumpCm) !== null ||
+    persistedNumber(block.standingLongJumpCm) !== null;
+  const hasSprint = persistedNumber(block.sprintSeconds) !== null;
+  return hasSprint && !hasJump;
+}
+
 export function mergeScoreMapWithResolvedExplosivePower(
   scores: ScoreMap,
   profile: PhysicalProfile | null | undefined,
   inputs: PowerInputsPersisted | null | undefined
 ): ScoreMap {
   const resolved = resolveExplosivePowerScoreForDisplay(profile, inputs);
-  if (resolved === null) return { ...scores };
-  return { ...scores, explosivePower: resolved };
+  if (resolved !== null) return { ...scores, explosivePower: resolved };
+  // WHY: Clear stale axis when only specialty sprint remains so radar never inherits an old composite.
+  if (explosiveBlockHasSprintOnly(inputs?.explosivePower)) {
+    return { ...scores, explosivePower: 0 };
+  }
+  return { ...scores };
 }
 
 /** Per-shard ladder scores derived from the same capped inputs as radar (branch = single-test norm score, clamped). */
@@ -365,8 +391,8 @@ export interface ExplosiveLadderScoreBundle {
 }
 
 /**
- * Maps persisted explosive inputs → composite (radar axis) + three branch scores for separate leaderboard shards.
- * WHY: `explosive_composite` must stay the fixed-denominator radar composite; branch shards must not receive each other's points.
+ * Maps persisted explosive inputs → jump composite (radar axis) + branch scores for leaderboard shards.
+ * WHY: `explosive_composite` must stay jump-only /2; sprint shard stays independent and never fills radar.
  */
 export function resolveExplosiveLadderScoreBundle(
   profile: PhysicalProfile | null | undefined,
@@ -400,10 +426,13 @@ export function resolveExplosiveLadderScoreBundle(
     sprintSeconds: capped.sprintSeconds,
     profile,
   });
-  if (breakdown === null || !Number.isFinite(breakdown.averageRaw)) return empty;
+  if (breakdown === null) return empty;
 
   return {
-    composite: clampScoreMapValue(breakdown.averageRaw),
+    composite:
+      breakdown.averageRaw != null && Number.isFinite(breakdown.averageRaw)
+        ? clampScoreMapValue(breakdown.averageRaw)
+        : null,
     vertical:
       breakdown.verticalJumpRaw != null && Number.isFinite(breakdown.verticalJumpRaw)
         ? clampScoreMapValue(breakdown.verticalJumpRaw)
@@ -448,7 +477,10 @@ export function tryComputeExplosiveAssessmentScore(args: {
 }):
   | {
       ok: true;
-      score: number;
+      /** Radar axis score — null for sprint-only specialty submits (never writes explosivePower). */
+      score: number | null;
+      /** True when at least one jump fills the six-axis torque composite. */
+      writesRadarAxis: boolean;
       persisted: ExplosivePowerRawPersisted;
       breakdown: ExplosivePowerBreakdown;
       capApplied: ExplosiveCapApplied;
@@ -487,7 +519,13 @@ export function tryComputeExplosiveAssessmentScore(args: {
     profile: args.profile,
   });
 
-  if (breakdown === null || !Number.isFinite(breakdown.averageRaw)) {
+  if (breakdown === null) {
+    return { ok: false, error: 'power-no-standard' };
+  }
+
+  const writesRadarAxis =
+    breakdown.averageRaw != null && Number.isFinite(breakdown.averageRaw);
+  if (!writesRadarAxis && breakdown.sprintRaw == null) {
     return { ok: false, error: 'power-no-standard' };
   }
 
@@ -498,7 +536,8 @@ export function tryComputeExplosiveAssessmentScore(args: {
 
   return {
     ok: true,
-    score: clampScoreMapValue(breakdown.averageRaw),
+    score: writesRadarAxis ? clampScoreMapValue(breakdown.averageRaw!) : null,
+    writesRadarAxis,
     persisted,
     breakdown,
     capApplied: capped.capApplied,

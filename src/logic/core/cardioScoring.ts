@@ -192,8 +192,10 @@ export function calculate5KmScore(input: {
 }
 
 /**
- * Radar precedence matches reference `RadarChartSection`: Cooper if valid, else 5 km.
- * Returns null when no structured inputs produce a score (caller keeps stored manual cardio).
+ * Radar axis = Cooper only. 5 km is specialty-only (local + `cardio_5km` ladder) —
+ * never falls back into the six-axis cardio score (aligned with explosive sprint).
+ * Returns null when no Cooper distance produces a score (caller keeps stored manual cardio,
+ * or merge clears stale axis when only 5 km remains).
  */
 export function resolveCardioScoreForDisplay(
   profile: PhysicalProfile | null | undefined,
@@ -201,26 +203,20 @@ export function resolveCardioScoreForDisplay(
 ): number | null {
   if (!inputs) return null;
 
-  const cooper = (() => {
-    const distanceMeters = Number(inputs.cardio?.distance);
-    if (!Number.isFinite(distanceMeters) || distanceMeters <= 0) return null;
-    const age = profile?.age;
-    const gender = profile?.gender;
-    if (age == null || !gender) return null;
-    const computed = calculateCooperScore({ distanceMeters, age, gender });
-    return Number.isFinite(computed) ? computed : null;
-  })();
+  const distanceMeters = Number(inputs.cardio?.distance);
+  if (!Number.isFinite(distanceMeters) || distanceMeters <= 0) return null;
+  const age = profile?.age;
+  const gender = profile?.gender;
+  if (age == null || !gender) return null;
+  const computed = calculateCooperScore({ distanceMeters, age, gender });
+  return Number.isFinite(computed) ? computed : null;
+}
 
-  if (cooper !== null) return cooper;
-
-  const fiveKm = (() => {
-    const totalSeconds = Number(inputs.run_5km?.totalSeconds);
-    if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return null;
-    const computed = calculate5KmScore({ totalSeconds, gender: profile?.gender });
-    return Number.isFinite(computed) ? computed : null;
-  })();
-
-  return fiveKm;
+function cardioBlockHas5KmOnly(inputs: CardioInputsPersisted | null | undefined): boolean {
+  if (!inputs) return false;
+  const hasCooper = Number(inputs.cardio?.distance) > 0;
+  const has5km = Number(inputs.run_5km?.totalSeconds) > 0;
+  return has5km && !hasCooper;
 }
 
 export function mergeScoreMapWithResolvedCardio(
@@ -229,8 +225,12 @@ export function mergeScoreMapWithResolvedCardio(
   inputs: CardioInputsPersisted | null | undefined
 ): ScoreMap {
   const resolved = resolveCardioScoreForDisplay(profile, inputs);
-  if (resolved === null) return { ...scores };
-  return { ...scores, cardio: clampScoreMapValue(resolved) };
+  if (resolved !== null) return { ...scores, cardio: clampScoreMapValue(resolved) };
+  // WHY: Specialty-only 5 km must not leave a stale Cooper/fallback axis on the radar.
+  if (cardioBlockHas5KmOnly(inputs)) {
+    return { ...scores, cardio: 0 };
+  }
+  return { ...scores };
 }
 
 /** Text field → positive distance (m) or null. */

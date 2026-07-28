@@ -24,7 +24,8 @@ import type { ScoreMap } from '../types/scoring';
 import { useScoreStore } from '../stores/scoreStore';
 
 /**
- * Zustand scores + local Cooper/5 km + SMM + explosive raw inputs + physical profile → same merged map as Home radar.
+ * Zustand scores + local Cooper (radar) / 5 km (specialty inputs) + SMM + explosive raw inputs +
+ * physical profile → same merged map as Home radar (5 km never enters the cardio axis).
  * Subscribes to profile/cardio/muscle/power saves and cross-tab `storage` for those keys.
  */
 export function useMergedScoresFromLocalStores(): ScoreMap {

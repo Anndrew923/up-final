@@ -9,13 +9,16 @@ import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 
 export const LEADERBOARD_PREVIEW_SCHEMA_VERSION = 1 as const;
 
-/** Maps a ladder shard id to the six-axis preview bucket (null = no radar slice for this shard). */
+/**
+ * Maps a ladder shard id to the six-axis preview bucket.
+ * null = specialty-only / branch shard — must not write `radarScores.*` (Plan B: `cardio_5km`,
+ * `explosive_sprint`, arm size, per-lift strength, etc.).
+ */
 export function resolvePreviewRadarMetric(metric: LeaderboardShardId): SixAxisMetric | null {
   switch (metric) {
     case 'strength_totalFive':
       return 'strength';
     case 'cardio':
-    case 'cardio_5km':
       return 'cardio';
     case 'explosive_composite':
       return 'explosivePower';

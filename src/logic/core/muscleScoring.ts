@@ -187,7 +187,7 @@ export function calculateMuscleScores(input: {
 
 /**
  * When saved SMM + complete profile produce a score, override stored `muscleMass` for display
- * (same precedence idea as Cooper/5 km for cardio).
+ * (same precedence idea as Cooper-only cardio axis resolution).
  */
 export function resolveMuscleScoreForDisplay(
   profile: PhysicalProfile | null | undefined,

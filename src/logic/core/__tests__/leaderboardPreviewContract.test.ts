@@ -10,10 +10,13 @@ import {
 describe('leaderboardPreviewContract', () => {
   it('maps shard metrics to preview radar axes', () => {
     expect(resolvePreviewRadarMetric('strength_totalFive')).toBe('strength');
-    expect(resolvePreviewRadarMetric('cardio_5km')).toBe('cardio');
+    expect(resolvePreviewRadarMetric('cardio')).toBe('cardio');
     expect(resolvePreviewRadarMetric('explosive_composite')).toBe('explosivePower');
     expect(resolvePreviewRadarMetric('bodyFat_ffmi')).toBe('bodyFat');
     expect(resolvePreviewRadarMetric('gripStrength')).toBe('gripStrength');
+    // Specialty / branch shards must not paint six-axis preview buckets.
+    expect(resolvePreviewRadarMetric('cardio_5km')).toBeNull();
+    expect(resolvePreviewRadarMetric('explosive_sprint')).toBeNull();
     expect(resolvePreviewRadarMetric('armSize')).toBeNull();
   });
 

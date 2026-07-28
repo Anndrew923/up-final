@@ -7,6 +7,10 @@ import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbien
 import AssessmentFieldHintBubble from '../components/assessment/AssessmentFieldHintBubble';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import {
+  AssessmentSegmentedControl,
+  AssessmentTabPanel,
+} from '../components/assessment/AssessmentSegmentedControl';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
@@ -17,6 +21,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
+import type { CardioTab } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
 import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -48,9 +53,11 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
     clearError,
     calculate,
     persistToDashboard,
-    submitToRadar,
+    submitAssessment,
   } = useCardioAssessmentPage();
   const scoreMeaningMetric = scoreMeaningMetricForCardioTab(activeTab);
+  const isCooperTab = activeTab === 'cooper';
+  const isSpecialtyTab = activeTab === '5km';
 
   const ladderUploadBundle = useMemo(
     () =>
@@ -92,6 +99,30 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning(scoreMeaningMetric, previewScore ?? heroScore);
 
+  const segmentOptions = useMemo(
+    () => [
+      {
+        id: 'cooper' as const,
+        tabId: 'cardio-tab-cooper',
+        panelId: 'cardio-panel-cooper',
+        label: t('cardio.tabCooper'),
+        badgeLabel: t('cardio.badgeRadarCore'),
+        badgeTone: 'core' as const,
+        disabled: !profileReady || revealBlocking,
+      },
+      {
+        id: '5km' as const,
+        tabId: 'cardio-tab-5km',
+        panelId: 'cardio-panel-5km',
+        label: t('cardio.tab5km'),
+        badgeLabel: t('cardio.badgeSpecialtyOptional'),
+        badgeTone: 'specialty' as const,
+        disabled: revealBlocking,
+      },
+    ],
+    [t, profileReady, revealBlocking]
+  );
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="cardio" />
@@ -99,14 +130,14 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
         open={modalOpen}
         payload={modalPayload}
         onClose={closeModal}
-        onSyncToDashboard={submitToRadar}
+        onSyncToDashboard={submitAssessment}
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
       />
       <AssessmentAmbientGlow />
 
-      <ShellFlowStack gapClassName="space-y-8">
+      <ShellFlowStack gapClassName="space-y-5">
         <AssessmentPageHeader
           kicker={t('cardio.kicker')}
           title={t('cardio.title')}
@@ -115,73 +146,39 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
 
         {!profileReady ? (
           <section
-            className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100/90"
+            className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-100/90"
             role="status"
           >
             <p>{t('cardio.profileIncompleteHint')}</p>
-            <Link className="mt-3 inline-block text-accent-info underline" to={ROUTES.home}>
+            <Link className="mt-2 inline-block text-accent-info underline" to={ROUTES.home}>
               {t('cardio.ctaProfile')}
             </Link>
           </section>
         ) : null}
 
-        <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-          <div
-            className="flex flex-wrap gap-2 border-b border-zinc-800 pb-4"
-            role="tablist"
-            aria-label={t('cardio.tabsAria')}
-          >
-            <button
-              type="button"
-              id="cardio-tab-cooper"
-              role="tab"
-              aria-selected={activeTab === 'cooper'}
-              aria-controls="cardio-panel-cooper"
-              disabled={!profileReady || revealBlocking}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'cooper'
-                  ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
-                  : 'text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-200'
-              }`}
-              onClick={() => setActiveTab('cooper')}
-            >
-              {t('cardio.tabCooper')}
-            </button>
-            <button
-              type="button"
-              id="cardio-tab-5km"
-              role="tab"
-              aria-selected={activeTab === '5km'}
-              aria-controls="cardio-panel-5km"
-              disabled={!profileReady || revealBlocking}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === '5km'
-                  ? 'bg-accent-primary/15 text-accent-primary ring-1 ring-accent-primary/40'
-                  : 'text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-200'
-              }`}
-              onClick={() => {
-                setCooperInfoOpen(false);
-                setActiveTab('5km');
-              }}
-            >
-              {t('cardio.tab5km')}
-            </button>
-          </div>
+        <section className="space-y-3.5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 shadow-panel backdrop-blur sm:p-5">
+          <AssessmentSegmentedControl<CardioTab>
+            value={activeTab}
+            options={segmentOptions}
+            onChange={(tab) => {
+              if (tab === '5km') setCooperInfoOpen(false);
+              setActiveTab(tab);
+            }}
+            ariaLabel={t('cardio.tabsAria')}
+          />
 
-          <div
+          <AssessmentTabPanel
             id="cardio-panel-cooper"
-            role="tabpanel"
-            aria-labelledby="cardio-tab-cooper"
-            hidden={activeTab !== 'cooper'}
-            className="space-y-5"
+            labelledBy="cardio-tab-cooper"
+            active={isCooperTab}
           >
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <label className="min-w-0 flex-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
                   {t('cardio.cooperDistanceLabel')}
                 </label>
                 <AssessmentFieldHintBubble
-                  active={activeTab === 'cooper'}
+                  active={isCooperTab}
                   ariaLabel={t('cardio.cooperInfo.infoButtonAria')}
                   tip={t('cardio.cooperInfo.bubbleTip')}
                   footer={t('cardio.cooperInfo.bubbleReferenceHint', {
@@ -212,18 +209,17 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 </p>
               ) : null}
             </div>
-          </div>
-          <div
+          </AssessmentTabPanel>
+
+          <AssessmentTabPanel
             id="cardio-panel-5km"
-            role="tabpanel"
-            aria-labelledby="cardio-tab-5km"
-            hidden={activeTab !== '5km'}
-            className="space-y-3"
+            labelledBy="cardio-tab-5km"
+            active={isSpecialtyTab}
           >
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('cardio.run5kmHeading')}
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2.5">
               <label className="flex flex-col gap-1 text-xs text-zinc-400">
                 <span>{t('cardio.minutesLabel')}</span>
                 <input
@@ -232,7 +228,8 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   min={0}
                   className="ui-input w-28"
                   value={runMinutesInput}
-                  disabled={!profileReady || revealBlocking}
+                  disabled={revealBlocking}
+                  placeholder={t('cardio.run5kmMinutesPlaceholder')}
                   onChange={(e) => {
                     clearError();
                     setRunMinutesInput(e.target.value);
@@ -248,7 +245,8 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                   min={0}
                   className="ui-input w-28"
                   value={runSecondsInput}
-                  disabled={!profileReady || revealBlocking}
+                  disabled={revealBlocking}
+                  placeholder={t('cardio.run5kmSecondsPlaceholder')}
                   onChange={(e) => {
                     clearError();
                     setRunSecondsInput(e.target.value);
@@ -257,7 +255,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
                 />
               </label>
             </div>
-          </div>
+          </AssessmentTabPanel>
 
           {errorKey ? (
             <p className="text-sm text-red-400" role="alert">
@@ -266,7 +264,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           ) : null}
 
           {previewScore !== null ? (
-            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
+            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-3 py-2.5">
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('cardio.previewLabel')}
               </p>
@@ -277,28 +275,28 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
           ) : null}
 
           {previewScore !== null && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
+            <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-3.5 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/65 to-transparent" />
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
                 {t('cardio.performanceSpecHeader')}
               </p>
-              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
+              <h3 className="mt-1.5 text-base font-semibold tracking-tight text-zinc-50">
                 {scoreMeaning.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
               {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-cyan-300">
+                <p className="mt-2.5 border-t border-zinc-800/90 pt-2.5 text-xs font-medium text-cyan-300">
                   {t('cardio.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
                 </p>
               ) : null}
             </section>
           ) : null}
 
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
+          <div className="flex flex-wrap gap-2 border-t border-zinc-800/80 pt-3">
             <button
               type="button"
               className="ui-btn ui-btn-primary"
-              disabled={!profileReady || revealBlocking}
+              disabled={(isCooperTab && !profileReady) || revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
@@ -308,10 +306,10 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
             <button
               type="button"
               className="ui-btn"
-              disabled={!profileReady || revealBlocking}
-              onClick={submitToRadar}
+              disabled={(isCooperTab && !profileReady) || revealBlocking}
+              onClick={submitAssessment}
             >
-              {t('cardio.submitRadar')}
+              {isSpecialtyTab ? t('cardio.submitSpecialty') : t('cardio.submitRadar')}
             </button>
             <Link className="ui-btn inline-flex" to={ROUTES.home}>
               {t('assessment.viewHomeRadar')}
@@ -320,14 +318,14 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
 
           {submitDone ? (
             <p className="text-sm text-accent-info" role="status">
-              {t('cardio.submitDone')}
+              {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
             </p>
           ) : null}
 
           <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
-            {activeTab === 'cooper' ? (
+            {isCooperTab ? (
               <AssessmentReferenceDisclosure
                 instanceId="cooper-info"
                 expanded={cooperInfoOpen}

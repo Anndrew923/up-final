@@ -120,7 +120,7 @@ describe('CardioAssessmentPage', () => {
       errorKey: null,
       clearError: vi.fn(),
       calculate: vi.fn(),
-      submitToRadar: vi.fn(),
+      submitAssessment: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue({
       title: 'Thermal Elite',
@@ -168,7 +168,7 @@ describe('CardioAssessmentPage', () => {
       errorKey: null,
       clearError: vi.fn(),
       calculate: vi.fn(),
-      submitToRadar: vi.fn(),
+      submitAssessment: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue(null);
 
@@ -199,7 +199,7 @@ describe('CardioAssessmentPage', () => {
       errorKey: null,
       clearError: vi.fn(),
       calculate: vi.fn(),
-      submitToRadar: vi.fn(),
+      submitAssessment: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue({
       title: 'Cruise Tier',
@@ -234,7 +234,7 @@ describe('CardioAssessmentPage', () => {
       errorKey: null,
       clearError: vi.fn(),
       calculate: vi.fn(),
-      submitToRadar: vi.fn(),
+      submitAssessment: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue(null);
 

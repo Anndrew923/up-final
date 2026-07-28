@@ -9,7 +9,7 @@ import { buildWidgetSnapshot, saveWidgetSnapshot } from '../services/widgetSnaps
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 
 /**
- * Home radar + overall: merges Cooper / 5 km over `scores.cardio` and saved SMM over `scores.muscleMass`
+ * Home radar + overall: merges Cooper-only over `scores.cardio` and saved SMM over `scores.muscleMass`
  * when local inputs + profile resolve (see `useMergedScoresFromLocalStores`).
  */
 export function useCoreSixRadar() {

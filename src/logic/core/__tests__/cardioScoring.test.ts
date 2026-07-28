@@ -190,20 +190,9 @@ describe('calculate5KmScore', () => {
   });
 
   it('female floor raw stays below radar clamp (no dead-zone collapse at 200)', () => {
-    const femaleProfile: PhysicalProfile = {
-      gender: 'female',
-      age: 28,
-      heightCm: 165,
-      weightKg: 58,
-      updatedAt: '',
-    };
     const raw = run5KmCeilingScore(RUN_5KM_FEMALE, 'female');
     expect(raw).toBe(180.05);
     expect(raw).toBeLessThan(200);
-    const merged = mergeScoreMapWithResolvedCardio({ cardio: 0 }, femaleProfile, {
-      run_5km: { totalSeconds: RUN_5KM_FEMALE.floorSeconds },
-    });
-    expect(merged.cardio).toBe(180.05);
     expect(clampScoreMapValue(raw)).toBe(raw);
   });
 });
@@ -222,7 +211,7 @@ describe('resolveCardioScoreForDisplay', () => {
     expect(capped).toBe(expected);
   });
 
-  it('prefers Cooper when distance and profile are valid', () => {
+  it('uses Cooper only when both Cooper and 5 km inputs exist', () => {
     const inputs: CardioInputsPersisted = {
       cardio: { distance: 2600 },
       run_5km: { totalSeconds: 25 * 60 },
@@ -235,31 +224,14 @@ describe('resolveCardioScoreForDisplay', () => {
       gender: maleProfile.gender,
     });
     expect(c).toBe(onlyCooper);
-    expect(onlyCooper).not.toBe(only5k);
     expect(c).not.toBe(only5k);
   });
 
-  it('falls back to 5 km when Cooper distance missing', () => {
+  it('never falls back to 5 km when Cooper distance missing', () => {
     const inputs: CardioInputsPersisted = {
       run_5km: { totalSeconds: 30 * 60 },
     };
-    expect(resolveCardioScoreForDisplay(maleProfile, inputs)).toBe(
-      calculate5KmScore({ totalSeconds: 30 * 60, gender: maleProfile.gender })
-    );
-  });
-
-  it('resolves female 5 km with decoupled norms', () => {
-    const femaleProfile: PhysicalProfile = {
-      gender: 'female',
-      age: 28,
-      heightCm: 165,
-      weightKg: 58,
-      updatedAt: '',
-    };
-    const inputs: CardioInputsPersisted = {
-      run_5km: { totalSeconds: 20 * 60 },
-    };
-    expect(resolveCardioScoreForDisplay(femaleProfile, inputs)).toBe(115.18);
+    expect(resolveCardioScoreForDisplay(maleProfile, inputs)).toBeNull();
   });
 });
 
@@ -332,6 +304,13 @@ describe('mergeScoreMapWithResolvedCardio', () => {
     });
     expect(merged.strength).toBe(50);
     expect(merged.cardio).toBeGreaterThan(10);
+  });
+
+  it('clears stale axis when only specialty 5 km remains', () => {
+    const merged = mergeScoreMapWithResolvedCardio({ cardio: 77 }, maleProfile, {
+      run_5km: { totalSeconds: 25 * 60 },
+    });
+    expect(merged.cardio).toBe(0);
   });
 
   it('keeps stored scores when no cardio inputs resolve', () => {

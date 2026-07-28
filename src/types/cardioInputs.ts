@@ -1,6 +1,7 @@
 /**
- * Local persistence shape for cardio assessment raw inputs (Cooper / 5 km).
- * Field names mirror reference-app (`run_5km`) for future cloud parity.
+ * Local persistence shape for cardio assessment raw inputs.
+ * `cardio` (Cooper) feeds the six-axis radar; `run_5km` is specialty-only (ladder `cardio_5km`).
+ * Field names mirror reference-app for cloud parity.
  */
 export interface CardioCooperPersisted {
   distance?: number;

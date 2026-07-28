@@ -8,6 +8,7 @@ import {
 } from '../logic/core/explosiveInputCaps';
 import {
   getPowerStandardsForProfile,
+  resolveExplosivePowerScoreForDisplay,
   tryComputeExplosiveAssessmentScore,
   type ExplosiveAssessmentComputeError,
   type ExplosivePowerBreakdown,
@@ -29,18 +30,22 @@ import {
 import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { PhysicalProfile } from '../types/userProfile';
-import type { PowerInputsPersisted } from '../types/powerInputs';
+import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../types/powerInputs';
 import { useScoreStore } from '../stores/scoreStore';
 import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 
 export type { ExplosiveCapNoticeInterpolation };
 export type { ExplosivePowerNormAnchors };
 
+export type ExplosiveAssessmentTab = 'jumps' | 'sprint';
+
 export type ExplosivePageErrorKey = ExplosiveAssessmentComputeError | null;
 
 export interface UseExplosiveAssessmentPageResult {
   profile: PhysicalProfile | null;
   profileReady: boolean;
+  activeTab: ExplosiveAssessmentTab;
+  setActiveTab: (tab: ExplosiveAssessmentTab) => void;
   verticalJumpInput: string;
   setVerticalJumpInput: (v: string) => void;
   standingLongJumpInput: string;
@@ -48,8 +53,8 @@ export interface UseExplosiveAssessmentPageResult {
   sprintInput: string;
   setSprintInput: (v: string) => void;
   /**
-   * Metric (cm / s) strings for scoring + ladder supplemental builders.
-   * WHY: UI may show inches; core formulas and Firestore summaries stay metric-only.
+   * Tab-scoped metric strings for scoring + ladder (inactive tab fields blanked).
+   * WHY: Mirror cardio — sync bar uploads only the active specialty/core surface.
    */
   metricScoringInputs: {
     verticalJumpInput: string;
@@ -58,16 +63,18 @@ export interface UseExplosiveAssessmentPageResult {
   };
   previewScore: number | null;
   previewBreakdown: ExplosivePowerBreakdown | null;
-  /** Present after successful compute/submit when any input hit an elite model cap/floor — for i18n only. */
   capNoticeInterpolation: ExplosiveCapNoticeInterpolation | null;
-  /** Resolved norm rows for the current profile (null if profile incomplete or age outside 12–80 tables). */
   powerNormAnchors: ExplosivePowerNormAnchors | null;
   submitDone: boolean;
   errorKey: ExplosivePageErrorKey;
   clearError: () => void;
   calculate: () => void;
   persistToDashboard: () => boolean;
-  submitToRadar: () => void;
+  /**
+   * Persist active tab (jumps → radar axis + home resonance; sprint → specialty only).
+   * WHY: Name reflects tab-scoped submit, not “always write radar”.
+   */
+  submitAssessment: () => void;
 }
 
 function resolveExplosiveCapNoticeInterpolation(
@@ -82,7 +89,6 @@ function mergePersisted(): PowerInputsPersisted {
   return loadPowerInputs() ?? {};
 }
 
-/** Empty stays empty; invalid stays as-is so core validators surface the right error. */
 function toMetricLengthField(raw: string, unitSystem: UnitSystem): string {
   const trimmed = raw.trim();
   if (trimmed === '') return '';
@@ -113,12 +119,31 @@ function readInitialForm(unitSystem: UnitSystem): {
   };
 }
 
+function mergeExplosiveBlockForTab(
+  prev: ExplosivePowerRawPersisted | undefined,
+  tab: ExplosiveAssessmentTab,
+  persisted: ExplosivePowerRawPersisted
+): ExplosivePowerRawPersisted {
+  const next: ExplosivePowerRawPersisted = { ...(prev ?? {}) };
+  if (tab === 'jumps') {
+    if (persisted.verticalJumpCm != null) next.verticalJumpCm = persisted.verticalJumpCm;
+    else delete next.verticalJumpCm;
+    if (persisted.standingLongJumpCm != null) next.standingLongJumpCm = persisted.standingLongJumpCm;
+    else delete next.standingLongJumpCm;
+  } else {
+    if (persisted.sprintSeconds != null) next.sprintSeconds = persisted.sprintSeconds;
+    else delete next.sprintSeconds;
+  }
+  return next;
+}
+
 export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
   const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
   const prevUnitSystemRef = useRef(unitSystem);
   const [profile, setProfile] = useState(loadPhysicalProfile);
+  const [activeTab, setActiveTabState] = useState<ExplosiveAssessmentTab>('jumps');
   const [form, setForm] = useState(() => readInitialForm(unitSystem));
   const verticalJumpInput = form.verticalJump;
   const standingLongJumpInput = form.standingLongJump;
@@ -139,22 +164,32 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     useState<ExplosiveCapNoticeInterpolation | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
   const [errorKey, setErrorKey] = useState<ExplosivePageErrorKey>(null);
+  const lastPersistWroteRadarAxisRef = useRef(false);
 
   const profileReady = isPhysicalProfileComplete(profile);
 
-  const metricScoringInputs = useMemo(
-    () => ({
-      verticalJumpInput: toMetricLengthField(verticalJumpInput, unitSystem),
-      standingLongJumpInput: toMetricLengthField(standingLongJumpInput, unitSystem),
-      sprintInput,
-    }),
-    [sprintInput, standingLongJumpInput, unitSystem, verticalJumpInput]
-  );
+  const metricScoringInputs = useMemo(() => {
+    const vj = toMetricLengthField(verticalJumpInput, unitSystem);
+    const slj = toMetricLengthField(standingLongJumpInput, unitSystem);
+    if (activeTab === 'jumps') {
+      return { verticalJumpInput: vj, standingLongJumpInput: slj, sprintInput: '' };
+    }
+    return { verticalJumpInput: '', standingLongJumpInput: '', sprintInput };
+  }, [activeTab, sprintInput, standingLongJumpInput, unitSystem, verticalJumpInput]);
 
   const powerNormAnchors = useMemo((): ExplosivePowerNormAnchors | null => {
     if (!profileReady || !profile) return null;
     return getPowerStandardsForProfile(profile);
   }, [profile, profileReady]);
+
+  const setActiveTab = useCallback((tab: ExplosiveAssessmentTab) => {
+    setActiveTabState(tab);
+    setPreviewScore(null);
+    setPreviewBreakdown(null);
+    setCapNoticeInterpolation(null);
+    setSubmitDone(false);
+    setErrorKey(null);
+  }, []);
 
   useEffect(() => {
     const prev = prevUnitSystemRef.current;
@@ -167,7 +202,6 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     }));
   }, [unitSystem]);
 
-  /** Inputs or baseline (age/sex/height/weight) change → prior preview is no longer valid. */
   useEffect(() => {
     queueMicrotask(() => {
       setPreviewScore(null);
@@ -176,7 +210,7 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       setSubmitDone(false);
       setErrorKey(null);
     });
-  }, [verticalJumpInput, standingLongJumpInput, sprintInput, profile, unitSystem]);
+  }, [verticalJumpInput, standingLongJumpInput, sprintInput, profile, unitSystem, activeTab]);
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -187,7 +221,8 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
 
   const applySuccessfulExplosivePreview = useCallback(
     (result: {
-      score: number;
+      score: number | null;
+      writesRadarAxis: boolean;
       breakdown: ExplosivePowerBreakdown;
       capApplied: ExplosiveCapApplied;
     }) => {
@@ -233,16 +268,27 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     }
 
     const prev = mergePersisted();
+    const nextBlock = mergeExplosiveBlockForTab(prev.explosivePower, activeTab, result.persisted);
     savePowerInputs({
       ...prev,
-      explosivePower: result.persisted,
+      explosivePower: nextBlock,
     });
-    setStoreScore('explosivePower', result.score);
+
+    if (activeTab === 'jumps' && result.writesRadarAxis && result.score != null) {
+      setStoreScore('explosivePower', result.score);
+      lastPersistWroteRadarAxisRef.current = true;
+    } else {
+      // Specialty tab (or jumps with no axis): keep jump-derived axis if present, else clear.
+      const axis = resolveExplosivePowerScoreForDisplay(profile, { explosivePower: nextBlock });
+      setStoreScore('explosivePower', axis ?? 0);
+      lastPersistWroteRadarAxisRef.current = activeTab === 'jumps' && axis != null;
+    }
     applySuccessfulExplosivePreview(result);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
     return true;
   }, [
+    activeTab,
     applySuccessfulExplosivePreview,
     metricScoringInputs,
     profile,
@@ -250,14 +296,17 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     setStoreScore,
   ]);
 
-  const submitToRadar = useCallback(() => {
+  const submitAssessment = useCallback(() => {
     if (!persistToDashboard()) return;
+    if (!lastPersistWroteRadarAxisRef.current) return;
     navigateHomeWithResonance(navigate);
   }, [navigate, persistToDashboard]);
 
   return {
     profile,
     profileReady,
+    activeTab,
+    setActiveTab,
     verticalJumpInput,
     setVerticalJumpInput,
     standingLongJumpInput,
@@ -274,6 +323,6 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     clearError,
     calculate,
     persistToDashboard,
-    submitToRadar,
+    submitAssessment,
   };
 }
