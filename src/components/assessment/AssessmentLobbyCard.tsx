@@ -1,5 +1,4 @@
 import { useCallback, useMemo, type CSSProperties, type KeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
-import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ASSESSMENT_LOBBY_STATUS_BAR_CLASS,
@@ -10,8 +9,6 @@ import { buildLobbyCardAuraSurfaceStyle } from '../../config/sharedAxisAccentTok
 import { cn } from '../../lib/cn';
 import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
 import type { RoutePath } from '../../config/routes';
-
-const MotionLink = motion.create(Link);
 
 export interface AssessmentLobbyCardProps {
   cardKey: AssessmentLobbyCardKey;
@@ -32,6 +29,9 @@ function isModifiedPointerEvent(event: {
 /**
  * Presentational assessment lobby card (WHY): Whole card is the tap target—no faux CTA bar.
  * Axis aurora gradient + neon border + status bar share one RGB source from sharedAxisAccentTokens.
+ *
+ * WHY no `motion.create(Link)`: Framer Motion + RR `Link` composite breaks under Vite HMR
+ * (Invalid Hook Call / useContext null) and blacks out the shell. CSS active scale keeps the feel.
  */
 export function AssessmentLobbyCard({
   cardKey,
@@ -49,14 +49,10 @@ export function AssessmentLobbyCard({
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);
 
-  const handleClick = useCallback((event: ReactMouseEvent<HTMLAnchorElement>) => {
-    if (isModifiedPointerEvent(event) || event.button !== 0) return;
-    event.preventDefault();
-  }, []);
-
-  const handleTap = useCallback(
-    (event: PointerEvent | MouseEvent | TouchEvent) => {
-      if (isModifiedPointerEvent(event)) return;
+  const handleClick = useCallback(
+    (event: ReactMouseEvent<HTMLAnchorElement>) => {
+      if (isModifiedPointerEvent(event) || event.button !== 0) return;
+      event.preventDefault();
       goToAssessment();
     },
     [goToAssessment]
@@ -72,18 +68,16 @@ export function AssessmentLobbyCard({
   );
 
   return (
-    <MotionLink
+    <Link
       to={to}
       aria-label={title}
       style={surfaceStyle}
-      whileTap={{ scale: 0.99 }}
       onClick={handleClick}
-      onTap={handleTap}
       onKeyDown={handleKeyDown}
       className={cn(
         'group relative block touch-manipulation overflow-hidden rounded-2xl border p-3 pl-4',
         'backdrop-blur-sm shadow-panel',
-        'transition-all duration-300',
+        'transition-all duration-300 active:scale-[0.99]',
         'hover:border-[color:var(--lobby-border-hover)]',
         'hover:shadow-[0_0_24px_var(--lobby-glow-hover),0_10px_30px_rgba(0,0,0,0.35)]',
         className
@@ -108,6 +102,6 @@ export function AssessmentLobbyCard({
           </p>
         ) : null}
       </div>
-    </MotionLink>
+    </Link>
   );
 }

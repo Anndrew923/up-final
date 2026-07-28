@@ -30,10 +30,6 @@ import {
 import type { FormatUnitOptions } from '../logic/core/unitConverters';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
-export interface StrengthAssessmentPageProps {
-  onBack?: () => void;
-}
-
 function fmtBranchLine(
   t: (key: string, opts?: Record<string, string | number>) => string,
   b: { weightKg: number; reps: number; oneRepMax: number; finalScore: number },
@@ -49,7 +45,7 @@ function fmtBranchLine(
   });
 }
 
-const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => {
+const StrengthAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const { labels, formatWeight, unitSystem, setUnitSystem } = useUnit();
   const [howToOpen, setHowToOpen] = useState(false);
@@ -141,11 +137,7 @@ const StrengthAssessmentPage: FC<StrengthAssessmentPageProps> = ({ onBack }) => 
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader
-          kicker={t('strength.kicker')}
-          title={t('strength.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('strength.kicker')} title={t('strength.title')} />
 
         {!profileReady ? (
           <section

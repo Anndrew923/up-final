@@ -67,10 +67,35 @@ export function isHomeRoutePath(pathname: string): boolean {
 /**
  * Tools deck **tab only** (`/training-tools`).
  * WHY: Compact HUD clearance for the deck list. Calculator subpages keep full `shell-top`
- * so their top-right「返回」clears the fixed HUD avatar row (no overlap).
+ * so page titles clear the fixed HUD row (avatar + optional back).
  */
 export function isToolsTabRoutePath(pathname: string): boolean {
   return pathname === ROUTES.tools || pathname.startsWith(`${ROUTES.tools}/`);
+}
+
+/** True for the assessment lobby tab (`/skill-tree`) and nested lobby paths. */
+export function isAssessmentTabRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.assessment || pathname.startsWith(`${ROUTES.assessment}/`);
+}
+
+/** True for the history tab (`/history`) and nested history paths. */
+export function isHistoryTabRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.history || pathname.startsWith(`${ROUTES.history}/`);
+}
+
+/**
+ * Sub-pages that show the fixed HUD back control (left of avatar).
+ * WHY: iOS has no system back affordance — primary bottom tabs must not show a redundant back,
+ * while assessment/tools/settings stacks need a persistent top-left exit that survives scroll.
+ */
+export function isHudBackRoutePath(pathname: string): boolean {
+  if (isHomeRoutePath(pathname)) return false;
+  if (isLadderRoutePath(pathname)) return false;
+  if (isAssessmentTabRoutePath(pathname)) return false;
+  if (isHistoryTabRoutePath(pathname)) return false;
+  if (isToolsTabRoutePath(pathname)) return false;
+  if (pathname === ROUTES.root || pathname === ROUTES.authChoice) return false;
+  return true;
 }
 
 /**

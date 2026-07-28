@@ -24,11 +24,7 @@ import { ARM_SIZE_MAX_CM } from '../logic/core/armSizeScoring';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useScoreStore } from '../stores/scoreStore';
 
-export interface ArmSizeAssessmentPageProps {
-  onBack?: () => void;
-}
-
-const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
+const ArmSizeAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const { labels, unitSystem, setUnitSystem, displayLength } = useUnit();
   const armMaxDisplay = Number(displayLength(ARM_SIZE_MAX_CM).toFixed(1));
@@ -101,11 +97,7 @@ const ArmSizeAssessmentPage: FC<ArmSizeAssessmentPageProps> = ({ onBack }) => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader
-          kicker={t('armSize.kicker')}
-          title={t('armSize.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('armSize.kicker')} title={t('armSize.title')} />
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <div className="flex justify-end">

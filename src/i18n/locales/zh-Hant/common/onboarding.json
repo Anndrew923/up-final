@@ -2,14 +2,15 @@
   "onboarding": {
     "overlayAria": "核心通電協議",
     "scrimDismissBlocked": "初始化未完成，請先執行基準校準",
-    "next": "NEXT // 下一步",
-    "ignite": "IGNITE // 點火啟動",
+    "next": "下一步",
+    "ignite": "點火啟動",
+    "phase": "階段",
     "phase1": {
-      "kicker": "Phase 01 · 系統喚醒",
+      "kicker": "{{phase}} 01 · 系統喚醒",
       "body": "系統喚醒完畢，載具待命——準備榨出你的極限馬力。"
     },
     "profileInput": {
-      "kicker": "Phase 01.5 · 規格登錄",
+      "kicker": "{{phase}} 01.5 · 規格登錄",
       "body": "輸入性別、年齡、身高、體重，鎖定六軸評測對照基準。",
       "lockHint": "載具規格未寫入。請儲存參數以解鎖通電程序。"
     },
@@ -26,7 +27,7 @@
         },
         "cardio": {
           "label": "心肺耐力／續航力",
-          "desc": "Cooper 雙軌推估有氧與 VO2 Max。"
+          "desc": "Cooper 12分鐘跑雙軌推估有氧與 VO2 Max。"
         },
         "skeletalMuscle": {
           "label": "骨骼肌量／車體外觀",
@@ -47,12 +48,12 @@
       }
     },
     "phase2": {
-      "kicker": "Phase 02 · 性能總覽",
+      "kicker": "{{phase}} 02 · 性能總覽",
       "body": "六維儀表就緒，數據不說謊——輸出由你定義。"
     },
     "phase3": {
-      "kicker": "Phase 03 · 全車性能校準",
-      "body": "進入 DYNO，寫入極限數據，啟動首場底盤校準。"
+      "kicker": "{{phase}} 03 · 全車性能校準",
+      "body": "進入 Dyno，寫入極限數據，啟動首場底盤校準。"
     }
   }
 }

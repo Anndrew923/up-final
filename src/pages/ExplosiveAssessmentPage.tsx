@@ -27,11 +27,7 @@ import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
-export interface ExplosiveAssessmentPageProps {
-  onBack?: () => void;
-}
-
-const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) => {
+const ExplosiveAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [referenceOpen, setReferenceOpen] = useState(false);
 
@@ -172,11 +168,7 @@ const ExplosiveAssessmentPage: FC<ExplosiveAssessmentPageProps> = ({ onBack }) =
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
-        <AssessmentPageHeader
-          kicker={t('explosive.kicker')}
-          title={t('explosive.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('explosive.kicker')} title={t('explosive.title')} />
 
         {!profileReady ? (
           <section

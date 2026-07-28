@@ -19,9 +19,6 @@ type DebugMetric = LeaderboardShardId;
 
 const METRICS: DebugMetric[] = [...KNOWN_LEADERBOARD_SHARD_IDS];
 
-interface LeaderboardDebugPageProps {
-  onBack: () => void;
-}
 
 interface DebugLogItem {
   id: string;
@@ -29,7 +26,7 @@ interface DebugLogItem {
   payload: unknown;
 }
 
-export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPageProps) {
+export default function LeaderboardDebugPage() {
   const { t } = useTranslation();
 
   const purchaseStatus = useEntitlementStore((state) => state.purchaseStatus);
@@ -120,14 +117,9 @@ export default function LeaderboardDebugPage({ onBack }: LeaderboardDebugPagePro
 
   return (
     <main className="ui-shell flex min-h-screen flex-col gap-5 text-zinc-100">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('debugTitle', { ns: 'common' })}</h1>
-          <p className="text-sm text-zinc-300">{t('debugSubtitle', { ns: 'common' })}</p>
-        </div>
-        <button type="button" onClick={onBack} className="ui-btn">
-          {t('back', { ns: 'common' })}
-        </button>
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold">{t('debugTitle', { ns: 'common' })}</h1>
+        <p className="text-sm text-zinc-300">{t('debugSubtitle', { ns: 'common' })}</p>
       </header>
 
       <section className="ui-card grid gap-4 md:grid-cols-2">

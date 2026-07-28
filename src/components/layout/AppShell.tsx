@@ -21,6 +21,7 @@ import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
+import HudBackControl from './HudBackControl';
 import HudProfileControls from './HudProfileControls';
 
 export interface AppShellProps {
@@ -76,8 +77,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       >
         {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
         <div
-          className={`shell-hud-slot flex min-h-14 shrink-0 items-center px-4 pt-[env(safe-area-inset-top,0px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          className={`shell-hud-slot flex min-h-14 shrink-0 items-center gap-3 px-4 pt-[env(safe-area-inset-top,0px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >
+          <HudBackControl />
           <HudProfileControls />
         </div>
       </div>

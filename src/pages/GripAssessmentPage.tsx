@@ -22,11 +22,7 @@ import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessment
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
 
-export interface GripAssessmentPageProps {
-  onBack?: () => void;
-}
-
-const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
+const GripAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [referenceOpen, setReferenceOpen] = useState(false);
   const { labels, unitSystem, setUnitSystem, formatWeight } = useUnit();
@@ -97,11 +93,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader
-          kicker={t('grip.kicker')}
-          title={t('grip.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('grip.kicker')} title={t('grip.title')} />
 
         {!profileReady ? (
           <section

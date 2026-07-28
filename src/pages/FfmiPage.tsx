@@ -18,11 +18,7 @@ import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 
-export interface FfmiPageProps {
-  onBack?: () => void;
-}
-
-const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
+const FfmiPage: FC = () => {
   const { t } = useTranslation('common');
   const {
     profileReady,
@@ -37,7 +33,6 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
     calculate,
     persistToDashboard,
     submitToRadar,
-    goHome,
   } = useFfmiPage();
 
   const reveal = useAssessmentRevealFlow({
@@ -87,11 +82,7 @@ const FfmiPage: FC<FfmiPageProps> = ({ onBack }) => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader
-          kicker={t('ffmi.kicker')}
-          title={t('ffmi.title')}
-          onBack={onBack ?? goHome}
-        />
+        <AssessmentPageHeader kicker={t('ffmi.kicker')} title={t('ffmi.title')} />
 
         {!profileReady ? (
           <section

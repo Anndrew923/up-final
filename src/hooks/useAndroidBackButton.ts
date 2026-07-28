@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../config/nav.config';
 import { ROUTES } from '../config/routes';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { canNavigateHistoryBack, resolveHudBackFallback } from '../lib/hudBackNavigation';
 import { hapticService } from '../services/hapticService';
 
 /** Tab roots + auth gate — first back press opens exit confirm instead of leaving. */
@@ -20,7 +21,7 @@ export interface UseAndroidBackButtonResult {
 /**
  * Native Android back-button guard (GOAT Meter pattern).
  * WHY: Capacitor WebView exits immediately on back at history root; we intercept at tab roots
- * with a confirm modal and route sub-pages through navigate(-1).
+ * with a confirm modal and route sub-pages through the same HUD back pop/fallback contract.
  */
 export function useAndroidBackButton(): UseAndroidBackButtonResult {
   const navigate = useNavigate();
@@ -28,9 +29,11 @@ export function useAndroidBackButton(): UseAndroidBackButtonResult {
   const [exitModalOpen, setExitModalOpen] = useState(false);
 
   const pathnameRef = useRef(location.pathname);
+  const searchRef = useRef(location.search);
   const exitModalOpenRef = useRef(exitModalOpen);
 
   pathnameRef.current = location.pathname;
+  searchRef.current = location.search;
   exitModalOpenRef.current = exitModalOpen;
 
   const closeExitModal = useCallback(() => {
@@ -55,7 +58,11 @@ export function useAndroidBackButton(): UseAndroidBackButtonResult {
         return;
       }
 
-      navigate(-1);
+      if (canNavigateHistoryBack(window.history.state)) {
+        navigate(-1);
+        return;
+      }
+      navigate(resolveHudBackFallback(pathname, searchRef.current), { replace: true });
     };
 
     const listenerPromise = App.addListener('backButton', handler);

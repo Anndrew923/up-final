@@ -24,11 +24,7 @@ import {
   SMM_KG_CEILING_MALE,
 } from '../logic/core/muscleScoring';
 
-export interface MuscleAssessmentPageProps {
-  onBack?: () => void;
-}
-
-const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
+const MuscleAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [standardsInfoOpen, setStandardsInfoOpen] = useState(false);
 
@@ -113,11 +109,7 @@ const MuscleAssessmentPage: FC<MuscleAssessmentPageProps> = ({ onBack }) => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader
-          kicker={t('muscle.kicker')}
-          title={t('muscle.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('muscle.kicker')} title={t('muscle.title')} />
 
         {!profileReady ? (
           <section

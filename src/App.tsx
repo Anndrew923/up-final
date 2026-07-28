@@ -1,5 +1,5 @@
 import { Suspense, lazy, type ComponentType, type ReactElement } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
 import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
@@ -68,88 +68,11 @@ function withRouteSuspense(element: ReactElement): ReactElement {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 }
 
-function JoinArenaRoute() {
-  const navigate = useNavigate();
-
-  return withRouteSuspense(<JoinArenaPage onBack={() => navigate(-1)} />);
-}
-
-function SettingsRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<SettingsPage onBack={() => navigate(-1)} />);
-}
-
-function AboutRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<AboutPage onBack={() => navigate(-1)} />);
-}
-
-function ContactRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<ContactPage onBack={() => navigate(-1)} />);
-}
-
-function PrivacyPolicyRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<PrivacyPolicyPage onBack={() => navigate(-1)} />);
-}
-
 function LeaderboardDebugRoute() {
-  const navigate = useNavigate();
   if (!import.meta.env.DEV) {
     return <Navigate to={ROUTES.home} replace />;
   }
-  return withRouteSuspense(<LeaderboardDebugPage onBack={() => navigate(-1)} />);
-}
-
-function FfmiRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<FfmiPage onBack={() => navigate(-1)} />);
-}
-
-function CardioRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<CardioAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function MuscleRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<MuscleAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function ExplosiveRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<ExplosiveAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function StrengthRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<StrengthAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function GripRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<GripAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function ArmSizeRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<ArmSizeAssessmentPage onBack={() => navigate(-1)} />);
-}
-
-function OneRmCalculatorRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<OneRmCalculatorPage onBack={() => navigate(-1)} />);
-}
-
-function PlateCalculatorRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<PlateCalculatorPage onBack={() => navigate(-1)} />);
-}
-
-function SomatotypeLabRoute() {
-  const navigate = useNavigate();
-  return withRouteSuspense(<SomatotypeLabPage onBack={() => navigate(-1)} />);
+  return withRouteSuspense(<LeaderboardDebugPage />);
 }
 
 function AuthChoiceOnlyRoutes() {
@@ -182,36 +105,63 @@ function MainAppRoutes({ isGoogleSignedIn }: { isGoogleSignedIn: boolean }) {
             />
           );
         })}
-        <Route path={toRelativeRoutePath(ROUTES.settings)} element={<SettingsRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.about)} element={<AboutRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.contact)} element={<ContactRoute />} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.settings)}
+          element={withRouteSuspense(<SettingsPage />)}
+        />
+        <Route path={toRelativeRoutePath(ROUTES.about)} element={withRouteSuspense(<AboutPage />)} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.contact)}
+          element={withRouteSuspense(<ContactPage />)}
+        />
         <Route
           path={toRelativeRoutePath(ROUTES.privacyPolicy)}
-          element={<PrivacyPolicyRoute />}
+          element={withRouteSuspense(<PrivacyPolicyPage />)}
         />
-        <Route path={toRelativeRoutePath(ROUTES.joinArena)} element={<JoinArenaRoute />} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.joinArena)}
+          element={withRouteSuspense(<JoinArenaPage />)}
+        />
         <Route
           path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
           element={<LeaderboardDebugRoute />}
         />
-        <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={<FfmiRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.cardio)} element={<CardioRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.muscle)} element={<MuscleRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.explosive)} element={<ExplosiveRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.strength)} element={<StrengthRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.grip)} element={<GripRoute />} />
-        <Route path={toRelativeRoutePath(ROUTES.armSize)} element={<ArmSizeRoute />} />
+        <Route path={toRelativeRoutePath(ROUTES.ffmi)} element={withRouteSuspense(<FfmiPage />)} />
+        <Route
+          path={toRelativeRoutePath(ROUTES.cardio)}
+          element={withRouteSuspense(<CardioAssessmentPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.muscle)}
+          element={withRouteSuspense(<MuscleAssessmentPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.explosive)}
+          element={withRouteSuspense(<ExplosiveAssessmentPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.strength)}
+          element={withRouteSuspense(<StrengthAssessmentPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.grip)}
+          element={withRouteSuspense(<GripAssessmentPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.armSize)}
+          element={withRouteSuspense(<ArmSizeAssessmentPage />)}
+        />
         <Route
           path={toRelativeRoutePath(ROUTES.oneRmCalculator)}
-          element={<OneRmCalculatorRoute />}
+          element={withRouteSuspense(<OneRmCalculatorPage />)}
         />
         <Route
           path={toRelativeRoutePath(ROUTES.plateCalculator)}
-          element={<PlateCalculatorRoute />}
+          element={withRouteSuspense(<PlateCalculatorPage />)}
         />
         <Route
           path={toRelativeRoutePath(ROUTES.somatotypeLab)}
-          element={<SomatotypeLabRoute />}
+          element={withRouteSuspense(<SomatotypeLabPage />)}
         />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>

@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
@@ -13,13 +12,8 @@ import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
 import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
 
-export interface PlateCalculatorPageProps {
-  onBack?: () => void;
-}
-
-const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
+const PlateCalculatorPage: FC = () => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
   const { unitSystem, setUnitSystem, labels } = useUnit();
   const {
     targetTotalInput,
@@ -80,8 +74,6 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('tools.calculators.plates.kicker')}
           title={t('tools.calculators.plates.title')}
-          backDisabled={isBlocking}
-          onBack={onBack ?? (() => navigate(-1))}
         />
 
         <fieldset disabled={isBlocking} className="min-w-0 border-0 p-0">

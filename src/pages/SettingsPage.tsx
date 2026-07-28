@@ -3,13 +3,9 @@ import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
-export interface SettingsPageProps {
-  onBack?: () => void;
-}
-
 const RESTORE_TOAST_MS = 3500;
 
-const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
+const SettingsPage: FC = () => {
   const { t } = useTranslation('common');
   const [restoreToastVisible, setRestoreToastVisible] = useState(false);
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
@@ -54,18 +50,11 @@ const SettingsPage: FC<SettingsPageProps> = ({ onBack }) => {
 
   return (
     <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
-            {t('settings.kicker')}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
-        </div>
-        {onBack ? (
-          <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-            {t('back')}
-          </button>
-        ) : null}
+      <header className="space-y-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
+          {t('settings.kicker')}
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
       </header>
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">

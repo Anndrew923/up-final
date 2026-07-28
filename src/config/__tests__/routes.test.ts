@@ -3,6 +3,7 @@ import {
   ROUTES,
   isCompactShellRoutePath,
   isHomeRoutePath,
+  isHudBackRoutePath,
   isJoinArenaRoutePath,
   isLadderRoutePath,
   isOneRmCalculatorRoutePath,
@@ -108,7 +109,7 @@ describe('isCompactShellRoutePath', () => {
     expect(isCompactShellRoutePath(ROUTES.tools)).toBe(true);
   });
 
-  it('keeps calculator subpages on full shell so back clears HUD', () => {
+  it('keeps calculator subpages on full shell so titles clear HUD', () => {
     expect(isCompactShellRoutePath(ROUTES.oneRmCalculator)).toBe(false);
     expect(isCompactShellRoutePath(ROUTES.plateCalculator)).toBe(false);
     expect(isCompactShellRoutePath(ROUTES.somatotypeLab)).toBe(false);
@@ -117,5 +118,28 @@ describe('isCompactShellRoutePath', () => {
   it('rejects other primary tabs', () => {
     expect(isCompactShellRoutePath(ROUTES.history)).toBe(false);
     expect(isCompactShellRoutePath(ROUTES.assessment)).toBe(false);
+  });
+});
+
+describe('isHudBackRoutePath', () => {
+  it('hides back on primary bottom-nav tabs', () => {
+    expect(isHudBackRoutePath(ROUTES.home)).toBe(false);
+    expect(isHudBackRoutePath(ROUTES.assessment)).toBe(false);
+    expect(isHudBackRoutePath(ROUTES.ladder)).toBe(false);
+    expect(isHudBackRoutePath(ROUTES.history)).toBe(false);
+    expect(isHudBackRoutePath(ROUTES.tools)).toBe(false);
+  });
+
+  it('shows back on assessment, settings, and calculator subpages', () => {
+    expect(isHudBackRoutePath(ROUTES.strength)).toBe(true);
+    expect(isHudBackRoutePath(ROUTES.settings)).toBe(true);
+    expect(isHudBackRoutePath(ROUTES.joinArena)).toBe(true);
+    expect(isHudBackRoutePath(ROUTES.oneRmCalculator)).toBe(true);
+    expect(isHudBackRoutePath(ROUTES.ffmi)).toBe(true);
+  });
+
+  it('hides back on auth entry routes', () => {
+    expect(isHudBackRoutePath(ROUTES.root)).toBe(false);
+    expect(isHudBackRoutePath(ROUTES.authChoice)).toBe(false);
   });
 });

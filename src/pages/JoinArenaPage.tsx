@@ -27,10 +27,6 @@ import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { selectEntitlementState } from '../stores/entitlementSelectors';
 
-export interface JoinArenaPageProps {
-  onBack?: () => void;
-}
-
 type ResultModalState =
   | { open: false }
   | {
@@ -39,7 +35,7 @@ type ResultModalState =
       failureReason?: ProSubscriptionFailureReason;
     };
 
-const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
+const JoinArenaPage: FC = () => {
   const { t } = useTranslation(['arena', 'common']);
   const navigate = useNavigate();
   const location = useLocation();
@@ -134,14 +130,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
     authStatus === 'loading' ||
     (uiGate.kind === 'pro' && subscriptionStatus === 'pro' && isPro);
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    navigate(returnTo);
-  };
-
   const primaryCtaLabel = (() => {
     if (billingBusy || authBusy || authStatus === 'loading') return t('billingLoading');
     if (isDynoFunnel) {
@@ -174,17 +162,6 @@ const JoinArenaPage: FC<JoinArenaPageProps> = ({ onBack }) => {
           <div className="absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
           <div className="absolute -right-32 bottom-12 h-80 w-80 rounded-full bg-accent-info/10 blur-[110px]" />
         </div>
-
-        {onBack ? (
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label={t('common:back')}
-            className="absolute left-0 top-0 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800/80 bg-zinc-950/70 text-lg text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-100"
-          >
-            ←
-          </button>
-        ) : null}
 
         <header className="space-y-2.5">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-accent-info">

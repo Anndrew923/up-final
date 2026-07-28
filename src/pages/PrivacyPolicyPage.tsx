@@ -2,11 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toSupportedLng } from '../i18n';
 
-export interface PrivacyPolicyPageProps {
-  onBack?: () => void;
-}
-
-const PrivacyPolicyPage: FC<PrivacyPolicyPageProps> = ({ onBack }) => {
+const PrivacyPolicyPage: FC = () => {
   const { t, i18n } = useTranslation('common');
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
   const policyHref =
@@ -17,19 +13,12 @@ const PrivacyPolicyPage: FC<PrivacyPolicyPageProps> = ({ onBack }) => {
 
   return (
     <main className="ui-shell relative max-w-4xl space-y-6 text-zinc-100">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
-            {t('privacy.kicker')}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('privacy.title')}</h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">{t('privacy.subtitle')}</p>
-        </div>
-        {onBack ? (
-          <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-            {t('back')}
-          </button>
-        ) : null}
+      <header className="space-y-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
+          {t('privacy.kicker')}
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('privacy.title')}</h1>
+        <p className="max-w-2xl text-sm leading-relaxed text-zinc-400">{t('privacy.subtitle')}</p>
       </header>
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 shadow-panel backdrop-blur">

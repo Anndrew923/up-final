@@ -32,11 +32,12 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
 
   if (!active) return null;
 
+  const phaseLabel = t('onboarding.phase');
   const phaseKicker =
     variant === 'profile_input'
-      ? t('onboarding.profileInput.kicker')
+      ? t('onboarding.profileInput.kicker', { phase: phaseLabel })
       : narrativePhase
-        ? t(`onboarding.phase${narrativePhase}.kicker`)
+        ? t(`onboarding.phase${narrativePhase}.kicker`, { phase: phaseLabel })
         : '';
   const showContinue = typewriterDone && step !== 'phase3';
   const useSpotlightScrim = spotlightRect != null;

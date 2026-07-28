@@ -1,29 +1,18 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export interface ContactPageProps {
-  onBack?: () => void;
-}
-
-const ContactPage: FC<ContactPageProps> = ({ onBack }) => {
+const ContactPage: FC = () => {
   const { t } = useTranslation('common');
   const supportEmail = t('contact.supportEmail');
 
   return (
     <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
-            {t('contact.kicker')}
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('contact.title')}</h1>
-          <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('contact.subtitle')}</p>
-        </div>
-        {onBack ? (
-          <button type="button" className="ui-btn shrink-0" onClick={onBack}>
-            {t('back')}
-          </button>
-        ) : null}
+      <header className="space-y-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
+          {t('contact.kicker')}
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('contact.title')}</h1>
+        <p className="max-w-xl text-sm leading-relaxed text-zinc-400">{t('contact.subtitle')}</p>
       </header>
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">

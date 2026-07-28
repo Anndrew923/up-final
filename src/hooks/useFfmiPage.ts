@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PhysicalProfile } from '../types/userProfile';
-import { ROUTES } from '../config/routes';
 import {
   evaluateFfmiScoring,
   parseFfmiBodyFatPctInput,
@@ -46,7 +45,6 @@ export interface UseFfmiPageResult {
   persistToDashboard: () => boolean;
   submitToRadar: () => void;
   clearError: () => void;
-  goHome: () => void;
 }
 
 export function useFfmiPage(): UseFfmiPageResult {
@@ -158,10 +156,6 @@ export function useFfmiPage(): UseFfmiPageResult {
     navigateHomeWithResonance(navigate);
   }, [navigate, persistToDashboard]);
 
-  const goHome = useCallback(() => {
-    navigate(ROUTES.home);
-  }, [navigate]);
-
   return {
     profileReady,
     gender: profile && profileReady ? profile.gender : null,
@@ -176,6 +170,5 @@ export function useFfmiPage(): UseFfmiPageResult {
     persistToDashboard,
     submitToRadar,
     clearError,
-    goHome,
   };
 }

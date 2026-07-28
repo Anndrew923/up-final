@@ -2,14 +2,15 @@
   "onboarding": {
     "overlayAria": "Core Boot Protocol",
     "scrimDismissBlocked": "Initialization incomplete. Please execute baseline calibration.",
-    "next": "NEXT // 下一步",
-    "ignite": "IGNITE // 點火啟動",
+    "next": "NEXT",
+    "ignite": "IGNITE",
+    "phase": "Phase",
     "phase1": {
-      "kicker": "Phase 01 · System Wake",
+      "kicker": "{{phase}} 01 · System Wake",
       "body": "System wake complete. Chassis standby—ready to squeeze out your max horsepower."
     },
     "profileInput": {
-      "kicker": "Phase 01.5 · Spec Registration",
+      "kicker": "{{phase}} 01.5 · Spec Registration",
       "body": "Enter sex, age, height, and weight to lock your six-axis baseline.",
       "lockHint": "Chassis parameters unwritten. Save telemetry to unlock boot sequence."
     },
@@ -47,11 +48,11 @@
       }
     },
     "phase2": {
-      "kicker": "Phase 02 · Performance Overview",
+      "kicker": "{{phase}} 02 · Performance Overview",
       "body": "Six-axis cluster ready—your output, your rules."
     },
     "phase3": {
-      "kicker": "Phase 03 · Full-Vehicle Calibration",
+      "kicker": "{{phase}} 03 · Full-Vehicle Calibration",
       "body": "Enter the Dyno—commit threshold data and start baseline calibration."
     }
   }

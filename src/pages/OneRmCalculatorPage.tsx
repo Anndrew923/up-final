@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
@@ -14,13 +13,8 @@ import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
 import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
 
-export interface OneRmCalculatorPageProps {
-  onBack?: () => void;
-}
-
-const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
+const OneRmCalculatorPage: FC = () => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
   const { unitSystem, setUnitSystem, labels, displayWeight } = useUnit();
   const {
     weightInput,
@@ -73,8 +67,6 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
         <AssessmentPageHeader
           kicker={t('tools.calculators.oneRm.kicker')}
           title={t('tools.calculators.oneRm.title')}
-          backDisabled={isBlocking}
-          onBack={onBack ?? (() => navigate(-1))}
         />
 
         <fieldset disabled={isBlocking} className="min-w-0 border-0 p-0">

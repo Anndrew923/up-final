@@ -27,11 +27,7 @@ import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalo
 import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { loadPhysicalProfile } from '../services/localStorageService';
 
-export interface CardioAssessmentPageProps {
-  onBack?: () => void;
-}
-
-const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
+const CardioAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [cooperInfoOpen, setCooperInfoOpen] = useState(false);
   const [run5kmInfoOpen, setRun5kmInfoOpen] = useState(false);
@@ -138,11 +134,7 @@ const CardioAssessmentPage: FC<CardioAssessmentPageProps> = ({ onBack }) => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
-        <AssessmentPageHeader
-          kicker={t('cardio.kicker')}
-          title={t('cardio.title')}
-          onBack={onBack}
-        />
+        <AssessmentPageHeader kicker={t('cardio.kicker')} title={t('cardio.title')} />
 
         {!profileReady ? (
           <section

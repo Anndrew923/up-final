@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import DiagnosticOverlay from '../components/assessment/DiagnosticOverlay';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import SomatotypeReportModal from '../components/tools/SomatotypeReportModal';
@@ -8,10 +7,6 @@ import SomatotypeScientificAppendix from '../components/tools/SomatotypeScientif
 import { useSomatotypeLab } from '../hooks/useSomatotypeLab';
 import { useSomatotypeLabRitual } from '../hooks/useSomatotypeLabRitual';
 import { PHYSIQUE_TIERS, SOMATOTYPE_GENDERS } from '../logic/core/somatotypeLab';
-
-export interface SomatotypeLabPageProps {
-  onBack?: () => void;
-}
 
 const fieldClass =
   'mt-1.5 w-full rounded-lg border border-zinc-700 bg-black/40 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-accent-primary/60 disabled:cursor-not-allowed disabled:opacity-50';
@@ -23,9 +18,8 @@ const segmentClass = (selected: boolean) =>
       : 'border-zinc-700 bg-black/30 text-zinc-300 hover:border-zinc-500'
   }`;
 
-const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
+const SomatotypeLabPage: FC = () => {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
   const lab = useSomatotypeLab();
   const canAnalyze = lab.snapshot != null;
   const ritual = useSomatotypeLabRitual(canAnalyze, lab.snapshot);
@@ -53,8 +47,6 @@ const SomatotypeLabPage: FC<SomatotypeLabPageProps> = ({ onBack }) => {
       <AssessmentPageHeader
         kicker={t('tools.somatotypeLab.kicker')}
         title={t('tools.somatotypeLab.title')}
-        backDisabled={formLocked}
-        onBack={onBack ?? (() => navigate(-1))}
       />
 
       <fieldset
