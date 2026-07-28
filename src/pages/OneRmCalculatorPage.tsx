@@ -1,11 +1,10 @@
-import { useCallback, useMemo, useState, type FC } from 'react';
+import { useCallback, useMemo, useRef, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import OptionSelectSheet from '../components/home/OptionSelectSheet';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
-import ToolFloatingCalculateCta from '../components/tools/ToolFloatingCalculateCta';
 import ToolResultModal, {
   type ToolResultModalOneRmPayload,
 } from '../components/tools/ToolResultModal';
@@ -13,6 +12,7 @@ import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useOneRmCalculatorPage } from '../hooks/useOneRmCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
+import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
 
 export interface OneRmCalculatorPageProps {
   onBack?: () => void;
@@ -36,6 +36,7 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
     haptic: 'medium',
   });
   const [modalPayload, setModalPayload] = useState<ToolResultModalOneRmPayload | null>(null);
+  const repsInputRef = useRef<HTMLInputElement>(null);
 
   const canCalculate = estimatedOneRmKg > 0;
   const previewDisplay =
@@ -80,7 +81,7 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
           <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {t('tools.calculators.plates.unitLabel')}
+                {t('tools.calculators.unitLabel')}
               </span>
               <UnitSystemToggle
                 value={unitSystem}
@@ -97,9 +98,14 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
                 <input
                   type="number"
                   inputMode="decimal"
+                  enterKeyHint="next"
                   className="ui-input"
                   value={weightInput}
                   onChange={(event) => setWeightInput(event.target.value)}
+                  onFocus={(event) => scrollFocusedInputIntoView(event.currentTarget)}
+                  onKeyDown={(event) =>
+                    onInputEnterKey(event, () => repsInputRef.current?.focus())
+                  }
                   placeholder={t('tools.calculators.oneRm.weightPlaceholder')}
                 />
               </label>
@@ -109,11 +115,15 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
                   {t('tools.calculators.oneRm.repsLabel')}
                 </span>
                 <input
+                  ref={repsInputRef}
                   type="number"
                   inputMode="numeric"
+                  enterKeyHint="done"
                   className="ui-input"
                   value={repsInput}
                   onChange={(event) => setRepsInput(event.target.value)}
+                  onFocus={(event) => scrollFocusedInputIntoView(event.currentTarget)}
+                  onKeyDown={(event) => onInputEnterKey(event, () => void handleCalculate())}
                   placeholder={t('tools.calculators.oneRm.repsPlaceholder')}
                 />
               </label>
@@ -132,6 +142,15 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
                 allowEmpty={false}
               />
             </label>
+
+            <button
+              type="button"
+              onClick={() => void handleCalculate()}
+              disabled={!canCalculate || isBlocking}
+              className="ui-btn ui-btn-primary w-full min-h-12 whitespace-nowrap text-base font-semibold disabled:cursor-not-allowed"
+            >
+              {t('tools.calculators.oneRm.calculate')}
+            </button>
 
             <div className="rounded-xl border border-accent-primary/25 bg-gradient-to-br from-bg-panel to-bg-card px-4 py-5">
               <p className="text-xs uppercase tracking-wide text-zinc-500">
@@ -156,12 +175,6 @@ const OneRmCalculatorPage: FC<OneRmCalculatorPageProps> = ({ onBack }) => {
           </section>
         </fieldset>
       </ShellFlowStack>
-
-      <ToolFloatingCalculateCta
-        label={t('tools.calculators.oneRm.calculate')}
-        disabled={!canCalculate || isBlocking}
-        onClick={() => void handleCalculate()}
-      />
 
       <ToolResultModal
         variant="oneRm"

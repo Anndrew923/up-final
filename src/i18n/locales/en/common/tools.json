@@ -35,6 +35,7 @@
     },
     "calculators": {
       "title": "Training Calculators",
+      "unitLabel": "Unit",
       "oneRm": {
         "kicker": "Strength Tool",
         "title": "1RM Calculator",
@@ -59,12 +60,6 @@
       "plates": {
         "kicker": "Strength Tool",
         "title": "Plate Calculator",
-        "unitLabel": "Unit",
-        "unitSheetTitle": "Choose Unit",
-        "unitOptions": {
-          "kg": "Kilograms (kg)",
-          "lb": "Pounds (lb)"
-        },
         "targetLabel": "Target Total ({{unit}})",
         "targetPlaceholder": "e.g. 140",
         "barLabel": "Bar Weight ({{unit}})",

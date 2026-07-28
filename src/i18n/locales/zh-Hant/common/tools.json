@@ -35,6 +35,7 @@
     },
     "calculators": {
       "title": "訓練計算器",
+      "unitLabel": "單位制",
       "oneRm": {
         "kicker": "力量工具",
         "title": "1RM 計算機",
@@ -59,12 +60,6 @@
       "plates": {
         "kicker": "力量工具",
         "title": "槓片計算器",
-        "unitLabel": "單位制",
-        "unitSheetTitle": "選擇單位制",
-        "unitOptions": {
-          "kg": "公斤（kg）",
-          "lb": "磅（lb）"
-        },
         "targetLabel": "目標總重量（{{unit}}）",
         "targetPlaceholder": "例如 140",
         "barLabel": "槓鈴重量（{{unit}}）",

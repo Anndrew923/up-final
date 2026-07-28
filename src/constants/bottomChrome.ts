@@ -77,7 +77,7 @@ export const LADDER_FILTER_PILL_BOTTOM_PX =
 export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 142
 
 /**
- * Floating CTA dock geometry when Dyno Intel chip is hidden (Join Arena + tools calculators).
+ * Floating CTA dock geometry when Dyno Intel chip is hidden (Join Arena).
  * WHY: Single stack clears BottomNav + center hex only; safe-area via `bottomChromeCalc`.
  * Semantic aliases below keep call-site intent readable without drifting numbers.
  */
@@ -90,11 +90,6 @@ export const DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX =
 export const JOIN_ARENA_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
 export const JOIN_ARENA_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
 export const JOIN_ARENA_SCROLL_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX;
-
-/** Tools calculator floating CTA (1RM / plates) — aliases shared Dyno-hidden dock stack. */
-export const TOOL_FLOATING_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
-export const TOOL_FLOATING_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
-export const TOOL_FLOATING_CTA_SCROLL_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX;
 
 /** CSS `calc` bottom / padding-bottom that clears chrome + device safe-area. */
 export function bottomChromeCalc(offsetPx: number): string {

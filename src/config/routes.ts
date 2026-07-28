@@ -94,12 +94,3 @@ export function isPlateCalculatorRoutePath(pathname: string): boolean {
 export function isOneRmCalculatorRoutePath(pathname: string): boolean {
   return pathname === ROUTES.oneRmCalculator || pathname.startsWith(`${ROUTES.oneRmCalculator}/`);
 }
-
-/**
- * Calculator subpages that mount `ToolFloatingCalculateCta`.
- * WHY: Single route truth for AppShell taller scroll inset AND Dyno Intel chip hide
- * (BottomNav including center DYNO tab stays visible).
- */
-export function isToolsFloatingCtaRoutePath(pathname: string): boolean {
-  return isPlateCalculatorRoutePath(pathname) || isOneRmCalculatorRoutePath(pathname);
-}

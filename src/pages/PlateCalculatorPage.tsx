@@ -1,10 +1,9 @@
-import { useCallback, useState, type FC } from 'react';
+import { useCallback, useRef, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
-import ToolFloatingCalculateCta from '../components/tools/ToolFloatingCalculateCta';
 import ToolResultModal, {
   type ToolResultModalPlatesPayload,
 } from '../components/tools/ToolResultModal';
@@ -12,6 +11,7 @@ import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { usePlateCalculatorPage } from '../hooks/usePlateCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
+import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
 
 export interface PlateCalculatorPageProps {
   onBack?: () => void;
@@ -38,6 +38,7 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
     haptic: 'heavy',
   });
   const [modalPayload, setModalPayload] = useState<ToolResultModalPlatesPayload | null>(null);
+  const barWeightInputRef = useRef<HTMLInputElement>(null);
 
   const unitLabel = labels.weight;
   const canCalculate = hasResult;
@@ -87,7 +88,7 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
           <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                {t('tools.calculators.plates.unitLabel')}
+                {t('tools.calculators.unitLabel')}
               </span>
               <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
             </div>
@@ -99,9 +100,14 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
               <input
                 type="number"
                 inputMode="decimal"
+                enterKeyHint="next"
                 className="ui-input"
                 value={targetTotalInput}
                 onChange={(event) => setTargetTotalInput(event.target.value)}
+                onFocus={(event) => scrollFocusedInputIntoView(event.currentTarget)}
+                onKeyDown={(event) =>
+                  onInputEnterKey(event, () => barWeightInputRef.current?.focus())
+                }
                 placeholder={t('tools.calculators.plates.targetPlaceholder')}
               />
             </label>
@@ -111,14 +117,27 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
                 {t('tools.calculators.plates.barLabel', { unit: unitLabel })}
               </span>
               <input
+                ref={barWeightInputRef}
                 type="number"
                 inputMode="decimal"
+                enterKeyHint="done"
                 className="ui-input"
                 value={barWeightInput}
                 onChange={(event) => setBarWeightInput(event.target.value)}
+                onFocus={(event) => scrollFocusedInputIntoView(event.currentTarget)}
+                onKeyDown={(event) => onInputEnterKey(event, () => void handleCalculate())}
                 placeholder={t('tools.calculators.plates.barPlaceholder')}
               />
             </label>
+
+            <button
+              type="button"
+              onClick={() => void handleCalculate()}
+              disabled={!canCalculate || isBlocking}
+              className="ui-btn ui-btn-primary w-full min-h-12 whitespace-nowrap text-base font-semibold disabled:cursor-not-allowed"
+            >
+              {t('tools.calculators.plates.calculate')}
+            </button>
 
             <div className="rounded-xl border border-accent-primary/25 bg-gradient-to-br from-bg-panel to-bg-card px-4 py-5">
               <p className="text-xs uppercase tracking-wide text-zinc-500">
@@ -179,12 +198,6 @@ const PlateCalculatorPage: FC<PlateCalculatorPageProps> = ({ onBack }) => {
           </section>
         </fieldset>
       </ShellFlowStack>
-
-      <ToolFloatingCalculateCta
-        label={t('tools.calculators.plates.calculate')}
-        disabled={!canCalculate || isBlocking}
-        onClick={() => void handleCalculate()}
-      />
 
       <ToolResultModal
         variant="plates"
