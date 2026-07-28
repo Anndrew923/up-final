@@ -18,8 +18,8 @@ export interface LeaderboardAssessmentSyncBarProps {
 
 /**
  * Compact Sync Capsule for assessment pages: sync CTA + identity chip on one row.
- * WHY: Strip DEV/write-mode chrome and always-on copy so the radar CTA pair stays the
- * visual primary; ladder sync remains one glanceable action when gate + identity are ready.
+ * WHY: No always-on gate/identity prose — click opens Gate Sheet / Identity Sheet /
+ * no-targets hint so the radar CTA pair stays the visual primary.
  */
 const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   syncController,
@@ -40,27 +40,15 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
-  /** Ready path: capsule only — no gate / identity prose competing with the avatar chip. */
+  /** Ready path: show identity chip only when gate + identity are both ready. */
   const showReadyCapsule = gate === 'ok' && identity.ready;
-  const statusCopy =
-    targetCount === 0
-      ? t('ladder.assessmentSync.noTargets')
-      : gate !== 'ok'
-        ? t(`ladder.upload.gate.${gate}`)
-        : !identity.ready
-          ? t('ladder.syncAll.identityRequiredHint')
-          : null;
 
   useEffect(() => {
     setTapHint(null);
   }, [targetCount, gate]);
 
   return (
-    <div className={`relative space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
-      {statusCopy ? (
-        <p className="text-xs leading-relaxed text-zinc-500">{statusCopy}</p>
-      ) : null}
-
+    <div className={`space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
       {tapHint === 'no-targets' ? (
         <p className="text-sm text-amber-400/90" role="status">
           {t('ladder.assessmentSync.noTargetsTap')}

@@ -123,19 +123,11 @@
         "body": "此功能僅限 Pro。升級後可上傳分數並參與即時天梯。"
       }
     },
-    "devWriteMode": {
-      "clientDirectWarning": "⚠️ 客戶端直寫模式（Rules 會擋，請檢查 .env 並重啟 dev）",
-      "callableOk": "🟢 Callable 寫入模式"
-    },
     "syncAll": {
       "sectionTitle": "天梯上傳",
-      "infoButtonAria": "查看上傳次數限制說明",
-      "advancedTitle": "上傳次數限制說明",
-      "advancedTip": "同步會依序送出每個可用分片，並套用以下限制：\n\n- 每個榜單分片每小時最多計入 {{limit}} 次有效寫入（滾動 60 分鐘）。\n- 分數與雲端相同時不會寫入，也不會消耗本小時次數。\n- 分數變好或變差都會寫入，並扣減 1 次額度。\n- 一鍵同步本身有冷卻，約每 90 分鐘最多完成一次，每天最多 3 次。\n- 若尚未完成評測、未寫入雷達或未通過登入閘門，該分片會被略過或擋下。",
       "noTargets": "尚無可上傳的分數 — 請先完成評測或將分數寫入雷達。",
       "button": "⚡ 同步全球天梯",
       "buttonSetupIdentity": "⚡ 設定天梯身份以登榜",
-      "identityRequiredHint": "登榜前請先設定顯示名稱。大頭照可選，未設定時會以姓名首字母顯示。",
       "identitySheetTitle": "設定天梯身份",
       "identitySheetBody": "這是你在全球天梯上的戰場分身。顯示名稱必填；大頭照可稍後再補。",
       "identityAvatarOptional": "大頭照為選填 — 未上傳時以姓名首字母作為預設頭像。",
@@ -167,7 +159,6 @@
       "identityPatched": "分數未變，暱稱／匿名狀態已同步至各子榜。"
     },
     "assessmentSync": {
-      "noTargets": "尚無可上傳的本頁分數。",
       "noTargetsTap": "請先按「計算」產生有效分數，再同步至天梯。",
       "button": "同步至天梯",
       "busy": "同步中…",

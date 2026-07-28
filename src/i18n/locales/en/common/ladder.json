@@ -123,19 +123,11 @@
         "body": "Pro-only feature. Upgrade to upload and join live ladder."
       }
     },
-    "devWriteMode": {
-      "clientDirectWarning": "⚠️ Client direct-write mode (rules block writes — check .env and restart dev)",
-      "callableOk": "🟢 Callable write mode"
-    },
     "syncAll": {
       "sectionTitle": "Arena Upload",
-      "infoButtonAria": "View upload limit details",
-      "advancedTitle": "Upload Limits",
-      "advancedTip": "Sync uploads every eligible shard in sequence with these limits:\n\n- Up to {{limit}} counted writes per shard per hour (rolling 60 minutes).\n- When the score matches the cloud value, no write occurs and no quota is used.\n- When the score changes (higher or lower), the row is updated and 1 write is counted.\n- Full sync itself has cooldown: roughly once every 90 minutes, up to 3 times per day.\n- Shards with incomplete tests, no radar value, or a failed auth gate are skipped or blocked.",
       "noTargets": "No scores ready — complete assessments or save to radar first.",
       "button": "⚡ Sync Global Ladder",
       "buttonSetupIdentity": "⚡ Set arena identity to climb",
-      "identityRequiredHint": "Set a display name before climbing. Avatar is optional — initials are used when missing.",
       "identitySheetTitle": "Set arena identity",
       "identitySheetBody": "This is your public ladder persona. Display name is required; avatar can be added later.",
       "identityAvatarOptional": "Avatar is optional — initials are shown until you upload a photo.",
@@ -167,7 +159,6 @@
       "identityPatched": "Score unchanged — display name / anonymity synced across boards."
     },
     "assessmentSync": {
-      "noTargets": "No scores on this page ready to upload.",
       "noTargetsTap": "Calculate a valid score on this page first, then sync to ladder.",
       "button": "Sync to Ladder",
       "busy": "Syncing…",
