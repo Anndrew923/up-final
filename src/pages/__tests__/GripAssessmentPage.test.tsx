@@ -100,8 +100,8 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseGripAssessmentPage.mockReturnValue({
       profile: { gender: 'male', weightKg: 80 },
       profileReady: true,
-      peakKgInput: '120',
-      setPeakKgInput: vi.fn(),
+      peakInput: '120',
+      setPeakInput: vi.fn(),
       previewScore: 191,
       capNotice: null,
       errorKey: null,
@@ -135,8 +135,8 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseGripAssessmentPage.mockReturnValue({
       profile: { gender: 'male', weightKg: 92.8 },
       profileReady: true,
-      peakKgInput: '',
-      setPeakKgInput: vi.fn(),
+      peakInput: '',
+      setPeakInput: vi.fn(),
       previewScore: null,
       capNotice: null,
       errorKey: null,

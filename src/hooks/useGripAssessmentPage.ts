@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   applyGripPeakCap,
@@ -8,6 +8,12 @@ import {
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import { clampScoreMapValue } from '../logic/core/scoring';
 import {
+  formatWeightInput,
+  parseInputToMetric,
+  reprojectDisplayInput,
+  type UnitSystem,
+} from '../logic/core/unitConverters';
+import {
   loadGripInputs,
   loadPhysicalProfile,
   saveGripInputs,
@@ -16,6 +22,7 @@ import {
 import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import { useScoreStore } from '../stores/scoreStore';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 import type { PhysicalProfile } from '../types/userProfile';
 
 export type GripAssessmentError = 'missing-profile' | 'invalid-peak';
@@ -23,9 +30,11 @@ export type GripAssessmentError = 'missing-profile' | 'invalid-peak';
 export interface UseGripAssessmentPageResult {
   profile: PhysicalProfile | null;
   profileReady: boolean;
-  peakKgInput: string;
-  setPeakKgInput: (v: string) => void;
+  /** Peak grip in the active display unit (kg or lb). Persist path converts to kg. */
+  peakInput: string;
+  setPeakInput: (v: string) => void;
   previewScore: number | null;
+  /** Cap notice always carries metric kg — page projects for display. */
   capNotice: { inputKg: number; maxKg: number } | null;
   errorKey: GripAssessmentError | null;
   submitDone: boolean;
@@ -35,20 +44,25 @@ export interface UseGripAssessmentPageResult {
   submitToRadar: () => void;
 }
 
-function parsePeakKg(raw: string): number | null {
-  const n = Number(raw.trim());
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return n;
+function readInitialPeakInput(unitSystem: UnitSystem): string {
+  const saved = loadGripInputs()?.peakKg;
+  if (!Number.isFinite(saved) || (saved ?? 0) <= 0) return '';
+  return formatWeightInput(saved!, unitSystem);
+}
+
+function parsePeakKg(raw: string, unitSystem: UnitSystem): number | null {
+  const kg = parseInputToMetric(raw, 'weight', unitSystem);
+  if (kg === null || kg <= 0) return null;
+  return kg;
 }
 
 export function useGripAssessmentPage(): UseGripAssessmentPageResult {
   const navigate = useNavigate();
   const setStoreScore = useScoreStore((s) => s.setScore);
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
+  const prevUnitSystemRef = useRef(unitSystem);
   const [profile, setProfile] = useState(loadPhysicalProfile);
-  const [peakKgInput, setPeakKgInput] = useState(() => {
-    const saved = loadGripInputs()?.peakKg;
-    return Number.isFinite(saved) && (saved ?? 0) > 0 ? String(saved) : '';
-  });
+  const [peakInput, setPeakInput] = useState(() => readInitialPeakInput(unitSystem));
   const [previewScore, setPreviewScore] = useState<number | null>(null);
   const [capNotice, setCapNotice] = useState<{ inputKg: number; maxKg: number } | null>(null);
   const [errorKey, setErrorKey] = useState<GripAssessmentError | null>(null);
@@ -62,12 +76,19 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
   }, []);
 
   useEffect(() => {
+    const prev = prevUnitSystemRef.current;
+    if (prev === unitSystem) return;
+    prevUnitSystemRef.current = unitSystem;
+    setPeakInput((raw) => reprojectDisplayInput(raw, 'weight', prev, unitSystem));
+  }, [unitSystem]);
+
+  useEffect(() => {
     queueMicrotask(() => {
       setPreviewScore(null);
       setCapNotice(null);
       setSubmitDone(false);
     });
-  }, [peakKgInput, profile]);
+  }, [peakInput, profile, unitSystem]);
 
   const clearError = useCallback(() => setErrorKey(null), []);
 
@@ -79,7 +100,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       setPreviewScore(null);
       return;
     }
-    const peakKg = parsePeakKg(peakKgInput);
+    const peakKg = parsePeakKg(peakInput, unitSystem);
     if (peakKg === null) {
       setErrorKey('invalid-peak');
       setPreviewScore(null);
@@ -90,7 +111,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
     setPreviewScore(score);
     setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
-  }, [peakKgInput, profile, profileReady]);
+  }, [peakInput, profile, profileReady, unitSystem]);
 
   const persistToDashboard = useCallback((): boolean => {
     setSubmitDone(false);
@@ -99,13 +120,14 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       setErrorKey('missing-profile');
       return false;
     }
-    const peakKg = parsePeakKg(peakKgInput);
+    const peakKg = parsePeakKg(peakInput, unitSystem);
     if (peakKg === null) {
       setErrorKey('invalid-peak');
       return false;
     }
     const capped = applyGripPeakCap(peakKg);
     const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
+    // WHY: Always persist metric kg so unit toggles never rewrite the stored source of truth.
     saveGripInputs({ peakKg: capped.usedKg, genderSnapshot: profile.gender });
     setStoreScore('gripStrength', clampScoreMapValue(score));
     setPreviewScore(score);
@@ -113,7 +135,7 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
     return true;
-  }, [peakKgInput, profile, profileReady, setStoreScore]);
+  }, [peakInput, profile, profileReady, setStoreScore, unitSystem]);
 
   const submitToRadar = useCallback(() => {
     if (!persistToDashboard()) return;
@@ -123,8 +145,8 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
   return {
     profile,
     profileReady,
-    peakKgInput,
-    setPeakKgInput,
+    peakInput,
+    setPeakInput,
     previewScore,
     capNotice,
     errorKey,

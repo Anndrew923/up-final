@@ -3,7 +3,7 @@
     "kicker": "Grip",
     "title": "Grip Strength Test",
     "subtitle": "Enter peak grip. Save to traction axis.",
-    "peakLabel": "Peak Grip (kg)",
+    "peakLabel": "Peak Grip ({{unit}})",
     "peakPlaceholder": "e.g. 65",
     "referenceInfo": {
       "toggleExpand": "Show References",
@@ -19,7 +19,7 @@
       "p8": "Changing Home body weight will dynamically recalculate your grip axis score from the latest weight."
     },
     "capNoticeTitle": "Input Exceeds Model Cap",
-    "capNoticeBody": "Entered {{input}} kg, above cap of {{max}} kg. Scoring and saved value locked to {{max}} kg.",
+    "capNoticeBody": "Entered {{input}} {{unit}}, above cap of {{max}} {{unit}}. Scoring and saved value locked to {{max}} {{unit}}.",
     "capNoticeLegend": "Ceiling benchmark: Magnus Samuelsson (1998 WSM champion; legendary CoC No.4 closer).",
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "PERFORMANCE SPEC / Potential Spec",
@@ -32,7 +32,7 @@
     "metaGender": "Sex: {{value}}",
     "errors": {
       "missing-profile": "Complete physical profile on Home first.",
-      "invalid-peak": "Enter positive peak grip value in kg."
+      "invalid-peak": "Enter a positive peak grip value ({{unit}})."
     }
   }
 }

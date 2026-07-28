@@ -13,9 +13,11 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { useUnit } from '../hooks/useUnit';
 import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
@@ -27,11 +29,12 @@ export interface GripAssessmentPageProps {
 const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
   const { t } = useTranslation('common');
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const { labels, unitSystem, setUnitSystem, formatWeight } = useUnit();
   const {
     profile,
     profileReady,
-    peakKgInput,
-    setPeakKgInput,
+    peakInput,
+    setPeakInput,
     previewScore,
     capNotice,
     errorKey,
@@ -77,6 +80,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? formatOverallResonanceScore(heroScore) : null;
   const scoreMeaning = useScoreMeaning('gripStrength', previewScore ?? heroScore);
+  const peakLabel = t('grip.peakLabel', { unit: labels.weight });
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
@@ -123,8 +127,12 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
         ) : null}
 
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <div className="flex justify-end">
+            <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
+          </div>
+
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="grip-peak">
-            <span className="font-medium text-zinc-200">{t('grip.peakLabel')}</span>
+            <span className="font-medium text-zinc-200">{peakLabel}</span>
             <input
               id="grip-peak"
               type="number"
@@ -133,13 +141,13 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
               step={0.1}
               className="ui-input max-w-xs"
               placeholder={t('grip.peakPlaceholder')}
-              value={peakKgInput}
+              value={peakInput}
               onChange={(e) => {
                 clearError();
-                setPeakKgInput(e.target.value);
+                setPeakInput(e.target.value);
               }}
               disabled={revealBlocking}
-              aria-label={t('grip.peakLabel')}
+              aria-label={peakLabel}
             />
           </label>
 
@@ -150,7 +158,11 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
             >
               <p className="font-medium text-amber-50">{t('grip.capNoticeTitle')}</p>
               <p className="leading-relaxed">
-                {t('grip.capNoticeBody', { input: capNotice.inputKg, max: capNotice.maxKg })}
+                {t('grip.capNoticeBody', {
+                  input: formatWeight(capNotice.inputKg, { includeUnit: false, digits: 1 }),
+                  max: formatWeight(capNotice.maxKg, { includeUnit: false, digits: 1 }),
+                  unit: labels.weight,
+                })}
               </p>
               <p className="text-xs text-amber-100/80">{t('grip.capNoticeLegend')}</p>
             </div>
@@ -158,7 +170,7 @@ const GripAssessmentPage: FC<GripAssessmentPageProps> = ({ onBack }) => {
 
           {errorKey ? (
             <p className="text-sm text-red-400" role="alert">
-              {t(`grip.errors.${errorKey}`)}
+              {t(`grip.errors.${errorKey}`, { unit: labels.weight })}
             </p>
           ) : null}
 

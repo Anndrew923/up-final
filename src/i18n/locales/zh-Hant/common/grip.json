@@ -3,7 +3,7 @@
     "kicker": "握力",
     "title": "握力評測",
     "subtitle": "填入峰值握力，寫入握力軸。",
-    "peakLabel": "峰值握力（kg）",
+    "peakLabel": "峰值握力（{{unit}}）",
     "peakPlaceholder": "例如 65",
     "referenceInfo": {
       "toggleExpand": "展開資料",
@@ -19,7 +19,7 @@
       "p8": "若變更首頁體重資料，雷達圖的握力軸分數將依據最新體重進行動態同步重算。"
     },
     "capNoticeTitle": "輸入已超過模型上限",
-    "capNoticeBody": "你輸入 {{input}} kg，已超過握力模型上限 {{max}} kg；系統將以 {{max}} kg 計分與儲存。",
+    "capNoticeBody": "你輸入 {{input}} {{unit}}，已超過握力模型上限 {{max}} {{unit}}；系統將以 {{max}} {{unit}} 計分與儲存。",
     "capNoticeLegend": "上限參照：Magnus Samuelsson（1998 世界大力士冠軍；極少數能抓開 CoC No.4 的握力傳奇）。",
     "previewLabel": "預覽分數",
     "performanceSpecHeader": "潛力規格",
@@ -32,7 +32,7 @@
     "metaGender": "性別：{{value}}",
     "errors": {
       "missing-profile": "請先在首頁填寫完整身體資料。",
-      "invalid-peak": "請輸入大於 0 的握力峰值（kg）。"
+      "invalid-peak": "請輸入大於 0 的握力峰值（{{unit}}）。"
     }
   }
 }
