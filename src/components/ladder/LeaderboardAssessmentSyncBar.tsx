@@ -6,10 +6,8 @@ import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
 import { useLadderIdentityUploadGate } from '../../hooks/useLadderIdentityUploadGate';
 import { ROUTES } from '../../config/routes';
 import LadderUploadGateSheetPortal from './LadderUploadGateSheetPortal';
-import LadderInfoSheet from './LadderInfoSheet';
 import LadderIdentitySheet from './LadderIdentitySheet';
 import LadderIdentityChip from './LadderIdentityChip';
-import LadderCallableWriteModeBadge from './LadderCallableWriteModeBadge';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
 export interface LeaderboardAssessmentSyncBarProps {
@@ -19,7 +17,9 @@ export interface LeaderboardAssessmentSyncBarProps {
 }
 
 /**
- * Single control that uploads every ladder shard owned by the current assessment page.
+ * Compact Sync Capsule for assessment pages: sync CTA + identity chip on one row.
+ * WHY: Strip DEV/write-mode chrome and always-on copy so the radar CTA pair stays the
+ * visual primary; ladder sync remains one glanceable action when gate + identity are ready.
  */
 const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
   syncController,
@@ -34,13 +34,22 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
     closeIdentitySheet,
     ensureIdentityReady,
   } = useLadderIdentityUploadGate();
-  const [infoOpen, setInfoOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | null>(null);
   const { syncPage, busy, summary, failures, gate, targetCount, goJoinArena, clearFeedback } =
     syncController;
 
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
+  /** Ready path: capsule only — no gate / identity prose competing with the avatar chip. */
+  const showReadyCapsule = gate === 'ok' && identity.ready;
+  const statusCopy =
+    targetCount === 0
+      ? t('ladder.assessmentSync.noTargets')
+      : gate !== 'ok'
+        ? t(`ladder.upload.gate.${gate}`)
+        : !identity.ready
+          ? t('ladder.syncAll.identityRequiredHint')
+          : null;
 
   useEffect(() => {
     setTapHint(null);
@@ -48,24 +57,8 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
 
   return (
     <div className={`relative space-y-2 border-t border-zinc-800/80 pt-4 ${className ?? ''}`}>
-      <div className="absolute right-0 top-0 z-10 max-w-[55%] sm:max-w-none">
-        <LadderCallableWriteModeBadge />
-      </div>
-
-      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-        {t('ladder.upload.sectionTitle')}
-      </p>
-
-      {targetCount === 0 ? (
-        <p className="text-xs leading-relaxed text-zinc-500">
-          {t('ladder.assessmentSync.noTargets')}
-        </p>
-      ) : gate !== 'ok' ? (
-        <p className="text-xs leading-relaxed text-zinc-500">{t(`ladder.upload.gate.${gate}`)}</p>
-      ) : !identity.ready ? (
-        <p className="text-xs leading-relaxed text-zinc-500">
-          {t('ladder.syncAll.identityRequiredHint')}
-        </p>
+      {statusCopy ? (
+        <p className="text-xs leading-relaxed text-zinc-500">{statusCopy}</p>
       ) : null}
 
       {tapHint === 'no-targets' ? (
@@ -74,53 +67,46 @@ const LeaderboardAssessmentSyncBar: FC<LeaderboardAssessmentSyncBarProps> = ({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/60 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100"
-          aria-label={t('ladder.assessmentSync.infoButtonAria')}
-          onClick={() => setInfoOpen(true)}
-        >
-          ⓘ
-        </button>
-        <button
-          type="button"
-          className="ui-btn border-accent-primary/40 text-accent-primary"
-          disabled={disabled}
-          onClick={() => {
-            setTapHint(null);
-            if (targetCount === 0) {
-              setTapHint('no-targets');
-              return;
-            }
-            if (gateSheet.tryOpenGateSheet(gate)) return;
-            // WHY: Hard name gate on assessment pages too — same ghost-nickname leak path.
-            if (!ensureIdentityReady()) return;
-            clearFeedback();
-            void syncPage();
-          }}
-        >
-          {busy
-            ? t('ladder.assessmentSync.busy')
-            : identity.ready
-              ? t('ladder.assessmentSync.button')
-              : t('ladder.syncAll.buttonSetupIdentity')}
-        </button>
-        {identity.ready ? (
-          <LadderIdentityChip identity={identity} onClick={openIdentitySheet} />
-        ) : null}
-        {gate === 'pro' ? (
-          <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
-            {t('ladder.upload.joinArena')}
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="ui-btn border-accent-primary/40 text-accent-primary"
+            disabled={disabled}
+            onClick={() => {
+              setTapHint(null);
+              if (targetCount === 0) {
+                setTapHint('no-targets');
+                return;
+              }
+              if (gateSheet.tryOpenGateSheet(gate)) return;
+              // WHY: Hard name gate on assessment pages too — same ghost-nickname leak path.
+              if (!ensureIdentityReady()) return;
+              clearFeedback();
+              void syncPage();
+            }}
+          >
+            {busy
+              ? t('ladder.assessmentSync.busy')
+              : identity.ready
+                ? t('ladder.assessmentSync.button')
+                : t('ladder.syncAll.buttonSetupIdentity')}
           </button>
+          {gate === 'pro' ? (
+            <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
+              {t('ladder.upload.joinArena')}
+            </button>
+          ) : null}
+        </div>
+        {showReadyCapsule ? (
+          <LadderIdentityChip
+            identity={identity}
+            onClick={openIdentitySheet}
+            className="shrink-0"
+          />
         ) : null}
       </div>
-      <LadderInfoSheet
-        open={infoOpen}
-        onClose={() => setInfoOpen(false)}
-        title={t('ladder.assessmentSync.advancedTitle')}
-        body={t('ladder.assessmentSync.advancedTip')}
-      />
+
       <LadderIdentitySheet open={identitySheetOpen} onClose={closeIdentitySheet} />
 
       <LadderUploadGateSheetPortal

@@ -167,9 +167,6 @@
       "identityPatched": "Score unchanged — display name / anonymity synced across boards."
     },
     "assessmentSync": {
-      "infoButtonAria": "View page sync limits",
-      "advancedTitle": "Page Sync Limits",
-      "advancedTip": "Uploads this page's shards plus overall score and public six-axis preview in one run (does not count toward full-sync cooldown). Prefer the breakthrough modal's dashboard-then-Arena action if the dashboard is not updated yet. Skipped when scores missing, ineligible, or rate-limited.",
       "noTargets": "No scores on this page ready to upload.",
       "noTargetsTap": "Calculate a valid score on this page first, then sync to ladder.",
       "button": "Sync to Ladder",
