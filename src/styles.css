@@ -90,11 +90,11 @@
 
   /**
    * Hero metric field for assessment pages (tachometer focal).
-   * WHY: Keep base `.ui-input` unchanged for Home/Ladder; brand-orange focus draws the eye
-   * to the primary score driver without leaking into secondary fields.
+   * WHY: Keep base `.ui-input` unchanged for Home/Ladder; cyber-amber idle+focus glow
+   * raises affordance on the primary score driver without leaking into secondary fields.
    */
   .ui-input-hero {
-    @apply w-full min-h-[3.25rem] rounded-xl border border-zinc-600/90 bg-zinc-950/80 px-4 py-3 text-2xl font-bold tabular-nums tracking-tight text-zinc-50 outline-none ring-0 transition placeholder:text-base placeholder:font-medium placeholder:text-zinc-500 focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/25 sm:text-3xl;
+    @apply w-full min-h-[3.25rem] rounded-xl border border-amber-500/60 bg-zinc-950/80 px-4 py-3 text-2xl font-bold tabular-nums tracking-tight text-zinc-50 outline-none ring-0 shadow-[0_0_12px_rgba(245,158,11,0.25)] transition-[box-shadow,border-color] duration-200 placeholder:text-base placeholder:font-medium placeholder:text-zinc-500 focus:border-amber-400 focus:shadow-[0_0_20px_rgba(245,158,11,0.5)] focus:ring-0 sm:text-3xl;
   }
 
   /** Narrow hero cells — keep 2xl so fixed widths (w-28) stay readable at ~390px. */

@@ -13,7 +13,7 @@ export type HeroNumberInputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 /**
- * Primary assessment metric field — dashboard-scale digits + brand focus ring.
+ * Primary assessment metric field — dashboard-scale digits + cyber-amber glow.
  * WHY: One shared hero surface so six-axis pages share visual hierarchy without
  * mutating global `.ui-input` used by Home / Ladder / calculators.
  */
