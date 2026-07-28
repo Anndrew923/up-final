@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
@@ -109,7 +110,19 @@ const MuscleAssessmentPage: FC = () => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader kicker={t('muscle.kicker')} title={t('muscle.title')} />
+        <AssessmentPageHeader
+          kicker={t('muscle.kicker')}
+          title={t('muscle.title')}
+          meta={
+            profileReady && profile ? (
+              <p className="text-xs text-zinc-500">
+                <span className="mr-3">{t('muscle.metaWeight', { value: profile.weightKg })}</span>
+                <span className="mr-3">{t('muscle.metaAge', { value: profile.age })}</span>
+                <span>{t('muscle.metaGender', { value: genderLabel })}</span>
+              </p>
+            ) : null
+          }
+        />
 
         {!profileReady ? (
           <section
@@ -123,26 +136,17 @@ const MuscleAssessmentPage: FC = () => {
           </section>
         ) : null}
 
-        {profileReady && profile ? (
-          <p className="text-xs text-zinc-500">
-            <span className="mr-3">{t('muscle.metaWeight', { value: profile.weightKg })}</span>
-            <span className="mr-3">{t('muscle.metaAge', { value: profile.age })}</span>
-            <span>{t('muscle.metaGender', { value: genderLabel })}</span>
-          </p>
-        ) : null}
-
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <div className="space-y-3">
             <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="muscle-smm">
               <span className="font-medium text-zinc-200">{t('muscle.smmLabel')}</span>
-              <input
+              <HeroNumberInput
                 id="muscle-smm"
-                type="number"
                 inputMode="decimal"
                 min={0}
                 max={smmCeilingKg ?? undefined}
                 step={0.1}
-                className="ui-input max-w-xs"
+                className="max-w-xs"
                 placeholder={t('muscle.smmPlaceholder')}
                 value={smmInput}
                 disabled={!profileReady || revealBlocking}

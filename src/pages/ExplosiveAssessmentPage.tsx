@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import {
   AssessmentSegmentedControl,
@@ -168,7 +169,18 @@ const ExplosiveAssessmentPage: FC = () => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
-        <AssessmentPageHeader kicker={t('explosive.kicker')} title={t('explosive.title')} />
+        <AssessmentPageHeader
+          kicker={t('explosive.kicker')}
+          title={t('explosive.title')}
+          meta={
+            profileReady && profile ? (
+              <p className="text-xs text-zinc-500">
+                <span className="mr-3">{t('explosive.metaAge', { value: profile.age })}</span>
+                <span>{t('explosive.metaGender', { value: genderLabel })}</span>
+              </p>
+            ) : null
+          }
+        />
 
         {!profileReady ? (
           <section
@@ -180,13 +192,6 @@ const ExplosiveAssessmentPage: FC = () => {
               {t('explosive.ctaProfile')}
             </Link>
           </section>
-        ) : null}
-
-        {profileReady && profile ? (
-          <p className="text-xs text-zinc-500">
-            <span className="mr-3">{t('explosive.metaAge', { value: profile.age })}</span>
-            <span>{t('explosive.metaGender', { value: genderLabel })}</span>
-          </p>
         ) : null}
 
         <section className="space-y-3.5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 shadow-panel backdrop-blur sm:p-5">
@@ -214,13 +219,12 @@ const ExplosiveAssessmentPage: FC = () => {
               <span className="font-medium text-zinc-200">
                 {t('explosive.verticalJumpLabel', { unit: labels.length })}
               </span>
-              <input
+              <HeroNumberInput
                 id="exp-vj"
-                type="number"
                 inputMode="decimal"
                 min={0}
                 step={0.1}
-                className="ui-input max-w-xs"
+                className="max-w-xs"
                 placeholder={t('explosive.verticalJumpPlaceholder')}
                 value={verticalJumpInput}
                 disabled={tabDisabled}
@@ -235,13 +239,12 @@ const ExplosiveAssessmentPage: FC = () => {
               <span className="font-medium text-zinc-200">
                 {t('explosive.standingLongJumpLabel', { unit: labels.length })}
               </span>
-              <input
+              <HeroNumberInput
                 id="exp-slj"
-                type="number"
                 inputMode="decimal"
                 min={0}
                 step={0.1}
-                className="ui-input max-w-xs"
+                className="max-w-xs"
                 placeholder={t('explosive.standingLongJumpPlaceholder')}
                 value={standingLongJumpInput}
                 disabled={tabDisabled}
@@ -264,12 +267,12 @@ const ExplosiveAssessmentPage: FC = () => {
               {/*
                 WHY type=text: specialty placeholder carries locale prose; number inputs truncate it.
               */}
-              <input
+              <HeroNumberInput
                 id="exp-sprint"
                 type="text"
                 inputMode="decimal"
                 autoComplete="off"
-                className="ui-input max-w-md"
+                className="max-w-md"
                 placeholder={t('explosive.sprintPlaceholder')}
                 value={sprintInput}
                 disabled={tabDisabled}

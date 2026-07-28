@@ -15,6 +15,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -137,7 +138,24 @@ const StrengthAssessmentPage: FC = () => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader kicker={t('strength.kicker')} title={t('strength.title')} />
+        <AssessmentPageHeader
+          kicker={t('strength.kicker')}
+          title={t('strength.title')}
+          meta={
+            profileReady && profile ? (
+              <p className="text-xs text-zinc-500">
+                <span className="mr-3">
+                  {t('strength.metaWeight', {
+                    value: formatWeight(profile.weightKg, { includeUnit: false, digits: 1 }),
+                    unit: labels.weight,
+                  })}
+                </span>
+                <span className="mr-3">{t('strength.metaAge', { value: profile.age })}</span>
+                <span>{t('strength.metaGender', { value: genderLabel })}</span>
+              </p>
+            ) : null
+          }
+        />
 
         {!profileReady ? (
           <section
@@ -149,19 +167,6 @@ const StrengthAssessmentPage: FC = () => {
               {t('strength.ctaProfile')}
             </Link>
           </section>
-        ) : null}
-
-        {profileReady && profile ? (
-          <p className="text-xs text-zinc-500">
-            <span className="mr-3">
-              {t('strength.metaWeight', {
-                value: formatWeight(profile.weightKg, { includeUnit: false, digits: 1 }),
-                unit: labels.weight,
-              })}
-            </span>
-            <span className="mr-3">{t('strength.metaAge', { value: profile.age })}</span>
-            <span>{t('strength.metaGender', { value: genderLabel })}</span>
-          </p>
         ) : null}
 
         <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
@@ -192,13 +197,12 @@ const StrengthAssessmentPage: FC = () => {
                       htmlFor={`st-w-${lift}`}
                     >
                       <span>{t('strength.weightLabel', { unit: labels.weight })}</span>
-                      <input
+                      <HeroNumberInput
                         id={`st-w-${lift}`}
-                        type="number"
                         inputMode="decimal"
                         min={0}
                         step={0.5}
-                        className="ui-input w-full"
+                        className="w-full"
                         placeholder={t('strength.weightPlaceholder')}
                         value={form[lift].weight}
                         onChange={(e) => setWeight(lift, e.target.value)}

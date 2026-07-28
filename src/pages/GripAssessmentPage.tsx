@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import AssessmentReferenceDisclosure, {
@@ -93,7 +94,22 @@ const GripAssessmentPage: FC = () => {
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
-        <AssessmentPageHeader kicker={t('grip.kicker')} title={t('grip.title')} />
+        <AssessmentPageHeader
+          kicker={t('grip.kicker')}
+          title={t('grip.title')}
+          meta={
+            profileReady && profile ? (
+              <p className="text-xs">
+                <span
+                  className="inline-flex rounded-full border border-zinc-700/80 bg-zinc-900/60 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-zinc-400"
+                  aria-label={t('grip.metaGender', { value: genderLabel })}
+                >
+                  {genderLabel}
+                </span>
+              </p>
+            ) : null
+          }
+        />
 
         {!profileReady ? (
           <section
@@ -107,17 +123,6 @@ const GripAssessmentPage: FC = () => {
           </section>
         ) : null}
 
-        {profileReady && profile ? (
-          <p className="text-xs">
-            <span
-              className="inline-flex rounded-full border border-zinc-700/80 bg-zinc-900/60 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-zinc-400"
-              aria-label={t('grip.metaGender', { value: genderLabel })}
-            >
-              {genderLabel}
-            </span>
-          </p>
-        ) : null}
-
         <section className="space-y-5 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
           <div className="flex justify-end">
             <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
@@ -125,13 +130,12 @@ const GripAssessmentPage: FC = () => {
 
           <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="grip-peak">
             <span className="font-medium text-zinc-200">{peakLabel}</span>
-            <input
+            <HeroNumberInput
               id="grip-peak"
-              type="number"
               inputMode="decimal"
               min={0}
               step={0.1}
-              className="ui-input max-w-xs"
+              className="max-w-xs"
               placeholder={t('grip.peakPlaceholder')}
               value={peakInput}
               onChange={(e) => {

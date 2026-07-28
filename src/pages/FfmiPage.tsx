@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
@@ -101,10 +102,10 @@ const FfmiPage: FC = () => {
                 {t('ffmi.bodyFatLabel')}
               </label>
               <div className="flex flex-wrap items-end gap-3">
-                <input
+                <HeroNumberInput
                   type="text"
                   inputMode="decimal"
-                  className="ui-input max-w-[10rem]"
+                  className="max-w-[12rem]"
                   value={bodyFatInput}
                   disabled={revealBlocking}
                   onChange={(e) => setBodyFatInput(e.target.value)}

@@ -7,6 +7,7 @@ import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbien
 import AssessmentFieldHintBubble from '../components/assessment/AssessmentFieldHintBubble';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import {
   AssessmentSegmentedControl,
   AssessmentTabPanel,
@@ -178,11 +179,10 @@ const CardioAssessmentPage: FC = () => {
                   })}
                 />
               </div>
-              <input
-                type="number"
+              <HeroNumberInput
                 inputMode="decimal"
                 min={0}
-                className="ui-input max-w-md"
+                className="max-w-md"
                 value={distanceInput}
                 disabled={!profileReady || revealBlocking}
                 onChange={(e) => {
@@ -211,14 +211,14 @@ const CardioAssessmentPage: FC = () => {
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('cardio.run5kmHeading')}
             </p>
-            <div className="flex flex-wrap gap-2.5">
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+            <div className="flex min-w-0 flex-wrap gap-2.5">
+              <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
                 <span>{t('cardio.minutesLabel')}</span>
-                <input
-                  type="number"
+                <HeroNumberInput
                   inputMode="numeric"
                   min={0}
-                  className="ui-input w-28"
+                  density="compact"
+                  className="w-28 max-w-full"
                   value={runMinutesInput}
                   disabled={revealBlocking}
                   placeholder={t('cardio.run5kmMinutesPlaceholder')}
@@ -229,7 +229,7 @@ const CardioAssessmentPage: FC = () => {
                   aria-label={t('cardio.minutesLabel')}
                 />
               </label>
-              <label className="flex flex-col gap-1 text-xs text-zinc-400">
+              <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
                 <span>{t('cardio.secondsLabel')}</span>
                 <input
                   type="number"

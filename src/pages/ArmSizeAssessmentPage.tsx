@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
+import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentReferenceDisclosure, {
@@ -107,14 +108,13 @@ const ArmSizeAssessmentPage: FC = () => {
             <span className="font-medium text-zinc-200">
               {t('armSize.armLabel', { unit: labels.length })}
             </span>
-            <input
+            <HeroNumberInput
               id="arm-cm"
-              type="number"
               inputMode="decimal"
               min={armMinDisplay}
               max={armMaxDisplay}
               step={0.1}
-              className="ui-input max-w-xs"
+              className="max-w-xs"
               placeholder={t('armSize.armPlaceholder')}
               value={armCircumferenceInput}
               onChange={(e) => {
