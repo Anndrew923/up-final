@@ -3,7 +3,7 @@
     "profile": {
       "kicker": "身體基準",
       "title": "身體資料",
-      "completeBadge": "基準已齊 — 後續可接需要身高、體重、年齡、性別的評測換算。",
+      "completeBadge": "基準已齊。",
       "incompleteHint": "請補齊身體資料，之後評測才能從實測值換算分數。",
       "gender": "性別",
       "age": "年齡（歲）",
