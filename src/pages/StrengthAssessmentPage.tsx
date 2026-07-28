@@ -169,11 +169,11 @@ const StrengthAssessmentPage: FC = () => {
           </section>
         ) : null}
 
-        <section className="space-y-6 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+        <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-4 shadow-panel backdrop-blur sm:p-5">
           <div className="flex justify-end">
             <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
           </div>
-          <div className="grid gap-6">
+          <div className="grid gap-3">
             {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
               const rowResult = perLiftResult[lift];
               const rowErr = perLiftError[lift];
@@ -186,14 +186,18 @@ const StrengthAssessmentPage: FC = () => {
               return (
                 <fieldset
                   key={lift}
-                  className="space-y-3 rounded-xl border border-zinc-800/80 bg-bg-panel/40 p-4"
+                  className="space-y-2 rounded-xl border border-zinc-800/80 bg-bg-panel/40 p-3"
                 >
                   <legend className="text-sm font-medium text-zinc-200">
                     {t(`strength.lifts.${lift}`)}
                   </legend>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  {/*
+                    WHY grid-cols-2 without sm:: force weight|reps side-by-side on ~390px so five
+                    lift cards stay compact — sm: breakpoint previously stacked them on mobile.
+                  */}
+                  <div className="grid grid-cols-2 gap-2.5">
                     <label
-                      className="flex flex-col gap-1 text-xs text-zinc-400"
+                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
                       htmlFor={`st-w-${lift}`}
                     >
                       <span>{t('strength.weightLabel', { unit: labels.weight })}</span>
@@ -202,7 +206,8 @@ const StrengthAssessmentPage: FC = () => {
                         inputMode="decimal"
                         min={0}
                         step={0.5}
-                        className="w-full"
+                        density="compact"
+                        className="w-full max-w-full"
                         placeholder={t('strength.weightPlaceholder')}
                         value={form[lift].weight}
                         onChange={(e) => setWeight(lift, e.target.value)}
@@ -214,7 +219,7 @@ const StrengthAssessmentPage: FC = () => {
                       />
                     </label>
                     <label
-                      className="flex flex-col gap-1 text-xs text-zinc-400"
+                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
                       htmlFor={`st-r-${lift}`}
                     >
                       <span>{t('strength.repsLabel')}</span>
@@ -260,47 +265,47 @@ const StrengthAssessmentPage: FC = () => {
                   ) : null}
 
                   {rowResult ? (
-                    <div className="space-y-3">
-                      <div
-                        className="space-y-1 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2.5 text-sm"
-                        role="status"
-                      >
-                        {rowResult.weightCapped ? (
-                          <p
-                            className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
-                            role="status"
-                          >
-                            {t('strength.capWeightNotice', {
-                              lift: t(`strength.lifts.${lift}`),
-                              input: formatWeight(rowResult.weightInputKg, {
-                                includeUnit: false,
-                                digits: 1,
-                              }),
-                              max: formatWeight(rowResult.modelMaxKg, {
-                                includeUnit: false,
-                                digits: 1,
-                              }),
-                              unit: labels.weight,
-                            })}
-                          </p>
-                        ) : null}
-                        <p className="font-mono text-xs tabular-nums text-zinc-300">
-                          <span className="text-zinc-500">{t('strength.singleOneRmLabel')}</span>{' '}
-                          <span className="text-zinc-100">
-                            {t('strength.singleOneRmValue', {
-                              value: formatWeight(rowResult.oneRepMax, {
-                                includeUnit: false,
-                                digits: 1,
-                              }),
-                              unit: labels.weight,
-                            })}
-                          </span>
+                    <div
+                      className="space-y-1.5 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2"
+                      role="status"
+                    >
+                      {rowResult.weightCapped ? (
+                        <p
+                          className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
+                          role="status"
+                        >
+                          {t('strength.capWeightNotice', {
+                            lift: t(`strength.lifts.${lift}`),
+                            input: formatWeight(rowResult.weightInputKg, {
+                              includeUnit: false,
+                              digits: 1,
+                            }),
+                            max: formatWeight(rowResult.modelMaxKg, {
+                              includeUnit: false,
+                              digits: 1,
+                            }),
+                            unit: labels.weight,
+                          })}
                         </p>
-                        <p className="font-mono text-sm tabular-nums text-accent-info">
-                          <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
-                          <span className="font-semibold">{rowResult.finalScore.toFixed(2)}</span>
-                        </p>
-                      </div>
+                      ) : null}
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                        {t('strength.singleOneRmLabel')}
+                      </p>
+                      <p className="font-mono text-2xl font-bold tabular-nums text-accent-info">
+                        {t('strength.singleOneRmValue', {
+                          value: formatWeight(rowResult.oneRepMax, {
+                            includeUnit: false,
+                            digits: 1,
+                          }),
+                          unit: labels.weight,
+                        })}
+                      </p>
+                      <p className="font-mono text-sm tabular-nums text-zinc-300">
+                        <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
+                        <span className="font-semibold text-zinc-100">
+                          {rowResult.finalScore.toFixed(2)}
+                        </span>
+                      </p>
                     </div>
                   ) : null}
                 </fieldset>
@@ -308,7 +313,7 @@ const StrengthAssessmentPage: FC = () => {
             })}
           </div>
 
-          <div className="space-y-4 border-t border-zinc-800 pt-6">
+          <div className="space-y-4 border-t border-zinc-800 pt-4">
             <h2 className="text-sm font-semibold tracking-tight text-zinc-200">
               {t('strength.combinedSectionTitle')}
             </h2>
