@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import { useCurrentUserIsAdmin } from '../../hooks/useCurrentUserIsAdmin';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import LadderReportSheet from './LadderReportSheet';
@@ -55,9 +56,31 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const blockUid = useLadderBlockStore((s) => s.block);
+  // WHY: Modal stays mounted on LadderPage — only resolve admin when preview is open.
+  const { isAdmin } = useCurrentUserIsAdmin({ enabled: open });
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
+  const [uidCopied, setUidCopied] = useState(false);
+  const copyResetTimerRef = useRef<number | null>(null);
 
   useShellScrollLock(open);
+
+  useEffect(() => {
+    if (!open) {
+      setUidCopied(false);
+      if (copyResetTimerRef.current != null) {
+        window.clearTimeout(copyResetTimerRef.current);
+        copyResetTimerRef.current = null;
+      }
+    }
+  }, [open, targetUid, user?.uid]);
+
+  useEffect(() => {
+    return () => {
+      if (copyResetTimerRef.current != null) {
+        window.clearTimeout(copyResetTimerRef.current);
+      }
+    };
+  }, []);
 
   const showModerationActions = useMemo(() => {
     if (!targetUid || !viewerUid) return false;
@@ -65,6 +88,26 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
     if (user?.isAnonymousInLadder) return false;
     return true;
   }, [targetUid, viewerUid, user?.isAnonymousInLadder]);
+
+  const adminUid = targetUid?.trim() || user?.uid?.trim() || '';
+  const showAdminUid = Boolean(isAdmin && adminUid);
+
+  const handleCopyUid = async () => {
+    if (!adminUid) return;
+    try {
+      await navigator.clipboard.writeText(adminUid);
+      setUidCopied(true);
+      if (copyResetTimerRef.current != null) {
+        window.clearTimeout(copyResetTimerRef.current);
+      }
+      copyResetTimerRef.current = window.setTimeout(() => {
+        setUidCopied(false);
+        copyResetTimerRef.current = null;
+      }, 2000);
+    } catch {
+      setUidCopied(false);
+    }
+  };
 
   const handleBlock = () => {
     if (!targetUid) return;
@@ -142,6 +185,24 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
             {t('cancel', { ns: 'common' })}
           </button>
         </header>
+
+        {showAdminUid ? (
+          <div className="mb-3 rounded-md border border-accent-info/30 bg-accent-info/5 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent-info">
+              {t('ladder.userPreview.adminUidLabel', { ns: 'common' })}
+            </p>
+            <p className="mt-1 break-all font-mono text-xs text-zinc-200">{adminUid}</p>
+            <button
+              type="button"
+              className="ui-btn mt-2 w-full border-accent-info/40 text-xs text-accent-info hover:bg-accent-info/10"
+              onClick={() => void handleCopyUid()}
+            >
+              {uidCopied
+                ? t('ladder.userPreview.adminUidCopied', { ns: 'common' })
+                : t('ladder.userPreview.adminUidCopy', { ns: 'common' })}
+            </button>
+          </div>
+        ) : null}
 
         {loading ? (
           <p className="rounded-md border border-zinc-800 bg-zinc-900/40 px-3 py-4 text-sm text-zinc-400">

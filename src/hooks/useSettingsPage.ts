@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
@@ -6,10 +6,10 @@ import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { markUserLocaleOverride } from '../i18n/language';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
-import { fetchCurrentUserIsAdmin } from '../services/adminEntitlementService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
+import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
 import { useAuthStore } from '../stores/authStore';
 import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { sensoryPreferences } from '../services/sensoryPreferences';
@@ -86,27 +86,8 @@ export function useSettingsPage(): SettingsPageState {
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
   const [banner, setBanner] = useState<SettingsBanner>('idle');
   const [soundEnabled, setSoundEnabled] = useState(() => sensoryPreferences.isSoundEnabled());
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminCheckReady, setAdminCheckReady] = useState(false);
+  const { isAdmin, ready: adminCheckReady } = useCurrentUserIsAdmin();
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (authStatus !== 'signed-in' || isAnonymous) {
-      setIsAdmin(false);
-      setAdminCheckReady(authStatus !== 'loading');
-      return;
-    }
-    setAdminCheckReady(false);
-    void fetchCurrentUserIsAdmin().then((next) => {
-      if (cancelled) return;
-      setIsAdmin(next);
-      setAdminCheckReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [authStatus, isAnonymous, email]);
 
   const toggleSound = useCallback(() => {
     const next = !sensoryPreferences.isSoundEnabled();

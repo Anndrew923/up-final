@@ -425,6 +425,8 @@ export async function signInAnonymouslyWeb(): Promise<User> {
 export async function signOutFirebase(): Promise<void> {
   if (!firebaseAuth) return;
   await signOut(firebaseAuth);
+  const { clearAdminEntitlementCache } = await import('./adminEntitlementService');
+  clearAdminEntitlementCache();
   if (isCapacitorNativePlatform()) {
     const { signOutNative } = await import('./firebaseNativeAuth');
     await signOutNative();
