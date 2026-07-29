@@ -23,6 +23,11 @@ export type LadderAdminReportsCursor = {
 
 export type ProcessLadderReportAction = 'APPROVE' | 'REJECT';
 
+/** Must match server `CONFIRM_REMOVE_FROM_LADDER` / `CONFIRM_DELETE_ACCOUNT`. */
+export const CONFIRM_REMOVE_FROM_LADDER = 'REMOVE';
+export const CONFIRM_DELETE_ACCOUNT = 'DELETE';
+
+
 type GetAdminLadderReportsResponse = {
   ok: boolean;
   reports?: LadderAdminReportRow[];
@@ -102,6 +107,117 @@ export async function processAdminLadderReport(params: {
     return data ?? { ok: false };
   } catch (err) {
     logLadderCallableError('processLadderReport', err);
+    throw err;
+  }
+}
+
+export type AdminLadderUserLookup = {
+  uid: string;
+  email: string | null;
+  authExists: boolean;
+  userDocExists: boolean;
+  isAdmin: boolean;
+  onLadder: boolean;
+  displayName: string | null;
+  avatarUrl: string | null;
+  overallScore: number | null;
+};
+
+type LookupAdminLadderUserResponse = {
+  ok: boolean;
+  user?: AdminLadderUserLookup;
+};
+
+type AdminUserOpResponse = {
+  ok: boolean;
+  mode?: string;
+  previewDeleted?: boolean;
+  shardsDeleted?: number;
+  authDeleted?: boolean;
+  cloudDeleted?: boolean;
+};
+
+let lookupUserFn: HttpsCallable<{ query: string }, LookupAdminLadderUserResponse> | null = null;
+let removeFromLadderFn: HttpsCallable<
+  { targetUid: string; confirmPhrase: string },
+  AdminUserOpResponse
+> | null = null;
+let deleteUserFn: HttpsCallable<
+  { targetUid: string; confirmPhrase: string },
+  AdminUserOpResponse
+> | null = null;
+
+function getLookupCallable() {
+  const functions = getFirebaseFunctions();
+  if (!functions) return null;
+  if (!lookupUserFn) {
+    lookupUserFn = httpsCallable(functions, 'lookupAdminLadderUser');
+  }
+  return lookupUserFn;
+}
+
+function getRemoveCallable() {
+  const functions = getFirebaseFunctions();
+  if (!functions) return null;
+  if (!removeFromLadderFn) {
+    removeFromLadderFn = httpsCallable(functions, 'adminRemoveFromLadder');
+  }
+  return removeFromLadderFn;
+}
+
+function getDeleteUserCallable() {
+  const functions = getFirebaseFunctions();
+  if (!functions) return null;
+  if (!deleteUserFn) {
+    deleteUserFn = httpsCallable(functions, 'adminDeleteUser');
+  }
+  return deleteUserFn;
+}
+
+export async function lookupAdminLadderUser(query: string): Promise<{
+  ok: boolean;
+  user: AdminLadderUserLookup | null;
+} | null> {
+  const callable = getLookupCallable();
+  if (!callable) return null;
+  try {
+    const { data } = await callable({ query });
+    return {
+      ok: Boolean(data?.ok),
+      user: data?.user ?? null,
+    };
+  } catch (err) {
+    logLadderCallableError('lookupAdminLadderUser', err);
+    throw err;
+  }
+}
+
+export async function adminRemoveUserFromLadder(params: {
+  targetUid: string;
+  confirmPhrase: string;
+}): Promise<AdminUserOpResponse | null> {
+  const callable = getRemoveCallable();
+  if (!callable) return null;
+  try {
+    const { data } = await callable(params);
+    return data ?? { ok: false };
+  } catch (err) {
+    logLadderCallableError('adminRemoveFromLadder', err);
+    throw err;
+  }
+}
+
+export async function adminDeleteLadderUser(params: {
+  targetUid: string;
+  confirmPhrase: string;
+}): Promise<AdminUserOpResponse | null> {
+  const callable = getDeleteUserCallable();
+  if (!callable) return null;
+  try {
+    const { data } = await callable(params);
+    return data ?? { ok: false };
+  } catch (err) {
+    logLadderCallableError('adminDeleteUser', err);
     throw err;
   }
 }

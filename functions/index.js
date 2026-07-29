@@ -18,6 +18,11 @@ export {
   getAdminLadderReports,
   processLadderReport,
 } from "./ladder/adminReportsCallable.js";
+export {
+  lookupAdminLadderUser,
+  adminRemoveFromLadder,
+  adminDeleteUser,
+} from "./ladder/adminUserOpsCallable.js";
 export { dynoIntelChat } from "./dynoIntel/chatCallable.js";
 export { syncProSubscription } from "./subscription/syncProCallable.js";
 export { revenueCatWebhook } from "./subscription/revenueCatWebhook.js";

@@ -15,6 +15,9 @@ const REGION = process.env.FUNCTIONS_REGION || "us-central1";
 const CALLABLE_SERVICES = [
   "getadminladderreports",
   "processladderreport",
+  "lookupadminladderuser",
+  "adminremovefromladder",
+  "admindeleteuser",
   "ladderreportuser",
   "laddersubmitshard",
   "laddersyncpreview",

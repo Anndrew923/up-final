@@ -2,7 +2,7 @@
   "admin": {
     "kicker": "審核中心",
     "title": "管理員平台",
-    "subtitle": "在手機上審核天梯暱稱與頭像檢舉。",
+    "subtitle": "在手機上審核天梯檢舉，並管理天梯帳號。",
     "loading": "正在確認管理員權限…",
     "loadingList": "載入檢舉中…",
     "loadingMore": "載入更多…",
@@ -23,11 +23,37 @@
     "unknownName": "未命名",
     "unknownType": "原因未知",
     "unknownTime": "時間未知",
+    "reportsTitle": "待審核檢舉",
     "card": {
       "target": "被檢舉：{{name}}",
       "type": "原因：{{type}}",
       "time": "檢舉時間：{{time}}",
       "reporter": "檢舉者：{{name}}"
+    },
+    "userOps": {
+      "title": "天梯用戶工具",
+      "hint": "用 email 或 UID 查找學員。僅下架會清公開榜與頭像檔，但保留登入／Pro 與上傳配額；完整刪帳會連 Auth 一併移除。",
+      "queryPlaceholder": "Email 或 UID",
+      "search": "查詢",
+      "lookupFail": "查詢失敗，請確認輸入後再試。",
+      "lookupNotFound": "找不到對應的登入帳號。",
+      "removeOk": "已從公開天梯下架。",
+      "deleteOk": "帳號已刪除。",
+      "opFail": "操作失敗，請稍後再試。",
+      "blockedAdmin": "不可對管理員帳號操作。",
+      "blockedSelf": "不可對自己的帳號操作。",
+      "onLadder": "是否在天梯：{{value}}",
+      "yes": "是",
+      "no": "否",
+      "score": "預覽分數：{{score}}",
+      "removeLadder": "僅下架天梯",
+      "deleteAccount": "完整刪除帳號",
+      "confirmRemoveTitle": "確定下架天梯？",
+      "confirmRemoveBody": "將刪除公開預覽、各榜單資料與頭像檔。登入帳號、Pro 與上傳配額會保留。",
+      "confirmDeleteTitle": "確定永久刪除帳號？",
+      "confirmDeleteBody": "將刪除 Auth 與雲端資料，無法復原。",
+      "typeRemove": "請輸入 REMOVE 確認。",
+      "typeDelete": "請輸入 DELETE 確認。"
     }
   }
 }

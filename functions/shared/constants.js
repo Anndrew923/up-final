@@ -63,6 +63,13 @@ export const CALLABLE_OPTS = {
   enforceAppCheck: process.env.FUNCTIONS_EMULATOR !== "true",
 };
 
+/** Admin moderation audit trail — Admin SDK writes only (rules deny client create). */
+export const ADMIN_ACTIONS_COLLECTION = "adminActions";
+
+/** Storage prefix for public ladder avatars — mirror client `ladderAvatarStoragePath`. */
+export const LADDER_AVATARS_STORAGE_PREFIX = "ladder-avatars";
+
+
 /** DYNO INTEL — keep in sync with product quotas. */
 export const DYNO_INTEL_TRIAL_PER_DAY = 2;
 export const DYNO_INTEL_PRO_PER_DAY = 30;

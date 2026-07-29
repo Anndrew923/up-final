@@ -2,7 +2,7 @@
   "admin": {
     "kicker": "Moderation",
     "title": "Admin Platform",
-    "subtitle": "Review pending arena nickname and avatar reports on this device.",
+    "subtitle": "Review arena reports and manage ladder accounts on this device.",
     "loading": "Checking admin access…",
     "loadingList": "Loading reports…",
     "loadingMore": "Loading more…",
@@ -23,11 +23,37 @@
     "unknownName": "Unknown",
     "unknownType": "Unknown reason",
     "unknownTime": "Unknown time",
+    "reportsTitle": "Pending reports",
     "card": {
       "target": "Target: {{name}}",
       "type": "Reason: {{type}}",
       "time": "Reported: {{time}}",
       "reporter": "Reporter: {{name}}"
+    },
+    "userOps": {
+      "title": "Ladder user tools",
+      "hint": "Look up a student by email or UID. Remove clears the public ladder and avatar files but keeps Auth/Pro and upload quotas. Delete erases Auth + cloud data.",
+      "queryPlaceholder": "Email or UID",
+      "search": "Look up",
+      "lookupFail": "Lookup failed. Check the query and try again.",
+      "lookupNotFound": "No Auth user found for that email/UID.",
+      "removeOk": "Removed from the public ladder.",
+      "deleteOk": "Account deleted.",
+      "opFail": "Operation failed. Try again.",
+      "blockedAdmin": "Admin accounts cannot be targeted.",
+      "blockedSelf": "You cannot target your own account.",
+      "onLadder": "On ladder: {{value}}",
+      "yes": "Yes",
+      "no": "No",
+      "score": "Preview score: {{score}}",
+      "removeLadder": "Remove from ladder",
+      "deleteAccount": "Delete account",
+      "confirmRemoveTitle": "Remove from ladder?",
+      "confirmRemoveBody": "Deletes public preview, shard entries, and avatar files. Auth login, Pro, and upload quotas stay intact.",
+      "confirmDeleteTitle": "Delete account permanently?",
+      "confirmDeleteBody": "Erases Auth + cloud data. This cannot be undone.",
+      "typeRemove": "Type REMOVE to confirm.",
+      "typeDelete": "Type DELETE to confirm."
     }
   }
 }

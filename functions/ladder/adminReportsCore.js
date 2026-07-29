@@ -2,14 +2,13 @@ import { FieldPath } from "firebase-admin/firestore";
 import { FieldValue, db } from "../shared/admin.js";
 import { assertAdmin } from "../shared/assertAdmin.js";
 import {
+  ADMIN_ACTIONS_COLLECTION,
   KNOWN_LEADERBOARD_SHARD_IDS,
   LEADERBOARD_PREVIEWS_COLLECTION,
   LEADERBOARDS_COLLECTION,
   ENTRIES_SUBCOLLECTION,
 } from "../shared/constants.js";
 import { LADDER_REPORTS_COLLECTION } from "./reportUserCore.js";
-
-export const ADMIN_ACTIONS_COLLECTION = "adminActions";
 export const DEFAULT_ADMIN_REPORTS_LIMIT = 20;
 export const MAX_ADMIN_REPORTS_LIMIT = 50;
 export const VALID_REPORT_TYPES = new Set(["nickname", "avatar", "both"]);
