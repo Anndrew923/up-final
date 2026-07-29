@@ -65,7 +65,32 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('../../components/DisclosurePanel', () => ({
-  DisclosurePanel: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  DisclosurePanel: ({
+    children,
+    expanded,
+    onToggle,
+    title,
+    toggleExpandLabel,
+    toggleCollapseLabel,
+    collapsedHint,
+  }: {
+    children?: ReactNode;
+    expanded: boolean;
+    onToggle: () => void;
+    title?: ReactNode;
+    toggleExpandLabel: string;
+    toggleCollapseLabel: string;
+    collapsedHint?: string;
+  }) => (
+    <div data-testid="disclosure-panel">
+      <button type="button" onClick={onToggle}>
+        {title}
+        {expanded ? toggleCollapseLabel : toggleExpandLabel}
+      </button>
+      {!expanded && collapsedHint ? <p>{collapsedHint}</p> : null}
+      {expanded ? <div data-testid="disclosure-body">{children}</div> : null}
+    </div>
+  ),
 }));
 
 vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
@@ -289,6 +314,61 @@ describe('CardioAssessmentPage', () => {
     expect(container.textContent).toContain('cardio.run5kmWorldRecordFloorHint');
     const status = container.querySelector('[role="status"]');
     expect(status?.textContent).toContain('cardio.run5kmWorldRecordFloorHint');
+
+    unmount();
+  });
+
+  it('keeps 5km scoring anchors and disclaimer collapsed in reference by default', () => {
+    mockUseCardioAssessmentPage.mockReturnValue({
+      profileReady: true,
+      cooperDistanceOverCap: false,
+      cooperCapMeters: null,
+      run5KmTimeUnderFloor: false,
+      run5KmFloorSeconds: 740,
+      activeTab: '5km',
+      setActiveTab: vi.fn(),
+      distanceInput: '',
+      setDistanceInput: vi.fn(),
+      runMinutesInput: '25',
+      setRunMinutesInput: vi.fn(),
+      runSecondsInput: '0',
+      setRunSecondsInput: vi.fn(),
+      previewScore: null,
+      submitDone: false,
+      errorKey: null,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      submitAssessment: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue(null);
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    expect(text).toContain('assessment.referenceInfo.title');
+    expect(text).toContain('cardio.run5kmInfo.collapsedHint');
+    expect(text).not.toContain('cardio.run5kmSpec.disclaimer');
+    expect(text).not.toContain('cardio.run5kmSpec.baseLabel');
+    expect(container.querySelector('[role="note"]')).toBeNull();
+
+    const hint = container.querySelector(
+      'button[aria-label="cardio.run5kmInfo.infoButtonAria"]'
+    );
+    expect(hint).toBeTruthy();
+
+    const expandBtn = Array.from(container.querySelectorAll('button')).find((el) =>
+      el.textContent?.includes('assessment.referenceInfo.toggleExpand')
+    );
+    expect(expandBtn).toBeTruthy();
+    act(() => {
+      expandBtn!.click();
+    });
+    expect(container.textContent).toContain('cardio.run5kmSpec.disclaimer');
+    expect(container.textContent).toContain('cardio.run5kmSpec.baseLabel');
+    expect(container.textContent).toContain('cardio.run5kmSpec.baseMale');
+    expect(container.textContent).toContain('cardio.run5kmSpec.ceilingLabel');
+    expect(container.textContent).toContain('cardio.run5kmSpec.specialtyNote');
+    expect(container.textContent).not.toContain('cardio.run5kmInfo.collapsedHint');
+    expect(container.querySelector('[role="note"]')).toBeTruthy();
 
     unmount();
   });

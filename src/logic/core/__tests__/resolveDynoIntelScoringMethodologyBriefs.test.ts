@@ -69,6 +69,12 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(cooper?.body).toMatch(/4900/);
     expect(cooper?.body).toMatch(/4400/);
 
+    const fiveKm = briefs.find((b) => b.metric === '5km');
+    expect(fiveKm?.body).toMatch(/20:00/);
+    expect(fiveKm?.body).toMatch(/12:20/);
+    expect(fiveKm?.body).toMatch(/13:40/);
+    expect(fiveKm?.body).not.toMatch(/\{\{maleFloor\}\}/);
+
     const grip = briefs.find((b) => b.metric === 'gripStrength');
     expect(grip?.body).toMatch(/IronMind/);
     expect(grip?.body).toMatch(/CoC/);

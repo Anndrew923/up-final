@@ -32,11 +32,21 @@
     "run5kmWorldRecordFloorHint": "輸入時間快於模型最短成績（{{capTime}}）。已改以該時間計分並鎖定最高分。",
     "run5kmInfo": {
       "title": "5 公里完成時間評測",
-      "p1": "以 5 公里完成時間對照常模計分。屬專項選填 — 僅本地與天梯，不計入六軸。（不作醫療診斷。）",
-      "p2": "性別錨點：男 20:00＝100 分、45:00＝0 分；女 22:30＝100 分、50:00＝0 分。",
-      "p3": "快於 100 分錨點採線性＋四次方溢出。未填性別時預設男性常模。",
-      "p4": "絕不 Fallback 進六軸雷達。",
-      "p5": "模型最短成績：男性 {{maleFloor}}、女性 {{femaleFloor}}；更快時分數鎖在此上限。"
+      "infoButtonAria": "5 公里評測說明",
+      "bubbleTip": "輸入 5 公里完成時間（分／秒）。分數依性別常模換算。",
+      "bubbleReferenceHint": "基準、加分與天花板請見底部「{{title}}」",
+      "collapsedHint": "評測基準、突破加分、成績天花板"
+    },
+    "run5kmSpec": {
+      "disclaimer": "成績僅供個人紀錄與天梯排行，非醫療依據。",
+      "baseLabel": "評測基準",
+      "baseMale": "男 {{t100}}（100分）～ {{t0}}（0分）",
+      "baseFemale": "女 {{t100}}（100分）～ {{t0}}（0分）",
+      "overflowLabel": "突破加分",
+      "overflow": "快於 100 分基準可獲溢出加分；未設性別預設男性。",
+      "ceilingLabel": "成績天花板",
+      "ceiling": "上限男 {{maleFloor}}／女 {{femaleFloor}}，超越鎖定最高分。",
+      "specialtyNote": "專項選填 — 僅本地與天梯，不計入六軸雷達。"
     },
     "previewLabel": "預覽分數",
     "performanceSpecHeader": "律動規格",

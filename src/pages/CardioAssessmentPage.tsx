@@ -18,13 +18,14 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
+import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import type { CardioTab } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
-import { formatRun5KmFloorClock, RUN_5KM_FEMALE, RUN_5KM_MALE } from '../logic/core/cardioScoring';
+import { formatRun5KmFloorClock } from '../logic/core/cardioScoring';
 import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
 import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { loadPhysicalProfile } from '../services/localStorageService';
@@ -158,7 +159,9 @@ const CardioAssessmentPage: FC = () => {
             value={activeTab}
             options={segmentOptions}
             onChange={(tab) => {
+              // WHY: Close the other tab's disclosure so expanded science copy never leaks across panels.
               if (tab === '5km') setCooperInfoOpen(false);
+              if (tab === 'cooper') setRun5kmInfoOpen(false);
               setActiveTab(tab);
             }}
             ariaLabel={t('cardio.tabsAria')}
@@ -212,10 +215,21 @@ const CardioAssessmentPage: FC = () => {
             labelledBy="cardio-tab-5km"
             active={isSpecialtyTab}
           >
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              {t('cardio.run5kmHeading')}
-            </p>
-            <div className="space-y-2">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <label className="min-w-0 flex-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  {t('cardio.run5kmHeading')}
+                </label>
+                <AssessmentFieldHintBubble
+                  active={isSpecialtyTab}
+                  ariaLabel={t('cardio.run5kmInfo.infoButtonAria')}
+                  tip={t('cardio.run5kmInfo.bubbleTip')}
+                  footer={t('cardio.run5kmInfo.bubbleReferenceHint', {
+                    title: t('assessment.referenceInfo.title'),
+                  })}
+                />
+              </div>
+
               <div className="flex min-w-0 flex-wrap gap-2.5">
                 <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
                   <span>{t('cardio.minutesLabel')}</span>
@@ -252,6 +266,7 @@ const CardioAssessmentPage: FC = () => {
                   />
                 </label>
               </div>
+
               {run5KmTimeUnderFloor ? (
                 <p
                   className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
@@ -329,6 +344,7 @@ const CardioAssessmentPage: FC = () => {
 
           <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
+          {/* WHY: Scheme C keeps the form clean — scoring anchors live in the shared collapsible footer. */}
           <AssessmentReferenceFooter>
             {isCooperTab ? (
               <AssessmentReferenceDisclosure
@@ -351,19 +367,9 @@ const CardioAssessmentPage: FC = () => {
                 instanceId="run5km-info"
                 expanded={run5kmInfoOpen}
                 onToggle={() => setRun5kmInfoOpen((v) => !v)}
+                collapsedHint={t('cardio.run5kmInfo.collapsedHint')}
               >
-                <ReferenceSimpleCopy
-                  paragraphs={[
-                    t('cardio.run5kmInfo.p1'),
-                    t('cardio.run5kmInfo.p2'),
-                    t('cardio.run5kmInfo.p3'),
-                    t('cardio.run5kmInfo.p4'),
-                  ]}
-                  footnote={t('cardio.run5kmInfo.p5', {
-                    maleFloor: formatRun5KmFloorClock(RUN_5KM_MALE.floorSeconds),
-                    femaleFloor: formatRun5KmFloorClock(RUN_5KM_FEMALE.floorSeconds),
-                  })}
-                />
+                <Run5KmSpecReferencePanel />
               </AssessmentReferenceDisclosure>
             )}
           </AssessmentReferenceFooter>

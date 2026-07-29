@@ -139,11 +139,35 @@ export function getRun5KmFloorSecondsForGender(gender: string | null | undefined
   return resolveRun5KmNorm(gender).floorSeconds;
 }
 
-/** MM:SS clock for WR-floor hints / reference copy (no fractional seconds). */
+/** MM:SS for any 5 km anchor seconds (T100 / T0 / WR floor; no fractional seconds). */
 export function formatRun5KmFloorClock(floorSeconds: number): string {
   const minutes = Math.floor(floorSeconds / 60);
   const seconds = floorSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/**
+ * WHY: Page Scheme C copy + DynoIntel methodology briefs must interpolate the same clocks
+ * from scoring constants — never diverge into hard-coded 20:00 / 12:20 strings.
+ */
+export type Run5KmSpecClockParams = {
+  maleT100: string;
+  maleT0: string;
+  femaleT100: string;
+  femaleT0: string;
+  maleFloor: string;
+  femaleFloor: string;
+};
+
+export function getRun5KmSpecClockParams(): Run5KmSpecClockParams {
+  return {
+    maleT100: formatRun5KmFloorClock(RUN_5KM_MALE.t100Seconds),
+    maleT0: formatRun5KmFloorClock(RUN_5KM_MALE.t0Seconds),
+    femaleT100: formatRun5KmFloorClock(RUN_5KM_FEMALE.t100Seconds),
+    femaleT0: formatRun5KmFloorClock(RUN_5KM_FEMALE.t0Seconds),
+    maleFloor: formatRun5KmFloorClock(RUN_5KM_MALE.floorSeconds),
+    femaleFloor: formatRun5KmFloorClock(RUN_5KM_FEMALE.floorSeconds),
+  };
 }
 
 /** Canonical persisted shape after floor clamp + minute/second renormalization. */

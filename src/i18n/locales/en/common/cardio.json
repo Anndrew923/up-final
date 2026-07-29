@@ -32,11 +32,21 @@
     "run5kmWorldRecordFloorHint": "Time is faster than the model floor ({{capTime}}). Scoring uses the capped time.",
     "run5kmInfo": {
       "title": "5 km Finish-Time Test",
-      "p1": "Specialty optional — local + ladder only; never enters the six-axis cardio score. Fitness context only.",
-      "p2": "Anchors: male 20:00 = 100, 45:00 = 0; female 22:30 = 100, 50:00 = 0.",
-      "p3": "Faster than the 100-pt anchor uses linear + quartic overflow. Missing sex defaults to male norms.",
-      "p4": "Never falls back into the six-axis radar.",
-      "p5": "Model floors: {{maleFloor}} (male), {{femaleFloor}} (female); scores cap when faster."
+      "infoButtonAria": "5 km test details",
+      "bubbleTip": "Enter 5 km finish time (minutes / seconds). Score maps to sex-specific norms.",
+      "bubbleReferenceHint": "Base, overflow, and ceiling details are in “{{title}}” at the bottom.",
+      "collapsedHint": "Scoring base, overflow bonus, hard ceiling"
+    },
+    "run5kmSpec": {
+      "disclaimer": "For personal logs and ladder ranking only — not medical advice.",
+      "baseLabel": "Scoring base",
+      "baseMale": "Male {{t100}} (100) – {{t0}} (0)",
+      "baseFemale": "Female {{t100}} (100) – {{t0}} (0)",
+      "overflowLabel": "Overflow bonus",
+      "overflow": "Faster than the 100-pt anchor earns overflow points. Missing sex defaults to male.",
+      "ceilingLabel": "Hard ceiling",
+      "ceiling": "Floors: male {{maleFloor}} / female {{femaleFloor}}. Faster times lock the max score.",
+      "specialtyNote": "Specialty optional — local + ladder only; never enters the six-axis radar."
     },
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "PERFORMANCE SPEC / Thermal Spec",

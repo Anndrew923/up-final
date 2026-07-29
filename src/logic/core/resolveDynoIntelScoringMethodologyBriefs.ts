@@ -2,9 +2,7 @@ import type { TFunction } from 'i18next';
 import {
   COOPER_MAX_DISTANCE_FEMALE_METERS,
   COOPER_MAX_DISTANCE_MALE_METERS,
-  RUN_5KM_FEMALE,
-  RUN_5KM_MALE,
-  formatRun5KmFloorClock,
+  getRun5KmSpecClockParams,
 } from './cardioScoring';
 import {
   SMM_KG_CEILING_FEMALE,
@@ -15,14 +13,24 @@ import {
 } from './dynoIntelScoringMethodologyCatalog';
 import type { DynoScoringMethodologyBrief } from './dynoIntelTypes';
 
+const RUN_5KM_SPEC_CLOCKS = getRun5KmSpecClockParams();
+
 const METHODOLOGY_I18N_INTERPOLATIONS: Record<string, Record<string, number | string>> = {
   'cardio.cooperInfo.p5': {
     maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
     femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
   },
-  'cardio.run5kmInfo.p5': {
-    maleFloor: formatRun5KmFloorClock(RUN_5KM_MALE.floorSeconds),
-    femaleFloor: formatRun5KmFloorClock(RUN_5KM_FEMALE.floorSeconds),
+  'cardio.run5kmSpec.baseMale': {
+    t100: RUN_5KM_SPEC_CLOCKS.maleT100,
+    t0: RUN_5KM_SPEC_CLOCKS.maleT0,
+  },
+  'cardio.run5kmSpec.baseFemale': {
+    t100: RUN_5KM_SPEC_CLOCKS.femaleT100,
+    t0: RUN_5KM_SPEC_CLOCKS.femaleT0,
+  },
+  'cardio.run5kmSpec.ceiling': {
+    maleFloor: RUN_5KM_SPEC_CLOCKS.maleFloor,
+    femaleFloor: RUN_5KM_SPEC_CLOCKS.femaleFloor,
   },
   'muscle.standardsInfo.dualSovereignPreamble': {
     maleMax: SMM_KG_CEILING_MALE,

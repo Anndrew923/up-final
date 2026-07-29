@@ -13,6 +13,7 @@ import {
   getRun5KmFloorSecondsForGender,
   clampRun5KmSplitToFloor,
   formatRun5KmFloorClock,
+  getRun5KmSpecClockParams,
   mergeScoreMapWithResolvedCardio,
   resolveCardioScoreForDisplay,
   resolveRun5KmNorm,
@@ -173,6 +174,17 @@ describe('calculate5KmScore', () => {
     it('formatRun5KmFloorClock renders MM:SS', () => {
       expect(formatRun5KmFloorClock(740)).toBe('12:20');
       expect(formatRun5KmFloorClock(820)).toBe('13:40');
+    });
+
+    it('getRun5KmSpecClockParams mirrors scoring anchors for UI/Dyno copy', () => {
+      expect(getRun5KmSpecClockParams()).toEqual({
+        maleT100: '20:00',
+        maleT0: '45:00',
+        femaleT100: '22:30',
+        femaleT0: '50:00',
+        maleFloor: '12:20',
+        femaleFloor: '13:40',
+      });
     });
 
     it('clampRun5KmSplitToFloor raises under-floor times and renormalizes', () => {
