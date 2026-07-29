@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
@@ -6,6 +6,7 @@ import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { markUserLocaleOverride } from '../i18n/language';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
+import { fetchCurrentUserIsAdmin } from '../services/adminEntitlementService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
@@ -52,11 +53,16 @@ export interface SettingsPageState {
   canSignOut: boolean;
   canDeleteAccount: boolean;
   canRestorePurchases: boolean;
+  /** True only when `users/{uid}.isAdmin === true` — hides admin entry otherwise. */
+  isAdmin: boolean;
+  /** False until the admin entitlement check finishes (avoids entry flicker). */
+  adminCheckReady: boolean;
   dynoIntelLogCount: number;
   goToAbout(): void;
   goToContact(): void;
   goToPrivacyPolicy(): void;
   goToJoinArena(): void;
+  goToAdmin(): void;
   reCalibrateBoot(): void;
   toggleLocale(): void;
   toggleSound(): void;
@@ -80,7 +86,27 @@ export function useSettingsPage(): SettingsPageState {
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
   const [banner, setBanner] = useState<SettingsBanner>('idle');
   const [soundEnabled, setSoundEnabled] = useState(() => sensoryPreferences.isSoundEnabled());
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminCheckReady, setAdminCheckReady] = useState(false);
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (authStatus !== 'signed-in' || isAnonymous) {
+      setIsAdmin(false);
+      setAdminCheckReady(authStatus !== 'loading');
+      return;
+    }
+    setAdminCheckReady(false);
+    void fetchCurrentUserIsAdmin().then((next) => {
+      if (cancelled) return;
+      setIsAdmin(next);
+      setAdminCheckReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus, isAnonymous, email]);
 
   const toggleSound = useCallback(() => {
     const next = !sensoryPreferences.isSoundEnabled();
@@ -112,6 +138,8 @@ export function useSettingsPage(): SettingsPageState {
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
+      isAdmin,
+      adminCheckReady,
       dynoIntelLogCount,
       goToAbout() {
         navigate(ROUTES.about);
@@ -124,6 +152,9 @@ export function useSettingsPage(): SettingsPageState {
       },
       goToJoinArena() {
         navigate(joinArenaPath('settings'));
+      },
+      goToAdmin() {
+        navigate(ROUTES.admin);
       },
       reCalibrateBoot() {
         if (!window.confirm(t('settings.system.reCalibrateConfirm'))) return;
@@ -240,6 +271,8 @@ export function useSettingsPage(): SettingsPageState {
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
+      isAdmin,
+      adminCheckReady,
       dynoIntelLogCount,
       clearDynoIntelHistory,
       toggleSound,

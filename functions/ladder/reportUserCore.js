@@ -53,12 +53,31 @@ export function isReportAllowedWithinWindow(existingCreatedAtIso, nowMs = Date.n
 }
 
 /**
- * @returns {{ mode: 'merge' | 'new', consumesQuota: boolean, preserveCreatedAt: string | null }}
+ * @returns {{ mode: 'merge' | 'new' | 'noop', consumesQuota: boolean, preserveCreatedAt: string | null }}
  */
-export function resolveReportWritePlan(existingCreatedAtIso, nowMs = Date.now()) {
+export function resolveReportWritePlan(existingCreatedAtIso, nowMs = Date.now(), existingStatus = null) {
+  const closed =
+    existingStatus === "resolved" ||
+    existingStatus === "dismissed" ||
+    existingStatus === "processing";
+
   if (!existingCreatedAtIso) {
     return { mode: "new", consumesQuota: true, preserveCreatedAt: null };
   }
+
+  // WHY: Closed reports must not be silently reopened by merge (admin work lost).
+  // Within the dedupe window → noop; after the window → fresh pending case (quota).
+  if (closed) {
+    if (!isReportAllowedWithinWindow(existingCreatedAtIso, nowMs)) {
+      return {
+        mode: "noop",
+        consumesQuota: false,
+        preserveCreatedAt: existingCreatedAtIso,
+      };
+    }
+    return { mode: "new", consumesQuota: true, preserveCreatedAt: null };
+  }
+
   if (!isReportAllowedWithinWindow(existingCreatedAtIso, nowMs)) {
     return {
       mode: "merge",
@@ -141,8 +160,19 @@ export async function runLadderReportUser(request) {
   return db.runTransaction(async (tx) => {
     const { ref: rateRef, data: rateDoc } = await loadRateLimitDoc(reporterUid, tx);
     const reportSnap = await tx.get(reportRef);
-    const existingCreatedAt = reportSnap.exists ? reportSnap.data()?.createdAt : null;
-    const plan = resolveReportWritePlan(existingCreatedAt, nowMs);
+    const existing = reportSnap.exists ? reportSnap.data() : null;
+    const existingCreatedAt = existing?.createdAt ?? null;
+    const existingStatus = existing?.status ?? null;
+    const plan = resolveReportWritePlan(existingCreatedAt, nowMs, existingStatus);
+
+    if (plan.mode === "noop") {
+      return {
+        ok: true,
+        reportId: docId,
+        merged: true,
+        reopened: false,
+      };
+    }
 
     if (plan.consumesQuota) {
       const cap = checkReporterReportsRollingCap(rateDoc, nowMs);
@@ -163,13 +193,19 @@ export async function runLadderReportUser(request) {
       preserveCreatedAt: plan.preserveCreatedAt,
     });
 
-    tx.set(reportRef, payload);
+    // WHY: Full replace on new cases drops review stamps; merge only updates pending type/time.
+    if (plan.mode === "merge") {
+      tx.set(reportRef, payload, { merge: true });
+    } else {
+      tx.set(reportRef, payload);
+    }
     tx.set(rateRef, rateDoc, { merge: true });
 
     return {
       ok: true,
       reportId: docId,
       merged: plan.mode === "merge",
+      reopened: plan.mode === "new" && Boolean(existingStatus),
     };
   });
 }

@@ -17,6 +17,7 @@ export const ROUTES = {
   contact: '/contact' as const,
   privacyPolicy: '/privacy-policy' as const,
   joinArena: '/join-arena' as const,
+  admin: '/admin' as const,
   leaderboardDebug: '/debug/leaderboard' as const,
   ffmi: '/ffmi' as const,
   cardio: '/cardio' as const,

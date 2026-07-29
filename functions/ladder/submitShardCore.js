@@ -26,6 +26,10 @@ import {
   sanitizeProfile,
   validateScore,
 } from "./validate.js";
+import {
+  applyLadderIdentityLockToUpload,
+  loadLadderIdentityLock,
+} from "../shared/ladderIdentityLock.js";
 
 function entryRef(metric, uid) {
   return db
@@ -75,6 +79,7 @@ export async function runLadderSubmitShard(request) {
 
   await assertLadderUploadAllowed(uid);
 
+  const identityLock = await loadLadderIdentityLock(uid);
   const data = request.data || {};
   const metric = data.metric;
   const score = Number(data.score);
@@ -88,9 +93,15 @@ export async function runLadderSubmitShard(request) {
       submittedScore: null,
     };
   }
-  const displayName = nameResult.displayName;
-  const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
-  const profile = sanitizeProfile(data.profile);
+  const locked = applyLadderIdentityLockToUpload({
+    displayName: nameResult.displayName,
+    avatarUrl: sanitizeAvatarUrl(data.avatarUrl),
+    profile: sanitizeProfile(data.profile),
+    lock: identityLock,
+  });
+  const displayName = locked.displayName;
+  const avatarUrl = locked.avatarUrl;
+  const profile = locked.profile;
   const skipPreviewUpdate = data.skipPreviewUpdate === true;
 
   if (!isValidShardId(metric)) {
@@ -321,14 +332,21 @@ export async function runLadderSyncPreview(request) {
 
   await assertLadderUploadAllowed(uid);
 
+  const identityLock = await loadLadderIdentityLock(uid);
   const data = request.data || {};
   const previewNameResult = tryNormalizeDisplayName(data.displayName);
   if (!previewNameResult.ok) {
     return { ok: false, reason: previewNameResult.reason };
   }
-  const displayName = previewNameResult.displayName;
-  const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
-  const profile = sanitizeProfile(data.profile);
+  const locked = applyLadderIdentityLockToUpload({
+    displayName: previewNameResult.displayName,
+    avatarUrl: sanitizeAvatarUrl(data.avatarUrl),
+    profile: sanitizeProfile(data.profile),
+    lock: identityLock,
+  });
+  const displayName = locked.displayName;
+  const avatarUrl = locked.avatarUrl;
+  const profile = locked.profile;
   const mergedScores = data.mergedScores;
   if (!mergedScores || typeof mergedScores !== "object") {
     return { ok: false, reason: "invalid-input" };

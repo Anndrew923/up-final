@@ -1,0 +1,33 @@
+{
+  "admin": {
+    "kicker": "審核中心",
+    "title": "管理員平台",
+    "subtitle": "在手機上審核天梯暱稱與頭像檢舉。",
+    "loading": "正在確認管理員權限…",
+    "loadingList": "載入檢舉中…",
+    "loadingMore": "載入更多…",
+    "refresh": "重新整理",
+    "refreshing": "整理中…",
+    "loadMore": "載入更多",
+    "empty": "目前沒有待審核的檢舉。",
+    "listFail": "無法載入檢舉，請稍後再試。",
+    "processOk": "已完成處理。",
+    "processFail": "處理失敗，請稍後再試。",
+    "busy": "處理中…",
+    "approve": "重置並下架",
+    "reject": "忽略／駁回",
+    "confirmApproveTitle": "確定重置身分？",
+    "confirmApproveBody": "將清除被檢舉的暱稱與／或頭像（公開天梯同步更新），並將檢舉標為已處置。",
+    "confirmRejectTitle": "確定駁回檢舉？",
+    "confirmRejectBody": "僅關閉此檢舉單，不會變更對方的公開身分。",
+    "unknownName": "未命名",
+    "unknownType": "原因未知",
+    "unknownTime": "時間未知",
+    "card": {
+      "target": "被檢舉：{{name}}",
+      "type": "原因：{{type}}",
+      "time": "檢舉時間：{{time}}",
+      "reporter": "檢舉者：{{name}}"
+    }
+  }
+}

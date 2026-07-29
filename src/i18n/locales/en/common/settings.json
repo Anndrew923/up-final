@@ -50,6 +50,8 @@
     "deleteReauthFail": "Re-authentication didn’t finish. Complete the Google account prompt, then try again.",
     "deleteCloudPartial": "Account deleted; cloud cleanup continues in background.",
     "deleteAuthFail": "Unable to delete account. Try again later.",
-    "deleteNotAllowed": "Only signed-in Google accounts can delete."
+    "deleteNotAllowed": "Only signed-in Google accounts can delete.",
+    "adminSection": "Admin",
+    "openAdmin": "Admin Platform"
   }
 }

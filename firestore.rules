@@ -155,17 +155,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ✅ 新增：adminActions 集合
-    // 僅管理員可讀寫
+    // adminActions：僅 Admin SDK（Callable）可寫；管理員仍可讀稽核紀錄
     match /adminActions/{actionId} {
       allow read: if isAdmin();
-
-      allow create: if isAdmin()
-        && request.resource.data.adminId == request.auth.uid
-        && request.resource.data.action is string
-        && request.resource.data.timestamp is string;
-
-      allow update, delete: if false; // 不允許修改或刪除記錄
+      allow create, update, delete: if false;
     }
 
     // Global sequence is server-authoritative to prevent collisions and tampering.

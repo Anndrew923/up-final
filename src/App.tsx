@@ -24,6 +24,7 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const LadderPage = lazy(() => import('./pages/LadderPage'));
 const JoinArenaPage = lazy(() => import('./pages/JoinArenaPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AdminPanelPage = lazy(() => import('./pages/AdminPanelPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -76,6 +77,14 @@ function LeaderboardDebugRoute() {
   return withRouteSuspense(<LeaderboardDebugPage />);
 }
 
+/**
+ * Admin panel route — entitlement is enforced inside AdminPanelPage (users.isAdmin)
+ * and again on every Callable. Non-admins are redirected home.
+ */
+function AdminRoute() {
+  return withRouteSuspense(<AdminPanelPage />);
+}
+
 function AuthChoiceOnlyRoutes() {
   return (
     <Routes>
@@ -123,6 +132,7 @@ function MainAppRoutes({ isGoogleSignedIn }: { isGoogleSignedIn: boolean }) {
           path={toRelativeRoutePath(ROUTES.joinArena)}
           element={withRouteSuspense(<JoinArenaPage />)}
         />
+        <Route path={toRelativeRoutePath(ROUTES.admin)} element={<AdminRoute />} />
         <Route
           path={toRelativeRoutePath(ROUTES.leaderboardDebug)}
           element={<LeaderboardDebugRoute />}

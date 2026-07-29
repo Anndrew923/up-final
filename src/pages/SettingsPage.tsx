@@ -28,6 +28,7 @@ const SettingsPage: FC = () => {
     goToContact,
     goToPrivacyPolicy,
     goToJoinArena,
+    goToAdmin,
     reCalibrateBoot,
     toggleLocale,
     toggleSound,
@@ -36,6 +37,8 @@ const SettingsPage: FC = () => {
     signOut,
     restorePurchases,
     clearDynoIntelHistory,
+    isAdmin,
+    adminCheckReady,
   } = useSettingsPage();
   const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
 
@@ -155,6 +158,23 @@ const SettingsPage: FC = () => {
           </button>
         </div>
       </section>
+
+      {adminCheckReady && isAdmin ? (
+        <section className="space-y-4 rounded-2xl border border-accent-info/30 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-accent-info">
+            {t('settings.adminSection')}
+          </h2>
+          <div className="border-t border-zinc-800 pt-4">
+            <button
+              type="button"
+              className="ui-btn w-full border-accent-info/40 text-accent-info hover:bg-accent-info/10"
+              onClick={goToAdmin}
+            >
+              {t('settings.openAdmin')}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">

@@ -50,6 +50,8 @@
     "deleteReauthFail": "重新驗證未完成，請在跳出的 Google 帳號視窗完成授權後再試一次。",
     "deleteCloudPartial": "帳號已刪除，但部分雲端資料清理將延後完成。",
     "deleteAuthFail": "目前無法完成帳號刪除，請稍後再試。",
-    "deleteNotAllowed": "僅 Google 已登入帳號可使用刪除功能。"
+    "deleteNotAllowed": "僅 Google 已登入帳號可使用刪除功能。",
+    "adminSection": "管理員",
+    "openAdmin": "管理員平台"
   }
 }

@@ -1,0 +1,33 @@
+{
+  "admin": {
+    "kicker": "Moderation",
+    "title": "Admin Platform",
+    "subtitle": "Review pending arena nickname and avatar reports on this device.",
+    "loading": "Checking admin access…",
+    "loadingList": "Loading reports…",
+    "loadingMore": "Loading more…",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "loadMore": "Load more",
+    "empty": "No pending reports.",
+    "listFail": "Could not load reports. Try again.",
+    "processOk": "Report processed.",
+    "processFail": "Could not process report. Try again.",
+    "busy": "Working…",
+    "approve": "Reset & take down",
+    "reject": "Dismiss",
+    "confirmApproveTitle": "Reset identity?",
+    "confirmApproveBody": "This clears the reported nickname and/or avatar on the public ladder and marks the report resolved.",
+    "confirmRejectTitle": "Dismiss report?",
+    "confirmRejectBody": "This closes the report without changing the user’s public identity.",
+    "unknownName": "Unknown",
+    "unknownType": "Unknown reason",
+    "unknownTime": "Unknown time",
+    "card": {
+      "target": "Target: {{name}}",
+      "type": "Reason: {{type}}",
+      "time": "Reported: {{time}}",
+      "reporter": "Reporter: {{name}}"
+    }
+  }
+}

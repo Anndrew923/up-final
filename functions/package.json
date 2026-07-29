@@ -11,7 +11,8 @@
     "lint": "node --check index.js && node --check ladder/submitShardCore.js",
     "migrate:pro-expiries": "node scripts/backfillProEntitlements.js",
     "migrate:pro-expiries:apply": "node scripts/backfillProEntitlements.js --apply",
-    "seed:hall-of-fame": "node scripts/seedHallOfFameMatrix.js"
+    "seed:hall-of-fame": "node scripts/seedHallOfFameMatrix.js",
+    "set-admin": "node scripts/setAdminByEmail.js"
   },
   "dependencies": {
     "firebase-admin": "^14.2.0",
