@@ -81,7 +81,6 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
     metric: '5km',
     titleKey: 'cardio.run5kmInfo.title',
     bodyKeys: [
-      'cardio.run5kmSpec.disclaimer',
       'cardio.run5kmSpec.baseMale',
       'cardio.run5kmSpec.baseFemale',
       'cardio.run5kmSpec.overflow',

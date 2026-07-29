@@ -38,7 +38,6 @@
       "collapsedHint": "評測基準、突破加分、成績天花板"
     },
     "run5kmSpec": {
-      "disclaimer": "成績僅供個人紀錄與天梯排行，非醫療依據。",
       "baseLabel": "評測基準",
       "baseMale": "男 {{t100}}（100分）～ {{t0}}（0分）",
       "baseFemale": "女 {{t100}}（100分）～ {{t0}}（0分）",

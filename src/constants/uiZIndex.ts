@@ -18,9 +18,11 @@ export const Z_INDEX_CLASS = {
   /** Boot narrative / profile gate — sheets opened from inside must sit above this. */
   bootSequenceOverlay: 'z-[300]',
   genderSelectSheet: 'z-[320]',
-  /** Native back-press exit confirm — above boot overlay so shutdown is always reachable. */
-  exitConfirmModal: 'z-[330]',
-  /** Genesis early-bird / Pro subscription ceremony overlays. */
+  /** Genesis early-bird / Pro subscription — below terms gate so legal cannot be skipped. */
   ladderGenesisModal: 'z-[340]',
   proSubscriptionResultModal: 'z-[340]',
+  /** Health/service terms gate — above boot + ceremonies so accept cannot be skipped. */
+  termsGateModal: 'z-[350]',
+  /** Native back-press exit confirm — above terms gate so shutdown stays reachable. */
+  exitConfirmModal: 'z-[360]',
 } as const;

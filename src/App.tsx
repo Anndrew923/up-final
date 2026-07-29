@@ -5,6 +5,7 @@ import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
 import ExitConfirmModal from './components/shell/ExitConfirmModal';
+import TermsGatekeeper from './components/legal/TermsGatekeeper';
 import { useAndroidBackButton } from './hooks/useAndroidBackButton';
 import { useAuthSessionBootstrap } from './hooks/useAuthSessionBootstrap';
 import { useProStructuredUserSyncLifecycle } from './hooks/useProStructuredUserSyncLifecycle';
@@ -199,6 +200,7 @@ export default function App() {
   return (
     <>
       {gatedTree}
+      {canMountShell ? <TermsGatekeeper /> : null}
       <ExitConfirmModal open={exitModalOpen} onClose={closeExitModal} />
     </>
   );

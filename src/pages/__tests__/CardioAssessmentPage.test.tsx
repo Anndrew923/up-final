@@ -318,7 +318,7 @@ describe('CardioAssessmentPage', () => {
     unmount();
   });
 
-  it('keeps 5km scoring anchors and disclaimer collapsed in reference by default', () => {
+  it('keeps 5km scoring anchors collapsed in reference by default', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
       profileReady: true,
       cooperDistanceOverCap: false,
@@ -346,7 +346,6 @@ describe('CardioAssessmentPage', () => {
     const text = container.textContent ?? '';
     expect(text).toContain('assessment.referenceInfo.title');
     expect(text).toContain('cardio.run5kmInfo.collapsedHint');
-    expect(text).not.toContain('cardio.run5kmSpec.disclaimer');
     expect(text).not.toContain('cardio.run5kmSpec.baseLabel');
     expect(container.querySelector('[role="note"]')).toBeNull();
 
@@ -362,13 +361,11 @@ describe('CardioAssessmentPage', () => {
     act(() => {
       expandBtn!.click();
     });
-    expect(container.textContent).toContain('cardio.run5kmSpec.disclaimer');
     expect(container.textContent).toContain('cardio.run5kmSpec.baseLabel');
     expect(container.textContent).toContain('cardio.run5kmSpec.baseMale');
     expect(container.textContent).toContain('cardio.run5kmSpec.ceilingLabel');
     expect(container.textContent).toContain('cardio.run5kmSpec.specialtyNote');
     expect(container.textContent).not.toContain('cardio.run5kmInfo.collapsedHint');
-    expect(container.querySelector('[role="note"]')).toBeTruthy();
 
     unmount();
   });

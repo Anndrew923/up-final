@@ -37,7 +37,18 @@ service cloud.firestore {
     // lives in leaderboard summary docs, so user documents are private.
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create, update, delete: if false;
+      // Client may not delete user roots. Create/update only via the narrow allow rules below.
+      allow delete: if false;
+
+      // Legal audit stamp — owner may only merge terms acceptance fields.
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['termsAcceptedVersion', 'termsAcceptedAt'])
+        && request.resource.data.termsAcceptedVersion is string
+        && request.resource.data.termsAcceptedAt is string;
+      allow update: if isOwner(userId)
+        && onlyMutate(['termsAcceptedVersion', 'termsAcceptedAt'])
+        && request.resource.data.termsAcceptedVersion is string
+        && request.resource.data.termsAcceptedAt is string;
 
       // ✅ 新增：允許管理員更新認證相關字段
       allow update: if isAdmin()

@@ -1,0 +1,18 @@
+{
+  "legal": {
+    "consentLineBefore": "點擊登入或繼續，即表示您已閱讀並同意",
+    "consentLink": "《服務條款與健康免責聲明》",
+    "modalTitle": "服務條款與健康免責聲明",
+    "modalKicker": "法律聲明",
+    "sectionMedicalTitle": "非醫療依據",
+    "sectionMedicalBody": "本 App 數據與評測（含 5K 測速與其他體能測驗）僅供個人紀錄與天梯交流，不作醫療診斷、處方或緊急醫療指示。",
+    "sectionRiskTitle": "自負運動風險",
+    "sectionRiskBody": "高強度運動請評估自身狀況。如有不適請立即停止，並尋求專業醫療協助。使用本 App 所產生之訓練決策與身體風險由您自行承擔。",
+    "sectionServiceTitle": "服務使用",
+    "sectionServiceBody": "登入或繼續使用即表示您同意依產品規則使用評測、天梯與本機功能；我們得於條款版本更新時再次徵求同意。",
+    "acceptContinue": "同意並繼續",
+    "closePreview": "關閉",
+    "gateTitle": "使用前請確認",
+    "gateIntro": "請閱讀並同意下列重點後繼續使用最強肉體。"
+  }
+}

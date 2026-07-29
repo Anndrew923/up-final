@@ -1,10 +1,13 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import TermsLegalModal from '../components/legal/TermsLegalModal';
 import { ROUTES } from '../config/routes';
+import { HEALTH_TERMS_VERSION } from '../logic/core/termsAcceptance';
 import { markAuthOnboardingCompleted } from '../services/authOnboardingService';
 import { waitForAnonymousAuthSession } from '../services/authSessionWait';
 import { signInAnonymouslyWeb, signInWithGoogleWeb } from '../services/firebaseClient';
+import { persistHealthTermsAcceptance } from '../services/termsAcceptanceService';
 
 const AuthChoicePage: FC = () => {
   const { t } = useTranslation('common');
@@ -12,6 +15,7 @@ const AuthChoicePage: FC = () => {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<'none' | 'google' | 'guest'>('none');
   const [error, setError] = useState(false);
+  const [termsPreviewOpen, setTermsPreviewOpen] = useState(false);
   const returnTo =
     location.state && typeof location.state === 'object' && 'returnTo' in location.state
       ? location.state.returnTo
@@ -23,6 +27,8 @@ const AuthChoicePage: FC = () => {
   })();
 
   const completeFlow = () => {
+    // WHY: Clicking Google / guest is the consent act — local stamp is sync; cloud audit is fire-and-forget.
+    persistHealthTermsAcceptance(HEALTH_TERMS_VERSION);
     markAuthOnboardingCompleted();
     navigate(targetRoute, { replace: true });
   };
@@ -59,6 +65,11 @@ const AuthChoicePage: FC = () => {
 
   return (
     <main className="ui-shell relative flex min-h-screen max-w-xl items-center bg-bg-base text-zinc-100 motion-safe:animate-auth-choice-enter">
+      <TermsLegalModal
+        open={termsPreviewOpen}
+        mode="preview"
+        onClose={() => setTermsPreviewOpen(false)}
+      />
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <div className="absolute -left-20 top-20 h-64 w-64 rounded-full bg-accent-primary/20 blur-[90px]" />
         <div className="absolute -right-20 bottom-20 h-64 w-64 rounded-full bg-accent-info/15 blur-[90px]" />
@@ -98,6 +109,16 @@ const AuthChoicePage: FC = () => {
             {busy === 'guest' ? t('authChoice.guestBusy') : t('authChoice.guest')}
           </button>
         </div>
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {t('legal.consentLineBefore')}{' '}
+          <button
+            type="button"
+            className="font-medium text-accent-info underline decoration-accent-info/40 underline-offset-2 hover:text-sky-200"
+            onClick={() => setTermsPreviewOpen(true)}
+          >
+            {t('legal.consentLink')}
+          </button>
+        </p>
         <p className="text-xs leading-relaxed text-zinc-500">{t('authChoice.note')}</p>
       </section>
     </main>

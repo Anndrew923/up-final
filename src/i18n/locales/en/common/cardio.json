@@ -38,7 +38,6 @@
       "collapsedHint": "Scoring base, overflow bonus, hard ceiling"
     },
     "run5kmSpec": {
-      "disclaimer": "For personal logs and ladder ranking only — not medical advice.",
       "baseLabel": "Scoring base",
       "baseMale": "Male {{t100}} (100) – {{t0}} (0)",
       "baseFemale": "Female {{t100}} (100) – {{t0}} (0)",

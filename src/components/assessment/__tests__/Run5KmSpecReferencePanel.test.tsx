@@ -45,9 +45,8 @@ describe('Run5KmSpecReferencePanel', () => {
     expect(text).toContain('50:00');
     expect(text).toContain('12:20');
     expect(text).toContain('13:40');
-    expect(text).toMatch(/成績僅供個人紀錄與天梯排行/);
     expect(text).toMatch(/評測基準|突破加分|成績天花板/);
-    expect(container.querySelector('[role="note"]')).toBeTruthy();
+    expect(text).not.toMatch(/成績僅供個人紀錄與天梯排行/);
 
     unmount();
   });

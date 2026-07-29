@@ -16,6 +16,7 @@ import enAbout from './en/common/about.json';
 import enPrivacy from './en/common/privacy.json';
 import enContact from './en/common/contact.json';
 import enAuthChoice from './en/common/authChoice.json';
+import enLegal from './en/common/legal.json';
 import enOnboarding from './en/common/onboarding.json';
 import enAxisLexicon from './en/common/axisLexicon.json';
 import enDynoIntel from './en/common/dynoIntel.json';
@@ -37,6 +38,7 @@ import zhAbout from './zh-Hant/common/about.json';
 import zhPrivacy from './zh-Hant/common/privacy.json';
 import zhContact from './zh-Hant/common/contact.json';
 import zhAuthChoice from './zh-Hant/common/authChoice.json';
+import zhLegal from './zh-Hant/common/legal.json';
 import zhOnboarding from './zh-Hant/common/onboarding.json';
 import zhAxisLexicon from './zh-Hant/common/axisLexicon.json';
 import zhDynoIntel from './zh-Hant/common/dynoIntel.json';
@@ -85,6 +87,7 @@ export const enCommon = mergeCommonSections([
   { name: 'privacy', content: enPrivacy },
   { name: 'contact', content: enContact },
   { name: 'authChoice', content: enAuthChoice },
+  { name: 'legal', content: enLegal },
   { name: 'onboarding', content: enOnboarding },
   { name: 'axisLexicon', content: enAxisLexicon },
   { name: 'dynoIntel', content: enDynoIntel },
@@ -109,6 +112,7 @@ export const zhHantCommon = mergeCommonSections([
   { name: 'privacy', content: zhPrivacy },
   { name: 'contact', content: zhContact },
   { name: 'authChoice', content: zhAuthChoice },
+  { name: 'legal', content: zhLegal },
   { name: 'onboarding', content: zhOnboarding },
   { name: 'axisLexicon', content: zhAxisLexicon },
   { name: 'dynoIntel', content: zhDynoIntel },

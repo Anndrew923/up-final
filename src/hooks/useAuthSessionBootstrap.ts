@@ -5,6 +5,7 @@ import {
   onFirebaseAuthStateChanged,
 } from '../services/firebaseClient';
 import { bindStructuredSyncSession } from '../services/structuredSyncSession';
+import { syncAcceptedHealthTermsToCloudIfNeeded } from '../services/termsAcceptanceService';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
@@ -51,6 +52,10 @@ export function useAuthSessionBootstrap(): void {
         bindEntitlementSession(user.uid);
         bindDynoIntelLogSession(user.uid);
         void refreshEntitlement();
+        // WHY: Guest→Google / Settings sign-in never re-prompts terms — backfill audit if local already accepted.
+        if (!user.isAnonymous) {
+          syncAcceptedHealthTermsToCloudIfNeeded();
+        }
       });
     })();
 

@@ -1,0 +1,18 @@
+{
+  "legal": {
+    "consentLineBefore": "By signing in or continuing, you confirm you have read and agree to the",
+    "consentLink": "Terms of Service & Health Disclaimer",
+    "modalTitle": "Terms of Service & Health Disclaimer",
+    "modalKicker": "Legal",
+    "sectionMedicalTitle": "Not medical advice",
+    "sectionMedicalBody": "Scores and assessments in this app (including 5 km timing and other fitness tests) are for personal logs and ladder play only — not medical diagnosis, prescriptions, or emergency care.",
+    "sectionRiskTitle": "Exercise at your own risk",
+    "sectionRiskBody": "Assess your condition before intense training. Stop immediately if you feel unwell and seek professional medical help. You accept responsibility for training decisions and physical risk.",
+    "sectionServiceTitle": "Service use",
+    "sectionServiceBody": "Signing in or continuing means you agree to use assessments, the ladder, and local features under product rules. We may ask again when terms versions change.",
+    "acceptContinue": "Agree and continue",
+    "closePreview": "Close",
+    "gateTitle": "Before you continue",
+    "gateIntro": "Please review and accept the following to use Ultimate Physique."
+  }
+}
