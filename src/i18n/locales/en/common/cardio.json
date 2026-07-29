@@ -29,12 +29,14 @@
     "secondsLabel": "Seconds",
     "run5kmMinutesPlaceholder": "e.g. 25",
     "run5kmSecondsPlaceholder": "e.g. 30",
+    "run5kmWorldRecordFloorHint": "Time is faster than the model floor ({{capTime}}). Scoring uses the capped time.",
     "run5kmInfo": {
       "title": "5 km Finish-Time Test",
       "p1": "Specialty optional — local + ladder only; never enters the six-axis cardio score. Fitness context only.",
       "p2": "Anchors: male 20:00 = 100, 45:00 = 0; female 22:30 = 100, 50:00 = 0.",
       "p3": "Faster than the 100-pt anchor uses linear + quartic overflow. Missing sex defaults to male norms.",
-      "p4": "Never falls back into the six-axis radar."
+      "p4": "Never falls back into the six-axis radar.",
+      "p5": "Model floors: {{maleFloor}} (male), {{femaleFloor}} (female); scores cap when faster."
     },
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "PERFORMANCE SPEC / Thermal Spec",

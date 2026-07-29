@@ -2,6 +2,9 @@ import type { TFunction } from 'i18next';
 import {
   COOPER_MAX_DISTANCE_FEMALE_METERS,
   COOPER_MAX_DISTANCE_MALE_METERS,
+  RUN_5KM_FEMALE,
+  RUN_5KM_MALE,
+  formatRun5KmFloorClock,
 } from './cardioScoring';
 import {
   SMM_KG_CEILING_FEMALE,
@@ -12,10 +15,14 @@ import {
 } from './dynoIntelScoringMethodologyCatalog';
 import type { DynoScoringMethodologyBrief } from './dynoIntelTypes';
 
-const METHODOLOGY_I18N_INTERPOLATIONS: Record<string, Record<string, number>> = {
+const METHODOLOGY_I18N_INTERPOLATIONS: Record<string, Record<string, number | string>> = {
   'cardio.cooperInfo.p5': {
     maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
     femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
+  },
+  'cardio.run5kmInfo.p5': {
+    maleFloor: formatRun5KmFloorClock(RUN_5KM_MALE.floorSeconds),
+    femaleFloor: formatRun5KmFloorClock(RUN_5KM_FEMALE.floorSeconds),
   },
   'muscle.standardsInfo.dualSovereignPreamble': {
     maleMax: SMM_KG_CEILING_MALE,

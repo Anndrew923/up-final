@@ -24,6 +24,7 @@ import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAss
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import type { CardioTab } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
+import { formatRun5KmFloorClock, RUN_5KM_FEMALE, RUN_5KM_MALE } from '../logic/core/cardioScoring';
 import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
 import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { loadPhysicalProfile } from '../services/localStorageService';
@@ -36,6 +37,8 @@ const CardioAssessmentPage: FC = () => {
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
+    run5KmTimeUnderFloor,
+    run5KmFloorSeconds,
     activeTab,
     setActiveTab,
     distanceInput,
@@ -52,6 +55,7 @@ const CardioAssessmentPage: FC = () => {
     persistToDashboard,
     submitAssessment,
   } = useCardioAssessmentPage();
+  const run5KmFloorClock = formatRun5KmFloorClock(run5KmFloorSeconds);
   const scoreMeaningMetric = scoreMeaningMetricForCardioTab(activeTab);
   const isCooperTab = activeTab === 'cooper';
   const isSpecialtyTab = activeTab === '5km';
@@ -211,41 +215,53 @@ const CardioAssessmentPage: FC = () => {
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
               {t('cardio.run5kmHeading')}
             </p>
-            <div className="flex min-w-0 flex-wrap gap-2.5">
-              <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
-                <span>{t('cardio.minutesLabel')}</span>
-                <HeroNumberInput
-                  inputMode="numeric"
-                  min={0}
-                  density="compact"
-                  className="w-28 max-w-full"
-                  value={runMinutesInput}
-                  disabled={revealBlocking}
-                  placeholder={t('cardio.run5kmMinutesPlaceholder')}
-                  onChange={(e) => {
-                    clearError();
-                    setRunMinutesInput(e.target.value);
-                  }}
-                  aria-label={t('cardio.minutesLabel')}
-                />
-              </label>
-              <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
-                <span>{t('cardio.secondsLabel')}</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  className="ui-input w-28"
-                  value={runSecondsInput}
-                  disabled={revealBlocking}
-                  placeholder={t('cardio.run5kmSecondsPlaceholder')}
-                  onChange={(e) => {
-                    clearError();
-                    setRunSecondsInput(e.target.value);
-                  }}
-                  aria-label={t('cardio.secondsLabel')}
-                />
-              </label>
+            <div className="space-y-2">
+              <div className="flex min-w-0 flex-wrap gap-2.5">
+                <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+                  <span>{t('cardio.minutesLabel')}</span>
+                  <HeroNumberInput
+                    inputMode="numeric"
+                    min={0}
+                    density="compact"
+                    className="w-28 max-w-full"
+                    value={runMinutesInput}
+                    disabled={revealBlocking}
+                    placeholder={t('cardio.run5kmMinutesPlaceholder')}
+                    onChange={(e) => {
+                      clearError();
+                      setRunMinutesInput(e.target.value);
+                    }}
+                    aria-label={t('cardio.minutesLabel')}
+                  />
+                </label>
+                <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+                  <span>{t('cardio.secondsLabel')}</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    className="ui-input w-28"
+                    value={runSecondsInput}
+                    disabled={revealBlocking}
+                    placeholder={t('cardio.run5kmSecondsPlaceholder')}
+                    onChange={(e) => {
+                      clearError();
+                      setRunSecondsInput(e.target.value);
+                    }}
+                    aria-label={t('cardio.secondsLabel')}
+                  />
+                </label>
+              </div>
+              {run5KmTimeUnderFloor ? (
+                <p
+                  className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90"
+                  role="status"
+                >
+                  {t('cardio.run5kmWorldRecordFloorHint', {
+                    capTime: run5KmFloorClock,
+                  })}
+                </p>
+              ) : null}
             </div>
           </AssessmentTabPanel>
 
@@ -341,8 +357,12 @@ const CardioAssessmentPage: FC = () => {
                     t('cardio.run5kmInfo.p1'),
                     t('cardio.run5kmInfo.p2'),
                     t('cardio.run5kmInfo.p3'),
+                    t('cardio.run5kmInfo.p4'),
                   ]}
-                  footnote={t('cardio.run5kmInfo.p4')}
+                  footnote={t('cardio.run5kmInfo.p5', {
+                    maleFloor: formatRun5KmFloorClock(RUN_5KM_MALE.floorSeconds),
+                    femaleFloor: formatRun5KmFloorClock(RUN_5KM_FEMALE.floorSeconds),
+                  })}
                 />
               </AssessmentReferenceDisclosure>
             )}

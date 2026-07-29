@@ -80,7 +80,7 @@ export const DYNO_SCORING_METHODOLOGY_CATALOG: readonly DynoScoringMethodologyCa
   {
     metric: '5km',
     titleKey: 'cardio.run5kmInfo.title',
-    bodyKeys: ['cardio.run5kmInfo.p2', 'cardio.run5kmInfo.p3', 'cardio.subtitle'],
+    bodyKeys: ['cardio.run5kmInfo.p2', 'cardio.run5kmInfo.p3', 'cardio.run5kmInfo.p5', 'cardio.subtitle'],
   },
 ] as const;
 

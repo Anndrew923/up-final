@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getCooperMaxDistanceMetersForGender,
+  getRun5KmFloorSecondsForGender,
+  clampRun5KmSplitToFloor,
   parse5KmFieldSplit,
   parseCooperDistanceMeters,
   resolveCardioScoreForDisplay,
@@ -34,6 +36,10 @@ export interface UseCardioAssessmentPageResult {
   /** Cooper tab only: parsed distance exceeds world-record-aligned model ceiling. */
   cooperDistanceOverCap: boolean;
   cooperCapMeters: number | null;
+  /** 5 km tab only: finish time faster than WR-aligned model floor. */
+  run5KmTimeUnderFloor: boolean;
+  /** Sex-specific shortest accepted 5 km time (seconds); always resolved (male default). */
+  run5KmFloorSeconds: number;
   activeTab: CardioTab;
   setActiveTab: (t: CardioTab) => void;
   distanceInput: string;
@@ -107,6 +113,14 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     cooperCapMeters !== null &&
     cooperParsed !== null &&
     cooperParsed > cooperCapMeters;
+
+  // WHY: 5 km still accepts time without a complete profile — floor follows scoring gender fallback (male).
+  const run5KmFloorSeconds = getRun5KmFloorSecondsForGender(profile?.gender);
+  const run5KmSplit = parse5KmFieldSplit(runMinutesInput, runSecondsInput);
+  const run5KmTimeUnderFloor =
+    activeTab === '5km' &&
+    run5KmSplit !== null &&
+    run5KmSplit.totalSeconds < run5KmFloorSeconds;
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -189,13 +203,15 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
       setErrorKey('invalid-5km-time');
       return false;
     }
-    const paceInSeconds = Math.round(split.totalSeconds / 5);
+    // WHY: Align with Cooper distance clamp — persist WR floor so specialty history matches scored ceiling.
+    const clamped = clampRun5KmSplitToFloor(split, profile?.gender);
+    const paceInSeconds = Math.round(clamped.totalSeconds / 5);
     const nextInputs: CardioInputsPersisted = {
       ...prev,
       run_5km: {
-        minutes: split.minutes,
-        seconds: split.seconds,
-        totalSeconds: split.totalSeconds,
+        minutes: clamped.minutes,
+        seconds: clamped.seconds,
+        totalSeconds: clamped.totalSeconds,
         paceInSeconds,
       },
     };
@@ -219,6 +235,8 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
+    run5KmTimeUnderFloor,
+    run5KmFloorSeconds,
     activeTab,
     setActiveTab,
     distanceInput,

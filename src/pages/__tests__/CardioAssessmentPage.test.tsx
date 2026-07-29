@@ -107,6 +107,8 @@ describe('CardioAssessmentPage', () => {
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: 3200,
+      run5KmTimeUnderFloor: false,
+      run5KmFloorSeconds: 740,
       activeTab: 'cooper',
       setActiveTab: vi.fn(),
       distanceInput: '2800',
@@ -155,6 +157,8 @@ describe('CardioAssessmentPage', () => {
       profileReady: false,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
+      run5KmTimeUnderFloor: false,
+      run5KmFloorSeconds: 740,
       activeTab: 'cooper',
       setActiveTab: vi.fn(),
       distanceInput: '',
@@ -186,6 +190,8 @@ describe('CardioAssessmentPage', () => {
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
+      run5KmTimeUnderFloor: false,
+      run5KmFloorSeconds: 740,
       activeTab: '5km',
       setActiveTab: vi.fn(),
       distanceInput: '',
@@ -221,6 +227,8 @@ describe('CardioAssessmentPage', () => {
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
+      run5KmTimeUnderFloor: false,
+      run5KmFloorSeconds: 740,
       activeTab: 'cooper',
       setActiveTab: vi.fn(),
       distanceInput: '2800',
@@ -249,6 +257,38 @@ describe('CardioAssessmentPage', () => {
     });
     expect(container.textContent).toContain('cardio.cooperInfo.bubbleTip');
     expect(container.textContent).toContain('cardio.cooperInfo.bubbleReferenceHint');
+
+    unmount();
+  });
+
+  it('shows 5km WR floor amber hint when finish time is under model floor', () => {
+    mockUseCardioAssessmentPage.mockReturnValue({
+      profileReady: true,
+      cooperDistanceOverCap: false,
+      cooperCapMeters: null,
+      run5KmTimeUnderFloor: true,
+      run5KmFloorSeconds: 740,
+      activeTab: '5km',
+      setActiveTab: vi.fn(),
+      distanceInput: '',
+      setDistanceInput: vi.fn(),
+      runMinutesInput: '11',
+      setRunMinutesInput: vi.fn(),
+      runSecondsInput: '0',
+      setRunSecondsInput: vi.fn(),
+      previewScore: null,
+      submitDone: false,
+      errorKey: null,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      submitAssessment: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue(null);
+
+    const { container, unmount } = renderPage();
+    expect(container.textContent).toContain('cardio.run5kmWorldRecordFloorHint');
+    const status = container.querySelector('[role="status"]');
+    expect(status?.textContent).toContain('cardio.run5kmWorldRecordFloorHint');
 
     unmount();
   });

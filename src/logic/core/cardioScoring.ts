@@ -99,16 +99,18 @@ export function calculateCooperScore(input: {
 export const RUN_5KM_MALE = {
   t0Seconds: 45 * 60,
   t100Seconds: 20 * 60,
+  /** WR-aligned input floor (12:20) — slightly under elite WR with headroom for typos. */
   floorSeconds: 740,
 } as const;
 
 export const RUN_5KM_FEMALE = {
   t0Seconds: 50 * 60,
   t100Seconds: 22 * 60 + 30,
-  floorSeconds: 825,
+  /** WR-aligned input floor (13:40) — slightly under elite WR with headroom for typos. */
+  floorSeconds: 820,
 } as const;
 
-/** Shared shape for male/female 5 km norm rows (not `typeof RUN_5KM_MALE` — literal 740 ≠ 825). */
+/** Shared shape for male/female 5 km norm rows (not `typeof RUN_5KM_MALE` — literal 740 ≠ 820). */
 export type Run5KmNorm = Readonly<{
   t0Seconds: number;
   t100Seconds: number;
@@ -127,6 +129,48 @@ export const RUN_5KM_OVERFLOW_QUARTIC_COEFFICIENT_FEMALE = 0.0047 as const;
 
 export function resolveRun5KmNorm(gender: string | null | undefined): Run5KmNorm {
   return normalizeGenderForCardio(gender) === 'female' ? RUN_5KM_FEMALE : RUN_5KM_MALE;
+}
+
+/**
+ * Shortest 5 km finish time the model accepts (seconds). Faster inputs clamp here for score + persist.
+ * Missing / unknown gender defaults to male — same as `resolveRun5KmNorm`.
+ */
+export function getRun5KmFloorSecondsForGender(gender: string | null | undefined): number {
+  return resolveRun5KmNorm(gender).floorSeconds;
+}
+
+/** MM:SS clock for WR-floor hints / reference copy (no fractional seconds). */
+export function formatRun5KmFloorClock(floorSeconds: number): string {
+  const minutes = Math.floor(floorSeconds / 60);
+  const seconds = floorSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/** Canonical persisted shape after floor clamp + minute/second renormalization. */
+export type Run5KmFieldSplit = {
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
+};
+
+export function normalizeRun5KmSplit(totalSeconds: number): Run5KmFieldSplit {
+  return {
+    minutes: Math.floor(totalSeconds / 60),
+    seconds: totalSeconds % 60,
+    totalSeconds,
+  };
+}
+
+/**
+ * WHY: Persist path must share the same WR floor as scoring (`score5KmFromNorm` Math.max),
+ * and renormalize mm:ss so specialty history never stores 12m + 90s style drift.
+ */
+export function clampRun5KmSplitToFloor(
+  split: Run5KmFieldSplit,
+  gender: string | null | undefined,
+): Run5KmFieldSplit {
+  const floorSec = getRun5KmFloorSecondsForGender(gender);
+  return normalizeRun5KmSplit(Math.max(split.totalSeconds, floorSec));
 }
 
 /** WHY: overflow quartic must follow sex norm — female deltaT spans are wider at the same WR tier. */
@@ -244,7 +288,7 @@ export function parseCooperDistanceMeters(raw: string): number | null {
 export function parse5KmFieldSplit(
   minutesRaw: string,
   secondsRaw: string
-): { minutes: number; seconds: number; totalSeconds: number } | null {
+): Run5KmFieldSplit | null {
   const minutes = parseInt(minutesRaw || '0', 10) || 0;
   const seconds = parseInt(secondsRaw || '0', 10) || 0;
   const totalSeconds = minutes * 60 + seconds;
