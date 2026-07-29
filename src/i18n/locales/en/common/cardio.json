@@ -34,8 +34,7 @@
       "title": "5 km Finish-Time Test",
       "infoButtonAria": "5 km test details",
       "bubbleTip": "Enter 5 km finish time (minutes / seconds). Score maps to sex-specific norms.",
-      "bubbleReferenceHint": "Base, overflow, and ceiling details are in “{{title}}” at the bottom.",
-      "collapsedHint": "Scoring base, overflow bonus, hard ceiling"
+      "bubbleReferenceHint": "Base, overflow, and ceiling details are in “{{title}}” at the bottom."
     },
     "run5kmSpec": {
       "baseLabel": "Scoring base",

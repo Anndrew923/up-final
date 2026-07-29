@@ -367,7 +367,6 @@ const CardioAssessmentPage: FC = () => {
                 instanceId="run5km-info"
                 expanded={run5kmInfoOpen}
                 onToggle={() => setRun5kmInfoOpen((v) => !v)}
-                collapsedHint={t('cardio.run5kmInfo.collapsedHint')}
               >
                 <Run5KmSpecReferencePanel />
               </AssessmentReferenceDisclosure>

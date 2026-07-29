@@ -34,8 +34,7 @@
       "title": "5 公里完成時間評測",
       "infoButtonAria": "5 公里評測說明",
       "bubbleTip": "輸入 5 公里完成時間（分／秒）。分數依性別常模換算。",
-      "bubbleReferenceHint": "基準、加分與天花板請見底部「{{title}}」",
-      "collapsedHint": "評測基準、突破加分、成績天花板"
+      "bubbleReferenceHint": "基準、加分與天花板請見底部「{{title}}」"
     },
     "run5kmSpec": {
       "baseLabel": "評測基準",

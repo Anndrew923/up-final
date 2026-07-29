@@ -345,7 +345,7 @@ describe('CardioAssessmentPage', () => {
     const { container, unmount } = renderPage();
     const text = container.textContent ?? '';
     expect(text).toContain('assessment.referenceInfo.title');
-    expect(text).toContain('cardio.run5kmInfo.collapsedHint');
+    expect(text).not.toContain('cardio.run5kmInfo.collapsedHint');
     expect(text).not.toContain('cardio.run5kmSpec.baseLabel');
     expect(container.querySelector('[role="note"]')).toBeNull();
 
@@ -365,7 +365,6 @@ describe('CardioAssessmentPage', () => {
     expect(container.textContent).toContain('cardio.run5kmSpec.baseMale');
     expect(container.textContent).toContain('cardio.run5kmSpec.ceilingLabel');
     expect(container.textContent).toContain('cardio.run5kmSpec.specialtyNote');
-    expect(container.textContent).not.toContain('cardio.run5kmInfo.collapsedHint');
 
     unmount();
   });
