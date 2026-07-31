@@ -1,9 +1,18 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useState, type CSSProperties, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
+import {
+  APP_SHELL_SCROLL_BOTTOM_PX,
+  bottomChromeCalc,
+} from '../constants/bottomChrome';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
 const RESTORE_TOAST_MS = 3500;
+
+/** Clears BottomNav + DYNO hex + Dyno Intel chip (+ safe-area). */
+const RESTORE_TOAST_BOTTOM_STYLE = {
+  bottom: bottomChromeCalc(APP_SHELL_SCROLL_BOTTOM_PX),
+} satisfies CSSProperties;
 
 const SettingsPage: FC = () => {
   const { t } = useTranslation('common');
@@ -300,7 +309,8 @@ const SettingsPage: FC = () => {
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed inset-x-4 bottom-24 z-[1100] mx-auto max-w-md rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-center text-sm font-medium text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.2)] backdrop-blur-md sm:bottom-8"
+          style={RESTORE_TOAST_BOTTOM_STYLE}
+          className="pointer-events-none fixed inset-x-4 z-[1100] mx-auto max-w-md rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-center text-sm font-medium text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.2)] backdrop-blur-md"
         >
           {t('settings.restorePurchasesSuccess')}
         </div>

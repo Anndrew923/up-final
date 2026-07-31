@@ -144,6 +144,29 @@ describe('SettingsPage re-calibrate control', () => {
   });
 });
 
+describe('SettingsPage restore toast chrome clearance', () => {
+  afterEach(() => {
+    mockUseSettingsPage.mockReset();
+    document.body.innerHTML = '';
+  });
+
+  it('docks restore success toast above BottomNav / DYNO chrome', () => {
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      banner: 'restore-ok',
+    });
+
+    const { unmount } = renderPage();
+    const toast = document.querySelector('[role="status"]');
+    expect(toast).not.toBeNull();
+    expect(toast?.textContent).toContain('settings.restorePurchasesSuccess');
+    expect((toast as HTMLElement).style.bottom).toContain('142px');
+    expect((toast as HTMLElement).style.bottom).toContain('safe-area-inset-bottom');
+
+    unmount();
+  });
+});
+
 describe('SettingsPage local history control', () => {
   afterEach(() => {
     mockUseSettingsPage.mockReset();
