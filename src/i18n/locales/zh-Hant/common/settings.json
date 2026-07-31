@@ -35,6 +35,7 @@
     "signOutOk": "已成功登出。",
     "signOutFail": "登出失敗，請稍後再試。",
     "manageArena": "管理戰場訂閱",
+    "manageSubscription": "管理訂閱 / 取消訂閱",
     "restorePurchases": "恢復購買",
     "restorePurchasesBusy": "權益校準中...",
     "restorePurchasesSuccess": "權益已成功取回！",

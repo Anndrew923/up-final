@@ -36,6 +36,7 @@ const SettingsPage: FC = () => {
     signInGoogle,
     signOut,
     restorePurchases,
+    openManageSubscription,
     clearDynoIntelHistory,
     isAdmin,
     adminCheckReady,
@@ -258,6 +259,19 @@ const SettingsPage: FC = () => {
             {busyAction === 'restore-purchases'
               ? t('settings.restorePurchasesBusy')
               : t('settings.restorePurchases')}
+          </span>
+          <span className="text-xs text-zinc-500" aria-hidden>
+            →
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="flex w-full items-center justify-between rounded-xl border border-zinc-700/60 bg-zinc-950/40 px-4 py-3.5 text-left transition hover:border-zinc-500 hover:bg-zinc-900/60"
+          onClick={() => void openManageSubscription()}
+        >
+          <span className="text-sm font-medium text-zinc-300">
+            {t('settings.manageSubscription')}
           </span>
           <span className="text-xs text-zinc-500" aria-hidden>
             →

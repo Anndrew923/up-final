@@ -38,6 +38,7 @@
   "googleLoginSuccess": "Google sign-in complete ({{name}}).",
   "googleLoginFail": "Sign in with Google to continue. If no account prompt appears, check your network and try again.",
   "billingUnavailable": "Subscriptions unavailable. Try again soon.",
+  "manageSubscription": "Manage / Cancel Subscription",
   "betaOpenAccess": "Genesis Early Bird: First {{count}} players get free ladder access (Pro sold separately).",
   "identityOptionalBeta": "Google sign-in required.",
   "betaEnterLeaderboard": "Sign in & Enter Arena (Early Bird Free)",

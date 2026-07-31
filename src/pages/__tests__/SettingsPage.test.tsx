@@ -51,8 +51,12 @@ function baseSettingsState() {
     signInGoogle: vi.fn(),
     signOut: vi.fn(),
     restorePurchases: vi.fn(),
+    openManageSubscription: vi.fn(),
     clearDynoIntelHistory: vi.fn(),
     deleteAccount: vi.fn(),
+    isAdmin: false,
+    adminCheckReady: true,
+    goToAdmin: vi.fn(),
   };
 }
 

@@ -21,6 +21,7 @@ import {
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
+import { openPlaySubscriptionManagement } from '../services/playSubscriptionManageService';
 import { purchaseProSubscription } from '../services/subscriptionService';
 import { signInWithGoogleWeb } from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
@@ -195,6 +196,16 @@ const JoinArenaPage: FC = () => {
 
         {/* WHY: Single Pro kit panel — Core/Pro comparison removed to kill duplicate feature narrative. */}
         <JoinArenaProFeatures />
+
+        <button
+          type="button"
+          className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/40 px-4 py-3 text-left text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/60"
+          onClick={() => {
+            void openPlaySubscriptionManagement();
+          }}
+        >
+          {t('manageSubscription')}
+        </button>
 
         <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">

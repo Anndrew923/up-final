@@ -38,6 +38,7 @@
   "googleLoginSuccess": "Google 登入完成（{{name}}）。",
   "googleLoginFail": "請先完成 Google 登入再繼續。若帳號視窗沒有出現，請確認網路連線後再試一次。",
   "billingUnavailable": "訂閱通道暫時離線，請稍後再試。",
+  "manageSubscription": "管理訂閱 / 取消訂閱",
   "betaOpenAccess": "創世早鳥：前 {{count}} 名玩家享免費天梯通行（Pro 需另購）。",
   "identityOptionalBeta": "需使用 Google 帳號登入。",
   "betaEnterLeaderboard": "登入並進入戰場（早鳥免費）",

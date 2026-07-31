@@ -22,6 +22,9 @@ export type PurchaseProResult =
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
+/** Retry cadence after an immediate first attempt — RC REST often lags Play purchase. */
+const SERVER_SYNC_RETRY_DELAYS_MS = [1000, 3000, 8000] as const;
+
 function buildSimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
   return {
     active: true,
@@ -52,6 +55,28 @@ async function activateProOnServer(
   return sync.ok && sync.active === Boolean(snapshot?.active);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+/**
+ * Best-effort Firestore/RC reconciliation after a confirmed store purchase.
+ * WHY: Never block celebration/unlock on provider REST lag; retry instead of rollback.
+ */
+async function reconcileProEntitlementInBackground(
+  source: 'revenuecat' | 'client-simulation',
+  snapshot: RevenueCatEntitlementSnapshot
+): Promise<void> {
+  if (await activateProOnServer(source, snapshot)) return;
+
+  for (const delayMs of SERVER_SYNC_RETRY_DELAYS_MS) {
+    await sleep(delayMs);
+    if (await activateProOnServer(source, snapshot)) return;
+  }
+}
+
 /**
  * Purchases Pro subscription using RevenueCat when configured on a native build.
  * Falls back to local simulation when RC keys are unset or on web (Phase 1 flow testing).
@@ -74,6 +99,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     const snapshot = applySimulatedProSnapshot();
     const synced = await activateProOnServer('client-simulation', snapshot);
     if (!synced) {
+      // WHY: Simulation is not a store receipt — keep server as authority for fake Pro.
       rollbackLocalProSubscription();
       return { ok: false, reason: 'failed' };
     }
@@ -91,15 +117,12 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     if (!snapshot.active) {
       return { ok: false, reason: 'failed' };
     }
-    const synced = await activateProOnServer('revenuecat', snapshot);
-    if (!synced) {
-      rollbackLocalProSubscription();
-      return { ok: false, reason: 'failed' };
-    }
+    // WHY: Play charge already succeeded — unlock locally and celebrate immediately.
+    // Server verify can lag; never roll back a confirmed store entitlement for that.
     void hapticService.triggerProPurchaseCelebration();
+    void reconcileProEntitlementInBackground('revenuecat', snapshot);
     return { ok: true };
   } catch {
-    rollbackLocalProSubscription();
     return { ok: false, reason: 'failed' };
   }
 }

@@ -35,6 +35,7 @@
     "signOutOk": "Signed out successfully.",
     "signOutFail": "Sign-out failed. Please try again.",
     "manageArena": "Manage Arena Subscription",
+    "manageSubscription": "Manage / Cancel Subscription",
     "restorePurchases": "Restore Purchases",
     "restorePurchasesBusy": "Restoring...",
     "restorePurchasesSuccess": "Purchases successfully restored.",

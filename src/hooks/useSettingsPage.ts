@@ -7,6 +7,7 @@ import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { markUserLocaleOverride } from '../i18n/language';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
+import { openPlaySubscriptionManagement } from '../services/playSubscriptionManageService';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
@@ -69,6 +70,7 @@ export interface SettingsPageState {
   signInGoogle(): Promise<void>;
   signOut(): Promise<void>;
   restorePurchases(): Promise<void>;
+  openManageSubscription(): Promise<void>;
   deleteAccount(): Promise<void>;
   clearDynoIntelHistory(): void;
 }
@@ -200,6 +202,13 @@ export function useSettingsPage(): SettingsPageState {
           setBanner('restore-fail');
         } finally {
           setBusyAction('none');
+        }
+      },
+      async openManageSubscription() {
+        try {
+          await openPlaySubscriptionManagement();
+        } catch {
+          // Store / browser sheet failures are non-fatal; user can retry.
         }
       },
       async deleteAccount() {
