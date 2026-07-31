@@ -56,7 +56,7 @@ function LadderFilterSheetComponent({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderFilterSheet} flex flex-col justify-end overflow-y-auto overscroll-y-contain pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderFilterSheet} flex flex-col justify-end pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
       role="presentation"
     >
       <button
@@ -65,36 +65,41 @@ function LadderFilterSheetComponent({
         aria-label={t('cancel')}
         onClick={onClose}
       />
+      {/*
+        WHY: Shell clips at rounded corners (overflow-hidden); only the middle pane scrolls.
+        Sticky+semi-transparent footers let OptionSelect triggers paint through the CTA band on iOS.
+      */}
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 w-full max-w-3xl max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto rounded-t-2xl border border-zinc-700 bg-bg-card px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-panel [-webkit-overflow-scrolling:touch] sm:max-h-[min(88dvh,48rem)] sm:rounded-2xl sm:pb-6 sm:pt-4"
+        className="relative z-10 flex w-full max-w-3xl max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden rounded-t-2xl border border-zinc-700 bg-bg-card shadow-panel sm:max-h-[min(88dvh,48rem)] sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="space-y-3 sm:space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <h2
-              id={titleId}
-              className="text-sm font-semibold tracking-tight text-zinc-50 sm:text-base"
+        <header className="flex shrink-0 items-start justify-between gap-3 px-4 pt-3 sm:pt-4">
+          <h2
+            id={titleId}
+            className="text-sm font-semibold tracking-tight text-zinc-50 sm:text-base"
+          >
+            {t('ladder.filters.title')}
+          </h2>
+          <div className="flex items-center gap-2">
+            {activeFilterCount > 0 ? (
+              <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-mono text-cyan-300">
+                {activeFilterCount}
+              </span>
+            ) : null}
+            <button
+              type="button"
+              className="ui-btn py-1 text-[11px] sm:py-1.5 sm:text-xs"
+              onClick={onClose}
             >
-              {t('ladder.filters.title')}
-            </h2>
-            <div className="flex items-center gap-2">
-              {activeFilterCount > 0 ? (
-                <span className="rounded-full border border-cyan-400/40 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-mono text-cyan-300">
-                  {activeFilterCount}
-                </span>
-              ) : null}
-              <button
-                type="button"
-                className="ui-btn py-1 text-[11px] sm:py-1.5 sm:text-xs"
-                onClick={onClose}
-              >
-                {t('cancel')}
-              </button>
-            </div>
+              {t('cancel')}
+            </button>
           </div>
+        </header>
 
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain px-4 py-3 [-webkit-overflow-scrolling:touch] sm:space-y-4 sm:py-4">
           {syncAllSlot}
 
           <nav
@@ -221,23 +226,25 @@ function LadderFilterSheetComponent({
               </label>
             ) : null}
           </div>
-          <div className="sticky bottom-0 z-20 -mx-4 grid grid-cols-2 gap-2 border-t border-zinc-800/80 bg-bg-card/95 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur-sm sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-3 sm:backdrop-blur-none">
-            <button
-              type="button"
-              className="ui-btn py-1.5 text-[11px] sm:py-2 sm:text-xs"
-              onClick={onClear}
-            >
-              {t('ladder.filters.clear')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn border-accent-info/35 py-1.5 text-[11px] text-accent-info disabled:opacity-50 sm:py-2 sm:text-xs"
-              onClick={onApply}
-              disabled={!hasUnappliedChanges}
-            >
-              {t('ladder.filters.apply')}
-            </button>
-          </div>
+        </div>
+
+        {/* WHY: Opaque shrink-0 footer (not sticky/blur) — overlay already clears BottomNav + safe-area. */}
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-zinc-800 bg-bg-card px-4 pt-2 pb-3 sm:pt-3 sm:pb-4">
+          <button
+            type="button"
+            className="ui-btn py-1.5 text-[11px] sm:py-2 sm:text-xs"
+            onClick={onClear}
+          >
+            {t('ladder.filters.clear')}
+          </button>
+          <button
+            type="button"
+            className="ui-btn border-accent-info/35 py-1.5 text-[11px] text-accent-info disabled:opacity-50 sm:py-2 sm:text-xs"
+            onClick={onApply}
+            disabled={!hasUnappliedChanges}
+          >
+            {t('ladder.filters.apply')}
+          </button>
         </div>
       </section>
     </div>,
