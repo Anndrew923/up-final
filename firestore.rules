@@ -115,6 +115,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Genesis early-bird atomic counter — Admin SDK / Callable only.
+    match /meta/{docId} {
+      allow read, write: if false;
+    }
+
+    // Per-uid early-bird seat claims (grandfather). Admin SDK only.
+    match /genesis_early_bird_seats/{uid} {
+      allow read, write: if false;
+    }
+
     // DYNO INTEL — Gemini response cache; Admin SDK only (24h TTL).
     match /dyno_intel_cache/{hash} {
       allow read, write: if false;
