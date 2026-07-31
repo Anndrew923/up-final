@@ -11,7 +11,10 @@ import {
   restoreRevenueCatPurchases,
   type RevenueCatEntitlementSnapshot,
 } from './revenueCatService';
-import { syncProEntitlementToServer } from './subscriptionSyncService';
+import {
+  syncProEntitlementToServer,
+  type SyncProEntitlementIntent,
+} from './subscriptionSyncService';
 
 export type PurchaseProResult =
   | { ok: true }
@@ -49,9 +52,10 @@ function rollbackLocalProSubscription(): void {
 
 async function activateProOnServer(
   source: 'revenuecat' | 'client-simulation',
-  snapshot: RevenueCatEntitlementSnapshot | null
+  snapshot: RevenueCatEntitlementSnapshot | null,
+  intent: SyncProEntitlementIntent = 'reconcile'
 ): Promise<boolean> {
-  const sync = await syncProEntitlementToServer({ source, snapshot });
+  const sync = await syncProEntitlementToServer({ source, snapshot, intent });
   return sync.ok && sync.active === Boolean(snapshot?.active);
 }
 
@@ -67,13 +71,18 @@ function sleep(ms: number): Promise<void> {
  */
 async function reconcileProEntitlementInBackground(
   source: 'revenuecat' | 'client-simulation',
-  snapshot: RevenueCatEntitlementSnapshot
+  snapshot: RevenueCatEntitlementSnapshot,
+  purchaserUid: string
 ): Promise<void> {
-  if (await activateProOnServer(source, snapshot)) return;
+  const sessionMatches = () => useAuthStore.getState().uid === purchaserUid;
+
+  if (!sessionMatches()) return;
+  if (await activateProOnServer(source, snapshot, 'activate')) return;
 
   for (const delayMs of SERVER_SYNC_RETRY_DELAYS_MS) {
     await sleep(delayMs);
-    if (await activateProOnServer(source, snapshot)) return;
+    if (!sessionMatches()) return;
+    if (await activateProOnServer(source, snapshot, 'activate')) return;
   }
 }
 
@@ -120,7 +129,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     // WHY: Play charge already succeeded — unlock locally and celebrate immediately.
     // Server verify can lag; never roll back a confirmed store entitlement for that.
     void hapticService.triggerProPurchaseCelebration();
-    void reconcileProEntitlementInBackground('revenuecat', snapshot);
+    void reconcileProEntitlementInBackground('revenuecat', snapshot, userId);
     return { ok: true };
   } catch {
     return { ok: false, reason: 'failed' };

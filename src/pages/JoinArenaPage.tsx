@@ -201,7 +201,9 @@ const JoinArenaPage: FC = () => {
           type="button"
           className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/40 px-4 py-3 text-left text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/60"
           onClick={() => {
-            void openPlaySubscriptionManagement();
+            void openPlaySubscriptionManagement().catch(() => {
+              // Store / browser sheet failures are non-fatal; user can retry.
+            });
           }}
         >
           {t('manageSubscription')}

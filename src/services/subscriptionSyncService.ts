@@ -4,6 +4,9 @@ import { getFirebaseAuth, getFirebaseFunctions } from './firebaseClient';
 
 export type SyncProEntitlementSource = 'revenuecat' | 'client-simulation';
 
+/** activate = post-purchase confirm (no revoke on RC lag); reconcile = restore/boot. */
+export type SyncProEntitlementIntent = 'activate' | 'reconcile';
+
 export type SyncProEntitlementResult =
   | {
       ok: true;
@@ -26,12 +29,14 @@ export type SyncProEntitlementResult =
 export interface SyncProEntitlementInput {
   source: SyncProEntitlementSource;
   snapshot?: RevenueCatEntitlementSnapshot | null;
+  intent?: SyncProEntitlementIntent;
 }
 
 let syncProFn: ReturnType<
   typeof httpsCallable<
     {
       source: SyncProEntitlementSource;
+      intent?: SyncProEntitlementIntent;
       proExpiresAt?: string | null;
       planId?: string | null;
     },
@@ -75,6 +80,7 @@ export async function syncProEntitlementToServer(
   try {
     const result = await callable({
       source: input.source,
+      intent: input.intent ?? 'reconcile',
       proExpiresAt: input.snapshot?.expiresDate ?? null,
       planId: input.snapshot?.productIdentifier ?? null,
     });

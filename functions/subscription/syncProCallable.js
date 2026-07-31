@@ -7,6 +7,10 @@ import {
   clearProEntitlementFromUser,
 } from "../shared/proEntitlementSync.js";
 import { hasCoreFromUserDoc } from "../shared/userEntitlement.js";
+import {
+  normalizeSyncProIntent,
+  shouldClearProWhenRevenueCatInactive,
+} from "./syncProIntent.js";
 import { isDevProSyncAllowed, verifyRevenueCatProEntitlement } from "./verifyRevenueCat.js";
 
 const revenueCatApiKey = defineSecret("REVENUECAT_SECRET_API_KEY");
@@ -30,6 +34,7 @@ export const syncProSubscription = onCall(
 
     const data = request.data ?? {};
     const source = typeof data.source === "string" ? data.source : "revenuecat";
+    const intent = normalizeSyncProIntent(data.intent);
 
     const userRef = db.collection("users").doc(uid);
     const userSnap = await userRef.get();
@@ -58,6 +63,16 @@ export const syncProSubscription = onCall(
           proExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         }
       } else if (!verified.active) {
+        if (!shouldClearProWhenRevenueCatInactive(intent)) {
+          // Soft-miss for purchase confirmation — client will retry; webhook may win.
+          return {
+            ok: true,
+            active: false,
+            subscriptionStatus: "free",
+            proExpiresAt: null,
+            planId: null,
+          };
+        }
         // WHY: Restore/refresh is an authoritative inactive signal. Revoke both
         // local mirrors before returning a successful reconciliation result.
         const reconciled = await clearProEntitlementFromUser(uid, { verifiedAtMs });

@@ -119,10 +119,31 @@ describe('subscription service native purchase', () => {
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
     expect(triggerProPurchaseCelebration).toHaveBeenCalledTimes(1);
     expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
+    expect(syncProEntitlementToServer).toHaveBeenCalledWith(
+      expect.objectContaining({ intent: 'activate', source: 'revenuecat' })
+    );
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(syncProEntitlementToServer).toHaveBeenCalledTimes(2);
     expect(useEntitlementStore.getState().isPro).toBe(true);
+  });
+
+  it('aborts background sync retries after purchaser signs out', async () => {
+    seedSignedInBuyer();
+    revenueCat.purchaseRevenueCatPro.mockResolvedValue({
+      active: true,
+      productIdentifier: 'up_pro_monthly',
+      expiresDate: '2099-01-01T00:00:00.000Z',
+    });
+    syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
+
+    const result = await purchaseProSubscription();
+    expect(result.ok).toBe(true);
+    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
+
+    useAuthStore.getState().setSignedOut();
+    await vi.advanceTimersByTimeAsync(1000 + 3000 + 8000);
+    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
   });
 
   it('never rolls back local Pro after a confirmed store entitlement', async () => {
