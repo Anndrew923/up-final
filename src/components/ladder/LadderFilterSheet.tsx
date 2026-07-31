@@ -73,13 +73,14 @@ function LadderFilterSheetComponent({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 flex w-full max-w-3xl max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden rounded-t-2xl border border-zinc-700 bg-bg-card shadow-panel sm:max-h-[min(88dvh,48rem)] sm:rounded-2xl"
+        className="relative z-10 flex min-h-0 w-full max-w-3xl max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col overflow-hidden rounded-t-2xl border border-zinc-700 bg-bg-card shadow-panel sm:max-h-[min(88dvh,48rem)] sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex shrink-0 items-start justify-between gap-3 px-4 pt-3 sm:pt-4">
+        {/* WHY: Rigid 2-col grid — title must not shove cancel onto a second row on narrow widths. */}
+        <header className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4 px-4 pt-3 sm:pt-4">
           <h2
             id={titleId}
-            className="text-sm font-semibold tracking-tight text-zinc-50 sm:text-base"
+            className="min-w-0 text-sm font-semibold tracking-tight text-zinc-50 sm:text-base"
           >
             {t('ladder.filters.title')}
           </h2>
