@@ -82,4 +82,17 @@ describe("genesisEarlyBird decision matrix", () => {
       { allow: false, action: "none", reason: "seats-full" }
     );
   });
+
+  it("documents claimSeat contract: under-cap without seat may gate-only allow", () => {
+    // Preview paths use claimSeat=false; they must mirror under-cap allow without writing.
+    const gateOnly = resolveGenesisUploadDecision({
+      hasPro: false,
+      paywallForced: false,
+      alreadyClaimed: false,
+      claimedCount: 10,
+      seatLimit: 2000,
+    });
+    assert.equal(gateOnly.allow, true);
+    assert.equal(gateOnly.action, "claim");
+  });
 });

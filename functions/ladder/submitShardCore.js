@@ -77,8 +77,6 @@ export async function runLadderSubmitShard(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid);
-
   const identityLock = await loadLadderIdentityLock(uid);
   const data = request.data || {};
   const metric = data.metric;
@@ -122,6 +120,9 @@ export async function runLadderSubmitShard(request) {
       submittedScore: null,
     };
   }
+
+  // WHY: Claim only after shard payload is valid — empty/invalid calls must not burn seats.
+  await assertLadderUploadAllowed(uid, new Date(), { claimSeat: true });
 
   const rateKey = `leaderboard:${metric}`;
   const now = new Date();
@@ -330,8 +331,6 @@ export async function runLadderSyncPreview(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid);
-
   const identityLock = await loadLadderIdentityLock(uid);
   const data = request.data || {};
   const previewNameResult = tryNormalizeDisplayName(data.displayName);
@@ -351,6 +350,9 @@ export async function runLadderSyncPreview(request) {
   if (!mergedScores || typeof mergedScores !== "object") {
     return { ok: false, reason: "invalid-input" };
   }
+
+  // WHY: Preview must not consume a free seat — only gate against a filled cap.
+  await assertLadderUploadAllowed(uid, new Date(), { claimSeat: false });
 
   const isAnonymous = profile?.isAnonymousInLadder === true;
   const nowIso = new Date().toISOString();

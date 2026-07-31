@@ -3,6 +3,11 @@
  * WHY: Client `genesisEarlyBirdSeatLimit` is messaging only; upload defense lives here.
  */
 import { db, FieldValue } from "./admin.js";
+import {
+  ENTRIES_SUBCOLLECTION,
+  LEADERBOARD_PREVIEWS_COLLECTION,
+  LEADERBOARDS_COLLECTION,
+} from "./constants.js";
 
 /** Production seat cap — independent of client monetization constants. */
 export const GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT = 2000;
@@ -48,6 +53,51 @@ export function resolveGenesisUploadDecision(input) {
 }
 
 /**
+ * Users who already appeared on the ladder before seat docs existed.
+ * WHY: Grandfather without burning a post-deploy free seat against the 2000 cap.
+ */
+export async function hasLegacyLadderPresence(uid) {
+  const previewSnap = await db.collection(LEADERBOARD_PREVIEWS_COLLECTION).doc(uid).get();
+  if (previewSnap.exists) return true;
+
+  const entrySnap = await db
+    .collection(LEADERBOARDS_COLLECTION)
+    .doc("ladderScore")
+    .collection(ENTRIES_SUBCOLLECTION)
+    .doc(uid)
+    .get();
+  return entrySnap.exists;
+}
+
+/** Read current claimedCount (0 when meta missing). */
+export async function readGenesisEarlyBirdClaimedCount() {
+  const metaSnap = await db.doc(GENESIS_EARLY_BIRD_META_PATH).get();
+  return Number(metaSnap.data()?.claimedCount) || 0;
+}
+
+/**
+ * Grant a seat marker without incrementing claimedCount (legacy grandfather).
+ *
+ * @param {string} uid
+ * @param {{ now?: Date }} [options]
+ */
+export async function grantGenesisEarlyBirdSeatGrandfather(uid, options = {}) {
+  const nowIso = (options.now ?? new Date()).toISOString();
+  const seatRef = db.collection(GENESIS_EARLY_BIRD_SEATS_COLLECTION).doc(uid);
+
+  await db.runTransaction(async (tx) => {
+    const seatSnap = await tx.get(seatRef);
+    if (seatSnap.exists) return;
+    tx.set(seatRef, {
+      uid,
+      claimedAt: nowIso,
+      createdAt: FieldValue.serverTimestamp(),
+      grandfather: true,
+    });
+  });
+}
+
+/**
  * Atomically claim a free early-bird seat for `uid`, or confirm an existing claim.
  *
  * @param {string} uid
@@ -86,8 +136,8 @@ export async function claimGenesisEarlyBirdSeat(uid, options = {}) {
     tx.set(seatRef, {
       uid,
       claimedAt: nowIso,
-      // WHY: FieldValue keeps ops queries flexible without a second write.
       createdAt: FieldValue.serverTimestamp(),
+      grandfather: false,
     });
 
     return { ok: true, claimed: true, alreadyHad: false, claimedCount: nextCount };

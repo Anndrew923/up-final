@@ -1,5 +1,4 @@
 import { db } from "../shared/admin.js";
-import { assertLadderUploadAllowed } from "../shared/ladderEntitlement.js";
 import {
   checkFullSyncRateLimit,
   loadRateLimitDoc,
@@ -140,8 +139,6 @@ export async function runLadderSyncBatch(request) {
     throw err;
   }
 
-  await assertLadderUploadAllowed(uid);
-
   const data = request.data || {};
   const nameResult = tryNormalizeDisplayName(data.displayName);
   if (!nameResult.ok) {
@@ -171,6 +168,7 @@ export async function runLadderSyncBatch(request) {
   const failures = /** @type {LadderSyncShardFailure[]} */ ([]);
 
   if (targets.length === 0) {
+    // WHY: Empty batches must not enter shard submit (which claims early-bird seats).
     return { ok: true, summary: createEmptySummary(), failures };
   }
 
@@ -189,6 +187,7 @@ export async function runLadderSyncBatch(request) {
     }
   }
 
+  // Seat claim happens inside `runLadderSubmitShard` only after per-shard validation.
   const tally = createEmptySummary();
 
   for (const target of targets) {
