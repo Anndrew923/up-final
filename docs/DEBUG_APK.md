@@ -9,7 +9,7 @@
 | 項目                       | 說明                                                                                                                                                                       |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Android SDK**            | 須有 `android/local.properties`（`sdk.dir=...`）或環境變數 **`ANDROID_HOME`**。最省事：用 Android Studio 開啟 **`android/`** 一次，讓 Studio 自動產生 `local.properties`。 |
-| **`google-services.json`** | 必須位於 **`android/app/google-services.json`**（Firebase 下載；套件名 **`com.ultimatephysique.app`**）。                                                                  |
+| **`google-services.json`** | 必須位於 **`android/app/google-services.json`**（Firebase 下載；套件名 **`com.ultimatephysique.fitness2025`**）。                                                                  |
 | **Node / npm**             | 與倉庫開發環境一致。                                                                                                                                                       |
 
 ---
@@ -47,7 +47,7 @@ android/app/build/outputs/apk/debug/app-debug.apk
 **無法**由 Agent 代登入 Firebase Console；請 Boss 在瀏覽器完成下列步驟：
 
 1. 開啟 [Firebase Console](https://console.firebase.google.com) → 專案 **`fitness-app-69f08`**。
-2. **Project settings**（齒輪）→ **Your apps** → 選 **Android**（`com.ultimatephysique.app`）。
+2. **Project settings**（齒輪）→ **Your apps** → 選 **Android**（`com.ultimatephysique.fitness2025`）。
 3. **Add fingerprint** → 貼上 **SHA-1**（必要時一併新增 **SHA-256**）。
 4. 若 Console 提示更新設定，請**重新下載** `google-services.json` 覆蓋 **`android/app/google-services.json`**，再執行一次 `npm run android:apk:debug`。
 
@@ -82,7 +82,7 @@ npm run android:signing-report
 
 除 **SHA-1 / SHA-256** 外，請一併核對：
 
-- **套件名** 是否為 **`com.ultimatephysique.app`**（與 Firebase Android App、`google-services.json` 一致）。
+- **套件名** 是否為 **`com.ultimatephysique.fitness2025`**（與 Firebase Android App、`google-services.json` 一致）。
 - **Google Cloud Console** 內與 OAuth 相關的 Android 用戶端（若有）是否也綁定相同 **package + SHA-1**。
 
 詳見 **`docs/CAPACITOR_ANDROID.md`** §5。

@@ -236,8 +236,9 @@ export async function runAdminDeleteUser(request) {
   await assertSafeAdminTarget({ adminUid, targetUid: validated.targetUid });
   const surface = await assertTargetHasDeletableSurface(validated.targetUid);
 
-  let authDeleted = false;
-  let cloudDeleted = false;
+  // WHY: Both branches assign before audit write — avoid dead initializers (no-useless-assignment).
+  let authDeleted;
+  let cloudDeleted;
   try {
     await deleteAuthAndCloudUser(validated.targetUid);
     authDeleted = true;

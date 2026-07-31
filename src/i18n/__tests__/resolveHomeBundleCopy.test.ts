@@ -38,7 +38,9 @@ describe('resolveHomeBundleCopy', () => {
         gender: '男',
         age: '28',
         height: '175',
+        heightUnit: 'cm',
         weight: '72',
+        weightUnit: 'kg',
       })
     ).toBe('男 · 28 歲 · 175 cm · 72 kg');
   });
