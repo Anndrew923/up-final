@@ -5,7 +5,7 @@ import { ROUTES } from '../config/routes';
 
 const AboutPage: FC = () => {
   const { t } = useTranslation('common');
-  const appVersion = import.meta.env.VITE_APP_VERSION ?? '1.0.23';
+  const appVersion = import.meta.env.VITE_APP_VERSION ?? '1.0.24';
 
   return (
     <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
