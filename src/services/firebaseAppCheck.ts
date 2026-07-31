@@ -70,3 +70,23 @@ export function initializeFirebaseAppCheck(app: FirebaseApp): boolean {
   initialized = true;
   return true;
 }
+
+/**
+ * Prefetch / force-refresh attestation before ladder Callables.
+ * WHY: First sync after cold start can race native Play Integrity; Functions then reject
+ * with bare `unauthenticated` even though Google Auth is healthy.
+ */
+export async function ensureFreshAppCheckToken(forceRefresh = false): Promise<boolean> {
+  if (!initialized || isFirebaseEmulatorEnabled()) return true;
+  if (!isCapacitorNativePlatform()) return initialized;
+
+  try {
+    await FirebaseAppCheck.getToken({ forceRefresh });
+    return true;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[app-check] native getToken failed', error);
+    }
+    return false;
+  }
+}

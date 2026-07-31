@@ -15,6 +15,16 @@ export type LadderBatchCallableErrorMapped = {
   message: string;
 };
 
+export type LadderBatchCallableErrorContext = {
+  /**
+   * True when the client still has a non-anonymous Firebase user.
+   * WHY: Functions `enforceAppCheck` often returns bare `unauthenticated` (no "App Check"
+   * in the message). If JS Auth is healthy, that 401 is almost always attestation — not a
+   * missing Google session — and the UI must not tell testers to "sign in again".
+   */
+  hasGoogleSignedInUser?: boolean;
+};
+
 function readErrorCode(err: unknown): string {
   if (!err || typeof err !== 'object') return '';
   const code = 'code' in err ? String((err as { code?: unknown }).code ?? '') : '';
@@ -35,7 +45,10 @@ export function normalizeFirebaseCallableErrorCode(code: string): string {
   return trimmed.startsWith('functions/') ? trimmed.slice('functions/'.length) : trimmed;
 }
 
-export function mapLadderBatchCallableError(err: unknown): LadderBatchCallableErrorMapped {
+export function mapLadderBatchCallableError(
+  err: unknown,
+  context: LadderBatchCallableErrorContext = {}
+): LadderBatchCallableErrorMapped {
   const rawCode = readErrorCode(err);
   const code = normalizeFirebaseCallableErrorCode(rawCode);
   const message = readErrorMessage(err);
@@ -45,7 +58,8 @@ export function mapLadderBatchCallableError(err: unknown): LadderBatchCallableEr
     code === 'failed-precondition' ||
     haystack.includes('app check') ||
     haystack.includes('appcheck') ||
-    haystack.includes('attestation')
+    haystack.includes('attestation') ||
+    haystack.includes('play integrity')
   ) {
     return {
       reason: 'app-check',
@@ -54,6 +68,14 @@ export function mapLadderBatchCallableError(err: unknown): LadderBatchCallableEr
   }
 
   if (code === 'unauthenticated') {
+    if (context.hasGoogleSignedInUser) {
+      return {
+        reason: 'app-check',
+        message:
+          message ||
+          'Callable rejected while signed in — usually App Check / Play Integrity attestation',
+      };
+    }
     return {
       reason: 'unauthenticated',
       message: message || 'Sign in required for ladder sync',

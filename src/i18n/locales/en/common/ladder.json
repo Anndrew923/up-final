@@ -151,7 +151,7 @@
         "unknown": "Unknown error",
         "anonymous": "Anonymous account",
         "avatar-upload-failed": "Avatar upload failed (scores still sync without a new portrait)",
-        "app-check": "Security check failed (App Check / Play Integrity)",
+        "app-check": "Security check failed (App Check / Play Integrity). Use a Play Internal Testing install and ensure the Play App Signing certificate is registered in Firebase.",
         "unauthenticated": "Sign-in required or session expired",
         "permission-denied": "Permission denied for ladder writes"
       },

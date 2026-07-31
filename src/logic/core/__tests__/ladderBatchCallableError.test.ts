@@ -29,6 +29,15 @@ describe('ladderBatchCallableError', () => {
     ).toBe('permission-denied');
   });
 
+  it('reclassifies bare unauthenticated as app-check when Google session is healthy', () => {
+    expect(
+      mapLadderBatchCallableError(
+        { code: 'functions/unauthenticated', message: 'Unauthenticated' },
+        { hasGoogleSignedInUser: true }
+      ).reason
+    ).toBe('app-check');
+  });
+
   it('maps internal transport failures', () => {
     expect(
       mapLadderBatchCallableError({ code: 'functions/unavailable', message: 'down' }).reason

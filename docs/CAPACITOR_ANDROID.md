@@ -1,7 +1,7 @@
 # Capacitor Android 裝機與點火手冊（Ultimate Physique）
 
 本文件描述如何在本機與實機上，從零啟動 **Vite Web 資產 + Capacitor Android 殼 + Firebase（Google 登入）** 的完整路徑。  
-套件名稱（`applicationId`）固定為 **`com.ultimatephysique.app`**，須與 Firebase Console、Google Play Console、RevenueCat Android App 完全一致。
+套件名稱（`applicationId`）固定為 **`com.ultimatephysique.fitness2025`**，須與 Firebase Console、Google Play Console、RevenueCat Android App 完全一致。
 
 ---
 
@@ -32,7 +32,7 @@
 ### 2.2 `google-services.json`（必放、且路徑唯一）
 
 1. 登入 [Firebase Console](https://console.firebase.google.com) → 選專案（例如 **`fitness-app-69f08`**）。
-2. **Project settings** → **Your apps** → 若尚無 Android App，請新增，**Android package name** 必須填：**`com.ultimatephysique.app`**。
+2. **Project settings** → **Your apps** → 若尚無 Android App，請新增，**Android package name** 必須填：**`com.ultimatephysique.fitness2025`**。
 3. 下載 **`google-services.json`**。
 4. 將檔案放在本 repo 的下列路徑（**檔名不可改**）：
 
@@ -131,35 +131,40 @@ Android/iOS 殼內使用 **`@capacitor-firebase/authentication`** 走 **原生 G
 
 ## 6. 天梯與 Google 登入：SHA-1 簽章防線（必讀）
 
-若 **Google 登入** 在 App 內失敗（常見：錯誤碼 `DEVELOPER_ERROR`、Auth 彈窗立即關閉、或後端拒絕），九成是 **SHA 指紋未註冊**。
+若 **Google 登入** 在 App 內失敗（常見：錯誤碼 `DEVELOPER_ERROR`、Auth 彈窗立即關閉、或後端拒絕），九成是 **SHA 指紋未註冊**。  
+若登入成功但天梯同步顯示 **`Unauthenticated` / App Check**，亦請核對本節——Play 內測安裝用的是 **App signing key**，不是本機 upload keystore。
 
-### 5.1 為什麼要兩組指紋？
+### 5.1 為什麼要兩組（其實三組）指紋？
 
-| 簽章類型               | 用途                                                              |
-| ---------------------- | ----------------------------------------------------------------- |
-| **Debug**              | 本機 `Run`、日常偵錯                                              |
-| **Release / 上傳金鑰** | Play 內測／正式軌道安裝的包（與 Play App Signing 實際簽署鍵有關） |
+| 簽章類型 | 用途 |
+| -------- | ---- |
+| **Debug** | 本機 `Run`、日常偵錯 |
+| **Upload key（本機 release keystore）** | 上傳 AAB 到 Play 時用的金鑰 |
+| **App signing key（Play 代簽）** | 使用者從 **Play 內部測試／正式軌道** 下載到手機上的實際簽章 |
 
-兩者指紋不同；**Firebase 與 Google Cloud OAuth 用戶端**需分別加入，否則對應安裝來源的登入會失敗。
+Play 開啟 App Signing 後，裝置上的 APK **不是** upload key 簽的。Firebase / OAuth / Play Integrity 都必須有 **App signing key** 指紋。
 
-### 5.2 取得 SHA-1（範例指令）
+### 5.2 本機已知指紋（`./gradlew signingReport`，2026-07-31）
 
-於 **`android/`** 目錄：
+| Variant | SHA-1 |
+| ------- | ----- |
+| **debug** | `7D:94:C0:AB:65:80:83:EA:44:C0:05:12:A0:19:1D:BC:17:31:FE:59` |
+| **release（upload key）** | `EF:20:CB:30:78:01:11:92:B4:D2:8B:12:45:F3:97:5E:7C:55:04:26` |
+
+> 目前倉內 `google-services.json` 已登記的 Android OAuth SHA-1 **不包含**上表兩組（另有 4 組歷史／Play 指紋）。  
+> **必做**：到 Play Console → **版本 → App integrity / App signing**，複製 **App signing key certificate** 的 SHA-1（與 SHA-256），確認已出現在 Firebase → Project settings → Android app（`com.ultimatephysique.fitness2025`）。若缺失就 **Add fingerprint**，再重新下載 `google-services.json`。
+
+於 **`android/`** 目錄重印本機指紋：
 
 ```bash
-# Debug（預設 debug.keystore）
 ./gradlew signingReport
 ```
 
-從輸出複製 **SHA1**（與 **SHA-256** 若後台要求）。
-
-Release 請使用 **Play Console → 版本 → App integrity**（或 Play App Signing 頁面）提供的 **App signing key certificate** 指紋；若你本地另有 upload keystore，亦需一併對照。
-
 ### 5.3 要填到哪裡？
 
-1. **Firebase Console** → Project settings → 你的 **Android app** → **Add fingerprint** → 貼上 **Debug** 與 **Release（Play）** 的 SHA-1（必要時含 SHA-256）。
+1. **Firebase Console** → Project settings → 你的 **Android app** → **Add fingerprint** → 貼上 **Debug**、**Upload**、以及 **Play App signing** 的 SHA-1（必要時含 SHA-256）。
 2. **Google Cloud Console**（若使用 Web OAuth Client ID 綁 Android）：對應 **OAuth 2.0 Client** 的 Android 設定中，加入相同 **package name + SHA-1**。
-3. **Google Play Console**：與 **Play Integrity / 連結 Cloud 專案** 相關的檢查清單，依 Google 當前後台文案完成（避免僅改 Firebase 忘記 Play 側）。
+3. **Google Play Console**：確認 App 已連結同一 Firebase／Cloud 專案，且 **Play Integrity API** 可用（App Check 已選 Play Integrity 仍可能因專案未連結而 401）。
 
 完成後建議 **重新下載** `google-services.json`（若 Console 提示配置更新），再覆蓋 **`android/app/google-services.json`**，最後 **`npm run cap:sync`** 與 Android Studio **Rebuild**。
 
@@ -194,7 +199,7 @@ Android 原生組譯另需本機 **Android SDK** 與 **`google-services.json`**�
 | 現象                                    | 檢查                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Gradle：`SDK location not found`        | **`android/local.properties`** 的 `sdk.dir` 或 **`ANDROID_HOME`**                            |
-| Gradle：`google-services.json` 相關錯誤 | 檔案是否在 **`android/app/`**、package name 是否為 **`com.ultimatephysique.app`**            |
+| Gradle：`google-services.json` 相關錯誤 | 檔案是否在 **`android/app/`**、package name 是否為 **`com.ultimatephysique.fitness2025`**            |
 | Google 登入失敗                         | **SHA-1** 是否同時涵蓋 **Debug** 與 **Play 安裝來源**；`google-services.json` 是否為最新下載 |
 | Web 正常、App 內 Firebase 異常          | 確認已 **`npm run cap:sync`** 再 Run；避免只更新程式未同步 `dist/`                           |
 

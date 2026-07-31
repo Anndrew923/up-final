@@ -15,7 +15,7 @@ import { logLadderCallableError } from '../lib/ladderCallableDevLog';
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
 import type { LadderProfileProjection } from '../types/ladderProfile';
-import { getFirestoreDb } from './firebaseClient';
+import { getCurrentFirebaseUser, getFirestoreDb } from './firebaseClient';
 import { resolveLeaderboardAvatarUrlForCloud } from './ladderIdentityService';
 import { ensureLadderAvatarHttpsForProSync } from './ladderAvatarStorageService';
 import { callLadderSyncBatch } from './ladderCallableService';
@@ -153,7 +153,10 @@ export async function runLeaderboardBatchUpload(options: {
     } catch (err) {
       // WHY: App Check / auth failures must surface in UI — empty failures look like a silent no-op on APK.
       logLadderCallableError('runLeaderboardBatchUpload/ladderSyncBatch', err);
-      const mapped = mapLadderBatchCallableError(err);
+      const user = getCurrentFirebaseUser();
+      const mapped = mapLadderBatchCallableError(err, {
+        hasGoogleSignedInUser: Boolean(user && !user.isAnonymous),
+      });
       console.error('[ladder] ladderSyncBatch callable failed', mapped);
       const failures: LadderSyncShardFailure[] = [
         ...preflightFailures,

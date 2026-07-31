@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "5144099869-4ks7ju1uholdd93aln6u5lu8b25fgn4q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "7d94c0ab658083ea44c00512a0191dbc1731fe59"
+          }
+        },
+        {
           "client_id": "5144099869-org039ohcg6l5h83n3bndr0qirisnai6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -35,6 +43,14 @@
           "android_info": {
             "package_name": "com.ultimatephysique.fitness2025",
             "certificate_hash": "95904a605c5a8b83c7b11010f7bd6cada524c085"
+          }
+        },
+        {
+          "client_id": "5144099869-r00uifg2fu4glp7fla2g7k0re1a7p951.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ultimatephysique.fitness2025",
+            "certificate_hash": "ef20cb3078011192b4d28b1245f3975e7c550426"
           }
         },
         {

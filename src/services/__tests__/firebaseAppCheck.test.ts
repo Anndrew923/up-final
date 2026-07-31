@@ -91,4 +91,12 @@ describe('Firebase App Check initialization', () => {
     expect(token.token).toBe('native-token');
     expect(token.expireTimeMillis).toBeGreaterThan(Date.now());
   });
+
+  it('force-refreshes native App Check tokens for ladder Callables', async () => {
+    mocks.native = true;
+    const { initializeFirebaseAppCheck, ensureFreshAppCheckToken } = await loadSubject();
+    expect(initializeFirebaseAppCheck(app)).toBe(true);
+    await expect(ensureFreshAppCheckToken(true)).resolves.toBe(true);
+    expect(mocks.getNativeToken).toHaveBeenCalledWith({ forceRefresh: true });
+  });
 });

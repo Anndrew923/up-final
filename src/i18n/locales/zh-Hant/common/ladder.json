@@ -151,7 +151,7 @@
         "unknown": "未知錯誤",
         "anonymous": "訪客帳號",
         "avatar-upload-failed": "大頭照上傳失敗（已略過頭像，分數仍會同步）",
-        "app-check": "安全驗證失敗（App Check / Play Integrity）",
+        "app-check": "安全驗證失敗（App Check / Play Integrity）。請確認以 Play 內部測試安裝，且 Firebase 已登記 Play App Signing 指紋。",
         "unauthenticated": "尚未登入或登入已失效",
         "permission-denied": "權限不足，無法寫入天梯"
       },

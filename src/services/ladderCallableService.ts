@@ -8,12 +8,21 @@ import { createEmptyLeaderboardSyncRunSummary } from '../logic/core/leaderboardS
 import type { LadderProfileProjection } from '../types/ladderProfile';
 import type { ScoreMap } from '../types/scoring';
 import { logLadderCallableError } from '../lib/ladderCallableDevLog';
-import { getFirebaseFunctions } from './firebaseClient';
+import { ensureFreshAppCheckToken } from './firebaseAppCheck';
+import { ensureFreshFirebaseIdToken, getFirebaseFunctions } from './firebaseClient';
 import type {
   SubmitLeaderboardInput,
   SubmitLeaderboardOptions,
   SubmitLeaderboardResult,
 } from './leaderboardService';
+
+/**
+ * Refresh Auth + App Check tokens immediately before ladder Callables.
+ * WHY: Cold-start Play Integrity races and stale JWTs both surface as `unauthenticated`.
+ */
+async function prepareLadderCallableSession(): Promise<void> {
+  await Promise.all([ensureFreshFirebaseIdToken(), ensureFreshAppCheckToken(true)]);
+}
 
 type LadderSubmitShardPayload = {
   metric: LeaderboardShardId;
@@ -115,6 +124,7 @@ export async function callLadderReportUser(params: {
   const callable = getReportUserCallable();
   if (!callable) return null;
   try {
+    await prepareLadderCallableSession();
     const { data } = await callable(params);
     return data ?? { ok: false, reason: 'unknown' };
   } catch (err) {
@@ -145,6 +155,7 @@ export async function callLadderSubmitShard(params: {
 
   const { input, options } = params;
   try {
+    await prepareLadderCallableSession();
     const { data } = await callable({
       metric: input.metric,
       score: input.score,
@@ -171,6 +182,7 @@ export async function callLadderSyncPreview(params: {
   if (!callable) return null;
 
   try {
+    await prepareLadderCallableSession();
     const { data } = await callable({
       displayName: params.displayName,
       mergedScores: params.mergedScores,
@@ -205,6 +217,7 @@ export async function callLadderSyncBatch(params: {
   if (!callable) return null;
 
   try {
+    await prepareLadderCallableSession();
     const { data } = await callable({
       targets: params.targets,
       displayName: params.displayName,

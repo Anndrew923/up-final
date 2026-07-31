@@ -253,6 +253,25 @@ export function getCurrentFirebaseUser(): User | null {
   return firebaseAuth?.currentUser ?? null;
 }
 
+/**
+ * Force-refresh the Firebase ID token before Callables.
+ * WHY: Stale WebView sessions on Capacitor can keep `currentUser` while the JWT expired;
+ * Callables then fail closed as `unauthenticated`.
+ */
+export async function ensureFreshFirebaseIdToken(): Promise<boolean> {
+  const user = firebaseAuth?.currentUser;
+  if (!user || user.isAnonymous) return false;
+  try {
+    await user.getIdToken(true);
+    return true;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[auth] getIdToken(true) failed', error);
+    }
+    return false;
+  }
+}
+
 export function onFirebaseAuthStateChanged(listener: (user: User | null) => void): Unsubscribe {
   if (!firebaseAuth) {
     listener(null);
