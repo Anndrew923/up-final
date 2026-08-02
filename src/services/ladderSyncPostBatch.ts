@@ -12,8 +12,10 @@ import type {
 import type { EntitlementState } from '../types/entitlement';
 import type { ScoreMap } from '../types/scoring';
 import type { LadderProfileProjection } from '../types/ladderProfile';
-import { clearLeaderboardCache } from './leaderboardCacheService';
-import { syncLeaderboardPreviewFullSixAxis } from './leaderboardService';
+import {
+  clearLeaderboardReadCaches,
+  syncLeaderboardPreviewFullSixAxis,
+} from './leaderboardService';
 
 export const LADDER_CACHE_INVALIDATED_EVENT = 'up-final-ladder-cache-invalidated';
 
@@ -52,7 +54,7 @@ export async function runLeaderboardBatchPostUpload(options: {
 
   const metrics = collectLadderCacheMetricsToClear(options.targets);
   for (const metric of metrics) {
-    clearLeaderboardCache(metric);
+    clearLeaderboardReadCaches(metric);
   }
   notifyLadderCacheInvalidated(metrics);
 

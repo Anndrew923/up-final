@@ -13,6 +13,10 @@ import {
   recordShardWrite,
 } from "./rateLimits.js";
 import {
+  checkIdentityFanOutAllowed,
+  recordIdentityFanOut,
+} from "./identityFanOutDebounce.js";
+import {
   buildFullRadarScoresMap,
   ladderPreviewProfileFields,
   resolvePreviewRadarMetric,
@@ -151,6 +155,19 @@ export async function runLadderSubmitShard(request) {
         : { needsPatch: false, identityChanged: false, avatarChanged: false };
 
       if (patch.needsPatch && entrySnap.exists) {
+        // WHY: Score-equal identity fan-out is debounced (24h + wave grace) so sync-all
+        // does not rewrite every shard on every nickname/avatar tweak.
+        const fanOut = checkIdentityFanOutAllowed(rateDoc, nowMs);
+        if (!fanOut.allowed) {
+          return {
+            outcome: "unchanged",
+            previousScore,
+            submittedScore: score,
+            quota,
+            identityFanOutDeferred: true,
+          };
+        }
+
         // WHY: Avatar uploads stay rate-limited (storage + bandwidth). Pure nickname /
         // anonymous identity fan-out must not burn the hourly shard quota or renames stall.
         if (patch.avatarChanged) {
@@ -165,6 +182,7 @@ export async function runLadderSubmitShard(request) {
           const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
           tx.set(entryRef(metric, uid), payload, { merge: true });
           const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
+          recordIdentityFanOut(rateDoc, nowMs, { startNewWave: fanOut.startNewWave });
           tx.set(rateRef, rateDoc, { merge: true });
           return {
             outcome: "avatar-patched",
@@ -176,7 +194,9 @@ export async function runLadderSubmitShard(request) {
         }
 
         const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+        recordIdentityFanOut(rateDoc, nowMs, { startNewWave: fanOut.startNewWave });
         tx.set(entryRef(metric, uid), payload, { merge: true });
+        tx.set(rateRef, rateDoc, { merge: true });
         return {
           outcome: "identity-patched",
           identityPatched: true,

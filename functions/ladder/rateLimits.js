@@ -31,6 +31,17 @@ function emptyRateDoc(nowMs = Date.now()) {
   };
 }
 
+function normalizeIdentityFanOut(identityFanOut) {
+  if (!identityFanOut || typeof identityFanOut !== "object") return null;
+  const lastWaveStartMs = Number(identityFanOut.lastWaveStartMs);
+  const lastAtMs = Number(identityFanOut.lastAtMs);
+  if (!Number.isFinite(lastWaveStartMs) || lastWaveStartMs <= 0) return null;
+  return {
+    lastWaveStartMs,
+    lastAtMs: Number.isFinite(lastAtMs) && lastAtMs > 0 ? lastAtMs : lastWaveStartMs,
+  };
+}
+
 function normalizeReportsRolling(reportsRolling, nowMs) {
   if (!reportsRolling || typeof reportsRolling !== "object") {
     return { windowStartMs: nowMs, count: 0 };
@@ -184,12 +195,14 @@ export async function loadRateLimitDoc(uid, tx) {
   const nowMs = Date.now();
   if (!snap.exists) return { ref, data: emptyRateDoc(nowMs) };
   const raw = snap.data() || {};
-  return {
-    ref,
-    data: {
-      shards: raw.shards && typeof raw.shards === "object" ? { ...raw.shards } : {},
-      fullSync: normalizeFullSync(raw.fullSync, new Date()),
-      reportsRolling: normalizeReportsRolling(raw.reportsRolling, nowMs),
-    },
+  const identityFanOut = normalizeIdentityFanOut(raw.identityFanOut);
+  /** @type {Record<string, unknown>} */
+  const data = {
+    shards: raw.shards && typeof raw.shards === "object" ? { ...raw.shards } : {},
+    fullSync: normalizeFullSync(raw.fullSync, new Date()),
+    reportsRolling: normalizeReportsRolling(raw.reportsRolling, nowMs),
   };
+  // WHY: Omit null so merge writes do not clobber an existing wave marker with explicit null.
+  if (identityFanOut) data.identityFanOut = identityFanOut;
+  return { ref, data };
 }

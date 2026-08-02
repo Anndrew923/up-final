@@ -40,10 +40,16 @@ export interface GetLadderUserPreviewResult {
   reason?: 'pro-required' | 'not-found' | 'unknown';
   item?: LadderUserPreview | null;
   fromCache?: boolean;
+  stale?: boolean;
 }
 
-const DEFAULT_PREVIEW_TTL_MS = 120000;
+export const LEADERBOARD_PREVIEW_TTL_MS = 120_000;
+export const LEADERBOARD_PREVIEW_SWR_MAX_AGE_MS = 15 * 60 * 1000;
+const DISK_STORAGE_PREFIX = 'up:leaderboard-preview:v1:';
+
 const previewCache = new Map<string, { item: LadderUserPreview; cachedAt: number }>();
+const previewRevalidateInFlight = new Set<string>();
+
 const AGE_BUCKET_SET = new Set<LadderAgeBucket>([
   'under-20',
   '20-29',
@@ -67,18 +73,99 @@ const JOB_CATEGORY_SET = new Set<LadderJobCategory>([
   'other',
 ]);
 
-function readCache(uid: string, nowMs: number, ttlMs: number): LadderUserPreview | null {
-  const cached = previewCache.get(uid);
-  if (!cached) return null;
-  if (nowMs - cached.cachedAt > ttlMs) {
-    previewCache.delete(uid);
+type PreviewLookup = {
+  item: LadderUserPreview;
+  freshness: 'fresh' | 'stale';
+  cachedAt: number;
+};
+
+function diskKey(uid: string): string {
+  return `${DISK_STORAGE_PREFIX}${uid}`;
+}
+
+function readDiskPreview(uid: string): { item: LadderUserPreview; cachedAt: number } | null {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    const raw = window.localStorage.getItem(diskKey(uid));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { item?: LadderUserPreview; cachedAt?: number };
+    if (!parsed?.item || typeof parsed.cachedAt !== 'number' || !Number.isFinite(parsed.cachedAt)) {
+      window.localStorage.removeItem(diskKey(uid));
+      return null;
+    }
+    return { item: parsed.item, cachedAt: parsed.cachedAt };
+  } catch {
     return null;
   }
-  return cached.item;
+}
+
+function writeDiskPreview(uid: string, item: LadderUserPreview, cachedAt: number): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(diskKey(uid), JSON.stringify({ item, cachedAt }));
+  } catch {
+    // ignore
+  }
+}
+
+function lookupPreview(
+  uid: string,
+  nowMs: number,
+  ttlMs: number,
+  swrMaxAgeMs: number
+): PreviewLookup | null {
+  const memory = previewCache.get(uid);
+  if (memory) {
+    const age = nowMs - memory.cachedAt;
+    if (age <= ttlMs) return { item: memory.item, freshness: 'fresh', cachedAt: memory.cachedAt };
+    if (age <= swrMaxAgeMs) return { item: memory.item, freshness: 'stale', cachedAt: memory.cachedAt };
+    previewCache.delete(uid);
+  }
+
+  const disk = readDiskPreview(uid);
+  if (disk) {
+    const age = nowMs - disk.cachedAt;
+    if (age <= ttlMs) {
+      previewCache.set(uid, disk);
+      return { item: disk.item, freshness: 'fresh', cachedAt: disk.cachedAt };
+    }
+    if (age <= swrMaxAgeMs) {
+      // WHY: Returning from background — serve disk preview instantly, refresh in background.
+      previewCache.set(uid, disk);
+      return { item: disk.item, freshness: 'stale', cachedAt: disk.cachedAt };
+    }
+  }
+
+  return null;
 }
 
 function writeCache(uid: string, item: LadderUserPreview, nowMs: number): void {
   previewCache.set(uid, { item, cachedAt: nowMs });
+  writeDiskPreview(uid, item, nowMs);
+}
+
+function schedulePreviewRevalidate(entitlement: EntitlementState, uid: string): void {
+  if (previewRevalidateInFlight.has(uid)) return;
+  if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+  const db = getFirestoreDb();
+  if (!db) return;
+  previewRevalidateInFlight.add(uid);
+  void (async () => {
+    try {
+      if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+      const ref = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const item = mapPreview(snap.data() as Record<string, unknown>, uid);
+      writeCache(uid, item, Date.now());
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] preview SWR revalidate failed', err);
+      }
+    } finally {
+      previewRevalidateInFlight.delete(uid);
+    }
+  })();
 }
 
 function mapPreview(data: Record<string, unknown>, uid: string): LadderUserPreview {
@@ -177,11 +264,15 @@ export async function getLadderUserPreview(params: {
   }
   const uid = params.uid.trim();
   if (!uid) return { ok: false, reason: 'not-found', item: null };
-  const ttlMs = params.ttlMs ?? DEFAULT_PREVIEW_TTL_MS;
+  const ttlMs = params.ttlMs ?? LEADERBOARD_PREVIEW_TTL_MS;
   const nowMs = Date.now();
-  const cached = readCache(uid, nowMs, ttlMs);
-  if (cached) {
-    return { ok: true, item: cached, fromCache: true };
+  const cached = lookupPreview(uid, nowMs, ttlMs, LEADERBOARD_PREVIEW_SWR_MAX_AGE_MS);
+  if (cached?.freshness === 'fresh') {
+    return { ok: true, item: cached.item, fromCache: true };
+  }
+  if (cached?.freshness === 'stale') {
+    schedulePreviewRevalidate(params.entitlement, uid);
+    return { ok: true, item: cached.item, fromCache: true, stale: true };
   }
 
   const db = getFirestoreDb();

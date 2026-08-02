@@ -11,6 +11,7 @@ import {
   setDoc,
   startAfter,
   where,
+  type DocumentSnapshot,
   type Firestore,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
@@ -56,8 +57,12 @@ import { callLadderSubmitShard, callLadderSyncPreview } from './ladderCallableSe
 import { checkUploadRateLimit, consumeUploadQuota } from './rateLimitService';
 import {
   clearLeaderboardCache,
-  getCachedLeaderboard,
   LEADERBOARD_CATALOG_CACHE_PAGE,
+  LEADERBOARD_CATALOG_SWR_MAX_AGE_MS,
+  LEADERBOARD_CATALOG_TTL_MS,
+  LEADERBOARD_LIST_SWR_MAX_AGE_MS,
+  LEADERBOARD_LIST_TTL_MS,
+  lookupLeaderboardCache,
   setCachedLeaderboard,
   type LeaderboardEntry,
 } from './leaderboardCacheService';
@@ -67,6 +72,44 @@ import {
  * Users ranked beyond this window may show global rank but filtered rank/jump can be approximate.
  */
 export const LEADERBOARD_CATALOG_MAX_ENTRIES = 500;
+
+/**
+ * WHY: Store page startAfter document cursor in session cache to prevent cumulative
+ * N-page re-queries on deeper pagination, reducing Firestore reads.
+ */
+const pageEndCursors = new Map<string, DocumentSnapshot>();
+const catalogRevalidateInFlight = new Set<string>();
+const listRevalidateInFlight = new Set<string>();
+
+function pageCursorKey(metric: string, pageSize: number, page: number): string {
+  return `${metric}::${pageSize}::${page}`;
+}
+
+function rememberPageEndCursor(
+  metric: string,
+  pageSize: number,
+  page: number,
+  snap: DocumentSnapshot | QueryDocumentSnapshot | undefined
+): void {
+  if (!snap?.exists()) return;
+  pageEndCursors.set(pageCursorKey(metric, pageSize, page), snap);
+}
+
+function clearPageEndCursors(metric?: string): void {
+  if (!metric) {
+    pageEndCursors.clear();
+    return;
+  }
+  Array.from(pageEndCursors.keys()).forEach((key) => {
+    if (key.startsWith(`${metric}::`)) pageEndCursors.delete(key);
+  });
+}
+
+/** Clears memory + disk list/catalog cache and in-memory page cursors. */
+export function clearLeaderboardReadCaches(metric?: string): void {
+  clearLeaderboardCache(metric);
+  clearPageEndCursors(metric);
+}
 
 /** Re-export for callers that only import from `leaderboardService`. */
 export type { LeaderboardShardId };
@@ -122,6 +165,8 @@ export interface ListLeaderboardResult {
   reason?: 'pro-required' | 'unknown';
   items?: LeaderboardEntry[];
   fromCache?: boolean;
+  /** True when serving stale cache while a background revalidate may be running. */
+  stale?: boolean;
 }
 
 export interface GetMyLeaderboardEntryResult {
@@ -350,36 +395,167 @@ async function fetchFirestoreLeaderboardCatalog(
   );
 }
 
+async function resolveStartAfterCursor(
+  db: Firestore,
+  metric: string,
+  pageSize: number,
+  page: number
+): Promise<DocumentSnapshot | null> {
+  if (page <= 1) return null;
+
+  const memoryCursor = pageEndCursors.get(pageCursorKey(metric, pageSize, page - 1));
+  if (memoryCursor?.exists()) return memoryCursor;
+
+  // WHY: After process kill, DocumentSnapshot is gone but disk cache still has endCursorUid —
+  // one getDoc rebuilds startAfter without re-walking pages 1…N-1.
+  const prevPageCache = lookupLeaderboardCache({
+    metric,
+    page: page - 1,
+    pageSize,
+    ttlMs: LEADERBOARD_LIST_TTL_MS,
+    swrMaxAgeMs: LEADERBOARD_LIST_SWR_MAX_AGE_MS,
+  });
+  const cursorUid =
+    prevPageCache?.data.endCursorUid ||
+    prevPageCache?.data.items[prevPageCache.data.items.length - 1]?.uid;
+  if (!cursorUid) return null;
+
+  const cursorRef = doc(db, LEADERBOARDS_COLLECTION, metric, ENTRIES_SUBCOLLECTION, cursorUid);
+  const cursorSnap = await getDoc(cursorRef);
+  if (!cursorSnap.exists()) return null;
+  rememberPageEndCursor(metric, pageSize, page - 1, cursorSnap);
+  return cursorSnap;
+}
+
+type FetchLeaderboardPageResult =
+  | { ok: true; items: LeaderboardEntry[] }
+  | { ok: false; reason: 'cursor-missing' };
+
 async function fetchFirestoreLeaderboardPage(
   db: Firestore,
   metric: string,
   page: number,
   pageSize: number
-): Promise<LeaderboardEntry[]> {
+): Promise<FetchLeaderboardPageResult> {
   const base = entriesCollection(db, metric);
-  const qBase = query(base, orderBy('scoreBest', 'desc'), limit(pageSize));
+  const safePage = Math.max(1, Math.floor(page));
 
-  let cursor: QueryDocumentSnapshot | undefined;
-  for (let p = 1; p <= page; p++) {
-    const q = cursor
-      ? query(base, orderBy('scoreBest', 'desc'), startAfter(cursor), limit(pageSize))
-      : qBase;
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      return [];
-    }
-    const docs = snap.docs;
-    cursor = docs[docs.length - 1];
-    if (p === page) {
-      const offset = (page - 1) * pageSize;
-      return withRank(
-        docs.map((x) => mapFirestoreDoc(x)),
-        offset
-      );
-    }
-    if (!cursor) return [];
+  if (safePage === 1) {
+    const snap = await getDocs(query(base, orderBy('scoreBest', 'desc'), limit(pageSize)));
+    if (snap.empty) return { ok: true, items: [] };
+    rememberPageEndCursor(metric, pageSize, 1, snap.docs[snap.docs.length - 1]);
+    return {
+      ok: true,
+      items: withRank(
+        snap.docs.map((x) => mapFirestoreDoc(x)),
+        0
+      ),
+    };
   }
-  return [];
+
+  const cursor = await resolveStartAfterCursor(db, metric, pageSize, safePage);
+  if (!cursor) {
+    // WHY: Refuse N-walk and do not cache a fake empty page (would poison TTL/SWR).
+    return { ok: false, reason: 'cursor-missing' };
+  }
+
+  const snap = await getDocs(
+    query(base, orderBy('scoreBest', 'desc'), startAfter(cursor), limit(pageSize))
+  );
+  if (snap.empty) return { ok: true, items: [] };
+  rememberPageEndCursor(metric, pageSize, safePage, snap.docs[snap.docs.length - 1]);
+  const offset = (safePage - 1) * pageSize;
+  return {
+    ok: true,
+    items: withRank(
+      snap.docs.map((x) => mapFirestoreDoc(x)),
+      offset
+    ),
+  };
+}
+
+function cacheLeaderboardPage(params: {
+  metric: string;
+  page: number;
+  pageSize: number;
+  items: LeaderboardEntry[];
+}): void {
+  const endCursorUid = params.items[params.items.length - 1]?.uid;
+  setCachedLeaderboard({
+    metric: params.metric,
+    page: params.page,
+    pageSize: params.pageSize,
+    items: params.items,
+    endCursorUid,
+    cachedAt: new Date().toISOString(),
+  });
+}
+
+function scheduleListRevalidate(params: {
+  entitlement: EntitlementState;
+  metric: LeaderboardShardId;
+  page: number;
+  pageSize: number;
+}): void {
+  const key = `${params.metric}:${params.page}:${params.pageSize}`;
+  if (listRevalidateInFlight.has(key)) return;
+  if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) return;
+  const db = getFirestoreDb();
+  if (!db) return;
+  listRevalidateInFlight.add(key);
+  void (async () => {
+    try {
+      if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) return;
+      const fetched = await fetchFirestoreLeaderboardPage(
+        db,
+        params.metric,
+        params.page,
+        params.pageSize
+      );
+      if (!fetched.ok) return;
+      cacheLeaderboardPage({
+        metric: params.metric,
+        page: params.page,
+        pageSize: params.pageSize,
+        items: fetched.items,
+      });
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] list SWR revalidate failed', err);
+      }
+    } finally {
+      listRevalidateInFlight.delete(key);
+    }
+  })();
+}
+
+function scheduleCatalogRevalidate(
+  entitlement: EntitlementState,
+  metric: LeaderboardShardId
+): void {
+  if (catalogRevalidateInFlight.has(metric)) return;
+  if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+  const db = getFirestoreDb();
+  if (!db) return;
+  catalogRevalidateInFlight.add(metric);
+  void (async () => {
+    try {
+      if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+      const items = await fetchFirestoreLeaderboardCatalog(db, metric);
+      setCachedLeaderboard({
+        metric,
+        page: LEADERBOARD_CATALOG_CACHE_PAGE,
+        items,
+        cachedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn('[leaderboard] catalog SWR revalidate failed', err);
+      }
+    } finally {
+      catalogRevalidateInFlight.delete(metric);
+    }
+  })();
 }
 
 async function listLeaderboardMemory(params: {
@@ -392,11 +568,11 @@ async function listLeaderboardMemory(params: {
   const sorted = Array.from(store.values()).sort((a, b) => b.scoreBest - a.scoreBest);
   const start = Math.max(0, params.page - 1) * pageSize;
   const items = withRank(sorted.slice(start, start + pageSize), start);
-  setCachedLeaderboard({
+  cacheLeaderboardPage({
     metric: params.metric,
     page: params.page,
+    pageSize,
     items,
-    cachedAt: new Date().toISOString(),
   });
   return { ok: true, items, fromCache: false };
 }
@@ -411,24 +587,47 @@ export async function listLeaderboard(params: {
     return { ok: false, reason: 'pro-required' };
   }
 
-  const cached = getCachedLeaderboard({ metric: params.metric, page: params.page });
-  if (cached) {
-    return { ok: true, items: cached.items, fromCache: true };
+  const pageSize = params.pageSize ?? 20;
+  const cached = lookupLeaderboardCache({
+    metric: params.metric,
+    page: params.page,
+    pageSize,
+    ttlMs: LEADERBOARD_LIST_TTL_MS,
+    swrMaxAgeMs: LEADERBOARD_LIST_SWR_MAX_AGE_MS,
+  });
+  if (cached?.freshness === 'fresh') {
+    return { ok: true, items: cached.data.items, fromCache: true };
+  }
+  if (cached?.freshness === 'stale') {
+    scheduleListRevalidate({
+      entitlement: params.entitlement,
+      metric: params.metric,
+      page: params.page,
+      pageSize,
+    });
+    return { ok: true, items: cached.data.items, fromCache: true, stale: true };
   }
 
-  const pageSize = params.pageSize ?? 20;
   const db = getFirestoreDb();
 
   if (db) {
     try {
-      const items = await fetchFirestoreLeaderboardPage(db, params.metric, params.page, pageSize);
-      setCachedLeaderboard({
+      const fetched = await fetchFirestoreLeaderboardPage(
+        db,
+        params.metric,
+        params.page,
+        pageSize
+      );
+      if (!fetched.ok) {
+        return { ok: false, reason: 'unknown' };
+      }
+      cacheLeaderboardPage({
         metric: params.metric,
         page: params.page,
-        items,
-        cachedAt: new Date().toISOString(),
+        pageSize,
+        items: fetched.items,
       });
-      return { ok: true, items, fromCache: false };
+      return { ok: true, items: fetched.items, fromCache: false };
     } catch (err) {
       if (import.meta.env.DEV) {
         console.warn('[leaderboard] listLeaderboard Firestore error', err);
@@ -467,12 +666,19 @@ export async function listLeaderboardCatalog(params: {
     return { ok: false, reason: 'pro-required' };
   }
 
-  const cached = getCachedLeaderboard({
+  const cached = lookupLeaderboardCache({
     metric: params.metric,
     page: LEADERBOARD_CATALOG_CACHE_PAGE,
+    ttlMs: LEADERBOARD_CATALOG_TTL_MS,
+    swrMaxAgeMs: LEADERBOARD_CATALOG_SWR_MAX_AGE_MS,
   });
-  if (cached) {
-    return { ok: true, items: cached.items, fromCache: true };
+  if (cached?.freshness === 'fresh') {
+    return { ok: true, items: cached.data.items, fromCache: true };
+  }
+  if (cached?.freshness === 'stale') {
+    // WHY: Catalog is the 500-read spike — serve stale instantly, refresh once in background.
+    scheduleCatalogRevalidate(params.entitlement, params.metric);
+    return { ok: true, items: cached.data.items, fromCache: true, stale: true };
   }
 
   const db = getFirestoreDb();
@@ -684,7 +890,7 @@ function applyMemoryLeaderboardSubmit(
     }
   }
 
-  clearLeaderboardCache(input.metric);
+  clearLeaderboardReadCaches(input.metric);
 
   return {
     ok: true,
@@ -947,7 +1153,7 @@ export async function submitLeaderboardScore(params: {
             callableResult.reason === 'avatar-patched' ||
             callableResult.reason === 'identity-patched'
           ) {
-            clearLeaderboardCache(mergedForWrite.metric);
+            clearLeaderboardReadCaches(mergedForWrite.metric);
           }
           return callableResult;
         }
@@ -1088,7 +1294,7 @@ export async function submitLeaderboardScore(params: {
       }
 
       const afterConsume = consumeUploadQuota({ uid, key: rateKey });
-      clearLeaderboardCache(mergedForWrite.metric);
+      clearLeaderboardReadCaches(mergedForWrite.metric);
 
       const improved =
         previousScore != null && Number.isFinite(previousScore)

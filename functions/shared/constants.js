@@ -5,6 +5,12 @@ export const LEADERBOARD_UPLOADS_PER_HOUR = 3;
 export const FULL_SYNC_COOLDOWN_MS = 90 * 60 * 1000;
 export const FULL_SYNC_MAX_PER_DAY = 3;
 export const ONE_HOUR_MS = 60 * 60 * 1000;
+/**
+ * WHY: Score-equal nickname/avatar fan-out across ~23 shards is write-heavy;
+ * one wave per day plus a short grace covers a single sync-all.
+ */
+export const IDENTITY_FANOUT_DEBOUNCE_MS = 24 * 60 * 60 * 1000;
+export const IDENTITY_FANOUT_WAVE_GRACE_MS = 15 * 60 * 1000;
 
 /** Rolling window for ladder report quota — mirror `REPORT_DEDUPE_MS` in reportUserCore.js */
 export const LADDER_REPORT_ROLLING_MS = 24 * 60 * 60 * 1000;

@@ -8,8 +8,12 @@ import {
   shouldBlockFirebase,
 } from '../logic/core/entitlement';
 import { KNOWN_LEADERBOARD_SHARD_IDS, type LeaderboardShardId } from '../logic/core/ladderShards';
-import { listLeaderboard, submitLeaderboardScore } from '../services/leaderboardService';
-import { clearLeaderboardCache, getCachedLeaderboard } from '../services/leaderboardCacheService';
+import {
+  clearLeaderboardReadCaches,
+  listLeaderboard,
+  submitLeaderboardScore,
+} from '../services/leaderboardService';
+import { getCachedLeaderboard } from '../services/leaderboardCacheService';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { loadPhysicalProfile } from '../services/localStorageService';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -74,7 +78,7 @@ export default function LeaderboardDebugPage() {
   const reasonWrite = getEntitlementReasonCode(entitlement, 'leaderboard-write');
   const readBlocked = shouldBlockFirebase(entitlement, 'leaderboard-read');
   const writeBlocked = shouldBlockFirebase(entitlement, 'leaderboard-write');
-  const cacheProbe = getCachedLeaderboard({ metric, page });
+  const cacheProbe = getCachedLeaderboard({ metric, page, pageSize: 20 });
 
   const addLog = (label: string, payload: unknown) => {
     const now = new Date().toISOString();
@@ -267,7 +271,7 @@ export default function LeaderboardDebugPage() {
             <button
               type="button"
               onClick={() => {
-                clearLeaderboardCache(metric);
+                clearLeaderboardReadCaches(metric);
                 addLog(t('debugClearCacheAction', { ns: 'common' }), { metric });
               }}
               className="ui-btn"
