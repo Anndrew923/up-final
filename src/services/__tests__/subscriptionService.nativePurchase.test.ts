@@ -54,7 +54,8 @@ vi.mock('../../lib/safeLocalStorage', () => ({
 
 const { useAuthStore } = await import('../../stores/authStore');
 const { useEntitlementStore } = await import('../../stores/entitlementStore');
-const { purchaseProSubscription } = await import('../subscriptionService');
+const { purchaseProSubscription, restorePurchasesFromDevice } =
+  await import('../subscriptionService');
 
 function seedSignedInBuyer(): void {
   useEntitlementStore.getState().hydrateEntitlement({
@@ -62,6 +63,7 @@ function seedSignedInBuyer(): void {
     subscriptionStatus: 'free',
     planId: 'core_lifetime_099',
     proExpiresAt: null,
+    proPurchaseCooldownUntil: null,
   });
   useAuthStore.setState({
     status: 'signed-in',
@@ -75,12 +77,19 @@ function seedSignedInBuyer(): void {
   useEntitlementStore.getState().bindEntitlementSession('rc-buyer');
 }
 
-describe('subscription service native purchase', () => {
+describe('subscription service native purchase hard-sync', () => {
   beforeEach(() => {
     memory.clear();
     vi.useFakeTimers();
     triggerProPurchaseCelebration.mockClear();
     syncProEntitlementToServer.mockReset();
+    syncProEntitlementToServer.mockResolvedValue({
+      ok: true,
+      active: true,
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+    });
     revenueCat.purchaseRevenueCatPro.mockReset();
     revenueCat.logInRevenueCatUser.mockClear();
     revenueCat.isRevenueCatConfiguredFromEnv.mockReturnValue(true);
@@ -94,7 +103,7 @@ describe('subscription service native purchase', () => {
     useAuthStore.getState().setSignedOut();
   });
 
-  it('unlocks locally and returns ok even when first server sync fails', async () => {
+  it('awaits hard-sync retries before unlocking local Pro', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
       active: true,
@@ -112,23 +121,25 @@ describe('subscription service native purchase', () => {
       });
 
     const resultPromise = purchaseProSubscription();
+    await Promise.resolve();
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1000);
     const result = await resultPromise;
 
     expect(result.ok).toBe(true);
     expect(useEntitlementStore.getState().isPro).toBe(true);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
+    expect(useEntitlementStore.getState().proPurchaseCooldownUntil).toBeTruthy();
     expect(triggerProPurchaseCelebration).toHaveBeenCalledTimes(1);
-    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
+    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(2);
     expect(syncProEntitlementToServer).toHaveBeenCalledWith(
       expect.objectContaining({ intent: 'activate', source: 'revenuecat' })
     );
-
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(2);
-    expect(useEntitlementStore.getState().isPro).toBe(true);
   });
 
-  it('aborts background sync retries after purchaser signs out', async () => {
+  it('keeps UI locked when hard-sync never confirms after charge', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
       active: true,
@@ -137,30 +148,76 @@ describe('subscription service native purchase', () => {
     });
     syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
 
-    const result = await purchaseProSubscription();
-    expect(result.ok).toBe(true);
-    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
-
-    useAuthStore.getState().setSignedOut();
+    const resultPromise = purchaseProSubscription();
     await vi.advanceTimersByTimeAsync(1000 + 3000 + 8000);
-    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
+    const result = await resultPromise;
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('failed');
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
+    expect(syncProEntitlementToServer.mock.calls.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('never rolls back local Pro after a confirmed store entitlement', async () => {
+  it('rejects active snapshot without a valid expiry before optimistic unlock', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
       active: true,
       productIdentifier: 'up_pro_monthly',
-      expiresDate: '2099-06-01T00:00:00.000Z',
+      expiresDate: null,
+    });
+
+    const result = await purchaseProSubscription();
+    expect(result.ok).toBe(false);
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
+  });
+
+  it('blocks inactive restore reconcile while purchase cooldown protects SSOT', async () => {
+    seedSignedInBuyer();
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: true,
+    });
+    syncProEntitlementToServer.mockClear();
+    revenueCat.restoreRevenueCatPurchases.mockResolvedValue({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+
+    const result = await restorePurchasesFromDevice();
+
+    expect(result.restored).toBe(true);
+    expect(result.proActive).toBe(true);
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('aborts hard-sync retries after purchaser signs out', async () => {
+    seedSignedInBuyer();
+    revenueCat.purchaseRevenueCatPro.mockResolvedValue({
+      active: true,
+      productIdentifier: 'up_pro_monthly',
+      expiresDate: '2099-01-01T00:00:00.000Z',
     });
     syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
 
-    const result = await purchaseProSubscription();
-    expect(result.ok).toBe(true);
-    expect(useEntitlementStore.getState().isPro).toBe(true);
+    const resultPromise = purchaseProSubscription();
+    // WHY: Let the first activate attempt finish, then revoke session before retry sleeps fire.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
 
+    useAuthStore.getState().setSignedOut();
     await vi.advanceTimersByTimeAsync(1000 + 3000 + 8000);
-    expect(syncProEntitlementToServer.mock.calls.length).toBeGreaterThanOrEqual(4);
-    expect(useEntitlementStore.getState().isPro).toBe(true);
+    const result = await resultPromise;
+
+    expect(result.ok).toBe(false);
+    expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
+    expect(useEntitlementStore.getState().isPro).toBe(false);
   });
 });

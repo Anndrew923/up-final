@@ -7,8 +7,11 @@ import {
   getEntitlementReasonCode,
   hasCoreAccess,
   hasProAccess,
+  isProPurchaseCooldownActive,
+  isValidActiveProExpiry,
   resolveLeaderboardAccessReason,
   resolveUiGate,
+  shouldBlockProReconcileDowngrade,
   shouldBlockStructuredUserSync,
 } from '../entitlement';
 import { resolveLeaderboardUploadGate } from '../../../hooks/useLeaderboardUpload';
@@ -31,6 +34,7 @@ function buildEntitlement(overrides: Partial<EntitlementState> = {}): Entitlemen
     proExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
     ...overrides,
   };
 }
@@ -105,6 +109,29 @@ describe('entitlement core guards', () => {
           subscriptionStatus: 'pro',
           proExpiresAt: '2099-01-01T00:00:00.000Z',
         })
+      )
+    ).toBe(false);
+  });
+
+  it('validates active Pro expiry and purchase cooldown downgrade guard', () => {
+    const now = new Date('2026-08-02T00:00:00.000Z');
+    expect(isValidActiveProExpiry('2026-08-02T01:00:00.000Z', now)).toBe(true);
+    expect(isValidActiveProExpiry(null, now)).toBe(false);
+    expect(isValidActiveProExpiry('2026-08-01T23:59:59.000Z', now)).toBe(false);
+
+    const cooling = buildEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      proPurchaseCooldownUntil: '2026-08-02T00:05:00.000Z',
+    });
+    expect(isProPurchaseCooldownActive(cooling, now)).toBe(true);
+    expect(shouldBlockProReconcileDowngrade(cooling, false, now)).toBe(true);
+    expect(shouldBlockProReconcileDowngrade(cooling, true, now)).toBe(false);
+    expect(
+      shouldBlockProReconcileDowngrade(
+        buildEntitlement({ proPurchaseCooldownUntil: null }),
+        false,
+        now
       )
     ).toBe(false);
   });

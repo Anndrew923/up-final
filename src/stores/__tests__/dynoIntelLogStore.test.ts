@@ -32,6 +32,7 @@ describe('dynoIntelLogStore', () => {
       proExpiresAt: null,
       planId: null,
       lastCheckedAt: null,
+      proPurchaseCooldownUntil: null,
     });
   });
 
@@ -112,6 +113,7 @@ describe('dynoIntelLogStore', () => {
       proExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'pro',
       lastCheckedAt: null,
+      proPurchaseCooldownUntil: null,
     });
     vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
     useDynoIntelLogStore.getState().bindSession('pro-user');

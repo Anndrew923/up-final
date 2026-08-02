@@ -49,6 +49,7 @@ function setEntitlementState(params: {
     proExpiresAt: null,
     planId: params.subscriptionStatus === 'pro' ? 'pro_monthly_099' : 'core_lifetime_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   });
 }
 

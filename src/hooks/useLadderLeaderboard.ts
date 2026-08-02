@@ -15,7 +15,6 @@ import {
   listLeaderboard,
   listLeaderboardCatalog,
 } from '../services/leaderboardService';
-import type { EntitlementState } from '../types/entitlement';
 import type {
   LadderAgeBucket,
   LadderCountryCode,
@@ -27,6 +26,7 @@ import type {
 import { filterBlockedLeaderboardRows } from '../logic/core/ladderBlockList';
 import { useAuthStore } from '../stores/authStore';
 import { useLadderBlockStore } from '../stores/ladderBlockStore';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useEntitlementStore } from '../stores/entitlementStore';
 
 export interface LadderLeaderboardState {
@@ -73,18 +73,7 @@ export function useLadderLeaderboard(
   filters: LadderLeaderboardFilters,
   options?: UseLadderLeaderboardOptions
 ): LadderLeaderboardState {
-  const entitlement = useEntitlementStore(
-    useShallow(
-      (s): EntitlementState => ({
-        purchaseStatus: s.purchaseStatus,
-        subscriptionStatus: s.subscriptionStatus,
-        isPro: s.isPro,
-        proExpiresAt: s.proExpiresAt,
-        planId: s.planId,
-        lastCheckedAt: s.lastCheckedAt,
-      })
-    )
-  );
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
 
   const [fetchedRows, setFetchedRows] = useState<LeaderboardEntry[]>([]);
   const [catalogRows, setCatalogRows] = useState<LeaderboardEntry[]>([]);

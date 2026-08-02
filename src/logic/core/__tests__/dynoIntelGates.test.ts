@@ -24,6 +24,7 @@ function buildEntitlement(overrides: Partial<EntitlementState> = {}): Entitlemen
     proExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
     ...overrides,
   };
 }

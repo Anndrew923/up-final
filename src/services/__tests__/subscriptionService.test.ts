@@ -122,12 +122,14 @@ describe('subscription service', () => {
     expect(persisted?.subscriptionStatus).toBe('pro');
   });
 
-  it('rolls back local pro when server sync fails after simulation purchase', async () => {
+  it('keeps local Pro locked when hard-sync fails after simulation purchase', async () => {
+    vi.useFakeTimers();
     useEntitlementStore.getState().hydrateEntitlement({
       purchaseStatus: 'owned',
       subscriptionStatus: 'free',
       planId: 'core_lifetime_099',
       proExpiresAt: null,
+      proPurchaseCooldownUntil: null,
     });
     useAuthStore.setState({
       status: 'signed-in',
@@ -139,12 +141,17 @@ describe('subscription service', () => {
       isAnonymous: false,
     });
     useEntitlementStore.getState().bindEntitlementSession('tester');
-    syncProEntitlementToServer.mockResolvedValueOnce({ ok: false, reason: 'simulation-denied' });
+    syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'simulation-denied' });
 
-    const result = await purchaseProSubscription();
+    const resultPromise = purchaseProSubscription();
+    await vi.advanceTimersByTimeAsync(1000 + 3000 + 8000);
+    const result = await resultPromise;
+    vi.useRealTimers();
+
     expect(result.ok).toBe(false);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
     expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
   });
 
   it('returns empty restore result when no provider and no snapshot', async () => {

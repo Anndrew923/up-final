@@ -90,4 +90,40 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().setPurchaseStatus('none');
     expect(useEntitlementStore.getState().purchaseStatus).toBe('owned');
   });
+
+  it('commitServerProEntitlement arms cooldown and blocks inactive reconcile downgrade', () => {
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: true,
+    });
+
+    const committed = useEntitlementStore.getState();
+    expect(committed.isPro).toBe(true);
+    expect(committed.proPurchaseCooldownUntil).toBeTruthy();
+
+    useEntitlementStore.getState().applyRevenueCatEntitlement({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+
+    const guarded = useEntitlementStore.getState();
+    expect(guarded.isPro).toBe(true);
+    expect(guarded.subscriptionStatus).toBe('pro');
+    expect(guarded.proExpiresAt).toBe('2099-01-01T00:00:00.000Z');
+  });
+
+  it('commitServerProEntitlement without armPurchaseCooldown leaves cooldown unset', () => {
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(useEntitlementStore.getState().proPurchaseCooldownUntil).toBeNull();
+  });
 });

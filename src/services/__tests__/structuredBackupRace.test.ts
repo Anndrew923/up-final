@@ -65,6 +65,7 @@ const entitlement: EntitlementState = {
   proExpiresAt: '2099-01-01T00:00:00.000Z',
   planId: 'pro_monthly',
   lastCheckedAt: null,
+  proPurchaseCooldownUntil: null,
 };
 
 describe('structured backup account boundary', () => {

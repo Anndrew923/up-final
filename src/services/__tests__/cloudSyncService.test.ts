@@ -19,6 +19,7 @@ function proEntitlement(): EntitlementState {
     proExpiresAt: null,
     planId: 'pro_monthly_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   };
 }
 

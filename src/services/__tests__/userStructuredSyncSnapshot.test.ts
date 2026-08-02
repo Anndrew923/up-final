@@ -15,6 +15,7 @@ const proEnt: EntitlementState = {
   proExpiresAt: null,
   planId: 'pro_monthly_099',
   lastCheckedAt: null,
+  proPurchaseCooldownUntil: null,
 };
 
 const freeEnt: EntitlementState = {
@@ -24,6 +25,7 @@ const freeEnt: EntitlementState = {
   proExpiresAt: null,
   planId: null,
   lastCheckedAt: null,
+  proPurchaseCooldownUntil: null,
 };
 
 describe('tryApplyRemoteProfileFromSnapshot', () => {

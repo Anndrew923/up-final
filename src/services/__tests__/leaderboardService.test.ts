@@ -16,6 +16,7 @@ function ownedFreeEntitlement(): EntitlementState {
     proExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   };
 }
 
@@ -27,6 +28,7 @@ function ownedProEntitlement(): EntitlementState {
     proExpiresAt: null,
     planId: 'pro_monthly_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   };
 }
 

@@ -33,6 +33,7 @@ describe('entitlementPersistenceService', () => {
       proExpiresAt: '2026-12-01T00:00:00.000Z',
       planId: 'pro_monthly_099',
       lastCheckedAt: '2026-05-27T00:00:00.000Z',
+      proPurchaseCooldownUntil: '2026-05-27T00:05:00.000Z',
     };
     savePersistedEntitlement(state, 'user-a');
 
@@ -41,6 +42,7 @@ describe('entitlementPersistenceService', () => {
     expect(loaded?.isPro).toBe(true);
     expect(loaded?.proExpiresAt).toBe(state.proExpiresAt);
     expect(loaded?.purchaseStatus).toBe('owned');
+    expect(loaded?.proPurchaseCooldownUntil).toBe(state.proPurchaseCooldownUntil);
   });
 
   it('migrates legacy purchaseStatus none to owned', () => {
@@ -66,6 +68,7 @@ describe('entitlementPersistenceService', () => {
         proExpiresAt: null,
         planId: 'pro_monthly_099',
         lastCheckedAt: null,
+        proPurchaseCooldownUntil: null,
       },
       'user-a'
     );
@@ -77,6 +80,7 @@ describe('entitlementPersistenceService', () => {
         proExpiresAt: null,
         planId: null,
         lastCheckedAt: null,
+        proPurchaseCooldownUntil: null,
       },
       'user-b'
     );

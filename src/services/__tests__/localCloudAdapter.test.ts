@@ -24,6 +24,7 @@ function proEntitlement(): EntitlementState {
     proExpiresAt: '2099-01-01T00:00:00.000Z',
     planId: 'pro_monthly_099',
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   };
 }
 
@@ -35,6 +36,7 @@ function freeEntitlement(): EntitlementState {
     proExpiresAt: null,
     planId: null,
     lastCheckedAt: null,
+    proPurchaseCooldownUntil: null,
   };
 }
 

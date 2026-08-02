@@ -1,4 +1,9 @@
-import { hasCoreAccess, hasProAccess } from '../logic/core/entitlement';
+import {
+  hasCoreAccess,
+  hasProAccess,
+  isValidActiveProExpiry,
+  shouldBlockProReconcileDowngrade,
+} from '../logic/core/entitlement';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { loadPersistedEntitlement } from './entitlementPersistenceService';
@@ -13,7 +18,7 @@ import {
 } from './revenueCatService';
 import {
   syncProEntitlementToServer,
-  type SyncProEntitlementIntent,
+  type SyncProEntitlementResult,
 } from './subscriptionSyncService';
 
 export type PurchaseProResult =
@@ -25,7 +30,7 @@ export type PurchaseProResult =
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-/** Retry cadence after an immediate first attempt — RC REST often lags Play purchase. */
+/** Retry cadence while awaiting Firestore hard-sync — RC REST often lags Play purchase. */
 const SERVER_SYNC_RETRY_DELAYS_MS = [1000, 3000, 8000] as const;
 
 function buildSimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
@@ -36,27 +41,12 @@ function buildSimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
   };
 }
 
-function applySimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
-  const snapshot = buildSimulatedProSnapshot();
-  useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-  return snapshot;
-}
-
-function rollbackLocalProSubscription(): void {
-  useEntitlementStore.getState().applyRevenueCatEntitlement({
-    active: false,
-    productIdentifier: null,
-    expiresDate: null,
-  });
-}
-
-async function activateProOnServer(
-  source: 'revenuecat' | 'client-simulation',
-  snapshot: RevenueCatEntitlementSnapshot | null,
-  intent: SyncProEntitlementIntent = 'reconcile'
-): Promise<boolean> {
-  const sync = await syncProEntitlementToServer({ source, snapshot, intent });
-  return sync.ok && sync.active === Boolean(snapshot?.active);
+/**
+ * WHY: Require active + future expiry before any hard-sync attempt so we never
+ * celebrate a charge that cannot produce a durable `proExpiresAt` on Firestore.
+ */
+function isHardSyncEligibleSnapshot(snapshot: RevenueCatEntitlementSnapshot): boolean {
+  return snapshot.active === true && isValidActiveProExpiry(snapshot.expiresDate);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -65,25 +55,61 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
+type ConfirmedServerPro = {
+  ok: true;
+  active: true;
+  subscriptionStatus: 'pro' | 'grace';
+  proExpiresAt: string;
+  planId: string | null;
+};
+
+function isConfirmedServerPro(sync: SyncProEntitlementResult): sync is ConfirmedServerPro {
+  return (
+    sync.ok === true &&
+    sync.active === true &&
+    (sync.subscriptionStatus === 'pro' || sync.subscriptionStatus === 'grace') &&
+    typeof sync.proExpiresAt === 'string' &&
+    isValidActiveProExpiry(sync.proExpiresAt)
+  );
+}
+
 /**
- * Best-effort Firestore/RC reconciliation after a confirmed store purchase.
- * WHY: Never block celebration/unlock on provider REST lag; retry instead of rollback.
+ * Blocking hard-sync with bounded retries.
+ * WHY: Require explicit server-side Firestore write confirmation before unlocking
+ * local UI to keep Firestore as the single source of truth and avoid stale RC snapshot races.
  */
-async function reconcileProEntitlementInBackground(
+async function awaitHardSyncProEntitlement(
   source: 'revenuecat' | 'client-simulation',
   snapshot: RevenueCatEntitlementSnapshot,
   purchaserUid: string
-): Promise<void> {
+): Promise<ConfirmedServerPro | null> {
   const sessionMatches = () => useAuthStore.getState().uid === purchaserUid;
 
-  if (!sessionMatches()) return;
-  if (await activateProOnServer(source, snapshot, 'activate')) return;
+  if (!sessionMatches()) return null;
+
+  const first = await syncProEntitlementToServer({ source, snapshot, intent: 'activate' });
+  if (isConfirmedServerPro(first)) return first;
 
   for (const delayMs of SERVER_SYNC_RETRY_DELAYS_MS) {
     await sleep(delayMs);
-    if (!sessionMatches()) return;
-    if (await activateProOnServer(source, snapshot, 'activate')) return;
+    if (!sessionMatches()) return null;
+    const next = await syncProEntitlementToServer({ source, snapshot, intent: 'activate' });
+    if (isConfirmedServerPro(next)) return next;
   }
+
+  return null;
+}
+
+function commitConfirmedProLocally(
+  sync: ConfirmedServerPro,
+  options: { armPurchaseCooldown: boolean }
+): void {
+  useEntitlementStore.getState().commitServerProEntitlement({
+    subscriptionStatus: sync.subscriptionStatus,
+    proExpiresAt: sync.proExpiresAt,
+    planId: sync.planId,
+    armPurchaseCooldown: options.armPurchaseCooldown,
+  });
 }
 
 /**
@@ -105,13 +131,13 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
   }
 
   if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
-    const snapshot = applySimulatedProSnapshot();
-    const synced = await activateProOnServer('client-simulation', snapshot);
+    const snapshot = buildSimulatedProSnapshot();
+    // WHY: Simulation is not a store receipt — only unlock after Firestore accepts the grant.
+    const synced = await awaitHardSyncProEntitlement('client-simulation', snapshot, userId);
     if (!synced) {
-      // WHY: Simulation is not a store receipt — keep server as authority for fake Pro.
-      rollbackLocalProSubscription();
       return { ok: false, reason: 'failed' };
     }
+    commitConfirmedProLocally(synced, { armPurchaseCooldown: true });
     void hapticService.triggerProPurchaseCelebration();
     return { ok: true };
   }
@@ -122,14 +148,20 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
     if (!snapshot) {
       return { ok: false, reason: 'billing-unavailable' };
     }
-    useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-    if (!snapshot.active) {
+    // WHY: Rigid expiry gate — active without expirationDate must not optimistically unlock UI.
+    if (!isHardSyncEligibleSnapshot(snapshot)) {
       return { ok: false, reason: 'failed' };
     }
-    // WHY: Play charge already succeeded — unlock locally and celebrate immediately.
-    // Server verify can lag; never roll back a confirmed store entitlement for that.
+
+    const synced = await awaitHardSyncProEntitlement('revenuecat', snapshot, userId);
+    if (!synced) {
+      // WHY: Charge may have succeeded, but Firestore SSOT was not confirmed — keep UI locked
+      // and let restore / webhook complete the grant instead of fake-unlocking cloud/Dyno.
+      return { ok: false, reason: 'failed' };
+    }
+
+    commitConfirmedProLocally(synced, { armPurchaseCooldown: true });
     void hapticService.triggerProPurchaseCelebration();
-    void reconcileProEntitlementInBackground('revenuecat', snapshot, userId);
     return { ok: true };
   } catch {
     return { ok: false, reason: 'failed' };
@@ -154,17 +186,49 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
       if (!snapshot) {
         return { restored: false, hadSnapshot: false, proActive: false };
       }
+
+      if (snapshot.active) {
+        if (!isHardSyncEligibleSnapshot(snapshot)) {
+          return { restored: false, hadSnapshot: true, proActive: false };
+        }
+        // WHY: Restore activation also requires Firestore confirmation before local Pro unlock.
+        const synced = await awaitHardSyncProEntitlement('revenuecat', snapshot, userId);
+        if (!synced) {
+          return { restored: false, hadSnapshot: true, proActive: false };
+        }
+        // WHY: Restore is not a fresh purchase — do not arm the post-charge cooldown shield.
+        commitConfirmedProLocally(synced, { armPurchaseCooldown: false });
+        return {
+          restored: true,
+          hadSnapshot: true,
+          proActive: true,
+        };
+      }
+
+      const current = useEntitlementStore.getState();
+      // WHY: Cooldown must protect Firestore SSOT too — local-only guard would still let
+      // reconcile wipe the just-written server grant after a purchase race.
+      if (shouldBlockProReconcileDowngrade(current, snapshot.active)) {
+        return {
+          restored: true,
+          hadSnapshot: true,
+          proActive: hasProAccess(current),
+        };
+      }
+
       useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-      // WHY: An inactive restore is also authoritative and must reach the
-      // server so stale Firestore/custom-claim Pro access is revoked.
-      const reconciled = await activateProOnServer('revenuecat', snapshot);
-      if (!reconciled) {
-        return { restored: false, hadSnapshot: true, proActive: snapshot.active };
+      const reconciled = await syncProEntitlementToServer({
+        source: 'revenuecat',
+        snapshot,
+        intent: 'reconcile',
+      });
+      if (!reconciled.ok) {
+        return { restored: false, hadSnapshot: true, proActive: false };
       }
       return {
         restored: true,
         hadSnapshot: true,
-        proActive: snapshot.active,
+        proActive: false,
       };
     } catch {
       return { restored: false, hadSnapshot: false, proActive: false };

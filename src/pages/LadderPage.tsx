@@ -52,6 +52,7 @@ import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
 import { useAuthStore } from '../stores/authStore';
 import { useLadderBlockStore } from '../stores/ladderBlockStore';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import {
   buildLadderUserPreviewFromEntry,
@@ -62,8 +63,6 @@ import type { LeaderboardEntry } from '../services/leaderboardCacheService';
 import { LADDER_CACHE_INVALIDATED_EVENT } from '../services/ladderSyncPostBatch';
 import { sanitizeAvatarUrlForLeaderboard } from '../services/ladderIdentityService';
 import { useShallow } from 'zustand/react/shallow';
-import type { EntitlementState } from '../types/entitlement';
-
 function formatLeaderboardRowScore(
   shardId: LeaderboardShardId,
   scoreBest: number,
@@ -122,18 +121,7 @@ export default function LadderPage() {
   const pendingScrollUidRef = useRef<string | null>(null);
   const rowRefs = useRef(new Map<string, HTMLLIElement>());
   const authUid = useAuthStore((state) => state.uid);
-  const entitlement = useEntitlementStore(
-    useShallow(
-      (s): EntitlementState => ({
-        purchaseStatus: s.purchaseStatus,
-        subscriptionStatus: s.subscriptionStatus,
-        isPro: s.isPro,
-        proExpiresAt: s.proExpiresAt,
-        planId: s.planId,
-        lastCheckedAt: s.lastCheckedAt,
-      })
-    )
-  );
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);

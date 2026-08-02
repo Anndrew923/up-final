@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import { hasProAccess } from '../logic/core/entitlement';
+import {
+  hasProAccess,
+  isProPurchaseCooldownActive,
+  PRO_PURCHASE_COOLDOWN_MS,
+  shouldBlockProReconcileDowngrade,
+} from '../logic/core/entitlement';
 import {
   loadPersistedEntitlement,
   savePersistedEntitlement,
@@ -14,10 +19,26 @@ import { syncProEntitlementToServer } from '../services/subscriptionSyncService'
 import { useAuthStore } from './authStore';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
+export interface ServerProEntitlementCommit {
+  subscriptionStatus: 'pro' | 'grace';
+  proExpiresAt: string;
+  planId: string | null;
+  /**
+   * Purchase path arms the 5-minute reconcile shield; restore/bootstrap should not.
+   * WHY: Cooldown exists for post-charge RC lag, not to delay legitimate restore revocation.
+   */
+  armPurchaseCooldown?: boolean;
+}
+
 export interface EntitlementStore extends EntitlementState {
   hydrateEntitlement(payload: Partial<EntitlementState>): void;
   /** Single path for RevenueCat purchase / restore / refresh outcomes. */
   applyRevenueCatEntitlement(snapshot: RevenueCatEntitlementSnapshot): void;
+  /**
+   * Inject Firestore-confirmed Pro after hard-sync (optionally arm purchase cooldown).
+   * WHY: Local UI unlocks only from server SSOT, never from a raw RC callback alone.
+   */
+  commitServerProEntitlement(payload: ServerProEntitlementCommit): void;
   /**
    * Bind entitlement cache to the signed-in Firebase uid (or clear Pro on sign-out).
    * WHY: Prevent prior user's Pro snapshot leaking to the next account on shared localStorage.
@@ -42,6 +63,7 @@ const defaultState: EntitlementState = {
   proExpiresAt: null,
   planId: null,
   lastCheckedAt: null,
+  proPurchaseCooldownUntil: null,
 };
 const DEBUG_PRO_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -58,6 +80,7 @@ function normalizeEntitlementState(state: EntitlementState): EntitlementState {
     normalizeProExpiry({
       ...state,
       purchaseStatus: 'owned',
+      proPurchaseCooldownUntil: state.proPurchaseCooldownUntil ?? null,
     })
   );
 }
@@ -76,13 +99,21 @@ function syncProFlag(state: EntitlementState): EntitlementState {
   return { ...state, isPro: hasProAccess(state) };
 }
 
-/** Fold missing/elapsed paid expiry to expired so UI and guards stay consistent. */
+/**
+ * Fold missing/elapsed paid expiry to expired so UI and guards stay consistent.
+ * WHY: Cooldown only blocks stale inactive RC snapshots — real clock expiry must still win.
+ */
 function normalizeProExpiry(state: EntitlementState): EntitlementState {
-  if (state.subscriptionStatus !== 'pro' && state.subscriptionStatus !== 'grace') return state;
-  if (!state.proExpiresAt) return { ...state, subscriptionStatus: 'expired' };
-  const exp = new Date(state.proExpiresAt).getTime();
-  if (!Number.isNaN(exp) && exp >= Date.now()) return state;
-  return { ...state, subscriptionStatus: 'expired' };
+  let next = state;
+  // WHY: Drop elapsed cooldown stamps so uid-scoped cache does not carry dead shield forever.
+  if (next.proPurchaseCooldownUntil && !isProPurchaseCooldownActive(next)) {
+    next = { ...next, proPurchaseCooldownUntil: null };
+  }
+  if (next.subscriptionStatus !== 'pro' && next.subscriptionStatus !== 'grace') return next;
+  if (!next.proExpiresAt) return { ...next, subscriptionStatus: 'expired' };
+  const exp = new Date(next.proExpiresAt).getTime();
+  if (!Number.isNaN(exp) && exp >= Date.now()) return next;
+  return { ...next, subscriptionStatus: 'expired' };
 }
 
 function scheduleEntitlementExpiry(state: EntitlementState): void {
@@ -131,6 +162,7 @@ function clearProSubscriptionFields(state: EntitlementState): EntitlementState {
     subscriptionStatus: 'free',
     proExpiresAt: null,
     planId: null,
+    proPurchaseCooldownUntil: null,
   });
 }
 
@@ -146,10 +178,32 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     );
   },
   applyRevenueCatEntitlement(snapshot) {
+    set((state) => {
+      // WHY: Stale inactive RC reads after hard-sync must not downgrade local Pro during cooldown.
+      if (shouldBlockProReconcileDowngrade(state, snapshot.active)) {
+        return {
+          ...state,
+          lastCheckedAt: new Date().toISOString(),
+        };
+      }
+      return normalizeEntitlementState({
+        ...state,
+        ...snapshotToEntitlementPatch(snapshot),
+      });
+    });
+  },
+  commitServerProEntitlement(payload) {
     set((state) =>
       normalizeEntitlementState({
         ...state,
-        ...snapshotToEntitlementPatch(snapshot),
+        subscriptionStatus: payload.subscriptionStatus,
+        proExpiresAt: payload.proExpiresAt,
+        planId: payload.planId,
+        // WHY: Opt-in only — restore/bootstrap must not inherit the post-charge shield.
+        proPurchaseCooldownUntil: payload.armPurchaseCooldown
+          ? new Date(Date.now() + PRO_PURCHASE_COOLDOWN_MS).toISOString()
+          : state.proPurchaseCooldownUntil,
+        lastCheckedAt: new Date().toISOString(),
       })
     );
   },
@@ -171,6 +225,7 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           subscriptionStatus: cached.subscriptionStatus,
           proExpiresAt: cached.proExpiresAt,
           planId: cached.planId,
+          proPurchaseCooldownUntil: cached.proPurchaseCooldownUntil ?? null,
         });
       }
       return clearProSubscriptionFields(state);
@@ -222,6 +277,15 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
         if (!sessionIsCurrent()) return;
         if (snapshot) {
           const previous = useEntitlementStore.getState();
+          // WHY: Purchase cooldown blocks reconcile downgrade so a lagging RC REST
+          // read cannot wipe the Firestore SSOT grant or local unlock.
+          if (shouldBlockProReconcileDowngrade(previous, snapshot.active)) {
+            set((state) => ({
+              ...state,
+              lastCheckedAt: new Date().toISOString(),
+            }));
+            return;
+          }
           const shouldSyncServer =
             snapshot.active ||
             previous.subscriptionStatus === 'pro' ||

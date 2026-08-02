@@ -205,7 +205,8 @@ const DynoIntelConsole = () => {
         setPaywallBillingError(true);
         return;
       }
-      await useEntitlementStore.getState().refreshEntitlement();
+      // WHY: Hard-sync purchase already committed Firestore SSOT into the store — do not
+      // refreshEntitlement() here or a lagging RC snapshot can race-overwrite the new Pro grant.
       setSheetView('chat');
       restoreLatestLog();
     } finally {

@@ -21,10 +21,48 @@ export interface UiGateResult {
   joinArenaFrom?: UiGateJoinArenaFrom;
 }
 
+/** Post-purchase shield against stale RC reconcile wiping a hard-synced Firestore Pro grant. */
+export const PRO_PURCHASE_COOLDOWN_MS = 5 * 60 * 1000;
+
 function safeDate(input: string | null): Date | null {
   if (!input) return null;
   const parsed = new Date(input);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** True while a successful hard-sync purchase cooldown is still in effect. */
+export function isProPurchaseCooldownActive(
+  ent: Pick<EntitlementState, 'proPurchaseCooldownUntil'>,
+  now: Date = new Date()
+): boolean {
+  const until = safeDate(ent.proPurchaseCooldownUntil ?? null);
+  if (!until) return false;
+  return until.getTime() > now.getTime();
+}
+
+/**
+ * WHY: Optimistic Pro unlock without a future expiry creates fake `isPro` that
+ * `normalizeProExpiry` immediately folds to `expired` — block that path at the gate.
+ */
+export function isValidActiveProExpiry(
+  expiresDate: string | null | undefined,
+  now: Date = new Date()
+): boolean {
+  const expiresAt = safeDate(expiresDate ?? null);
+  if (!expiresAt) return false;
+  return expiresAt.getTime() >= now.getTime();
+}
+
+/**
+ * WHY: During purchase cooldown, inactive/stale RC snapshots must not clear local Pro
+ * or trigger reconcile revocation against the Firestore SSOT just written.
+ */
+export function shouldBlockProReconcileDowngrade(
+  ent: Pick<EntitlementState, 'proPurchaseCooldownUntil'>,
+  snapshotActive: boolean,
+  now: Date = new Date()
+): boolean {
+  return !snapshotActive && isProPurchaseCooldownActive(ent, now);
 }
 
 export function isGoogleLinkedAuth(authStatus: AuthStatus, isAnonymous: boolean): boolean {

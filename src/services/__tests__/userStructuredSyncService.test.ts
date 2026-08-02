@@ -17,6 +17,7 @@ describe('userStructuredSyncService gates', () => {
       proExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'pro_monthly_099',
       lastCheckedAt: null,
+      proPurchaseCooldownUntil: null,
     };
     expect(shouldBlockStructuredUserSync(ent)).toBe(false);
     expect(canRunStructuredUserSync(ent)).toBe(false);

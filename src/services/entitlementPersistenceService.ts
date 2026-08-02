@@ -9,7 +9,12 @@ const STORAGE_KEY_PREFIX = 'up.final.entitlement.v1';
 /** Cached subset for local-first UI; `isPro` is recomputed on hydrate via `hasProAccess`. */
 export type PersistedEntitlementSubset = Pick<
   EntitlementState,
-  'purchaseStatus' | 'subscriptionStatus' | 'proExpiresAt' | 'planId' | 'isPro'
+  | 'purchaseStatus'
+  | 'subscriptionStatus'
+  | 'proExpiresAt'
+  | 'planId'
+  | 'isPro'
+  | 'proPurchaseCooldownUntil'
 >;
 
 function storageKeyForUid(uid?: string | null): string {
@@ -46,6 +51,8 @@ function parseStoredEntitlement(raw: string | null): PersistedEntitlementSubset 
       proExpiresAt: typeof parsed.proExpiresAt === 'string' ? parsed.proExpiresAt : null,
       planId: typeof parsed.planId === 'string' ? parsed.planId : null,
       isPro: parsed.isPro === true,
+      proPurchaseCooldownUntil:
+        typeof parsed.proPurchaseCooldownUntil === 'string' ? parsed.proPurchaseCooldownUntil : null,
     };
   } catch {
     return null;
@@ -59,6 +66,7 @@ export function savePersistedEntitlement(state: EntitlementState, uid?: string |
     proExpiresAt: state.proExpiresAt,
     planId: state.planId,
     isPro: state.isPro,
+    proPurchaseCooldownUntil: state.proPurchaseCooldownUntil,
   };
   const key = storageKeyForUid(uid);
   safeSetItem(key, JSON.stringify(payload));

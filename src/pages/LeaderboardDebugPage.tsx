@@ -35,6 +35,7 @@ export default function LeaderboardDebugPage() {
   const proExpiresAt = useEntitlementStore((state) => state.proExpiresAt);
   const planId = useEntitlementStore((state) => state.planId);
   const lastCheckedAt = useEntitlementStore((state) => state.lastCheckedAt);
+  const proPurchaseCooldownUntil = useEntitlementStore((state) => state.proPurchaseCooldownUntil);
   const setPurchaseStatus = useEntitlementStore((state) => state.setPurchaseStatus);
   const setSubscriptionStatus = useEntitlementStore((state) => state.setSubscriptionStatus);
   const setProExpiry = useEntitlementStore((state) => state.setProExpiry);
@@ -56,8 +57,17 @@ export default function LeaderboardDebugPage() {
       proExpiresAt,
       planId,
       lastCheckedAt,
+      proPurchaseCooldownUntil,
     }),
-    [purchaseStatus, subscriptionStatus, isPro, proExpiresAt, planId, lastCheckedAt]
+    [
+      purchaseStatus,
+      subscriptionStatus,
+      isPro,
+      proExpiresAt,
+      planId,
+      lastCheckedAt,
+      proPurchaseCooldownUntil,
+    ]
   );
 
   const reasonRead = getEntitlementReasonCode(entitlement, 'leaderboard-read');

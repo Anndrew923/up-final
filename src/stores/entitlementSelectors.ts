@@ -12,6 +12,7 @@ export function selectEntitlementState(
     proExpiresAt: s.proExpiresAt,
     planId: s.planId,
     lastCheckedAt: s.lastCheckedAt,
+    proPurchaseCooldownUntil: s.proPurchaseCooldownUntil,
   };
 }
 
