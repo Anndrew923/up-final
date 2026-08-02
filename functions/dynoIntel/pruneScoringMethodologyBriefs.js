@@ -5,6 +5,8 @@ import {
 } from "./resolveQuestionIntent.js";
 
 const MAX_ON_DEMAND_BRIEFS = 2;
+/** WHY: Methodology answers one constitution at a time — dual briefs only inflate Flash input. */
+const MAX_METHODOLOGY_BRIEFS = 1;
 
 /**
  * WHY: Client ships all nine briefs for validation parity; inference only pays tokens for relevant metrics.
@@ -18,12 +20,11 @@ export function collectOnDemandMethodologyMetrics(userQuestion, context, intent 
     const ordered = [detected];
     const supplemental =
       detectQuestionFocusSupplemental(userQuestion) ?? context?.focusSupplemental ?? null;
-    if (supplemental === "cooper" || supplemental === "5km") {
-      if (!ordered.includes("cardio")) ordered.push("cardio");
-    } else if (supplemental && !ordered.includes(supplemental)) {
-      ordered.push(supplemental);
+    // Prefer the specific supplemental constitution when the question names it.
+    if (supplemental === "cooper" || supplemental === "5km" || supplemental === "armSize") {
+      return [supplemental].slice(0, MAX_METHODOLOGY_BRIEFS);
     }
-    return ordered.slice(0, MAX_ON_DEMAND_BRIEFS);
+    return ordered.slice(0, MAX_METHODOLOGY_BRIEFS);
   }
 
   const ordered = [];

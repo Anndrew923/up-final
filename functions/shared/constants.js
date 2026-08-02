@@ -90,3 +90,5 @@ export const DYNO_INTEL_GEMINI_CONTEXT_CACHE_TTL_SECONDS = 3600;
 export const DYNO_INTEL_GEMINI_CONTEXT_CACHE_REFRESH_BUFFER_MS = 10 * 60 * 1000;
 /** Cap structured JSON commentary length — three-beat constitution fits well under 1536. */
 export const DYNO_INTEL_GEMINI_MAX_OUTPUT_TOKENS = 1536;
+/** Same-question anti-double-tap window (client + Callable). */
+export const DYNO_INTEL_QUESTION_DEBOUNCE_MS = 10_000;

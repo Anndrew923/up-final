@@ -1,18 +1,19 @@
 /**
- * Mirrors src/logic/core/resolveDynoIntelQuestionFocus.ts — keep regex lists in sync (v3.0.4.1).
+ * Mirrors src/logic/core/resolveDynoIntelQuestionFocus.ts — keep regex lists in sync (v3.0.5).
  * WHY: Server is routing source of truth so clients cannot force flash on every request.
+ * Cost guard: only explicit formula/standard phrasing escalates to methodology (Flash).
  */
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 
 const METHODOLOGY_PATTERNS = [
-  /公式|常模|給分|計分|計算方式|怎[麼么]算|如何計算|係数|系数|評分標準|評測標準|計分依據|評分邏輯|评分逻辑|计分依据|评测标准|打分|換算|怎[麼么]評分|如何評分|評分方式|評分機制|评分方式|怎[麼么]評測|如何評測|評測方式|怎[麼么]測|如何測/i,
+  // WHY: Narrow to explicit scoring-constitution asks — bare「分／評分／依據」must stay on Lite status.
+  /公式|常模|給分標準|給分方式|計分方式|計分依據|計算方式|計算公式|怎[麼么]算|如何計算|怎[麼么]計分|如何計分|係数|系数|評分標準|評測標準|評分邏輯|评分逻辑|计分依据|评测标准|打分標準|換算公式|怎[麼么]給分|怎[麼么]評分|如何評分|評分方式|評分機制|评分方式|怎[麼么]評測|如何評測|評測方式|怎[麼么]測分|如何測分/i,
   /how\s+(is|are|does).*(calculat|formula|computed|determined)/i,
   /how\s+to\s+(calculate|compute)\b/i,
-  /how\s+(does|do)\s+.*\bscor/i,
+  /how\s+(does|do)\s+.*\b(scor(e|ing)|grade)\b/i,
+  /how\s+are\s+.*\bscores?\s+calculated\b/i,
   /formula|methodology|scoring\s+(rule|standard|logic)|evaluation\s+criteria|norm\s+table|coefficient|dots|brzycki|mcculloch|ffmi\s*公式/i,
-  /captains\s+of\s+crush|ironmind|cooper\s*test/i,
-  /(?<![的])評分(?!多少|如何|怎樣|怎麼樣)/,
-  /評斷|評定|判定|判斷|評測參考|評測依據|依據|如何評斷|怎[麼么]評斷|如何判定|怎[麼么]判定|如何評判|分數.{0,6}如何|如何.{0,6}分數/i,
+  /如何評斷|怎[麼么]評斷|如何判定|怎[麼么]判定|如何評判|計分公式|科學計分/i,
 ];
 
 const PROGRESS_PATTERNS = [
@@ -47,8 +48,10 @@ export function isChassisMacroQuestion(userQuestion) {
 }
 
 const METHODOLOGY_HEURISTIC_HOW = /如何|怎[麼么]|what|how/i;
-const METHODOLOGY_HEURISTIC_SCORE_STANDARD = /分|標準|score|scor|規|依據/i;
-const METHODOLOGY_HEURISTIC_PANEL_READ = /我|我的|my|me|多少分/i;
+/** WHY: Require constitution verbs — bare「分／score」alone used to false-escalate panel reads to Flash. */
+const METHODOLOGY_HEURISTIC_SCORE_STANDARD =
+  /給分|計分|評分標準|評測標準|計分依據|計算公式|formula|standard|criteria|methodology|怎[麼么]算|計算/i;
+const METHODOLOGY_HEURISTIC_PANEL_READ = /我|我的|my|me|多少分|表現|成績|解讀|解读/i;
 
 /**
  * v2.3.5 P1 — escalate when axis + methodology probes hit but regex missed.

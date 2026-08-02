@@ -70,6 +70,10 @@ export function mapDynoIntelCallableErrorToMessageKey(error: unknown): string | 
   if (code === 'functions/resource-exhausted') {
     return 'dynoIntel.error.geminiQuotaExhausted';
   }
+  // WHY: Same-question debounce / in-flight lock — UI should stay quiet, not show a hard error.
+  if (code === 'functions/aborted' || message.includes('request-in-progress')) {
+    return null;
+  }
   if (code === 'functions/internal') {
     if (message.includes('DYNO_INTEL_INFERENCE_MALFORMED')) {
       return 'dynoIntel.error.inferenceMalformed';

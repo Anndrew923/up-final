@@ -2,6 +2,12 @@ import { buildOfficialHumanAnchor, isMethodologyReplyContext } from "./dynoIntel
 import { resolveMethodologyFullBrief } from "./methodologyBeatRepair.js";
 import { buildPreemptiveOffTopicReply, shouldPreemptOffTopic } from "./offTopicPreempt.js";
 import { resolveDynoQuestionIntent } from "./resolveQuestionIntent.js";
+import {
+  buildMethodologyTemplateReply,
+  shouldPreemptMethodology,
+} from "./scoringMethodologyTemplate.js";
+
+export { shouldPreemptMethodology, buildMethodologyTemplateReply };
 
 export const DYNO_INTEL_COACHING_BOUNDARY_ZH =
   "我是 DYNO INTEL，只負責解碼你的六軸遙測數據與級距座標，不開立訓練處方。有關『如何進步』，請回到對應評測頁對照短板指標與計分說明；如需具體訓練課表，請諮詢專業教練。";
@@ -58,6 +64,11 @@ export function resolveDeterministicDynoIntelReply(context, userQuestion) {
     return buildPreemptiveOffTopicReply(userQuestion, context);
   }
 
+  // WHY: Only true methodology intents get the full template. methodology-nudge closings on
+  // status replies must not hijack fallback into a generic formula dump.
+  if (shouldPreemptMethodology(userQuestion, context)) {
+    return buildMethodologyTemplateReply(context);
+  }
   if (isMethodologyReplyContext(context)) {
     const fullBrief = resolveMethodologyFullBrief(context);
     if (fullBrief) {
@@ -66,7 +77,7 @@ export function resolveDeterministicDynoIntelReply(context, userQuestion) {
         action_directive: "",
         is_off_topic: false,
         detected_weakest_axis: String(
-          context?.weakestAxis ?? context?.questionFocusAxis ?? ""
+          context?.questionFocusAxis ?? context?.weakestAxis ?? ""
         ),
       };
     }

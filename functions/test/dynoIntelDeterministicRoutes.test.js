@@ -63,15 +63,57 @@ describe("buildGeminiInferencePayload", () => {
     assert.equal(payload.chassisBeats.summaryHuman, undefined);
   });
 
-  it("omits chassisBeats when segment1 core is unavailable", () => {
+  it("omits chassisBeats on methodology and trims axes to the focus metric", () => {
     const payload = buildGeminiInferencePayload({
       locale: "zh-Hant",
       mode: "cross-axis",
       intent: "methodology",
-      gaps: [{ axis: "gripStrength" }],
-      axes: [],
+      questionFocusAxis: "strength",
+      gaps: [],
+      axes: [
+        {
+          axis: "strength",
+          score: 90,
+          tierBandId: "TIER_90",
+          cardCopy: { title: "x", summary: "long prose that must not ship" },
+        },
+        {
+          axis: "gripStrength",
+          score: 70,
+          tierBandId: "TIER_70",
+          cardCopy: { title: "y", summary: "y" },
+        },
+      ],
+      scoringMethodologyBriefs: [{ metric: "strength", title: "力量", body: "DOTS" }],
+      momentum: { deltas: [{ axis: "strength", delta: 1 }] },
     });
     assert.equal(payload.chassisBeats, undefined);
+    assert.equal(payload.momentum, undefined);
+    assert.equal(payload.axes.length, 1);
+    assert.equal(payload.axes[0].axis, "strength");
+    assert.equal(payload.axes[0].cardCopy, undefined);
+    assert.equal(payload.scoringMethodologyBriefs.length, 1);
+  });
+
+  it("preserves weightSimulation target for sim mode while pruning cardCopy", () => {
+    const payload = buildGeminiInferencePayload({
+      locale: "zh-Hant",
+      mode: "weight-simulation",
+      intent: "status",
+      gaps: [],
+      weightSimulation: { targetWeightKg: 72.5, unusedFat: true },
+      axes: [
+        {
+          axis: "strength",
+          score: 80,
+          tierBandId: "TIER_80",
+          cardCopy: { title: "t", summary: "x".repeat(200) },
+        },
+      ],
+    });
+    assert.equal(payload.weightSimulation?.targetWeightKg, 72.5);
+    assert.equal(payload.weightSimulation?.unusedFat, undefined);
+    assert.ok(String(payload.axes[0].cardCopy.summary).length <= 120);
   });
 });
 

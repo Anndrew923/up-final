@@ -25,12 +25,22 @@ describe('resolveDynoIntelQuestionFocus', () => {
 
   it('escalates methodology via heuristic when regex misses but axis + probes hit', () => {
     expect(
-      resolveDynoQuestionIntent('握力標準 how to read', {
+      resolveDynoQuestionIntent('grip scoring standard how', {
         focusAxis: null,
         mode: 'cross-axis',
         focusAxisLexicon: null,
       })
     ).toBe('methodology');
+  });
+
+  it('keeps loose「標準／怎麼看」panel reads on status (cost: no Flash escalate)', () => {
+    expect(
+      resolveDynoQuestionIntent('握力標準 how to read', {
+        focusAxis: null,
+        mode: 'cross-axis',
+        focusAxisLexicon: null,
+      })
+    ).toBe('status');
   });
 
   it('routes axis panel-read questions to status under v3.0.3', () => {

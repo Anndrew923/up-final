@@ -12,8 +12,10 @@ import { buildDynoIntelCacheHash, loadDynoIntelCache, saveDynoIntelCache } from 
 import {
   buildCoachingBoundaryReply,
   buildGapsSeedReply,
+  buildMethodologyTemplateReply,
   resolveDeterministicDynoIntelReply,
   shouldPreemptCoaching,
+  shouldPreemptMethodology,
 } from "./deterministicDynoIntelRoutes.js";
 import { runGeminiDynoIntel, finalizeDynoIntelCallableReply } from "./gemini.js";
 import { recordDynoIntelRouteTelemetry } from "./geminiTelemetry.js";
@@ -24,11 +26,13 @@ import {
 import { loadHallOfFameMatrix } from "./hallOfFameMatrixLoader.js";
 import { buildPreemptiveOffTopicReply, shouldPreemptOffTopic } from "./offTopicPreempt.js";
 import {
+  checkDynoIntelDailyLimit,
   finalizeDynoQuotaReservation,
   loadDynoRateLimitDoc,
   releasePendingDynoQuotaReservation,
   reserveDynoIntelUsage,
 } from "./rateLimits.js";
+import { checkAndTouchDynoQuestionDebounce } from "./questionDebounce.js";
 import { buildDynoIntelInferenceContext } from "./pruneScoringMethodologyBriefs.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { validateDynoIntelContext } from "./validateContext.js";
@@ -221,6 +225,33 @@ export const dynoIntelChat = onCall(
     // commentary freezes the same 3 names across identical questions.
     const isHallConsult = isHallOfFameConsultQuestion(userQuestion);
     const cached = isHallConsult ? null : await loadDynoIntelCache(cacheHash);
+
+    // WHY: 10s same-question debounce — replay 48h cache without a second quota burn / Gemini call.
+    // If debounced but cache is cold (first ask failed / still writing), fall through so retries work.
+    const debounce = isHallConsult
+      ? { debounced: false }
+      : await checkAndTouchDynoQuestionDebounce(uid, userQuestion, now);
+    if (debounce.debounced && cached) {
+      const { data } = await loadDynoRateLimitDoc(uid);
+      const limitSnap = checkDynoIntelDailyLimit(data, hasProQuota, now);
+      recordDynoIntelRouteTelemetry({
+        route: "debounce-cache",
+        intent: inferenceContext.intent,
+        uid,
+        userQuestion,
+      });
+      return buildDynoChatSuccess(
+        {
+          remaining: limitSnap.remaining,
+          limit: limitSnap.limit,
+          quotaTier: limitSnap.quotaTier,
+          resetAt: limitSnap.resetAt,
+        },
+        finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
+        { fromCache: true }
+      );
+    }
+
     if (cached) {
       const quota = await consumeDynoQuota(uid, hasProQuota, requestId, now);
       if (!quota.allowed) {
@@ -305,6 +336,24 @@ export const dynoIntelChat = onCall(
         );
         recordDynoIntelRouteTelemetry({
           route: "off-topic-preempt",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
+        return completeDynoChatSuccess(uid, hasProQuota, requestId, reply);
+      }
+
+      // WHY: Intercept exact methodology queries with deterministic static templates to bypass
+      // Gemini Flash calls, achieving zero-token response for fixed scoring logic.
+      if (shouldPreemptMethodology(userQuestion, inferenceContext)) {
+        const reply = finalizeDynoIntelCallableReply(
+          buildMethodologyTemplateReply(inferenceContext),
+          inferenceContext,
+          userQuestion
+        );
+        await saveDynoIntelCache(cacheHash, reply, promptTemplateId, now, inferenceContext);
+        recordDynoIntelRouteTelemetry({
+          route: "methodology-deterministic",
           intent: inferenceContext.intent,
           uid,
           userQuestion,

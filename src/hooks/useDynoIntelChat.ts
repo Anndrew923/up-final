@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID, DYNO_INTEL_PRO_DAILY } from '../config/dynoIntel';
+import {
+  DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID,
+  DYNO_INTEL_PRO_DAILY,
+  DYNO_INTEL_QUESTION_DEBOUNCE_MS,
+} from '../config/dynoIntel';
 import { resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
@@ -67,6 +71,13 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const [lastDisplayMeta, setLastDisplayMeta] = useState<DynoIntelDisplayMeta | null>(null);
   const previousUid = useRef(uid);
   const latestRequestSequence = useRef(0);
+  /** WHY: Client 10s same-question lock — pairs with Callable debounce to stop double-tap bills. */
+  const lastQuestionDebounceRef = useRef<{ question: string; atMs: number } | null>(null);
+  // WHY: Read status/lastReply via refs so sendQuestion identity stays stable across typing ticks.
+  const statusRef = useRef(status);
+  const lastReplyRef = useRef(lastReply);
+  statusRef.current = status;
+  lastReplyRef.current = lastReply;
 
   useEffect(() => {
     if (previousUid.current === uid) return;
@@ -87,6 +98,28 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       modeOverride?: DynoIntelMode
     ) => {
       const effectiveMode = modeOverride ?? input.mode;
+      const trimmedQuestion = userQuestion.trim();
+      if (!trimmedQuestion) return;
+
+      // WHY: Ignore rapid re-submits while typing/loading — never open a second Callable.
+      if (statusRef.current === 'loading' || statusRef.current === 'typing') return;
+
+      const nowMs = Date.now();
+      const priorDebounce = lastQuestionDebounceRef.current;
+      if (
+        priorDebounce &&
+        priorDebounce.question === trimmedQuestion &&
+        nowMs - priorDebounce.atMs < DYNO_INTEL_QUESTION_DEBOUNCE_MS
+      ) {
+        const cachedReply = lastReplyRef.current;
+        if (cachedReply) {
+          showImmediately(cachedReply.commentary);
+          setStatus('idle');
+        }
+        return;
+      }
+      lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
+
       const requestSyncToken = input.quota.syncToken;
       const requestSequence = ++latestRequestSequence.current;
       const access = resolveDynoIntelAccess(effectiveMode, entitlement, authStatus, isAnonymous);
@@ -110,8 +143,8 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         return;
       }
 
-      const context = input.enrichContext(input.resolveContext(effectiveMode), userQuestion);
-      const displayMeta = resolveDynoIntelDisplayMeta(context, userQuestion);
+      const context = input.enrichContext(input.resolveContext(effectiveMode), trimmedQuestion);
+      const displayMeta = resolveDynoIntelDisplayMeta(context, trimmedQuestion);
 
       // WHY: CF cannot read on-device dynoIntelLog — attach newest turn so pantheon
       // consult can inherit axis/decade for anaphoric follow-ups ("這個區間還有誰").
@@ -127,7 +160,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         const result = await requestDynoIntelChat({
           context: { ...context, mode: effectiveMode },
           promptTemplateId,
-          userQuestion,
+          userQuestion: trimmedQuestion,
           mode: effectiveMode,
           priorTurn,
         });
@@ -236,6 +269,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       isAnonymous,
       play,
       reset,
+      showImmediately,
       uid,
     ]
   );
