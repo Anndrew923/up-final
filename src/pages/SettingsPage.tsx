@@ -214,6 +214,12 @@ const SettingsPage: FC = () => {
         {banner === 'restore-empty' ? (
           <p className="text-sm text-zinc-400">{t('settings.restorePurchasesEmpty')}</p>
         ) : null}
+        {banner === 'restore-invalid-expiry' ? (
+          <p className="text-sm text-amber-300">{t('settings.restorePurchasesInvalidExpiry')}</p>
+        ) : null}
+        {banner === 'restore-sync-failed' ? (
+          <p className="text-sm text-amber-300">{t('settings.restorePurchasesSyncFailed')}</p>
+        ) : null}
         {banner === 'restore-fail' ? (
           <p className="text-sm text-rose-400">{t('settings.restorePurchasesFail')}</p>
         ) : null}

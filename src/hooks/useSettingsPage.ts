@@ -24,6 +24,8 @@ export type SettingsBanner =
   | 'sign-out-fail'
   | 'restore-ok'
   | 'restore-empty'
+  | 'restore-invalid-expiry'
+  | 'restore-sync-failed'
   | 'restore-fail'
   | 'delete-success'
   | 'delete-requires-recent-login'
@@ -189,15 +191,23 @@ export function useSettingsPage(): SettingsPageState {
         setBusyAction('restore-purchases');
         try {
           const result = await restorePurchasesFromDevice();
-          if (!result.hadSnapshot) {
-            setBanner('restore-empty');
-            return;
-          }
-          if (result.proActive) {
+          if (result.outcome === 'restored' && result.proActive) {
             setBanner('restore-ok');
             return;
           }
-          setBanner('restore-empty');
+          if (result.outcome === 'invalid_expiry') {
+            setBanner('restore-invalid-expiry');
+            return;
+          }
+          if (result.outcome === 'sync_failed') {
+            setBanner('restore-sync-failed');
+            return;
+          }
+          if (result.outcome === 'no_receipt') {
+            setBanner('restore-empty');
+            return;
+          }
+          setBanner('restore-fail');
         } catch {
           setBanner('restore-fail');
         } finally {

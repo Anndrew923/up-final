@@ -11,6 +11,7 @@ import ProSubscriptionResultModal, {
 } from '../components/arena/ProSubscriptionResultModal';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { hasCoreAccess } from '../logic/core/entitlement';
+import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
 import { useUiGate } from '../hooks/useUiGate';
 import {
   joinArenaDescriptionKey,
@@ -96,11 +97,11 @@ const JoinArenaPage: FC = () => {
       hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
-        if (result.reason === 'auth-required') {
-          setResultModal({ open: true, kind: 'failure', failureReason: 'auth' });
-        } else {
-          setResultModal({ open: true, kind: 'failure', failureReason: 'billing' });
-        }
+        setResultModal({
+          open: true,
+          kind: 'failure',
+          failureReason: mapPurchaseProFailureToUi(result.reason),
+        });
         return;
       }
       setResultModal({ open: true, kind: 'success' });

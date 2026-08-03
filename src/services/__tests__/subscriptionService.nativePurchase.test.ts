@@ -91,6 +91,7 @@ describe('subscription service native purchase hard-sync', () => {
       planId: 'up_pro_monthly',
     });
     revenueCat.purchaseRevenueCatPro.mockReset();
+    revenueCat.restoreRevenueCatPurchases.mockReset();
     revenueCat.logInRevenueCatUser.mockClear();
     revenueCat.isRevenueCatConfiguredFromEnv.mockReturnValue(true);
     revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(true);
@@ -153,7 +154,7 @@ describe('subscription service native purchase hard-sync', () => {
     const result = await resultPromise;
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toBe('failed');
+    if (!result.ok) expect(result.reason).toBe('sync-failed');
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
     expect(syncProEntitlementToServer.mock.calls.length).toBeGreaterThanOrEqual(4);
@@ -169,6 +170,7 @@ describe('subscription service native purchase hard-sync', () => {
 
     const result = await purchaseProSubscription();
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('invalid-expiry');
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(syncProEntitlementToServer).not.toHaveBeenCalled();
     expect(triggerProPurchaseCelebration).not.toHaveBeenCalled();
@@ -191,10 +193,61 @@ describe('subscription service native purchase hard-sync', () => {
 
     const result = await restorePurchasesFromDevice();
 
-    expect(result.restored).toBe(true);
+    expect(result.outcome).toBe('restored');
     expect(result.proActive).toBe(true);
     expect(useEntitlementStore.getState().isPro).toBe(true);
     expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('routes PRODUCT_ALREADY_PURCHASED into restore hard-sync', async () => {
+    seedSignedInBuyer();
+    revenueCat.purchaseRevenueCatPro.mockRejectedValue({
+      code: 'PRODUCT_ALREADY_PURCHASED_ERROR',
+      message: 'This product has already been purchased.',
+    });
+    revenueCat.restoreRevenueCatPurchases.mockResolvedValue({
+      active: true,
+      productIdentifier: 'up_pro_monthly',
+      expiresDate: '2099-01-01T00:00:00.000Z',
+    });
+
+    const result = await purchaseProSubscription();
+
+    expect(result.ok).toBe(true);
+    expect(revenueCat.restoreRevenueCatPurchases).toHaveBeenCalled();
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(triggerProPurchaseCelebration).toHaveBeenCalledTimes(1);
+  });
+
+  it('classifies restore without valid expiry', async () => {
+    seedSignedInBuyer();
+    revenueCat.restoreRevenueCatPurchases.mockResolvedValue({
+      active: true,
+      productIdentifier: 'up_pro_monthly',
+      expiresDate: null,
+    });
+
+    const result = await restorePurchasesFromDevice();
+    expect(result.outcome).toBe('invalid_expiry');
+    expect(result.proActive).toBe(false);
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('classifies restore hard-sync failure', async () => {
+    seedSignedInBuyer();
+    revenueCat.restoreRevenueCatPurchases.mockResolvedValue({
+      active: true,
+      productIdentifier: 'up_pro_monthly',
+      expiresDate: '2099-01-01T00:00:00.000Z',
+    });
+    syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
+
+    const resultPromise = restorePurchasesFromDevice();
+    await vi.advanceTimersByTimeAsync(1000 + 3000 + 8000);
+    const result = await resultPromise;
+
+    expect(result.outcome).toBe('sync_failed');
+    expect(result.proActive).toBe(false);
   });
 
   it('aborts hard-sync retries after purchaser signs out', async () => {

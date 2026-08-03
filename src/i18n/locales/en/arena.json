@@ -64,6 +64,13 @@
     "browseCta": "Browse for now",
     "coreFailKicker": "Core License",
     "coreFailTitle": "Core not unlocked",
-    "coreFailBody": "Pro checkout requires Core ownership first. Assessment, radar, and history stay local — unlock Core, then return for Pro."
+    "coreFailBody": "Pro checkout requires Core ownership first. Assessment, radar, and history stay local — unlock Core, then return for Pro.",
+    "restoreFailKicker": "Entitlement sync",
+    "noReceiptFailTitle": "No Pro entitlement to restore",
+    "noReceiptFailBody": "The store reports an active subscription, but this account has nothing to sync yet. Sign in with the Google account used for the original purchase, then use Restore Purchases in Settings.",
+    "invalidExpiryFailTitle": "Subscription expiry not ready",
+    "invalidExpiryFailBody": "A store subscription was found, but it has no valid expiry date for entitlement sync. Retry shortly, or use Restore Purchases in Settings.",
+    "syncFailTitle": "Server sync incomplete",
+    "syncFailBody": "The store subscription was confirmed, but server sync is not finished yet. Retry shortly, or use Restore Purchases in Settings."
   }
 }

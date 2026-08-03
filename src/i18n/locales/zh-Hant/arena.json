@@ -64,6 +64,13 @@
     "browseCta": "先去逛逛",
     "coreFailKicker": "Core 授權",
     "coreFailTitle": "尚未解鎖 Core",
-    "coreFailBody": "訂閱前需先具備 Core 買斷授權。評測、雷達與歷史維持本機可用；完成 Core 後再回來解鎖 Pro。"
+    "coreFailBody": "訂閱前需先具備 Core 買斷授權。評測、雷達與歷史維持本機可用；完成 Core 後再回來解鎖 Pro。",
+    "restoreFailKicker": "權益校準",
+    "noReceiptFailTitle": "尚未找到可恢復的 Pro",
+    "noReceiptFailBody": "商店顯示已訂閱，但目前帳號尚無可同步的權益。請確認登入的是當初訂閱時使用的 Google 帳號，再到設定使用「恢復購買」。",
+    "invalidExpiryFailTitle": "訂閱到期日尚未就緒",
+    "invalidExpiryFailBody": "已偵測到商店訂閱，但缺少有效到期日，無法完成權益校準。請稍後再試，或到設定使用「恢復購買」。",
+    "syncFailTitle": "伺服器同步尚未完成",
+    "syncFailBody": "商店訂閱已確認，但伺服器同步尚未完成。請稍候再試，或到設定使用「恢復購買」。"
   }
 }

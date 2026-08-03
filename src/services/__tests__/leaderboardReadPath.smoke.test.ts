@@ -1,25 +1,36 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EntitlementState } from '../../types/entitlement';
 
-const getDocsMock = vi.fn();
-const getDocMock = vi.fn();
-const startAfterMock = vi.fn((...args: unknown[]) => ({ __startAfter: args }));
-const queryMock = vi.fn((...args: unknown[]) => ({ __query: args }));
-const orderByMock = vi.fn((field: string, dir?: string) => ({ __orderBy: [field, dir] }));
-const limitMock = vi.fn((n: number) => ({ __limit: n }));
-const collectionMock = vi.fn(() => ({ __collection: true }));
-const docMock = vi.fn((_db: unknown, ...path: string[]) => ({ __path: path.join('/') }));
+const {
+  getDocsMock,
+  getDocMock,
+  startAfterMock,
+  queryMock,
+  orderByMock,
+  limitMock,
+  collectionMock,
+  docMock,
+} = vi.hoisted(() => ({
+  getDocsMock: vi.fn(),
+  getDocMock: vi.fn(),
+  startAfterMock: vi.fn((...args: unknown[]) => ({ __startAfter: args })),
+  queryMock: vi.fn((...args: unknown[]) => ({ __query: args })),
+  orderByMock: vi.fn((field: string, dir?: string) => ({ __orderBy: [field, dir] })),
+  limitMock: vi.fn((n: number) => ({ __limit: n })),
+  collectionMock: vi.fn(() => ({ __collection: true })),
+  docMock: vi.fn((_db: unknown, ...path: string[]) => ({ __path: path.join('/') })),
+}));
 
 vi.mock('firebase/firestore', () => ({
-  collection: (...args: unknown[]) => collectionMock(...args),
-  doc: (...args: unknown[]) => docMock(...args),
-  getDoc: (...args: unknown[]) => getDocMock(...args),
-  getDocs: (...args: unknown[]) => getDocsMock(...args),
+  collection: collectionMock,
+  doc: docMock,
+  getDoc: getDocMock,
+  getDocs: getDocsMock,
   getCountFromServer: vi.fn(),
-  limit: (...args: unknown[]) => limitMock(...args),
-  orderBy: (...args: unknown[]) => orderByMock(...(args as [string, string?])),
-  query: (...args: unknown[]) => queryMock(...args),
-  startAfter: (...args: unknown[]) => startAfterMock(...args),
+  limit: limitMock,
+  orderBy: orderByMock,
+  query: queryMock,
+  startAfter: startAfterMock,
   where: vi.fn(),
   setDoc: vi.fn(),
   deleteField: vi.fn(),

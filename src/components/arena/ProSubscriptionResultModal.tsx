@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import type { PurchaseProUiFailureReason } from '../../logic/core/purchaseProUiFailure';
 
 export type ProSubscriptionResultKind = 'success' | 'failure';
-export type ProSubscriptionFailureReason = 'billing' | 'auth' | 'core';
+export type ProSubscriptionFailureReason = PurchaseProUiFailureReason
 
 export interface ProSubscriptionResultModalProps {
   open: boolean;
@@ -35,6 +36,27 @@ function failureCopyKeys(reason: ProSubscriptionFailureReason): {
       kicker: 'subscriptionResult.coreFailKicker',
       title: 'subscriptionResult.coreFailTitle',
       body: 'subscriptionResult.coreFailBody',
+    };
+  }
+  if (reason === 'no-receipt') {
+    return {
+      kicker: 'subscriptionResult.restoreFailKicker',
+      title: 'subscriptionResult.noReceiptFailTitle',
+      body: 'subscriptionResult.noReceiptFailBody',
+    };
+  }
+  if (reason === 'invalid-expiry') {
+    return {
+      kicker: 'subscriptionResult.restoreFailKicker',
+      title: 'subscriptionResult.invalidExpiryFailTitle',
+      body: 'subscriptionResult.invalidExpiryFailBody',
+    };
+  }
+  if (reason === 'sync-failed') {
+    return {
+      kicker: 'subscriptionResult.restoreFailKicker',
+      title: 'subscriptionResult.syncFailTitle',
+      body: 'subscriptionResult.syncFailBody',
     };
   }
   return {

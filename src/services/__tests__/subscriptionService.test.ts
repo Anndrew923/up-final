@@ -156,7 +156,7 @@ describe('subscription service', () => {
 
   it('returns empty restore result when no provider and no snapshot', async () => {
     const restored = await restorePurchasesFromDevice();
-    expect(restored.hadSnapshot).toBe(false);
+    expect(restored.outcome).toBe('no_receipt');
     expect(restored.proActive).toBe(false);
   });
 });

@@ -5,6 +5,7 @@ import {
   onFirebaseAuthStateChanged,
 } from '../services/firebaseClient';
 import { bindStructuredSyncSession } from '../services/structuredSyncSession';
+import { bindRevenueCatIdentityForSession } from '../services/subscriptionService';
 import { syncAcceptedHealthTermsToCloudIfNeeded } from '../services/termsAcceptanceService';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -51,7 +52,13 @@ export function useAuthSessionBootstrap(): void {
         setFromUser(user);
         bindEntitlementSession(user.uid);
         bindDynoIntelLogSession(user.uid);
-        void refreshEntitlement();
+        // WHY: Await RC identity bind before entitlement refresh so logIn and CustomerInfo
+        // fetch cannot race after reinstall (Play already owns the SKU).
+        void (async () => {
+          await bindRevenueCatIdentityForSession(user.uid);
+          if (isDisposed) return;
+          await refreshEntitlement();
+        })();
         // WHY: Guest→Google / Settings sign-in never re-prompts terms — backfill audit if local already accepted.
         if (!user.isAnonymous) {
           syncAcceptedHealthTermsToCloudIfNeeded();
