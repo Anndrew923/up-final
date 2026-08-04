@@ -9,8 +9,11 @@ import ProSubscriptionResultModal, {
   type ProSubscriptionFailureReason,
   type ProSubscriptionResultKind,
 } from '../components/arena/ProSubscriptionResultModal';
+import ProBadge from '../components/ProBadge';
+import UserProIdentityRow from '../components/UserProIdentityRow';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { hasCoreAccess } from '../logic/core/entitlement';
+import { ladderIdentityInitial } from '../logic/core/ladderUploadPolicy';
 import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
 import { useUiGate } from '../hooks/useUiGate';
 import {
@@ -61,6 +64,7 @@ const JoinArenaPage: FC = () => {
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
   const authStatus = useAuthStore((s) => s.status);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
+  const photoURL = useAuthStore((s) => s.photoURL);
 
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
 
@@ -170,9 +174,8 @@ const JoinArenaPage: FC = () => {
             {t('magitekKicker')}
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-accent-primary/50 bg-accent-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-accent-primary">
-              {t('proBadge')}
-            </span>
+            {/* WHY: Header stays product brand (subtle); metal honor mark lives on identity row only. */}
+            <ProBadge size="sm" variant="subtle" />
             {isPro ? <span className="text-xs text-emerald-400">{t('activeProBadge')}</span> : null}
           </div>
           <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
@@ -214,15 +217,25 @@ const JoinArenaPage: FC = () => {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
             {t('identityTitle')}
           </p>
-          <p className="mt-2 text-sm text-zinc-300">
-            {uiGate.kind === 'auth'
-              ? isBackupFunnel || isDynoFunnel
+          {uiGate.kind === 'auth' ? (
+            <p className="mt-2 text-sm text-zinc-300">
+              {isBackupFunnel || isDynoFunnel
                 ? t('identityRequired')
                 : isBetaOpen
                   ? t('identityOptionalBeta')
-                  : t('identityRequired')
-              : t('signedInAs', { name: signedInDisplayName })}
-          </p>
+                  : t('identityRequired')}
+            </p>
+          ) : (
+            <UserProIdentityRow
+              className="mt-3"
+              isPro={isPro}
+              avatarSize="md"
+              avatarUrl={photoURL}
+              avatarFallback={ladderIdentityInitial(signedInDisplayName)}
+              name={t('signedInAs', { name: signedInDisplayName })}
+              nameClassName="text-sm text-zinc-200"
+            />
+          )}
         </section>
 
         <ProSubscriptionResultModal

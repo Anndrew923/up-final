@@ -12,6 +12,7 @@ import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
 import { useAuthStore } from '../stores/authStore';
+import { useEntitlementStore } from '../stores/entitlementStore';
 import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { sensoryPreferences } from '../services/sensoryPreferences';
 import { soundService } from '../services/soundService';
@@ -44,8 +45,10 @@ export type SettingsBusyAction =
 export interface SettingsPageState {
   authStatus: 'loading' | 'signed-out' | 'signed-in';
   displayName: string;
+  photoURL: string | null;
   email: string | null;
   isAnonymous: boolean;
+  isPro: boolean;
   locale: SupportedLng;
   soundEnabled: boolean;
   /** False while `SOUND_PIPELINE_TACTICALLY_SILENCED` — hides misleading sound toggle. */
@@ -83,8 +86,10 @@ export function useSettingsPage(): SettingsPageState {
   const { resetBoot } = useBootSequence();
   const authStatus = useAuthStore((s) => s.status);
   const displayName = useAuthStore((s) => s.displayName);
+  const photoURL = useAuthStore((s) => s.photoURL);
   const email = useAuthStore((s) => s.email);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
+  const isPro = useEntitlementStore((s) => s.isPro);
   const dynoIntelLogCount = useDynoIntelLogStore((s) => s.entries.length);
   const clearDynoIntelHistory = useDynoIntelLogStore((s) => s.clearLocalLogs);
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
@@ -112,8 +117,10 @@ export function useSettingsPage(): SettingsPageState {
     () => ({
       authStatus,
       displayName,
+      photoURL,
       email,
       isAnonymous,
+      isPro,
       locale,
       soundEnabled,
       soundSettingsVisible: !SOUND_PIPELINE_TACTICALLY_SILENCED,
@@ -261,8 +268,10 @@ export function useSettingsPage(): SettingsPageState {
     [
       authStatus,
       displayName,
+      photoURL,
       email,
       isAnonymous,
+      isPro,
       locale,
       soundEnabled,
       busyAction,

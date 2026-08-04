@@ -5,7 +5,8 @@ import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 import { useHomeSectionExpanded } from '../../hooks/useHomeSectionExpanded';
 import { useLadderIdentityForm } from '../../hooks/useLadderIdentityForm';
 import { useEntitlementStore } from '../../stores/entitlementStore';
-import ProBadge from '../ProBadge';
+import ProAvatarRing from '../ProAvatarRing';
+import UserProIdentityRow from '../UserProIdentityRow';
 import HomeCollapsibleCard from './HomeCollapsibleCard';
 
 export default function HomeLadderIdentitySection() {
@@ -47,23 +48,16 @@ export default function HomeLadderIdentitySection() {
   const collapsedSummary = useMemo(() => {
     const label = savedName || ladderCopy('collapsedEmpty');
     return (
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent-info/40 bg-zinc-900 text-sm font-semibold uppercase text-zinc-200">
-          {previewAvatarUrl ? (
-            <img
-              src={previewAvatarUrl}
-              alt=""
-              className="h-full w-full object-cover"
-              aria-hidden
-            />
-          ) : (
-            <span aria-hidden>{ladderIdentityInitial(savedName)}</span>
-          )}
-        </div>
-        <span className="truncate font-medium text-zinc-200">{label}</span>
-      </div>
+      <UserProIdentityRow
+        isPro={isPro}
+        avatarSize="sm"
+        avatarUrl={previewAvatarUrl}
+        avatarFallback={ladderIdentityInitial(savedName)}
+        name={label}
+        nameClassName="font-medium text-zinc-200"
+      />
     );
-  }, [ladderCopy, previewAvatarUrl, savedName]);
+  }, [isPro, ladderCopy, previewAvatarUrl, savedName]);
 
   return (
     <HomeCollapsibleCard
@@ -73,13 +67,6 @@ export default function HomeLadderIdentitySection() {
       canCollapse={canCollapse}
       kicker={ladderCopy('kicker')}
       title={ladderCopy('title')}
-      statusSlot={
-        isPro ? (
-          <div className="pt-0.5">
-            <ProBadge size="sm" />
-          </div>
-        ) : null
-      }
       summarySlot={collapsedSummary}
       toggleExpandLabel={ladderCopy('toggleExpand')}
       toggleCollapseLabel={ladderCopy('toggleCollapse')}
@@ -113,17 +100,13 @@ export default function HomeLadderIdentitySection() {
             {t('home.ladderIdentity.avatar', { ns: 'common' })}
           </span>
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent-info/40 bg-zinc-900 text-lg font-semibold uppercase text-zinc-200">
-              {previewAvatarUrl ? (
-                <img
-                  src={previewAvatarUrl}
-                  alt={t('home.ladderIdentity.avatarAlt', { ns: 'common' })}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span aria-hidden>{ladderIdentityInitial(displayName)}</span>
-              )}
-            </div>
+            <ProAvatarRing
+              isPro={isPro}
+              size="lg"
+              src={previewAvatarUrl}
+              alt={t('home.ladderIdentity.avatarAlt', { ns: 'common' })}
+              fallback={ladderIdentityInitial(displayName)}
+            />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <input
                 id={fileInputId}

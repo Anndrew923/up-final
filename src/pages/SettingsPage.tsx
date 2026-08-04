@@ -1,10 +1,12 @@
 import { useEffect, useState, type CSSProperties, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
+import UserProIdentityRow from '../components/UserProIdentityRow';
 import {
   APP_SHELL_SCROLL_BOTTOM_PX,
   bottomChromeCalc,
 } from '../constants/bottomChrome';
+import { ladderIdentityInitial } from '../logic/core/ladderUploadPolicy';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
 const RESTORE_TOAST_MS = 3500;
@@ -21,8 +23,10 @@ const SettingsPage: FC = () => {
   const {
     authStatus,
     displayName,
+    photoURL,
     email,
     isAnonymous,
+    isPro,
     locale,
     soundEnabled,
     soundSettingsVisible,
@@ -192,14 +196,24 @@ const SettingsPage: FC = () => {
         </h2>
 
         <div className="space-y-1 rounded-lg border border-zinc-700 bg-bg-panel/70 px-4 py-3">
-          <p className="text-sm text-zinc-200">
-            {isGoogleSignedIn
-              ? t('settings.signedInAs', { name: displayName })
-              : authStatus === 'loading'
-                ? t('settings.loadingAuth')
-                : t('settings.signedOut')}
-          </p>
-          {email ? <p className="text-xs text-zinc-400">{email}</p> : null}
+          {isGoogleSignedIn ? (
+            <UserProIdentityRow
+              isPro={isPro}
+              avatarSize="md"
+              avatarUrl={photoURL}
+              avatarFallback={ladderIdentityInitial(displayName)}
+              name={t('settings.signedInAs', { name: displayName })}
+              nameClassName="text-sm text-zinc-200"
+              subtitle={email}
+            />
+          ) : (
+            <>
+              <p className="text-sm text-zinc-200">
+                {authStatus === 'loading' ? t('settings.loadingAuth') : t('settings.signedOut')}
+              </p>
+              {email ? <p className="text-xs text-zinc-400">{email}</p> : null}
+            </>
+          )}
         </div>
 
         {banner === 'sign-in-fail' ? (
