@@ -1,7 +1,7 @@
 {
   "version": "v1",
   "source": "DynoIntel_v4.0_名人堂聖殿矩陣.csv",
-  "generatedAt": "2026-07-11T15:33:46.550Z",
+  "generatedAt": "2026-08-04T09:18:58.893Z",
   "maxDisplayNames": 3,
   "entries": [
     {
@@ -113,6 +113,26 @@
       "axisId": "strength",
       "anchors": [
         {
+          "id": "larry_wheels",
+          "displayZh": "Larry Wheels",
+          "referenceScore": 165
+        },
+        {
+          "id": "becca_swanson",
+          "displayZh": "Becca Swanson",
+          "referenceScore": 155
+        },
+        {
+          "id": "mariusz_pudzianowski",
+          "displayZh": "Mariusz Pudzianowski",
+          "referenceScore": 158
+        },
+        {
+          "id": "andrey_smaev",
+          "displayZh": "Andrey Smaev",
+          "referenceScore": 150
+        },
+        {
           "id": "colton_engelbrecht",
           "displayZh": "Colton Engelbrecht",
           "referenceScore": 180
@@ -121,26 +141,6 @@
           "id": "john_haack",
           "displayZh": "John Haack",
           "referenceScore": 175
-        },
-        {
-          "id": "larry_wheels",
-          "displayZh": "Larry Wheels",
-          "referenceScore": 165
-        },
-        {
-          "id": "mariusz_pudzianowski",
-          "displayZh": "Mariusz Pudzianowski",
-          "referenceScore": 158
-        },
-        {
-          "id": "becca_swanson",
-          "displayZh": "Becca Swanson",
-          "referenceScore": 155
-        },
-        {
-          "id": "andrey_smaev",
-          "displayZh": "Andrey Smaev",
-          "referenceScore": 150
         }
       ]
     },
@@ -293,6 +293,10 @@
         {
           "id": "david_beckham",
           "displayZh": "David Beckham"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -303,6 +307,10 @@
         {
           "id": "呂小軍",
           "displayZh": "呂小軍"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
         }
       ]
     },
@@ -457,6 +465,14 @@
         {
           "id": "erling_haaland",
           "displayZh": "Erling Haaland"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
         }
       ]
     },
@@ -479,6 +495,10 @@
         {
           "id": "mike_tyson",
           "displayZh": "Mike tyson"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
         }
       ]
     },
@@ -653,10 +673,6 @@
           "displayZh": "Conor McGregor"
         },
         {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
-        },
-        {
           "id": "大谷翔平_shohei_ohtani",
           "displayZh": "大谷翔平（Shohei Ohtani）"
         },
@@ -695,6 +711,10 @@
         {
           "id": "erling_haaland",
           "displayZh": "Erling Haaland"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -963,10 +983,6 @@
           "displayZh": "Michael Jordan"
         },
         {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
-        },
-        {
           "id": "彭于晏eddie_peng",
           "displayZh": "彭于晏Eddie Peng"
         },
@@ -981,6 +997,10 @@
         {
           "id": "甄子丹_donnie_yen",
           "displayZh": "甄子丹（Donnie Yen）"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
         }
       ]
     },
@@ -1109,6 +1129,14 @@
         {
           "id": "chris_bumstead",
           "displayZh": "Chris Bumstead"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
         }
       ]
     },
@@ -1143,6 +1171,10 @@
         {
           "id": "呂小軍",
           "displayZh": "呂小軍"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
         }
       ]
     },
@@ -1193,6 +1225,14 @@
         {
           "id": "chris_bumstead",
           "displayZh": "Chris Bumstead"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
         }
       ]
     },
@@ -1343,6 +1383,10 @@
         {
           "id": "布萊德_彼特_特洛伊",
           "displayZh": "布萊德·彼特《特洛伊》"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
         }
       ]
     },
@@ -1471,6 +1515,10 @@
         {
           "id": "jason_momoa",
           "displayZh": "Jason Momoa"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
         }
       ]
     },
@@ -1529,6 +1577,10 @@
         {
           "id": "jason_statham",
           "displayZh": "Jason Statham"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -1607,10 +1659,6 @@
           "displayZh": "Chris Evans"
         },
         {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
-        },
-        {
           "id": "林書豪_jeremy_lin",
           "displayZh": "林書豪（Jeremy Lin）"
         },
@@ -1665,6 +1713,14 @@
         {
           "id": "jason_statham",
           "displayZh": "Jason Statham"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -1783,6 +1839,18 @@
         {
           "id": "erling_haaland",
           "displayZh": "Erling Haaland"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -1903,6 +1971,10 @@
         {
           "id": "erling_haaland",
           "displayZh": "Erling Haaland"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
         }
       ]
     },
@@ -1995,6 +2067,14 @@
         {
           "id": "vin_diesel",
           "displayZh": "Vin Diesel"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "chien_ming_wang_王建民",
+          "displayZh": "Chien-Ming Wang（王建民）"
         }
       ]
     },
@@ -2016,10 +2096,6 @@
       "decadeKey": "70",
       "axisId": "bodyFat",
       "anchors": [
-        {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
-        },
         {
           "id": "彭于晏eddie_peng",
           "displayZh": "彭于晏Eddie Peng"
@@ -2131,6 +2207,14 @@
         {
           "id": "ryan_reynolds_刀鋒戰士_3時期",
           "displayZh": "Ryan Reynolds(刀鋒戰士 3時期)"
+        },
+        {
+          "id": "bruce_lee",
+          "displayZh": "Bruce Lee"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     },
@@ -2171,10 +2255,6 @@
         {
           "id": "michael_jordan",
           "displayZh": "Michael Jordan"
-        },
-        {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
         },
         {
           "id": "kobe_bryant",
@@ -2291,10 +2371,6 @@
           "displayZh": "Conor McGregor"
         },
         {
-          "id": "bruce_lee",
-          "displayZh": "Bruce Lee"
-        },
-        {
           "id": "tom_holland",
           "displayZh": "Tom Holland"
         }
@@ -2327,6 +2403,14 @@
         {
           "id": "michelle_rodriguez",
           "displayZh": "Michelle Rodriguez"
+        },
+        {
+          "id": "鈴木一朗_ichiro",
+          "displayZh": "鈴木一朗（Ichiro）"
+        },
+        {
+          "id": "floyd_mayweather",
+          "displayZh": "Floyd Mayweather"
         }
       ]
     }
