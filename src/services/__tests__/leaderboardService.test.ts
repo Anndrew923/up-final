@@ -51,6 +51,33 @@ describe('leaderboard service guards', () => {
 
     expect(result.ok).toBe(true);
     expect(result.updated).toBe(true);
+
+    const mine = await getMyLeaderboardEntry({
+      entitlement: ownedFreeEntitlement(),
+      metric: 'armSize',
+      uid: 'u1',
+    });
+    expect(mine.ok).toBe(true);
+    expect(mine.item?.isPro).toBe(false);
+  });
+
+  it('denormalizes isPro true only when entitlement has valid Pro expiry', async () => {
+    const entitlement: EntitlementState = {
+      ...ownedProEntitlement(),
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+    };
+    const result = await submitLeaderboardScore({
+      entitlement,
+      input: { uid: 'u-pro-honor', metric: 'armSize', score: 91, displayName: 'ProHonor' },
+    });
+    expect(result.ok).toBe(true);
+
+    const mine = await getMyLeaderboardEntry({
+      entitlement,
+      metric: 'armSize',
+      uid: 'u-pro-honor',
+    });
+    expect(mine.item?.isPro).toBe(true);
   });
 
   it('blocks when over hourly upload limit', async () => {

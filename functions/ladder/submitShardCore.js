@@ -47,15 +47,16 @@ function previewRef(uid) {
   return db.collection(LEADERBOARD_PREVIEWS_COLLECTION).doc(uid);
 }
 
-export function buildEntryPayload({ displayName, score, profile, avatarUrl }) {
+export function buildEntryPayload({ displayName, score, profile, avatarUrl, isPro }) {
   const isAnonymous = profile?.isAnonymousInLadder === true;
   const payload = {
     displayName: isAnonymous ? "Anonymous" : displayName,
     scoreBest: score,
     updatedAt: new Date().toISOString(),
-    isPro: true,
     ...ladderPreviewProfileFields(profile),
     isAnonymousInLadder: Boolean(isAnonymous),
+    // WHY: Must win over any accidental profile.isPro — denormalized honor flag is gate SSOT.
+    isPro: isPro === true,
   };
   if (isAnonymous) {
     payload.avatarUrl = FieldValue.delete();
@@ -126,10 +127,17 @@ export async function runLadderSubmitShard(request) {
   }
 
   // WHY: Claim only after shard payload is valid — empty/invalid calls must not burn seats.
-  await assertLadderUploadAllowed(uid, new Date(), { claimSeat: true });
+  // Single users/{uid} read shared with isPro denormalization (no N+1 on submit).
+  const now = new Date();
+  const userSnap = await db.collection("users").doc(uid).get();
+  const userData = userSnap.data() ?? null;
+  const gate = await assertLadderUploadAllowed(uid, now, {
+    claimSeat: true,
+    userData,
+  });
+  const isPro = gate.isPro === true;
 
   const rateKey = `leaderboard:${metric}`;
-  const now = new Date();
   const nowMs = now.getTime();
 
   const result = await db.runTransaction(async (tx) => {
@@ -151,6 +159,7 @@ export async function runLadderSubmitShard(request) {
             displayName,
             profile,
             avatarUrl,
+            isPro,
           })
         : { needsPatch: false, identityChanged: false, avatarChanged: false };
 
@@ -179,7 +188,13 @@ export async function runLadderSubmitShard(request) {
               quota,
             };
           }
-          const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+          const payload = buildEntryPayload({
+            displayName,
+            score,
+            profile,
+            avatarUrl,
+            isPro,
+          });
           tx.set(entryRef(metric, uid), payload, { merge: true });
           const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
           recordIdentityFanOut(rateDoc, nowMs, { startNewWave: fanOut.startNewWave });
@@ -193,7 +208,13 @@ export async function runLadderSubmitShard(request) {
           };
         }
 
-        const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+        const payload = buildEntryPayload({
+          displayName,
+          score,
+          profile,
+          avatarUrl,
+          isPro,
+        });
         recordIdentityFanOut(rateDoc, nowMs, { startNewWave: fanOut.startNewWave });
         tx.set(entryRef(metric, uid), payload, { merge: true });
         tx.set(rateRef, rateDoc, { merge: true });
@@ -224,7 +245,7 @@ export async function runLadderSubmitShard(request) {
       };
     }
 
-    const payload = buildEntryPayload({ displayName, score, profile, avatarUrl });
+    const payload = buildEntryPayload({ displayName, score, profile, avatarUrl, isPro });
     tx.set(entryRef(metric, uid), payload, { merge: true });
     const quotaAfter = recordShardWrite(rateDoc, rateKey, nowMs);
     tx.set(rateRef, rateDoc, { merge: true });
@@ -292,6 +313,7 @@ export async function runLadderSubmitShard(request) {
       displayName,
       avatarUrl,
       profile,
+      isPro,
     });
   }
 
@@ -315,7 +337,15 @@ export async function runLadderSubmitShard(request) {
   };
 }
 
-async function applyShardPreviewUpdate({ uid, metric, score, displayName, avatarUrl, profile }) {
+async function applyShardPreviewUpdate({
+  uid,
+  metric,
+  score,
+  displayName,
+  avatarUrl,
+  profile,
+  isPro,
+}) {
   const isAnonymous = profile?.isAnonymousInLadder === true;
   const previewMetric = resolvePreviewRadarMetric(metric);
   const nowIso = new Date().toISOString();
@@ -326,6 +356,7 @@ async function applyShardPreviewUpdate({ uid, metric, score, displayName, avatar
     updatedAt: nowIso,
     ...ladderPreviewProfileFields(profile),
     isAnonymousInLadder: isAnonymous,
+    isPro: isPro === true,
   };
 
   if (isAnonymous) {
@@ -372,10 +403,16 @@ export async function runLadderSyncPreview(request) {
   }
 
   // WHY: Preview must not consume a free seat — only gate against a filled cap.
-  await assertLadderUploadAllowed(uid, new Date(), { claimSeat: false });
+  const now = new Date();
+  const userSnap = await db.collection("users").doc(uid).get();
+  const gate = await assertLadderUploadAllowed(uid, now, {
+    claimSeat: false,
+    userData: userSnap.data() ?? null,
+  });
+  const isPro = gate.isPro === true;
 
   const isAnonymous = profile?.isAnonymousInLadder === true;
-  const nowIso = new Date().toISOString();
+  const nowIso = now.toISOString();
   const payload = {
     uid,
     schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
@@ -383,6 +420,7 @@ export async function runLadderSyncPreview(request) {
     updatedAt: nowIso,
     ...ladderPreviewProfileFields(profile),
     isAnonymousInLadder: isAnonymous,
+    isPro,
   };
 
   if (isAnonymous) {

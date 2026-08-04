@@ -41,19 +41,41 @@ describe("resolveScoreEqualEntryPatch", () => {
     assert.equal(patch.avatarChanged, true);
   });
 
-  it("returns no patch when identity and avatar match", () => {
+  it("returns no patch when identity, avatar, and isPro match", () => {
     const patch = resolveScoreEqualEntryPatch(
       {
         displayName: "Pilot",
         isAnonymousInLadder: false,
         avatarUrl: "https://cdn/a.jpg",
+        isPro: true,
       },
       {
         displayName: "Pilot",
         profile: { isAnonymousInLadder: false },
         avatarUrl: "https://cdn/a.jpg",
+        isPro: true,
       }
     );
     assert.equal(patch.needsPatch, false);
+  });
+
+  it("detects isPro honor drift on score-equal shards", () => {
+    const patch = resolveScoreEqualEntryPatch(
+      {
+        displayName: "Pilot",
+        isAnonymousInLadder: false,
+        avatarUrl: "https://cdn/a.jpg",
+        isPro: true,
+      },
+      {
+        displayName: "Pilot",
+        profile: { isAnonymousInLadder: false },
+        avatarUrl: "https://cdn/a.jpg",
+        isPro: false,
+      }
+    );
+    assert.equal(patch.needsPatch, true);
+    assert.equal(patch.identityChanged, false);
+    assert.equal(patch.avatarChanged, false);
   });
 });

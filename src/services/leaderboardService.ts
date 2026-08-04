@@ -16,7 +16,7 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
-import { shouldBlockFirebase } from '../logic/core/entitlement';
+import { hasProAccess, shouldBlockFirebase } from '../logic/core/entitlement';
 import { isValidLeaderboardShardId, type LeaderboardShardId } from '../logic/core/ladderShards';
 import {
   buildFullRadarScoresMapForFirestore,
@@ -790,7 +790,8 @@ export async function getRankByScoreBest(params: {
 function applyMemoryLeaderboardSubmit(
   uid: string,
   input: SubmitLeaderboardInput,
-  options?: SubmitLeaderboardOptions
+  options?: SubmitLeaderboardOptions,
+  isPro = false
 ): SubmitLeaderboardResult {
   const metricStore = getMetricStore(input.metric);
   const existing = metricStore.get(uid);
@@ -834,8 +835,9 @@ function applyMemoryLeaderboardSubmit(
     displayName: isAnonymousInLadder ? 'Anonymous' : input.displayName,
     scoreBest: input.score,
     updatedAt: new Date().toISOString(),
-    isPro: true,
     ...input.profile,
+    // WHY: Profile projection must not clobber the denormalized Pro honor flag.
+    isPro,
   };
   if (!isAnonymousInLadder) {
     const safeAvatar = sanitizeAvatarUrlForLeaderboard(input.avatarUrl);
@@ -857,8 +859,8 @@ function applyMemoryLeaderboardSubmit(
       displayName: row.displayName,
       avatarUrl: row.avatarUrl,
       updatedAt,
-      isPro: true,
       schemaVersion: LEADERBOARD_PREVIEW_SCHEMA_VERSION,
+      isPro,
     };
     if (isAnonymousInLadder) {
       previewRow.radarScores = {};
@@ -881,6 +883,7 @@ function applyMemoryLeaderboardSubmit(
           avatarUrl: input.avatarUrl,
           profile: input.profile,
           mergedScores: getMergedScoresSnapshotForRadar(),
+          isPro,
         });
       } catch (e) {
         if (import.meta.env.DEV) {
@@ -910,8 +913,9 @@ function applyMemoryPreviewFullSixAxis(options: {
   avatarUrl?: string | null;
   profile?: Partial<LadderProfileProjection>;
   mergedScores: ScoreMap;
+  isPro?: boolean;
 }): void {
-  const { uid, displayName, avatarUrl, profile, mergedScores } = options;
+  const { uid, displayName, avatarUrl, profile, mergedScores, isPro = false } = options;
   const previousPreview = memoryPreviewDb.get(uid) ?? {};
   const rowProfile = profile ?? buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? {};
   const isAnonymousInLadder = rowProfile.isAnonymousInLadder === true;
@@ -933,8 +937,8 @@ function applyMemoryPreviewFullSixAxis(options: {
     updatedAt: now,
     radarUpdatedAt: isAnonymousInLadder ? undefined : now,
     radarScores,
-    isPro: true,
     isAnonymousInLadder,
+    isPro,
   });
 }
 
@@ -1016,6 +1020,7 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
       avatarUrl: av,
       profile: profileProjection,
       mergedScores,
+      isPro: hasProAccess(entitlement),
     });
     return { ok: true };
   }
@@ -1035,6 +1040,7 @@ export async function syncLeaderboardPreviewFullSixAxis(params: {
       ...ladderPreviewProfileFirestoreFields(profileProjection),
       isAnonymousInLadder,
       avatarUrl: isAnonymousInLadder ? deleteField() : av ? av : deleteField(),
+      isPro: hasProAccess(entitlement),
     };
 
     if (isAnonymousInLadder) {
@@ -1225,6 +1231,7 @@ export async function submitLeaderboardScore(params: {
         };
       }
 
+      const entryIsPro = hasProAccess(entitlement);
       const payload: Record<string, unknown> = {
         displayName:
           mergedForWrite.profile?.isAnonymousInLadder === true
@@ -1232,8 +1239,8 @@ export async function submitLeaderboardScore(params: {
             : mergedForWrite.displayName,
         scoreBest: mergedForWrite.score,
         updatedAt: new Date().toISOString(),
-        isPro: true,
         ...mergedForWrite.profile,
+        isPro: entryIsPro,
         avatarUrl:
           mergedForWrite.profile?.isAnonymousInLadder === true
             ? deleteField()
@@ -1259,6 +1266,7 @@ export async function submitLeaderboardScore(params: {
           updatedAt: payload.updatedAt,
           ...ladderPreviewProfileFirestoreFields(mergedForWrite.profile),
           isAnonymousInLadder,
+          isPro: entryIsPro,
         };
         if (isAnonymousInLadder) {
           previewPayload.radarScores = deleteField();
@@ -1325,5 +1333,5 @@ export async function submitLeaderboardScore(params: {
     }
   }
 
-  return applyMemoryLeaderboardSubmit(uid, mergedForWrite, options);
+  return applyMemoryLeaderboardSubmit(uid, mergedForWrite, options, hasProAccess(entitlement));
 }

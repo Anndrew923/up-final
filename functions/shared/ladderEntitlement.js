@@ -25,9 +25,10 @@ function throwProRequired() {
  *
  * @param {string} uid
  * @param {Date} [now]
- * @param {{ claimSeat?: boolean }} [options]
+ * @param {{ claimSeat?: boolean, userData?: Record<string, unknown> | null }} [options]
  *   claimSeat=true  → consume / grandfather a seat (real shard upload paths only)
  *   claimSeat=false → gate check only (preview / preflight; never burns the 2000 cap)
+ *   userData        → optional preloaded `users/{uid}` doc (avoids a second read on submit)
  *
  * Order of authority (never trusts client seat constants):
  * 1) Active Pro → always allow
@@ -35,26 +36,31 @@ function throwProRequired() {
  * 3) Existing seat / legacy ladder presence → allow (grandfather; legacy does not ++count)
  * 4) Genesis open + claimSeat → atomic claim; seats-full → Pro required
  * 5) Genesis open + !claimSeat → allow only while under cap (no write to counter)
+ *
+ * @returns {Promise<{ isPro: boolean }>}
  */
 export async function assertLadderUploadAllowed(uid, now = new Date(), options = {}) {
   const claimSeat = options.claimSeat === true;
   const paywallForced = isLeaderboardPaywallForced();
-  const userSnap = await db.collection("users").doc(uid).get();
-  const hasPro = hasProFromUserDoc(userSnap.data(), now);
+  const userData =
+    options.userData !== undefined
+      ? options.userData
+      : (await db.collection("users").doc(uid).get()).data();
+  const hasPro = hasProFromUserDoc(userData, now);
 
-  if (hasPro) return;
+  if (hasPro) return { isPro: true };
   if (paywallForced) {
     throwProRequired();
   }
 
   // WHY: Returning free uploaders already hold a seat — skip the write transaction.
   const existingSeat = await db.collection(GENESIS_EARLY_BIRD_SEATS_COLLECTION).doc(uid).get();
-  if (existingSeat.exists) return;
+  if (existingSeat.exists) return { isPro: false };
 
   // WHY: Pre-counter ladder veterans keep free access without consuming post-deploy seats.
   if (await hasLegacyLadderPresence(uid)) {
     await grantGenesisEarlyBirdSeatGrandfather(uid, { now });
-    return;
+    return { isPro: false };
   }
 
   const seatLimit = resolveGenesisEarlyBirdSeatLimit();
@@ -64,11 +70,11 @@ export async function assertLadderUploadAllowed(uid, now = new Date(), options =
     if (claimedCount >= seatLimit) {
       throwProRequired();
     }
-    return;
+    return { isPro: false };
   }
 
   const claim = await claimGenesisEarlyBirdSeat(uid, { seatLimit, now });
-  if (claim.ok) return;
+  if (claim.ok) return { isPro: false };
 
   throwProRequired();
 }
