@@ -2,13 +2,72 @@
   "about": {
     "kicker": "Product Profile",
     "title": "About Ultimate Physique",
-    "subtitle": "Local-first fitness assessment — clear scoring, long-term progress tracking.",
+    "subtitle": "Scientific fitness assessment — track progress with data, train like leveling up.",
+    "missionTitle": "Mission",
+    "missionBody": "We build scientific, transparent, reproducible fitness scoring so you can see your level clearly — and make everyday training feel like leveling up in a game.",
+    "founderTitle": "Founder & Origin Story",
+    "founderName": "Anndrew Lin",
+    "founderRole": "Founder & Chief Training Advisor",
+    "founderStory": "Inspired by Arnold Schwarzenegger and Bruce Lee since childhood, I began self-training at age 10 — but without scientific guidance, progress stayed out of reach. In college, at 180 cm / 55 kg with severely low BMI, I learned how costly unguided training can be. I then trained under the US Northwest Regional MMA Champion. Over 2.5 years I gained 28 kg (to 83 kg) while keeping body fat under 12%. That transformation set me on the path of exercise science and coaching — and became the spark for Ultimate Physique.",
+    "founderCredentialsTitle": "Credentials",
+    "founderCredentials": [
+      "Certified Fitness Coach",
+      "Muay Thai National Team Conditioning Coach",
+      "Basketball National Team Strength & Conditioning Coach",
+      "College Karate Championship S&C Coach",
+      "Personal Trainer for Multiple Celebrities",
+      "Coaching since 2012; 500+ athletes coached with 25,000+ teaching hours"
+    ],
+    "founderVisionTitle": "Product Vision",
+    "founderVisionLead": "Combining a business-management background with exercise-science expertise, I built the Ultimate Physique assessment system. Through data-driven, scientific evaluation, everyone can:",
+    "founderVisionGoals": [
+      "Clearly understand their fitness level",
+      "Set specific and achievable training goals",
+      "Track progress through data",
+      "Compete positively with fitness enthusiasts worldwide",
+      "Make fitness training fun like leveling up in a game"
+    ],
+    "founderScoreTitle": "Personal Best Score",
+    "founderScore": "96.59 Points",
+    "founderClosing": "Let the data speak — let's get stronger together.",
+    "advisorsTitle": "Advisor Circle",
+    "advisorsSubtitle": "Cross-domain support across exercise science, integrative TCM, and competitive natural bodybuilding.",
+    "advisors": [
+      {
+        "name": "Yang Ching-Hsien",
+        "role": "TCM Doctor / Mind-Body Integration Expert",
+        "subtitle": "Founder of Holistic Mind-Body-Spirit Integration Therapy",
+        "bio": "Senior TCM doctor with 38+ years of practice in mind-body-spirit integration. Combines traditional Chinese medicine, modern psychology, and NLP to pioneer revolutionary MNLP therapy — covering sports injury, chronic pain, and psychological recovery.",
+        "highlights": [
+          "Education: Ph.D. in TCM, Guangzhou University of Chinese Medicine; Master's in Environmental Management, Chaoyang University of Technology; licensed TCM practitioner (1996)",
+          "Credentials: Advanced NLP Practitioner (US NLP University); Chinese Psychological Counselor",
+          "Experience: Visiting Professor at Kang Ning University; national-level sports referee/coach; 4th-generation Taiwan successor of Shaolin Temple Foguang Hall",
+          "2011: founded Holistic Mind-Body-Spirit Integration Therapy; 2019: invented 4th-generation NLP \"MNLP Therapy\"",
+          "2015: non-surgical treatment for degenerative arthritis; 2018: chiropractic robot therapy machine",
+          "Publication: The Amazing Cupping Therapy — Precise and Effective Pain Relief"
+        ],
+        "closing": "Using 38 years of clinical experience to help everyone find the most suitable health solutions."
+      },
+      {
+        "name": "Fin Chou",
+        "role": "National Team Athlete / Natural Bodybuilding Advisor",
+        "subtitle": "Chinese Taipei National Bodybuilding Team",
+        "bio": "Member of the Chinese Taipei National Bodybuilding Team, also representing Taipei City Bodybuilding Team and Posing Team. Specializes in natural bodybuilding and competition prep — drug-free, through scientific training and nutrition management.",
+        "highlights": [
+          "12 domestic and international medals (8 gold, 2 silver, 2 bronze)",
+          "2024 National Bodybuilding Championships: category double gold and Overall Champion",
+          "2025 IFBB Mr. Universe International, Fitness Model 6th place",
+          "2022 Presidential Cup Masters Physique gold; Asia Pride Games Men's Physique Pairs gold",
+          "2021 Fitness Model double gold + overall bronze; 2020 WNBF Men's Physique silver",
+          "Natural-training advocate with deep competition-prep and conditioning coaching experience"
+        ],
+        "closing": "Using competition experience to help everyone reach their best physical condition."
+      }
+    ],
+    "localDataTitle": "Local Data Notice",
+    "localDataBody": "Dyno logs and detailed assessment records stay on this device only. Core local features (assessments, radar, logs, tools) work fully without a subscription.",
     "versionTitle": "Version",
     "versionBody": "Current app version: {{version}}",
-    "missionTitle": "Mission",
-    "missionBody": "Transparent, deterministic fitness scoring for everyday training decisions.",
-    "localDataTitle": "Local Data & Access",
-    "localDataBody": "Dyno logs and detailed assessment records stay on this device only. Core local features (assessments, radar, logs, tools) work fully without a subscription.",
     "disclaimerTitle": "Medical Disclaimer",
     "disclaimerBody": "Fitness self-tracking only — not medical diagnosis, treatment, or emergency guidance.",
     "contactTitle": "Contact",
