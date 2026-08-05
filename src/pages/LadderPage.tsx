@@ -12,7 +12,6 @@ import LadderTagsPromptSheet, {
   type LadderTagsPromptVariant,
 } from '../components/ladder/LadderTagsPromptSheet';
 import ProAvatarRing from '../components/ProAvatarRing';
-import ProBadge from '../components/ProBadge';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { LADDER_SCROLL_BOTTOM_INSET_PX } from '../constants/bottomChrome';
@@ -777,16 +776,11 @@ export default function LadderPage() {
                           />
                         ) : null}
                         <div className="min-w-0">
-                          <div className="flex min-w-0 items-center gap-1.5">
-                            <p
-                              className={`truncate font-medium text-zinc-100 ${isAnonymousRow ? 'italic opacity-70' : ''}`}
-                            >
-                              {displayName}
-                            </p>
-                            {!isAnonymousRow && row.isPro === true ? (
-                              <ProBadge size="sm" variant="metal" />
-                            ) : null}
-                          </div>
+                          <p
+                            className={`truncate font-medium text-zinc-100 ${isAnonymousRow ? 'italic opacity-70' : ''}`}
+                          >
+                            {displayName}
+                          </p>
                           <p
                             className={`hidden truncate text-[10px] uppercase sm:block ${
                               isAnonymousRow

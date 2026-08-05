@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '../../config/routes';
+import { useEntitlementStore } from '../../stores/entitlementStore';
 import { useUiInteractionStore } from '../../stores/uiInteractionStore';
+import ProBadge from '../ProBadge';
 import HudAvatar from './HudAvatar';
 
 function SettingsGlyph() {
@@ -15,17 +17,23 @@ function SettingsGlyph() {
   );
 }
 
-/** Floating top-right profile controls: settings gear + avatar. */
+/**
+ * Floating top-right profile controls: Pro honor mark + settings gear + avatar.
+ * WHY: `isPro` is already synced via store `syncProFlag` → `hasProAccess`; subscribe
+ * to the boolean only so unrelated entitlement field churn does not re-render the HUD.
+ */
 export default function HudProfileControls() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const isBlocked = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
+  const isPro = useEntitlementStore((s) => s.isPro);
 
   return (
     <div
       className={`ml-auto flex items-center gap-2 motion-safe:transition-opacity motion-safe:duration-300 ${isBlocked ? 'pointer-events-none opacity-40 saturate-50' : ''}`}
       aria-hidden={isBlocked}
     >
+      {isPro ? <ProBadge size="sm" variant="metal" /> : null}
       <button
         type="button"
         onClick={() => navigate(ROUTES.settings)}
