@@ -77,10 +77,13 @@ describe('entitlementStore', () => {
       expiresDate: new Date(Date.now() + 86_400_000).toISOString(),
     });
     expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(useEntitlementStore.getState().lastCheckedAt).toBeTruthy();
 
     useEntitlementStore.getState().bindEntitlementSession('new-user');
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+    // WHY: Prior session's lastCheckedAt must not look settled before this uid's RC refresh.
+    expect(useEntitlementStore.getState().lastCheckedAt).toBeNull();
   });
 
   it('defaults and normalizes purchaseStatus to owned (download-includes-Core)', () => {
@@ -125,5 +128,18 @@ describe('entitlementStore', () => {
 
     expect(useEntitlementStore.getState().isPro).toBe(true);
     expect(useEntitlementStore.getState().proPurchaseCooldownUntil).toBeNull();
+  });
+
+  it('refreshEntitlement clears isRefreshing and stamps lastCheckedAt when idle', async () => {
+    expect(useEntitlementStore.getState().isRefreshing).toBe(false);
+    await useEntitlementStore.getState().refreshEntitlement();
+    expect(useEntitlementStore.getState().isRefreshing).toBe(false);
+    expect(useEntitlementStore.getState().lastCheckedAt).toBeTruthy();
+  });
+
+  it('resetEntitlement clears isRefreshing', () => {
+    useEntitlementStore.setState({ isRefreshing: true });
+    useEntitlementStore.getState().resetEntitlement();
+    expect(useEntitlementStore.getState().isRefreshing).toBe(false);
   });
 });

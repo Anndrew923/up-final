@@ -20,8 +20,9 @@ describe("hallOfFameResolver v5.0", () => {
     );
     assert.ok(overall90);
     assert.ok(overall90.anchors.length > 3, `expected full 90:overall pool, got ${overall90.anchors.length}`);
+    // WHY: Roster is matrix-driven (CSV → JSON); assert stable members of the current 90:overall cell.
     const joined = overall90.anchors.map((a) => a.displayZh).join("|");
-    assert.match(joined, /Bruce Lee/i);
+    assert.match(joined, /Chris Hemsworth/i);
     assert.match(joined, /林書豪/);
     assert.match(joined, /Haaland/i);
 

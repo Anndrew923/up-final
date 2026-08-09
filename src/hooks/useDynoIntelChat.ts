@@ -5,7 +5,12 @@ import {
   DYNO_INTEL_PRO_DAILY,
   DYNO_INTEL_QUESTION_DEBOUNCE_MS,
 } from '../config/dynoIntel';
-import { resolveDynoIntelAccess } from '../logic/core/dynoIntelGates';
+import {
+  canUseDynoIntelFull,
+  isEntitlementCheckSettled,
+  resolveDynoIntelAccess,
+  shouldOpenDynoIntelQuotaExhaustedPaywall,
+} from '../logic/core/dynoIntelGates';
 import type { DynoIntelLogEntry } from '../logic/core/dynoIntelLogTypes';
 import { resolveDynoIntelLogFocusAxis } from '../logic/core/resolveDynoIntelLogFocusAxis';
 import { resolveDynoIntelPriorTurnFromLog } from '../logic/core/resolveDynoIntelPriorTurnFromLog';
@@ -59,6 +64,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const uid = useAuthStore((s) => s.uid);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const entitlementRefreshing = useEntitlementStore((s) => s.isRefreshing);
   const appendLog = useDynoIntelLogStore((s) => s.appendLog);
   const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
 
@@ -125,6 +131,8 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       const access = resolveDynoIntelAccess(effectiveMode, entitlement, authStatus, isAnonymous);
 
       if (!access.allowed) {
+        // WHY: Auth loading is `pending` — no-op until the session is known.
+        if (access.blockReason === 'pending') return;
         if (access.blockReason === 'auth') {
           input.onAuthBlocked();
           return;
@@ -134,13 +142,24 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       }
 
       if (input.quota.isSynced && input.quota.remaining <= 0) {
-        if (input.quota.quotaTier === 'pro') {
+        const hasProFullAccess = canUseDynoIntelFull(entitlement, authStatus, isAnonymous);
+        if (input.quota.quotaTier === 'pro' || hasProFullAccess) {
           setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
           setStatus('error');
           return;
         }
-        input.onPaywallRequest('quota-exhausted');
-        return;
+        // WHY: Unsettled free+0 may be a Pro subscriber mid-RC refresh — ask the server instead.
+        if (
+          shouldOpenDynoIntelQuotaExhaustedPaywall({
+            entitlementSettled: isEntitlementCheckSettled(entitlement, entitlementRefreshing),
+            hasProFullAccess,
+            quotaSynced: true,
+            remaining: input.quota.remaining,
+          })
+        ) {
+          input.onPaywallRequest('quota-exhausted');
+          return;
+        }
       }
 
       const context = input.enrichContext(input.resolveContext(effectiveMode), trimmedQuestion);
@@ -264,6 +283,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       authStatus,
       cancel,
       entitlement,
+      entitlementRefreshing,
       getMostRecentLog,
       input,
       isAnonymous,

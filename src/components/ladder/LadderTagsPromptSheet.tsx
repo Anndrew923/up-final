@@ -164,7 +164,7 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
     savePhysicalProfile(result.profile);
     // WHY: Offer Local→Cloud sync before closing — Save alone never writes shard tags.
     setPhase('saved');
-  }, [city, countryCode, district, jobCategory, region]);
+  }, [city, countryCode, district, finish, jobCategory, region]);
 
   const isTaiwan = countryCode === 'TW';
   const jobOptions = LADDER_JOB_CATEGORIES.map((value) => ({

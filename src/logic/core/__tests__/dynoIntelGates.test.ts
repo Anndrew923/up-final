@@ -4,8 +4,10 @@ import {
   canUseDynoIntelFull,
   canUseDynoIntelMode,
   canUseDynoIntelTrial,
+  isEntitlementCheckSettled,
   resolveDynoIntelAccess,
   resolveDynoIntelSheetEntry,
+  shouldOpenDynoIntelQuotaExhaustedPaywall,
 } from '../dynoIntelGates';
 
 const { mockIsDynoIntelProBypassActive } = vi.hoisted(() => ({
@@ -93,6 +95,81 @@ describe('dynoIntelGates', () => {
     const entry = resolveDynoIntelSheetEntry('cross-axis', ent, 'signed-in', false);
     expect(entry.openMode).toBe('cross-axis');
     expect(entry.access.allowed).toBe(true);
+  });
+
+  describe('race: auth loading and entitlement settle', () => {
+    it('maps auth loading to pending — never auth gate or pro-required paywall', () => {
+      const access = resolveDynoIntelAccess('cross-axis', buildEntitlement(), 'loading', false);
+      expect(access.allowed).toBe(false);
+      expect(access.blockReason).toBe('pending');
+    });
+
+    it('treats missing lastCheckedAt or in-flight refresh as unsettled', () => {
+      expect(isEntitlementCheckSettled(buildEntitlement({ lastCheckedAt: null }), false)).toBe(
+        false
+      );
+      expect(
+        isEntitlementCheckSettled(
+          buildEntitlement({ lastCheckedAt: '2026-08-09T00:00:00.000Z' }),
+          true
+        )
+      ).toBe(false);
+      expect(
+        isEntitlementCheckSettled(
+          buildEntitlement({ lastCheckedAt: '2026-08-09T00:00:00.000Z' }),
+          false
+        )
+      ).toBe(true);
+    });
+
+    it('does not open quota-exhausted paywall while RC refresh is still running', () => {
+      expect(
+        shouldOpenDynoIntelQuotaExhaustedPaywall({
+          entitlementSettled: false,
+          hasProFullAccess: false,
+          quotaSynced: true,
+          remaining: 0,
+        })
+      ).toBe(false);
+    });
+
+    it('does not open quota-exhausted paywall for confirmed Pro even at remaining 0', () => {
+      expect(
+        shouldOpenDynoIntelQuotaExhaustedPaywall({
+          entitlementSettled: true,
+          hasProFullAccess: true,
+          quotaSynced: true,
+          remaining: 0,
+        })
+      ).toBe(false);
+    });
+
+    it('opens quota-exhausted paywall only when settled, non-Pro, synced, and remaining 0', () => {
+      expect(
+        shouldOpenDynoIntelQuotaExhaustedPaywall({
+          entitlementSettled: true,
+          hasProFullAccess: false,
+          quotaSynced: true,
+          remaining: 0,
+        })
+      ).toBe(true);
+      expect(
+        shouldOpenDynoIntelQuotaExhaustedPaywall({
+          entitlementSettled: true,
+          hasProFullAccess: false,
+          quotaSynced: true,
+          remaining: 1,
+        })
+      ).toBe(false);
+      expect(
+        shouldOpenDynoIntelQuotaExhaustedPaywall({
+          entitlementSettled: true,
+          hasProFullAccess: false,
+          quotaSynced: false,
+          remaining: 0,
+        })
+      ).toBe(false);
+    });
   });
 
   describe('pro bypass (dev/beta)', () => {

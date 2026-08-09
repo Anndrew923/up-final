@@ -546,9 +546,11 @@ export default function LadderPage() {
   const canNextPage = hasNextPage;
 
   // WHY: Segment filters read cloud shard tags — tip when local profile is ahead of myEntry.
+  // `ladderRefreshNonce` intentionally re-reads local profile after sync even if `myEntry` is stable.
   const showTagsSyncFilterHint = useMemo(() => {
     if (!isLadderSegmentFilterActive(initialFilters)) return false;
     return ladderTagsNeedCloudSync(loadPhysicalProfile(), myEntry);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nonce forces local-profile re-read after sync
   }, [initialFilters, myEntry, ladderRefreshNonce]);
 
   if (!canEnter) {

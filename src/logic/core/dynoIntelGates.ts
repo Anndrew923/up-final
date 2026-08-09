@@ -14,7 +14,8 @@ function hasDynoIntelBypassAccess(authStatus: AuthStatus, isAnonymous: boolean):
   return isDynoIntelProBypassActive() && isGoogleLinkedAuth(authStatus, isAnonymous);
 }
 
-export type DynoIntelBlockReason = 'auth' | 'pro-required';
+/** `pending` = auth/entitlement bootstrap in flight — callers must no-op, never paywall. */
+export type DynoIntelBlockReason = 'auth' | 'pro-required' | 'pending';
 
 export interface DynoIntelAccessResult {
   allowed: boolean;
@@ -34,6 +35,33 @@ function mapUiGateToDynoAccess(gate: UiGateResult): DynoIntelAccessResult {
 }
 
 /**
+ * True after the latest entitlement refresh has stamped `lastCheckedAt` and is idle.
+ * WHY: Quota paywalls must not fire while RC/Firestore hydration can still flip free→Pro.
+ */
+export function isEntitlementCheckSettled(
+  ent: Pick<EntitlementState, 'lastCheckedAt'>,
+  isRefreshing: boolean
+): boolean {
+  return Boolean(ent.lastCheckedAt) && !isRefreshing;
+}
+
+/**
+ * Exhausted-trial paywall only after entitlement is settled and the user is confirmed non-Pro.
+ * WHY: During RC refresh, a Pro subscriber can briefly look like free with migrated trial 0/2.
+ */
+export function shouldOpenDynoIntelQuotaExhaustedPaywall(input: {
+  entitlementSettled: boolean;
+  hasProFullAccess: boolean;
+  quotaSynced: boolean;
+  remaining: number;
+}): boolean {
+  if (!input.entitlementSettled) return false;
+  if (input.hasProFullAccess) return false;
+  if (!input.quotaSynced) return false;
+  return input.remaining <= 0;
+}
+
+/**
  * Maps DYNO INTEL diagnostic mode to auth / trial / Pro gates.
  * WHY: Core + Google unlocks trial (2/day) on single/cross-axis; weight-sim stays Pro-only.
  */
@@ -45,7 +73,8 @@ export function resolveDynoIntelAccess(
   now: Date = new Date()
 ): DynoIntelAccessResult {
   if (authStatus === 'loading') {
-    return { allowed: false };
+    // WHY: Missing blockReason collapses to pro-required in UI; loading is neither auth nor Pro miss.
+    return { allowed: false, blockReason: 'pending' };
   }
 
   if (hasDynoIntelBypassAccess(authStatus, isAnonymous)) {

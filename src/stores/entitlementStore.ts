@@ -31,6 +31,11 @@ export interface ServerProEntitlementCommit {
 }
 
 export interface EntitlementStore extends EntitlementState {
+  /**
+   * True while `refreshEntitlement` is in flight.
+   * WHY: Dyno quota paywalls must wait until RC reconcile finishes before treating free as settled.
+   */
+  isRefreshing: boolean;
   hydrateEntitlement(payload: Partial<EntitlementState>): void;
   /** Single path for RevenueCat purchase / restore / refresh outcomes. */
   applyRevenueCatEntitlement(snapshot: RevenueCatEntitlementSnapshot): void;
@@ -70,6 +75,11 @@ const DEBUG_PRO_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 /** Tracks which uid the in-memory subscription cache belongs to. */
 let boundSessionUid: string | null = null;
 let expiryTimer: number | null = null;
+/**
+ * Nested refresh depth — a finished older call must not clear `isRefreshing`
+ * while a newer refresh is still awaiting RC / server sync.
+ */
+let entitlementRefreshInFlight = 0;
 
 /**
  * WHY: Legacy caches / debug toggles may still write `purchaseStatus: 'none'`.
@@ -163,11 +173,14 @@ function clearProSubscriptionFields(state: EntitlementState): EntitlementState {
     proExpiresAt: null,
     planId: null,
     proPurchaseCooldownUntil: null,
+    // WHY: Stale lastCheckedAt from a prior uid would look "settled" before this session's RC refresh.
+    lastCheckedAt: null,
   });
 }
 
 export const useEntitlementStore = create<EntitlementStore>((set) => ({
   ...buildInitialEntitlement(),
+  isRefreshing: false,
   hydrateEntitlement(payload) {
     set((state) =>
       normalizeEntitlementState({
@@ -226,6 +239,8 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           proExpiresAt: cached.proExpiresAt,
           planId: cached.planId,
           proPurchaseCooldownUntil: cached.proPurchaseCooldownUntil ?? null,
+          // WHY: Cache restores Pro/free flags, but settle waits for this session's refreshEntitlement.
+          lastCheckedAt: null,
         });
       }
       return clearProSubscriptionFields(state);
@@ -266,57 +281,67 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     );
   },
   async refreshEntitlement() {
-    const userId = useAuthStore.getState().uid;
-    const sessionIsCurrent = () =>
-      useAuthStore.getState().uid === userId && boundSessionUid === userId;
-    if (userId && isRevenueCatNativeBillingAvailable()) {
-      try {
-        await logInRevenueCatUser(userId);
-        if (!sessionIsCurrent()) return;
-        const snapshot = await fetchRevenueCatEntitlement(userId);
-        if (!sessionIsCurrent()) return;
-        if (snapshot) {
-          const previous = useEntitlementStore.getState();
-          // WHY: Purchase cooldown blocks reconcile downgrade so a lagging RC REST
-          // read cannot wipe the Firestore SSOT grant or local unlock.
-          if (shouldBlockProReconcileDowngrade(previous, snapshot.active)) {
-            set((state) => ({
-              ...state,
-              lastCheckedAt: new Date().toISOString(),
-            }));
+    entitlementRefreshInFlight += 1;
+    set((state) => ({ ...state, isRefreshing: true }));
+    try {
+      const userId = useAuthStore.getState().uid;
+      const sessionIsCurrent = () =>
+        useAuthStore.getState().uid === userId && boundSessionUid === userId;
+      if (userId && isRevenueCatNativeBillingAvailable()) {
+        try {
+          await logInRevenueCatUser(userId);
+          if (!sessionIsCurrent()) return;
+          const snapshot = await fetchRevenueCatEntitlement(userId);
+          if (!sessionIsCurrent()) return;
+          if (snapshot) {
+            const previous = useEntitlementStore.getState();
+            // WHY: Purchase cooldown blocks reconcile downgrade so a lagging RC REST
+            // read cannot wipe the Firestore SSOT grant or local unlock.
+            if (shouldBlockProReconcileDowngrade(previous, snapshot.active)) {
+              set((state) => ({
+                ...state,
+                lastCheckedAt: new Date().toISOString(),
+              }));
+              return;
+            }
+            const shouldSyncServer =
+              snapshot.active ||
+              previous.subscriptionStatus === 'pro' ||
+              previous.subscriptionStatus === 'grace' ||
+              previous.subscriptionStatus === 'expired' ||
+              previous.isPro;
+            useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+            // WHY: Boot refresh also migrates legacy/missing server expiry and
+            // propagates inactive revocation without charging every free boot.
+            if (shouldSyncServer) {
+              await syncProEntitlementToServer({ source: 'revenuecat', snapshot });
+              if (!sessionIsCurrent()) return;
+            }
             return;
           }
-          const shouldSyncServer =
-            snapshot.active ||
-            previous.subscriptionStatus === 'pro' ||
-            previous.subscriptionStatus === 'grace' ||
-            previous.subscriptionStatus === 'expired' ||
-            previous.isPro;
-          useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-          // WHY: Boot refresh also migrates legacy/missing server expiry and
-          // propagates inactive revocation without charging every free boot.
-          if (shouldSyncServer) {
-            await syncProEntitlementToServer({ source: 'revenuecat', snapshot });
-            if (!sessionIsCurrent()) return;
-          }
-          return;
+        } catch {
+          if (!sessionIsCurrent()) return;
+          // Keep uid-scoped local cache if provider sync fails.
         }
-      } catch {
-        if (!sessionIsCurrent()) return;
-        // Keep uid-scoped local cache if provider sync fails.
+      }
+      if (userId && !sessionIsCurrent()) return;
+      set((state) =>
+        normalizeEntitlementState({
+          ...state,
+          lastCheckedAt: new Date().toISOString(),
+        })
+      );
+    } finally {
+      entitlementRefreshInFlight = Math.max(0, entitlementRefreshInFlight - 1);
+      if (entitlementRefreshInFlight === 0) {
+        set((state) => ({ ...state, isRefreshing: false }));
       }
     }
-    if (userId && !sessionIsCurrent()) return;
-    set((state) =>
-      normalizeEntitlementState({
-        ...state,
-        lastCheckedAt: new Date().toISOString(),
-      })
-    );
   },
   resetEntitlement() {
     boundSessionUid = null;
-    set(normalizeEntitlementState({ ...defaultState }));
+    entitlementRefreshInFlight = 0;
+    set({ ...normalizeEntitlementState({ ...defaultState }), isRefreshing: false });
   },
 }));
 

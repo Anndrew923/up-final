@@ -13,9 +13,20 @@ function assertZhMirrorsEnShape(enVal: unknown, zhVal: unknown, path: string): v
     expect((zhVal as string).trim().length, path).toBeGreaterThan(0);
     return;
   }
+  // WHY: About credentials / vision goals / advisor highlights are intentional string lists
+  // (and advisor cards are object lists) consumed via `returnObjects` + aboutI18n helpers.
+  if (Array.isArray(enVal)) {
+    expect(Array.isArray(zhVal), path).toBe(true);
+    const enArr = enVal as unknown[];
+    const zhArr = zhVal as unknown[];
+    expect(zhArr.length, path).toBe(enArr.length);
+    for (let i = 0; i < enArr.length; i += 1) {
+      assertZhMirrorsEnShape(enArr[i], zhArr[i], `${path}[${i}]`);
+    }
+    return;
+  }
   expect(enVal, path).toEqual(expect.any(Object));
   expect(zhVal, path).toEqual(expect.any(Object));
-  expect(Array.isArray(enVal), path).toBe(false);
   expect(Array.isArray(zhVal), path).toBe(false);
   const enObj = enVal as Record<string, unknown>;
   const zhObj = zhVal as Record<string, unknown>;

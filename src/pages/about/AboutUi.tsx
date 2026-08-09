@@ -2,17 +2,6 @@ import { useState, type FC, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import type { AdvisorProfile } from './aboutI18n';
 
-export const ABOUT_PORTRAITS = {
-  founder: '/images/about/founder.jpg',
-  advisor1: '/images/about/advisor1.jpg',
-  advisor2: '/images/about/advisor2.jpg',
-} as const;
-
-export const ADVISOR_PORTRAIT_BY_INDEX = [
-  ABOUT_PORTRAITS.advisor1,
-  ABOUT_PORTRAITS.advisor2,
-] as const;
-
 /** WHY: Absolute glow must not sit under `space-y` (margin-collapse gutter). Prefer flex/gap shells. */
 export const AboutCard: FC<{
   title: string;

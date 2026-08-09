@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../config/routes';
 import {
-  ABOUT_PORTRAITS,
-  ADVISOR_PORTRAIT_BY_INDEX,
   AboutCard,
   AboutPortrait,
   AdvisorCard,
@@ -12,6 +10,7 @@ import {
   FounderScoreBadge,
   QuoteCallout,
 } from './about/AboutUi';
+import { ABOUT_PORTRAITS, ADVISOR_PORTRAIT_BY_INDEX } from './about/aboutPortraits';
 import { readAdvisorProfiles, readStringList } from './about/aboutI18n';
 
 const AboutPage: FC = () => {

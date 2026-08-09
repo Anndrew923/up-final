@@ -11,7 +11,12 @@ import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoIntelSuggestions } from '../../hooks/useDynoIntelSuggestions';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
-import { resolveDynoIntelSheetEntry, canUseDynoIntelFull } from '../../logic/core/dynoIntelGates';
+import {
+  canUseDynoIntelFull,
+  isEntitlementCheckSettled,
+  resolveDynoIntelSheetEntry,
+  shouldOpenDynoIntelQuotaExhaustedPaywall,
+} from '../../logic/core/dynoIntelGates';
 import { DYNO_INTEL_LOCAL_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
@@ -46,6 +51,7 @@ const DynoIntelConsole = () => {
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const entitlementRefreshing = useEntitlementStore((s) => s.isRefreshing);
   const logEntries = useDynoIntelLogStore((s) => s.entries);
   const loadLocalLogs = useDynoIntelLogStore((s) => s.loadLocalLogs);
   const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
@@ -146,6 +152,8 @@ const DynoIntelConsole = () => {
       isAnonymous
     );
     if (!entry.access.allowed) {
+      // WHY: Bootstrap pending must never open auth gate or Pro paywall.
+      if (entry.access.blockReason === 'pending') return;
       if (entry.access.blockReason === 'auth') {
         handleAuthBlocked();
         return;
@@ -154,11 +162,14 @@ const DynoIntelConsole = () => {
       openPaywall('pro-required');
       return;
     }
-    // WHY: After server sync, exhausted trial should open the 15x paywall — not an empty chat.
+    // WHY: Only after RC refresh settles may we treat "free + remaining 0" as a real upgrade cue.
     if (
-      quota.isSynced &&
-      quota.remaining <= 0 &&
-      !canUseDynoIntelFull(entitlement, authStatus, isAnonymous)
+      shouldOpenDynoIntelQuotaExhaustedPaywall({
+        entitlementSettled: isEntitlementCheckSettled(entitlement, entitlementRefreshing),
+        hasProFullAccess: canUseDynoIntelFull(entitlement, authStatus, isAnonymous),
+        quotaSynced: quota.isSynced,
+        remaining: quota.remaining,
+      })
     ) {
       openPaywall('quota-exhausted');
       return;
@@ -169,6 +180,7 @@ const DynoIntelConsole = () => {
   }, [
     authStatus,
     entitlement,
+    entitlementRefreshing,
     handleAuthBlocked,
     isAnonymous,
     openPaywall,
