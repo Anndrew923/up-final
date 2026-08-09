@@ -95,7 +95,7 @@ describe("buildGeminiInferencePayload", () => {
     assert.equal(payload.scoringMethodologyBriefs.length, 1);
   });
 
-  it("preserves weightSimulation target for sim mode while pruning cardCopy", () => {
+  it("preserves weightSimulation target for sim mode and never ships cardCopy", () => {
     const payload = buildGeminiInferencePayload({
       locale: "zh-Hant",
       mode: "weight-simulation",
@@ -107,13 +107,41 @@ describe("buildGeminiInferencePayload", () => {
           axis: "strength",
           score: 80,
           tierBandId: "TIER_80",
-          cardCopy: { title: "t", summary: "x".repeat(200) },
+          cardCopy: { title: "工廠賽車原廠寬體", summary: "x".repeat(200) },
         },
       ],
     });
     assert.equal(payload.weightSimulation?.targetWeightKg, 72.5);
     assert.equal(payload.weightSimulation?.unusedFat, undefined);
-    assert.ok(String(payload.axes[0].cardCopy.summary).length <= 120);
+    assert.equal(payload.axes[0].cardCopy, undefined);
+    assert.equal(payload.axes[0].score, 80);
+    assert.equal(payload.axes[0].tierBandId, "TIER_80");
+  });
+
+  it("never ships UI vehicle cardCopy on status axes (source bait cut)", () => {
+    const payload = buildGeminiInferencePayload({
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的肌肉量表現如何？",
+      questionFocusAxis: "muscleMass",
+      gaps: [],
+      axes: [
+        {
+          axis: "muscleMass",
+          score: 112,
+          tierBandId: "TIER_110",
+          cardCopy: {
+            title: "工廠賽車原廠寬體",
+            summary:
+              "【怪物規格】突破常人基因極限。車體外裝完全對齊680匹精銳工廠賽車之規格，極致的物理體積與橫向跨度，出場即鎮壓全場。",
+          },
+        },
+      ],
+    });
+    assert.equal(payload.axes.length, 1);
+    assert.equal(payload.axes[0].cardCopy, undefined);
+    assert.doesNotMatch(JSON.stringify(payload), /工廠賽車|寬體|車體外裝|怪物規格/);
   });
 });
 

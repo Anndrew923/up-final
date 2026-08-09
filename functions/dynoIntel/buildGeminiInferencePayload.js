@@ -18,17 +18,12 @@ function pruneAxesForPayload(axes, focusAxis, intent) {
       }));
   }
 
-  // Status/progress still need the hex — strip cardCopy prose that models rarely need verbatim.
+  // WHY: UI tier cards keep vehicle metaphors (工廠賽車/寬體); Dyno Intel must never
+  // feed that prose to Gemini or the model will occasionally paraphrase it into replies.
   return source.map((row) => ({
     axis: row.axis,
     score: row.score,
     tierBandId: row.tierBandId ?? null,
-    cardCopy: row.cardCopy
-      ? {
-          title: row.cardCopy.title ?? "",
-          summary: String(row.cardCopy.summary ?? "").slice(0, 120),
-        }
-      : undefined,
   }));
 }
 

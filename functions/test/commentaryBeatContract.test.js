@@ -80,6 +80,9 @@ function normalizeBriefForAssert(text) {
 describe("dynoIntelHumanBriefs v3", () => {
   it("VEHICLE_LEXICON_REGEX flags vehicle metaphors", () => {
     assert.ok(containsVehicleLexicon("這台跑車的馬力輸出"));
+    assert.ok(containsVehicleLexicon("車體外裝完全對標頂尖工廠賽車的寬體設定"));
+    assert.ok(containsVehicleLexicon("葉子板與輪拱、尾翼、風阻與輪轂"));
+    assert.ok(containsVehicleLexicon("賽道版熱熔橡膠載具"));
     assert.ok(!containsVehicleLexicon("深蹲硬舉的募集水準"));
   });
 
@@ -112,6 +115,11 @@ describe("dynoIntelHumanBriefs v3", () => {
   it("scrubVehicleLexicon strips blacklisted tokens", () => {
     const cleaned = scrubVehicleLexicon("馬力輸出與抓地力");
     assert.ok(!VEHICLE_LEXICON_REGEX.test(cleaned));
+    const factoryLeak = scrubVehicleLexicon(
+      "車體外裝完全對標頂尖工廠賽車的寬體設定，極致的物理體積與橫向跨度"
+    );
+    assert.ok(!containsVehicleLexicon(factoryLeak));
+    assert.doesNotMatch(factoryLeak, /車體|工廠賽車|寬體|賽車/);
   });
 
   it("v5.0 — muscleMass 91.6 uses population class + volume soul praise (no tier tail)", () => {
@@ -542,6 +550,75 @@ describe("enforceCommentaryBeatContract v3", () => {
     assert.ok(paragraphs[0].startsWith(segment1));
     assert.match(paragraphs[0], /握力軸|硬拉終點/);
     assert.match(paragraphs[1], /生涯巔峰狀態/);
+  });
+
+  it("rejects vehicle leak when segment1Core is missing (fallback path)", () => {
+    const ctx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的肌肉量表現如何？",
+      questionFocusAxis: "muscleMass",
+      gaps: [],
+      // Missing axis score → no human brief / no segment1Core.
+      axes: [{ axis: "muscleMass", score: null, tierBandId: null }],
+    };
+    const reply = {
+      commentary:
+        "你骨骼肌量的得分已達「怪物規格」級距，車體外裝完全對標頂尖工廠賽車的寬體設定。健身房裡這份量體密度已經很難忽視。",
+      action_directive: "",
+      is_off_topic: false,
+      detected_weakest_axis: "muscleMass",
+    };
+    const repaired = enforceCommentaryBeatContract(reply, ctx);
+    assert.ok(!containsVehicleLexicon(repaired.commentary));
+    assert.doesNotMatch(repaired.commentary, /工廠賽車|寬體|車體|怪物規格/);
+    assert.match(repaired.commentary, /健身房|量體密度/);
+  });
+
+  it("rejects factory-race-car cardCopy paraphrase from fake model output (regression)", () => {
+    const muscleCtx = {
+      locale: "zh-Hant",
+      mode: "cross-axis",
+      intent: "status",
+      userQuestion: "我的肌肉量表現如何？",
+      questionFocusAxis: "muscleMass",
+      profile: { gender: "male" },
+      gaps: [],
+      axes: [
+        {
+          axis: "muscleMass",
+          score: 112,
+          tierBandId: "TIER_110",
+          cardCopy: {
+            title: "工廠賽車原廠寬體",
+            summary:
+              "【怪物規格】突破常人基因極限。車體外裝完全對齊680匹精銳工廠賽車之規格，極致的物理體積與橫向跨度，出場即鎮壓全場。",
+          },
+        },
+      ],
+    };
+    const enriched = injectChassisBeatsIntoContext(muscleCtx);
+    const segment1 = enriched.chassisBeats?.p1Official;
+    assert.ok(segment1);
+    assert.ok(!containsVehicleLexicon(segment1));
+
+    const leakSentence =
+      "你骨骼肌量的得分已達「怪物規格」級距，車體外裝完全對標頂尖工廠賽車的寬體設定，極致的物理體積與橫向跨度，出場即鎮壓全場。";
+    const reply = {
+      commentary: `${segment1}${leakSentence}`,
+      action_directive: "",
+      is_off_topic: false,
+      detected_weakest_axis: "muscleMass",
+    };
+    const repaired = enforceCommentaryBeatContract(reply, enriched);
+    assert.ok(!containsVehicleLexicon(repaired.commentary));
+    assert.doesNotMatch(repaired.commentary, /工廠賽車|寬體|車體|賽車|怪物規格/);
+    const paragraphs = splitParagraphs(repaired.commentary);
+    assert.equal(
+      normalizeBriefWhitespace(paragraphs[0]),
+      normalizeBriefWhitespace(segment1)
+    );
   });
 
   it("injectChassisBeatsIntoContext exposes segment1 and trailing segments", () => {

@@ -117,6 +117,21 @@ function extensionSentenceIsSafe(sentence, context, anchor, keptSentences) {
   return true;
 }
 
+/**
+ * WHY: Scrub-then-keep leaves hollow remnants after vehicle tokens are deleted
+ * (e.g. 「怪物規格」). Vehicle-tainted sentences must be rejected wholesale.
+ */
+function keepVehicleSafeSentences(text, locale = "zh-Hant") {
+  const kept = [];
+  for (const sentence of splitCommentarySentences(text)) {
+    if (containsVehicleLexicon(sentence)) continue;
+    const row = stripScorePatterns(scrubVehicleLexicon(sentence));
+    if (row) kept.push(row);
+  }
+  if (!kept.length) return "";
+  return kept.join(locale === "en" ? " " : "");
+}
+
 function extractCoachExtension(aiCommentary, anchor, context) {
   const locale = resolveSingleBeatLocale(context);
   const anchorNorm = String(anchor ?? "").trim();
@@ -135,6 +150,7 @@ function extractCoachExtension(aiCommentary, anchor, context) {
   const kept = [];
 
   for (const sentence of sentences) {
+    if (containsVehicleLexicon(sentence)) continue;
     let row = stripScorePatterns(scrubVehicleLexicon(sentence));
     if (!row) continue;
     if (!extensionSentenceIsSafe(row, context, anchorNorm, kept)) continue;
@@ -226,14 +242,14 @@ function enforceSingleBeatCommentary(reply, context) {
   const trailingSegments = assembly?.trailingSegments ?? [];
 
   if (!segment1Core) {
-    const collapsed = collapseToSingleParagraph(reply.commentary);
+    // WHY: Human-brief miss — AI is sole source; apply the same wholesale vehicle reject.
+    const cleaned = pruneSynonymLoopsInParagraph(
+      keepVehicleSafeSentences(collapseToSingleParagraph(reply.commentary), locale)
+    );
     return {
       ...reply,
       commentary: finalizeContractCommentary(
-        ensureBeatTerminalPunctuation(
-          pruneSynonymLoopsInParagraph(scrubVehicleLexicon(stripScorePatterns(collapsed))),
-          locale
-        ),
+        ensureBeatTerminalPunctuation(cleaned, locale),
         context,
         { contractMode: "single" }
       ),

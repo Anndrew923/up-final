@@ -90,7 +90,10 @@ export function isChassisMacroContext(context) {
 
 /** v3.3.2 — rigid vehicle lexicon lint for AI commentary assembly. */
 export const VEHICLE_LEXICON_REGEX =
-  /馬力|跑車|輪胎|冷卻|底盤|Bar|hp|Nm|排量|渦輪|熱熔|通電|遙測主機|引擎|防滾架|車架|續航天賦|淨引擎|遙測底盤|抓地頻譜|空力噸位/i;
+  /馬力|跑車|輪胎|冷卻|底盤|Bar|hp|Nm|排量|渦輪|熱熔橡膠|熱熔|通電|遙測主機|引擎|防滾架|車架|續航天賦|淨引擎|遙測底盤|抓地頻譜|空力噸位|車體|工廠賽車|寬體|賽車|葉子板|輪拱|尾翼|載具|風阻|賽道版|輪轂/i;
+
+/** WHY: Keep the shared lint regex non-global — `/g` + `.test()` mutates lastIndex across calls. */
+const VEHICLE_LEXICON_SCRUB_REGEX = new RegExp(VEHICLE_LEXICON_REGEX.source, "gi");
 
 export function containsVehicleLexicon(text) {
   return VEHICLE_LEXICON_REGEX.test(String(text ?? ""));
@@ -98,7 +101,7 @@ export function containsVehicleLexicon(text) {
 
 export function scrubVehicleLexicon(text) {
   return String(text ?? "")
-    .replace(VEHICLE_LEXICON_REGEX, "")
+    .replace(VEHICLE_LEXICON_SCRUB_REGEX, "")
     .replace(/\s{2,}/g, " ")
     .replace(/[，,、]{2,}/g, "，")
     .trim();
