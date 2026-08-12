@@ -19,6 +19,7 @@ import {
 } from '../../logic/core/dynoIntelGates';
 import { DYNO_INTEL_LOCAL_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
+import { pushAndroidBackDismiss } from '../../lib/androidBackDismissStack';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
 import { hapticService } from '../../services/hapticService';
@@ -45,7 +46,7 @@ const DynoIntelConsole = () => {
   const { pathname } = useLocation();
   const isShellBlocked = useShellInteractionBlocked();
   const route = useDynoRouteContext();
-  const sheet = useDynoIntelSheet();
+  const { open: sheetOpen, openSheet, closeSheet } = useDynoIntelSheet();
   const quota = useDynoIntelQuota();
   const buildRadarInput = useDynoIntelContextBuilder();
   const { discovered, markDiscovered } = useDynoIntelTriggerDiscovery();
@@ -104,9 +105,9 @@ const DynoIntelConsole = () => {
       setPaywallReason(reason);
       setPaywallBillingError(false);
       setSheetView('paywall');
-      sheet.openSheet();
+      openSheet();
     },
-    [sheet]
+    [openSheet]
   );
 
   const handleAuthBlocked = useCallback(() => {
@@ -118,9 +119,9 @@ const DynoIntelConsole = () => {
    * (e.g. RevenueCat offerings missing). WHY: Preserve surface via allowlisted `returnTo`.
    */
   const openJoinArenaProFunnel = useCallback(() => {
-    sheet.closeSheet();
+    closeSheet();
     navigate(joinArenaPath('dyno-intel', pathname));
-  }, [navigate, pathname, sheet]);
+  }, [closeSheet, navigate, pathname]);
 
   const chat = useDynoIntelChat({
     mode: DYNO_INFERENCE_MODE,
@@ -178,7 +179,7 @@ const DynoIntelConsole = () => {
     }
     setSheetView('chat');
     restoreLatestLog();
-    sheet.openSheet();
+    openSheet();
   }, [
     authStatus,
     entitlement,
@@ -186,18 +187,27 @@ const DynoIntelConsole = () => {
     handleAuthBlocked,
     isAnonymous,
     openPaywall,
+    openSheet,
     quota.remaining,
     quota.isSynced,
     restoreLatestLog,
-    sheet,
   ]);
 
   const handleSheetClose = useCallback(() => {
-    sheet.closeSheet();
+    closeSheet();
     setSheetView('chat');
     setPaywallBillingError(false);
     setSuggestionsDismissed(false);
-  }, [sheet]);
+  }, [closeSheet]);
+
+  // WHY: Android back must close Dyno before tab-root ExitConfirm — register only while open.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    return pushAndroidBackDismiss(() => {
+      handleSheetClose();
+      return true;
+    });
+  }, [handleSheetClose, sheetOpen]);
 
   const handlePaywallDismiss = useCallback(() => {
     setSheetView('chat');
@@ -255,7 +265,7 @@ const DynoIntelConsole = () => {
     isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
 
   const showCallout =
-    !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheet.open;
+    !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
 
   const handleTriggerPress = useCallback(() => {
     if (!discovered) markDiscovered();
@@ -268,13 +278,13 @@ const DynoIntelConsole = () => {
         consoleLabel={consoleLabel}
         onPress={handleTriggerPress}
         hidden={hideTrigger}
-        sheetOpen={sheet.open}
+        sheetOpen={sheetOpen}
         discovered={discovered}
         showCallout={showCallout}
         onCalloutDismiss={markDiscovered}
       />
       <DynoIntelBottomSheet
-        open={sheet.open}
+        open={sheetOpen}
         onClose={handleSheetClose}
         view={sheetView}
         paywallReason={paywallReason}

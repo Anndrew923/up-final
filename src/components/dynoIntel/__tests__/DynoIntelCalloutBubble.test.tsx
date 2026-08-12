@@ -28,7 +28,8 @@ describe('DynoIntelCalloutBubble', () => {
     const button = container.querySelector('button');
     expect(button).not.toBeNull();
     expect(button?.textContent).toContain('dynoIntel.triggerDiscovery.callout');
-    expect(button?.getAttribute('aria-label')).toContain('dynoIntel.triggerDiscovery.calloutDismiss');
+    expect(button?.textContent).toContain('dynoIntel.triggerDiscovery.calloutDismiss');
+    expect(button?.getAttribute('aria-label')).toBe('dynoIntel.triggerDiscovery.calloutAria');
 
     act(() => {
       button?.click();

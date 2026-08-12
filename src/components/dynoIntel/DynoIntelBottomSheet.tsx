@@ -124,17 +124,12 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (view === 'paywall') {
-          onPaywallDismiss();
-          return;
-        }
-        onClose();
-      }
+      // WHY: Match header ✕ / Android back — Escape leaves the whole sheet (paywall soft-dismiss stays on its CTA).
+      if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, onPaywallDismiss, open, view]);
+  }, [onClose, open]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -160,7 +155,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
           !visible && 'pointer-events-none'
         )}
         aria-label={t('dynoIntel.close')}
-        onClick={view === 'paywall' ? onPaywallDismiss : onClose}
+        onClick={onClose}
       />
       <section
         role="dialog"
@@ -175,8 +170,8 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <header className="shrink-0 border-b border-zinc-800/80 px-4 pb-3 pt-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+            <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-wider text-cyan-300/80">
                 {consoleLabel}
               </p>
@@ -184,11 +179,21 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
                 {t('dynoIntel.sheetTitle')}
               </h2>
             </div>
-            {view === 'chat' && quotaKnown ? (
-              <p className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900/80 px-2.5 py-1 font-mono text-[10px] text-zinc-300">
-                {t('dynoIntel.quotaLabel', { remaining, limit })}
-              </p>
-            ) : null}
+            <div className="flex shrink-0 items-center gap-2">
+              {view === 'chat' && quotaKnown ? (
+                <p className="rounded-full border border-zinc-700 bg-zinc-900/80 px-2.5 py-1 font-mono text-[10px] text-zinc-300">
+                  {t('dynoIntel.quotaLabel', { remaining, limit })}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={t('dynoIntel.close')}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700/80 bg-zinc-900/80 text-base leading-none text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-50"
+              >
+                <span aria-hidden>✕</span>
+              </button>
+            </div>
           </div>
         </header>
 

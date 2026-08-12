@@ -14,7 +14,9 @@ export interface DynoIntelCalloutBubbleProps {
 const DynoIntelCalloutBubble: FC<DynoIntelCalloutBubbleProps> = ({ onDismiss, className }) => {
   const { t } = useTranslation('common');
   const callout = t('dynoIntel.triggerDiscovery.callout');
-  const dismissLabel = t('dynoIntel.triggerDiscovery.calloutDismiss');
+  const dismissGlyph = t('dynoIntel.triggerDiscovery.calloutDismiss');
+  // WHY: Visual dismiss is ✕; SR needs a real phrase — calloutAria already exists for this coachmark.
+  const calloutAria = t('dynoIntel.triggerDiscovery.calloutAria');
 
   return (
     <div
@@ -27,7 +29,7 @@ const DynoIntelCalloutBubble: FC<DynoIntelCalloutBubbleProps> = ({ onDismiss, cl
       <button
         type="button"
         onClick={onDismiss}
-        aria-label={`${callout} ${dismissLabel}`}
+        aria-label={calloutAria}
         className={cn(
           'relative w-full rounded-xl border border-cyan-400/45 bg-zinc-950/95 px-3 py-2.5 text-left',
           'shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur-sm',
@@ -35,12 +37,12 @@ const DynoIntelCalloutBubble: FC<DynoIntelCalloutBubbleProps> = ({ onDismiss, cl
           'motion-safe:transition-opacity motion-safe:duration-200 motion-safe:active:opacity-80',
         )}
       >
-        <p className="pr-12 text-xs leading-relaxed text-zinc-100">{callout}</p>
+        <p className="pr-5 text-xs leading-relaxed text-zinc-100">{callout}</p>
         <span
-          className="pointer-events-none absolute right-2 top-2 text-[10px] font-medium uppercase tracking-wide text-cyan-300/80"
+          className="pointer-events-none absolute right-2 top-2 text-[10px] leading-none text-cyan-300/80"
           aria-hidden
         >
-          {dismissLabel}
+          {dismissGlyph}
         </span>
         <span
           className="pointer-events-none absolute -bottom-1.5 right-5 h-0 w-0 border-x-[6px] border-t-[6px] border-x-transparent border-t-cyan-400/45"

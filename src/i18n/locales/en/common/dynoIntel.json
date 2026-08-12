@@ -8,8 +8,8 @@
     },
     "triggerDiscovery": {
       "cta": "TAP · INTEL",
-      "callout": "AI analyst lives here — tap to uplink",
-      "calloutDismiss": "Got it",
+      "callout": "💡 AI Intel",
+      "calloutDismiss": "✕",
       "calloutAria": "DYNO INTEL entry hint"
     },
     "sheetTitle": "DYNO INTEL",

@@ -8,8 +8,8 @@
     },
     "triggerDiscovery": {
       "cta": "點擊通電",
-      "callout": "AI 戰情分析在此 — 點擊通電",
-      "calloutDismiss": "知道了",
+      "callout": "💡 AI 戰情點評",
+      "calloutDismiss": "✕",
       "calloutAria": "DYNO INTEL 入口提示"
     },
     "sheetTitle": "DYNO INTEL",

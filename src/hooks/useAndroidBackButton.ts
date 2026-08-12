@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../config/nav.config';
 import { ROUTES } from '../config/routes';
+import { tryDismissTopAndroidBackOverlay } from '../lib/androidBackDismissStack';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
 import { canNavigateHistoryBack, resolveHudBackFallback } from '../lib/hudBackNavigation';
 import { hapticService } from '../services/hapticService';
@@ -22,6 +23,7 @@ export interface UseAndroidBackButtonResult {
  * Native Android back-button guard (GOAT Meter pattern).
  * WHY: Capacitor WebView exits immediately on back at history root; we intercept at tab roots
  * with a confirm modal and route sub-pages through the same HUD back pop/fallback contract.
+ * Overlays register via `androidBackDismissStack` and win before exit-confirm / history pop.
  */
 export function useAndroidBackButton(): UseAndroidBackButtonResult {
   const navigate = useNavigate();
@@ -51,6 +53,9 @@ export function useAndroidBackButton(): UseAndroidBackButtonResult {
         void App.exitApp();
         return;
       }
+
+      // WHY: Overlays (Dyno Intel sheet, etc.) must close before tab-root exit confirm.
+      if (tryDismissTopAndroidBackOverlay()) return;
 
       if (ROOT_PATHS.has(pathname)) {
         void hapticService.trigger('warning');
