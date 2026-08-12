@@ -8,14 +8,6 @@
     "colActions": "操作",
     "delete": "刪除",
     "deleteConfirm": "確定要刪除這筆快照嗎？此操作無法復原。",
-    "valueEmpty": "—",
-    "shortAxis": {
-      "strength": "馬力",
-      "explosivePower": "扭矩",
-      "cardio": "續航",
-      "muscleMass": "車體外觀",
-      "bodyFat": "引擎排量",
-      "gripStrength": "抓地"
-    }
+    "valueEmpty": "—"
   }
 }

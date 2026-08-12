@@ -58,7 +58,6 @@ export const SIX_AXIS_LEXICON_MAPPING_RULES: Record<SixAxisMetric, SixAxisLexico
 
 /** Output surfaces that must mirror `axisLexicon.output.full` verbatim. */
 export const SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS = [
-  'history.shortAxis',
   'home.radar.axis',
   'assessment.axis',
   'ladder.metrics',

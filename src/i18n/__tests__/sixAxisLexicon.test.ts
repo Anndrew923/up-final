@@ -88,7 +88,7 @@ describe('six-axis lexicon dual-track mapping', () => {
   });
 
   it.each(SIX_AXIS_METRICS)(
-    'zh-Hant output.full mirrors history, radar, assessment, and ladder metrics for %s',
+    'zh-Hant output.full mirrors radar, assessment, and ladder metrics for %s',
     (metric) => {
       const canonical = readLexicon(zhHantCommon, 'output', 'full', metric);
       for (const mirrorKey of SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS) {
@@ -98,7 +98,7 @@ describe('six-axis lexicon dual-track mapping', () => {
   );
 
   it.each(SIX_AXIS_METRICS)(
-    'en output.full mirrors history, radar, assessment, and ladder metrics for %s',
+    'en output.full mirrors radar, assessment, and ladder metrics for %s',
     (metric) => {
       const canonical = readLexicon(enCommon, 'output', 'full', metric);
       for (const mirrorKey of SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS) {

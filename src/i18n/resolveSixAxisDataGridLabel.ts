@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { SixAxisMetric } from '../types/scoring';
 import { resolveSixAxisChartLabel } from './resolveSixAxisChartLabel';
+import { resolveSixAxisInputShortLabel } from './resolveSixAxisInputShortLabel';
 
 export interface SixAxisDataGridLabelParts {
   chart: string;
@@ -18,7 +19,7 @@ export function resolveSixAxisDataGridLabelParts(
 ): SixAxisDataGridLabelParts {
   return {
     chart: resolveSixAxisChartLabel(t, metric),
-    inputShort: t(`axisLexicon.input.short.${metric}`, { ns: 'common' }),
+    inputShort: resolveSixAxisInputShortLabel(t, metric),
     code: t(`axisLexicon.output.code.${metric}`, { ns: 'common' }),
   };
 }

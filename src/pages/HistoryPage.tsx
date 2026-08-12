@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
+import { resolveSixAxisInputShortLabel } from '../i18n/resolveSixAxisInputShortLabel';
 import { SIX_AXIS_METRICS } from '../types/scoring';
 import { useHistoryStore } from '../stores/historyStore';
 
@@ -49,7 +50,7 @@ export default function HistoryPage() {
                   </th>
                   {SIX_AXIS_METRICS.map((m) => (
                     <th key={m} className="whitespace-nowrap px-1 py-2 font-normal">
-                      {t(`history.shortAxis.${m}`, { ns: 'common' })}
+                      {resolveSixAxisInputShortLabel(t, m)}
                     </th>
                   ))}
                   <th className="whitespace-nowrap px-2 py-2">

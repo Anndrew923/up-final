@@ -8,14 +8,6 @@
     "colActions": "Actions",
     "delete": "Delete",
     "deleteConfirm": "Are you sure you want to delete this snapshot? This action cannot be undone.",
-    "valueEmpty": "—",
-    "shortAxis": {
-      "strength": "Horsepower",
-      "explosivePower": "Torque",
-      "cardio": "Stint",
-      "muscleMass": "Exterior",
-      "bodyFat": "Displacement",
-      "gripStrength": "Traction"
-    }
+    "valueEmpty": "—"
   }
 }
