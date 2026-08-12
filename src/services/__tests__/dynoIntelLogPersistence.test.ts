@@ -3,6 +3,7 @@ import * as safeLocalStorage from '../../lib/safeLocalStorage';
 import {
   clearAllDynoIntelLogs,
   DYNO_INTEL_LOG_STORAGE_KEY_PREFIX,
+  hasAnyDynoIntelLogs,
   loadDynoIntelLogs,
   saveDynoIntelLogs,
 } from '../dynoIntelLogPersistence';
@@ -45,6 +46,12 @@ describe('dynoIntelLogPersistence', () => {
     saveDynoIntelLogs('user-a', [entry]);
     expect(loadDynoIntelLogs('user-a')).toEqual([entry]);
     expect(loadDynoIntelLogs('user-b')).toEqual([]);
+  });
+
+  it('hasAnyDynoIntelLogs returns true when a shard holds entries', () => {
+    expect(hasAnyDynoIntelLogs()).toBe(false);
+    saveDynoIntelLogs('user-a', [makeEntry('user-a')]);
+    expect(hasAnyDynoIntelLogs()).toBe(true);
   });
 
   it('filters invalid closingBeatKind on load', () => {

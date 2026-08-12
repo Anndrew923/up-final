@@ -6,6 +6,12 @@
       "scanning": "SCANNING...",
       "coreMax": "CORE_MAX"
     },
+    "triggerDiscovery": {
+      "cta": "TAP · INTEL",
+      "callout": "AI analyst lives here — tap to uplink",
+      "calloutDismiss": "Got it",
+      "calloutAria": "DYNO INTEL entry hint"
+    },
     "sheetTitle": "DYNO INTEL",
     "quotaLabel": "Daily uplink {{remaining}}/{{limit}}",
     "close": "Close",

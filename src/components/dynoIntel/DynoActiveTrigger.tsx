@@ -19,6 +19,7 @@ import {
   dynoIntelTriggerWillChange,
 } from '../../lib/dynoIntelTriggerMotion';
 import { hapticService } from '../../services/hapticService';
+import DynoIntelCalloutBubble from './DynoIntelCalloutBubble';
 import DynoIntelCrosshairIcon from './DynoIntelCrosshairIcon';
 
 export interface DynoActiveTriggerProps {
@@ -31,23 +32,34 @@ export interface DynoActiveTriggerProps {
   hidden?: boolean;
   /** Sink + fade the chip while the intel bottom sheet is open. */
   sheetOpen?: boolean;
+  /** When false, force expanded pill + verb CTA (first-run discovery). */
+  discovered?: boolean;
+  /** One-shot coachmark above the trigger — parent gates visibility (Home, !hidden). */
+  showCallout?: boolean;
+  onCalloutDismiss?: () => void;
 }
 
 const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
   onPress,
   hidden = false,
   sheetOpen = false,
+  discovered = true,
+  showCallout = false,
+  onCalloutDismiss,
 }) => {
   const { t } = useTranslation('common');
+  const discoveryMode = !discovered;
   const { label: tickerLabel, phase, reducedMotion } = useDynoIntelTriggerTicker({
     enabled: !hidden && !sheetOpen,
+    discoveryMode,
   });
   const motionOn = !reducedMotion;
   const [pressExpanded, setPressExpanded] = useState(false);
   const [compositorHint, setCompositorHint] = useState(false);
   const pressExpandTimerRef = useRef<number | null>(null);
 
-  const isExpanded = motionOn && (phase === 'scanning' || pressExpanded);
+  const isExpanded =
+    discoveryMode || (motionOn && (phase === 'scanning' || pressExpanded));
   const morphScaleX = dynoIntelTriggerMorphScaleX(isExpanded);
   const sink = dynoIntelTriggerSinkClasses(sheetOpen, reducedMotion);
 
@@ -85,7 +97,7 @@ const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
   const handleClick = useCallback(() => {
     if (sheetOpen) return;
     void hapticService.trigger('ack');
-    if (motionOn) {
+    if (motionOn && !discoveryMode) {
       clearPressExpandTimer();
       setPressExpanded(true);
       pressExpandTimerRef.current = window.setTimeout(() => {
@@ -94,7 +106,7 @@ const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
       }, DYNO_INTEL_TRIGGER_TICKER_INTERVAL_MS);
     }
     onPress();
-  }, [clearPressExpandTimer, motionOn, onPress, sheetOpen]);
+  }, [clearPressExpandTimer, discoveryMode, motionOn, onPress, sheetOpen]);
 
   if (hidden) return null;
 
@@ -110,10 +122,17 @@ const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
         paddingBottom: bottomChromeCalc(BOTTOM_CHROME_STACK_PX),
       }}
     >
-      <div className="flex h-9 w-28 justify-end">
+      <div className="relative flex h-9 w-28 flex-col items-end justify-end overflow-visible">
+        {showCallout && onCalloutDismiss ? (
+          <DynoIntelCalloutBubble onDismiss={onCalloutDismiss} />
+        ) : null}
         <button
           type="button"
-          aria-label={t('dynoIntel.triggerAria')}
+          aria-label={
+            discoveryMode
+              ? `${t('dynoIntel.triggerDiscovery.cta')} — ${t('dynoIntel.triggerAria')}`
+              : t('dynoIntel.triggerAria')
+          }
           aria-hidden={sheetOpen}
           tabIndex={sink.interactive ? 0 : -1}
           disabled={!sink.interactive}
@@ -165,7 +184,8 @@ const DynoActiveTrigger: FC<DynoActiveTriggerProps> = ({
             <span
               className={cn(
                 'absolute inset-x-0 z-[1] flex items-center justify-center px-3',
-                'font-mono text-[9px] font-semibold uppercase tracking-wider text-[#DFFF00] tabular-nums',
+                'font-mono font-semibold uppercase tracking-wider text-[#DFFF00] tabular-nums',
+                discoveryMode ? 'text-[8px] tracking-tight normal-case' : 'text-[9px]',
                 DYNO_INTEL_TRIGGER_CONTENT_TRANSITION,
                 dynoIntelTriggerTickerVisible(isExpanded),
               )}

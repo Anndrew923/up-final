@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { isLadderRoutePath, ROUTES } from '../../config/routes';
+import { isLadderRoutePath, isHomeRoutePath, ROUTES } from '../../config/routes';
 import { buildDynoIntelContext } from '../../logic/core/buildDynoIntelContext';
 import { enrichDynoIntelContextCardCopy } from '../../logic/core/enrichDynoIntelContextCardCopy';
 import { resolveDynoPaywallWeakestBrief } from '../../logic/core/dynoIntelPaywallBrief';
@@ -33,6 +33,7 @@ import DynoActiveTrigger from './DynoActiveTrigger';
 import DynoIntelBottomSheet, { type DynoIntelSheetView } from './DynoIntelBottomSheet';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import { useDynoIntelContextBuilder } from '../../hooks/useDynoIntelContextBuilder';
+import { useDynoIntelTriggerDiscovery } from '../../hooks/useDynoIntelTriggerDiscovery';
 
 const HIDDEN_TRIGGER_ROUTES = new Set<string>([ROUTES.authChoice, ROUTES.joinArena]);
 /** v2.4.2 — inference always cross-axis; route label is UI-only. */
@@ -47,6 +48,7 @@ const DynoIntelConsole = () => {
   const sheet = useDynoIntelSheet();
   const quota = useDynoIntelQuota();
   const buildRadarInput = useDynoIntelContextBuilder();
+  const { discovered, markDiscovered } = useDynoIntelTriggerDiscovery();
 
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
@@ -250,13 +252,26 @@ const DynoIntelConsole = () => {
   // WHY: Ladder floating rank / Join Arena own the bottom band —
   // hide Dyno Intel chip only (BottomNav + center hex stay). Calculators use in-flow CTAs.
   const hideTrigger =
-    isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);  return (
+    isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
+
+  const showCallout =
+    !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheet.open;
+
+  const handleTriggerPress = useCallback(() => {
+    if (!discovered) markDiscovered();
+    openSheetWithGate();
+  }, [discovered, markDiscovered, openSheetWithGate]);
+
+  return (
     <>
       <DynoActiveTrigger
         consoleLabel={consoleLabel}
-        onPress={openSheetWithGate}
+        onPress={handleTriggerPress}
         hidden={hideTrigger}
         sheetOpen={sheet.open}
+        discovered={discovered}
+        showCallout={showCallout}
+        onCalloutDismiss={markDiscovered}
       />
       <DynoIntelBottomSheet
         open={sheet.open}

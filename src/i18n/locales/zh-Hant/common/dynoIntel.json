@@ -6,6 +6,12 @@
       "scanning": "SCANNING...",
       "coreMax": "CORE_MAX"
     },
+    "triggerDiscovery": {
+      "cta": "點擊通電",
+      "callout": "AI 戰情分析在此 — 點擊通電",
+      "calloutDismiss": "知道了",
+      "calloutAria": "DYNO INTEL 入口提示"
+    },
     "sheetTitle": "DYNO INTEL",
     "quotaLabel": "今日通電額度 {{remaining}}/{{limit}}",
     "close": "關閉",

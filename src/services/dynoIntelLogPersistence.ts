@@ -55,6 +55,13 @@ export function saveDynoIntelLogs(uid: string, entries: DynoIntelLogEntry[]): bo
   return safeSetItem(storageKeyForUid(uid), JSON.stringify(enforceDynoIntelLogCap(entries)));
 }
 
+/** True when any uid shard holds at least one log — used for trigger discovery migration. */
+export function hasAnyDynoIntelLogs(): boolean {
+  return listStorageKeys()
+    .filter((key) => key.startsWith(`${DYNO_INTEL_LOG_STORAGE_KEY_PREFIX}:`))
+    .some((key) => safeParseLogs(safeGetItem(key)).length > 0);
+}
+
 /** Removes all per-uid dyno intel log shards — used on account/local wipe. */
 export function clearAllDynoIntelLogs(): void {
   listStorageKeys()

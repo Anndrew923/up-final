@@ -13,8 +13,8 @@ import {
   isLocalHistoryRecord,
   type LocalHistoryRecord,
 } from '../logic/core/localHistoryRecord';
+import { clearAllDynoIntelLogs, hasAnyDynoIntelLogs } from './dynoIntelLogPersistence';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
-import { clearAllDynoIntelLogs } from './dynoIntelLogPersistence';
 
 export { isLocalHistoryRecord, type LocalHistoryRecord } from '../logic/core/localHistoryRecord';
 
@@ -33,10 +33,14 @@ const STORAGE_KEYS = {
   armSizeInputs: 'up.armSizeInputs',
   somatotypeLabInputs: 'up.somatotypeLabInputs',
   bootSequenceCompleted: 'up:completed-boot-sequence',
+  dynoIntelTriggerDiscovered: 'up:dyno-intel-trigger-discovered',
 } as const;
 
 /** First-run spotlight onboarding — persisted across sessions. */
 export const BOOT_SEQUENCE_COMPLETED_KEY = STORAGE_KEYS.bootSequenceCompleted;
+
+/** DYNO INTEL floating trigger — discovery coachmark dismissed. */
+export const DYNO_INTEL_TRIGGER_DISCOVERED_KEY = STORAGE_KEYS.dynoIntelTriggerDiscovered;
 
 /** Same-tab/cross-tab: HUD & consumers can subscribe via `LOCAL_PROFILE_CHANGED_EVENT`. */
 export const PROFILE_STORAGE_KEY = STORAGE_KEYS.profile;
@@ -344,6 +348,23 @@ export function loadBootSequenceCompleted(): boolean {
 
 export function saveBootSequenceCompleted(completed: boolean): void {
   safeSetItem(BOOT_SEQUENCE_COMPLETED_KEY, completed ? '1' : '0');
+}
+
+export function loadDynoIntelTriggerDiscovered(): boolean {
+  return safeGetItem(DYNO_INTEL_TRIGGER_DISCOVERED_KEY) === '1';
+}
+
+export function saveDynoIntelTriggerDiscovered(discovered: boolean): void {
+  safeSetItem(DYNO_INTEL_TRIGGER_DISCOVERED_KEY, discovered ? '1' : '0');
+}
+
+/**
+ * Read-only discovery resolution — key first, then intel log shards (migration hint).
+ * WHY: Synchronous read avoids a discovery-mode flash before paint for returning intel users.
+ */
+export function resolveDynoIntelTriggerDiscovered(): boolean {
+  if (loadDynoIntelTriggerDiscovered()) return true;
+  return hasAnyDynoIntelLogs();
 }
 
 export function clearLocalData(): void {

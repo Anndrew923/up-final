@@ -11,7 +11,9 @@ import { DYNO_INTEL_CACHE_COLLECTION } from "../functions/shared/constants.js";
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const functionsDir = join(rootDir, "functions");
 const require = createRequire(join(functionsDir, "package.json"));
-const admin = require("firebase-admin");
+// WHY: firebase-admin v13+ is modular — legacy admin.firestore()/admin.apps are undefined.
+const { getApps, initializeApp } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 
 function loadEnvLocal() {
   const envPath = join(rootDir, "functions", ".env.local");
@@ -28,7 +30,7 @@ function loadEnvLocal() {
 }
 
 async function clearCollection(collectionName) {
-  const db = admin.firestore();
+  const db = getFirestore();
   const batchSize = 200;
   let deleted = 0;
 
@@ -56,8 +58,8 @@ async function main() {
     projectId = firebaserc?.projects?.default;
   }
 
-  if (!admin.apps.length) {
-    admin.initializeApp(projectId ? { projectId } : undefined);
+  if (getApps().length === 0) {
+    initializeApp(projectId ? { projectId } : undefined);
   }
 
   const deleted = await clearCollection(DYNO_INTEL_CACHE_COLLECTION);
