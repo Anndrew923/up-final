@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ScoreMap } from '../../types/scoring';
+import type { SomatotypeLabInputsPersisted } from '../../types/somatotypeLabInputs';
 
 const persistUnlockedBadgeUnion = vi.hoisted(() => vi.fn());
 const loadCardioInputs = vi.hoisted(() => vi.fn(() => null));
 const loadPowerInputs = vi.hoisted(() => vi.fn(() => null));
-const loadSomatotypeLabInputs = vi.hoisted(() => vi.fn(() => null));
+const loadSomatotypeLabInputs = vi.hoisted(() =>
+  vi.fn((): SomatotypeLabInputsPersisted | null => null)
+);
 const loadScores = vi.hoisted(() => vi.fn(() => ({})));
 const loadHistory = vi.hoisted(() => vi.fn(() => []));
 
