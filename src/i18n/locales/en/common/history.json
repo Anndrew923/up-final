@@ -8,6 +8,69 @@
     "colActions": "Actions",
     "delete": "Delete",
     "deleteConfirm": "Are you sure you want to delete this snapshot? This action cannot be undone.",
-    "valueEmpty": "—"
+    "valueEmpty": "—",
+    "footprint": {
+      "kicker": "LOCAL RHYTHM",
+      "title": "Dyno Rhythm",
+      "weeklyLabel": "This week",
+      "weeklyValue": "{{count}}/{{target}} sessions",
+      "lifetimeLabel": "Lifetime",
+      "lifetimeValue": "{{count}} days",
+      "monthLabel": "This month",
+      "monthAria": "Monthly dyno session matrix",
+      "weekdays": {
+        "mon": "M",
+        "tue": "T",
+        "wed": "W",
+        "thu": "T",
+        "fri": "F",
+        "sat": "S",
+        "sun": "S"
+      },
+      "levelEmpty": "{{date}} idle",
+      "levelTool": "{{date}} gym tool",
+      "levelArchive": "{{date}} snapshot archived",
+      "levelPr": "{{date}} personal record",
+      "legendTool": "Tool",
+      "legendArchive": "Archive",
+      "legendPr": "PR",
+      "toggleExpand": "Expand dyno rhythm",
+      "toggleCollapse": "Collapse dyno rhythm",
+      "collapsedWeekly": "This week {{count}}/{{target}}",
+      "collapsedLifetime": "Lifetime {{count}} days"
+    },
+    "badges": {
+      "rackTitle": "Spec Badges",
+      "rackAria": "Dyno spec badges",
+      "locked": "Locked",
+      "unlocked": "Unlocked",
+      "progress": "{{current}}/{{target}}",
+      "items": {
+        "IGN-01": {
+          "name": "First Ignition",
+          "desc": "Log your first attendance day and start the local dyno record."
+        },
+        "RUN-30": {
+          "name": "Break-in Complete",
+          "desc": "Reach 30 lifetime attendance days."
+        },
+        "CRS-04": {
+          "name": "Cruise Lock",
+          "desc": "Hit at least 3 sessions in 4 consecutive Mon–Sun weeks. If this week is not yet qualified, the streak starts from last week."
+        },
+        "HIST-10": {
+          "name": "Data Foundation",
+          "desc": "Store 10 six-axis snapshots in the local dyno log."
+        },
+        "PR-01": {
+          "name": "First Break",
+          "desc": "Reach personal-record intensity on any attendance day."
+        },
+        "SPEC-6": {
+          "name": "Six-Axis Live",
+          "desc": "All six assessment scores are greater than 0 (arm size excluded)."
+        }
+      }
+    }
   }
 }

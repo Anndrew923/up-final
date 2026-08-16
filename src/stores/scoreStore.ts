@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import type { ScoreMap } from '../types/scoring';
+import { resolveAssessmentFootprintLevel } from '../logic/core/trainingFootprint';
 import { calculateSixAxisOverall, clampScoreMapValue } from '../logic/core/scoring';
-import { loadScores, saveScores } from '../services/localStorageService';
+import { loadHistory, loadScores, saveScores } from '../services/localStorageService';
+import { recordTrainingFootprint } from '../services/trainingFootprintService';
 import { buildWidgetSnapshot, saveWidgetSnapshot } from '../services/widgetSnapshotService';
 
 function persistWidgetSnapshot(scores: ScoreMap, overallScore: number): void {
@@ -30,10 +32,19 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
   overallScore: initialOverall,
   setScore(metric, value) {
     set((state) => {
-      const nextScores = { ...state.scores, [metric]: clampScoreMapValue(value) };
+      const nextValue = clampScoreMapValue(value);
+      const nextScores = { ...state.scores, [metric]: nextValue };
       const overallScore = calculateSixAxisOverall(nextScores);
+      const history = loadHistory();
       saveScores(nextScores);
       persistWidgetSnapshot(nextScores, overallScore);
+      // WHY: Single-axis persist is a local archive (L2); beating history/live max is a PR (L3).
+      // Bulk `setScores` (cloud restore) must not call this path.
+      recordTrainingFootprint(
+        resolveAssessmentFootprintLevel(metric, nextValue, state.scores[metric], history),
+        new Date(),
+        { scores: nextScores, historyLength: history.length }
+      );
       return { scores: nextScores, overallScore };
     });
   },

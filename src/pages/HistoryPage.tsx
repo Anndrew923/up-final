@@ -1,19 +1,31 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import HistoryFootprintDashboard from '../components/history/HistoryFootprintDashboard';
 import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
 import { resolveSixAxisInputShortLabel } from '../i18n/resolveSixAxisInputShortLabel';
+import { useHistoryRhythmExpanded } from '../hooks/useHistoryRhythmExpanded';
+import { useTrainingFootprint } from '../hooks/useTrainingFootprint';
+import { persistUnlockedBadgeUnion } from '../services/trainingFootprintService';
 import { SIX_AXIS_METRICS } from '../types/scoring';
 import { useHistoryStore } from '../stores/historyStore';
+import { useScoreStore } from '../stores/scoreStore';
 
 export default function HistoryPage() {
   const { t, i18n } = useTranslation();
   const records = useHistoryStore((s) => s.records);
   const loadLocalHistory = useHistoryStore((s) => s.loadLocalHistory);
   const removeHistoryRecord = useHistoryStore((s) => s.removeHistoryRecord);
+  const scores = useScoreStore((s) => s.scores);
+  const footprint = useTrainingFootprint();
+  const { expanded: rhythmExpanded, toggle: toggleRhythm } = useHistoryRhythmExpanded();
 
   useEffect(() => {
     loadLocalHistory();
   }, [loadLocalHistory]);
+
+  useEffect(() => {
+    persistUnlockedBadgeUnion({ scores, historyLength: records.length });
+  }, [scores, records.length]);
 
   const handleRemoveRecord = (id: string) => {
     if (!window.confirm(t('history.deleteConfirm', { ns: 'common' }))) return;
@@ -31,6 +43,14 @@ export default function HistoryPage() {
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">
             {t('history.title', { ns: 'common' })}
           </h1>
+        </div>
+
+        <div className="border-b border-zinc-800 px-5 py-4 md:px-8">
+          <HistoryFootprintDashboard
+            {...footprint}
+            expanded={rhythmExpanded}
+            onToggle={toggleRhythm}
+          />
         </div>
 
         <div className="overflow-x-auto px-3 py-4 md:px-6">

@@ -4,7 +4,7 @@
 import { getAuth } from "firebase-admin/auth";
 import { getStorage } from "firebase-admin/storage";
 import {
-  KNOWN_LEADERBOARD_SHARD_IDS,
+  erasureLeaderboardShardIds,
   LADDER_AVATARS_STORAGE_PREFIX,
 } from "../shared/constants.js";
 import { db } from "../shared/admin.js";
@@ -63,7 +63,7 @@ export async function deleteLadderPublicData(uid, opts = {}) {
   }
 
   const entryRefs = [];
-  for (const metric of KNOWN_LEADERBOARD_SHARD_IDS) {
+  for (const metric of erasureLeaderboardShardIds()) {
     entryRefs.push(
       db.collection("leaderboards").doc(metric).collection("entries").doc(uid)
     );

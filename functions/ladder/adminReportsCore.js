@@ -3,7 +3,7 @@ import { FieldValue, db } from "../shared/admin.js";
 import { assertAdmin } from "../shared/assertAdmin.js";
 import {
   ADMIN_ACTIONS_COLLECTION,
-  KNOWN_LEADERBOARD_SHARD_IDS,
+  erasureLeaderboardShardIds,
   LEADERBOARD_PREVIEWS_COLLECTION,
   LEADERBOARDS_COLLECTION,
   ENTRIES_SUBCOLLECTION,
@@ -133,7 +133,7 @@ export async function sanitizeLadderIdentityForReport({ targetUid, type, reportI
 
   const previewRef = db.collection(LEADERBOARD_PREVIEWS_COLLECTION).doc(targetUid);
   const entryRefs = [];
-  for (const metric of KNOWN_LEADERBOARD_SHARD_IDS) {
+  for (const metric of erasureLeaderboardShardIds()) {
     entryRefs.push(
       db
         .collection(LEADERBOARDS_COLLECTION)

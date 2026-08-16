@@ -12,6 +12,7 @@ import { useOneRmCalculatorPage } from '../hooks/useOneRmCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
 import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
+import { recordTrainingFootprint } from '../services/trainingFootprintService';
 
 const OneRmCalculatorPage: FC = () => {
   const { t } = useTranslation('common');
@@ -51,7 +52,10 @@ const OneRmCalculatorPage: FC = () => {
     if (!canCalculate) return;
     const snapshot: ToolResultModalOneRmPayload = { oneRmKg: estimatedOneRmKg };
     const opened = await reveal(estimatedOneRmKg, canCalculate);
-    if (opened) setModalPayload(snapshot);
+    if (opened) {
+      recordTrainingFootprint(1);
+      setModalPayload(snapshot);
+    }
   }, [canCalculate, estimatedOneRmKg, reveal]);
 
   const handleCloseModal = useCallback(() => {

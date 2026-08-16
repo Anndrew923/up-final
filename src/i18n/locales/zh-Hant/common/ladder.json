@@ -172,10 +172,6 @@
         "label": "總戰力",
         "desc": "綜合天梯分"
       },
-      "stats_totalLoginDays": {
-        "label": "累積登入",
-        "desc": "登入天數榜"
-      },
       "stats_sbdTotal": {
         "label": "力量",
         "desc": "三項／五項／單項 — 選細項"

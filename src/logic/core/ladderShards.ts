@@ -7,10 +7,12 @@
  * so existing documents keep resolving without a one-off migration.
  */
 
-/** Matches `LadderDivisionSelector.jsx` DIVISION_OPTIONS order (plus `stats_grip` for UP grip axis). */
+/**
+ * Public filter tabs (UI source of truth). Login-days is not a live ranking metric.
+ * Order follows fitness `DIVISION_OPTIONS` minus that tab, plus `stats_grip`.
+ */
 export const FITNESS_LADDER_DIVISION_IDS = [
   'ladderScore',
-  'stats_totalLoginDays',
   'stats_sbdTotal',
   'stats_bodyFat',
   'stats_cooper',
@@ -29,12 +31,11 @@ export type LadderDivisionId = (typeof LADDER_DIVISION_IDS)[number];
 export const LADDER_PROJECT_NONE = '__none__' as const;
 
 /**
- * Every allowed Firestore `leaderboards/{shardId}/entries` segment.
- * Keep in sync with `getLeaderboardShardId` and Firestore rules allow-pattern.
+ * Every allowed Firestore `leaderboards/{shardId}/entries` segment for live writes.
+ * Keep in sync with `getLeaderboardShardId` and `functions/shared/constants.js`.
  */
 export const KNOWN_LEADERBOARD_SHARD_IDS = [
   'ladderScore',
-  'totalLoginDays',
   'strength',
   'strength_totalFive',
   'strength_squat',
@@ -81,7 +82,6 @@ export function getDefaultProjectForDivision(division: LadderDivisionId): string
     case 'stats_grip':
       return 'grip';
     case 'ladderScore':
-    case 'stats_totalLoginDays':
     case 'armSize':
       return LADDER_PROJECT_NONE;
   }
@@ -131,7 +131,6 @@ export function getProjectOptionsForDivision(
     case 'stats_grip':
       return [{ value: 'grip', labelKey: 'ladder.project.grip' }] as const;
     case 'ladderScore':
-    case 'stats_totalLoginDays':
     case 'armSize':
       return [];
   }
@@ -155,8 +154,6 @@ export function getLeaderboardShardId(
   switch (division) {
     case 'ladderScore':
       return 'ladderScore';
-    case 'stats_totalLoginDays':
-      return 'totalLoginDays';
     case 'armSize':
       return 'armSize';
     case 'stats_grip':

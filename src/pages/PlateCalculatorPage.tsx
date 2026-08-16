@@ -11,6 +11,7 @@ import { usePlateCalculatorPage } from '../hooks/usePlateCalculatorPage';
 import { useToolResultReveal } from '../hooks/useToolResultReveal';
 import { useUnit } from '../hooks/useUnit';
 import { onInputEnterKey, scrollFocusedInputIntoView } from '../lib/formKeyboard';
+import { recordTrainingFootprint } from '../services/trainingFootprintService';
 
 const PlateCalculatorPage: FC = () => {
   const { t } = useTranslation('common');
@@ -49,7 +50,10 @@ const PlateCalculatorPage: FC = () => {
       leftover: leftoverDisplay,
     };
     const opened = await reveal(perSideDisplay, canCalculate);
-    if (opened) setModalPayload(snapshot);
+    if (opened) {
+      recordTrainingFootprint(1);
+      setModalPayload(snapshot);
+    }
   }, [
     canCalculate,
     isExactMatch,

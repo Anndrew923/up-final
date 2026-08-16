@@ -22,4 +22,16 @@ describe('ladder shard whitelist parity (client vs functions)', () => {
 
     expect(clientIds).toEqual(serverIds);
   });
+
+  it('keeps legacy orphan shards out of the live write whitelist', () => {
+    const constantsPath = resolve(process.cwd(), 'functions/shared/constants.js');
+    const source = readFileSync(constantsPath, 'utf8');
+    const match = source.match(/LEGACY_ORPHAN_SHARD_IDS = \[([\s\S]*?)\]/);
+    expect(match, 'Could not parse LEGACY_ORPHAN_SHARD_IDS').not.toBeNull();
+    const orphans = [...match![1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    expect(orphans).toContain('totalLoginDays');
+    for (const id of orphans) {
+      expect(KNOWN_LEADERBOARD_SHARD_IDS).not.toContain(id);
+    }
+  });
 });

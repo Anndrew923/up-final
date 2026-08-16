@@ -6,7 +6,7 @@ export const FULL_SYNC_COOLDOWN_MS = 90 * 60 * 1000;
 export const FULL_SYNC_MAX_PER_DAY = 3;
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 /**
- * WHY: Score-equal nickname/avatar fan-out across ~23 shards is write-heavy;
+ * WHY: Score-equal nickname/avatar fan-out across every live shard is write-heavy;
  * one wave per day plus a short grace covers a single sync-all.
  */
 export const IDENTITY_FANOUT_DEBOUNCE_MS = 24 * 60 * 60 * 1000;
@@ -28,7 +28,6 @@ export const SCORE_AXIS_MAX = 200;
 /** Mirror `KNOWN_LEADERBOARD_SHARD_IDS` in `src/logic/core/ladderShards.ts`. */
 export const KNOWN_LEADERBOARD_SHARD_IDS = new Set([
   "ladderScore",
-  "totalLoginDays",
   "strength",
   "strength_totalFive",
   "strength_squat",
@@ -51,6 +50,17 @@ export const KNOWN_LEADERBOARD_SHARD_IDS = new Set([
   "gripStrength",
   "armSize",
 ]);
+
+/**
+ * WHY: Delisted from live UI/Callable writes, but leftover
+ * `leaderboards/{id}/entries/{uid}` must still be traversed on delete/sanitize.
+ */
+export const LEGACY_ORPHAN_SHARD_IDS = ["totalLoginDays"];
+
+/** Live whitelist + orphans — Admin SDK erasure/sanitize only, never Callable writes. */
+export function erasureLeaderboardShardIds() {
+  return [...new Set([...KNOWN_LEADERBOARD_SHARD_IDS, ...LEGACY_ORPHAN_SHARD_IDS])];
+}
 
 export const SIX_AXIS_METRICS = [
   "strength",

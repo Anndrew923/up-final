@@ -172,10 +172,6 @@
         "label": "All Zones",
         "desc": "Composite ladder score"
       },
-      "stats_totalLoginDays": {
-        "label": "Login Days",
-        "desc": "Cumulative check-ins"
-      },
       "stats_sbdTotal": {
         "label": "Strength",
         "desc": "SBD + accessories — pick sub-ranking"

@@ -6,6 +6,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n';
 import { resolveSixAxisInputShortLabel } from '../../i18n/resolveSixAxisInputShortLabel';
 import type { LocalHistoryRecord } from '../../logic/core/localHistoryRecord';
+import { HISTORY_TI_PLATE_GRAD_ID } from '../../components/history/TitaniumBadgeDefs';
+import { WEEKLY_RHYTHM_TARGET } from '../../logic/core/trainingFootprint';
 import { SIX_AXIS_METRICS } from '../../types/scoring';
 import HistoryPage from '../HistoryPage';
 
@@ -49,7 +51,7 @@ function renderHistoryPage(): { container: HTMLDivElement; root: Root } {
   return { container, root };
 }
 
-describe('HistoryPage axis table headers', () => {
+describe('HistoryPage', () => {
   beforeAll(async () => {
     await i18n.changeLanguage('zh-Hant');
   });
@@ -75,6 +77,35 @@ describe('HistoryPage axis table headers', () => {
     expect(headerText).not.toContain('馬力');
     expect(headerText).not.toContain('車體外觀');
     expect(headerText).not.toContain('引擎排量');
+
+    act(() => root.unmount());
+  });
+
+  it('keeps dyno rhythm collapsed by default and reveals the matrix after expand', async () => {
+    const { container, root } = renderHistoryPage();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const rhythmToggle = container.querySelector('#history-rhythm-toggle');
+    const rhythmPanel = container.querySelector('#history-rhythm-panel');
+    expect(rhythmToggle?.textContent).toContain(`本週 0/${WEEKLY_RHYTHM_TARGET}`);
+    expect(rhythmToggle?.textContent).toContain('累積 0 天');
+    expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('true');
+
+    act(() => {
+      (rhythmToggle as HTMLButtonElement).click();
+    });
+
+    expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('true');
+    expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('false');
+    expect(container.textContent).toContain('規格銘牌');
+    expect(container.querySelector('[aria-label="本月測功點陣"]')).not.toBeNull();
+    expect(container.querySelector(`#${HISTORY_TI_PLATE_GRAD_ID}`)).not.toBeNull();
+    expect(container.textContent).toContain('IGN-01');
+    expect(container.textContent).toContain('SPEC-6');
 
     act(() => root.unmount());
   });

@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FITNESS_LADDER_DIVISION_IDS,
   getDefaultProjectForDivision,
   getLeaderboardShardId,
   getProjectOptionsForDivision,
   isValidLeaderboardShardId,
+  LADDER_DIVISION_IDS,
 } from '../ladderShards';
 
 describe('ladderShards', () => {
+  it('omits login-days from public division tabs', () => {
+    expect(FITNESS_LADDER_DIVISION_IDS).not.toContain('stats_totalLoginDays');
+    expect(LADDER_DIVISION_IDS).not.toContain('stats_totalLoginDays');
+    expect(LADDER_DIVISION_IDS[0]).toBe('ladderScore');
+  });
+
   it('maps fitness strength subdivisions to shard ids (legacy total → strength)', () => {
     expect(getLeaderboardShardId('stats_sbdTotal', 'total')).toBe('strength');
     expect(getLeaderboardShardId('stats_sbdTotal', 'total_five')).toBe('strength_totalFive');
@@ -43,7 +51,6 @@ describe('ladderShards', () => {
 
   it('resolves meta divisions and grip extension', () => {
     expect(getLeaderboardShardId('ladderScore', '__none__')).toBe('ladderScore');
-    expect(getLeaderboardShardId('stats_totalLoginDays', '__none__')).toBe('totalLoginDays');
     expect(getLeaderboardShardId('armSize', '__none__')).toBe('armSize');
     expect(getLeaderboardShardId('stats_grip', 'grip')).toBe('gripStrength');
   });
@@ -51,6 +58,7 @@ describe('ladderShards', () => {
   it('validates known shard ids', () => {
     expect(isValidLeaderboardShardId('strength_squat')).toBe(true);
     expect(isValidLeaderboardShardId('bogus')).toBe(false);
+    expect(isValidLeaderboardShardId('totalLoginDays')).toBe(false);
   });
 
   it('defaults projects per division', () => {
