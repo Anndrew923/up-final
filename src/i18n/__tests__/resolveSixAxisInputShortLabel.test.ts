@@ -4,6 +4,11 @@ import { SIX_AXIS_METRICS } from '../../types/scoring';
 import { zhHantCommon } from '../locales/common';
 import { resolveSixAxisInputShortLabel } from '../resolveSixAxisInputShortLabel';
 
+type AxisLexiconBundle = {
+  input: { short: Record<string, string> };
+  output: { full: Record<string, string> };
+};
+
 describe('resolveSixAxisInputShortLabel', () => {
   beforeAll(async () => {
     await i18n.changeLanguage('zh-Hant');
@@ -18,9 +23,10 @@ describe('resolveSixAxisInputShortLabel', () => {
 
   it.each(SIX_AXIS_METRICS)('zh-Hant %s stays on input.short track, not output.full', (metric) => {
     const t = i18n.getFixedT('zh-Hant', 'common');
+    const lexicon = zhHantCommon.axisLexicon as AxisLexiconBundle;
     const inputLabel = resolveSixAxisInputShortLabel(t, metric);
-    const outputLabel = zhHantCommon.axisLexicon.output.full[metric];
-    expect(inputLabel).toBe(zhHantCommon.axisLexicon.input.short[metric]);
+    const outputLabel = lexicon.output.full[metric];
+    expect(inputLabel).toBe(lexicon.input.short[metric]);
     expect(inputLabel).not.toBe(outputLabel);
   });
 });
