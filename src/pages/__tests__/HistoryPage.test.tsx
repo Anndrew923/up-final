@@ -56,8 +56,9 @@ describe('HistoryPage', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     document.body.innerHTML = '';
+    await i18n.changeLanguage('zh-Hant');
   });
 
   it('renders fitness-science axis headers, not mechanical output labels', async () => {
@@ -90,8 +91,12 @@ describe('HistoryPage', () => {
 
     const rhythmToggle = container.querySelector('#history-rhythm-toggle');
     const rhythmPanel = container.querySelector('#history-rhythm-panel');
+    expect(rhythmToggle?.textContent).toContain('測功節奏');
     expect(rhythmToggle?.textContent).toContain(`本週 0/${WEEKLY_RHYTHM_TARGET}`);
     expect(rhythmToggle?.textContent).toContain('累積 0 天');
+    expect(rhythmToggle?.textContent).toContain('展開測功節奏');
+    expect(rhythmToggle?.className).toContain('rounded-lg');
+    expect(rhythmToggle?.getAttribute('aria-label')).toBeNull();
     expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('false');
     expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('true');
 
@@ -101,11 +106,35 @@ describe('HistoryPage', () => {
 
     expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('true');
     expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('false');
+    expect(rhythmToggle?.textContent).not.toContain(`本週 0/${WEEKLY_RHYTHM_TARGET}`);
     expect(container.textContent).toContain('規格銘牌');
     expect(container.querySelector('[aria-label="本月測功點陣"]')).not.toBeNull();
     expect(container.querySelector(`#${HISTORY_TI_PLATE_GRAD_ID}`)).not.toBeNull();
     expect(container.textContent).toContain('IGN-01');
     expect(container.textContent).toContain('SPEC-6');
+
+    act(() => root.unmount());
+  });
+
+  it('keeps the English dyno rhythm title fully visible above pills', async () => {
+    await i18n.changeLanguage('en');
+    const { container, root } = renderHistoryPage();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const rhythmToggle = container.querySelector('#history-rhythm-toggle');
+    const titleEl = Array.from(rhythmToggle?.querySelectorAll('span') ?? []).find(
+      (node) => node.textContent === 'Dyno Rhythm'
+    );
+
+    expect(titleEl?.textContent).toBe('Dyno Rhythm');
+    expect(titleEl?.className).toContain('whitespace-nowrap');
+    expect(titleEl?.className).not.toContain('truncate');
+    expect(rhythmToggle?.className).toContain('flex-col');
+    expect(rhythmToggle?.textContent).toContain(`This week 0/${WEEKLY_RHYTHM_TARGET}`);
+    expect(rhythmToggle?.textContent).toContain('Lifetime 0 days');
 
     act(() => root.unmount());
   });
