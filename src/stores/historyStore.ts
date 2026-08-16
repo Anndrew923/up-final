@@ -7,6 +7,7 @@ import {
   type LocalHistoryRecord,
 } from '../services/localStorageService';
 import { scheduleStructuredHistoryPushAfterLocalAppend } from '../services/structuredHistoryPushSchedule';
+import { snapshotSpecBadgeDeriveInput } from '../services/specBadgeDeriveSnapshot';
 import { recordTrainingFootprint } from '../services/trainingFootprintService';
 import { useEntitlementStore } from './entitlementStore';
 
@@ -27,10 +28,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
     const updated = appendHistory(record);
     set({ records: updated });
     // WHY: Snapshot archive is the explicit L2 ritual; Pro history push stays independent.
-    recordTrainingFootprint(2, new Date(), {
-      scores: loadScores(),
-      historyLength: updated.length,
-    });
+    recordTrainingFootprint(2, new Date(), snapshotSpecBadgeDeriveInput(loadScores(), updated.length));
     const ent = useEntitlementStore.getState();
     scheduleStructuredHistoryPushAfterLocalAppend(ent, record);
   },

@@ -3,6 +3,7 @@ import type { ScoreMap } from '../types/scoring';
 import { resolveAssessmentFootprintLevel } from '../logic/core/trainingFootprint';
 import { calculateSixAxisOverall, clampScoreMapValue } from '../logic/core/scoring';
 import { loadHistory, loadScores, saveScores } from '../services/localStorageService';
+import { snapshotSpecBadgeDeriveInput } from '../services/specBadgeDeriveSnapshot';
 import { recordTrainingFootprint } from '../services/trainingFootprintService';
 import { buildWidgetSnapshot, saveWidgetSnapshot } from '../services/widgetSnapshotService';
 
@@ -43,7 +44,7 @@ export const useScoreStore = create<ScoreStore>((set, get) => ({
       recordTrainingFootprint(
         resolveAssessmentFootprintLevel(metric, nextValue, state.scores[metric], history),
         new Date(),
-        { scores: nextScores, historyLength: history.length }
+        snapshotSpecBadgeDeriveInput(nextScores, history.length)
       );
       return { scores: nextScores, overallScore };
     });

@@ -40,8 +40,10 @@
       "collapsedLifetime": "累積 {{count}} 天"
     },
     "badges": {
-      "rackTitle": "規格銘牌",
-      "rackAria": "測功規格銘牌",
+      "rackTitle": "機體規格",
+      "rackAria": "測功機體規格銘牌",
+      "optionalRackTitle": "專項選配",
+      "optionalRackAria": "測功專項選配銘牌",
       "locked": "未解鎖",
       "unlocked": "已解鎖",
       "progress": "{{current}}/{{target}}",
@@ -81,6 +83,18 @@
         "SPEC-6": {
           "name": "全軸通電",
           "desc": "六軸評測分數皆大於 0（不含臂圍）。"
+        },
+        "ARM-01": {
+          "name": "圍度入庫",
+          "desc": "完成本機臂圍評測並寫入有效分數。選配規格，不計入六軸雷達。"
+        },
+        "5K-01": {
+          "name": "五公里完賽",
+          "desc": "本機寫入一筆有效 5 公里完賽時間。選配專項，不取代有氧雷達軸。"
+        },
+        "SPR-01": {
+          "name": "百米起跑",
+          "desc": "本機寫入一筆有效 100 公尺秒數。選配專項，不填入爆發力雷達軸。"
         }
       }
     }

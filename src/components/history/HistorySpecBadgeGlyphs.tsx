@@ -117,6 +117,30 @@ export function HistorySpecBadgeGlyph({ id }: { id: TrainingFootprintBadgeId }):
           ))}
         </>
       );
+    case 'ARM-01':
+      return (
+        <>
+          <path d="M3.6 8.4 H9.2 L10.4 6.6 H13.6 L14.8 8.4 H20.4" strokeWidth="1.2" strokeLinejoin="round" />
+          <path d="M9.2 8.4 V17.6 H14.8 V8.4" strokeWidth="1.15" />
+          <path d="M4.2 12 H8.4 M15.6 12 H19.8" strokeWidth="1.15" strokeLinecap="round" />
+          <path d="M6.2 10.4 V13.6 M17.8 10.4 V13.6" strokeWidth="1.1" />
+        </>
+      );
+    case '5K-01':
+      return (
+        <>
+          <path d="M3.6 16.8 L7.2 11.4 L10.6 13.2 L14.4 6.8 L17.6 9.2 L20.6 5.2" strokeWidth="1.2" strokeLinejoin="round" />
+          <path d="M3.8 18.6 Q 7.4 16.2 10.8 17.4 Q 14.6 18.8 20.4 15.2" strokeWidth="1.1" />
+        </>
+      );
+    case 'SPR-01':
+      return (
+        <>
+          <path d="M4.2 18.4 L7.6 18.4 L9.2 14.8 L6.4 14.8 Z" strokeWidth="1.15" strokeLinejoin="round" />
+          <path d="M9.2 14.8 L12.4 9.2" strokeWidth="1.15" strokeLinecap="round" />
+          <path d="M12.2 8.2 L16.8 5.4 L15.4 9.6 L20.2 7.2 L16.2 12.4 L19.6 11.2" strokeWidth="1.2" strokeLinejoin="round" />
+        </>
+      );
     default: {
       const _never: never = id;
       return _never;

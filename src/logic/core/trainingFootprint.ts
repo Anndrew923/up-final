@@ -8,8 +8,8 @@ export const FOOTPRINT_RETENTION_MONTHS = 18;
 
 export type FootprintLevel = 1 | 2 | 3;
 
-/** Catalog IDs persisted on the footprint blob so 18-month prune cannot relock. */
-export const TRAINING_FOOTPRINT_BADGE_IDS = [
+/** Core 3×3 attendance / six-axis catalog. */
+export const CORE_SPEC_BADGE_IDS = [
   'IGN-01',
   'ARC-01',
   'RHY-03',
@@ -21,7 +21,22 @@ export const TRAINING_FOOTPRINT_BADGE_IDS = [
   'SPEC-6',
 ] as const;
 
+/** Optional specialty catalog (arm / 5 km / 100 m). */
+export const OPTIONAL_SPEC_BADGE_IDS = ['ARM-01', '5K-01', 'SPR-01'] as const;
+
+/** Catalog IDs persisted on the footprint blob so 18-month prune cannot relock. */
+export const TRAINING_FOOTPRINT_BADGE_IDS = [
+  ...CORE_SPEC_BADGE_IDS,
+  ...OPTIONAL_SPEC_BADGE_IDS,
+] as const;
+
+export type CoreSpecBadgeId = (typeof CORE_SPEC_BADGE_IDS)[number];
+export type OptionalSpecBadgeId = (typeof OPTIONAL_SPEC_BADGE_IDS)[number];
 export type TrainingFootprintBadgeId = (typeof TRAINING_FOOTPRINT_BADGE_IDS)[number];
+
+export function isOptionalSpecBadgeId(id: string): id is OptionalSpecBadgeId {
+  return (OPTIONAL_SPEC_BADGE_IDS as readonly string[]).includes(id);
+}
 
 export interface TrainingFootprintState {
   schemaVersion: typeof FOOTPRINT_SCHEMA_VERSION;

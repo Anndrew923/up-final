@@ -16,6 +16,7 @@ import {
   BADGE_RUN_IN_DAYS,
   countConsecutiveQualifiedWeeks,
   deriveUnlockedBadges,
+  resolveRun5KmFinishSeconds,
 } from '../trainingFootprintBadges';
 import type { ScoreMap } from '../../../types/scoring';
 
@@ -275,6 +276,63 @@ describe('trainingFootprintBadges', () => {
       historyLength: 0,
     });
     expect(live.find((row) => row.id === 'SPEC-6')?.unlocked).toBe(true);
+  });
+
+  it('unlocks ARM-01 from a positive arm-size score, not from six-axis fill', () => {
+    const empty = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: { ...SIX_LIVE },
+      historyLength: 0,
+    });
+    expect(empty.find((row) => row.id === 'ARM-01')).toMatchObject({
+      unlocked: false,
+      current: 0,
+      target: 1,
+    });
+    const armed = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: { armSize: 40 },
+      historyLength: 0,
+    });
+    expect(armed.find((row) => row.id === 'ARM-01')?.unlocked).toBe(true);
+  });
+
+  it('unlocks 5K-01 and SPR-01 from specialty raw, not radar axes', () => {
+    const locked = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: { cardio: 90, explosivePower: 90 },
+      historyLength: 0,
+    });
+    expect(locked.find((row) => row.id === '5K-01')?.unlocked).toBe(false);
+    expect(locked.find((row) => row.id === 'SPR-01')?.unlocked).toBe(false);
+
+    const specialty = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: {},
+      historyLength: 0,
+      run5KmTotalSeconds: 1350,
+      sprintSeconds: 14,
+    });
+    expect(specialty.find((row) => row.id === '5K-01')?.unlocked).toBe(true);
+    expect(specialty.find((row) => row.id === 'SPR-01')?.unlocked).toBe(true);
+  });
+
+  it('resolves 5 km finish seconds from split fields when totalSeconds is missing', () => {
+    expect(resolveRun5KmFinishSeconds(undefined)).toBeNull();
+    expect(resolveRun5KmFinishSeconds({ totalSeconds: 0 })).toBeNull();
+    expect(resolveRun5KmFinishSeconds({ totalSeconds: 1350 })).toBe(1350);
+    expect(resolveRun5KmFinishSeconds({ minutes: 22, seconds: 30 })).toBe(1350);
+    expect(resolveRun5KmFinishSeconds({ minutes: 0, seconds: 0 })).toBeNull();
+  });
+
+  it('keeps optional spec badges unlocked after raw is cleared (monotonic)', () => {
+    const views = deriveUnlockedBadges(
+      footprint({
+        days: {},
+        lifetimeDays: 1,
+        unlockedBadgeIds: ['ARM-01', '5K-01', 'SPR-01'],
+      }),
+      { scores: {}, historyLength: 0 }
+    );
+    expect(views.find((row) => row.id === 'ARM-01')?.unlocked).toBe(true);
+    expect(views.find((row) => row.id === '5K-01')?.unlocked).toBe(true);
+    expect(views.find((row) => row.id === 'SPR-01')?.unlocked).toBe(true);
   });
 
   it('parses unknown badge ids out and keeps catalog order', () => {

@@ -40,8 +40,10 @@
       "collapsedLifetime": "Lifetime {{count}} days"
     },
     "badges": {
-      "rackTitle": "Spec Badges",
-      "rackAria": "Dyno spec badges",
+      "rackTitle": "Standard Spec",
+      "rackAria": "Standard dyno spec badges",
+      "optionalRackTitle": "Optional Spec",
+      "optionalRackAria": "Optional specialty spec badges",
       "locked": "Locked",
       "unlocked": "Unlocked",
       "progress": "{{current}}/{{target}}",
@@ -81,6 +83,18 @@
         "SPEC-6": {
           "name": "Six-Axis Live",
           "desc": "All six assessment scores are greater than 0 (arm size excluded)."
+        },
+        "ARM-01": {
+          "name": "Girth Logged",
+          "desc": "Store a valid arm-size score locally. Optional spec — not part of the six-axis radar."
+        },
+        "5K-01": {
+          "name": "5K Finish",
+          "desc": "Store a valid 5 km finish time locally. Optional specialty — does not replace the cardio radar axis."
+        },
+        "SPR-01": {
+          "name": "100 m Start",
+          "desc": "Store a valid 100 m sprint time locally. Optional specialty — does not fill the explosive radar axis."
         }
       }
     }

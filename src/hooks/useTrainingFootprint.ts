@@ -4,6 +4,7 @@ import {
   deriveUnlockedBadges,
   type TrainingFootprintPanelView,
 } from '../logic/core/trainingFootprintBadges';
+import { snapshotSpecBadgeDeriveInput } from '../services/specBadgeDeriveSnapshot';
 import {
   loadTrainingFootprint,
   subscribeTrainingFootprint,
@@ -22,7 +23,7 @@ export function useTrainingFootprint(): TrainingFootprintPanelView {
 
   const dashboard = useMemo(() => deriveFootprintDashboard(state), [state]);
   const badges = useMemo(
-    () => deriveUnlockedBadges(state, { scores, historyLength }),
+    () => deriveUnlockedBadges(state, snapshotSpecBadgeDeriveInput(scores, historyLength)),
     [state, scores, historyLength]
   );
 

@@ -2,7 +2,7 @@
  * Local spec-badge derivation. WHY: unlocks must stay device-local (no Firestore)
  * and monotonic — once an ID is on the footprint blob, heatmap prune cannot relock it.
  */
-import { countCoreSixFilled } from './scoring';
+import { clampScoreMapValue, countCoreSixFilled } from './scoring';
 import {
   TRAINING_FOOTPRINT_BADGE_IDS,
   WEEKLY_RHYTHM_TARGET,
@@ -26,6 +26,10 @@ const BADGE_CRUISE_SCAN_WEEKS = 200;
 export interface SpecBadgeDeriveInput {
   scores: ScoreMap;
   historyLength: number;
+  /** Device-local 5 km finish time (seconds). Specialty raw — not the cardio radar axis. */
+  run5KmTotalSeconds?: number | null;
+  /** Device-local 100 m sprint time (seconds). Specialty raw — not the explosive radar axis. */
+  sprintSeconds?: number | null;
 }
 
 export interface SpecBadgeView {
@@ -70,6 +74,42 @@ function hasLevelThreeDay(days: TrainingFootprintState['days']): boolean {
 
 function wasUnlocked(state: TrainingFootprintState, id: TrainingFootprintBadgeId): boolean {
   return (state.unlockedBadgeIds ?? []).includes(id);
+}
+
+function isPositiveFinite(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+/** Reconstruct a 5 km finish from specialty raw when `totalSeconds` was omitted. */
+export function resolveRun5KmFinishSeconds(raw: {
+  totalSeconds?: number;
+  minutes?: number;
+  seconds?: number;
+} | null | undefined): number | null {
+  if (!raw) return null;
+  if (isPositiveFinite(raw.totalSeconds)) return raw.totalSeconds;
+  const minutes = raw.minutes;
+  const seconds = raw.seconds;
+  if (
+    typeof minutes !== 'number' ||
+    typeof seconds !== 'number' ||
+    !Number.isFinite(minutes) ||
+    !Number.isFinite(seconds) ||
+    minutes < 0 ||
+    seconds < 0
+  ) {
+    return null;
+  }
+  const total = minutes * 60 + seconds;
+  return total > 0 ? total : null;
+}
+
+function binaryProgress(liveUnlock: boolean): {
+  current: number;
+  target: number;
+  liveUnlock: boolean;
+} {
+  return { current: liveUnlock ? 1 : 0, target: 1, liveUnlock };
 }
 
 export function deriveUnlockedBadges(
@@ -130,6 +170,9 @@ export function deriveUnlockedBadges(
       target: SIX_AXIS_COUNT,
       liveUnlock: sixFilled >= SIX_AXIS_COUNT,
     },
+    'ARM-01': binaryProgress(clampScoreMapValue(input.scores.armSize ?? 0) > 0),
+    '5K-01': binaryProgress(isPositiveFinite(input.run5KmTotalSeconds)),
+    'SPR-01': binaryProgress(isPositiveFinite(input.sprintSeconds)),
   };
 
   return TRAINING_FOOTPRINT_BADGE_IDS.map((id) => {

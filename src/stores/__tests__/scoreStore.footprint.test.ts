@@ -6,6 +6,14 @@ const saveScores = vi.hoisted(() => vi.fn());
 const loadScores = vi.hoisted(() => vi.fn(() => ({})));
 const saveWidgetSnapshot = vi.hoisted(() => vi.fn());
 
+const snapshotSpecBadgeDeriveInput = vi.hoisted(() =>
+  vi.fn((scores: object, historyLength: number) => ({ scores, historyLength }))
+);
+
+vi.mock('../../services/specBadgeDeriveSnapshot', () => ({
+  snapshotSpecBadgeDeriveInput,
+}));
+
 vi.mock('../../services/trainingFootprintService', () => ({
   recordTrainingFootprint,
 }));
@@ -29,6 +37,7 @@ describe('scoreStore footprint instrumentation', () => {
     saveScores.mockReset();
     loadScores.mockReturnValue({});
     saveWidgetSnapshot.mockReset();
+    snapshotSpecBadgeDeriveInput.mockClear();
     vi.resetModules();
   });
 

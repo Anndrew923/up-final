@@ -107,7 +107,8 @@ describe('HistoryPage', () => {
     expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('true');
     expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('false');
     expect(rhythmToggle?.textContent).not.toContain(`本週 0/${WEEKLY_RHYTHM_TARGET}`);
-    expect(container.textContent).toContain('規格銘牌');
+    expect(container.textContent).toContain('機體規格');
+    expect(container.textContent).toContain('專項選配');
     expect(container.querySelector('[aria-label="本月測功點陣"]')).not.toBeNull();
     expect(container.querySelector(`#${HISTORY_TI_PLATE_GRAD_ID}`)).not.toBeNull();
     expect(container.textContent).toContain('IGN-01');
@@ -115,6 +116,9 @@ describe('HistoryPage', () => {
     expect(container.textContent).toContain('RHY-03');
     expect(container.textContent).toContain('RUN-07');
     expect(container.textContent).toContain('SPEC-6');
+    expect(container.textContent).toContain('ARM-01');
+    expect(container.textContent).toContain('5K-01');
+    expect(container.textContent).toContain('SPR-01');
 
     act(() => root.unmount());
   });
