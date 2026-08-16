@@ -11,6 +11,9 @@ export type FootprintLevel = 1 | 2 | 3;
 /** Catalog IDs persisted on the footprint blob so 18-month prune cannot relock. */
 export const TRAINING_FOOTPRINT_BADGE_IDS = [
   'IGN-01',
+  'ARC-01',
+  'RHY-03',
+  'RUN-07',
   'RUN-30',
   'CRS-04',
   'HIST-10',

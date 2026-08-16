@@ -9,9 +9,11 @@ import {
   type TrainingFootprintState,
 } from '../trainingFootprint';
 import {
+  BADGE_ARCHIVE_SNAPSHOTS,
   BADGE_BREAKIN_DAYS,
   BADGE_CRUISE_WEEKS,
   BADGE_HISTORY_SNAPSHOTS,
+  BADGE_RUN_IN_DAYS,
   countConsecutiveQualifiedWeeks,
   deriveUnlockedBadges,
 } from '../trainingFootprintBadges';
@@ -85,6 +87,82 @@ describe('trainingFootprintBadges', () => {
         historyLength: 0,
       }).find((row) => row.id === 'RUN-30')?.unlocked
     ).toBe(false);
+  });
+
+  it('unlocks ARC-01 on the first snapshot, not on empty history', () => {
+    const empty = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: {},
+      historyLength: 0,
+    });
+    const archived = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: {},
+      historyLength: BADGE_ARCHIVE_SNAPSHOTS,
+    });
+    expect(empty.find((row) => row.id === 'ARC-01')).toMatchObject({
+      unlocked: false,
+      current: 0,
+      target: BADGE_ARCHIVE_SNAPSHOTS,
+    });
+    expect(archived.find((row) => row.id === 'ARC-01')?.unlocked).toBe(true);
+  });
+
+  it('unlocks RHY-03 when the current week hits 3 attendance days', () => {
+    const monday = startOfLocalIsoWeek(NOW);
+    const shortDays: Record<string, FootprintLevel> = {};
+    markWeekDays(monday, 2, shortDays);
+    const short = deriveUnlockedBadges(
+      footprint({ days: shortDays, lifetimeDays: 2 }),
+      { scores: {}, historyLength: 0 },
+      NOW
+    );
+    expect(short.find((row) => row.id === 'RHY-03')).toMatchObject({
+      unlocked: false,
+      current: 2,
+      target: 3,
+    });
+
+    const fullDays: Record<string, FootprintLevel> = {};
+    markWeekDays(monday, 3, fullDays);
+    const full = deriveUnlockedBadges(
+      footprint({ days: fullDays, lifetimeDays: 3 }),
+      { scores: {}, historyLength: 0 },
+      NOW
+    );
+    expect(full.find((row) => row.id === 'RHY-03')?.unlocked).toBe(true);
+  });
+
+  it('keeps RHY-03 unlocked after a short later week (monotonic)', () => {
+    const views = deriveUnlockedBadges(
+      footprint({
+        days: { '2026-08-16': 1 },
+        lifetimeDays: 4,
+        unlockedBadgeIds: ['RHY-03'],
+      }),
+      { scores: {}, historyLength: 0 },
+      NOW
+    );
+    expect(views.find((row) => row.id === 'RHY-03')).toMatchObject({
+      unlocked: true,
+      current: 3,
+      target: 3,
+    });
+  });
+
+  it('unlocks RUN-07 at 7 lifetime days, not 6', () => {
+    const six = deriveUnlockedBadges(footprint({ days: {}, lifetimeDays: BADGE_RUN_IN_DAYS - 1 }), {
+      scores: {},
+      historyLength: 0,
+    });
+    const seven = deriveUnlockedBadges(footprint({ days: {}, lifetimeDays: BADGE_RUN_IN_DAYS }), {
+      scores: {},
+      historyLength: 0,
+    });
+    expect(six.find((row) => row.id === 'RUN-07')).toMatchObject({
+      unlocked: false,
+      current: BADGE_RUN_IN_DAYS - 1,
+      target: BADGE_RUN_IN_DAYS,
+    });
+    expect(seven.find((row) => row.id === 'RUN-07')?.unlocked).toBe(true);
   });
 
   it('walks CRS-04 back from the previous week when the current week is short', () => {

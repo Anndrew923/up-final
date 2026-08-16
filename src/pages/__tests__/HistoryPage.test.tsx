@@ -111,6 +111,9 @@ describe('HistoryPage', () => {
     expect(container.querySelector('[aria-label="本月測功點陣"]')).not.toBeNull();
     expect(container.querySelector(`#${HISTORY_TI_PLATE_GRAD_ID}`)).not.toBeNull();
     expect(container.textContent).toContain('IGN-01');
+    expect(container.textContent).toContain('ARC-01');
+    expect(container.textContent).toContain('RHY-03');
+    expect(container.textContent).toContain('RUN-07');
     expect(container.textContent).toContain('SPEC-6');
 
     act(() => root.unmount());

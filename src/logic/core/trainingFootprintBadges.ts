@@ -15,6 +15,8 @@ import {
 import { SIX_AXIS_COUNT, type ScoreMap } from '../../types/scoring';
 
 export const BADGE_IGNITION_DAYS = 1;
+export const BADGE_ARCHIVE_SNAPSHOTS = 1;
+export const BADGE_RUN_IN_DAYS = 7;
 export const BADGE_BREAKIN_DAYS = 30;
 export const BADGE_CRUISE_WEEKS = 4;
 export const BADGE_HISTORY_SNAPSHOTS = 10;
@@ -75,6 +77,7 @@ export function deriveUnlockedBadges(
   input: SpecBadgeDeriveInput,
   now: Date = new Date()
 ): SpecBadgeView[] {
+  const weeklyCount = countActiveDaysInLocalWeek(state.days, now);
   const cruiseStreak = countConsecutiveQualifiedWeeks(state.days, now);
   const sixFilled = countCoreSixFilled(input.scores);
   const historyLength = Math.max(0, input.historyLength);
@@ -86,6 +89,21 @@ export function deriveUnlockedBadges(
       current: Math.min(state.lifetimeDays, BADGE_IGNITION_DAYS),
       target: BADGE_IGNITION_DAYS,
       liveUnlock: state.lifetimeDays >= BADGE_IGNITION_DAYS,
+    },
+    'ARC-01': {
+      current: Math.min(historyLength, BADGE_ARCHIVE_SNAPSHOTS),
+      target: BADGE_ARCHIVE_SNAPSHOTS,
+      liveUnlock: historyLength >= BADGE_ARCHIVE_SNAPSHOTS,
+    },
+    'RHY-03': {
+      current: Math.min(weeklyCount, WEEKLY_RHYTHM_TARGET),
+      target: WEEKLY_RHYTHM_TARGET,
+      liveUnlock: weeklyCount >= WEEKLY_RHYTHM_TARGET,
+    },
+    'RUN-07': {
+      current: Math.min(state.lifetimeDays, BADGE_RUN_IN_DAYS),
+      target: BADGE_RUN_IN_DAYS,
+      liveUnlock: state.lifetimeDays >= BADGE_RUN_IN_DAYS,
     },
     'RUN-30': {
       current: Math.min(state.lifetimeDays, BADGE_BREAKIN_DAYS),

@@ -59,7 +59,7 @@ function mergeDerivedBadgeUnion(
 
 /**
  * Records a gym action for the device-local day. Same-day equal/lower levels are no-ops
- * unless `badgeContext` newly unlocks an ID (HIST-10 / SPEC-6 need real scores + history length).
+ * unless `badgeContext` newly unlocks an ID (ARC-01 / HIST-10 / SPEC-6 need scores + history length).
  */
 export function recordTrainingFootprint(
   level: FootprintLevel,

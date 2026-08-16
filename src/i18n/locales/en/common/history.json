@@ -50,6 +50,18 @@
           "name": "First Ignition",
           "desc": "Log your first attendance day and start the local dyno record."
         },
+        "ARC-01": {
+          "name": "First Archive",
+          "desc": "Store the first six-axis snapshot in the local dyno log."
+        },
+        "RHY-03": {
+          "name": "Weekly Rhythm",
+          "desc": "Reach 3 attendance days in the current Mon–Sun week."
+        },
+        "RUN-07": {
+          "name": "Seven-Day Break-in",
+          "desc": "Reach 7 lifetime attendance days."
+        },
         "RUN-30": {
           "name": "Break-in Complete",
           "desc": "Reach 30 lifetime attendance days."
