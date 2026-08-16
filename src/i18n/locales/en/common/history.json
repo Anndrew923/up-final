@@ -50,51 +50,55 @@
       "items": {
         "IGN-01": {
           "name": "First Ignition",
-          "desc": "Log your first attendance day and start the local dyno record."
+          "desc": "Complete a dyno action on any day (assess, save, or calculate 1RM / plates). Opening the app does not count."
         },
         "ARC-01": {
           "name": "First Archive",
-          "desc": "Store the first six-axis snapshot in the local dyno log."
+          "desc": "Save your first six-axis result on the Dyno tab."
         },
         "RHY-03": {
           "name": "Weekly Rhythm",
-          "desc": "Reach 3 attendance days in the current Mon–Sun week."
+          "desc": "Have 3 days with a dyno action this week (Monday–Sunday)."
         },
         "RUN-07": {
           "name": "Seven-Day Break-in",
-          "desc": "Reach 7 lifetime attendance days."
+          "desc": "Reach 7 days with a dyno action."
         },
         "RUN-30": {
           "name": "Break-in Complete",
-          "desc": "Reach 30 lifetime attendance days."
+          "desc": "Reach 30 days with a dyno action."
         },
         "CRS-04": {
           "name": "Cruise Lock",
-          "desc": "Hit at least 3 sessions in 4 consecutive Mon–Sun weeks. If this week is not yet qualified, the streak starts from last week."
+          "desc": "Hit 3 dyno days a week, 4 weeks in a row."
         },
         "HIST-10": {
           "name": "Data Foundation",
-          "desc": "Store 10 six-axis snapshots in the local dyno log."
+          "desc": "Save 10 six-axis results in your local log."
         },
         "PR-01": {
           "name": "First Break",
-          "desc": "Reach personal-record intensity on any attendance day."
+          "desc": "Beat your previous best on any axis. Filling all six scores is not enough — it has to be a new high."
         },
         "SPEC-6": {
           "name": "Six-Axis Live",
-          "desc": "All six assessment scores are greater than 0 (arm size excluded)."
+          "desc": "Strength, power, cardio, muscle, body fat, and grip all have a score above 0 (arm size not included)."
         },
         "ARM-01": {
           "name": "Girth Logged",
-          "desc": "Store a valid arm-size score locally. Optional spec — not part of the six-axis radar."
+          "desc": "Complete the arm-size test and save a score. Optional — not part of the six-axis radar."
         },
         "5K-01": {
           "name": "5K Finish",
-          "desc": "Store a valid 5 km finish time locally. Optional specialty — does not replace the cardio radar axis."
+          "desc": "Save a 5 km time on the cardio page. Optional — not part of the six-axis radar."
         },
         "SPR-01": {
           "name": "100 m Start",
-          "desc": "Store a valid 100 m sprint time locally. Optional specialty — does not fill the explosive radar axis."
+          "desc": "Save a 100 m time on the explosive page. Optional — not part of the six-axis radar."
+        },
+        "SOM-01": {
+          "name": "Somatotype Map",
+          "desc": "Complete a Heath-Carter somatotype analysis. Optional — not part of the six-axis radar."
         }
       }
     }

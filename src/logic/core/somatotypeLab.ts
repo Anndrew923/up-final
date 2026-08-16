@@ -420,6 +420,26 @@ export function calculateHeathCarterSomatotype(
   };
 }
 
+/**
+ * WHY: Lab drafts and badge snapshots carry optional fields. Keep Heath–Carter
+ * null-rules here so storage mapping does not duplicate ?? 0 / NaN checks.
+ */
+export function isHeathCarterComputable(
+  metrics: Partial<SomatotypeMetrics> | null | undefined
+): boolean {
+  if (!metrics) return false;
+  return (
+    calculateHeathCarterSomatotype({
+      heightCm: Number(metrics.heightCm),
+      weightKg: Number(metrics.weightKg),
+      bodyFatPct: Number(metrics.bodyFatPct),
+      wristCm: Number(metrics.wristCm),
+      flexedArmGirthCm: Number(metrics.flexedArmGirthCm),
+      isVeteran: metrics.isVeteran,
+    }) != null
+  );
+}
+
 /** Affine map onto the Heath–Carter somatochart plane. */
 export function convertToSomatochartCoordinates(
   endo: number,

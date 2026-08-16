@@ -22,7 +22,7 @@ export const CORE_SPEC_BADGE_IDS = [
 ] as const;
 
 /** Optional specialty catalog (arm / 5 km / 100 m). */
-export const OPTIONAL_SPEC_BADGE_IDS = ['ARM-01', '5K-01', 'SPR-01'] as const;
+export const OPTIONAL_SPEC_BADGE_IDS = ['ARM-01', '5K-01', 'SPR-01', 'SOM-01'] as const;
 
 /** Catalog IDs persisted on the footprint blob so 18-month prune cannot relock. */
 export const TRAINING_FOOTPRINT_BADGE_IDS = [

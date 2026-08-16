@@ -4,6 +4,7 @@ import { prefersReducedMotion } from '../lib/motionPreference';
 import type { SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
 import { hapticService } from '../services/hapticService';
 import { saveSomatotypeLabDraftFromSnapshot } from '../services/localStorageService';
+import { persistSpecBadgeUnionFromDevice } from '../services/specBadgeDeriveSnapshot';
 
 export type SomatotypeAnalysisState = 'idle' | 'analyzing' | 'completed';
 
@@ -80,7 +81,10 @@ export function useSomatotypeLabRitual(
     clearTimers();
 
     // WHY: Lock lab-local draft on successful CTA only — never pollute physicalProfile.
+    // Stamp SOM-01 onto the footprint blob here so unlock does not wait for 日誌, and
+    // does not record a heatmap attendance day.
     saveSomatotypeLabDraftFromSnapshot(liveSnapshot);
+    persistSpecBadgeUnionFromDevice();
 
     setReportSnapshot(liveSnapshot);
     setReportSessionId((n) => n + 1);

@@ -141,6 +141,14 @@ export function HistorySpecBadgeGlyph({ id }: { id: TrainingFootprintBadgeId }):
           <path d="M12.2 8.2 L16.8 5.4 L15.4 9.6 L20.2 7.2 L16.2 12.4 L19.6 11.2" strokeWidth="1.2" strokeLinejoin="round" />
         </>
       );
+    case 'SOM-01':
+      return (
+        <>
+          <path d="M12 3.5 L20.6 19.2 H3.4 Z" strokeWidth="1.2" strokeLinejoin="round" />
+          <path d="M12 3.5 V13.8 M3.4 19.2 L12 13.8 L20.6 19.2" strokeWidth="1.05" />
+          <circle cx="12" cy="13.8" r="1.35" strokeWidth="1.1" />
+        </>
+      );
     default: {
       const _never: never = id;
       return _never;

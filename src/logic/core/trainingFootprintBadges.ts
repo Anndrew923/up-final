@@ -30,6 +30,8 @@ export interface SpecBadgeDeriveInput {
   run5KmTotalSeconds?: number | null;
   /** Device-local 100 m sprint time (seconds). Specialty raw — not the explosive radar axis. */
   sprintSeconds?: number | null;
+  /** Lab-local Heath–Carter chart is computable. Specialty — not a radar axis or heatmap day. */
+  somatotypeChartComplete?: boolean;
 }
 
 export interface SpecBadgeView {
@@ -173,6 +175,7 @@ export function deriveUnlockedBadges(
     'ARM-01': binaryProgress(clampScoreMapValue(input.scores.armSize ?? 0) > 0),
     '5K-01': binaryProgress(isPositiveFinite(input.run5KmTotalSeconds)),
     'SPR-01': binaryProgress(isPositiveFinite(input.sprintSeconds)),
+    'SOM-01': binaryProgress(input.somatotypeChartComplete === true),
   };
 
   return TRAINING_FOOTPRINT_BADGE_IDS.map((id) => {

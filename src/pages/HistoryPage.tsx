@@ -5,8 +5,7 @@ import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
 import { resolveSixAxisInputShortLabel } from '../i18n/resolveSixAxisInputShortLabel';
 import { useHistoryRhythmExpanded } from '../hooks/useHistoryRhythmExpanded';
 import { useTrainingFootprint } from '../hooks/useTrainingFootprint';
-import { snapshotSpecBadgeDeriveInput } from '../services/specBadgeDeriveSnapshot';
-import { persistUnlockedBadgeUnion } from '../services/trainingFootprintService';
+import { persistSpecBadgeUnionFromDevice } from '../services/specBadgeDeriveSnapshot';
 import { SIX_AXIS_METRICS } from '../types/scoring';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
@@ -25,7 +24,7 @@ export default function HistoryPage() {
   }, [loadLocalHistory]);
 
   useEffect(() => {
-    persistUnlockedBadgeUnion(snapshotSpecBadgeDeriveInput(scores, records.length));
+    persistSpecBadgeUnionFromDevice(scores, records.length);
   }, [scores, records.length]);
 
   const handleRemoveRecord = (id: string) => {

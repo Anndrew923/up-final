@@ -29,6 +29,7 @@ import {
   calculateMaleGoldenRatio,
   calculateGrantIndex,
   calculateHeathCarterSomatotype,
+  isHeathCarterComputable,
   calculateHeightWeightRatio,
   calculateMaxTunedPhysique,
   convertToSomatochartCoordinates,
@@ -124,6 +125,13 @@ describe('calculateHeathCarterSomatotype', () => {
     const result = calculateHeathCarterSomatotype(baseMetrics)!;
     expect(result.mesomorphy).toBeCloseTo(expectedMeso, 3);
     expect(result.correctedArmGirthCm).toBeCloseTo(corrected, 3);
+  });
+
+  it('isHeathCarterComputable rejects empty drafts and accepts complete metrics', () => {
+    expect(isHeathCarterComputable(null)).toBe(false);
+    expect(isHeathCarterComputable({})).toBe(false);
+    expect(isHeathCarterComputable({ heightCm: 180, weightKg: 80 })).toBe(false);
+    expect(isHeathCarterComputable(baseMetrics)).toBe(true);
   });
 });
 

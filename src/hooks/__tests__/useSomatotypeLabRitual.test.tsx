@@ -15,11 +15,16 @@ import {
 
 const hapticTrigger = vi.fn<(preset: HapticPreset) => Promise<void>>(async () => undefined);
 const prefersReducedMotionMock = vi.fn(() => false);
+const persistSpecBadgeUnionFromDevice = vi.hoisted(() => vi.fn());
 
 vi.mock('../../services/hapticService', () => ({
   hapticService: {
     trigger: (preset: HapticPreset) => hapticTrigger(preset),
   },
+}));
+
+vi.mock('../../services/specBadgeDeriveSnapshot', () => ({
+  persistSpecBadgeUnionFromDevice,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -95,6 +100,7 @@ describe('useSomatotypeLabRitual', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     hapticTrigger.mockClear();
+    persistSpecBadgeUnionFromDevice.mockClear();
     prefersReducedMotionMock.mockReturnValue(false);
   });
 
@@ -115,6 +121,7 @@ describe('useSomatotypeLabRitual', () => {
       harness.getCurrent()!.runAnalysis();
     });
     expect(harness.getCurrent()!.analysisState).toBe('analyzing');
+    expect(persistSpecBadgeUnionFromDevice).toHaveBeenCalledTimes(1);
     expect(harness.getCurrent()!.isAnalyzing).toBe(true);
     expect(harness.getCurrent()!.reportSnapshot).toEqual(snap);
 
@@ -250,6 +257,7 @@ describe('useSomatotypeLabRitual', () => {
     });
     expect(harness.getCurrent()!.analysisState).toBe('idle');
     expect(hapticTrigger).not.toHaveBeenCalled();
+    expect(persistSpecBadgeUnionFromDevice).not.toHaveBeenCalled();
     harness.unmount();
   });
 });

@@ -313,6 +313,25 @@ describe('trainingFootprintBadges', () => {
     expect(specialty.find((row) => row.id === 'SPR-01')?.unlocked).toBe(true);
   });
 
+  it('unlocks SOM-01 from a computable lab chart, not radar axes', () => {
+    const locked = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: { ...SIX_LIVE },
+      historyLength: 0,
+    });
+    expect(locked.find((row) => row.id === 'SOM-01')).toMatchObject({
+      unlocked: false,
+      current: 0,
+      target: 1,
+    });
+
+    const charted = deriveUnlockedBadges(emptyTrainingFootprint(), {
+      scores: {},
+      historyLength: 0,
+      somatotypeChartComplete: true,
+    });
+    expect(charted.find((row) => row.id === 'SOM-01')?.unlocked).toBe(true);
+  });
+
   it('resolves 5 km finish seconds from split fields when totalSeconds is missing', () => {
     expect(resolveRun5KmFinishSeconds(undefined)).toBeNull();
     expect(resolveRun5KmFinishSeconds({ totalSeconds: 0 })).toBeNull();
@@ -326,13 +345,14 @@ describe('trainingFootprintBadges', () => {
       footprint({
         days: {},
         lifetimeDays: 1,
-        unlockedBadgeIds: ['ARM-01', '5K-01', 'SPR-01'],
+        unlockedBadgeIds: ['ARM-01', '5K-01', 'SPR-01', 'SOM-01'],
       }),
       { scores: {}, historyLength: 0 }
     );
     expect(views.find((row) => row.id === 'ARM-01')?.unlocked).toBe(true);
     expect(views.find((row) => row.id === '5K-01')?.unlocked).toBe(true);
     expect(views.find((row) => row.id === 'SPR-01')?.unlocked).toBe(true);
+    expect(views.find((row) => row.id === 'SOM-01')?.unlocked).toBe(true);
   });
 
   it('parses unknown badge ids out and keeps catalog order', () => {

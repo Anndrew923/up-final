@@ -119,6 +119,7 @@ describe('HistoryPage', () => {
     expect(container.textContent).toContain('ARM-01');
     expect(container.textContent).toContain('5K-01');
     expect(container.textContent).toContain('SPR-01');
+    expect(container.textContent).toContain('SOM-01');
 
     act(() => root.unmount());
   });
