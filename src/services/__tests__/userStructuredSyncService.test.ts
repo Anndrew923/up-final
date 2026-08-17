@@ -26,11 +26,18 @@ vi.mock('firebase/firestore', () => ({
   getDoc: (...args: unknown[]) => firebaseMocks.getDoc(...args),
   getDocs: vi.fn(),
   setDoc: (...args: unknown[]) => firebaseMocks.setDoc(...args),
-  runTransaction: vi.fn(async (_db: unknown, updater: (tx: { get: typeof firebaseMocks.getDoc; set: typeof firebaseMocks.setDoc }) => Promise<void> | void) =>
-    updater({
-      get: () => firebaseMocks.getDoc(),
-      set: firebaseMocks.setDoc,
-    })
+  runTransaction: vi.fn(
+    async (
+      _db: unknown,
+      updater: (tx: {
+        get: () => ReturnType<typeof firebaseMocks.getDoc>;
+        set: typeof firebaseMocks.setDoc;
+      }) => Promise<void> | void
+    ) =>
+      updater({
+        get: () => firebaseMocks.getDoc(),
+        set: firebaseMocks.setDoc,
+      })
   ),
   writeBatch: vi.fn(() => ({
     set: vi.fn(),
