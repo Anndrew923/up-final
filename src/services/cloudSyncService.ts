@@ -40,6 +40,7 @@ function mapCloudSyncError(error: unknown): CloudSyncErrorReason {
 
 /**
  * Pushes local profile + all history docs to Firestore (Pro + structured paths; migrates legacy blob once).
+ * Footprint fields are read-merged in a transaction; scores/inputs remain last-write-wins.
  */
 export async function backupLocalToCloud(): Promise<CloudSyncOutcome> {
   try {
@@ -55,7 +56,8 @@ export async function backupLocalToCloud(): Promise<CloudSyncOutcome> {
 }
 
 /**
- * Overwrites local scores, inputs, ladder profile, and history from Firestore structured snapshot.
+ * Overwrites local scores, inputs, ladder profile, and history from Firestore.
+ * Training footprint is union-merged and is never last-write-wins replaced.
  */
 export async function restoreCloudToLocal(): Promise<CloudSyncOutcome> {
   try {

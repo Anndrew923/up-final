@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  applyMergedFootprint,
   clearTrainingFootprint,
   loadTrainingFootprint,
   persistUnlockedBadgeUnion,
   recordTrainingFootprint,
   TRAINING_FOOTPRINT_STORAGE_KEY,
 } from '../trainingFootprintService';
+import { emptyTrainingFootprint } from '../../logic/core/trainingFootprint';
 
 const storage = vi.hoisted(() => new Map<string, string>());
 
@@ -73,5 +75,26 @@ describe('trainingFootprintService', () => {
   it('unions HIST-10 without requiring a new attendance day', () => {
     persistUnlockedBadgeUnion({ scores: {}, historyLength: 10 });
     expect(loadTrainingFootprint().unlockedBadgeIds).toContain('HIST-10');
+  });
+
+  it('merges a remote footprint into local without dropping existing ids', () => {
+    recordTrainingFootprint(1, new Date(2026, 7, 16, 9, 0, 0));
+    const merged = applyMergedFootprint({
+      schemaVersion: 1,
+      days: { '2026-08-15': 2 },
+      lifetimeDays: 20,
+      unlockedBadgeIds: ['SOM-01'],
+    });
+    expect(merged.unlockedBadgeIds).toContain('IGN-01');
+    expect(merged.unlockedBadgeIds).toContain('SOM-01');
+    expect(merged.lifetimeDays).toBe(20);
+    expect(merged.days['2026-08-16']).toBe(1);
+    expect(merged.days['2026-08-15']).toBe(2);
+  });
+
+  it('does not rewrite storage when the merged blob is unchanged', () => {
+    const unchanged = applyMergedFootprint(emptyTrainingFootprint());
+    expect(unchanged.lifetimeDays).toBe(0);
+    expect(storage.get(TRAINING_FOOTPRINT_STORAGE_KEY)).toBeUndefined();
   });
 });

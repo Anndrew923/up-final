@@ -46,6 +46,16 @@ vi.mock('firebase/firestore', () => ({
       })
   ),
   setDoc: mocks.setDoc,
+  runTransaction: vi.fn(async (_db: unknown, updater: (tx: { get: () => Promise<unknown>; set: typeof mocks.setDoc }) => Promise<void> | void) =>
+    updater({
+      get: () =>
+        Promise.resolve({
+          exists: () => false,
+          data: () => undefined,
+        }),
+      set: mocks.setDoc,
+    })
+  ),
   writeBatch: vi.fn(() => ({
     set: vi.fn(),
     commit: vi.fn(() => Promise.resolve()),

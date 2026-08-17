@@ -12,6 +12,7 @@ import type { GripInputsPersisted } from '../types/gripInputs';
 import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { FfmiDraft, LocalHistoryRecord, LocalProfile } from './localStorageService';
 import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
+import type { TrainingFootprintState } from '../logic/core/trainingFootprint';
 
 export const STRUCTURED_PROFILE_SCHEMA_VERSION = 1 as const;
 
@@ -28,6 +29,8 @@ export interface StructuredProfileFirestoreV1 {
   strengthInputs?: StrengthInputsPersisted | null;
   gripInputs?: GripInputsPersisted | null;
   armSizeInputs?: ArmSizeInputsPersisted | null;
+  /** Optional Pro backup of spec badges + heatmap. Apply path is merge-only, never LWW. */
+  footprint?: TrainingFootprintState | null;
   legacyBlobMigratedAt?: string | null;
 }
 

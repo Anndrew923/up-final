@@ -10,6 +10,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  runTransaction,
   setDoc,
   writeBatch,
   type DocumentSnapshot,
@@ -69,6 +70,12 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 import { useScoreStore } from '../stores/scoreStore';
 import type { ScoreMap } from '../types/scoring';
 import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
+import {
+  emptyTrainingFootprint,
+  mergeTrainingFootprintStates,
+  parseTrainingFootprintState,
+} from '../logic/core/trainingFootprint';
+import { applyMergedFootprint, loadTrainingFootprint } from './trainingFootprintService';
 import {
   captureStructuredSyncSession,
   isStructuredSyncSessionCurrent,
@@ -147,8 +154,13 @@ export function ladderProfileForStructuredPush(): LocalProfile | null | undefine
   return stripDataUrlFromLadderProfile(profile);
 }
 
+function isFootprintObject(raw: unknown): boolean {
+  return raw != null && typeof raw === 'object' && !Array.isArray(raw);
+}
+
 export function buildStructuredProfileFromLocal(nowIso: string): StructuredProfileFirestoreV1 {
   const ladderProfile = ladderProfileForStructuredPush();
+  // WHY: Footprint is attached only after a cloud read-merge on full backup, never here.
   return {
     schemaVersion: STRUCTURED_PROFILE_SCHEMA_VERSION,
     updatedAt: nowIso,
@@ -175,6 +187,9 @@ export function applyStructuredProfileToLocal(data: StructuredProfileFirestoreV1
   if (data.strengthInputs) saveStrengthInputs(data.strengthInputs);
   if (data.gripInputs) saveGripInputs(data.gripInputs);
   if (data.armSizeInputs) saveArmSizeInputs(data.armSizeInputs);
+  if (isFootprintObject(data.footprint)) {
+    applyMergedFootprint(parseTrainingFootprintState(data.footprint));
+  }
   if (data.ladderProfile && typeof data.ladderProfile.uid === 'string') {
     const localBefore = loadProfile();
     const remote = stripDataUrlFromLadderProfile(data.ladderProfile);
@@ -268,7 +283,8 @@ export async function migrateLegacyBlobToStructuredIfPresent(
 
 export async function pushStructuredProfileFromLocal(
   ent: EntitlementState,
-  expectedSession?: StructuredSyncSession
+  expectedSession?: StructuredSyncSession,
+  options?: { includeFootprint?: boolean }
 ): Promise<void> {
   if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return;
   if (!canRunStructuredUserSync(ent)) return;
@@ -277,7 +293,22 @@ export async function pushStructuredProfileFromLocal(
   const uid = requireNonAnonymousUid();
   if (expectedSession && uid !== expectedSession.uid) return;
   const payload = buildStructuredProfileFromLocal(new Date().toISOString());
-  await setDoc(profileRef(db, uid), payload, { merge: true });
+  const ref = profileRef(db, uid);
+  if (options?.includeFootprint) {
+    await runTransaction(db, async (transaction) => {
+      if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return;
+      const snap = await transaction.get(ref);
+      const remoteFootprint = snap.exists()
+        ? parseTrainingFootprintState(
+            (snap.data() as StructuredProfileFirestoreV1 | undefined)?.footprint
+          )
+        : emptyTrainingFootprint();
+      payload.footprint = mergeTrainingFootprintStates(remoteFootprint, loadTrainingFootprint());
+      transaction.set(ref, payload, { merge: true });
+    });
+  } else {
+    await setDoc(ref, payload, { merge: true });
+  }
   // WHY: Skip echo apply of our own push (stripped ladderProfile would merge away data URL avatars).
   if (!expectedSession || isStructuredSyncSessionCurrent(expectedSession)) {
     writeWatermark(uid, payload.updatedAt);
@@ -336,7 +367,7 @@ export async function runStructuredBackup(ent: EntitlementState): Promise<void> 
   if (!isStructuredSyncSessionCurrent(session)) {
     throw new Error('structured-sync-session-changed');
   }
-  await pushStructuredProfileFromLocal(ent, session);
+  await pushStructuredProfileFromLocal(ent, session, { includeFootprint: true });
   if (!isStructuredSyncSessionCurrent(session)) {
     throw new Error('structured-sync-session-changed');
   }
@@ -348,6 +379,7 @@ export async function runStructuredBackup(ent: EntitlementState): Promise<void> 
 
 /**
  * Overwrite local state from Firestore profile + all history subdocuments.
+ * Footprint is merged via applyStructuredProfileToLocal, not replaced.
  */
 export async function runStructuredRestore(ent: EntitlementState): Promise<boolean> {
   if (!canRunStructuredUserSync(ent)) {
@@ -460,6 +492,7 @@ export function queueStructuredProfilePushDebounced(ent: EntitlementState, delay
     if (!canRunStructuredUserSync(ent)) return;
     const currentUid = requireNonAnonymousUid();
     if (currentUid !== session.uid) return;
+    // WHY: Radar debounce must omit footprint — nested map replace would wipe the other device's days.
     void pushStructuredProfileFromLocal(ent).catch((err) => {
       if (import.meta.env.DEV) {
         console.warn('[structured-sync] debounced profile push failed', err);

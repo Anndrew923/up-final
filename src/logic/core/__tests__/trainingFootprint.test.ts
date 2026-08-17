@@ -6,10 +6,12 @@ import {
   countActiveDaysInLocalWeek,
   deriveFootprintDashboard,
   EMPTY_TRAINING_FOOTPRINT,
+  emptyTrainingFootprint,
   historicalMaxForMetric,
   isPersonalRecord,
   localDateKey,
   mergeFootprintLevel,
+  mergeTrainingFootprintStates,
   parseLocalDateKey,
   resolveAssessmentFootprintLevel,
   startOfLocalIsoWeek,
@@ -127,5 +129,93 @@ describe('trainingFootprint month matrix', () => {
     expect(view.weeklyTarget).toBe(WEEKLY_RHYTHM_TARGET);
     expect(view.weeklyCount).toBe(1);
     expect(view.lifetimeDays).toBe(12);
+  });
+});
+
+describe('mergeTrainingFootprintStates', () => {
+  const now = new Date(2026, 7, 16);
+
+  it('unions badge ids in catalog order and keeps the higher same-day level', () => {
+    const merged = mergeTrainingFootprintStates(
+      {
+        schemaVersion: 1,
+        days: { '2026-08-16': 1 },
+        lifetimeDays: 4,
+        unlockedBadgeIds: ['ARM-01'],
+      },
+      {
+        schemaVersion: 1,
+        days: { '2026-08-16': 3, '2026-08-15': 2 },
+        lifetimeDays: 10,
+        unlockedBadgeIds: ['SOM-01', 'IGN-01'],
+      },
+      now
+    );
+    expect(merged.unlockedBadgeIds).toEqual(['IGN-01', 'ARM-01', 'SOM-01']);
+    expect(merged.days['2026-08-16']).toBe(3);
+    expect(merged.days['2026-08-15']).toBe(2);
+    expect(merged.lifetimeDays).toBe(10);
+  });
+
+  it('restores cloud assets onto an empty new-phone local', () => {
+    const cloud = {
+      schemaVersion: 1 as const,
+      days: { '2026-08-16': 2 as const },
+      lifetimeDays: 120,
+      unlockedBadgeIds: ['IGN-01' as const, 'PR-01' as const],
+    };
+    const merged = mergeTrainingFootprintStates(undefined, cloud, now);
+    expect(merged.unlockedBadgeIds).toEqual(['IGN-01', 'PR-01']);
+    expect(merged.lifetimeDays).toBe(120);
+    expect(merged.days['2026-08-16']).toBe(2);
+  });
+
+  it('does not let an empty remote wipe a filled local blob', () => {
+    const local = {
+      schemaVersion: 1 as const,
+      days: { '2026-08-16': 3 as const },
+      lifetimeDays: 40,
+      unlockedBadgeIds: ['HIST-10' as const],
+    };
+    const merged = mergeTrainingFootprintStates(local, undefined, now);
+    expect(merged.unlockedBadgeIds).toEqual(['HIST-10']);
+    expect(merged.lifetimeDays).toBe(40);
+    expect(merged.days['2026-08-16']).toBe(3);
+  });
+
+  it('prunes heatmap keys older than 18 months without shrinking lifetimeDays', () => {
+    const merged = mergeTrainingFootprintStates(
+      {
+        schemaVersion: 1,
+        days: { '2024-01-01': 3, '2026-08-16': 1 },
+        lifetimeDays: 40,
+        unlockedBadgeIds: ['PR-01'],
+      },
+      emptyTrainingFootprint(),
+      now
+    );
+    expect(merged.days['2024-01-01']).toBeUndefined();
+    expect(merged.days['2026-08-16']).toBe(1);
+    expect(merged.lifetimeDays).toBe(40);
+    expect(merged.unlockedBadgeIds).toEqual(['PR-01']);
+  });
+
+  it('strips unknown badge ids from either side before union', () => {
+    const merged = mergeTrainingFootprintStates(
+      {
+        schemaVersion: 1,
+        days: {},
+        lifetimeDays: 1,
+        unlockedBadgeIds: ['IGN-01', 'TOOL-20' as never],
+      },
+      {
+        schemaVersion: 1,
+        days: {},
+        lifetimeDays: 1,
+        unlockedBadgeIds: ['SOM-01'],
+      },
+      now
+    );
+    expect(merged.unlockedBadgeIds).toEqual(['IGN-01', 'SOM-01']);
   });
 });

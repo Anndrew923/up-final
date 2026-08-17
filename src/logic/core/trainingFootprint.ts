@@ -284,6 +284,31 @@ export function parseUnlockedBadgeIds(raw: unknown): TrainingFootprintBadgeId[] 
 }
 
 /**
+ * Monotonic union for Pro backup/restore.
+ * WHY: Profile sync is otherwise last-write-wins; empty new-phone local must not erase cloud assets.
+ * IMPACT: Dual-device disjoint days can under-count lifetime (max, not unique-key union across pruned history).
+ */
+export function mergeTrainingFootprintStates(
+  a?: TrainingFootprintState | null,
+  b?: TrainingFootprintState | null,
+  now: Date = new Date()
+): TrainingFootprintState {
+  const left = parseTrainingFootprintState(a);
+  const right = parseTrainingFootprintState(b);
+  const days: Record<string, FootprintLevel> = { ...left.days };
+  for (const [key, level] of Object.entries(right.days)) {
+    days[key] = mergeFootprintLevel(days[key], level).next;
+  }
+  const pruned = pruneDaysMap(days, now);
+  return {
+    schemaVersion: FOOTPRINT_SCHEMA_VERSION,
+    days: pruned,
+    lifetimeDays: Math.max(left.lifetimeDays, right.lifetimeDays, Object.keys(pruned).length),
+    unlockedBadgeIds: parseUnlockedBadgeIds([...left.unlockedBadgeIds, ...right.unlockedBadgeIds]),
+  };
+}
+
+/**
  * Union-only write. Pruned heatmaps must not drop IDs that already unlocked.
  */
 export function applyUnlockedBadgeUnion(

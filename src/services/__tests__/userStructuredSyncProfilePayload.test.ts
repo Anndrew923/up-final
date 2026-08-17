@@ -5,6 +5,7 @@ import {
   ladderProfileForStructuredPush,
 } from '../userStructuredSyncService';
 import { loadProfile, saveProfile } from '../localStorageService';
+import { applyMergedFootprint } from '../trainingFootprintService';
 
 vi.mock('../localStorageService', () => ({
   loadProfile: vi.fn(),
@@ -39,8 +40,19 @@ vi.mock('../firebaseClient', () => ({
   getCurrentFirebaseUser: vi.fn(() => null),
 }));
 
+vi.mock('../trainingFootprintService', () => ({
+  applyMergedFootprint: vi.fn(),
+  loadTrainingFootprint: vi.fn(() => ({
+    schemaVersion: 1,
+    days: {},
+    lifetimeDays: 0,
+    unlockedBadgeIds: [],
+  })),
+}));
+
 const loadProfileMock = vi.mocked(loadProfile);
 const saveProfileMock = vi.mocked(saveProfile);
+const applyMergedFootprintMock = vi.mocked(applyMergedFootprint);
 
 describe('ladderProfileForStructuredPush', () => {
   beforeEach(() => {
@@ -84,6 +96,7 @@ describe('buildStructuredProfileFromLocal', () => {
     const payload = buildStructuredProfileFromLocal('2026-06-01T06:54:05.856Z');
     expect(payload.ladderProfile).toBeUndefined();
     expect(payload.updatedAt).toBe('2026-06-01T06:54:05.856Z');
+    expect(payload.footprint).toBeUndefined();
   });
 });
 
@@ -115,5 +128,43 @@ describe('applyStructuredProfileToLocal', () => {
     expect(saveProfileMock).toHaveBeenCalledTimes(1);
     const saved = saveProfileMock.mock.calls[0][0];
     expect(saved.avatarUrl).toBe(dataUrl);
+  });
+
+  it('merges a remote footprint instead of replacing local attendance', () => {
+    applyStructuredProfileToLocal({
+      schemaVersion: 1,
+      updatedAt: '2026-06-01T06:54:05.856Z',
+      scores: {},
+      footprint: {
+        schemaVersion: 1,
+        days: { '2026-08-16': 2 },
+        lifetimeDays: 12,
+        unlockedBadgeIds: ['IGN-01'],
+      },
+    });
+    expect(applyMergedFootprintMock).toHaveBeenCalledTimes(1);
+    expect(applyMergedFootprintMock.mock.calls[0][0]).toMatchObject({
+      lifetimeDays: 12,
+      unlockedBadgeIds: ['IGN-01'],
+    });
+  });
+
+  it('skips footprint apply when the remote profile omits the field', () => {
+    applyStructuredProfileToLocal({
+      schemaVersion: 1,
+      updatedAt: '2026-06-01T06:54:05.856Z',
+      scores: {},
+    });
+    expect(applyMergedFootprintMock).not.toHaveBeenCalled();
+  });
+
+  it('ignores a malformed footprint field instead of merging an empty wipe', () => {
+    applyStructuredProfileToLocal({
+      schemaVersion: 1,
+      updatedAt: '2026-06-01T06:54:05.856Z',
+      scores: {},
+      footprint: 'not-an-object' as unknown as never,
+    });
+    expect(applyMergedFootprintMock).not.toHaveBeenCalled();
   });
 });

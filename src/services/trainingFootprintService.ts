@@ -1,6 +1,6 @@
 /**
- * Local-only training footprint persistence.
- * WHY: Must never import Firebase — this is a Core local feature, not Pro cloud traffic.
+ * Device-local training footprint persistence.
+ * WHY: Must never import Firebase — Pro sync merges through this API, then writes Firestore elsewhere.
  */
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 import {
@@ -13,6 +13,7 @@ import {
   applyUnlockedBadgeUnion,
   emptyTrainingFootprint,
   localDateKey,
+  mergeTrainingFootprintStates,
   parseTrainingFootprintState,
   type FootprintLevel,
   type TrainingFootprintState,
@@ -73,6 +74,30 @@ export function recordTrainingFootprint(
   if (!applied.changed && !withBadges.changed) return current;
   saveTrainingFootprint(withBadges.state);
   return withBadges.state;
+}
+
+function isSameFootprint(a: TrainingFootprintState, b: TrainingFootprintState): boolean {
+  if (a.lifetimeDays !== b.lifetimeDays) return false;
+  if (a.unlockedBadgeIds.length !== b.unlockedBadgeIds.length) return false;
+  if (a.unlockedBadgeIds.some((id, index) => id !== b.unlockedBadgeIds[index])) return false;
+  const keys = Object.keys(a.days);
+  if (keys.length !== Object.keys(b.days).length) return false;
+  return keys.every((key) => a.days[key] === b.days[key]);
+}
+
+/**
+ * Union a remote footprint into the device blob and notify listeners.
+ * WHY: Cloud restore/pull must never last-write-wins overwrite local attendance or badge IDs.
+ */
+export function applyMergedFootprint(
+  remoteState: TrainingFootprintState,
+  now: Date = new Date()
+): TrainingFootprintState {
+  const current = loadTrainingFootprint();
+  const merged = mergeTrainingFootprintStates(current, remoteState, now);
+  if (isSameFootprint(current, merged)) return current;
+  saveTrainingFootprint(merged);
+  return merged;
 }
 
 /**
