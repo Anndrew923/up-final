@@ -139,14 +139,14 @@ export default {
           '0%, 100%': { opacity: '0.5' },
           '50%': { opacity: '1' },
         },
-        /** Badge unlock HUD toast — slide down from top then slide back up. */
+        /** Badge unlock HUD toast — slide up from above bottom nav and slide back down on dismiss. */
         'toast-slide-in': {
-          '0%': { transform: 'translate3d(0, -100%, 0)', opacity: '0' },
+          '0%': { transform: 'translate3d(0, 100%, 0)', opacity: '0' },
           '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
         },
         'toast-slide-out': {
           '0%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
-          '100%': { transform: 'translate3d(0, -100%, 0)', opacity: '0' },
+          '100%': { transform: 'translate3d(0, 100%, 0)', opacity: '0' },
         },
         /** Spec badge rack — one-shot cyan glow + scale bounce for newly unlocked plates. */
         'unseen-glow': {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import HistoryFootprintDashboard from '../components/history/HistoryFootprintDashboard';
 import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
@@ -15,12 +16,14 @@ import { useScoreStore } from '../stores/scoreStore';
 
 export default function HistoryPage() {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
   const records = useHistoryStore((s) => s.records);
   const loadLocalHistory = useHistoryStore((s) => s.loadLocalHistory);
   const removeHistoryRecord = useHistoryStore((s) => s.removeHistoryRecord);
   const scores = useScoreStore((s) => s.scores);
   const footprint = useTrainingFootprint();
-  const { expanded: rhythmExpanded, toggle: toggleRhythm } = useHistoryRhythmExpanded();
+  const { expanded: rhythmExpanded, toggle: toggleRhythm, expand: expandRhythm } = useHistoryRhythmExpanded();
+  const focusedBadgeId = (location.state as { focusBadgeId?: string } | null)?.focusBadgeId ?? null;
 
   // WHY: Snapshot unseen IDs once at mount so the glow animation fires only on first visit.
   // Pure read — no writes, no dispatches.
@@ -36,6 +39,11 @@ export default function HistoryPage() {
   useEffect(() => {
     loadLocalHistory();
   }, [loadLocalHistory]);
+
+  useEffect(() => {
+    if (focusedBadgeId == null) return;
+    expandRhythm();
+  }, [expandRhythm, focusedBadgeId]);
 
   useEffect(() => {
     persistSpecBadgeUnionFromDevice(scores, records.length);
@@ -68,6 +76,7 @@ export default function HistoryPage() {
             expanded={rhythmExpanded}
             onToggle={toggleRhythm}
             unseenBadgeIds={unseenBadgeIds}
+            focusedBadgeId={focusedBadgeId}
           />
         </div>
 

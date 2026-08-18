@@ -2,7 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../i18n';
 import type { SpecBadgeView } from '../../../logic/core/trainingFootprintBadges';
 import {
@@ -26,14 +26,22 @@ const SAMPLE_BADGES: SpecBadgeView[] = [...CORE_SPEC_BADGE_IDS, ...OPTIONAL_SPEC
 
 const EMPTY_UNSEEN = new Set<string>();
 
-function renderRack(inspectionEnabled = true): { container: HTMLDivElement; root: Root } {
+function renderRack(
+  inspectionEnabled = true,
+  focusedBadgeId: string | null = null
+): { container: HTMLDivElement; root: Root } {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   act(() => {
     root.render(
       <I18nextProvider i18n={i18n}>
-        <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled={inspectionEnabled} unseenBadgeIds={EMPTY_UNSEEN} />
+        <HistorySpecBadgeRack
+          badges={SAMPLE_BADGES}
+          inspectionEnabled={inspectionEnabled}
+          unseenBadgeIds={EMPTY_UNSEEN}
+          focusedBadgeId={focusedBadgeId}
+        />
       </I18nextProvider>
     );
   });
@@ -140,5 +148,25 @@ describe('HistorySpecBadgeRack', () => {
     expect(glowing).toHaveLength(1);
 
     act(() => root.unmount());
+  });
+
+  it('opens and scroll-focuses the externally focused badge', () => {
+    const original = HTMLElement.prototype.scrollIntoView;
+    const scrollSpy = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollSpy,
+    });
+    const { container, root } = renderRack(true, 'IGN-01');
+
+    expect(container.querySelector('#spec-badge-inspect-IGN-01')).not.toBeNull();
+    expect(container.querySelector('#spec-badge-trigger-IGN-01')).not.toBeNull();
+    expect(scrollSpy).toHaveBeenCalled();
+
+    act(() => root.unmount());
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: original,
+    });
   });
 });

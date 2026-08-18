@@ -14,6 +14,7 @@ function readStoredExpanded(): boolean {
 export function useHistoryRhythmExpanded(): {
   expanded: boolean;
   toggle: () => void;
+  expand: () => void;
 } {
   const [expanded, setExpanded] = useState(() => readStoredExpanded());
 
@@ -25,5 +26,13 @@ export function useHistoryRhythmExpanded(): {
     });
   }, []);
 
-  return { expanded, toggle };
+  const expand = useCallback(() => {
+    setExpanded((current) => {
+      if (current) return current;
+      safeSetItem(HISTORY_RHYTHM_EXPANDED_KEY, 'true');
+      return true;
+    });
+  }, []);
+
+  return { expanded, toggle, expand };
 }

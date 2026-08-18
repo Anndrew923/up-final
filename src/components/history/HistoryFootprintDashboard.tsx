@@ -51,6 +51,7 @@ export type HistoryFootprintDashboardProps = TrainingFootprintPanelView & {
   expanded: boolean;
   onToggle: () => void;
   unseenBadgeIds: ReadonlySet<string>;
+  focusedBadgeId?: string | null;
 };
 
 const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
@@ -62,6 +63,7 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
   expanded,
   onToggle,
   unseenBadgeIds,
+  focusedBadgeId,
 }) => {
   const { t } = useTranslation('common');
   const title = t('history.footprint.title');
@@ -183,7 +185,12 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
                 {t('history.footprint.legendPr')}
               </li>
             </ul>
-            <HistorySpecBadgeRack badges={badges} inspectionEnabled={expanded} unseenBadgeIds={unseenBadgeIds} />
+            <HistorySpecBadgeRack
+              badges={badges}
+              inspectionEnabled={expanded}
+              unseenBadgeIds={unseenBadgeIds}
+              focusedBadgeId={focusedBadgeId}
+            />
           </div>
         </div>
       </div>

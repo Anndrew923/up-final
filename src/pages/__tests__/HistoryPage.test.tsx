@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n';
 import { resolveSixAxisInputShortLabel } from '../../i18n/resolveSixAxisInputShortLabel';
@@ -53,14 +54,19 @@ vi.mock('../../services/localStorageService', async (importOriginal) => {
   };
 });
 
-function renderHistoryPage(): { container: HTMLDivElement; root: Root } {
+function renderHistoryPage(
+  state?: { focusBadgeId?: string }
+): { container: HTMLDivElement; root: Root } {
+  const router = createMemoryRouter([{ path: '/history', element: <HistoryPage /> }], {
+    initialEntries: [{ pathname: '/history', state }],
+  });
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   act(() => {
     root.render(
       <I18nextProvider i18n={i18n}>
-        <HistoryPage />
+        <RouterProvider router={router} />
       </I18nextProvider>
     );
   });
@@ -196,6 +202,22 @@ describe('HistoryPage', () => {
     });
 
     expect(loadSeenBadgeIds()).toEqual(loadTrainingFootprint().unlockedBadgeIds);
+
+    act(() => root.unmount());
+  });
+
+  it('auto-expands and opens the focused badge when route state carries focusBadgeId', async () => {
+    const { container, root } = renderHistoryPage({ focusBadgeId: 'IGN-01' });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const rhythmToggle = container.querySelector('#history-rhythm-toggle');
+    const rhythmPanel = container.querySelector('#history-rhythm-panel');
+    expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('true');
+    expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('false');
+    expect(container.querySelector('#spec-badge-inspect-IGN-01')).not.toBeNull();
 
     act(() => root.unmount());
   });

@@ -5,7 +5,6 @@ import { ROUTES } from '../../config/routes';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useBadgeToastStore, type BadgeToastEntry } from '../../stores/badgeToastStore';
 
-const DISPLAY_MS = 3500;
 const EXIT_MS = 250;
 
 const BannerCard: FC<{ entry: BadgeToastEntry; onDone: () => void }> = ({ entry, onDone }) => {
@@ -14,19 +13,14 @@ const BannerCard: FC<{ entry: BadgeToastEntry; onDone: () => void }> = ({ entry,
   const [phase, setPhase] = useState<'enter' | 'exit'>('enter');
 
   useEffect(() => {
-    const stayTimer = setTimeout(() => setPhase('exit'), DISPLAY_MS);
-    return () => clearTimeout(stayTimer);
-  }, []);
-
-  useEffect(() => {
     if (phase !== 'exit') return;
     const exitTimer = setTimeout(onDone, EXIT_MS);
     return () => clearTimeout(exitTimer);
   }, [phase, onDone]);
 
   const handleTap = () => {
-    navigate(ROUTES.history);
-    onDone();
+    navigate(ROUTES.history, { state: { focusBadgeId: entry.badgeId } });
+    setPhase('exit');
   };
 
   const badgeName = t(`history.badges.items.${entry.badgeId}.name`);
@@ -66,7 +60,7 @@ const SpecBadgeUnlockBanner: FC = () => {
 
   return (
     <div
-      className={`pointer-events-none fixed inset-x-0 top-0 ${Z_INDEX_CLASS.badgeUnlockToast} flex justify-center pt-[calc(env(safe-area-inset-top,0px)+0.75rem)] px-4`}
+      className={`pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+4.5rem)] ${Z_INDEX_CLASS.badgeUnlockToast} flex justify-center px-4`}
       aria-live="polite"
     >
       <BannerCard key={current.badgeId + current.queuedAt} entry={current} onDone={handleDone} />

@@ -19,6 +19,7 @@ interface HistorySpecBadgeRackProps {
   /** Parent rhythm panel is open — inspection sheet resets when this goes false. */
   inspectionEnabled: boolean;
   unseenBadgeIds: ReadonlySet<string>;
+  focusedBadgeId?: string | null;
 }
 
 interface SpecBadgeGridProps {
@@ -84,6 +85,7 @@ const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onTogg
               return (
                 <li key={badge.id}>
                   <button
+                    id={`spec-badge-trigger-${badge.id}`}
                     type="button"
                     aria-expanded={selected}
                     aria-controls={selected ? `spec-badge-inspect-${badge.id}` : undefined}
@@ -120,7 +122,12 @@ const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onTogg
   );
 };
 
-const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectionEnabled, unseenBadgeIds }) => {
+const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({
+  badges,
+  inspectionEnabled,
+  unseenBadgeIds,
+  focusedBadgeId,
+}) => {
   const { t } = useTranslation('common');
   const [openId, setOpenId] = useState<TrainingFootprintBadgeId | null>(null);
   const coreBadges = badges.filter((row) => CORE_ID_SET.has(row.id));
@@ -129,6 +136,19 @@ const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectio
   useEffect(() => {
     if (!inspectionEnabled) setOpenId(null);
   }, [inspectionEnabled]);
+
+  useEffect(() => {
+    if (!inspectionEnabled || focusedBadgeId == null) return;
+    setOpenId(focusedBadgeId as TrainingFootprintBadgeId);
+  }, [focusedBadgeId, inspectionEnabled]);
+
+  useEffect(() => {
+    if (!inspectionEnabled || focusedBadgeId == null) return;
+    const target = document.getElementById(`spec-badge-trigger-${focusedBadgeId}`);
+    if (typeof target?.scrollIntoView === 'function') {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusedBadgeId, inspectionEnabled]);
 
   useEffect(() => {
     if (openId == null) return;
