@@ -12,9 +12,11 @@
       "scopeScores": "六軸分數與雷達合併結果",
       "scopeInputs": "各評測頁輸入草稿（力量、心肺、爆發、肌肉量、握力、臂圍、FFMI 等）",
       "scopeProfile": "首頁身體資料與天梯公開檔案",
+      "scopeFootprint": "測功節奏（出勤點陣）",
+      "scopeBadges": "機體規格銘牌（已解鎖成就）",
       "scopeHistory": "測功日誌（六軸快照紀錄）",
       "backupNote": "「立即備份至雲端」會將目前本機資料上傳至你的 Google 帳號雲端空間。",
-      "restoreWarning": "「從雲端還原」會以雲端快照覆寫本機分數與歷史，請確認後再操作。",
+      "restoreWarning": "「從雲端還原」會覆寫本機分數與測功日誌；測功節奏與銘牌則與雲端合併，空裝置不會清掉已解鎖成就。請確認後再操作。",
       "requirements": "需使用 Google 登入（不可為訪客）並持有有效 Pro 訂閱。"
     },
     "syncBackup": "立即備份至雲端",
@@ -98,12 +100,12 @@
       }
     },
     "sync": {
-      "backupOk": "結構化備份已完成（profile + 歷史文件）。",
+      "backupOk": "雲端備份已完成。",
       "backupFail": "備份失敗 — 請檢查網路或稍後再試。",
       "unavailable": "目前無法使用雲端同步，請稍後再試。",
       "permissionDenied": "目前無法完成同步，請稍後再試。",
       "authFail": "雲端同步需要已登入的 Google 帳號（不可為匿名）。",
-      "restoreOk": "已用雲端快照覆寫本機分數與歷史。",
+      "restoreOk": "已覆寫本機分數與測功日誌；測功節奏與銘牌已與雲端合併。",
       "restoreEmpty": "尚無雲端快照。",
       "restoreFail": "還原失敗 — 請檢查網路或稍後再試。"
     },

@@ -12,9 +12,11 @@
       "scopeScores": "Six-axis scores and merged radar results",
       "scopeInputs": "Assessment drafts (strength, cardio, explosive, muscle, grip, arm, FFMI, etc.)",
       "scopeProfile": "Home body profile and ladder identity",
+      "scopeFootprint": "Dyno rhythm heatmap (attendance days)",
+      "scopeBadges": "Dyno spec badges (unlocked)",
       "scopeHistory": "Dyno logs (six-axis snapshot history)",
       "backupNote": "\"Backup Now\" uploads local data to your signed-in Google account.",
-      "restoreWarning": "\"Restore\" overwrites local scores and history — confirm first.",
+      "restoreWarning": "\"Restore\" overwrites local scores and dyno logs; dyno rhythm and spec badges merge with cloud — an empty device will not wipe unlocked badges. Confirm first.",
       "requirements": "Requires Google sign-in (not guest) and active Pro."
     },
     "syncBackup": "Backup Now",
@@ -103,7 +105,7 @@
       "unavailable": "Cloud sync unavailable. Try again later.",
       "permissionDenied": "Cloud sync failed. Try again later.",
       "authFail": "Cloud sync needs a signed-in Google account (not guest).",
-      "restoreOk": "Local data replaced from cloud snapshot.",
+      "restoreOk": "Local scores and dyno logs replaced; dyno rhythm and spec badges merged from cloud.",
       "restoreEmpty": "No cloud snapshot found.",
       "restoreFail": "Restore failed — check network and retry."
     },

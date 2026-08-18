@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ToolsPage from '../ToolsPage';
+import enTools from '../../i18n/locales/en/common/tools.json';
 
 const mockUseUiGate = vi.fn();
 const mockUseVehicleCodexScores = vi.fn();
@@ -33,8 +34,7 @@ vi.mock('../../components/ladder/LeaderboardGateSheet', () => ({
   default: () => null,
 }));
 
-const SYNC_RESTORE_WARNING =
-  '"Restore" overwrites local scores and history — confirm first.';
+const SYNC_RESTORE_WARNING = enTools.tools.syncInfo.restoreWarning;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -46,6 +46,8 @@ vi.mock('react-i18next', () => ({
           'tools.syncInfo.toggleExpand': 'Show sync details',
           'tools.syncInfo.toggleCollapse': 'Hide sync details',
           'tools.syncInfo.restoreWarning': SYNC_RESTORE_WARNING,
+          'tools.syncInfo.scopeFootprint': enTools.tools.syncInfo.scopeFootprint,
+          'tools.syncInfo.scopeBadges': enTools.tools.syncInfo.scopeBadges,
           'tools.syncBackup': 'Backup Now',
           'tools.syncRestore': 'Restore',
           'tools.syncUpgrade': 'Unlock Pro',
@@ -140,6 +142,8 @@ describe('ToolsPage cloud sync card', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(panel?.hasAttribute('hidden')).toBe(false);
     expect(container.textContent).toContain(SYNC_RESTORE_WARNING);
+    expect(container.textContent).toContain(enTools.tools.syncInfo.scopeFootprint);
+    expect(container.textContent).toContain(enTools.tools.syncInfo.scopeBadges);
 
     unmount();
   });

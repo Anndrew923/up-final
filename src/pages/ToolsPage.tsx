@@ -174,6 +174,8 @@ export default function ToolsPage() {
                 <li>{t('tools.syncInfo.scopeScores', { ns: 'common' })}</li>
                 <li>{t('tools.syncInfo.scopeInputs', { ns: 'common' })}</li>
                 <li>{t('tools.syncInfo.scopeProfile', { ns: 'common' })}</li>
+                <li>{t('tools.syncInfo.scopeFootprint', { ns: 'common' })}</li>
+                <li>{t('tools.syncInfo.scopeBadges', { ns: 'common' })}</li>
                 <li>{t('tools.syncInfo.scopeHistory', { ns: 'common' })}</li>
               </ul>
               <p>{t('tools.syncInfo.backupNote', { ns: 'common' })}</p>
