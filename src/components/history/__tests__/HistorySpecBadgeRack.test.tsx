@@ -24,6 +24,8 @@ const SAMPLE_BADGES: SpecBadgeView[] = [...CORE_SPEC_BADGE_IDS, ...OPTIONAL_SPEC
   })
 );
 
+const EMPTY_UNSEEN = new Set<string>();
+
 function renderRack(inspectionEnabled = true): { container: HTMLDivElement; root: Root } {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -31,7 +33,7 @@ function renderRack(inspectionEnabled = true): { container: HTMLDivElement; root
   act(() => {
     root.render(
       <I18nextProvider i18n={i18n}>
-        <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled={inspectionEnabled} />
+        <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled={inspectionEnabled} unseenBadgeIds={EMPTY_UNSEEN} />
       </I18nextProvider>
     );
   });
@@ -97,7 +99,7 @@ describe('HistorySpecBadgeRack', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled />
+          <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled unseenBadgeIds={EMPTY_UNSEEN} />
         </I18nextProvider>
       );
     });
@@ -110,12 +112,32 @@ describe('HistorySpecBadgeRack', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled={false} />
+          <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled={false} unseenBadgeIds={EMPTY_UNSEEN} />
         </I18nextProvider>
       );
     });
 
     expect(container.querySelector('#spec-badge-inspect-IGN-01')).toBeNull();
+
+    act(() => root.unmount());
+  });
+
+  it('applies unseen-glow animation class only to badges in the unseen set', () => {
+    const unseenIds = new Set(['IGN-01']);
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <HistorySpecBadgeRack badges={SAMPLE_BADGES} inspectionEnabled unseenBadgeIds={unseenIds} />
+        </I18nextProvider>
+      );
+    });
+
+    const allSvgs = Array.from(container.querySelectorAll('svg'));
+    const glowing = allSvgs.filter((svg) => svg.classList.contains('animate-unseen-glow'));
+    expect(glowing).toHaveLength(1);
 
     act(() => root.unmount());
   });

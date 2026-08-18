@@ -139,6 +139,12 @@ export default {
           '0%, 100%': { opacity: '0.5' },
           '50%': { opacity: '1' },
         },
+        /** Spec badge rack — one-shot cyan glow for newly unlocked plates. */
+        'unseen-glow': {
+          '0%': { filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.8))' },
+          '70%': { filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.4))' },
+          '100%': { filter: 'drop-shadow(0 0 0px rgba(34, 211, 238, 0))' },
+        },
       },
       transitionTimingFunction: {
         'report-ease': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -161,6 +167,7 @@ export default {
         'arena-radar-sweep': 'arena-radar-sweep 6s linear infinite',
         'arena-cloud-breathe': 'arena-cloud-breathe 2.8s ease-in-out infinite',
         'arena-telemetry-pulse': 'arena-telemetry-pulse 2.4s ease-in-out infinite',
+        'unseen-glow': 'unseen-glow 1.8s ease-out forwards',
       },
     },
   },

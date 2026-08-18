@@ -18,6 +18,7 @@ interface HistorySpecBadgeRackProps {
   badges: SpecBadgeView[];
   /** Parent rhythm panel is open — inspection sheet resets when this goes false. */
   inspectionEnabled: boolean;
+  unseenBadgeIds: ReadonlySet<string>;
 }
 
 interface SpecBadgeGridProps {
@@ -25,6 +26,7 @@ interface SpecBadgeGridProps {
   openId: TrainingFootprintBadgeId | null;
   ariaLabel: string;
   onToggle: (id: TrainingFootprintBadgeId) => void;
+  unseenBadgeIds: ReadonlySet<string>;
 }
 
 function inspectAlignClass(columnIndex: number): string {
@@ -64,7 +66,7 @@ const SpecBadgeInspectPanel: FC<{ badge: SpecBadgeView }> = ({ badge }) => {
   );
 };
 
-const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onToggle }) => {
+const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onToggle, unseenBadgeIds }) => {
   const { t } = useTranslation('common');
 
   // WHY: inspect copy is an in-flow col-span row under the selected plates.
@@ -96,6 +98,7 @@ const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onTogg
                       unlocked={badge.unlocked}
                       burned={BURNED_BADGE_IDS.has(badge.id)}
                       selected={selected}
+                      unseenGlow={unseenBadgeIds.has(badge.id)}
                     >
                       <HistorySpecBadgeGlyph id={badge.id} />
                     </CompactTitaniumPlate>
@@ -117,7 +120,7 @@ const SpecBadgeGrid: FC<SpecBadgeGridProps> = ({ rows, openId, ariaLabel, onTogg
   );
 };
 
-const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectionEnabled }) => {
+const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectionEnabled, unseenBadgeIds }) => {
   const { t } = useTranslation('common');
   const [openId, setOpenId] = useState<TrainingFootprintBadgeId | null>(null);
   const coreBadges = badges.filter((row) => CORE_ID_SET.has(row.id));
@@ -151,6 +154,7 @@ const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectio
         openId={openId}
         ariaLabel={t('history.badges.rackAria')}
         onToggle={handleToggle}
+        unseenBadgeIds={unseenBadgeIds}
       />
       <p className="mb-2 mt-4 font-mono text-[10px] uppercase tracking-wider text-zinc-500">
         {t('history.badges.optionalRackTitle')}
@@ -160,6 +164,7 @@ const HistorySpecBadgeRack: FC<HistorySpecBadgeRackProps> = ({ badges, inspectio
         openId={openId}
         ariaLabel={t('history.badges.optionalRackAria')}
         onToggle={handleToggle}
+        unseenBadgeIds={unseenBadgeIds}
       />
     </div>
   );

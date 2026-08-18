@@ -39,6 +39,7 @@ export interface CompactTitaniumPlateProps {
   unlocked: boolean;
   burned: boolean;
   selected: boolean;
+  unseenGlow?: boolean;
   children: ReactNode;
 }
 
@@ -53,6 +54,7 @@ export const CompactTitaniumPlate: FC<CompactTitaniumPlateProps> = ({
   unlocked,
   burned,
   selected,
+  unseenGlow,
   children,
 }) => {
   const showBurn = unlocked && burned;
@@ -61,7 +63,7 @@ export const CompactTitaniumPlate: FC<CompactTitaniumPlateProps> = ({
   const glyphY = 24 - GLYPH_ORIGIN * GLYPH_SCALE;
 
   return (
-    <svg viewBox={`0 0 ${PLATE_W} ${PLATE_H}`} fill="none" className="h-12 w-full sm:h-14" aria-hidden>
+    <svg viewBox={`0 0 ${PLATE_W} ${PLATE_H}`} fill="none" className={`h-12 w-full sm:h-14${unseenGlow ? ' animate-unseen-glow motion-reduce:animate-none' : ''}`} aria-hidden>
       <g filter={selected ? `url(#${HISTORY_TI_SELECTED_GLOW_ID})` : undefined}>
         <rect
           {...PLATE_FRAME}

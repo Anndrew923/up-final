@@ -50,6 +50,7 @@ function levelLabelKey(level: FootprintLevel | 0): string {
 export type HistoryFootprintDashboardProps = TrainingFootprintPanelView & {
   expanded: boolean;
   onToggle: () => void;
+  unseenBadgeIds: ReadonlySet<string>;
 };
 
 const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
@@ -60,6 +61,7 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
   badges,
   expanded,
   onToggle,
+  unseenBadgeIds,
 }) => {
   const { t } = useTranslation('common');
   const title = t('history.footprint.title');
@@ -181,7 +183,7 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
                 {t('history.footprint.legendPr')}
               </li>
             </ul>
-            <HistorySpecBadgeRack badges={badges} inspectionEnabled={expanded} />
+            <HistorySpecBadgeRack badges={badges} inspectionEnabled={expanded} unseenBadgeIds={unseenBadgeIds} />
           </div>
         </div>
       </div>

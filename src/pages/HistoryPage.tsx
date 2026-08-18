@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import HistoryFootprintDashboard from '../components/history/HistoryFootprintDashboard';
 import { formatHistorySavedAt } from '../i18n/formatHistorySavedAt';
@@ -6,8 +6,9 @@ import { resolveSixAxisInputShortLabel } from '../i18n/resolveSixAxisInputShortL
 import { useHistoryRhythmExpanded } from '../hooks/useHistoryRhythmExpanded';
 import { useTrainingFootprint } from '../hooks/useTrainingFootprint';
 import { persistSpecBadgeUnionFromDevice } from '../services/specBadgeDeriveSnapshot';
-import { markBadgesAsSeen } from '../services/specBadgeSeenService';
+import { loadSeenBadgeIds, markBadgesAsSeen } from '../services/specBadgeSeenService';
 import { loadTrainingFootprint } from '../services/trainingFootprintService';
+import { getUnseenBadgeIds } from '../logic/core/specBadgeSeen';
 import { SIX_AXIS_METRICS } from '../types/scoring';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
@@ -20,6 +21,17 @@ export default function HistoryPage() {
   const scores = useScoreStore((s) => s.scores);
   const footprint = useTrainingFootprint();
   const { expanded: rhythmExpanded, toggle: toggleRhythm } = useHistoryRhythmExpanded();
+
+  // WHY: Snapshot unseen IDs once at mount so the glow animation fires only on first visit.
+  // Pure read — no writes, no dispatches.
+  const unseenBadgeIds = useMemo<ReadonlySet<string>>(() => {
+    const stored = loadSeenBadgeIds();
+    if (stored === null) return new Set();
+    const persisted = loadTrainingFootprint().unlockedBadgeIds;
+    const live = footprint.badges.filter((b) => b.unlocked).map((b) => b.id);
+    return new Set(getUnseenBadgeIds([...persisted, ...live], stored));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadLocalHistory();
@@ -55,6 +67,7 @@ export default function HistoryPage() {
             {...footprint}
             expanded={rhythmExpanded}
             onToggle={toggleRhythm}
+            unseenBadgeIds={unseenBadgeIds}
           />
         </div>
 
