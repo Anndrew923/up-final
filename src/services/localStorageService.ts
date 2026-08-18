@@ -14,6 +14,7 @@ import {
   type LocalHistoryRecord,
 } from '../logic/core/localHistoryRecord';
 import { clearAllDynoIntelLogs, hasAnyDynoIntelLogs } from './dynoIntelLogPersistence';
+import { clearSpecBadgeSeen } from './specBadgeSeenService';
 import { clearTrainingFootprint } from './trainingFootprintService';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
@@ -372,6 +373,7 @@ export function clearLocalData(): void {
   Object.values(STORAGE_KEYS).forEach((key) => safeRemoveItem(key));
   clearAllDynoIntelLogs();
   clearTrainingFootprint();
+  clearSpecBadgeSeen();
   notifyProfileObservers();
   notifyPhysicalProfileObservers();
   notifyCardioInputsObservers();

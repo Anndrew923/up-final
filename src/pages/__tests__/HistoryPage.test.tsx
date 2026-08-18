@@ -10,10 +10,26 @@ import { HISTORY_TI_PLATE_GRAD_ID } from '../../components/history/TitaniumBadge
 import { WEEKLY_RHYTHM_TARGET } from '../../logic/core/trainingFootprint';
 import { SIX_AXIS_METRICS } from '../../types/scoring';
 import HistoryPage from '../HistoryPage';
+import {
+  loadSeenBadgeIds,
+  SPEC_BADGE_SEEN_STORAGE_KEY,
+} from '../../services/specBadgeSeenService';
+import { loadTrainingFootprint } from '../../services/trainingFootprintService';
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
+
+const storage = vi.hoisted(() => new Map<string, string>());
+
+vi.mock('../../lib/safeLocalStorage', () => ({
+  safeGetItem: (key: string) => storage.get(key) ?? null,
+  safeSetItem: (key: string, value: string) => {
+    storage.set(key, value);
+    return true;
+  },
+  safeRemoveItem: (key: string) => storage.delete(key),
+}));
 
 const SAMPLE_RECORD: LocalHistoryRecord = {
   id: 'history-test-1',
@@ -57,6 +73,7 @@ describe('HistoryPage', () => {
   });
 
   afterEach(async () => {
+    storage.clear();
     document.body.innerHTML = '';
     await i18n.changeLanguage('zh-Hant');
   });
@@ -143,6 +160,42 @@ describe('HistoryPage', () => {
     expect(rhythmToggle?.className).toContain('flex-col');
     expect(rhythmToggle?.textContent).toContain(`This week 0/${WEEKLY_RHYTHM_TARGET}`);
     expect(rhythmToggle?.textContent).toContain('Lifetime 0 days');
+
+    act(() => root.unmount());
+  });
+
+  it('marks current unlocked badges as seen on entry so the nav dot clears immediately', async () => {
+    storage.set(
+      SPEC_BADGE_SEEN_STORAGE_KEY,
+      JSON.stringify({ schemaVersion: 1, seenBadgeIds: [] })
+    );
+
+    const { root } = renderHistoryPage();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const unlocked = loadTrainingFootprint().unlockedBadgeIds;
+    expect(unlocked.length).toBeGreaterThan(0);
+    expect(loadSeenBadgeIds()).toEqual(unlocked);
+
+    act(() => root.unmount());
+  });
+
+  it('keeps seen aligned with the unlocked set after history-page catch-up writes', async () => {
+    storage.set(
+      SPEC_BADGE_SEEN_STORAGE_KEY,
+      JSON.stringify({ schemaVersion: 1, seenBadgeIds: [] })
+    );
+
+    const { root } = renderHistoryPage();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(loadSeenBadgeIds()).toEqual(loadTrainingFootprint().unlockedBadgeIds);
 
     act(() => root.unmount());
   });

@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ONBOARDING_ASSESS_TARGET_ID } from '../../constants/onboardingTargets';
 import { NAV_CENTER_TAB_INDEX, NAV_ITEMS } from '../../config/nav.config';
+import { useHistorySpecBadgeNotification } from '../../hooks/useHistorySpecBadgeNotification';
 import { triggerNavTabTick } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked, useUiInteractionStore } from '../../stores/uiInteractionStore';
 import { NavGlyph } from './NavIcons';
@@ -35,6 +36,7 @@ export default function BottomNav() {
   const isBlocked = useShellInteractionBlocked();
   const bootPhase = useUiInteractionStore((s) => s.bootSequencePhase);
   const isResonanceBlocking = useUiInteractionStore((s) => s.isHomeResonanceBlocking);
+  const { hasUnseenSpecBadge } = useHistorySpecBadgeNotification();
 
   const handleTabPress = (targetPath: string) => {
     if (pathname !== targetPath) triggerNavTabTick();
@@ -60,6 +62,13 @@ export default function BottomNav() {
       <div className="relative z-10 flex w-full min-w-0 items-end px-1 sm:px-2">
         {NAV_ITEMS.map((item, index) => {
           const isCenter = index === NAV_CENTER_TAB_INDEX;
+          const itemTitle = t(`${item.labelKey}.title`, { ns: 'common' });
+          const showHistoryUnseenDot =
+            item.key === 'history' && hasUnseenSpecBadge && pathname !== item.path;
+          const unseenLabel = showHistoryUnseenDot
+            ? t('navbar.history.unseenBadge', { ns: 'common' })
+            : null;
+          const itemAriaLabel = unseenLabel ? `${itemTitle}, ${unseenLabel}` : itemTitle;
 
           if (isCenter) {
             return (
@@ -123,6 +132,7 @@ export default function BottomNav() {
               to={item.path}
               end
               onClick={() => handleTabPress(item.path)}
+              aria-label={itemAriaLabel}
               className={({ isActive }) =>
                 [
                   TAB_LINK_BASE,
@@ -135,15 +145,29 @@ export default function BottomNav() {
                 ].join(' ')
               }
             >
-              {({ isActive }) => (
-                <>
-                  <NavGlyph iconId={item.iconId} className="h-6 w-6 shrink-0" />
-                  <NavTabLabels labelKey={item.labelKey} accent={isActive} className={NAV_LABEL_INSET} />
-                  {isActive ? (
-                    <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.95)]" />
-                  ) : null}
-                </>
-              )}
+              {({ isActive }) => {
+                return (
+                  <>
+                    <span className="relative inline-flex shrink-0">
+                      <NavGlyph iconId={item.iconId} className="h-6 w-6 shrink-0" />
+                      {showHistoryUnseenDot ? (
+                        <span
+                          className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-zinc-950"
+                          aria-hidden
+                        />
+                      ) : null}
+                    </span>
+                    <NavTabLabels
+                      labelKey={item.labelKey}
+                      accent={isActive}
+                      className={NAV_LABEL_INSET}
+                    />
+                    {isActive ? (
+                      <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.95)]" />
+                    ) : null}
+                  </>
+                );
+              }}
             </NavLink>
           );
         })}

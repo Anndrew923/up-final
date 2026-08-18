@@ -575,7 +575,7 @@
     "tools": { "title": "GARAGE", "code": "GARAGE" },
     "assessment": { "title": "DYNO", "code": "DYNO" },
     "ladder": { "title": "RANK", "code": "RANK" },
-    "history": { "title": "LOGS", "code": "LOGS" }
+    "history": { "title": "LOGS", "code": "LOGS", "unseenBadge": "New spec badge unlocked" }
   },
   "shellAvatarFallback": "Guest",
   "shellAvatarAria": "User avatar, initial {{initial}}",
