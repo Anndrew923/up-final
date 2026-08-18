@@ -580,5 +580,9 @@
   "shellAvatarFallback": "Guest",
   "shellAvatarAria": "User avatar, initial {{initial}}",
   "shellSettingsAria": "Open settings",
-  "shellTitle": "Ultimate Physique"
+  "shellTitle": "Ultimate Physique",
+  "badgeToast": {
+    "unlocked": "Spec Unlocked",
+    "tapToView": "Tap to view"
+  }
 }

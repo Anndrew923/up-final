@@ -152,7 +152,7 @@ export default function BottomNav() {
                       <NavGlyph iconId={item.iconId} className="h-6 w-6 shrink-0" />
                       {showHistoryUnseenDot ? (
                         <span
-                          className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-zinc-950"
+                          className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-zinc-950 animate-pulse motion-reduce:animate-none"
                           aria-hidden
                         />
                       ) : null}

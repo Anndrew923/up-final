@@ -25,4 +25,6 @@ export const Z_INDEX_CLASS = {
   termsGateModal: 'z-[350]',
   /** Native back-press exit confirm — above terms gate so shutdown stays reachable. */
   exitConfirmModal: 'z-[360]',
+  /** Badge unlock HUD toast — above shell frame, below modals. */
+  badgeUnlockToast: 'z-[60]',
 } as const;

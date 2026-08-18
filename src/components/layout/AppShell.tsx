@@ -21,6 +21,8 @@ import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
+import SpecBadgeUnlockBanner from '../notifications/SpecBadgeUnlockBanner';
+import { useSpecBadgeUnlockToast } from '../../hooks/useSpecBadgeUnlockToast';
 import HudBackControl from './HudBackControl';
 import HudProfileControls from './HudProfileControls';
 
@@ -35,6 +37,7 @@ export interface AppShellProps {
  * reference-app-fitness `BottomNavBar.jsx` APK behavior — avoids WebView clipping / inset bugs).
  */
 export const AppShell: FC<AppShellProps> = ({ children }) => {
+  useSpecBadgeUnlockToast();
   const location = useLocation();
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();
@@ -89,6 +92,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       <BottomNav />
 
       <DynoIntelConsole />
+
+      <SpecBadgeUnlockBanner />
 
       <BootSequenceOverlay active={bootActive} onComplete={completeBoot} />
     </div>

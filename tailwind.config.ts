@@ -139,11 +139,21 @@ export default {
           '0%, 100%': { opacity: '0.5' },
           '50%': { opacity: '1' },
         },
-        /** Spec badge rack — one-shot cyan glow for newly unlocked plates. */
+        /** Badge unlock HUD toast — slide down from top then slide back up. */
+        'toast-slide-in': {
+          '0%': { transform: 'translate3d(0, -100%, 0)', opacity: '0' },
+          '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
+        },
+        'toast-slide-out': {
+          '0%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
+          '100%': { transform: 'translate3d(0, -100%, 0)', opacity: '0' },
+        },
+        /** Spec badge rack — one-shot cyan glow + scale bounce for newly unlocked plates. */
         'unseen-glow': {
-          '0%': { filter: 'drop-shadow(0 0 6px rgba(34, 211, 238, 0.8))' },
-          '70%': { filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.4))' },
-          '100%': { filter: 'drop-shadow(0 0 0px rgba(34, 211, 238, 0))' },
+          '0%': { filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.9))', transform: 'scale(1.04)' },
+          '30%': { filter: 'drop-shadow(0 0 5px rgba(34, 211, 238, 0.6))', transform: 'scale(1.0)' },
+          '70%': { filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.3))', transform: 'scale(1.0)' },
+          '100%': { filter: 'drop-shadow(0 0 0px rgba(34, 211, 238, 0))', transform: 'scale(1.0)' },
         },
       },
       transitionTimingFunction: {
@@ -167,7 +177,9 @@ export default {
         'arena-radar-sweep': 'arena-radar-sweep 6s linear infinite',
         'arena-cloud-breathe': 'arena-cloud-breathe 2.8s ease-in-out infinite',
         'arena-telemetry-pulse': 'arena-telemetry-pulse 2.4s ease-in-out infinite',
-        'unseen-glow': 'unseen-glow 1.8s ease-out forwards',
+        'toast-slide-in': 'toast-slide-in 300ms ease-out forwards',
+        'toast-slide-out': 'toast-slide-out 250ms ease-in forwards',
+        'unseen-glow': 'unseen-glow 2.8s ease-out forwards',
       },
     },
   },
