@@ -20,11 +20,11 @@
     "worldRecordLockIntro": "Adjusted FFMI exceeds the human-limit anchor for your sex. Adjust body fat or profile before saving to radar.",
     "anchorMale": "Male human-limit anchor (FFMI {{value}}).",
     "anchorFemale": "Female human-limit anchor (FFMI {{value}}).",
-    "submitRadar": "Write Score to Radar (Displacement Axis)",
+    "submitRadar": "Save to Radar · P2W",
     "submitDone": "Stored locally — Home radar updated.",
     "ctaProfile": "Fill Physical Profile on Home",
     "errors": {
-      "missing-profile": "Profile incomplete — add gender, age, height, and weight on Home.",
+      "missing-profile": "Profile incomplete — add sex, age, height, and weight on Home.",
       "missing-body-fat": "Enter body fat percentage.",
       "invalid-body-fat": "Body fat must be 3–60%.",
       "need-calculate": "Calculate once before saving.",

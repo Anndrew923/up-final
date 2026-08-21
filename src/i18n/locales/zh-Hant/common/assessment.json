@@ -1,7 +1,6 @@
 {
   "assessment": {
     "title": "性能測功機 //\u00a0DYNO",
-    "localFirstNote": "僅本機：此畫面不連 Firebase。",
     "referenceInfo": {
       "title": "評測參考資料",
       "toggleExpand": "展開資料",

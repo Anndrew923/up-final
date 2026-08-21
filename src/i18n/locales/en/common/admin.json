@@ -19,7 +19,7 @@
     "confirmApproveTitle": "Reset identity?",
     "confirmApproveBody": "This clears the reported nickname and/or avatar on the public ladder and marks the report resolved.",
     "confirmRejectTitle": "Dismiss report?",
-    "confirmRejectBody": "This closes the report without changing the user’s public identity.",
+    "confirmRejectBody": "This closes the report without changing the user's public identity.",
     "unknownName": "Unknown",
     "unknownType": "Unknown reason",
     "unknownTime": "Unknown time",

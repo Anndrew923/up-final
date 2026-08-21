@@ -3,7 +3,7 @@
     "triggerAria": "Open DYNO INTEL console",
     "triggerTicker": {
       "online": "INTEL: ONLINE",
-      "scanning": "SCANNING...",
+      "scanning": "SCANNING…",
       "coreMax": "CORE_MAX"
     },
     "triggerDiscovery": {
@@ -153,7 +153,7 @@
       "title": "DYNO INTEL TELEMETRY",
       "subtitle": "Local readiness — Client / Emulator / Auth.",
       "statusOn": "Online",
-      "statusOff": "Tripped",
+      "statusOff": "Offline",
       "serverNote": "Bypass and GEMINI_API_KEY live in functions/.env.local; use npm run dev:dyno. If Callable returns pro-required, check Emulator Functions logs.",
       "rows": {
         "clientDev": "Vite DEV mode",
@@ -164,7 +164,7 @@
       }
     },
     "humanBrief": {
-      "prPercentileFallback": "【Global Peer PR Percentile Data Is Actively Being Gathered】\nWhen sufficient data is accumulated, this feature will unlock via a backend sync. We sincerely invite you to recruit new players to accelerate the calibration of this ultimate coordinate of human physical limits!",
+      "prPercentileFallback": "[GLOBAL PR PERCENTILE — CALIBRATING]\n\nNot enough peer data yet. This unlocks on a future sync — bring more lifters in and we get there faster.",
       "hallOfFameSentence": "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}."
     },
     "hallOfFame": {

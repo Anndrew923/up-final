@@ -1,13 +1,13 @@
 {
   "onboarding": {
     "overlayAria": "Core Boot Protocol",
-    "scrimDismissBlocked": "Initialization incomplete. Please execute baseline calibration.",
+    "scrimDismissBlocked": "Baseline calibration required before launch.",
     "next": "NEXT",
     "ignite": "IGNITE",
     "phase": "Phase",
     "phase1": {
       "kicker": "{{phase}} 01 · System Wake",
-      "body": "System wake complete. Chassis standby—ready to squeeze out your max horsepower."
+      "body": "System wake complete. Chassis on standby — time to unleash max horsepower."
     },
     "profileInput": {
       "kicker": "{{phase}} 01.5 · Spec Registration",
@@ -16,10 +16,10 @@
     },
     "baseline": {
       "protocolTitle": "6-Axis Dyno Protocol",
-      "protocolDesc": "Six axes from the sports-science engine; parameters lock all later benchmarks.",
+      "protocolDesc": "Six axes from the sports-science engine. These parameters anchor every later benchmark.",
       "protocolExpand": "Expand protocol details",
       "protocolCollapse": "Collapse protocol details",
-      "authorityFooter": "⚠️ Scores benchmark live data—straight to raw Dyno on boot.",
+      "authorityFooter": "⚠️ Scored against live data — straight to raw dyno numbers.",
       "features": {
         "strength": {
           "label": "STRENGTH / MAX HP",

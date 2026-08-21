@@ -28,7 +28,7 @@
         "sun": "S"
       },
       "levelEmpty": "{{date}} idle",
-      "levelTool": "{{date}} gym tool",
+      "levelTool": "{{date}} · tool used",
       "levelArchive": "{{date}} snapshot archived",
       "levelPr": "{{date}} personal record",
       "legendTool": "Tool",

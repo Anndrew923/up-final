@@ -4,10 +4,10 @@
     "title": "Welcome",
     "subtitle": "Pick a sign-in method to start assessments.",
     "google": "Sign in with Google",
-    "googleBusy": "Signing in...",
+    "googleBusy": "Signing in…",
     "guest": "Continue as Guest",
-    "guestBusy": "Preparing...",
-    "fail": "Google sign-in didn’t finish. Check your network and complete the account prompt, then try again.",
+    "guestBusy": "Preparing…",
+    "fail": "Google sign-in didn't finish. Check your network and complete the account prompt, then try again.",
     "note": "Start as guest — link Google account later.",
     "continue": "Continue"
   }

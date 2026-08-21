@@ -73,7 +73,7 @@
         "inputHint": "Total must exceed bar weight.",
         "leftoverWarning": "Cannot match exactly; {{value}} {{unit}} left per side.",
         "activePlateSet": "Active set: {{values}} ({{unit}}).",
-        "calculate": "Calculate Loading"
+        "calculate": "Calculate Plates"
       },
       "resultModal": {
         "closeAria": "Close result",
@@ -125,7 +125,7 @@
         "arm": "Flexed arm (cm)"
       },
       "gender": {
-        "label": "Gender",
+        "label": "Sex",
         "options": {
           "male": "Male",
           "female": "Female"
@@ -190,16 +190,16 @@
         "goldenValue": "Wt {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "maxLabel": "Max-tuned",
         "maxValue": "Wt {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
-        "upgradeGuideCut_male": "Guide: [Cut] Shed ~{{fatToLoseKg}}kg fat to show lines.",
-        "upgradeGuideCut_female": "Guide: [Cut] Shed ~{{fatToLoseKg}}kg fat to show lines.",
+        "upgradeGuideCut_male": "Guide: [Cut] Drop ~{{fatToLoseKg}}kg of fat to reveal definition.",
+        "upgradeGuideCut_female": "Guide: [Cut] Drop ~{{fatToLoseKg}}kg of fat to reveal definition.",
         "upgradeGuideGolden_male": "Guide: [Golden Ratio] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "upgradeGuideGolden_female": "Guide: [Golden Ratio] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "upgradeGuideLimit_male": "Guide: [Max-tuned] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "upgradeGuideLimit_female": "Guide: [Max-tuned] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "beyondTitle_male": "👑 Peak Physique Horizon",
-        "beyondBody_male": "Your physique has topped this gender's natural ceiling. Morphology Lab marks you as Legendary Peak — standard guides no longer apply. Hold the summit.",
+        "beyondBody_male": "Your physique has topped your sex's natural ceiling. Morphology Lab marks you as Legendary Peak — standard guides no longer apply. Hold the summit.",
         "beyondTitle_female": "👑 Peak Physique Horizon",
-        "beyondBody_female": "Your physique has topped this gender's natural ceiling. Morphology Lab marks you as Epic Apex — standard guides no longer apply. You own the limit proportions."
+        "beyondBody_female": "Your physique has topped your sex's natural ceiling. Morphology Lab marks you as Epic Apex — standard guides no longer apply. You own the limit proportions."
       },
       "help": {
         "dismiss": "Got it",
@@ -232,7 +232,7 @@
           "rowSmm": "Golden muscle",
           "maleSmm": "57% of FFM",
           "femaleSmm": "55% of FFM",
-          "outro": "Lean without flat; full without bulky — clothes-hanger geometry."
+          "outro": "Lean but never flat, full but never bulky — proportions that hang clothes."
         }
       },
       "appendix": {

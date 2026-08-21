@@ -1,7 +1,6 @@
 {
   "assessment": {
     "title": "Performance Dyno",
-    "localFirstNote": "Core-only: scores stay on device — no Firebase here.",
     "referenceInfo": {
       "title": "Scoring Guide",
       "toggleExpand": "Show References",
@@ -11,7 +10,7 @@
       "title": "Performance Snapshot",
       "toggleExpand": "Expand performance snapshot",
       "toggleCollapse": "Collapse performance snapshot",
-      "saveSnapshot": "Snapshot Status to Logs",
+      "saveSnapshot": "Save Snapshot",
       "saveDone": "Snapshot archived"
     },
     "axis": {
@@ -89,7 +88,7 @@
         "grip": {
           "m0": "Reading Peak Grip Signal…",
           "m1": "Calibrating Grip Conversion Factor…",
-          "m2": "Matching Gender-Weighted Model…",
+          "m2": "Matching Sex-Weighted Model…",
           "m3": "Scanning Grip-Axis Dynamic Range…",
           "m4": "Verifying Model Cap Logic…",
           "m5": "Synthesizing Grip-Axis Preview Score…",
