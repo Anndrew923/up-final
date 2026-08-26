@@ -6,15 +6,22 @@ import { ROUTES } from '../config/routes';
 import { HEALTH_TERMS_VERSION } from '../logic/core/termsAcceptance';
 import { markAuthOnboardingCompleted } from '../services/authOnboardingService';
 import { waitForAnonymousAuthSession } from '../services/authSessionWait';
-import { signInAnonymouslyWeb, signInWithGoogleWeb } from '../services/firebaseClient';
+import {
+  isNativeAppleSignInAvailable,
+  signInAnonymouslyWeb,
+  signInWithApple,
+  signInWithGoogleWeb,
+} from '../services/firebaseClient';
 import { persistHealthTermsAcceptance } from '../services/termsAcceptanceService';
 
 const AuthChoicePage: FC = () => {
   const { t } = useTranslation('common');
   const location = useLocation();
   const navigate = useNavigate();
-  const [busy, setBusy] = useState<'none' | 'google' | 'guest'>('none');
-  const [error, setError] = useState(false);
+  // WHY: Same gate as firebaseClient — hides Apple on emulator / non-iOS so the button never dead-ends.
+  const showAppleSignIn = isNativeAppleSignInAvailable();
+  const [busy, setBusy] = useState<'none' | 'apple' | 'google' | 'guest'>('none');
+  const [error, setError] = useState<'none' | 'apple' | 'google' | 'guest'>('none');
   const [termsPreviewOpen, setTermsPreviewOpen] = useState(false);
   const returnTo =
     location.state && typeof location.state === 'object' && 'returnTo' in location.state
@@ -27,14 +34,30 @@ const AuthChoicePage: FC = () => {
   })();
 
   const completeFlow = () => {
-    // WHY: Clicking Google / guest is the consent act — local stamp is sync; cloud audit is fire-and-forget.
+    // WHY: Clicking provider / guest is the consent act — local stamp is sync; cloud audit is fire-and-forget.
     persistHealthTermsAcceptance(HEALTH_TERMS_VERSION);
     markAuthOnboardingCompleted();
     navigate(targetRoute, { replace: true });
   };
 
+  const handleApple = async () => {
+    setError('none');
+    setBusy('apple');
+    try {
+      const user = await signInWithApple();
+      if (!user) {
+        return;
+      }
+      completeFlow();
+    } catch {
+      setError('apple');
+    } finally {
+      setBusy('none');
+    }
+  };
+
   const handleGoogle = async () => {
-    setError(false);
+    setError('none');
     setBusy('google');
     try {
       const user = await signInWithGoogleWeb();
@@ -43,21 +66,21 @@ const AuthChoicePage: FC = () => {
       }
       completeFlow();
     } catch {
-      setError(true);
+      setError('google');
     } finally {
       setBusy('none');
     }
   };
 
   const handleGuest = async () => {
-    setError(false);
+    setError('none');
     setBusy('guest');
     try {
       await signInAnonymouslyWeb();
       await waitForAnonymousAuthSession();
       completeFlow();
     } catch {
-      setError(true);
+      setError('guest');
     } finally {
       setBusy('none');
     }
@@ -85,18 +108,39 @@ const AuthChoicePage: FC = () => {
           <p className="text-sm leading-relaxed text-zinc-400">{t('authChoice.subtitle')}</p>
         </header>
 
-        {error ? (
+        {error === 'apple' ? (
+          <p className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {t('authChoice.failApple')}
+          </p>
+        ) : null}
+        {error === 'google' ? (
           <p className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
             {t('authChoice.fail')}
           </p>
         ) : null}
+        {error === 'guest' ? (
+          <p className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {t('authChoice.failGuest')}
+          </p>
+        ) : null}
 
         <div className="space-y-3 border-t border-zinc-800 pt-4">
+          {/* WHY: App Store 4.8 — Apple must appear when third-party login exists; Android never mounts this. */}
+          {showAppleSignIn ? (
+            <button
+              type="button"
+              onClick={() => void handleApple()}
+              disabled={busy !== 'none'}
+              className="ui-btn ui-btn-primary w-full justify-center"
+            >
+              {busy === 'apple' ? t('authChoice.appleBusy') : t('authChoice.apple')}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleGoogle()}
             disabled={busy !== 'none'}
-            className="ui-btn ui-btn-primary w-full justify-center"
+            className={`ui-btn w-full justify-center ${showAppleSignIn ? '' : 'ui-btn-primary'}`}
           >
             {busy === 'google' ? t('authChoice.googleBusy') : t('authChoice.google')}
           </button>
@@ -119,7 +163,9 @@ const AuthChoicePage: FC = () => {
             {t('legal.consentLink')}
           </button>
         </p>
-        <p className="text-xs leading-relaxed text-zinc-500">{t('authChoice.note')}</p>
+        <p className="text-xs leading-relaxed text-zinc-500">
+          {showAppleSignIn ? t('authChoice.noteApple') : t('authChoice.note')}
+        </p>
       </section>
     </main>
   );

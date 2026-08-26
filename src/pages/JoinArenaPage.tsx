@@ -25,9 +25,13 @@ import {
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
-import { openPlaySubscriptionManagement } from '../services/playSubscriptionManageService';
+import { openStoreSubscriptionManagement } from '../services/storeSubscriptionManageService';
 import { purchaseProSubscription } from '../services/subscriptionService';
-import { signInWithGoogleWeb } from '../services/firebaseClient';
+import {
+  isNativeAppleSignInAvailable,
+  signInWithApple,
+  signInWithGoogleWeb,
+} from '../services/firebaseClient';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { selectEntitlementState } from '../stores/entitlementSelectors';
@@ -55,10 +59,11 @@ const JoinArenaPage: FC = () => {
   const isDynoFunnel = joinFrom === 'dyno-intel';
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
-  const [banner, setBanner] = useState<'idle' | 'auth-ok'>('idle');
+  const [banner, setBanner] = useState<'idle' | 'auth-ok' | 'apple-ok'>('idle');
   const [resultModal, setResultModal] = useState<ResultModalState>({ open: false });
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
+  const showAppleSignIn = isNativeAppleSignInAvailable();
 
   const isPro = useEntitlementStore((s) => s.isPro);
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
@@ -82,6 +87,21 @@ const JoinArenaPage: FC = () => {
       const user = await signInWithGoogleWeb();
       if (user) {
         setBanner('auth-ok');
+      }
+    } catch {
+      setResultModal({ open: true, kind: 'failure', failureReason: 'auth' });
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setBanner('idle');
+    setAuthBusy(true);
+    try {
+      const user = await signInWithApple();
+      if (user) {
+        setBanner('apple-ok');
       }
     } catch {
       setResultModal({ open: true, kind: 'failure', failureReason: 'auth' });
@@ -118,6 +138,11 @@ const JoinArenaPage: FC = () => {
     setBanner('idle');
 
     if (uiGate.kind === 'auth') {
+      // WHY: On iOS, primary CTA uses Apple directly (guideline 4.8); Android keeps auth-choice route.
+      if (showAppleSignIn) {
+        await handleAppleSignIn();
+        return;
+      }
       navigateFromUiGate(navigate, uiGate, returnTo);
       return;
     }
@@ -139,11 +164,12 @@ const JoinArenaPage: FC = () => {
   const primaryCtaLabel = (() => {
     if (billingBusy || authBusy || authStatus === 'loading') return t('billingLoading');
     if (isDynoFunnel) {
-      if (uiGate.kind === 'auth') return t('googleLogin');
+      if (uiGate.kind === 'auth') return showAppleSignIn ? t('appleLogin') : t('googleLogin');
       if (uiGate.kind === 'none') return t('returnToDynoIntel');
       return t('subscribeUnlockProDynoIntel');
     }
     if (uiGate.kind === 'auth') {
+      if (showAppleSignIn) return t('appleLogin');
       return isBackupFunnel
         ? t('googleLogin')
         : isBetaOpen
@@ -189,6 +215,11 @@ const JoinArenaPage: FC = () => {
             {t('googleLoginSuccess', { name: signedInDisplayName })}
           </p>
         ) : null}
+        {banner === 'apple-ok' ? (
+          <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            {t('appleLoginSuccess', { name: signedInDisplayName })}
+          </p>
+        ) : null}
         {showLadderBetaBanner ? (
           <p
             role="status"
@@ -205,7 +236,7 @@ const JoinArenaPage: FC = () => {
           type="button"
           className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/40 px-4 py-3 text-left text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/60"
           onClick={() => {
-            void openPlaySubscriptionManagement().catch(() => {
+            void openStoreSubscriptionManagement().catch(() => {
               // Store / browser sheet failures are non-fatal; user can retry.
             });
           }}
@@ -218,13 +249,28 @@ const JoinArenaPage: FC = () => {
             {t('identityTitle')}
           </p>
           {uiGate.kind === 'auth' ? (
-            <p className="mt-2 text-sm text-zinc-300">
-              {isBackupFunnel || isDynoFunnel
-                ? t('identityRequired')
-                : isBetaOpen
-                  ? t('identityOptionalBeta')
-                  : t('identityRequired')}
-            </p>
+            <div className="mt-2 space-y-3">
+              <p className="text-sm text-zinc-300">
+                {isBackupFunnel || isDynoFunnel
+                  ? t(showAppleSignIn ? 'identityRequiredApple' : 'identityRequired')
+                  : isBetaOpen
+                    ? t(showAppleSignIn ? 'identityOptionalBetaApple' : 'identityOptionalBeta')
+                    : t(showAppleSignIn ? 'identityRequiredApple' : 'identityRequired')}
+              </p>
+              {/* WHY: Secondary Google on iOS only — primary floating CTA already runs Apple. */}
+              {showAppleSignIn ? (
+                <button
+                  type="button"
+                  className="ui-btn w-full justify-center"
+                  disabled={authBusy || billingBusy}
+                  onClick={() => {
+                    void handleGoogleSignIn();
+                  }}
+                >
+                  {t('googleLogin')}
+                </button>
+              ) : null}
+            </div>
           ) : (
             <UserProIdentityRow
               className="mt-3"
@@ -246,6 +292,10 @@ const JoinArenaPage: FC = () => {
             const reason = resultModal.open ? resultModal.failureReason : 'billing';
             setResultModal({ open: false });
             if (reason === 'auth') {
+              if (showAppleSignIn) {
+                void handleAppleSignIn();
+                return;
+              }
               void handleGoogleSignIn();
               return;
             }

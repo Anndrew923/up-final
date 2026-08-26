@@ -60,8 +60,14 @@ vi.mock('../../services/accountDeletionService', () => ({
 }));
 
 vi.mock('../../services/firebaseClient', () => ({
+  isNativeAppleSignInAvailable: () => false,
+  signInWithApple: vi.fn(),
   signInWithGoogleWeb: vi.fn(),
   signOutFirebase: vi.fn(),
+}));
+
+vi.mock('../../services/storeSubscriptionManageService', () => ({
+  openStoreSubscriptionManagement: vi.fn(),
 }));
 
 vi.mock('../../services/subscriptionService', () => ({

@@ -3,12 +3,17 @@
     "kicker": "身份選擇",
     "title": "歡迎使用",
     "subtitle": "先選擇登入方式，就能開始評測與記錄。",
+    "apple": "使用 Apple 登入",
+    "appleBusy": "登入中...",
     "google": "使用 Google 登入",
     "googleBusy": "登入中...",
     "guest": "先匿名使用",
     "guestBusy": "準備中...",
     "fail": "這次 Google 登入沒有完成，請再試一次。請確認網路連線，並在跳出的帳號視窗完成授權。",
+    "failApple": "這次 Apple 登入沒有完成，請再試一次。請確認網路連線，並在系統授權視窗完成確認。",
+    "failGuest": "這次匿名登入沒有完成，請確認網路連線後再試一次。",
     "note": "你可以先匿名體驗，之後再登入 Google 綁定同一帳號。",
+    "noteApple": "你可以先匿名體驗，之後再以 Apple 或 Google 綁定同一帳號。",
     "continue": "繼續"
   }
 }

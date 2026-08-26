@@ -6,8 +6,13 @@ import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { markUserLocaleOverride } from '../i18n/language';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
-import { signInWithGoogleWeb, signOutFirebase } from '../services/firebaseClient';
-import { openPlaySubscriptionManagement } from '../services/playSubscriptionManageService';
+import {
+  isNativeAppleSignInAvailable,
+  signInWithApple,
+  signInWithGoogleWeb,
+  signOutFirebase,
+} from '../services/firebaseClient';
+import { openStoreSubscriptionManagement } from '../services/storeSubscriptionManageService';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { useBootSequence } from './useBootSequence';
 import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
@@ -21,6 +26,7 @@ import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 export type SettingsBanner =
   | 'idle'
   | 'sign-in-fail'
+  | 'sign-in-apple-fail'
   | 'sign-out-ok'
   | 'sign-out-fail'
   | 'restore-ok'
@@ -38,6 +44,7 @@ export type SettingsBanner =
 export type SettingsBusyAction =
   | 'none'
   | 'sign-in'
+  | 'sign-in-apple'
   | 'sign-out'
   | 'restore-purchases'
   | 'delete-account';
@@ -56,6 +63,8 @@ export interface SettingsPageState {
   busyAction: SettingsBusyAction;
   banner: SettingsBanner;
   canSignIn: boolean;
+  /** True only on native iOS with Apple auth available (App Store 4.8). */
+  showAppleSignIn: boolean;
   canSignOut: boolean;
   canDeleteAccount: boolean;
   canRestorePurchases: boolean;
@@ -73,6 +82,7 @@ export interface SettingsPageState {
   toggleLocale(): void;
   toggleSound(): void;
   signInGoogle(): Promise<void>;
+  signInApple(): Promise<void>;
   signOut(): Promise<void>;
   restorePurchases(): Promise<void>;
   openManageSubscription(): Promise<void>;
@@ -106,11 +116,12 @@ export function useSettingsPage(): SettingsPageState {
       soundService.stopAll();
     }
   }, []);
-  const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
+  const isLinkedSignedIn = authStatus === 'signed-in' && !isAnonymous;
+  const showAppleSignIn = isNativeAppleSignInAvailable();
 
-  const canSignIn = authStatus !== 'loading' && !isGoogleSignedIn && busyAction === 'none';
-  const canSignOut = isGoogleSignedIn && busyAction === 'none';
-  const canDeleteAccount = isGoogleSignedIn && busyAction === 'none';
+  const canSignIn = authStatus !== 'loading' && !isLinkedSignedIn && busyAction === 'none';
+  const canSignOut = isLinkedSignedIn && busyAction === 'none';
+  const canDeleteAccount = isLinkedSignedIn && busyAction === 'none';
   const canRestorePurchases = authStatus !== 'loading' && busyAction === 'none';
 
   const state = useMemo<SettingsPageState>(
@@ -127,6 +138,7 @@ export function useSettingsPage(): SettingsPageState {
       busyAction,
       banner,
       canSignIn,
+      showAppleSignIn,
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,
@@ -179,6 +191,25 @@ export function useSettingsPage(): SettingsPageState {
           setBusyAction('none');
         }
       },
+      async signInApple() {
+        if (!canSignIn || !showAppleSignIn) return;
+        setBanner('idle');
+        setBusyAction('sign-in-apple');
+        try {
+          await signInWithApple();
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            const code =
+              typeof error === 'object' && error && 'code' in error
+                ? String((error as { code?: unknown }).code)
+                : '';
+            console.warn('[settings] apple sign-in failed', { code, error });
+          }
+          setBanner('sign-in-apple-fail');
+        } finally {
+          setBusyAction('none');
+        }
+      },
       async signOut() {
         if (!canSignOut) return;
         setBanner('idle');
@@ -223,7 +254,7 @@ export function useSettingsPage(): SettingsPageState {
       },
       async openManageSubscription() {
         try {
-          await openPlaySubscriptionManagement();
+          await openStoreSubscriptionManagement();
         } catch {
           // Store / browser sheet failures are non-fatal; user can retry.
         }
@@ -277,6 +308,7 @@ export function useSettingsPage(): SettingsPageState {
       busyAction,
       banner,
       canSignIn,
+      showAppleSignIn,
       canSignOut,
       canDeleteAccount,
       canRestorePurchases,

@@ -1,7 +1,7 @@
 import { clearLocalData } from './localStorageService';
 import {
   getCurrentFirebaseUser,
-  reauthenticateCurrentGoogleUserWeb,
+  reauthenticateCurrentUserForSensitiveAction,
   signOutFirebase,
 } from './firebaseClient';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -55,7 +55,8 @@ export async function deleteSignedInAccount(): Promise<DeleteAccountResult> {
   }
 
   try {
-    await reauthenticateCurrentGoogleUserWeb();
+    // WHY: Provider-aware reauth — Apple users must not be forced through Google Credential Manager.
+    await reauthenticateCurrentUserForSensitiveAction();
   } catch (error) {
     if (isFirebaseErrorCode(error, ACCOUNT_DELETION_ERROR_CODES.requiresRecentLogin)) {
       return { ok: false, code: ACCOUNT_DELETION_ERROR_CODES.requiresRecentLogin };

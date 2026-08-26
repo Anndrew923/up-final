@@ -3,12 +3,17 @@
     "kicker": "Identity Choice",
     "title": "Welcome",
     "subtitle": "Pick a sign-in method to start assessments.",
+    "apple": "Sign in with Apple",
+    "appleBusy": "Signing in…",
     "google": "Sign in with Google",
     "googleBusy": "Signing in…",
     "guest": "Continue as Guest",
     "guestBusy": "Preparing…",
     "fail": "Google sign-in didn't finish. Check your network and complete the account prompt, then try again.",
+    "failApple": "Apple sign-in didn't finish. Check your network and complete the system prompt, then try again.",
+    "failGuest": "Guest sign-in didn't finish. Check your network and try again.",
     "note": "Start as guest — link Google account later.",
+    "noteApple": "Start as guest — link Apple or Google later.",
     "continue": "Continue"
   }
 }

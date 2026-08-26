@@ -22,7 +22,7 @@ import {
   type User,
   type Unsubscribe,
 } from 'firebase/auth';
-import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { isCapacitorNativePlatform, isIosNativePlatform } from '../lib/capacitorPlatform';
 import { hapticService } from './hapticService';
 import {
   getFirestore,
@@ -108,6 +108,11 @@ const GOOGLE_REDIRECT_RETRY_KEY = 'up.auth.googleRedirectRetry';
 /** Native Google via Capacitor — avoids WebView redirect sessionStorage failures. */
 export function isNativeGoogleSignInAvailable(): boolean {
   return isCapacitorNativePlatform() && !isFirebaseEmulatorEnabled();
+}
+
+/** Native Apple via Capacitor — iOS shell only (App Store guideline + platform capability). */
+export function isNativeAppleSignInAvailable(): boolean {
+  return isIosNativePlatform() && !isFirebaseEmulatorEnabled();
 }
 
 /**
@@ -373,6 +378,11 @@ function notifyGoogleSignInSuccess(user: User): void {
   hapticService.triggerGoogleSignInSuccess(user);
 }
 
+/** Same success haptic path for Apple — identity is non-anonymous either way. */
+function notifyAppleSignInSuccess(user: User): void {
+  hapticService.triggerGoogleSignInSuccess(user);
+}
+
 /**
  * Starts Google redirect sign-in for all web cases.
  * Returns null because redirect flow completes after page reload.
@@ -430,6 +440,36 @@ export async function signInWithGoogleWeb(): Promise<User | null> {
   }
 }
 
+/**
+ * Sign in with Apple — native iOS only.
+ * WHY: Android / web must never enter this path; UI gates with isNativeAppleSignInAvailable().
+ */
+export async function signInWithApple(): Promise<User | null> {
+  if (!firebaseAuth) {
+    throw new Error('firebase-auth-not-configured');
+  }
+  if (!isNativeAppleSignInAvailable()) {
+    throw new Error('apple-sign-in-unavailable');
+  }
+
+  const currentUser = firebaseAuth.currentUser;
+  const wasAnonymous = Boolean(currentUser?.isAnonymous);
+  if (wasAnonymous) {
+    await signOut(firebaseAuth);
+    const { signOutNative } = await import('./firebaseNativeAuth');
+    await signOutNative();
+  }
+
+  if (import.meta.env.DEV) {
+    console.warn('[auth] starting apple native sign-in', { wasAnonymous });
+  }
+  const { signInWithAppleNative } = await import('./firebaseNativeAuth');
+  const user = await signInWithAppleNative(firebaseAuth);
+  clearGoogleRedirectPending();
+  notifyAppleSignInSuccess(user);
+  return user;
+}
+
 export async function signInAnonymouslyWeb(): Promise<User> {
   if (!firebaseAuth) {
     throw new Error('firebase-auth-not-configured');
@@ -452,10 +492,15 @@ export async function signOutFirebase(): Promise<void> {
   }
 }
 
+function userHasProvider(user: User, providerId: string): boolean {
+  return user.providerData.some((entry) => entry.providerId === providerId);
+}
+
 /**
- * Re-authenticate current signed-in Google user for sensitive actions (e.g. delete account).
+ * Re-authenticate the current user for sensitive actions (e.g. delete account).
+ * WHY: Apple-signed-in users must reauth via Apple; forcing Google would hard-fail deletion on iOS.
  */
-export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
+export async function reauthenticateCurrentUserForSensitiveAction(): Promise<void> {
   if (!firebaseAuth) {
     throw new Error('firebase-auth-not-configured');
   }
@@ -463,13 +508,31 @@ export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
   if (!user || user.isAnonymous) {
     throw new Error('auth-not-ready');
   }
+
+  if (userHasProvider(user, 'apple.com') && isNativeAppleSignInAvailable()) {
+    const { reauthenticateWithAppleNative } = await import('./firebaseNativeAuth');
+    await reauthenticateWithAppleNative(firebaseAuth);
+    return;
+  }
+
   if (isNativeGoogleSignInAvailable()) {
     const { reauthenticateWithGoogleNative } = await import('./firebaseNativeAuth');
     await reauthenticateWithGoogleNative(firebaseAuth);
     return;
   }
-  const provider = createGoogleAuthProvider();
-  await reauthenticateWithPopup(user, provider);
+
+  if (userHasProvider(user, 'google.com')) {
+    const provider = createGoogleAuthProvider();
+    await reauthenticateWithPopup(user, provider);
+    return;
+  }
+
+  throw new Error('reauth-provider-unavailable');
+}
+
+/** @deprecated Prefer reauthenticateCurrentUserForSensitiveAction — kept for call-site clarity during Google-only flows. */
+export async function reauthenticateCurrentGoogleUserWeb(): Promise<void> {
+  await reauthenticateCurrentUserForSensitiveAction();
 }
 
 /**

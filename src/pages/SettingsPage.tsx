@@ -33,6 +33,7 @@ const SettingsPage: FC = () => {
     busyAction,
     banner,
     canSignIn,
+    showAppleSignIn,
     canSignOut,
     canDeleteAccount,
     canRestorePurchases,
@@ -47,6 +48,7 @@ const SettingsPage: FC = () => {
     toggleSound,
     deleteAccount,
     signInGoogle,
+    signInApple,
     signOut,
     restorePurchases,
     openManageSubscription,
@@ -54,7 +56,7 @@ const SettingsPage: FC = () => {
     isAdmin,
     adminCheckReady,
   } = useSettingsPage();
-  const isGoogleSignedIn = authStatus === 'signed-in' && !isAnonymous;
+  const isLinkedSignedIn = authStatus === 'signed-in' && !isAnonymous;
 
   useEffect(() => {
     if (banner !== 'restore-ok') return;
@@ -196,7 +198,7 @@ const SettingsPage: FC = () => {
         </h2>
 
         <div className="space-y-1 rounded-lg border border-zinc-700 bg-bg-panel/70 px-4 py-3">
-          {isGoogleSignedIn ? (
+          {isLinkedSignedIn ? (
             <UserProIdentityRow
               isPro={isPro}
               avatarSize="md"
@@ -218,6 +220,9 @@ const SettingsPage: FC = () => {
 
         {banner === 'sign-in-fail' ? (
           <p className="text-sm text-rose-400">{t('settings.signInFail')}</p>
+        ) : null}
+        {banner === 'sign-in-apple-fail' ? (
+          <p className="text-sm text-rose-400">{t('settings.signInAppleFail')}</p>
         ) : null}
         {banner === 'sign-out-ok' ? (
           <p className="text-sm text-emerald-400">{t('settings.signOutOk')}</p>
@@ -257,9 +262,21 @@ const SettingsPage: FC = () => {
         ) : null}
 
         <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
+          {showAppleSignIn ? (
+            <button
+              type="button"
+              className="ui-btn ui-btn-primary"
+              onClick={() => void signInApple()}
+              disabled={!canSignIn}
+            >
+              {busyAction === 'sign-in-apple'
+                ? t('settings.signInBusy')
+                : t('settings.signInApple')}
+            </button>
+          ) : null}
           <button
             type="button"
-            className="ui-btn ui-btn-primary"
+            className={`ui-btn ${showAppleSignIn ? '' : 'ui-btn-primary'}`}
             onClick={() => void signInGoogle()}
             disabled={!canSignIn}
           >

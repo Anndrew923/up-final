@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const signInWithGoogle = vi.fn();
+const signInWithApple = vi.fn();
 const signOut = vi.fn();
 
 vi.mock('@capacitor-firebase/authentication', () => ({
   FirebaseAuthentication: {
     signInWithGoogle,
+    signInWithApple,
     signOut,
   },
 }));
@@ -22,11 +24,20 @@ vi.mock('../../config/firebaseEmulator', () => ({
 }));
 
 const signInWithCredential = vi.fn();
+const oauthCredential = vi.fn(
+  (input: { idToken: string; rawNonce?: string }) => ({
+    providerId: 'apple.com',
+    ...input,
+  })
+);
 
 vi.mock('firebase/auth', () => ({
   GoogleAuthProvider: {
     credential: vi.fn((idToken: string) => ({ providerId: 'google.com', idToken })),
   },
+  OAuthProvider: vi.fn().mockImplementation(() => ({
+    credential: oauthCredential,
+  })),
   signInWithCredential,
 }));
 
@@ -57,5 +68,33 @@ describe('firebaseNativeAuth', () => {
     });
     expect(signInWithCredential).toHaveBeenCalled();
     expect(user.uid).toBe('uid-1');
+  });
+
+  it('signInWithAppleNative bridges id token + nonce into Firebase JS auth', async () => {
+    const { Capacitor } = await import('@capacitor/core');
+    vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
+
+    signInWithApple.mockResolvedValue({
+      credential: { idToken: 'apple-id-token', nonce: 'apple-nonce' },
+    });
+    signInWithCredential.mockResolvedValue({
+      user: { uid: 'uid-apple', isAnonymous: false },
+    });
+
+    const { signInWithAppleNative } = await import('../firebaseNativeAuth');
+    const auth = {} as import('firebase/auth').Auth;
+    const user = await signInWithAppleNative(auth);
+
+    expect(signInWithApple).toHaveBeenCalledWith({
+      skipNativeAuth: true,
+      scopes: ['email', 'name'],
+    });
+    expect(oauthCredential).toHaveBeenCalledWith({
+      idToken: 'apple-id-token',
+      rawNonce: 'apple-nonce',
+    });
+    expect(signInWithCredential).toHaveBeenCalled();
+    expect(user.uid).toBe('uid-apple');
   });
 });
