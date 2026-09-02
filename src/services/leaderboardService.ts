@@ -36,6 +36,13 @@ import {
   LADDER_WEIGHT_BUCKETS,
   type LadderProfileProjection,
 } from '../types/ladderProfile';
+import {
+  logLeaderboardFirestoreError,
+  prepareLeaderboardFirestoreRead,
+  resolveLeaderboardFirestoreErrorReason,
+  type LeaderboardFirestoreErrorReason,
+  type LeaderboardReadFailureReason,
+} from './leaderboardFirestoreSession';
 import { getCurrentFirebaseUser, getFirestoreDb } from './firebaseClient';
 import { ensureLadderAvatarHttpsForProSync } from './ladderAvatarStorageService';
 import {
@@ -160,9 +167,13 @@ export interface SubmitLeaderboardResult {
   limitPerHour?: number;
 }
 
+/** @see leaderboardFirestoreSession — re-exported for callers importing from leaderboardService. */
+export type { LeaderboardFirestoreErrorReason, LeaderboardReadFailureReason };
+export { logLeaderboardFirestoreError, resolveLeaderboardFirestoreErrorReason };
+
 export interface ListLeaderboardResult {
   ok: boolean;
-  reason?: 'pro-required' | 'unknown';
+  reason?: LeaderboardReadFailureReason;
   items?: LeaderboardEntry[];
   fromCache?: boolean;
   /** True when serving stale cache while a background revalidate may be running. */
@@ -171,13 +182,13 @@ export interface ListLeaderboardResult {
 
 export interface GetMyLeaderboardEntryResult {
   ok: boolean;
-  reason?: 'pro-required' | 'unknown';
+  reason?: LeaderboardReadFailureReason;
   item?: LeaderboardEntry | null;
 }
 
 export interface GetRankByScoreBestResult {
   ok: boolean;
-  reason?: 'pro-required' | 'unknown';
+  reason?: LeaderboardReadFailureReason;
   rank?: number | null;
   fromCache?: boolean;
 }
@@ -506,6 +517,7 @@ function scheduleListRevalidate(params: {
   void (async () => {
     try {
       if (shouldBlockFirebase(params.entitlement, 'leaderboard-read')) return;
+      await prepareLeaderboardFirestoreRead();
       const fetched = await fetchFirestoreLeaderboardPage(
         db,
         params.metric,
@@ -520,9 +532,7 @@ function scheduleListRevalidate(params: {
         items: fetched.items,
       });
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] list SWR revalidate failed', err);
-      }
+      logLeaderboardFirestoreError('list SWR revalidate', err);
     } finally {
       listRevalidateInFlight.delete(key);
     }
@@ -541,6 +551,7 @@ function scheduleCatalogRevalidate(
   void (async () => {
     try {
       if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+      await prepareLeaderboardFirestoreRead();
       const items = await fetchFirestoreLeaderboardCatalog(db, metric);
       setCachedLeaderboard({
         metric,
@@ -549,9 +560,7 @@ function scheduleCatalogRevalidate(
         cachedAt: new Date().toISOString(),
       });
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] catalog SWR revalidate failed', err);
-      }
+      logLeaderboardFirestoreError('catalog SWR revalidate', err);
     } finally {
       catalogRevalidateInFlight.delete(metric);
     }
@@ -612,6 +621,7 @@ export async function listLeaderboard(params: {
 
   if (db) {
     try {
+      await prepareLeaderboardFirestoreRead();
       const fetched = await fetchFirestoreLeaderboardPage(
         db,
         params.metric,
@@ -629,10 +639,8 @@ export async function listLeaderboard(params: {
       });
       return { ok: true, items: fetched.items, fromCache: false };
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] listLeaderboard Firestore error', err);
-      }
-      return { ok: false, reason: 'unknown' };
+      logLeaderboardFirestoreError('listLeaderboard', err);
+      return { ok: false, reason: resolveLeaderboardFirestoreErrorReason(err) };
     }
   }
 
@@ -684,6 +692,7 @@ export async function listLeaderboardCatalog(params: {
   const db = getFirestoreDb();
   if (db) {
     try {
+      await prepareLeaderboardFirestoreRead();
       const items = await fetchFirestoreLeaderboardCatalog(db, params.metric);
       setCachedLeaderboard({
         metric: params.metric,
@@ -693,10 +702,8 @@ export async function listLeaderboardCatalog(params: {
       });
       return { ok: true, items, fromCache: false };
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] listLeaderboardCatalog Firestore error', err);
-      }
-      return { ok: false, reason: 'unknown' };
+      logLeaderboardFirestoreError('listLeaderboardCatalog', err);
+      return { ok: false, reason: resolveLeaderboardFirestoreErrorReason(err) };
     }
   }
 
@@ -718,6 +725,7 @@ export async function getMyLeaderboardEntry(params: {
   const db = getFirestoreDb();
   if (db) {
     try {
+      await prepareLeaderboardFirestoreRead();
       const ref = doc(
         db,
         LEADERBOARDS_COLLECTION,
@@ -731,10 +739,8 @@ export async function getMyLeaderboardEntry(params: {
       }
       return { ok: true, item: mapFirestoreDoc(snap) };
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] getMyLeaderboardEntry Firestore error', err);
-      }
-      return { ok: false, reason: 'unknown' };
+      logLeaderboardFirestoreError('getMyLeaderboardEntry', err);
+      return { ok: false, reason: resolveLeaderboardFirestoreErrorReason(err) };
     }
   }
 
@@ -764,6 +770,7 @@ export async function getRankByScoreBest(params: {
   const db = getFirestoreDb();
   if (db) {
     try {
+      await prepareLeaderboardFirestoreRead();
       const base = entriesCollection(db, params.metric);
       const countQuery = query(base, where('scoreBest', '>', params.scoreBest));
       const snap = await getCountFromServer(countQuery);
@@ -771,10 +778,8 @@ export async function getRankByScoreBest(params: {
       writeGlobalRankCache(cacheKey, rank);
       return { ok: true, rank, fromCache: false };
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] getRankByScoreBest Firestore error', err);
-      }
-      return { ok: false, reason: 'unknown' };
+      logLeaderboardFirestoreError('getRankByScoreBest', err);
+      return { ok: false, reason: resolveLeaderboardFirestoreErrorReason(err) };
     }
   }
 

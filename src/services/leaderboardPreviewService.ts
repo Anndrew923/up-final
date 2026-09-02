@@ -9,6 +9,12 @@ import type { EntitlementState } from '../types/entitlement';
 import type { LadderAgeBucket, LadderGender, LadderJobCategory } from '../types/ladderProfile';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 import { getFirestoreDb } from './firebaseClient';
+import {
+  logLeaderboardFirestoreError,
+  prepareLeaderboardFirestoreRead,
+  resolveLeaderboardFirestoreErrorReason,
+  type LeaderboardFirestoreErrorReason,
+} from './leaderboardFirestoreSession';
 import { LEADERBOARD_PREVIEWS_COLLECTION } from './firestorePaths';
 import type { LeaderboardEntry } from './leaderboardCacheService';
 import { sanitizeAvatarUrlForLeaderboard } from './ladderIdentityService';
@@ -37,7 +43,7 @@ export interface LadderUserPreview {
 
 export interface GetLadderUserPreviewResult {
   ok: boolean;
-  reason?: 'pro-required' | 'not-found' | 'unknown';
+  reason?: 'pro-required' | 'not-found' | LeaderboardFirestoreErrorReason;
   item?: LadderUserPreview | null;
   fromCache?: boolean;
   stale?: boolean;
@@ -153,15 +159,14 @@ function schedulePreviewRevalidate(entitlement: EntitlementState, uid: string): 
   void (async () => {
     try {
       if (shouldBlockFirebase(entitlement, 'leaderboard-read')) return;
+      await prepareLeaderboardFirestoreRead();
       const ref = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
       const snap = await getDoc(ref);
       if (!snap.exists()) return;
       const item = mapPreview(snap.data() as Record<string, unknown>, uid);
       writeCache(uid, item, Date.now());
     } catch (err) {
-      if (import.meta.env.DEV) {
-        console.warn('[leaderboard] preview SWR revalidate failed', err);
-      }
+      logLeaderboardFirestoreError('preview SWR revalidate', err);
     } finally {
       previewRevalidateInFlight.delete(uid);
     }
@@ -279,6 +284,7 @@ export async function getLadderUserPreview(params: {
   if (!db) return { ok: false, reason: 'unknown', item: null };
 
   try {
+    await prepareLeaderboardFirestoreRead();
     const ref = doc(db, LEADERBOARD_PREVIEWS_COLLECTION, uid);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
@@ -288,9 +294,11 @@ export async function getLadderUserPreview(params: {
     writeCache(uid, item, nowMs);
     return { ok: true, item, fromCache: false };
   } catch (err) {
-    if (import.meta.env.DEV) {
-      console.warn('[leaderboard] getLadderUserPreview error', err);
-    }
-    return { ok: false, reason: 'unknown', item: null };
+    logLeaderboardFirestoreError('getLadderUserPreview', err);
+    return {
+      ok: false,
+      reason: resolveLeaderboardFirestoreErrorReason(err),
+      item: null,
+    };
   }
 }
