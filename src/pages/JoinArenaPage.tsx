@@ -13,7 +13,7 @@ import ProBadge from '../components/ProBadge';
 import UserProIdentityRow from '../components/UserProIdentityRow';
 import { MONETIZATION_CONFIG } from '../config/monetization';
 import { hasCoreAccess } from '../logic/core/entitlement';
-import { ladderIdentityInitial } from '../logic/core/ladderUploadPolicy';
+import { resolveIdentityInitial } from '../logic/core/identity';
 import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
 import { useUiGate } from '../hooks/useUiGate';
 import {
@@ -69,6 +69,7 @@ const JoinArenaPage: FC = () => {
   const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
   const authStatus = useAuthStore((s) => s.status);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
+  const signedInEmail = useAuthStore((s) => s.email);
   const photoURL = useAuthStore((s) => s.photoURL);
 
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
@@ -277,7 +278,7 @@ const JoinArenaPage: FC = () => {
               isPro={isPro}
               avatarSize="md"
               avatarUrl={photoURL}
-              avatarFallback={ladderIdentityInitial(signedInDisplayName)}
+              avatarFallback={resolveIdentityInitial(signedInDisplayName, signedInEmail)}
               name={t('signedInAs', { name: signedInDisplayName })}
               nameClassName="text-sm text-zinc-200"
             />

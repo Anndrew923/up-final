@@ -6,7 +6,7 @@ import {
   APP_SHELL_SCROLL_BOTTOM_PX,
   bottomChromeCalc,
 } from '../constants/bottomChrome';
-import { ladderIdentityInitial } from '../logic/core/ladderUploadPolicy';
+import { resolveIdentityInitial } from '../logic/core/identity';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
 const RESTORE_TOAST_MS = 3500;
@@ -203,7 +203,7 @@ const SettingsPage: FC = () => {
               isPro={isPro}
               avatarSize="md"
               avatarUrl={photoURL}
-              avatarFallback={ladderIdentityInitial(displayName)}
+              avatarFallback={resolveIdentityInitial(displayName, email)}
               name={t('settings.signedInAs', { name: displayName })}
               nameClassName="text-sm text-zinc-200"
               subtitle={email}

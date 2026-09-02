@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { resolveIdentityInitial } from '../../logic/core/identity';
 import { useLocalProfileBrief } from '../../hooks/useLocalProfileBrief';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -12,11 +13,15 @@ export default function HudAvatar() {
   } = useLocalProfileBrief();
   const authStatus = useAuthStore((s) => s.status);
   const authDisplayName = useAuthStore((s) => s.displayName);
+  const authEmail = useAuthStore((s) => s.email);
   const authPhotoURL = useAuthStore((s) => s.photoURL);
   const displayName = authStatus === 'signed-in' ? authDisplayName : localDisplayName;
   // WHY: Ladder identity avatar (Home) is the arena portrait; Google photoURL is fallback only.
   const avatarUrl = localAvatarUrl ?? (authStatus === 'signed-in' ? authPhotoURL : undefined);
-  const initial = (displayName?.charAt(0) || localInitial || 'U').toUpperCase();
+  const initial =
+    authStatus === 'signed-in'
+      ? resolveIdentityInitial(authDisplayName, authEmail)
+      : (displayName?.charAt(0) || localInitial || 'U').toUpperCase();
   const label =
     avatarUrl && displayName?.trim()
       ? displayName.trim()
