@@ -193,7 +193,30 @@ describe('subscription service native purchase hard-sync', () => {
 
     const result = await restorePurchasesFromDevice();
 
-    expect(result.outcome).toBe('restored');
+    expect(result.outcome).toBe('no_receipt');
+    expect(result.proActive).toBe(true);
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('preserves cross-platform cloud Pro when iOS restore finds no StoreKit receipt', async () => {
+    seedSignedInBuyer();
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+    syncProEntitlementToServer.mockClear();
+    revenueCat.restoreRevenueCatPurchases.mockResolvedValue({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+
+    const result = await restorePurchasesFromDevice();
+
+    expect(result.outcome).toBe('no_receipt');
     expect(result.proActive).toBe(true);
     expect(useEntitlementStore.getState().isPro).toBe(true);
     expect(syncProEntitlementToServer).not.toHaveBeenCalled();

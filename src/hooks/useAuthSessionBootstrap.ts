@@ -20,6 +20,9 @@ export function useAuthSessionBootstrap(): void {
   const setFromUser = useAuthStore((s) => s.setFromUser);
   const refreshEntitlement = useEntitlementStore((s) => s.refreshEntitlement);
   const bindEntitlementSession = useEntitlementStore((s) => s.bindEntitlementSession);
+  const hydrateServerProFromFirestore = useEntitlementStore(
+    (s) => s.hydrateServerProFromFirestore
+  );
   const bindDynoIntelLogSession = useDynoIntelLogStore((s) => s.bindSession);
 
   useEffect(() => {
@@ -52,9 +55,11 @@ export function useAuthSessionBootstrap(): void {
         setFromUser(user);
         bindEntitlementSession(user.uid);
         bindDynoIntelLogSession(user.uid);
-        // WHY: Await RC identity bind before entitlement refresh so logIn and CustomerInfo
-        // fetch cannot race after reinstall (Play already owns the SKU).
+        // WHY: Firestore SSOT hydrate must run before RC refresh so an inactive iOS
+        // StoreKit read cannot downgrade a valid Android/cloud Pro grant.
         void (async () => {
+          await hydrateServerProFromFirestore(user.uid);
+          if (isDisposed) return;
           await bindRevenueCatIdentityForSession(user.uid);
           if (isDisposed) return;
           await refreshEntitlement();
@@ -70,5 +75,5 @@ export function useAuthSessionBootstrap(): void {
       isDisposed = true;
       unsubscribe?.();
     };
-  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement, bindEntitlementSession, bindDynoIntelLogSession]);
+  }, [setFromUser, setLoading, setSignedOut, refreshEntitlement, bindEntitlementSession, hydrateServerProFromFirestore, bindDynoIntelLogSession]);
 }

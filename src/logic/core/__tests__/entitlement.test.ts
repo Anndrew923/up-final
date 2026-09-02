@@ -12,6 +12,7 @@ import {
   resolveLeaderboardAccessReason,
   resolveUiGate,
   shouldBlockProReconcileDowngrade,
+  shouldBlockCrossPlatformProDowngrade,
   shouldBlockStructuredUserSync,
 } from '../entitlement';
 import { resolveLeaderboardUploadGate } from '../../../hooks/useLeaderboardUpload';
@@ -134,6 +135,17 @@ describe('entitlement core guards', () => {
         now
       )
     ).toBe(false);
+  });
+
+  it('blocks cross-platform downgrade when valid cloud Pro exists but RC is inactive', () => {
+    const now = new Date('2026-08-02T00:00:00.000Z');
+    const cloudPro = buildEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+    });
+    expect(shouldBlockCrossPlatformProDowngrade(cloudPro, false, now)).toBe(true);
+    expect(shouldBlockCrossPlatformProDowngrade(cloudPro, true, now)).toBe(false);
+    expect(shouldBlockCrossPlatformProDowngrade(buildEntitlement(), false, now)).toBe(false);
   });
 });
 

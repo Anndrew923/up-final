@@ -233,6 +233,10 @@ export function useSettingsPage(): SettingsPageState {
             setBanner('restore-ok');
             return;
           }
+          if (result.outcome === 'no_receipt' && result.proActive) {
+            setBanner('restore-ok');
+            return;
+          }
           if (result.outcome === 'invalid_expiry') {
             setBanner('restore-invalid-expiry');
             return;

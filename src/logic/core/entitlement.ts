@@ -65,6 +65,21 @@ export function shouldBlockProReconcileDowngrade(
   return !snapshotActive && isProPurchaseCooldownActive(ent, now);
 }
 
+/**
+ * WHY: Play/Android purchases do not surface as active on iOS StoreKit RC reads.
+ * When Firestore or a prior hydrate already granted valid Pro, an inactive local-store
+ * snapshot must not downgrade UI or trigger server reconcile revocation.
+ */
+export function shouldBlockCrossPlatformProDowngrade(
+  ent: EntitlementState,
+  snapshotActive: boolean,
+  now: Date = new Date()
+): boolean {
+  if (snapshotActive) return false;
+  if (shouldBlockProReconcileDowngrade(ent, snapshotActive, now)) return true;
+  return hasProAccess(ent, now);
+}
+
 export function isGoogleLinkedAuth(authStatus: AuthStatus, isAnonymous: boolean): boolean {
   return authStatus === 'signed-in' && !isAnonymous;
 }

@@ -1,8 +1,51 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useEntitlementStore } from '../entitlementStore';
 
+const resolveServerProHydrate = vi.hoisted(() => vi.fn());
+const shouldPreserveLocalProAgainstInactiveStore = vi.hoisted(() => vi.fn());
+
+vi.mock('../../services/userEntitlementService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../services/userEntitlementService')>();
+  return {
+    ...actual,
+    resolveServerProHydrate,
+    shouldPreserveLocalProAgainstInactiveStore,
+  };
+});
+
+const revenueCat = vi.hoisted(() => ({
+  isRevenueCatNativeBillingAvailable: vi.fn(() => false),
+  logInRevenueCatUser: vi.fn(),
+  fetchRevenueCatEntitlement: vi.fn(),
+}));
+
+const syncProEntitlementToServer = vi.hoisted(() => vi.fn());
+
+vi.mock('../../services/revenueCatService', () => ({
+  isRevenueCatNativeBillingAvailable: revenueCat.isRevenueCatNativeBillingAvailable,
+  logInRevenueCatUser: revenueCat.logInRevenueCatUser,
+  fetchRevenueCatEntitlement: revenueCat.fetchRevenueCatEntitlement,
+}));
+
+vi.mock('../../services/subscriptionSyncService', () => ({
+  syncProEntitlementToServer,
+}));
+
+vi.mock('../authStore', () => ({
+  useAuthStore: {
+    getState: () => ({ uid: 'test-user' }),
+  },
+}));
+
 describe('entitlementStore', () => {
   beforeEach(() => {
+    resolveServerProHydrate.mockReset();
+    resolveServerProHydrate.mockResolvedValue({ status: 'skipped', reason: 'doc-missing' });
+    shouldPreserveLocalProAgainstInactiveStore.mockReset();
+    shouldPreserveLocalProAgainstInactiveStore.mockResolvedValue(false);
+    revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(false);
+    revenueCat.fetchRevenueCatEntitlement.mockReset();
+    syncProEntitlementToServer.mockReset();
     useEntitlementStore.getState().resetEntitlement();
   });
 
@@ -130,7 +173,120 @@ describe('entitlementStore', () => {
     expect(useEntitlementStore.getState().proPurchaseCooldownUntil).toBeNull();
   });
 
+  it('hydrateServerProFromFirestore unlocks Pro from Firestore on empty local cache', async () => {
+    useEntitlementStore.getState().bindEntitlementSession('ios-user');
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+
+    resolveServerProHydrate.mockResolvedValue({
+      status: 'active',
+      entitlement: {
+        subscriptionStatus: 'pro',
+        proExpiresAt: '2099-01-01T00:00:00.000Z',
+        planId: 'up_pro_monthly',
+      },
+    });
+
+    const hydrated = await useEntitlementStore.getState().hydrateServerProFromFirestore('ios-user');
+    expect(hydrated).toBe(true);
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
+  });
+
+  it('hydrateServerProFromFirestore clears stale local Pro when Firestore revoked', async () => {
+    useEntitlementStore.getState().bindEntitlementSession('ios-user');
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+    resolveServerProHydrate.mockResolvedValue({ status: 'revoked' });
+
+    const hydrated = await useEntitlementStore.getState().hydrateServerProFromFirestore('ios-user');
+
+    expect(hydrated).toBe(false);
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+  });
+
+  it('refreshEntitlement keeps cloud Pro when RevenueCat snapshot is inactive', async () => {
+    useEntitlementStore.getState().bindEntitlementSession('test-user');
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+
+    revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(true);
+    revenueCat.fetchRevenueCatEntitlement.mockResolvedValue({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+    resolveServerProHydrate.mockResolvedValue({
+      status: 'active',
+      entitlement: {
+        subscriptionStatus: 'pro',
+        proExpiresAt: '2099-01-01T00:00:00.000Z',
+        planId: 'up_pro_monthly',
+      },
+    });
+    shouldPreserveLocalProAgainstInactiveStore.mockResolvedValue(true);
+
+    await useEntitlementStore.getState().refreshEntitlement();
+
+    expect(useEntitlementStore.getState().isPro).toBe(true);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('refreshEntitlement clears local Pro when Firestore revoked despite inactive RC', async () => {
+    useEntitlementStore.getState().bindEntitlementSession('test-user');
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+
+    revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(true);
+    revenueCat.fetchRevenueCatEntitlement.mockResolvedValue({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+    resolveServerProHydrate.mockResolvedValue({ status: 'revoked' });
+    shouldPreserveLocalProAgainstInactiveStore.mockResolvedValue(false);
+
+    await useEntitlementStore.getState().refreshEntitlement();
+
+    expect(useEntitlementStore.getState().isPro).toBe(false);
+    expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+  });
+
+  it('applyRevenueCatEntitlement does not downgrade valid cloud Pro when RC is inactive', () => {
+    useEntitlementStore.getState().commitServerProEntitlement({
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-01-01T00:00:00.000Z',
+      planId: 'up_pro_monthly',
+      armPurchaseCooldown: false,
+    });
+
+    useEntitlementStore.getState().applyRevenueCatEntitlement({
+      active: false,
+      productIdentifier: null,
+      expiresDate: null,
+    });
+
+    const state = useEntitlementStore.getState();
+    expect(state.isPro).toBe(true);
+    expect(state.subscriptionStatus).toBe('pro');
+    expect(state.proExpiresAt).toBe('2099-01-01T00:00:00.000Z');
+  });
+
   it('refreshEntitlement clears isRefreshing and stamps lastCheckedAt when idle', async () => {
+    useEntitlementStore.getState().bindEntitlementSession('test-user');
     expect(useEntitlementStore.getState().isRefreshing).toBe(false);
     await useEntitlementStore.getState().refreshEntitlement();
     expect(useEntitlementStore.getState().isRefreshing).toBe(false);

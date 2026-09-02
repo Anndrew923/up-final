@@ -2,7 +2,6 @@ import {
   hasCoreAccess,
   hasProAccess,
   isValidActiveProExpiry,
-  shouldBlockProReconcileDowngrade,
 } from '../logic/core/entitlement';
 import { isProductAlreadyPurchasedError } from '../logic/core/revenueCatPurchaseErrors';
 import { useAuthStore } from '../stores/authStore';
@@ -21,6 +20,7 @@ import {
   syncProEntitlementToServer,
   type SyncProEntitlementResult,
 } from './subscriptionSyncService';
+import { logEntitlementSync, shouldPreserveLocalProAgainstInactiveStore } from './userEntitlementService';
 
 export type PurchaseProResult =
   | { ok: true }
@@ -261,23 +261,25 @@ export async function restorePurchasesFromDevice(): Promise<RestorePurchasesResu
       }
 
       const current = useEntitlementStore.getState();
-      // WHY: Cooldown must protect Firestore SSOT too — local-only guard would still let
-      // reconcile wipe the just-written server grant after a purchase race.
-      if (shouldBlockProReconcileDowngrade(current, snapshot.active)) {
-        return restoreOk(hasProAccess(current));
+      // WHY: Cross-platform Pro (e.g. Android Play) must survive iOS restore with no StoreKit receipt.
+      if (await shouldPreserveLocalProAgainstInactiveStore(userId, current, snapshot.active)) {
+        const proActive = hasProAccess(current);
+        logEntitlementSync('restore-blocked-reconcile', {
+          snapshotActive: snapshot.active,
+          proActive,
+        });
+        if (proActive) {
+          // WHY: User already has cloud Pro — no Apple receipt to restore, but entitlement stays active.
+          return { outcome: 'no_receipt', proActive: true };
+        }
+        return restoreFail('no_receipt');
       }
 
-      useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
-      const reconciled = await syncProEntitlementToServer({
-        source: 'revenuecat',
-        snapshot,
-        intent: 'reconcile',
-      });
-      if (!reconciled.ok) {
-        return restoreFail('sync_failed');
-      }
+      logEntitlementSync('restore-no-store-receipt', { uid: userId });
       return restoreFail('no_receipt');
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logEntitlementSync('restore-error', { message });
       return restoreFail('failed');
     }
   }
@@ -303,7 +305,9 @@ export async function bindRevenueCatIdentityForSession(uid: string | null): Prom
   if (!uid || !isRevenueCatNativeBillingAvailable()) return;
   try {
     await logInRevenueCatUser(uid);
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logEntitlementSync('rc-login-error', { uid, message });
     // Non-fatal — purchase/restore/refresh will retry logIn.
   }
 }

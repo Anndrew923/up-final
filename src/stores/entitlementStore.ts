@@ -3,7 +3,7 @@ import {
   hasProAccess,
   isProPurchaseCooldownActive,
   PRO_PURCHASE_COOLDOWN_MS,
-  shouldBlockProReconcileDowngrade,
+  shouldBlockCrossPlatformProDowngrade,
 } from '../logic/core/entitlement';
 import {
   loadPersistedEntitlement,
@@ -16,6 +16,7 @@ import {
   type RevenueCatEntitlementSnapshot,
 } from '../services/revenueCatService';
 import { syncProEntitlementToServer } from '../services/subscriptionSyncService';
+import { logEntitlementSync, resolveServerProHydrate, shouldPreserveLocalProAgainstInactiveStore } from '../services/userEntitlementService';
 import { useAuthStore } from './authStore';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
@@ -56,6 +57,11 @@ export interface EntitlementStore extends EntitlementState {
   /** Debug-only status setter; production activation must use RevenueCat snapshots. */
   setSubscriptionStatus(status: SubscriptionStatus): void;
   setProExpiry(iso: string | null): void;
+  /**
+   * Pull `users/{uid}` Pro fields and commit when still valid.
+   * WHY: Cross-platform login must hydrate server SSOT before RC reconcile can downgrade.
+   */
+  hydrateServerProFromFirestore(uid: string): Promise<boolean>;
   refreshEntitlement(): Promise<void>;
   resetEntitlement(): void;
 }
@@ -192,8 +198,13 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
   },
   applyRevenueCatEntitlement(snapshot) {
     set((state) => {
-      // WHY: Stale inactive RC reads after hard-sync must not downgrade local Pro during cooldown.
-      if (shouldBlockProReconcileDowngrade(state, snapshot.active)) {
+      // WHY: Stale inactive RC reads must not downgrade Firestore-hydrated cross-platform Pro.
+      if (shouldBlockCrossPlatformProDowngrade(state, snapshot.active)) {
+        logEntitlementSync('rc-apply-blocked', {
+          reason: 'cross-platform-or-cooldown',
+          snapshotActive: snapshot.active,
+          subscriptionStatus: state.subscriptionStatus,
+        });
         return {
           ...state,
           lastCheckedAt: new Date().toISOString(),
@@ -280,6 +291,32 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
       })
     );
   },
+  async hydrateServerProFromFirestore(uid) {
+    const result = await resolveServerProHydrate(uid);
+    if (boundSessionUid !== uid) {
+      logEntitlementSync('firestore-hydrate-stale-session', { uid });
+      return false;
+    }
+
+    if (result.status === 'active') {
+      useEntitlementStore.getState().commitServerProEntitlement({
+        subscriptionStatus: result.entitlement.subscriptionStatus,
+        proExpiresAt: result.entitlement.proExpiresAt,
+        planId: result.entitlement.planId,
+        armPurchaseCooldown: false,
+      });
+      return true;
+    }
+
+    if (result.status === 'revoked') {
+      set((state) => {
+        if (!hasProAccess(state)) return state;
+        return clearProSubscriptionFields(state);
+      });
+    }
+
+    return false;
+  },
   async refreshEntitlement() {
     entitlementRefreshInFlight += 1;
     set((state) => ({ ...state, isRefreshing: true }));
@@ -295,9 +332,13 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           if (!sessionIsCurrent()) return;
           if (snapshot) {
             const previous = useEntitlementStore.getState();
-            // WHY: Purchase cooldown blocks reconcile downgrade so a lagging RC REST
-            // read cannot wipe the Firestore SSOT grant or local unlock.
-            if (shouldBlockProReconcileDowngrade(previous, snapshot.active)) {
+            // WHY: Inactive local-store reads must not wipe Firestore-hydrated cross-platform Pro.
+            if (await shouldPreserveLocalProAgainstInactiveStore(userId, previous, snapshot.active)) {
+              logEntitlementSync('rc-refresh-blocked', {
+                snapshotActive: snapshot.active,
+                subscriptionStatus: previous.subscriptionStatus,
+                isPro: previous.isPro,
+              });
               set((state) => ({
                 ...state,
                 lastCheckedAt: new Date().toISOString(),
@@ -306,23 +347,40 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
             }
             const shouldSyncServer =
               snapshot.active ||
-              previous.subscriptionStatus === 'pro' ||
-              previous.subscriptionStatus === 'grace' ||
-              previous.subscriptionStatus === 'expired' ||
-              previous.isPro;
-            useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+              (previous.subscriptionStatus === 'expired' && !hasProAccess(previous));
+            if (snapshot.active) {
+              useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+            } else {
+              // WHY: Server re-verify already ran in shouldPreserve* — safe to clear local Pro.
+              set((state) =>
+                normalizeEntitlementState({
+                  ...state,
+                  ...snapshotToEntitlementPatch(snapshot),
+                })
+              );
+            }
             // WHY: Boot refresh also migrates legacy/missing server expiry and
             // propagates inactive revocation without charging every free boot.
             if (shouldSyncServer) {
-              await syncProEntitlementToServer({ source: 'revenuecat', snapshot });
+              await syncProEntitlementToServer({
+                source: 'revenuecat',
+                snapshot,
+                intent: 'reconcile',
+              });
               if (!sessionIsCurrent()) return;
             }
             return;
           }
-        } catch {
+        } catch (error) {
           if (!sessionIsCurrent()) return;
-          // Keep uid-scoped local cache if provider sync fails.
+          const message = error instanceof Error ? error.message : String(error);
+          logEntitlementSync('rc-refresh-error', { message });
+          // WHY: RC outage should not strand users — retry Firestore SSOT before settling free.
+          await useEntitlementStore.getState().hydrateServerProFromFirestore(userId);
         }
+      } else if (userId && sessionIsCurrent()) {
+        // WHY: Web / RC-unconfigured builds still need server SSOT on manual refresh.
+        await useEntitlementStore.getState().hydrateServerProFromFirestore(userId);
       }
       if (userId && !sessionIsCurrent()) return;
       set((state) =>
