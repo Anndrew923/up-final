@@ -28,6 +28,25 @@ const config: CapacitorConfig = {
     // WHY: App already applies env(safe-area-inset-*) in shell/modals; automatic inset would double-pad.
     contentInset: 'never',
   },
+  /**
+   * WHY: SPM derives local package identity from the path basename, not the `name:` field.
+   * `@capacitor-firebase/app-check` collides with firebase-ios-sdk's transitive `google/app-check`,
+   * causing GoogleSignIn to fail resolving `AppCheckCore`. Symlink gives a unique SPM identity.
+   */
+  experimental: {
+    ios: {
+      spm: {
+        packageOptions: {
+          '@capacitor-firebase/app-check': {
+            symlink: true,
+          },
+          '@capacitor-firebase/authentication': {
+            symlink: true,
+          },
+        },
+      },
+    },
+  },
   plugins: {
     FirebaseAuthentication: {
       skipNativeAuth: false,

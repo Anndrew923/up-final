@@ -1,5 +1,9 @@
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import {
+  isAndroidNativePlatform,
+  isCapacitorNativePlatform,
+} from '../lib/capacitorPlatform';
+import { getFirebaseAuthErrorDetails } from './firebaseAuthError';
 import { GOOGLE_SIGN_IN_ACCOUNT_PICKER_CUSTOM_PARAMETERS } from './googleAuthProviderConfig';
 import {
   GoogleAuthProvider,
@@ -16,17 +20,46 @@ function requireIdToken(idToken: string | null | undefined, code: string): strin
   return idToken.trim();
 }
 
+/** WHY: Production auth failures were swallowed by UI catch blocks — surface codes in device logs. */
+function logNativeAuthError(
+  provider: 'google' | 'apple',
+  phase: string,
+  error: unknown
+): void {
+  const { code, message } = getFirebaseAuthErrorDetails(error);
+  console.error(`[auth-native] ${provider} ${phase} failed`, { code, message, error });
+}
+
 export async function signInWithGoogleNative(auth: Auth): Promise<User> {
-  const result = await FirebaseAuthentication.signInWithGoogle({
-    skipNativeAuth: true,
-    // Android Credential Manager / iOS GIDSignIn already surface account UI;
-    // keep OAuth parity for any web-layer fallbacks inside the plugin.
-    customParameters: [...GOOGLE_SIGN_IN_ACCOUNT_PICKER_CUSTOM_PARAMETERS],
-  });
-  const idToken = requireIdToken(result.credential?.idToken, 'google-native-no-id-token');
+  let nativeResult: Awaited<ReturnType<typeof FirebaseAuthentication.signInWithGoogle>>;
+  try {
+    const googleOptions: Parameters<typeof FirebaseAuthentication.signInWithGoogle>[0] = {
+      skipNativeAuth: true,
+    };
+    // WHY: Plugin docs — customParameters are not supported for Google on iOS; passing them can crash GIDSignIn.
+    if (isAndroidNativePlatform()) {
+      googleOptions.customParameters = [...GOOGLE_SIGN_IN_ACCOUNT_PICKER_CUSTOM_PARAMETERS];
+    }
+    nativeResult = await FirebaseAuthentication.signInWithGoogle(googleOptions);
+  } catch (error) {
+    logNativeAuthError('google', 'native-sign-in', error);
+    throw error;
+  }
+
+  const idToken = requireIdToken(nativeResult.credential?.idToken, 'google-native-no-id-token');
+
+  if (import.meta.env.DEV) {
+    console.warn('[auth-native] google native credential received', { hasIdToken: Boolean(idToken) });
+  }
+
   const credential = GoogleAuthProvider.credential(idToken);
-  const signedIn = await signInWithCredential(auth, credential);
-  return signedIn.user;
+  try {
+    const signedIn = await signInWithCredential(auth, credential);
+    return signedIn.user;
+  } catch (error) {
+    logNativeAuthError('google', 'signInWithCredential', error);
+    throw error;
+  }
 }
 
 /**
@@ -34,18 +67,39 @@ export async function signInWithGoogleNative(auth: Auth): Promise<User> {
  * WHY: skipNativeAuth is required so Apple's nonce is returned for OAuthProvider.credential.
  */
 export async function signInWithAppleNative(auth: Auth): Promise<User> {
-  const result = await FirebaseAuthentication.signInWithApple({
-    skipNativeAuth: true,
-    scopes: ['email', 'name'],
-  });
-  const idToken = requireIdToken(result.credential?.idToken, 'apple-native-no-id-token');
+  let nativeResult: Awaited<ReturnType<typeof FirebaseAuthentication.signInWithApple>>;
+  try {
+    nativeResult = await FirebaseAuthentication.signInWithApple({
+      skipNativeAuth: true,
+      scopes: ['email', 'name'],
+    });
+  } catch (error) {
+    logNativeAuthError('apple', 'native-sign-in', error);
+    throw error;
+  }
+
+  const idToken = requireIdToken(nativeResult.credential?.idToken, 'apple-native-no-id-token');
+  const rawNonce = nativeResult.credential?.nonce ?? undefined;
+
+  if (import.meta.env.DEV) {
+    console.warn('[auth-native] apple native credential received', {
+      hasIdToken: Boolean(idToken),
+      hasNonce: Boolean(rawNonce),
+    });
+  }
+
   const provider = new OAuthProvider('apple.com');
   const credential = provider.credential({
     idToken,
-    rawNonce: result.credential?.nonce ?? undefined,
+    rawNonce,
   });
-  const signedIn = await signInWithCredential(auth, credential);
-  return signedIn.user;
+  try {
+    const signedIn = await signInWithCredential(auth, credential);
+    return signedIn.user;
+  } catch (error) {
+    logNativeAuthError('apple', 'signInWithCredential', error);
+    throw error;
+  }
 }
 
 /** Re-auth for sensitive actions (e.g. account deletion) using the same native Google flow. */

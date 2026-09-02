@@ -6,6 +6,7 @@ import {
   type FirebaseOptions,
 } from 'firebase/app';
 import {
+  browserLocalPersistence,
   getAuth,
   getRedirectResult,
   GoogleAuthProvider,
@@ -47,6 +48,7 @@ import {
 } from '../config/firebaseEmulator';
 import { initializeFirebaseAppCheck } from './firebaseAppCheck';
 import { createGoogleAuthProvider } from './googleAuthProviderConfig';
+import { getFirebaseAuthErrorCode } from './firebaseAuthError';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -178,12 +180,16 @@ export function initFirebase(config: FirebaseConfig): void {
 }
 
 /**
- * WHY: Capacitor WebView + redirect/popup loses OAuth state; native Google + indexedDB keeps JS Auth in sync.
+ * WHY: Capacitor WebView + redirect/popup loses OAuth state; native bridge needs explicit persistence.
+ * iOS: indexedDB-only can hang signInWithCredential — prefer browserLocal with indexedDB fallback.
  */
 function initFirebaseAuthForApp(app: FirebaseApp): Auth {
   if (isCapacitorNativePlatform() && !isFirebaseEmulatorEnabled()) {
     try {
-      return initializeAuth(app, { persistence: indexedDBLocalPersistence });
+      const persistence = isIosNativePlatform()
+        ? [indexedDBLocalPersistence, browserLocalPersistence]
+        : indexedDBLocalPersistence;
+      return initializeAuth(app, { persistence });
     } catch (error: unknown) {
       const code =
         typeof error === 'object' && error !== null && 'code' in error
@@ -365,12 +371,6 @@ export async function consumeFirebaseRedirectResult(): Promise<UserCredential | 
     clearGoogleRedirectPending();
     return null;
   }
-}
-
-function getFirebaseAuthErrorCode(error: unknown): string {
-  return typeof error === 'object' && error && 'code' in error
-    ? String((error as { code?: unknown }).code)
-    : '';
 }
 
 /** Fires haptic only for a completed Google link (not anonymous guest). */
