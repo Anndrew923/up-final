@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   native: false,
   emulator: false,
   initializeNative: vi.fn(() => Promise.resolve()),
-  getNativeToken: vi.fn(() => Promise.resolve({ token: 'native-token' })),
+  getNativeToken: vi.fn(() => Promise.resolve({ token: 'native-token', expireTimeMillis: Date.now() + 3_600_000 })),
   initializeWeb: vi.fn(),
   recaptchaKey: '',
   customOptions: null as { getToken: () => Promise<{ token: string; expireTimeMillis: number }> } | null,
@@ -87,6 +87,11 @@ describe('Firebase App Check initialization', () => {
     mocks.native = true;
     const { initializeFirebaseAppCheck } = await loadSubject();
     expect(initializeFirebaseAppCheck(app)).toBe(true);
+    expect(mocks.initializeNative).toHaveBeenCalledWith({ isTokenAutoRefreshEnabled: false });
+    expect(mocks.initializeWeb).toHaveBeenCalledWith(
+      app,
+      expect.objectContaining({ isTokenAutoRefreshEnabled: false })
+    );
     const token = await mocks.customOptions!.getToken();
     expect(token.token).toBe('native-token');
     expect(token.expireTimeMillis).toBeGreaterThan(Date.now());
@@ -98,5 +103,109 @@ describe('Firebase App Check initialization', () => {
     expect(initializeFirebaseAppCheck(app)).toBe(true);
     await expect(ensureFreshAppCheckToken(true)).resolves.toBe(true);
     expect(mocks.getNativeToken).toHaveBeenCalledWith({ forceRefresh: true });
+  });
+
+  it('normalizes second-based native expiry to milliseconds', async () => {
+    mocks.native = true;
+    const futureSec = Math.floor(Date.now() / 1000) + 3600;
+    mocks.getNativeToken.mockResolvedValue({ token: 'native-token', expireTimeMillis: futureSec });
+    const { initializeFirebaseAppCheck, resetNativeAppCheckTokenCacheForTests } = await loadSubject();
+    resetNativeAppCheckTokenCacheForTests();
+    initializeFirebaseAppCheck(app);
+    const token = await mocks.customOptions!.getToken();
+    expect(token.expireTimeMillis).toBeGreaterThan(Date.now() + 30 * 60 * 1000);
+  });
+
+  it('debounces native getToken within 10 seconds when token is still valid', async () => {
+    mocks.native = true;
+    const futureMs = Date.now() + 60 * 60 * 1000;
+    mocks.getNativeToken.mockResolvedValue({ token: 'native-token', expireTimeMillis: futureMs });
+    const { initializeFirebaseAppCheck, resetNativeAppCheckTokenCacheForTests } = await loadSubject();
+    resetNativeAppCheckTokenCacheForTests();
+    initializeFirebaseAppCheck(app);
+    await mocks.customOptions!.getToken();
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('hard-blocks native bridge within 3 seconds of the previous bridge call', async () => {
+    vi.useFakeTimers();
+    mocks.native = true;
+    const futureMs = Date.now() + 60 * 60 * 1000;
+    mocks.getNativeToken.mockResolvedValue({ token: 'native-token', expireTimeMillis: futureMs });
+    const { initializeFirebaseAppCheck, resetNativeAppCheckTokenCacheForTests } = await loadSubject();
+    resetNativeAppCheckTokenCacheForTests();
+    initializeFirebaseAppCheck(app);
+
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(11_000);
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(2);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
+  it('does not reuse bridge cooldown cache when token is near expiry', async () => {
+    vi.useFakeTimers();
+    mocks.native = true;
+    const nearExpiryMs = Date.now() + 30_000;
+    mocks.getNativeToken.mockResolvedValue({ token: 'native-token', expireTimeMillis: nearExpiryMs });
+    const { initializeFirebaseAppCheck, resetNativeAppCheckTokenCacheForTests } = await loadSubject();
+    resetNativeAppCheckTokenCacheForTests();
+    initializeFirebaseAppCheck(app);
+
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    await mocks.customOptions!.getToken();
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
+  it('bypasses debounce cache when forceRefresh is requested', async () => {
+    mocks.native = true;
+    const futureMs = Date.now() + 60 * 60 * 1000;
+    mocks.getNativeToken.mockResolvedValue({ token: 'native-token', expireTimeMillis: futureMs });
+    const { initializeFirebaseAppCheck, ensureFreshAppCheckToken, resetNativeAppCheckTokenCacheForTests } =
+      await loadSubject();
+    resetNativeAppCheckTokenCacheForTests();
+    initializeFirebaseAppCheck(app);
+    await mocks.customOptions!.getToken();
+    await ensureFreshAppCheckToken(true);
+    expect(mocks.getNativeToken).toHaveBeenCalledTimes(2);
+    expect(mocks.getNativeToken).toHaveBeenLastCalledWith({ forceRefresh: true });
+  });
+});
+
+describe('normalizeExpireTimeMillis', () => {
+  beforeEach(async () => {
+    vi.resetModules();
+  });
+
+  it('defaults missing or invalid expiry to a future window', async () => {
+    const { normalizeExpireTimeMillis } = await loadSubject();
+    const now = Date.now();
+    expect(normalizeExpireTimeMillis(undefined)).toBeGreaterThan(now + 29 * 60 * 1000);
+    expect(normalizeExpireTimeMillis(Number.NaN)).toBeGreaterThan(now + 29 * 60 * 1000);
+  });
+
+  it('converts second-based timestamps to milliseconds', async () => {
+    const { normalizeExpireTimeMillis } = await loadSubject();
+    const futureSec = Math.floor(Date.now() / 1000) + 7200;
+    expect(normalizeExpireTimeMillis(futureSec)).toBe(futureSec * 1000);
+  });
+
+  it('replaces expired timestamps with a conservative ttl', async () => {
+    const { normalizeExpireTimeMillis } = await loadSubject();
+    const now = Date.now();
+    expect(normalizeExpireTimeMillis(now - 1000)).toBeGreaterThan(now + 29 * 60 * 1000);
   });
 });

@@ -22,6 +22,7 @@ export default function HomeLadderIdentitySection() {
     setDisplayName,
     previewAvatarUrl,
     pickAvatarFile,
+    openAvatarPicker,
     clearAvatar,
     handleSubmit,
     saving,
@@ -125,7 +126,7 @@ export default function HomeLadderIdentitySection() {
                   type="button"
                   className="ui-btn py-1.5 text-xs"
                   aria-controls={fileInputId}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => void openAvatarPicker(() => fileInputRef.current?.click())}
                 >
                   {t('home.ladderIdentity.pickAvatar', { ns: 'common' })}
                 </button>

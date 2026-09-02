@@ -42,6 +42,7 @@ const LadderIdentitySheetBody: FC<LadderIdentitySheetBodyProps> = ({ onClose, on
     setDisplayName,
     previewAvatarUrl,
     pickAvatarFile,
+    openAvatarPicker,
     clearAvatar,
     handleSubmit,
     saving,
@@ -121,7 +122,7 @@ const LadderIdentitySheetBody: FC<LadderIdentitySheetBodyProps> = ({ onClose, on
                   type="button"
                   className="ui-btn py-1.5 text-xs"
                   aria-controls={fileInputId}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => void openAvatarPicker(() => fileInputRef.current?.click())}
                 >
                   {t('home.ladderIdentity.pickAvatar')}
                 </button>

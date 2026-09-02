@@ -60,5 +60,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>選擇天梯個人頭像需要存取您的相簿以挑選照片。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>儲存或編輯天梯頭像需要存取您的相簿權限。</string>
+	<key>NSCameraUsageDescription</key>
+	<string>上傳個人天梯頭像需要相機與影像選取權限。</string>
 </dict>
 </plist>

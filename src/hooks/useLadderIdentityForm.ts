@@ -2,12 +2,14 @@ import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { validateLadderDisplayNameForSave } from '../logic/core/ladderDisplayNamePolicy';
 import { getDisplayNameMaxLength } from '../logic/core/identity';
+import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
 import { compressImageFileToDataUrl, ImageCompressError } from '../lib/imageCompress';
 import {
   LOCAL_PROFILE_CHANGED_EVENT,
   PROFILE_STORAGE_KEY,
   loadProfile,
 } from '../services/localStorageService';
+import { pickImageFromPhotoLibrary } from '../services/ladderAvatarPickService';
 import {
   saveLadderIdentity,
   sanitizeAvatarUrlForLeaderboard,
@@ -88,7 +90,7 @@ export function useLadderIdentityForm(options: UseLadderIdentityFormOptions = {}
     ? undefined
     : (pendingAvatarUrl ?? committedAvatarUrl ?? undefined);
 
-  const pickAvatarFile = async (file: File | null) => {
+  const pickAvatarFile = useCallback(async (file: File | null) => {
     if (!file) return;
     setErrorKey(null);
     try {
@@ -96,13 +98,36 @@ export function useLadderIdentityForm(options: UseLadderIdentityFormOptions = {}
       setPendingAvatarUrl(dataUrl);
       setAvatarRemoved(false);
     } catch (e) {
+      if (import.meta.env.DEV) {
+        console.error('[avatar-debug]', e);
+      }
       if (e instanceof ImageCompressError && e.code === 'too-large') {
         setErrorKey('home.ladderIdentity.errorImageTooLarge');
       } else {
         setErrorKey('home.ladderIdentity.errorImage');
       }
     }
-  };
+  }, []);
+
+  const openAvatarPicker = useCallback(
+    async (webFallback: () => void) => {
+      setErrorKey(null);
+      if (!isCapacitorNativePlatform()) {
+        webFallback();
+        return;
+      }
+      try {
+        const nativeFile = await pickImageFromPhotoLibrary();
+        if (nativeFile) await pickAvatarFile(nativeFile);
+      } catch (e) {
+        if (import.meta.env.DEV) {
+          console.error('[avatar-debug]', e);
+        }
+        setErrorKey('home.ladderIdentity.errorImage');
+      }
+    },
+    [pickAvatarFile]
+  );
 
   const clearAvatar = () => {
     setPendingAvatarUrl(null);
@@ -157,6 +182,7 @@ export function useLadderIdentityForm(options: UseLadderIdentityFormOptions = {}
     setDisplayName,
     previewAvatarUrl,
     pickAvatarFile,
+    openAvatarPicker,
     clearAvatar,
     handleSubmit,
     saving,
