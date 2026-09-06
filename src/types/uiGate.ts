@@ -1,5 +1,5 @@
 /** Query `from` values for contextual Join Arena copy and analytics. */
-export type JoinArenaFrom = 'ladder' | 'backup' | 'settings' | 'dyno-intel';
+export type JoinArenaFrom = 'ladder' | 'backup' | 'settings' | 'dyno-intel' | 'pro-upsell';
 
 /** Visual gate sheet variants — auth (sign-in) vs pro (arena upgrade). */
 export type GateSheetKind = 'auth' | 'pro';

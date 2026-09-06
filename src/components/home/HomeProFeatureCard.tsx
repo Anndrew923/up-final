@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { CollapsibleChevron } from '../CollapsibleChevron';
 import { useHomeProFeatureCardExpanded } from '../../hooks/useHomeProFeatureCardExpanded';
 import { onCollapsibleToggleKeyDown } from '../../lib/collapsibleKeyboard';
+import { ROUTES } from '../../config/routes';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
 import { useEntitlementStore } from '../../stores/entitlementStore';
 
@@ -95,7 +96,7 @@ const HomeProFeatureCardUpgrade: FC = () => {
         <div className="flex shrink-0 items-center gap-1.5">
           {!isExpanded ? (
             <Link
-              to={joinArenaPath('settings')}
+              to={joinArenaPath('pro-upsell', ROUTES.home)}
               className="inline-flex h-7 items-center justify-center rounded-full border border-amber-400/45 bg-amber-500/20 px-2.5 text-[11px] font-semibold tracking-wide text-amber-50 transition-colors hover:bg-amber-500/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60"
             >
               {t('home.proFeatureCard.collapsedCta')}
@@ -160,7 +161,7 @@ const HomeProFeatureCardUpgrade: FC = () => {
             </ul>
 
             <Link
-              to={joinArenaPath('settings')}
+              to={joinArenaPath('pro-upsell', ROUTES.home)}
               className="ui-btn ui-btn-primary inline-flex w-full items-center justify-center border-amber-400/40 bg-amber-500/15 text-amber-50 hover:bg-amber-500/25"
             >
               {t('home.proFeatureCard.cta')}

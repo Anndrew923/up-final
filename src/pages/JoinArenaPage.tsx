@@ -25,11 +25,14 @@ import { useGenesisSeatSummary } from '../hooks/useGenesisSeatSummary';
 import { useUiGate } from '../hooks/useUiGate';
 import { formatGenesisSeatSummaryCopy } from '../lib/genesisSeatSummaryCopy';
 import {
+  isProSubscribeFunnel,
   joinArenaDescriptionKey,
   joinArenaGateFeature,
+  joinArenaTitleKey,
   parseJoinArenaFrom,
   resolveJoinArenaReturnTo,
 } from '../lib/joinArenaNavigation';
+import { resolveJoinArenaPrimaryCtaKey } from '../lib/joinArenaPrimaryCta';
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
 import { hapticService } from '../services/hapticService';
@@ -58,13 +61,14 @@ const JoinArenaPage: FC = () => {
   const location = useLocation();
   const joinFrom = useMemo(() => parseJoinArenaFrom(location.search), [location.search]);
   const descriptionKey = joinArenaDescriptionKey(joinFrom);
+  const titleKey = joinArenaTitleKey(joinFrom);
   // WHY: Explicit allowlisted returnTo beats funnel defaults so Dyno never hard-routes to ladder.
   const returnTo = useMemo(
     () => resolveJoinArenaReturnTo(joinFrom, location.search),
     [joinFrom, location.search]
   );
-  const isBackupFunnel = joinFrom === 'backup';
-  const isDynoFunnel = joinFrom === 'dyno-intel';
+  // WHY: Home / Dyno / backup are paid Pro funnels — never inherit ladder "early bird free" CTA.
+  const proSubscribeFunnel = isProSubscribeFunnel(joinFrom);
   const gateFeature = useMemo(() => joinArenaGateFeature(joinFrom), [joinFrom]);
 
   const [banner, setBanner] = useState<'idle' | 'auth-ok' | 'apple-ok'>('idle');
@@ -77,6 +81,7 @@ const JoinArenaPage: FC = () => {
   const showAppleSignIn = isNativeAppleSignInAvailable();
 
   const isPro = useEntitlementStore((s) => s.isPro);
+  const isGenesisEarlyBird = useEntitlementStore((s) => s.isGenesisEarlyBird === true);
   const storeBillingExpiresAt = useEntitlementStore((s) => s.proExpiresAt);
   const authStatus = useAuthStore((s) => s.status);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
@@ -89,9 +94,9 @@ const JoinArenaPage: FC = () => {
   const uiGate = useUiGate(gateFeature);
   const coreOwned = hasCoreAccess(entitlement);
   const isBetaOpen = !MONETIZATION_CONFIG.leaderboardPaywallEnabled;
-  // WHY: Dyno / backup funnels must not inherit ladder genesis copy — context-aware isolation.
-  // Show for all ladder funnel stages (including ended) so FOMO / cutover messaging stays aligned.
-  const showLadderBetaBanner = !isBackupFunnel && !isDynoFunnel;
+  // WHY: Ladder FOMO strip only for ladder/settings entry — Pro funnels use pioneer upsell banner instead.
+  const showLadderBetaBanner = !proSubscribeFunnel;
+  const showGenesisPioneerProBanner = proSubscribeFunnel && isGenesisEarlyBird;
 
   const genesisBannerText = useMemo(
     () => formatGenesisSeatSummaryCopy(t, genesisSeatSummary),
@@ -170,6 +175,13 @@ const JoinArenaPage: FC = () => {
       return;
     }
 
+    // WHY: Pro subscribe funnel + visible plan picker must purchase even when uiGate is `none`
+    // (genesis / open ladder). Navigating returnTo here was the conversion break.
+    if (proSubscribeFunnel && showPlanPicker) {
+      await runPurchase();
+      return;
+    }
+
     if (uiGate.kind === 'none' && !promoOnlyConvert) {
       navigate(returnTo);
       return;
@@ -181,33 +193,17 @@ const JoinArenaPage: FC = () => {
   const subscribeDisabled =
     billingBusy || authBusy || authStatus === 'loading' || hasActiveStoreBilling;
 
-  const primaryCtaLabel = (() => {
-    if (billingBusy || authBusy || authStatus === 'loading') return t('billingLoading');
-    if (promoOnlyConvert) {
-      return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
-    }
-    if (isDynoFunnel) {
-      if (uiGate.kind === 'auth') return showAppleSignIn ? t('appleLogin') : t('googleLogin');
-      if (uiGate.kind === 'none') return t('returnToDynoIntel');
-      return t('subscribeUnlockProDynoIntel');
-    }
-    if (uiGate.kind === 'auth') {
-      if (showAppleSignIn) return t('appleLogin');
-      return isBackupFunnel
-        ? t('googleLogin')
-        : isBetaOpen
-          ? t('betaEnterLeaderboard')
-          : t('googleLogin');
-    }
-    if (uiGate.kind === 'none') {
-      return isBackupFunnel
-        ? t('returnToCloudSync')
-        : isBetaOpen
-          ? t('betaEnterArena')
-          : t('enterLeaderboard');
-    }
-    return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
-  })();
+  const primaryCtaLabel = t(
+    resolveJoinArenaPrimaryCtaKey({
+      from: joinFrom,
+      busy: billingBusy || authBusy || authStatus === 'loading',
+      showPlanPicker,
+      promoOnlyConvert,
+      uiGateKind: uiGate.kind,
+      showAppleSignIn,
+      isBetaOpen,
+    })
+  );
 
   return (
     <>
@@ -228,7 +224,7 @@ const JoinArenaPage: FC = () => {
             {isPro ? <span className="text-xs text-emerald-400">{t('activeProBadge')}</span> : null}
           </div>
           <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
-            {isDynoFunnel ? t('joinTitleFromDynoIntel') : t('joinTitle')}
+            {t(titleKey)}
           </h1>
           <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
         </header>
@@ -241,6 +237,14 @@ const JoinArenaPage: FC = () => {
         {banner === 'apple-ok' ? (
           <p className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
             {t('appleLoginSuccess', { name: signedInDisplayName })}
+          </p>
+        ) : null}
+        {showGenesisPioneerProBanner ? (
+          <p
+            role="status"
+            className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
+          >
+            {t('genesisPioneerProUpsellBanner')}
           </p>
         ) : null}
         {showLadderBetaBanner ? (
@@ -290,7 +294,7 @@ const JoinArenaPage: FC = () => {
           {uiGate.kind === 'auth' ? (
             <div className="mt-2 space-y-3">
               <p className="text-sm text-zinc-300">
-                {isBackupFunnel || isDynoFunnel
+                {proSubscribeFunnel
                   ? t(showAppleSignIn ? 'identityRequiredApple' : 'identityRequired')
                   : isBetaOpen
                     ? t(showAppleSignIn ? 'identityOptionalBetaApple' : 'identityOptionalBeta')

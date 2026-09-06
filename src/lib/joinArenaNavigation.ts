@@ -4,6 +4,17 @@ import type { JoinArenaFrom } from '../types/uiGate';
 
 export type { JoinArenaFrom } from '../types/uiGate';
 
+/** Single allowlist — keeps parseJoinArenaFrom aligned with JoinArenaFrom. */
+const JOIN_ARENA_FROM_VALUES = [
+  'ladder',
+  'backup',
+  'settings',
+  'dyno-intel',
+  'pro-upsell',
+] as const satisfies ReadonlyArray<JoinArenaFrom>;
+
+const JOIN_ARENA_FROM_SET: ReadonlySet<string> = new Set(JOIN_ARENA_FROM_VALUES);
+
 /** Allowlist of in-app paths safe for Join Arena `returnTo` (blocks open redirects). */
 const ALLOWED_RETURN_TO_PATHS: ReadonlySet<string> = new Set(Object.values(ROUTES));
 
@@ -13,8 +24,8 @@ export function isAllowedJoinArenaReturnTo(path: string): path is RoutePath {
 
 export function parseJoinArenaFrom(search: string): JoinArenaFrom | null {
   const raw = new URLSearchParams(search).get('from');
-  if (raw === 'ladder' || raw === 'backup' || raw === 'settings' || raw === 'dyno-intel') {
-    return raw;
+  if (raw && JOIN_ARENA_FROM_SET.has(raw)) {
+    return raw as JoinArenaFrom;
   }
   return null;
 }
@@ -39,13 +50,35 @@ export type JoinArenaDescriptionKey =
   | 'joinDescription'
   | 'joinDescriptionFromLadder'
   | 'joinDescriptionFromBackup'
-  | 'joinDescriptionFromDynoIntel';
+  | 'joinDescriptionFromDynoIntel'
+  | 'joinDescriptionFromProUpsell';
 
 export function joinArenaDescriptionKey(from: JoinArenaFrom | null): JoinArenaDescriptionKey {
   if (from === 'ladder') return 'joinDescriptionFromLadder';
   if (from === 'backup') return 'joinDescriptionFromBackup';
   if (from === 'dyno-intel') return 'joinDescriptionFromDynoIntel';
+  if (from === 'pro-upsell') return 'joinDescriptionFromProUpsell';
   return 'joinDescription';
+}
+
+export type JoinArenaTitleKey =
+  | 'joinTitle'
+  | 'joinTitleFromDynoIntel'
+  | 'joinTitleProUpsell';
+
+export function joinArenaTitleKey(from: JoinArenaFrom | null): JoinArenaTitleKey {
+  if (from === 'pro-upsell') return 'joinTitleProUpsell';
+  if (from === 'dyno-intel') return 'joinTitleFromDynoIntel';
+  return 'joinTitle';
+}
+
+/**
+ * Paid Pro funnel (home upsell / Dyno / cloud) — must not inherit ladder early-bird free CTA.
+ * WHY: Genesis open ladder access sets uiGate to `none`; without this split, upsell CTAs
+ * navigate away instead of purchasing.
+ */
+export function isProSubscribeFunnel(from: JoinArenaFrom | null): boolean {
+  return from === 'pro-upsell' || from === 'backup' || from === 'dyno-intel';
 }
 
 /**
@@ -72,15 +105,16 @@ export function resolveJoinArenaReturnTo(
 ): RoutePath {
   const explicit = parseJoinArenaReturnTo(search);
   if (explicit) return explicit;
-  // WHY: Backup funnel lives on Tools; Dyno should never dump users onto the ladder.
+  // WHY: Backup funnel lives on Tools; Dyno / home upsell should never dump users onto the ladder.
   if (from === 'backup') return ROUTES.tools;
-  if (from === 'dyno-intel') return ROUTES.home;
+  if (from === 'dyno-intel' || from === 'pro-upsell') return ROUTES.home;
   return ROUTES.ladder;
 }
 
 /** Maps Join Arena entry context to the unified UI gate feature key. */
 export function joinArenaGateFeature(from: JoinArenaFrom | null): GateFeature {
   if (from === 'backup') return 'cloud-sync';
-  if (from === 'dyno-intel') return 'dyno-intel-full';
+  // WHY: pro-upsell aligns to Pro entitlement gate (same as Dyno full), not ladder open-access.
+  if (from === 'dyno-intel' || from === 'pro-upsell') return 'dyno-intel-full';
   return 'ladder-read';
 }
