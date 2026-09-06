@@ -33,9 +33,12 @@ function buildEntitlement(overrides: Partial<EntitlementState> = {}): Entitlemen
     subscriptionStatus: 'free',
     isPro: false,
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
     ...overrides,
   };
 }
@@ -59,10 +62,12 @@ describe('entitlement core guards', () => {
     const pro = buildEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2026-01-01T12:00:00.000Z',
+      promoExpiresAt: null,
     });
     const grace = buildEntitlement({
       subscriptionStatus: 'grace',
       proExpiresAt: '2026-01-01T12:00:00.000Z',
+      promoExpiresAt: null,
     });
 
     expect(hasProAccess(pro, now)).toBe(true);
@@ -79,6 +84,7 @@ describe('entitlement core guards', () => {
         buildEntitlement({
           subscriptionStatus: 'pro',
           proExpiresAt: '2025-12-31T23:59:59.000Z',
+          promoExpiresAt: null,
         }),
         now
       )
@@ -92,6 +98,7 @@ describe('entitlement core guards', () => {
       purchaseStatus: 'owned',
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
     });
     expect(resolveUiGate('dyno-intel-trial', free, 'signed-in', false).kind).toBe('none');
     expect(resolveUiGate('dyno-intel-trial', noCore, 'signed-in', false).kind).toBe('core');
@@ -109,6 +116,7 @@ describe('entitlement core guards', () => {
         buildEntitlement({
           subscriptionStatus: 'pro',
           proExpiresAt: '2099-01-01T00:00:00.000Z',
+          promoExpiresAt: null,
         })
       )
     ).toBe(false);
@@ -123,7 +131,10 @@ describe('entitlement core guards', () => {
     const cooling = buildEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
       proPurchaseCooldownUntil: '2026-08-02T00:05:00.000Z',
+      isGenesisEarlyBird: false,
+      genesisSeatNumber: null,
     });
     expect(isProPurchaseCooldownActive(cooling, now)).toBe(true);
     expect(shouldBlockProReconcileDowngrade(cooling, false, now)).toBe(true);
@@ -142,6 +153,7 @@ describe('entitlement core guards', () => {
     const cloudPro = buildEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
     });
     expect(shouldBlockCrossPlatformProDowngrade(cloudPro, false, now)).toBe(true);
     expect(shouldBlockCrossPlatformProDowngrade(cloudPro, true, now)).toBe(false);
@@ -195,6 +207,22 @@ describe('resolveUiGate', () => {
     expect(gate.kind).toBe('pro');
     expect(gate.joinArenaFrom).toBe('ladder');
     expect(uiGateNextRoute(gate)).toBe(joinArenaPath('ladder'));
+  });
+
+  it('grandfathers genesis early-bird on ladder even when paywall is enabled', () => {
+    mutableMonetizationConfig.leaderboardPaywallEnabled = true;
+    const pioneer = buildEntitlement({
+      subscriptionStatus: 'free',
+      isGenesisEarlyBird: true,
+      genesisSeatNumber: 7,
+    });
+    expect(resolveUiGate('ladder-read', pioneer, 'signed-in', false).kind).toBe('none');
+    expect(resolveUiGate('ladder-upload', pioneer, 'signed-in', false).kind).toBe('none');
+    expect(resolveUiGate('cloud-sync', pioneer, 'signed-in', false).kind).toBe('pro');
+    expect(resolveUiGate('dyno-intel-full', pioneer, 'signed-in', false).kind).toBe('pro');
+    expect(canAccessLeaderboard(pioneer)).toBe(true);
+    expect(getEntitlementReasonCode(pioneer, 'leaderboard-read')).toBe('ok');
+    expect(getEntitlementReasonCode(pioneer, 'leaderboard-write')).toBe('ok');
   });
 
   it('maps ladder upload gate to UiGateKind-aligned codes', () => {

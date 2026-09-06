@@ -1,7 +1,9 @@
 import { doc, getDoc } from 'firebase/firestore';
 import {
+  parseGenesisEarlyBirdFromUserDoc,
   parseServerProFromUserDoc,
   type FirestoreUserEntitlementFields,
+  type ParsedGenesisEarlyBird,
   type ParsedServerProEntitlement,
 } from '../logic/core/userEntitlementDoc';
 import { hasProAccess, shouldBlockCrossPlatformProDowngrade } from '../logic/core/entitlement';
@@ -18,18 +20,24 @@ export function logEntitlementSync(phase: string, detail?: Record<string, unknow
 }
 
 export type ServerProHydrateResult =
-  | { status: 'active'; entitlement: ParsedServerProEntitlement }
+  | {
+      status: 'active';
+      entitlement: ParsedServerProEntitlement;
+      genesis: ParsedGenesisEarlyBird;
+    }
   /**
    * User doc exists but has no valid Pro — authoritative server revocation.
    * WHY: Webhook/cancel must beat stale uid-scoped localStorage on next login.
+   * Genesis mirror still applies (lifetime ladder seats survive Pro lapse).
    */
-  | { status: 'revoked' }
+  | { status: 'revoked'; genesis: ParsedGenesisEarlyBird }
   /** Missing doc, offline, or Firestore unavailable — do not mutate local Pro. */
   | { status: 'skipped'; reason: 'no-db-or-uid' | 'doc-missing' | 'read-error' };
 
 /**
- * Read authoritative Pro fields from `users/{uid}` (owner-read allowed by rules).
+ * Read authoritative Pro + Genesis fields from `users/{uid}` (owner-read allowed by rules).
  * WHY: Cross-platform SSOT — Android purchase must unlock iOS without local StoreKit receipt.
+ * Scheme A: same doc also carries founding-seat mirror for ladder lifetime free.
  */
 export async function resolveServerProHydrate(uid: string): Promise<ServerProHydrateResult> {
   const db = getFirestoreDb();
@@ -45,18 +53,24 @@ export async function resolveServerProHydrate(uid: string): Promise<ServerProHyd
       return { status: 'skipped', reason: 'doc-missing' };
     }
 
-    const parsed = parseServerProFromUserDoc(snap.data() as FirestoreUserEntitlementFields);
+    const data = snap.data() as FirestoreUserEntitlementFields;
+    const genesis = parseGenesisEarlyBirdFromUserDoc(data);
+    const parsed = parseServerProFromUserDoc(data);
     if (parsed) {
       logEntitlementSync('firestore-hydrate-hit', {
         uid,
         subscriptionStatus: parsed.subscriptionStatus,
         proExpiresAt: parsed.proExpiresAt,
+        isGenesisEarlyBird: genesis.isGenesisEarlyBird,
       });
-      return { status: 'active', entitlement: parsed };
+      return { status: 'active', entitlement: parsed, genesis };
     }
 
-    logEntitlementSync('firestore-hydrate-revoked', { uid });
-    return { status: 'revoked' };
+    logEntitlementSync('firestore-hydrate-revoked', {
+      uid,
+      isGenesisEarlyBird: genesis.isGenesisEarlyBird,
+    });
+    return { status: 'revoked', genesis };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logEntitlementSync('firestore-hydrate-error', { uid, message });

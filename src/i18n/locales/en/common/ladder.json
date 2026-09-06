@@ -7,7 +7,11 @@
       "body": "Free access to the \"Global Ladder\" for the first {{count}} registered players during the genesis launch. The ladder will become Pro-exclusive once reached; early participants will retain priority access.",
       "proNote": "Note: Pro features such as DYNO INTEL still require a subscription.",
       "dontShowAgain": "Got it — don't show again",
-      "enterCta": "Enter the Arena"
+      "enterCta": "Enter the Arena",
+      "pioneerBadge": "✦ Genesis Pioneer · Ladder Lifetime Free",
+      "pioneerBadgeWithSeat": "✦ Genesis Pioneer · NO. {{seat}} · Ladder Lifetime Free",
+      "pioneerHint": "Your founding seat is locked — lifetime ladder access is yours. Dyno Intel deep inference and cross-device cloud backup remain PRO exclusives.",
+      "seatsCountdown": "Genesis pioneer seats filling fast (limited to {{count}})"
     },
     "kicker": "Global Arena",
     "title": "Live Ladder",

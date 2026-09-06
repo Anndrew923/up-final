@@ -13,9 +13,12 @@ const proEnt: EntitlementState = {
   subscriptionStatus: 'pro',
   isPro: true,
   proExpiresAt: null,
+  promoExpiresAt: null,
   planId: 'pro_monthly_099',
   lastCheckedAt: null,
   proPurchaseCooldownUntil: null,
+  isGenesisEarlyBird: false,
+  genesisSeatNumber: null,
 };
 
 const freeEnt: EntitlementState = {
@@ -23,9 +26,12 @@ const freeEnt: EntitlementState = {
   subscriptionStatus: 'free',
   isPro: false,
   proExpiresAt: null,
+  promoExpiresAt: null,
   planId: null,
   lastCheckedAt: null,
   proPurchaseCooldownUntil: null,
+  isGenesisEarlyBird: false,
+  genesisSeatNumber: null,
 };
 
 describe('tryApplyRemoteProfileFromSnapshot', () => {

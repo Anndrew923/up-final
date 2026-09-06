@@ -19,6 +19,8 @@ const syncProEntitlementToServer = vi.hoisted(() =>
     active: true,
     subscriptionStatus: 'pro',
     proExpiresAt: '2099-01-01T00:00:00.000Z',
+    promoExpiresAt: null,
+    rcExpiresAt: '2099-01-01T00:00:00.000Z',
     planId: 'up_pro_monthly',
   })
 );
@@ -63,7 +65,10 @@ function seedSignedInBuyer(): void {
     subscriptionStatus: 'free',
     planId: 'core_lifetime_099',
     proExpiresAt: null,
+    promoExpiresAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   });
   useAuthStore.setState({
     status: 'signed-in',
@@ -88,6 +93,8 @@ describe('subscription service native purchase hard-sync', () => {
       active: true,
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
     });
     revenueCat.purchaseRevenueCatPro.mockReset();
@@ -118,6 +125,8 @@ describe('subscription service native purchase hard-sync', () => {
         active: true,
         subscriptionStatus: 'pro',
         proExpiresAt: '2099-01-01T00:00:00.000Z',
+        promoExpiresAt: null,
+        rcExpiresAt: '2099-01-01T00:00:00.000Z',
         planId: 'up_pro_monthly',
       });
 
@@ -181,6 +190,8 @@ describe('subscription service native purchase hard-sync', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: true,
     });
@@ -204,6 +215,8 @@ describe('subscription service native purchase hard-sync', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });

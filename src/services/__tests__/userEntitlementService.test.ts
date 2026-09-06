@@ -7,6 +7,7 @@ describe('resolveServerProHydrate result mapping', () => {
     const parsed = parseServerProFromUserDoc({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
       planId: 'up_pro_monthly',
       isPro: true,
     });
@@ -19,6 +20,7 @@ describe('resolveServerProHydrate result mapping', () => {
       subscriptionStatus: 'free',
       isPro: false,
       proExpiresAt: null,
+      promoExpiresAt: null,
     });
     expect(parsed).toBeNull();
   });

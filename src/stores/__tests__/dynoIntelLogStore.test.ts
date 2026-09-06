@@ -30,9 +30,12 @@ describe('dynoIntelLogStore', () => {
       subscriptionStatus: 'free',
       isPro: false,
       proExpiresAt: null,
+      promoExpiresAt: null,
       planId: null,
       lastCheckedAt: null,
       proPurchaseCooldownUntil: null,
+      isGenesisEarlyBird: false,
+      genesisSeatNumber: null,
     });
   });
 
@@ -111,9 +114,12 @@ describe('dynoIntelLogStore', () => {
       subscriptionStatus: 'pro',
       isPro: true,
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
       planId: 'pro',
       lastCheckedAt: null,
       proPurchaseCooldownUntil: null,
+      isGenesisEarlyBird: false,
+      genesisSeatNumber: null,
     });
     vi.spyOn(persistence, 'saveDynoIntelLogs').mockReturnValue(true);
     useDynoIntelLogStore.getState().bindSession('pro-user');

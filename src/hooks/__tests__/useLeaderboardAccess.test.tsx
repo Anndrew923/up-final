@@ -47,9 +47,12 @@ function setEntitlementState(params: {
     subscriptionStatus: params.subscriptionStatus,
     isPro: params.subscriptionStatus === 'pro',
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: params.subscriptionStatus === 'pro' ? 'pro_monthly_099' : 'core_lifetime_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   });
 }
 

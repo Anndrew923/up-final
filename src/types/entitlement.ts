@@ -5,7 +5,13 @@ export interface EntitlementState {
   purchaseStatus: PurchaseStatus;
   subscriptionStatus: SubscriptionStatus;
   isPro: boolean;
+  /** RevenueCat / store billing expiry (ISO). */
   proExpiresAt: string | null;
+  /**
+   * Coach invite promo expiry (ISO). Independent of RC.
+   * WHY: Effective Pro = max(proExpiresAt, promoExpiresAt).
+   */
+  promoExpiresAt: string | null;
   planId: string | null;
   lastCheckedAt: string | null;
   /**
@@ -13,4 +19,13 @@ export interface EntitlementState {
    * WHY: RC REST lag after a confirmed charge must not wipe a just-synced Firestore grant.
    */
   proPurchaseCooldownUntil: string | null;
+  /**
+   * Server-mirrored Genesis early-bird seat (`users/{uid}.isGenesisEarlyBird`).
+   * WHY: Ladder lifetime free access for founding seats — independent of Pro billing.
+   */
+  isGenesisEarlyBird: boolean;
+  /**
+   * Seat ordinal 1–2000 when claimed via atomic counter; `null` for legacy grandfather.
+   */
+  genesisSeatNumber: number | null;
 }

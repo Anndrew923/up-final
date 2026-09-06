@@ -7,6 +7,11 @@ import {
   type PurchasesOffering,
   type PurchasesPackage,
 } from '@revenuecat/purchases-capacitor';
+import {
+  DEFAULT_PRO_SUBSCRIPTION_PLAN,
+  PRO_SUBSCRIPTION_PLANS,
+  type ProSubscriptionPlanId,
+} from '../config/proSubscriptionPlans';
 
 export interface RevenueCatEntitlementSnapshot {
   active: boolean;
@@ -36,8 +41,8 @@ function entitlementId(): string {
   return env('VITE_RC_ENTITLEMENT_ID') || 'pro';
 }
 
-function packageId(): string {
-  return env('VITE_RC_PACKAGE_ID') || '$rc_monthly';
+function defaultPackageId(): string {
+  return env('VITE_RC_PACKAGE_ID') || PRO_SUBSCRIPTION_PLANS.monthly.packageId;
 }
 
 function parseEntitlement(info: CustomerInfo): RevenueCatEntitlementSnapshot {
@@ -108,25 +113,47 @@ export async function fetchRevenueCatEntitlement(
   return parseEntitlement(customerInfo);
 }
 
-function resolvePurchasePackage(offering: PurchasesOffering): PurchasesPackage | null {
-  if (offering.availablePackages.length === 0) return null;
-  const preferredId = packageId();
-  return (
-    offering.availablePackages.find((item) => item.identifier === preferredId) ??
-    offering.monthly ??
-    offering.availablePackages[0]
-  );
+function resolvePackageId(planId?: ProSubscriptionPlanId | string | null): string {
+  if (planId === 'monthly' || planId === PRO_SUBSCRIPTION_PLANS.monthly.packageId) {
+    return PRO_SUBSCRIPTION_PLANS.monthly.packageId;
+  }
+  if (planId === 'annual' || planId === PRO_SUBSCRIPTION_PLANS.annual.packageId) {
+    return PRO_SUBSCRIPTION_PLANS.annual.packageId;
+  }
+  if (typeof planId === 'string' && planId.trim()) return planId.trim();
+  return defaultPackageId();
 }
 
+function resolvePurchasePackage(
+  offering: PurchasesOffering,
+  preferredPackageId: string
+): PurchasesPackage | null {
+  if (offering.availablePackages.length === 0) return null;
+  const byId = offering.availablePackages.find((item) => item.identifier === preferredPackageId);
+  if (byId) return byId;
+  if (preferredPackageId === PRO_SUBSCRIPTION_PLANS.annual.packageId && offering.annual) {
+    return offering.annual;
+  }
+  if (preferredPackageId === PRO_SUBSCRIPTION_PLANS.monthly.packageId && offering.monthly) {
+    return offering.monthly;
+  }
+  return offering.monthly ?? offering.availablePackages[0];
+}
+
+/**
+ * Purchases the selected Pro package from the current offering.
+ * @param planOrPackageId `monthly` | `annual` | `$rc_monthly` | `$rc_annual` (default annual for new paywall).
+ */
 export async function purchaseRevenueCatPro(
-  appUserId: string
+  appUserId: string,
+  planOrPackageId: ProSubscriptionPlanId | string = DEFAULT_PRO_SUBSCRIPTION_PLAN
 ): Promise<RevenueCatEntitlementSnapshot | null> {
   const ok = await ensureRevenueCatConfigured(appUserId);
   if (!ok) return null;
   const offerings = await Purchases.getOfferings();
   const current = offerings.current;
   if (!current) return null;
-  const targetPackage = resolvePurchasePackage(current);
+  const targetPackage = resolvePurchasePackage(current, resolvePackageId(planOrPackageId));
   if (!targetPackage) return null;
   const result = await Purchases.purchasePackage({ aPackage: targetPackage });
   return parseEntitlement(result.customerInfo);

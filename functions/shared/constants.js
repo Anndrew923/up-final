@@ -82,6 +82,23 @@ export const CALLABLE_OPTS = {
 /** Admin moderation audit trail — Admin SDK writes only (rules deny client create). */
 export const ADMIN_ACTIONS_COLLECTION = "adminActions";
 
+/** Coach invite promo catalog — Admin SDK / redeemPromoCode only. */
+export const PROMO_CODES_COLLECTION = "promo_codes";
+/** One attribution doc per redeeming user (doc id = uid). */
+export const USER_ATTRIBUTIONS_COLLECTION = "user_attributions";
+/** Commission ledger keyed by RevenueCat event.id. */
+export const COMMISSION_LOGS_COLLECTION = "commission_logs";
+
+/** Store cut before coach share — price * (1 - cut) * coachRate. */
+export const COMMISSION_PLATFORM_CUT = 0.15;
+export const COMMISSION_COACH_SHARE_DEFAULT = 0.5;
+export const PROMO_DEFAULT_GRANT_DAYS = 60;
+export const PROMO_DEFAULT_ATTRIBUTION_MONTHS = 12;
+
+/** RevenueCat offering package identifiers (must match RC dashboard). */
+export const RC_PACKAGE_MONTHLY = "$rc_monthly";
+export const RC_PACKAGE_ANNUAL = "$rc_annual";
+
 /** Storage prefix for public ladder avatars — mirror client `ladderAvatarStoragePath`. */
 export const LADDER_AVATARS_STORAGE_PREFIX = "ladder-avatars";
 

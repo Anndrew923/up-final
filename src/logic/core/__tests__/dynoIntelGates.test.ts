@@ -24,9 +24,12 @@ function buildEntitlement(overrides: Partial<EntitlementState> = {}): Entitlemen
     subscriptionStatus: 'free',
     isPro: false,
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
     ...overrides,
   };
 }
@@ -77,6 +80,7 @@ describe('dynoIntelGates', () => {
     const ent = buildEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
     });
     expect(resolveDynoIntelAccess('cross-axis', ent, 'signed-in', false).allowed).toBe(true);
     expect(resolveDynoIntelAccess('weight-simulation', ent, 'signed-in', false).allowed).toBe(true);

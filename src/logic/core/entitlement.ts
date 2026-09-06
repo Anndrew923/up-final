@@ -1,6 +1,10 @@
 import type { UiGateJoinArenaFrom } from '../../types/uiGate';
 import type { EntitlementState } from '../../types/entitlement';
 import { MONETIZATION_CONFIG } from '../../config/monetization';
+import {
+  isPromoExpiryActive,
+  resolveEffectiveProExpiryMs,
+} from './proExpiry';
 
 type Feature = 'core' | 'leaderboard-read' | 'leaderboard-write';
 
@@ -69,6 +73,7 @@ export function shouldBlockProReconcileDowngrade(
  * WHY: Play/Android purchases do not surface as active on iOS StoreKit RC reads.
  * When Firestore or a prior hydrate already granted valid Pro, an inactive local-store
  * snapshot must not downgrade UI or trigger server reconcile revocation.
+ * Also blocks wipe while coach promo window is still active.
  */
 export function shouldBlockCrossPlatformProDowngrade(
   ent: EntitlementState,
@@ -77,6 +82,7 @@ export function shouldBlockCrossPlatformProDowngrade(
 ): boolean {
   if (snapshotActive) return false;
   if (shouldBlockProReconcileDowngrade(ent, snapshotActive, now)) return true;
+  if (isPromoExpiryActive(ent.promoExpiresAt, now)) return true;
   return hasProAccess(ent, now);
 }
 
@@ -100,17 +106,19 @@ function requiresProForFeature(
   ent: EntitlementState,
   now: Date = new Date()
 ): boolean {
-  if (feature === 'cloud-sync') {
+  // WHY: High-cost surfaces stay Pro forever — Genesis seats never unlock Dyno / cloud sync.
+  if (feature === 'cloud-sync' || feature === 'dyno-intel-full') {
     return !hasProAccess(ent, now);
   }
-  // WHY: Full Dyno (weight-sim / Pro quota path) stays Pro-gated; trial Core gate is above.
-  if (feature === 'dyno-intel-full') {
-    return !hasProAccess(ent, now);
+
+  // WHY: Founding seats get lifetime ladder access; non-pioneers follow the global paywall flag.
+  if (feature === 'ladder-read' || feature === 'ladder-upload') {
+    if (ent.isGenesisEarlyBird) return false;
+    if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) return false;
+    return !hasCoreAccess(ent) || !hasProAccess(ent, now);
   }
-  if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) {
-    return false;
-  }
-  return !hasCoreAccess(ent) || !hasProAccess(ent, now);
+
+  return false;
 }
 
 /**
@@ -157,20 +165,26 @@ export function hasCoreAccess(ent: EntitlementState): boolean {
   return ent.purchaseStatus === 'owned';
 }
 
+/**
+ * Effective Pro = now < max(rcExpiresAt, promoExpiresAt).
+ * Status pro/grace is preferred; active promo alone is accepted as defense in depth.
+ */
 export function hasProAccess(ent: EntitlementState, now: Date = new Date()): boolean {
-  if (ent.subscriptionStatus !== 'pro' && ent.subscriptionStatus !== 'grace') return false;
+  const effectiveMs = resolveEffectiveProExpiryMs(ent);
+  if (effectiveMs == null || effectiveMs < now.getTime()) return false;
 
-  const expiresAt = safeDate(ent.proExpiresAt);
-  if (!expiresAt) return false;
-  return expiresAt.getTime() >= now.getTime();
+  if (ent.subscriptionStatus === 'pro' || ent.subscriptionStatus === 'grace') return true;
+  return isPromoExpiryActive(ent.promoExpiresAt, now);
 }
 
 export function canAccessLeaderboard(ent: EntitlementState, now: Date = new Date()): boolean {
+  if (ent.isGenesisEarlyBird) return hasCoreAccess(ent);
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) return true;
   return hasCoreAccess(ent) && hasProAccess(ent, now);
 }
 
 export function canUploadLeaderboard(ent: EntitlementState, now: Date = new Date()): boolean {
+  if (ent.isGenesisEarlyBird) return hasCoreAccess(ent);
   if (!MONETIZATION_CONFIG.leaderboardPaywallEnabled) return true;
   return hasCoreAccess(ent) && hasProAccess(ent, now);
 }
@@ -201,6 +215,13 @@ export function getEntitlementReasonCode(
   if (feature !== 'core' && !MONETIZATION_CONFIG.leaderboardPaywallEnabled) return 'open-access';
   if (!hasCoreAccess(ent)) return 'core-not-owned';
   if (feature === 'core') return 'ok';
+  // WHY: Founding seats keep ladder reason = ok after cutover (matches canAccessLeaderboard).
+  if (
+    (feature === 'leaderboard-read' || feature === 'leaderboard-write') &&
+    ent.isGenesisEarlyBird
+  ) {
+    return 'ok';
+  }
   if (hasProAccess(ent, now)) return 'ok';
   return ent.subscriptionStatus === 'expired' ? 'pro-expired' : 'pro-required';
 }

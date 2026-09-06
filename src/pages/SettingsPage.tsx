@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
+import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
 import UserProIdentityRow from '../components/UserProIdentityRow';
 import {
   APP_SHELL_SCROLL_BOTTOM_PX,
@@ -294,6 +295,8 @@ const SettingsPage: FC = () => {
             {t('settings.manageArena')}
           </button>
         </div>
+
+        {isLinkedSignedIn ? <PromoCodeRedeemPanel variant="inline" /> : null}
 
         <button
           type="button"

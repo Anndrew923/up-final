@@ -7,7 +7,11 @@
       "body": "前 {{count}} 名登錄玩家於創世開放期間，享有「全球天梯」免費通行。達標後天梯將改為 Pro 專屬，早期參戰者將保留優先通行權。",
       "proNote": "註：DYNO INTEL 智慧分析等 Pro 功能仍需訂閱。",
       "dontShowAgain": "已了解，不再提示",
-      "enterCta": "進入天梯（開始參戰）"
+      "enterCta": "進入天梯（開始參戰）",
+      "pioneerBadge": "✦ 創始先鋒 · 終身天梯免費",
+      "pioneerBadgeWithSeat": "✦ 創始先鋒 · NO. {{seat}} · 終身天梯免費",
+      "pioneerHint": "您已鎖定創始特權，享有終身天梯登錄資格。Dyno Intel 深度推演與跨裝置雲端備份為 PRO 專屬特權。",
+      "seatsCountdown": "創始先鋒席位倒數中（限量 {{count}} 名）"
     },
     "kicker": "全球天梯",
     "title": "即時天梯",

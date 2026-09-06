@@ -16,6 +16,8 @@ const syncProEntitlementToServer = vi.fn().mockResolvedValue({
   active: true,
   subscriptionStatus: 'pro',
   proExpiresAt: '2099-01-01T00:00:00.000Z',
+  promoExpiresAt: null,
+  rcExpiresAt: '2099-01-01T00:00:00.000Z',
   planId: 'pro_monthly',
 });
 
@@ -49,6 +51,8 @@ describe('subscription service', () => {
       active: true,
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'pro_monthly',
     });
   });
@@ -83,6 +87,7 @@ describe('subscription service', () => {
       subscriptionStatus: 'free',
       planId: 'core_lifetime_099',
       proExpiresAt: null,
+      promoExpiresAt: null,
     });
     useAuthStore.getState().setSignedOut();
 
@@ -99,6 +104,7 @@ describe('subscription service', () => {
       subscriptionStatus: 'free',
       planId: 'core_lifetime_099',
       proExpiresAt: null,
+      promoExpiresAt: null,
     });
     useAuthStore.setState({
       status: 'signed-in',
@@ -129,7 +135,10 @@ describe('subscription service', () => {
       subscriptionStatus: 'free',
       planId: 'core_lifetime_099',
       proExpiresAt: null,
+      promoExpiresAt: null,
       proPurchaseCooldownUntil: null,
+      isGenesisEarlyBird: false,
+      genesisSeatNumber: null,
     });
     useAuthStore.setState({
       status: 'signed-in',

@@ -68,6 +68,7 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().hydrateEntitlement({
       subscriptionStatus: 'grace',
       proExpiresAt: future,
+      promoExpiresAt: null,
     });
 
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('grace');
@@ -141,6 +142,8 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: true,
     });
@@ -165,6 +168,8 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });
@@ -182,8 +187,11 @@ describe('entitlementStore', () => {
       entitlement: {
         subscriptionStatus: 'pro',
         proExpiresAt: '2099-01-01T00:00:00.000Z',
+        promoExpiresAt: null,
+        rcExpiresAt: '2099-01-01T00:00:00.000Z',
         planId: 'up_pro_monthly',
       },
+      genesis: { isGenesisEarlyBird: false, genesisSeatNumber: null },
     });
 
     const hydrated = await useEntitlementStore.getState().hydrateServerProFromFirestore('ios-user');
@@ -197,16 +205,23 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });
-    resolveServerProHydrate.mockResolvedValue({ status: 'revoked' });
+    resolveServerProHydrate.mockResolvedValue({
+      status: 'revoked',
+      genesis: { isGenesisEarlyBird: true, genesisSeatNumber: 9 },
+    });
 
     const hydrated = await useEntitlementStore.getState().hydrateServerProFromFirestore('ios-user');
 
     expect(hydrated).toBe(false);
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+    expect(useEntitlementStore.getState().isGenesisEarlyBird).toBe(true);
+    expect(useEntitlementStore.getState().genesisSeatNumber).toBe(9);
   });
 
   it('refreshEntitlement keeps cloud Pro when RevenueCat snapshot is inactive', async () => {
@@ -214,6 +229,8 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });
@@ -229,8 +246,11 @@ describe('entitlementStore', () => {
       entitlement: {
         subscriptionStatus: 'pro',
         proExpiresAt: '2099-01-01T00:00:00.000Z',
+        promoExpiresAt: null,
+        rcExpiresAt: '2099-01-01T00:00:00.000Z',
         planId: 'up_pro_monthly',
       },
+      genesis: { isGenesisEarlyBird: false, genesisSeatNumber: null },
     });
     shouldPreserveLocalProAgainstInactiveStore.mockResolvedValue(true);
 
@@ -238,6 +258,8 @@ describe('entitlementStore', () => {
 
     expect(useEntitlementStore.getState().isPro).toBe(true);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('pro');
+    // WHY: Preserve path must still hydrate Firestore so cleared RC / promo mirrors realign.
+    expect(resolveServerProHydrate).toHaveBeenCalled();
     expect(syncProEntitlementToServer).not.toHaveBeenCalled();
   });
 
@@ -246,6 +268,8 @@ describe('entitlementStore', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });
@@ -256,19 +280,26 @@ describe('entitlementStore', () => {
       productIdentifier: null,
       expiresDate: null,
     });
-    resolveServerProHydrate.mockResolvedValue({ status: 'revoked' });
+    resolveServerProHydrate.mockResolvedValue({
+      status: 'revoked',
+      genesis: { isGenesisEarlyBird: true, genesisSeatNumber: 3 },
+    });
     shouldPreserveLocalProAgainstInactiveStore.mockResolvedValue(false);
 
     await useEntitlementStore.getState().refreshEntitlement();
 
     expect(useEntitlementStore.getState().isPro).toBe(false);
     expect(useEntitlementStore.getState().subscriptionStatus).toBe('free');
+    expect(useEntitlementStore.getState().isGenesisEarlyBird).toBe(true);
+    expect(useEntitlementStore.getState().genesisSeatNumber).toBe(3);
   });
 
   it('applyRevenueCatEntitlement does not downgrade valid cloud Pro when RC is inactive', () => {
     useEntitlementStore.getState().commitServerProEntitlement({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
       planId: 'up_pro_monthly',
       armPurchaseCooldown: false,
     });

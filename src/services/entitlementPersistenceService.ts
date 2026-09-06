@@ -12,9 +12,12 @@ export type PersistedEntitlementSubset = Pick<
   | 'purchaseStatus'
   | 'subscriptionStatus'
   | 'proExpiresAt'
+  | 'promoExpiresAt'
   | 'planId'
   | 'isPro'
   | 'proPurchaseCooldownUntil'
+  | 'isGenesisEarlyBird'
+  | 'genesisSeatNumber'
 >;
 
 function storageKeyForUid(uid?: string | null): string {
@@ -45,14 +48,22 @@ function parseStoredEntitlement(raw: string | null): PersistedEntitlementSubset 
       parsed.subscriptionStatus === 'expired'
         ? parsed.subscriptionStatus
         : 'free';
+    const seatRaw = parsed.genesisSeatNumber;
+    const genesisSeatNumber =
+      typeof seatRaw === 'number' && Number.isFinite(seatRaw) && seatRaw >= 1
+        ? Math.floor(seatRaw)
+        : null;
     return {
       purchaseStatus,
       subscriptionStatus,
       proExpiresAt: typeof parsed.proExpiresAt === 'string' ? parsed.proExpiresAt : null,
+      promoExpiresAt: typeof parsed.promoExpiresAt === 'string' ? parsed.promoExpiresAt : null,
       planId: typeof parsed.planId === 'string' ? parsed.planId : null,
       isPro: parsed.isPro === true,
       proPurchaseCooldownUntil:
         typeof parsed.proPurchaseCooldownUntil === 'string' ? parsed.proPurchaseCooldownUntil : null,
+      isGenesisEarlyBird: parsed.isGenesisEarlyBird === true,
+      genesisSeatNumber,
     };
   } catch {
     return null;
@@ -64,9 +75,12 @@ export function savePersistedEntitlement(state: EntitlementState, uid?: string |
     purchaseStatus: state.purchaseStatus,
     subscriptionStatus: state.subscriptionStatus,
     proExpiresAt: state.proExpiresAt,
+    promoExpiresAt: state.promoExpiresAt,
     planId: state.planId,
     isPro: state.isPro,
     proPurchaseCooldownUntil: state.proPurchaseCooldownUntil,
+    isGenesisEarlyBird: state.isGenesisEarlyBird === true,
+    genesisSeatNumber: state.genesisSeatNumber ?? null,
   };
   const key = storageKeyForUid(uid);
   safeSetItem(key, JSON.stringify(payload));

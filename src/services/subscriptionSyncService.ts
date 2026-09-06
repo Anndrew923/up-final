@@ -12,7 +12,10 @@ export type SyncProEntitlementResult =
       ok: true;
       active: boolean;
       subscriptionStatus: 'pro' | 'grace' | 'free';
+      /** Effective max(rc, promo) for hard-sync eligibility checks. */
       proExpiresAt: string | null;
+      promoExpiresAt: string | null;
+      rcExpiresAt: string | null;
       planId: string | null;
     }
   | {
@@ -45,6 +48,8 @@ let syncProFn: ReturnType<
       active?: boolean;
       subscriptionStatus?: 'pro' | 'grace' | 'free';
       proExpiresAt?: string | null;
+      promoExpiresAt?: string | null;
+      rcExpiresAt?: string | null;
       planId?: string | null;
     }
   >
@@ -102,6 +107,8 @@ export async function syncProEntitlementToServer(
       active: data.active,
       subscriptionStatus: data.subscriptionStatus,
       proExpiresAt: data.proExpiresAt ?? null,
+      promoExpiresAt: data.promoExpiresAt ?? null,
+      rcExpiresAt: data.rcExpiresAt ?? null,
       planId: data.planId ?? null,
     };
   } catch (err: unknown) {

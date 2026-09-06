@@ -5,6 +5,7 @@ import {
   applyProEntitlementToUser,
   clearProEntitlementFromUser,
 } from "../shared/proEntitlementSync.js";
+import { ingestCommissionFromRevenueCatEvent } from "./commissionIngest.js";
 import { verifyRevenueCatProEntitlement } from "./verifyRevenueCat.js";
 
 const revenueCatApiKey = defineSecret("REVENUECAT_SECRET_API_KEY");
@@ -38,10 +39,9 @@ export const revenueCatWebhook = onRequest(
       return;
     }
 
+    const event = request.body?.event;
     const uid =
-      request.body?.event && typeof request.body.event.app_user_id === "string"
-        ? request.body.event.app_user_id.trim()
-        : "";
+      event && typeof event.app_user_id === "string" ? event.app_user_id.trim() : "";
     if (!uid || uid.startsWith("$RCAnonymousID:")) {
       response.status(400).send("invalid-app-user-id");
       return;
@@ -49,6 +49,17 @@ export const revenueCatWebhook = onRequest(
 
     const verifiedAtMs = Date.now();
     try {
+      // Commission first (idempotent by event.id) — paid events only.
+      try {
+        await ingestCommissionFromRevenueCatEvent(event);
+      } catch (commissionError) {
+        console.error(
+          "[revenueCatWebhook] commission ingest failed",
+          commissionError?.message ?? commissionError
+        );
+        // Non-fatal for entitlement path; RC retry will re-attempt create if needed.
+      }
+
       // Re-query RevenueCat instead of trusting event ordering or event fields.
       const verified = await verifyRevenueCatProEntitlement(uid, revenueCatApiKey.value());
       if (!verified) {

@@ -1,10 +1,11 @@
 import HomeLadderIdentitySection from '../components/home/HomeLadderIdentitySection';
+import HomeProFeatureCard from '../components/home/HomeProFeatureCard';
 import HomeProfileForm from '../components/home/HomeProfileForm';
 import HomeRadarBoard from '../components/home/HomeRadarBoard';
 
 /**
- * Console home: radar-first, then baseline profile + ladder identity.
- * Leaderboard entry / entitlement gates live on the Ladder tab + Join Arena — not duplicated here.
+ * Console home: radar-first, Pro value card, then baseline profile + ladder identity.
+ * WHY: Genesis ladder seats must still surface Dyno / Cloud Sync upgrade delta under the radar.
  */
 export default function HomePage() {
   return (
@@ -13,6 +14,8 @@ export default function HomePage() {
       <section>
         <HomeRadarBoard />
       </section>
+
+      <HomeProFeatureCard />
 
       {/* Profile stays below radar; collapses once baseline is complete (radar-first density). */}
       <HomeProfileForm />

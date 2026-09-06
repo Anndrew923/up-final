@@ -56,9 +56,12 @@ function ownedProEntitlement(): EntitlementState {
     subscriptionStatus: 'pro',
     isPro: true,
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: 'pro_monthly_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   };
 }
 

@@ -22,6 +22,14 @@ service cloud.firestore {
     }
     function hasValidPro(uid) {
       let userData = get(/databases/$(database)/documents/users/$(uid)).data;
+      // WHY: Effective Pro = max(RC billing, coach promo). Promo-only must pass cloud sync rules.
+      let rcMs = ('proExpiresAtMs' in userData && userData.proExpiresAtMs is int)
+        ? userData.proExpiresAtMs
+        : 0;
+      let promoMs = ('promoExpiresAtMs' in userData && userData.promoExpiresAtMs is int)
+        ? userData.promoExpiresAtMs
+        : 0;
+      let effectiveMs = rcMs > promoMs ? rcMs : promoMs;
       return isOwner(uid)
         && (
           ('purchaseStatus' in userData && userData.purchaseStatus == 'owned') ||
@@ -29,9 +37,7 @@ service cloud.firestore {
         )
         && 'subscriptionStatus' in userData
         && userData.subscriptionStatus in ['pro', 'grace']
-        && 'proExpiresAtMs' in userData
-        && userData.proExpiresAtMs is int
-        && userData.proExpiresAtMs >= request.time.toMillis();
+        && effectiveMs >= request.time.toMillis();
     }
     // Billing/verification state is server-authoritative. Public ladder identity
     // lives in leaderboard summary docs, so user documents are private.
@@ -182,6 +188,21 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
+      allow read, write: if false;
+    }
+
+    // Coach promo catalog — Admin SDK / redeemPromoCode Callable only.
+    match /promo_codes/{codeId} {
+      allow read, write: if false;
+    }
+
+    // One attribution doc per user (doc id = uid) — Admin SDK only.
+    match /user_attributions/{uid} {
+      allow read, write: if false;
+    }
+
+    // Commission ledger keyed by RevenueCat event.id — Admin SDK only.
+    match /commission_logs/{eventId} {
       allow read, write: if false;
     }
   }

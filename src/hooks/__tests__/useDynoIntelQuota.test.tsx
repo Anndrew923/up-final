@@ -40,9 +40,12 @@ function setPro(active: boolean): void {
     subscriptionStatus: active ? 'pro' : 'free',
     isPro: active,
     proExpiresAt: active ? '2099-01-01T00:00:00.000Z' : null,
+    promoExpiresAt: null,
     planId: active ? 'pro_monthly_099' : null,
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   });
 }
 

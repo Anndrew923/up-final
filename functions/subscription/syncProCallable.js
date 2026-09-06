@@ -70,22 +70,27 @@ export const syncProSubscription = onCall(
             active: false,
             subscriptionStatus: "free",
             proExpiresAt: null,
+            promoExpiresAt: null,
+            rcExpiresAt: null,
             planId: null,
           };
         }
         // WHY: Restore/refresh is an authoritative inactive signal. Revoke both
         // local mirrors before returning a successful reconciliation result.
         const reconciled = await clearProEntitlementFromUser(uid, { verifiedAtMs });
+        const effectiveIso = reconciled?.effectiveProExpiresAt ?? null;
         const active =
-          reconciled &&
+          Boolean(reconciled) &&
           (reconciled.subscriptionStatus === "pro" || reconciled.subscriptionStatus === "grace") &&
-          typeof reconciled.proExpiresAt === "string" &&
-          Date.parse(reconciled.proExpiresAt) > Date.now();
+          typeof effectiveIso === "string" &&
+          Date.parse(effectiveIso) > Date.now();
         return {
           ok: true,
           active: Boolean(active),
           subscriptionStatus: active ? reconciled.subscriptionStatus : "free",
-          proExpiresAt: active ? reconciled.proExpiresAt : null,
+          proExpiresAt: active ? effectiveIso : null,
+          promoExpiresAt: reconciled?.promoExpiresAt ?? null,
+          rcExpiresAt: reconciled?.proExpiresAt ?? null,
           planId: active ? reconciled.planId : null,
         };
       } else {
@@ -120,15 +125,19 @@ export const syncProSubscription = onCall(
       verifiedAtMs,
     });
 
+    const effectiveIso = applied.effectiveProExpiresAt;
     const active =
       (applied.subscriptionStatus === "pro" || applied.subscriptionStatus === "grace") &&
-      typeof applied.proExpiresAt === "string" &&
-      Date.parse(applied.proExpiresAt) > Date.now();
+      typeof effectiveIso === "string" &&
+      Date.parse(effectiveIso) > Date.now();
     return {
       ok: true,
       active,
       subscriptionStatus: active ? applied.subscriptionStatus : "free",
-      proExpiresAt: active ? applied.proExpiresAt : null,
+      // WHY: Client timers + hasProAccess use effective max(rc, promo).
+      proExpiresAt: active ? effectiveIso : null,
+      promoExpiresAt: applied.promoExpiresAt ?? null,
+      rcExpiresAt: applied.proExpiresAt ?? null,
       planId: active ? applied.planId : null,
     };
   }

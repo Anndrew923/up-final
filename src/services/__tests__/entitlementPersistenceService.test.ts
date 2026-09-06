@@ -31,9 +31,12 @@ describe('entitlementPersistenceService', () => {
       subscriptionStatus: 'pro',
       isPro: true,
       proExpiresAt: '2026-12-01T00:00:00.000Z',
+      promoExpiresAt: null,
       planId: 'pro_monthly_099',
       lastCheckedAt: '2026-05-27T00:00:00.000Z',
       proPurchaseCooldownUntil: '2026-05-27T00:05:00.000Z',
+      isGenesisEarlyBird: true,
+      genesisSeatNumber: 12,
     };
     savePersistedEntitlement(state, 'user-a');
 
@@ -43,6 +46,8 @@ describe('entitlementPersistenceService', () => {
     expect(loaded?.proExpiresAt).toBe(state.proExpiresAt);
     expect(loaded?.purchaseStatus).toBe('owned');
     expect(loaded?.proPurchaseCooldownUntil).toBe(state.proPurchaseCooldownUntil);
+    expect(loaded?.isGenesisEarlyBird).toBe(true);
+    expect(loaded?.genesisSeatNumber).toBe(12);
   });
 
   it('migrates legacy purchaseStatus none to owned', () => {
@@ -53,6 +58,7 @@ describe('entitlementPersistenceService', () => {
         subscriptionStatus: 'free',
         isPro: false,
         proExpiresAt: null,
+        promoExpiresAt: null,
         planId: null,
       })
     );
@@ -66,9 +72,12 @@ describe('entitlementPersistenceService', () => {
         subscriptionStatus: 'pro',
         isPro: true,
         proExpiresAt: null,
+        promoExpiresAt: null,
         planId: 'pro_monthly_099',
         lastCheckedAt: null,
         proPurchaseCooldownUntil: null,
+        isGenesisEarlyBird: false,
+        genesisSeatNumber: null,
       },
       'user-a'
     );
@@ -78,9 +87,12 @@ describe('entitlementPersistenceService', () => {
         subscriptionStatus: 'free',
         isPro: false,
         proExpiresAt: null,
+        promoExpiresAt: null,
         planId: null,
         lastCheckedAt: null,
         proPurchaseCooldownUntil: null,
+        isGenesisEarlyBird: false,
+        genesisSeatNumber: null,
       },
       'user-b'
     );

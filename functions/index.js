@@ -25,5 +25,6 @@ export {
 } from "./ladder/adminUserOpsCallable.js";
 export { dynoIntelChat } from "./dynoIntel/chatCallable.js";
 export { syncProSubscription } from "./subscription/syncProCallable.js";
+export { redeemPromoCode } from "./subscription/redeemPromoCallable.js";
 export { revenueCatWebhook } from "./subscription/revenueCatWebhook.js";
 export { deleteAccount } from "./account/deleteAccountCallable.js";

@@ -4,15 +4,21 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import JoinArenaFloatingCta from '../components/arena/JoinArenaFloatingCta';
+import JoinArenaPlanPicker from '../components/arena/JoinArenaPlanPicker';
 import JoinArenaProFeatures from '../components/arena/JoinArenaProFeatures';
 import ProSubscriptionResultModal, {
   type ProSubscriptionFailureReason,
   type ProSubscriptionResultKind,
 } from '../components/arena/ProSubscriptionResultModal';
+import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
 import ProBadge from '../components/ProBadge';
 import UserProIdentityRow from '../components/UserProIdentityRow';
 import { MONETIZATION_CONFIG } from '../config/monetization';
-import { hasCoreAccess } from '../logic/core/entitlement';
+import {
+  DEFAULT_PRO_SUBSCRIPTION_PLAN,
+  type ProSubscriptionPlanId,
+} from '../config/proSubscriptionPlans';
+import { hasCoreAccess, isValidActiveProExpiry } from '../logic/core/entitlement';
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
 import { useUiGate } from '../hooks/useUiGate';
@@ -63,10 +69,13 @@ const JoinArenaPage: FC = () => {
   const [resultModal, setResultModal] = useState<ResultModalState>({ open: false });
   const [authBusy, setAuthBusy] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<ProSubscriptionPlanId>(
+    DEFAULT_PRO_SUBSCRIPTION_PLAN
+  );
   const showAppleSignIn = isNativeAppleSignInAvailable();
 
   const isPro = useEntitlementStore((s) => s.isPro);
-  const subscriptionStatus = useEntitlementStore((s) => s.subscriptionStatus);
+  const storeBillingExpiresAt = useEntitlementStore((s) => s.proExpiresAt);
   const authStatus = useAuthStore((s) => s.status);
   const signedInDisplayName = useAuthStore((s) => s.displayName);
   const signedInEmail = useAuthStore((s) => s.email);
@@ -80,6 +89,10 @@ const JoinArenaPage: FC = () => {
   // WHY: Dyno / backup funnels must not inherit ladder beta copy — context-aware paywall isolation.
   const showLadderBetaBanner = isBetaOpen && !isBackupFunnel && !isDynoFunnel;
   const ctaMotionOn = !usePrefersReducedMotion();
+  // WHY: Promo-only Pro must still see plans — only active store billing blocks repurchase.
+  const hasActiveStoreBilling = isValidActiveProExpiry(storeBillingExpiresAt);
+  const showPlanPicker = authStatus === 'signed-in' && !hasActiveStoreBilling;
+  const promoOnlyConvert = isPro && !hasActiveStoreBilling;
 
   const handleGoogleSignIn = async () => {
     setBanner('idle');
@@ -120,7 +133,7 @@ const JoinArenaPage: FC = () => {
         return;
       }
       hapticService.triggerProPurchaseIntent();
-      const result = await purchaseProSubscription();
+      const result = await purchaseProSubscription(selectedPlan);
       if (!result.ok) {
         setResultModal({
           open: true,
@@ -148,7 +161,7 @@ const JoinArenaPage: FC = () => {
       return;
     }
 
-    if (uiGate.kind === 'none') {
+    if (uiGate.kind === 'none' && !promoOnlyConvert) {
       navigate(returnTo);
       return;
     }
@@ -157,13 +170,13 @@ const JoinArenaPage: FC = () => {
   };
 
   const subscribeDisabled =
-    billingBusy ||
-    authBusy ||
-    authStatus === 'loading' ||
-    (uiGate.kind === 'pro' && subscriptionStatus === 'pro' && isPro);
+    billingBusy || authBusy || authStatus === 'loading' || hasActiveStoreBilling;
 
   const primaryCtaLabel = (() => {
     if (billingBusy || authBusy || authStatus === 'loading') return t('billingLoading');
+    if (promoOnlyConvert) {
+      return isBackupFunnel ? t('unlockProCloudSync') : t('subscribeUnlockPro');
+    }
     if (isDynoFunnel) {
       if (uiGate.kind === 'auth') return showAppleSignIn ? t('appleLogin') : t('googleLogin');
       if (uiGate.kind === 'none') return t('returnToDynoIntel');
@@ -232,6 +245,16 @@ const JoinArenaPage: FC = () => {
 
         {/* WHY: Single Pro kit panel — Core/Pro comparison removed to kill duplicate feature narrative. */}
         <JoinArenaProFeatures />
+
+        {showPlanPicker ? (
+          <JoinArenaPlanPicker
+            selected={selectedPlan}
+            onSelect={setSelectedPlan}
+            disabled={billingBusy || authBusy}
+          />
+        ) : null}
+
+        {authStatus === 'signed-in' ? <PromoCodeRedeemPanel variant="link" /> : null}
 
         <button
           type="button"

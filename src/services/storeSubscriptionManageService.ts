@@ -3,11 +3,11 @@ import { Browser } from '@capacitor/browser';
 import { isIosNativePlatform } from '../lib/capacitorPlatform';
 
 /**
- * Google Play subscription management deep link.
- * WHY: Store policy requires an in-app path to cancel/manage; Play owns the UI.
+ * Google Play subscription management deep link (package-scoped, all base plans).
+ * WHY: Avoid hardcoding a single monthly SKU — annual + monthly share one package.
  */
 export const PLAY_SUBSCRIPTION_MANAGE_URL =
-  'https://play.google.com/store/account/subscriptions?sku=up_pro_monthly&package=com.ultimatephysique.fitness2025';
+  'https://play.google.com/store/account/subscriptions?package=com.ultimatephysique.fitness2025';
 
 /**
  * App Store subscriptions management (system sheet / Safari).

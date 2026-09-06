@@ -71,4 +71,20 @@ describe("userEntitlement", () => {
     );
   });
 
+  it("keeps Pro when promo window outlives RC", () => {
+    const now = new Date("2026-06-12T10:00:00.000Z");
+    assert.equal(
+      hasProFromUserDoc(
+        {
+          purchaseStatus: "owned",
+          subscriptionStatus: "pro",
+          proExpiresAt: "2026-06-12T09:00:00.000Z",
+          promoExpiresAt: "2026-08-01T00:00:00.000Z",
+        },
+        now
+      ),
+      true
+    );
+  });
+
 });

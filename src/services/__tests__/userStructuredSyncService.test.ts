@@ -55,9 +55,12 @@ const entitlement: EntitlementState = {
   subscriptionStatus: 'pro',
   isPro: true,
   proExpiresAt: '2099-01-01T00:00:00.000Z',
+  promoExpiresAt: null,
   planId: 'pro_monthly_099',
   lastCheckedAt: null,
   proPurchaseCooldownUntil: null,
+  isGenesisEarlyBird: false,
+  genesisSeatNumber: null,
 };
 
 describe('userStructuredSyncService gates', () => {

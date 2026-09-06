@@ -2,6 +2,7 @@ import { type FC, useEffect, useMemo, useState } from 'react';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { MONETIZATION_CONFIG } from '../../config/monetization';
 import { ROUTES } from '../../config/routes';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
@@ -9,6 +10,7 @@ import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
 import { useUiGate } from '../../hooks/useUiGate';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
+import { useEntitlementStore } from '../../stores/entitlementStore';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderIdentitySheet from './LadderIdentitySheet';
 import LadderIdentityChip from './LadderIdentityChip';
@@ -26,6 +28,7 @@ export interface LeaderboardSyncAllBarProps {
  * Compact Sync Capsule for Home CONSOLE + Ladder full-sync.
  * WHY: Match assessment Sync Capsule — no always-on gate/DEV chrome; click opens
  * Gate Sheet / Identity Sheet / cooldown·no-targets hints.
+ * Genesis pioneers see lifetime-ladder badge + Pro upsell copy for Dyno / cloud.
  */
 const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   onFinished,
@@ -37,6 +40,8 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const navigate = useNavigate();
   const uiGate = useUiGate('ladder-upload');
   const identity = useLadderIdentityReady();
+  const isGenesisEarlyBird = useEntitlementStore((s) => s.isGenesisEarlyBird === true);
+  const genesisSeatNumber = useEntitlementStore((s) => s.genesisSeatNumber);
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | 'gate' | null>(null);
@@ -66,6 +71,18 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     }
     return null;
   }, [fullSyncBlock, locale, t]);
+
+  const pioneerBadgeLabel = useMemo(() => {
+    if (!isGenesisEarlyBird) return null;
+    if (
+      typeof genesisSeatNumber === 'number' &&
+      Number.isFinite(genesisSeatNumber) &&
+      genesisSeatNumber >= 1
+    ) {
+      return t('ladder.genesisEarlyBird.pioneerBadgeWithSeat', { seat: genesisSeatNumber });
+    }
+    return t('ladder.genesisEarlyBird.pioneerBadge');
+  }, [genesisSeatNumber, isGenesisEarlyBird, t]);
 
   const runSyncOrIdentityGate = () => {
     setTapHint(null);
@@ -102,6 +119,23 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
       {showSectionTitle ? (
         <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
           {t('ladder.syncAll.sectionTitle')}
+        </p>
+      ) : null}
+
+      {pioneerBadgeLabel ? (
+        <div className="space-y-1.5 rounded-xl border border-amber-400/35 bg-gradient-to-r from-amber-500/10 to-zinc-950/40 px-3 py-2.5">
+          <p className="font-mono text-[11px] font-semibold tracking-wide text-amber-200">
+            {pioneerBadgeLabel}
+          </p>
+          <p className="text-[11px] leading-relaxed text-amber-100/80">
+            {t('ladder.genesisEarlyBird.pioneerHint')}
+          </p>
+        </div>
+      ) : !MONETIZATION_CONFIG.leaderboardPaywallEnabled ? (
+        <p className="text-[11px] leading-relaxed text-cyan-200/75">
+          {t('ladder.genesisEarlyBird.seatsCountdown', {
+            count: MONETIZATION_CONFIG.genesisEarlyBirdSeatLimit,
+          })}
         </p>
       ) : null}
 

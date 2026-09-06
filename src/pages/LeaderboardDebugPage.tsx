@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useShallow } from 'zustand/react/shallow';
 import {
   canAccessLeaderboard,
   canUploadLeaderboard,
@@ -16,6 +17,7 @@ import {
 import { getCachedLeaderboard } from '../services/leaderboardCacheService';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { loadPhysicalProfile } from '../services/localStorageService';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import DynoIntelLocalTelemetryPanel from '../components/dynoIntel/DynoIntelLocalTelemetryPanel';
 
@@ -33,13 +35,7 @@ interface DebugLogItem {
 export default function LeaderboardDebugPage() {
   const { t } = useTranslation();
 
-  const purchaseStatus = useEntitlementStore((state) => state.purchaseStatus);
-  const subscriptionStatus = useEntitlementStore((state) => state.subscriptionStatus);
-  const isPro = useEntitlementStore((state) => state.isPro);
-  const proExpiresAt = useEntitlementStore((state) => state.proExpiresAt);
-  const planId = useEntitlementStore((state) => state.planId);
-  const lastCheckedAt = useEntitlementStore((state) => state.lastCheckedAt);
-  const proPurchaseCooldownUntil = useEntitlementStore((state) => state.proPurchaseCooldownUntil);
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
   const setPurchaseStatus = useEntitlementStore((state) => state.setPurchaseStatus);
   const setSubscriptionStatus = useEntitlementStore((state) => state.setSubscriptionStatus);
   const setProExpiry = useEntitlementStore((state) => state.setProExpiry);
@@ -52,27 +48,6 @@ export default function LeaderboardDebugPage() {
   const [lastListResult, setLastListResult] = useState<unknown>(null);
   const [lastSubmitResult, setLastSubmitResult] = useState<unknown>(null);
   const [logs, setLogs] = useState<DebugLogItem[]>([]);
-
-  const entitlement = useMemo(
-    () => ({
-      purchaseStatus,
-      subscriptionStatus,
-      isPro,
-      proExpiresAt,
-      planId,
-      lastCheckedAt,
-      proPurchaseCooldownUntil,
-    }),
-    [
-      purchaseStatus,
-      subscriptionStatus,
-      isPro,
-      proExpiresAt,
-      planId,
-      lastCheckedAt,
-      proPurchaseCooldownUntil,
-    ]
-  );
 
   const reasonRead = getEntitlementReasonCode(entitlement, 'leaderboard-read');
   const reasonWrite = getEntitlementReasonCode(entitlement, 'leaderboard-write');

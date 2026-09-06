@@ -1,12 +1,27 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildUserGenesisMirrorFields,
   GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT,
+  normalizeGenesisSeatNumber,
   resolveGenesisEarlyBirdSeatLimit,
   resolveGenesisUploadDecision,
 } from "../shared/genesisEarlyBird.js";
 
 describe("genesisEarlyBird decision matrix", () => {
+  it("builds user-doc mirror fields (Scheme A)", () => {
+    assert.deepEqual(buildUserGenesisMirrorFields(42), {
+      isGenesisEarlyBird: true,
+      genesisSeatNumber: 42,
+    });
+    assert.deepEqual(buildUserGenesisMirrorFields(null), {
+      isGenesisEarlyBird: true,
+      genesisSeatNumber: null,
+    });
+    assert.equal(normalizeGenesisSeatNumber(0), null);
+    assert.equal(normalizeGenesisSeatNumber("7"), null);
+  });
+
   it("defaults seat limit to 2000", () => {
     assert.equal(GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT, 2000);
     const previous = process.env.GENESIS_EARLY_BIRD_SEAT_LIMIT;
@@ -31,12 +46,12 @@ describe("genesisEarlyBird decision matrix", () => {
     );
   });
 
-  it("forces Pro when paywall flag is on for non-Pro users", () => {
+  it("forces Pro when paywall flag is on for non-seat free users", () => {
     assert.deepEqual(
       resolveGenesisUploadDecision({
         hasPro: false,
         paywallForced: true,
-        alreadyClaimed: true,
+        alreadyClaimed: false,
         claimedCount: 10,
         seatLimit: 2000,
       }),
@@ -44,7 +59,20 @@ describe("genesisEarlyBird decision matrix", () => {
     );
   });
 
-  it("grandfathers already-claimed free seats", () => {
+  it("grandfathers already-claimed seats even after paywall cutover", () => {
+    assert.deepEqual(
+      resolveGenesisUploadDecision({
+        hasPro: false,
+        paywallForced: true,
+        alreadyClaimed: true,
+        claimedCount: 2000,
+        seatLimit: 2000,
+      }),
+      { allow: true, action: "none" }
+    );
+  });
+
+  it("grandfathers already-claimed free seats while genesis is open", () => {
     assert.deepEqual(
       resolveGenesisUploadDecision({
         hasPro: false,

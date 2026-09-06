@@ -5,6 +5,7 @@ import {
   PRO_PURCHASE_COOLDOWN_MS,
   shouldBlockCrossPlatformProDowngrade,
 } from '../logic/core/entitlement';
+import { isPromoExpiryActive, resolveEffectiveProExpiryMs } from '../logic/core/proExpiry';
 import {
   loadPersistedEntitlement,
   savePersistedEntitlement,
@@ -16,13 +17,23 @@ import {
   type RevenueCatEntitlementSnapshot,
 } from '../services/revenueCatService';
 import { syncProEntitlementToServer } from '../services/subscriptionSyncService';
-import { logEntitlementSync, resolveServerProHydrate, shouldPreserveLocalProAgainstInactiveStore } from '../services/userEntitlementService';
+import {
+  logEntitlementSync,
+  resolveServerProHydrate,
+  shouldPreserveLocalProAgainstInactiveStore,
+} from '../services/userEntitlementService';
 import { useAuthStore } from './authStore';
 import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../types/entitlement';
 
 export interface ServerProEntitlementCommit {
   subscriptionStatus: 'pro' | 'grace';
+  /**
+   * Effective access expiry (max rc/promo) — used when rc/promo mirrors are omitted.
+   * Prefer passing `rcExpiresAt` + `promoExpiresAt` explicitly.
+   */
   proExpiresAt: string;
+  rcExpiresAt?: string | null;
+  promoExpiresAt?: string | null;
   planId: string | null;
   /**
    * Purchase path arms the 5-minute reconcile shield; restore/bootstrap should not.
@@ -72,9 +83,12 @@ const defaultState: EntitlementState = {
   subscriptionStatus: 'free',
   isPro: false,
   proExpiresAt: null,
+  promoExpiresAt: null,
   planId: null,
   lastCheckedAt: null,
   proPurchaseCooldownUntil: null,
+  isGenesisEarlyBird: false,
+  genesisSeatNumber: null,
 };
 const DEBUG_PRO_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -96,7 +110,15 @@ function normalizeEntitlementState(state: EntitlementState): EntitlementState {
     normalizeProExpiry({
       ...state,
       purchaseStatus: 'owned',
+      promoExpiresAt: state.promoExpiresAt ?? null,
       proPurchaseCooldownUntil: state.proPurchaseCooldownUntil ?? null,
+      isGenesisEarlyBird: state.isGenesisEarlyBird === true,
+      genesisSeatNumber:
+        typeof state.genesisSeatNumber === 'number' &&
+        Number.isFinite(state.genesisSeatNumber) &&
+        state.genesisSeatNumber >= 1
+          ? Math.floor(state.genesisSeatNumber)
+          : null,
     })
   );
 }
@@ -110,13 +132,13 @@ function buildInitialEntitlement(): EntitlementState {
   return normalizeEntitlementState(merged);
 }
 
-/** Align `isPro` with core `hasProAccess` (grace requires valid `proExpiresAt`). */
+/** Align `isPro` with core `hasProAccess` (grace requires valid effective expiry). */
 function syncProFlag(state: EntitlementState): EntitlementState {
   return { ...state, isPro: hasProAccess(state) };
 }
 
 /**
- * Fold missing/elapsed paid expiry to expired so UI and guards stay consistent.
+ * Fold missing/elapsed paid+promo expiry to expired so UI and guards stay consistent.
  * WHY: Cooldown only blocks stale inactive RC snapshots — real clock expiry must still win.
  */
 function normalizeProExpiry(state: EntitlementState): EntitlementState {
@@ -125,10 +147,16 @@ function normalizeProExpiry(state: EntitlementState): EntitlementState {
   if (next.proPurchaseCooldownUntil && !isProPurchaseCooldownActive(next)) {
     next = { ...next, proPurchaseCooldownUntil: null };
   }
-  if (next.subscriptionStatus !== 'pro' && next.subscriptionStatus !== 'grace') return next;
-  if (!next.proExpiresAt) return { ...next, subscriptionStatus: 'expired' };
-  const exp = new Date(next.proExpiresAt).getTime();
-  if (!Number.isNaN(exp) && exp >= Date.now()) return next;
+  if (next.subscriptionStatus !== 'pro' && next.subscriptionStatus !== 'grace') {
+    // Promo-only defense: elevate status when promo window is still live.
+    if (isPromoExpiryActive(next.promoExpiresAt)) {
+      return { ...next, subscriptionStatus: 'pro' };
+    }
+    return next;
+  }
+  const effectiveMs = resolveEffectiveProExpiryMs(next);
+  if (effectiveMs == null) return { ...next, subscriptionStatus: 'expired' };
+  if (effectiveMs >= Date.now()) return next;
   return { ...next, subscriptionStatus: 'expired' };
 }
 
@@ -139,14 +167,13 @@ function scheduleEntitlementExpiry(state: EntitlementState): void {
   }
   if (
     typeof window === 'undefined' ||
-    (state.subscriptionStatus !== 'pro' && state.subscriptionStatus !== 'grace') ||
-    !state.proExpiresAt
+    (state.subscriptionStatus !== 'pro' && state.subscriptionStatus !== 'grace')
   ) {
     return;
   }
-  const expiresAtMs = Date.parse(state.proExpiresAt);
-  if (!Number.isFinite(expiresAtMs)) return;
-  const delay = Math.max(0, expiresAtMs - Date.now() + 1);
+  const effectiveMs = resolveEffectiveProExpiryMs(state);
+  if (effectiveMs == null) return;
+  const delay = Math.max(0, effectiveMs - Date.now() + 1);
   expiryTimer = window.setTimeout(
     () => {
       const current = useEntitlementStore.getState();
@@ -162,12 +189,30 @@ function scheduleEntitlementExpiry(state: EntitlementState): void {
 }
 
 function snapshotToEntitlementPatch(
-  snapshot: RevenueCatEntitlementSnapshot
+  snapshot: RevenueCatEntitlementSnapshot,
+  previous: EntitlementState
 ): Partial<EntitlementState> {
+  if (snapshot.active) {
+    return {
+      subscriptionStatus: 'pro',
+      planId: snapshot.productIdentifier ?? 'pro_monthly_099',
+      proExpiresAt: snapshot.expiresDate,
+      lastCheckedAt: new Date().toISOString(),
+    };
+  }
+  // WHY: Inactive RC must not clear coach promo — keep Pro when promo window remains.
+  if (isPromoExpiryActive(previous.promoExpiresAt)) {
+    return {
+      subscriptionStatus: 'pro',
+      planId: null,
+      proExpiresAt: null,
+      lastCheckedAt: new Date().toISOString(),
+    };
+  }
   return {
-    subscriptionStatus: snapshot.active ? 'pro' : 'free',
-    planId: snapshot.active ? (snapshot.productIdentifier ?? 'pro_monthly_099') : null,
-    proExpiresAt: snapshot.active ? snapshot.expiresDate : null,
+    subscriptionStatus: 'free',
+    planId: null,
+    proExpiresAt: null,
     lastCheckedAt: new Date().toISOString(),
   };
 }
@@ -177,10 +222,14 @@ function clearProSubscriptionFields(state: EntitlementState): EntitlementState {
     ...state,
     subscriptionStatus: 'free',
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: null,
     proPurchaseCooldownUntil: null,
     // WHY: Stale lastCheckedAt from a prior uid would look "settled" before this session's RC refresh.
     lastCheckedAt: null,
+    // WHY: Genesis seats are per-uid — clear on session wipe so the next account cannot inherit.
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   });
 }
 
@@ -212,24 +261,33 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
       }
       return normalizeEntitlementState({
         ...state,
-        ...snapshotToEntitlementPatch(snapshot),
+        ...snapshotToEntitlementPatch(snapshot, state),
       });
     });
   },
   commitServerProEntitlement(payload) {
-    set((state) =>
-      normalizeEntitlementState({
+    set((state) => {
+      // WHY: Store RC + promo mirrors separately; hasProAccess uses max().
+      const promoExpiresAt =
+        payload.promoExpiresAt !== undefined
+          ? payload.promoExpiresAt
+          : (state.promoExpiresAt ?? null);
+      const proExpiresAt =
+        payload.rcExpiresAt !== undefined ? payload.rcExpiresAt : payload.proExpiresAt;
+
+      return normalizeEntitlementState({
         ...state,
         subscriptionStatus: payload.subscriptionStatus,
-        proExpiresAt: payload.proExpiresAt,
+        proExpiresAt,
+        promoExpiresAt,
         planId: payload.planId,
         // WHY: Opt-in only — restore/bootstrap must not inherit the post-charge shield.
         proPurchaseCooldownUntil: payload.armPurchaseCooldown
           ? new Date(Date.now() + PRO_PURCHASE_COOLDOWN_MS).toISOString()
           : state.proPurchaseCooldownUntil,
         lastCheckedAt: new Date().toISOString(),
-      })
-    );
+      });
+    });
   },
   bindEntitlementSession(uid) {
     if (uid === boundSessionUid) return;
@@ -248,8 +306,11 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           purchaseStatus: cached.purchaseStatus ?? state.purchaseStatus,
           subscriptionStatus: cached.subscriptionStatus,
           proExpiresAt: cached.proExpiresAt,
+          promoExpiresAt: cached.promoExpiresAt ?? null,
           planId: cached.planId,
           proPurchaseCooldownUntil: cached.proPurchaseCooldownUntil ?? null,
+          isGenesisEarlyBird: cached.isGenesisEarlyBird === true,
+          genesisSeatNumber: cached.genesisSeatNumber ?? null,
           // WHY: Cache restores Pro/free flags, but settle waits for this session's refreshEntitlement.
           lastCheckedAt: null,
         });
@@ -268,10 +329,10 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
   },
   setSubscriptionStatus(status) {
     set((state) => {
-      const currentExpiryMs = state.proExpiresAt ? Date.parse(state.proExpiresAt) : Number.NaN;
+      const currentExpiryMs = resolveEffectiveProExpiryMs(state);
       const needsDebugExpiry =
         (status === 'pro' || status === 'grace') &&
-        (!Number.isFinite(currentExpiryMs) || currentExpiryMs <= Date.now());
+        (currentExpiryMs == null || currentExpiryMs <= Date.now());
       return normalizeEntitlementState({
         ...state,
         subscriptionStatus: status,
@@ -299,20 +360,47 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
     }
 
     if (result.status === 'active') {
-      useEntitlementStore.getState().commitServerProEntitlement({
-        subscriptionStatus: result.entitlement.subscriptionStatus,
-        proExpiresAt: result.entitlement.proExpiresAt,
-        planId: result.entitlement.planId,
-        armPurchaseCooldown: false,
-      });
+      // WHY: Single set — Pro grant + genesis mirror without double persist/subscribers.
+      set((state) =>
+        normalizeEntitlementState({
+          ...state,
+          subscriptionStatus: result.entitlement.subscriptionStatus,
+          proExpiresAt:
+            result.entitlement.rcExpiresAt !== undefined
+              ? result.entitlement.rcExpiresAt
+              : result.entitlement.proExpiresAt,
+          promoExpiresAt:
+            result.entitlement.promoExpiresAt !== undefined
+              ? result.entitlement.promoExpiresAt
+              : (state.promoExpiresAt ?? null),
+          planId: result.entitlement.planId,
+          isGenesisEarlyBird: result.genesis?.isGenesisEarlyBird === true,
+          genesisSeatNumber: result.genesis?.genesisSeatNumber ?? null,
+          lastCheckedAt: new Date().toISOString(),
+        })
+      );
       return true;
     }
 
     if (result.status === 'revoked') {
-      set((state) => {
-        if (!hasProAccess(state)) return state;
-        return clearProSubscriptionFields(state);
-      });
+      set((state) =>
+        normalizeEntitlementState({
+          ...state,
+          // WHY: Clear billing Pro when server revoked; always apply genesis from same read.
+          ...(hasProAccess(state)
+            ? {
+                subscriptionStatus: 'free' as const,
+                proExpiresAt: null,
+                promoExpiresAt: null,
+                planId: null,
+                proPurchaseCooldownUntil: null,
+              }
+            : {}),
+          isGenesisEarlyBird: result.genesis?.isGenesisEarlyBird === true,
+          genesisSeatNumber: result.genesis?.genesisSeatNumber ?? null,
+          lastCheckedAt: new Date().toISOString(),
+        })
+      );
     }
 
     return false;
@@ -332,13 +420,17 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           if (!sessionIsCurrent()) return;
           if (snapshot) {
             const previous = useEntitlementStore.getState();
-            // WHY: Inactive local-store reads must not wipe Firestore-hydrated cross-platform Pro.
+            // WHY: Inactive local-store must not wipe Pro, but must still realign
+            // RC/promo mirrors from Firestore SSOT (cleared RC after webhook, or
+            // cross-platform Android grant). Never trust stale local proExpiresAt alone.
             if (await shouldPreserveLocalProAgainstInactiveStore(userId, previous, snapshot.active)) {
               logEntitlementSync('rc-refresh-blocked', {
                 snapshotActive: snapshot.active,
                 subscriptionStatus: previous.subscriptionStatus,
                 isPro: previous.isPro,
               });
+              await useEntitlementStore.getState().hydrateServerProFromFirestore(userId);
+              if (!sessionIsCurrent()) return;
               set((state) => ({
                 ...state,
                 lastCheckedAt: new Date().toISOString(),
@@ -350,14 +442,22 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
               (previous.subscriptionStatus === 'expired' && !hasProAccess(previous));
             if (snapshot.active) {
               useEntitlementStore.getState().applyRevenueCatEntitlement(snapshot);
+              // WHY: Pull founding-seat mirror without re-running Pro revoke logic (server may lag RC).
+              const gen = await resolveServerProHydrate(userId);
+              if (!sessionIsCurrent()) return;
+              if (gen.status !== 'skipped' && 'genesis' in gen) {
+                set((state) =>
+                  normalizeEntitlementState({
+                    ...state,
+                    isGenesisEarlyBird: gen.genesis.isGenesisEarlyBird,
+                    genesisSeatNumber: gen.genesis.genesisSeatNumber,
+                  })
+                );
+              }
             } else {
-              // WHY: Server re-verify already ran in shouldPreserve* — safe to clear local Pro.
-              set((state) =>
-                normalizeEntitlementState({
-                  ...state,
-                  ...snapshotToEntitlementPatch(snapshot),
-                })
-              );
+              // WHY: Inactive RC must still hydrate Firestore so genesis seats survive Pro revoke.
+              await useEntitlementStore.getState().hydrateServerProFromFirestore(userId);
+              if (!sessionIsCurrent()) return;
             }
             // WHY: Boot refresh also migrates legacy/missing server expiry and
             // propagates inactive revocation without charging every free boot.

@@ -4,6 +4,10 @@ import {
   isValidActiveProExpiry,
 } from '../logic/core/entitlement';
 import { isProductAlreadyPurchasedError } from '../logic/core/revenueCatPurchaseErrors';
+import {
+  DEFAULT_PRO_SUBSCRIPTION_PLAN,
+  type ProSubscriptionPlanId,
+} from '../config/proSubscriptionPlans';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { loadPersistedEntitlement } from './entitlementPersistenceService';
@@ -51,15 +55,19 @@ export interface RestorePurchasesResult {
 }
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const YEAR_DAYS_MS = 365 * 24 * 60 * 60 * 1000;
 
 /** Retry cadence while awaiting Firestore hard-sync — RC REST often lags Play purchase. */
 const SERVER_SYNC_RETRY_DELAYS_MS = [1000, 3000, 8000] as const;
 
-function buildSimulatedProSnapshot(): RevenueCatEntitlementSnapshot {
+function buildSimulatedProSnapshot(
+  planId: ProSubscriptionPlanId = DEFAULT_PRO_SUBSCRIPTION_PLAN
+): RevenueCatEntitlementSnapshot {
+  const isAnnual = planId === 'annual';
   return {
     active: true,
-    productIdentifier: 'pro_monthly_099',
-    expiresDate: new Date(Date.now() + THIRTY_DAYS_MS).toISOString(),
+    productIdentifier: isAnnual ? 'pro_annual_1499' : 'pro_monthly_099',
+    expiresDate: new Date(Date.now() + (isAnnual ? YEAR_DAYS_MS : THIRTY_DAYS_MS)).toISOString(),
   };
 }
 
@@ -82,6 +90,8 @@ type ConfirmedServerPro = {
   active: true;
   subscriptionStatus: 'pro' | 'grace';
   proExpiresAt: string;
+  promoExpiresAt: string | null;
+  rcExpiresAt: string | null;
   planId: string | null;
 };
 
@@ -139,6 +149,8 @@ function commitConfirmedProLocally(
   useEntitlementStore.getState().commitServerProEntitlement({
     subscriptionStatus: sync.subscriptionStatus,
     proExpiresAt: sync.proExpiresAt,
+    rcExpiresAt: sync.rcExpiresAt,
+    promoExpiresAt: sync.promoExpiresAt,
     planId: sync.planId,
     armPurchaseCooldown: options.armPurchaseCooldown,
   });
@@ -176,12 +188,15 @@ async function restoreAfterAlreadyPurchased(): Promise<PurchaseProResult> {
  * Purchases Pro subscription using RevenueCat when configured on a native build.
  * Falls back to local simulation when RC keys are unset or on web (Phase 1 flow testing).
  */
-export async function purchaseProSubscription(): Promise<PurchaseProResult> {
+export async function purchaseProSubscription(
+  planId: ProSubscriptionPlanId = DEFAULT_PRO_SUBSCRIPTION_PLAN
+): Promise<PurchaseProResult> {
   const ent = useEntitlementStore.getState();
   if (!hasCoreAccess(ent)) {
     return { ok: false, reason: 'core-required' };
   }
-  if (hasProAccess(ent) && ent.subscriptionStatus === 'pro') {
+  if (hasProAccess(ent) && isValidActiveProExpiry(ent.proExpiresAt)) {
+    // WHY: Promo-only users must still convert to paid; only block active store billing.
     return { ok: false, reason: 'already-pro' };
   }
 
@@ -191,7 +206,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
   }
 
   if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
-    const snapshot = buildSimulatedProSnapshot();
+    const snapshot = buildSimulatedProSnapshot(planId);
     // WHY: Simulation is not a store receipt — only unlock after Firestore accepts the grant.
     const synced = await awaitHardSyncProEntitlement('client-simulation', snapshot, userId);
     if (!synced) {
@@ -204,7 +219,7 @@ export async function purchaseProSubscription(): Promise<PurchaseProResult> {
 
   try {
     await logInRevenueCatUser(userId);
-    const snapshot = await purchaseRevenueCatPro(userId);
+    const snapshot = await purchaseRevenueCatPro(userId, planId);
     if (!snapshot) {
       return { ok: false, reason: 'billing-unavailable' };
     }

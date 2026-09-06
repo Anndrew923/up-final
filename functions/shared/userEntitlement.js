@@ -3,11 +3,13 @@
  * WHY: Single source on Functions — ladder + dynoIntel share the same user doc rules.
  */
 
-function safeDate(input) {
-  if (!input) return null;
-  const parsed = new Date(input);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
+import {
+  isPromoExpiryActive,
+  resolveEffectiveProExpiryMs,
+  safeDate,
+} from "./proExpiry.js";
+
+export { safeDate, resolveEffectiveProExpiryMs, isPromoExpiryActive };
 
 export function hasCoreFromUserDoc(data) {
   const purchaseStatus = data?.purchaseStatus ?? data?.purchase_status;
@@ -17,11 +19,19 @@ export function hasCoreFromUserDoc(data) {
   return purchaseStatus === "owned";
 }
 
+/**
+ * Effective Pro = max(rcExpiresAt, promoExpiresAt) still in the future.
+ * WHY: Promo-only users keep access after RC clear; paid users keep RC window.
+ */
 export function hasProFromUserDoc(data, now = new Date()) {
   if (!hasCoreFromUserDoc(data)) return false;
+
+  const effectiveMs = resolveEffectiveProExpiryMs(data);
+  if (effectiveMs == null || effectiveMs < now.getTime()) return false;
+
   const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status;
-  if (subscriptionStatus !== "pro" && subscriptionStatus !== "grace") return false;
-  const expiresAt = safeDate(data?.proExpiresAt ?? data?.pro_expires_at);
-  if (!expiresAt) return false;
-  return expiresAt.getTime() >= now.getTime();
+  if (subscriptionStatus === "pro" || subscriptionStatus === "grace") return true;
+
+  // Defense in depth: redeem always sets status=pro, but tolerate free+active promo.
+  return isPromoExpiryActive(data, now);
 }

@@ -230,6 +230,18 @@
       }
     },
     "overallFormula": "Sum of six core scores ÷ 6 (arm excluded).",
+    "proFeatureCard": {
+      "kicker": "PRO EXTRAS",
+      "title": "Unlock compute & cloud power",
+      "body": "Genesis ladder seats do not include these — upgrade to PRO to unlock both.",
+      "dynoTitle": "Dyno Intel",
+      "dynoBody": "AI deep fatigue tolerance & bodyweight simulation",
+      "cloudTitle": "Cloud Sync",
+      "cloudBody": "Cross-device assessment history & full data backup",
+      "cta": "Upgrade to PRO",
+      "activeBadge": "PRO Active",
+      "activeBody": "Dyno Intel and cross-device cloud backup are unlocked."
+    },
     "radar": {
       "axis": {
         "strength": "Horsepower",

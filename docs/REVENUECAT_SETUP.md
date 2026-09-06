@@ -20,8 +20,8 @@ RevenueCat integration is already wired in code and ready to activate when you s
 
 1. **RevenueCat dashboard**
    - Create entitlement ID (default expected in code: `pro`)
-   - Create offering and package (default package ID expected: `$rc_monthly`)
-   - Map iOS / Android store products
+   - Create offering and packages (default: `$rc_monthly`, `$rc_annual` in the same subscription group)
+   - Map iOS / Android store products (monthly $1.99 + annual $14.99)
 
 2. **Store consoles**
    - App Store Connect: create subscription product and submit required metadata
@@ -32,7 +32,7 @@ RevenueCat integration is already wired in code and ready to activate when you s
      - `VITE_RC_API_KEY_IOS`
      - `VITE_RC_API_KEY_ANDROID`
      - `VITE_RC_ENTITLEMENT_ID` (if not `pro`)
-     - `VITE_RC_PACKAGE_ID` (if not `$rc_monthly`)
+     - `VITE_RC_PACKAGE_ID` (optional fallback; Paywall selects `$rc_monthly` / `$rc_annual`)
    - Store backend credentials in Secret Manager (never in `.env` committed to source):
      - `firebase functions:secrets:set REVENUECAT_SECRET_API_KEY`
      - `firebase functions:secrets:set REVENUECAT_WEBHOOK_AUTH`
@@ -43,7 +43,7 @@ RevenueCat integration is already wired in code and ready to activate when you s
      backfill with production Application Default Credentials:
      - `gcloud auth application-default login`
      - `GCLOUD_PROJECT=<project-id> REVENUECAT_SECRET_API_KEY="$(firebase functions:secrets:access REVENUECAT_SECRET_API_KEY)" npm run --prefix functions migrate:pro-expiries`
-   - Deploy `syncProSubscription`, `revenueCatWebhook`, and the strict entitlement gates only
+   - Deploy `syncProSubscription`, `redeemPromoCode`, `revenueCatWebhook`, and the strict entitlement gates only
      after the backfill completes successfully.
 
 4. **Native sync**

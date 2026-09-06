@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseServerProFromUserDoc } from '../userEntitlementDoc';
+import {
+  parseGenesisEarlyBirdFromUserDoc,
+  parseServerProFromUserDoc,
+} from '../userEntitlementDoc';
 
 describe('parseServerProFromUserDoc', () => {
   const now = new Date('2026-06-01T00:00:00.000Z');
@@ -17,6 +20,8 @@ describe('parseServerProFromUserDoc', () => {
     expect(parsed).toEqual({
       subscriptionStatus: 'pro',
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      rcExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
       planId: 'up_pro_monthly',
     });
   });
@@ -44,5 +49,40 @@ describe('parseServerProFromUserDoc', () => {
         now
       )
     ).toBeNull();
+  });
+
+  it('keeps Pro when promo outlives RC billing', () => {
+    const parsed = parseServerProFromUserDoc(
+      {
+        subscriptionStatus: 'pro',
+        proExpiresAt: '2020-01-01T00:00:00.000Z',
+        promoExpiresAt: '2099-06-01T00:00:00.000Z',
+        planId: null,
+      },
+      now
+    );
+    expect(parsed?.proExpiresAt).toBe('2099-06-01T00:00:00.000Z');
+    expect(parsed?.promoExpiresAt).toBe('2099-06-01T00:00:00.000Z');
+    // WHY: Expired RC must not surface as store-billing mirror.
+    expect(parsed?.rcExpiresAt).toBeNull();
+  });
+
+  it('parses genesis early-bird mirror independently of Pro', () => {
+    expect(
+      parseGenesisEarlyBirdFromUserDoc({
+        isGenesisEarlyBird: true,
+        genesisSeatNumber: 42,
+      })
+    ).toEqual({ isGenesisEarlyBird: true, genesisSeatNumber: 42 });
+    expect(
+      parseGenesisEarlyBirdFromUserDoc({
+        is_genesis_early_bird: true,
+        genesis_seat_number: 3,
+      })
+    ).toEqual({ isGenesisEarlyBird: true, genesisSeatNumber: 3 });
+    expect(parseGenesisEarlyBirdFromUserDoc({ subscriptionStatus: 'free' })).toEqual({
+      isGenesisEarlyBird: false,
+      genesisSeatNumber: null,
+    });
   });
 });

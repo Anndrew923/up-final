@@ -10,9 +10,12 @@ export function selectEntitlementState(
     subscriptionStatus: s.subscriptionStatus,
     isPro: s.isPro,
     proExpiresAt: s.proExpiresAt,
+    promoExpiresAt: s.promoExpiresAt,
     planId: s.planId,
     lastCheckedAt: s.lastCheckedAt,
     proPurchaseCooldownUntil: s.proPurchaseCooldownUntil,
+    isGenesisEarlyBird: s.isGenesisEarlyBird === true,
+    genesisSeatNumber: s.genesisSeatNumber ?? null,
   };
 }
 

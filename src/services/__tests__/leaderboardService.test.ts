@@ -14,9 +14,12 @@ function ownedFreeEntitlement(): EntitlementState {
     subscriptionStatus: 'free',
     isPro: false,
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: 'core_lifetime_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   };
 }
 
@@ -26,9 +29,12 @@ function ownedProEntitlement(): EntitlementState {
     subscriptionStatus: 'pro',
     isPro: true,
     proExpiresAt: null,
+    promoExpiresAt: null,
     planId: 'pro_monthly_099',
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
+    isGenesisEarlyBird: false,
+    genesisSeatNumber: null,
   };
 }
 
@@ -65,6 +71,7 @@ describe('leaderboard service guards', () => {
     const entitlement: EntitlementState = {
       ...ownedProEntitlement(),
       proExpiresAt: '2099-01-01T00:00:00.000Z',
+      promoExpiresAt: null,
     };
     const result = await submitLeaderboardScore({
       entitlement,
