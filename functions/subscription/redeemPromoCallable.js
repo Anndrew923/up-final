@@ -2,6 +2,10 @@
  * redeemPromoCode — coach invite → 60-day promo Pro + 12-month attribution.
  * WHY: Client must never write promo_codes / attributions; all grants go through this Callable.
  * Attribution + promoExpiresAt are written in ONE transaction to avoid locked attribution without grant.
+ *
+ * Anti-abuse:
+ * - UID hourly attempt cap (failed guesses burn quota) via promo_redeem_rate_limits.
+ * - Optional code-level maxRedemptions + atomic redeemedCount increment in the grant TX.
  */
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
@@ -10,10 +14,15 @@ import {
   PROMO_CODES_COLLECTION,
   PROMO_DEFAULT_ATTRIBUTION_MONTHS,
   PROMO_DEFAULT_GRANT_DAYS,
+  PROMO_REDEEM_RATE_LIMITS_COLLECTION,
   USER_ATTRIBUTIONS_COLLECTION,
 } from "../shared/constants.js";
 import { db, FieldValue } from "../shared/admin.js";
 import { resolvePromoExpiresAtIso, safeDate } from "../shared/proExpiry.js";
+import {
+  consumePromoRedeemAttempt,
+  isPromoRedemptionCapacityExhausted,
+} from "./promoRedeemGuards.js";
 
 function isAnonymousProvider(request) {
   const provider = request.auth?.token?.firebase?.sign_in_provider;
@@ -57,6 +66,31 @@ function resolveCommissionRate(promo) {
   return Math.min(1, Math.max(0, raw));
 }
 
+/**
+ * WHY: Count every attempt (invalid / expired / exhausted) so short codes cannot be swept.
+ * Runs in its own TX before the grant TX so failures still burn quota.
+ */
+async function assertAndConsumeRedeemAttempt(uid) {
+  const rateRef = db.collection(PROMO_REDEEM_RATE_LIMITS_COLLECTION).doc(uid);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(rateRef);
+    const nowMs = Date.now();
+    const result = consumePromoRedeemAttempt(snap.data() ?? null, nowMs);
+    if (!result.allowed) {
+      throw new HttpsError("resource-exhausted", "promo-redeem-rate-limited");
+    }
+    tx.set(
+      rateRef,
+      {
+        windowStartMs: result.next.windowStartMs,
+        count: result.next.count,
+        updatedAt: new Date(nowMs).toISOString(),
+      },
+      { merge: true }
+    );
+  });
+}
+
 export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
   const uid = request.auth?.uid;
   if (!uid || isAnonymousProvider(request)) {
@@ -67,6 +101,9 @@ export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
   if (!code || code.length > 64) {
     throw new HttpsError("invalid-argument", "invalid-promo-code");
   }
+
+  // Burn attempt before validating the code (dictionary-attack shield).
+  await assertAndConsumeRedeemAttempt(uid);
 
   const promoRef = db.collection(PROMO_CODES_COLLECTION).doc(code);
   const attributionRef = db.collection(USER_ATTRIBUTIONS_COLLECTION).doc(uid);
@@ -86,6 +123,10 @@ export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
     const isActive = promo.isActive !== false && promo.is_active !== false;
     if (!isActive) {
       throw new HttpsError("failed-precondition", "invalid-promo-code");
+    }
+
+    if (isPromoRedemptionCapacityExhausted(promo)) {
+      throw new HttpsError("resource-exhausted", "promo-code-exhausted");
     }
 
     const coachUid =
@@ -169,11 +210,19 @@ export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
       { merge: true }
     );
 
+    // WHY: Atomic capacity counter in the same TX as attribution — no oversell under concurrency.
+    tx.set(
+      promoRef,
+      {
+        redeemedCount: FieldValue.increment(1),
+      },
+      { merge: true }
+    );
+
     return {
       nextPromoIso,
       grantDays,
       attributionEndsAt,
-      coachUid,
     };
   });
 

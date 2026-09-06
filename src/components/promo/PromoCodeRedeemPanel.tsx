@@ -17,6 +17,10 @@ function errorKey(reason: RedeemPromoCodeReason): string {
       return 'promoCodeErrorAlready';
     case 'self-redeem':
       return 'promoCodeErrorSelf';
+    case 'rate-limited':
+      return 'promoCodeErrorRateLimited';
+    case 'exhausted':
+      return 'promoCodeErrorExhausted';
     default:
       return 'promoCodeErrorGeneric';
   }

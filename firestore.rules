@@ -208,6 +208,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Per-uid redeem attempt windows — Admin SDK only (failed guesses burn quota).
+    match /promo_redeem_rate_limits/{uid} {
+      allow read, write: if false;
+    }
+
     // Commission ledger keyed by RevenueCat event.id — Admin SDK only.
     match /commission_logs/{eventId} {
       allow read, write: if false;

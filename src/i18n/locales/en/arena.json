@@ -44,6 +44,8 @@
   "promoCodeErrorAlready": "This account already redeemed an invite code",
   "promoCodeErrorSelf": "You cannot redeem your own invite code",
   "promoCodeErrorAuth": "Sign in to redeem an invite code",
+  "promoCodeErrorRateLimited": "Too many attempts. Try again in an hour.",
+  "promoCodeErrorExhausted": "This invite code has reached its redemption limit",
   "promoCodeErrorGeneric": "Redeem failed. Try again soon.",
   "promoCodeCancel": "Cancel",
   "returnToDynoIntel": "Return and continue",

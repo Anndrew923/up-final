@@ -30,7 +30,9 @@
     "icons:android": "npm run icons",
     "dyno:import-hall-of-fame": "node scripts/import-hall-of-fame-matrix.mjs",
     "dyno:seed-hall-of-fame": "npm run seed:hall-of-fame --prefix functions",
-    "dyno:sync-human-praise": "node scripts/sync-dyno-intel-human-praise.mjs"
+    "dyno:sync-human-praise": "node scripts/sync-dyno-intel-human-praise.mjs",
+    "seed:promo": "node scripts/seed-promo-code.js",
+    "report:kol": "node scripts/report-kol-performance.js"
   },
   "dependencies": {
     "@capacitor-community/native-audio": "^8.0.0",

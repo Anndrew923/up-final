@@ -8,6 +8,8 @@ export type RedeemPromoCodeReason =
   | 'expired'
   | 'already-redeemed'
   | 'self-redeem'
+  | 'rate-limited'
+  | 'exhausted'
   | 'failed';
 
 export type RedeemPromoCodeResult =
@@ -40,14 +42,27 @@ function getRedeemCallable() {
   return redeemFn;
 }
 
-function mapCallableError(code: string): RedeemPromoCodeReason {
-  if (code.includes('unauthenticated')) return 'auth-required';
-  if (code.includes('already-exists') || code.includes('already-redeemed')) {
+/**
+ * Map Firebase Callable error code+message into UI reasons.
+ * WHY: `functions/resource-exhausted` contains the substring "exhausted" — never match on that alone.
+ */
+export function mapRedeemPromoCallableError(raw: string): RedeemPromoCodeReason {
+  const text = raw.toLowerCase();
+  if (text.includes('unauthenticated')) return 'auth-required';
+  if (text.includes('already-exists') || text.includes('already-redeemed')) {
     return 'already-redeemed';
   }
-  if (code.includes('failed-precondition') && code.includes('expired')) return 'expired';
-  if (code.includes('failed-precondition') && code.includes('self')) return 'self-redeem';
-  if (code.includes('not-found') || code.includes('invalid')) return 'invalid';
+  if (text.includes('resource-exhausted')) {
+    if (text.includes('rate-limited') || text.includes('promo-redeem-rate-limited')) {
+      return 'rate-limited';
+    }
+    if (text.includes('promo-code-exhausted')) return 'exhausted';
+    // Ambiguous resource-exhausted without a known detail — fail closed to generic UX.
+    return 'failed';
+  }
+  if (text.includes('failed-precondition') && text.includes('expired')) return 'expired';
+  if (text.includes('failed-precondition') && text.includes('self')) return 'self-redeem';
+  if (text.includes('not-found') || text.includes('invalid')) return 'invalid';
   return 'failed';
 }
 
@@ -80,7 +95,7 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
       typeof data.attributionEndsAt !== 'string'
     ) {
       const err = typeof data?.error === 'string' ? data.error : '';
-      return { ok: false, reason: mapCallableError(err || 'failed') };
+      return { ok: false, reason: mapRedeemPromoCallableError(err || 'failed') };
     }
     return {
       ok: true,
@@ -97,6 +112,6 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
       err && typeof err === 'object' && 'message' in err
         ? String((err as { message?: string }).message)
         : '';
-    return { ok: false, reason: mapCallableError(`${code} ${message}`) };
+    return { ok: false, reason: mapRedeemPromoCallableError(`${code} ${message}`) };
   }
 }

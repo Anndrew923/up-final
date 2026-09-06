@@ -88,6 +88,13 @@ export const PROMO_CODES_COLLECTION = "promo_codes";
 export const USER_ATTRIBUTIONS_COLLECTION = "user_attributions";
 /** Commission ledger keyed by RevenueCat event.id. */
 export const COMMISSION_LOGS_COLLECTION = "commission_logs";
+/**
+ * Per-uid redeem attempt windows — Admin SDK only.
+ * WHY: Failed guesses must burn quota or dictionary attacks can sweep short codes.
+ */
+export const PROMO_REDEEM_RATE_LIMITS_COLLECTION = "promo_redeem_rate_limits";
+/** Rolling hourly attempt cap (success + failure). */
+export const PROMO_REDEEM_MAX_ATTEMPTS_PER_HOUR = 10;
 
 /** Store cut before coach share — price * (1 - cut) * coachRate. */
 export const COMMISSION_PLATFORM_CUT = 0.15;
