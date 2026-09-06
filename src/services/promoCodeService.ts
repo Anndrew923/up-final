@@ -10,6 +10,7 @@ export type RedeemPromoCodeReason =
   | 'self-redeem'
   | 'rate-limited'
   | 'exhausted'
+  | 'app-check'
   | 'failed';
 
 export type RedeemPromoCodeResult =
@@ -20,6 +21,14 @@ export type RedeemPromoCodeResult =
       attributionEndsAt: string;
     }
   | { ok: false; reason: RedeemPromoCodeReason };
+
+export type MapRedeemPromoCallableErrorContext = {
+  /**
+   * True when JS Auth still has a non-anonymous user.
+   * WHY: enforceAppCheck often returns bare `unauthenticated` — must not show "sign in".
+   */
+  hasGoogleSignedInUser?: boolean;
+};
 
 type RedeemPromoCallableResponse = {
   ok: boolean;
@@ -46,9 +55,23 @@ function getRedeemCallable() {
  * Map Firebase Callable error code+message into UI reasons.
  * WHY: `functions/resource-exhausted` contains the substring "exhausted" — never match on that alone.
  */
-export function mapRedeemPromoCallableError(raw: string): RedeemPromoCodeReason {
+export function mapRedeemPromoCallableError(
+  raw: string,
+  context: MapRedeemPromoCallableErrorContext = {}
+): RedeemPromoCodeReason {
   const text = raw.toLowerCase();
-  if (text.includes('unauthenticated')) return 'auth-required';
+  if (
+    text.includes('app check') ||
+    text.includes('appcheck') ||
+    text.includes('attestation')
+  ) {
+    return 'app-check';
+  }
+  if (text.includes('unauthenticated')) {
+    // Align with ladderBatchCallableError: signed-in + 401 ≈ App Check, not missing session.
+    if (context.hasGoogleSignedInUser) return 'app-check';
+    return 'auth-required';
+  }
   if (text.includes('already-exists') || text.includes('already-redeemed')) {
     return 'already-redeemed';
   }
@@ -71,7 +94,19 @@ export function mapRedeemPromoCallableError(raw: string): RedeemPromoCodeReason 
  */
 export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeResult> {
   const auth = getFirebaseAuth();
-  if (!auth?.currentUser || auth.currentUser.isAnonymous) {
+  const functions = getFirebaseFunctions();
+  const signedInUser = auth?.currentUser;
+  const hasGoogleSignedInUser = Boolean(signedInUser && !signedInUser.isAnonymous);
+
+  if (import.meta.env.DEV) {
+    console.warn('[PromoDebug] Entry:', {
+      hasFunctions: Boolean(functions),
+      uid: signedInUser?.uid ?? null,
+      isAnonymous: signedInUser?.isAnonymous ?? null,
+    });
+  }
+
+  if (!signedInUser || signedInUser.isAnonymous) {
     return { ok: false, reason: 'auth-required' };
   }
 
@@ -82,6 +117,9 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
 
   const callable = getRedeemCallable();
   if (!callable) {
+    if (import.meta.env.DEV) {
+      console.warn('[PromoDebug] Guard: unavailable (firebaseFunctions not initialized)');
+    }
     return { ok: false, reason: 'unavailable' };
   }
 
@@ -95,7 +133,10 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
       typeof data.attributionEndsAt !== 'string'
     ) {
       const err = typeof data?.error === 'string' ? data.error : '';
-      return { ok: false, reason: mapRedeemPromoCallableError(err || 'failed') };
+      return {
+        ok: false,
+        reason: mapRedeemPromoCallableError(err || 'failed', { hasGoogleSignedInUser }),
+      };
     }
     return {
       ok: true,
@@ -104,7 +145,7 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
       attributionEndsAt: data.attributionEndsAt,
     };
   } catch (err: unknown) {
-    const code =
+    const errCode =
       err && typeof err === 'object' && 'code' in err
         ? String((err as { code?: string }).code)
         : '';
@@ -112,6 +153,11 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
       err && typeof err === 'object' && 'message' in err
         ? String((err as { message?: string }).message)
         : '';
-    return { ok: false, reason: mapRedeemPromoCallableError(`${code} ${message}`) };
+    return {
+      ok: false,
+      reason: mapRedeemPromoCallableError(`${errCode} ${message}`, {
+        hasGoogleSignedInUser,
+      }),
+    };
   }
 }

@@ -8,9 +8,12 @@ function errorKey(reason: RedeemPromoCodeReason): string {
   switch (reason) {
     case 'auth-required':
       return 'promoCodeErrorAuth';
+    case 'app-check':
+      return 'promoCodeErrorAppCheck';
     case 'invalid':
-    case 'unavailable':
       return 'promoCodeErrorInvalid';
+    case 'unavailable':
+      return 'promoCodeErrorUnavailable';
     case 'expired':
       return 'promoCodeErrorExpired';
     case 'already-redeemed':

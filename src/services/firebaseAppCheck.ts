@@ -50,7 +50,17 @@ function configureWebDebugToken(): void {
   const target = globalThis as typeof globalThis & {
     FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
   };
+  // WHY: Fixed env UUID must be registered in Console; `true` auto-mints an unregistered token → 403.
   target.FIREBASE_APPCHECK_DEBUG_TOKEN = configured || true;
+  if (configured) {
+    console.warn(
+      `[app-check] DEV debug token from VITE_APP_CHECK_DEBUG_TOKEN — register in Firebase Console App Check whitelist:\n${configured}`
+    );
+  } else {
+    console.warn(
+      '[app-check] DEV using auto debug token (FIREBASE_APPCHECK_DEBUG_TOKEN=true). Prefer a fixed VITE_APP_CHECK_DEBUG_TOKEN in .env and whitelist it.'
+    );
+  }
 }
 
 async function fetchNativeAppCheckToken(forceRefresh: boolean): Promise<CachedNativeToken> {

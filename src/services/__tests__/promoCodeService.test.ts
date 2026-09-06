@@ -36,4 +36,18 @@ describe('mapRedeemPromoCallableError', () => {
       'invalid'
     );
   });
+
+  it('maps unauthenticated to app-check when the user is already signed in', () => {
+    expect(
+      mapRedeemPromoCallableError('functions/unauthenticated', {
+        hasGoogleSignedInUser: true,
+      })
+    ).toBe('app-check');
+  });
+
+  it('maps explicit App Check messages to app-check', () => {
+    expect(
+      mapRedeemPromoCallableError('functions/failed-precondition App Check token is invalid.')
+    ).toBe('app-check');
+  });
 });

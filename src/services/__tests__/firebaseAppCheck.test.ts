@@ -57,6 +57,8 @@ describe('Firebase App Check initialization', () => {
     mocks.getNativeToken.mockClear();
     mocks.initializeWeb.mockClear();
     vi.stubEnv('VITE_APP_CHECK_SITE_KEY', '');
+    // WHY: Do not inherit machine `.env` debug UUID — keeps CI logs free of local secrets.
+    vi.stubEnv('VITE_APP_CHECK_DEBUG_TOKEN', '');
   });
 
   it('skips providers for emulator traffic', async () => {
@@ -76,11 +78,17 @@ describe('Firebase App Check initialization', () => {
 
   it('initializes the reCAPTCHA Enterprise provider once', async () => {
     vi.stubEnv('VITE_APP_CHECK_SITE_KEY', 'site-key');
+    vi.stubEnv('VITE_APP_CHECK_DEBUG_TOKEN', '11111111-2222-3333-4444-555555555555');
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { initializeFirebaseAppCheck } = await loadSubject();
     expect(initializeFirebaseAppCheck(app)).toBe(true);
     expect(initializeFirebaseAppCheck(app)).toBe(true);
     expect(mocks.recaptchaKey).toBe('site-key');
     expect(mocks.initializeWeb).toHaveBeenCalledTimes(1);
+    expect(warning).toHaveBeenCalledWith(
+      expect.stringContaining('11111111-2222-3333-4444-555555555555')
+    );
+    warning.mockRestore();
   });
 
   it('bridges native attestation and supplies a conservative token expiry', async () => {
