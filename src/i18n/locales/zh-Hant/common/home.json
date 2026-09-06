@@ -231,7 +231,7 @@
     },
     "overallFormula": "",
     "proFeatureCard": {
-      "kicker": "PRO 增值特權",
+      "kicker": "✦ PRO 增值特權",
       "title": "解鎖高算力與雲端能力",
       "body": "天梯早鳥席位不解鎖以下功能 — 升級 PRO 即可全開。",
       "dynoTitle": "Dyno Intel",
@@ -239,6 +239,10 @@
       "cloudTitle": "Cloud Sync",
       "cloudBody": "跨裝置歷史評測與數據全量備份",
       "cta": "升級 PRO 會員",
+      "collapsedSubtitle": "解鎖 AI 算力與雲端備份",
+      "collapsedCta": "升級",
+      "toggleExpand": "展開 PRO 增值特權詳情",
+      "toggleCollapse": "收合 PRO 增值特權詳情",
       "activeBadge": "PRO 已啟用",
       "activeBody": "Dyno Intel 與跨裝置雲端備份已解鎖。"
     },
