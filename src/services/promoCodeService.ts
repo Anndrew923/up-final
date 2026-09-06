@@ -52,7 +52,7 @@ function mapCallableError(code: string): RedeemPromoCodeReason {
 }
 
 /**
- * Redeems a coach invite code via Callable (server writes attribution + promoExpiresAt).
+ * Redeems an invite / referral code via Callable (server writes attribution + promoExpiresAt).
  */
 export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeResult> {
   const auth = getFirebaseAuth();

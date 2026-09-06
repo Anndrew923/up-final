@@ -1,4 +1,4 @@
-import { useState, type FC, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FC, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { redeemPromoCode, type RedeemPromoCodeReason } from '../../services/promoCodeService';
 import { useEntitlementStore } from '../../stores/entitlementStore';
@@ -23,14 +23,15 @@ function errorKey(reason: RedeemPromoCodeReason): string {
 }
 
 export interface PromoCodeRedeemPanelProps {
-  /** Compact link-style trigger (Paywall) vs always-expanded (Settings). */
+  /** Capsule trigger (Paywall) vs always-expanded inline row (Settings). */
   variant?: 'link' | 'inline';
   className?: string;
   onRedeemed?: () => void;
 }
 
 /**
- * Coach invite redeem UI — presentational; side effects via promoCodeService + entitlement hydrate.
+ * Invite / referral redeem UI — presentational; side effects via promoCodeService + entitlement hydrate.
+ * WHY: Equal-height (~h-10) capsule ↔ inline form keeps Paywall layout stable when expanding.
  */
 const PromoCodeRedeemPanel: FC<PromoCodeRedeemPanelProps> = ({
   variant = 'inline',
@@ -38,12 +39,49 @@ const PromoCodeRedeemPanel: FC<PromoCodeRedeemPanelProps> = ({
   onRedeemed,
 }) => {
   const { t } = useTranslation('arena');
+  const reactId = useId();
+  const panelId = `${reactId}-promo-panel`;
+  const toggleId = `${reactId}-promo-toggle`;
+
   const uid = useAuthStore((s) => s.uid);
   const [expanded, setExpanded] = useState(variant === 'inline');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [successDays, setSuccessDays] = useState<number | null>(null);
   const [errorReason, setErrorReason] = useState<RedeemPromoCodeReason | null>(null);
+
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  /** Skip first paint so Settings inline does not steal focus on mount. */
+  const didMountRef = useRef(false);
+
+  const canCollapse = variant === 'link';
+  const showForm = variant === 'inline' || expanded;
+
+  const collapse = () => {
+    setExpanded(false);
+    setCode('');
+    setErrorReason(null);
+    setSuccessDays(null);
+  };
+
+  // WHY: Match DisclosurePanel / modal focus handoff — expand lands in input; collapse returns to capsule.
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    if (!canCollapse) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (showForm) {
+        inputRef.current?.focus({ preventScroll: true });
+      } else {
+        toggleRef.current?.focus({ preventScroll: true });
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [canCollapse, showForm]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -74,65 +112,98 @@ const PromoCodeRedeemPanel: FC<PromoCodeRedeemPanelProps> = ({
     }
   };
 
-  if (variant === 'link' && !expanded) {
-    return (
-      <div className={className}>
-        <button
-          type="button"
-          className="text-sm font-medium text-accent-info underline-offset-2 hover:underline"
-          onClick={() => setExpanded(true)}
-        >
-          {t('promoCodeLink')}
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className={`space-y-3 rounded-2xl border border-zinc-800 bg-bg-card/80 p-4 ${className}`}
-    >
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-        {t('promoCodeTitle')}
-      </p>
-      <form className="flex flex-col gap-2 sm:flex-row" onSubmit={(e) => void handleSubmit(e)}>
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder={t('promoCodePlaceholder')}
-          disabled={busy}
-          autoCapitalize="characters"
-          autoCorrect="off"
-          spellCheck={false}
-          className="min-w-0 flex-1 rounded-xl border border-zinc-700 bg-zinc-950/60 px-3 py-2.5 font-mono text-sm uppercase tracking-wider text-zinc-100 placeholder:normal-case placeholder:tracking-normal placeholder:text-zinc-600 focus:border-accent-info/60 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={busy || !code.trim()}
-          className="ui-btn ui-btn-primary shrink-0 justify-center disabled:opacity-60"
-        >
-          {busy ? t('promoCodeBusy') : t('promoCodeSubmit')}
-        </button>
-      </form>
-      {variant === 'link' ? (
-        <button
-          type="button"
-          className="text-xs text-zinc-500 hover:text-zinc-300"
-          onClick={() => {
-            setExpanded(false);
-            setErrorReason(null);
-            setSuccessDays(null);
-          }}
-        >
-          {t('promoCodeCancel')}
-        </button>
+    <div className={className}>
+      {variant === 'inline' ? (
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          {t('promoCodeTitle')}
+        </p>
       ) : null}
+
+      {/* WHY: Shared h-10 shell — opacity swap (not height accordion) so plan cards do not jump. */}
+      <div className="relative h-10 w-full">
+        {canCollapse ? (
+          <button
+            ref={toggleRef}
+            type="button"
+            id={toggleId}
+            aria-expanded={showForm}
+            aria-controls={panelId}
+            className={`absolute inset-0 flex h-10 w-full items-center justify-between rounded-full border border-zinc-800 bg-zinc-900/60 px-4 text-left transition-[opacity,border-color] duration-200 ease-out hover:border-amber-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60 motion-reduce:transition-none ${
+              showForm ? 'pointer-events-none opacity-0' : 'opacity-100'
+            }`}
+            tabIndex={showForm ? -1 : 0}
+            aria-hidden={showForm}
+            inert={showForm ? true : undefined}
+            onClick={() => setExpanded(true)}
+          >
+            <span className="flex min-w-0 items-center gap-2 text-sm text-zinc-200">
+              <span aria-hidden>🎟️</span>
+              <span className="truncate">{t('promoCodeLink')}</span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-xs text-zinc-500">
+              {t('promoCodeEnterHint')}
+              <span aria-hidden>❯</span>
+            </span>
+          </button>
+        ) : null}
+
+        <form
+          id={panelId}
+          role={canCollapse ? 'region' : undefined}
+          aria-labelledby={canCollapse ? toggleId : undefined}
+          className={`absolute inset-0 flex h-10 w-full items-stretch overflow-hidden rounded-full border border-zinc-800 bg-zinc-950 transition-[opacity,border-color] duration-200 ease-out focus-within:border-amber-400/40 motion-reduce:transition-none ${
+            showForm ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          aria-hidden={!showForm}
+          inert={!showForm ? true : undefined}
+          onSubmit={(e) => void handleSubmit(e)}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder={t('promoCodePlaceholder')}
+            disabled={busy || !showForm}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="off"
+            enterKeyHint="done"
+            className="min-w-0 flex-1 bg-transparent px-3.5 font-mono text-sm uppercase tracking-wider text-zinc-100 placeholder:normal-case placeholder:tracking-normal placeholder:text-zinc-600 focus:outline-none disabled:opacity-60"
+          />
+          {canCollapse ? (
+            <button
+              type="button"
+              disabled={busy || !showForm}
+              aria-label={t('promoCodeCancel')}
+              className="flex h-full w-8 shrink-0 items-center justify-center text-sm text-zinc-500 transition hover:text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-amber-400/60 disabled:opacity-60"
+              onClick={collapse}
+            >
+              <span aria-hidden>✕</span>
+            </button>
+          ) : null}
+          {/* WHY: min-w keeps Redeem ↔ Redeeming… from nudging the mono input width. */}
+          <button
+            type="submit"
+            disabled={busy || !showForm || !code.trim()}
+            className="h-full min-w-[5.5rem] shrink-0 bg-accent-primary px-4 text-xs font-semibold text-black transition hover:bg-orange-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-black/40 disabled:opacity-60"
+          >
+            {busy ? t('promoCodeBusy') : t('promoCodeSubmit')}
+          </button>
+        </form>
+      </div>
+
       {successDays != null ? (
-        <p className="text-sm text-emerald-300">{t('promoCodeSuccess', { days: successDays })}</p>
+        <p className="mt-2 text-sm text-emerald-300" role="status" aria-live="polite">
+          {t('promoCodeSuccess', { days: successDays })}
+        </p>
       ) : null}
       {errorReason ? (
-        <p className="text-sm text-rose-400">{t(errorKey(errorReason))}</p>
+        <p className="mt-2 text-sm text-rose-400" role="status" aria-live="polite">
+          {t(errorKey(errorReason))}
+        </p>
       ) : null}
     </div>
   );

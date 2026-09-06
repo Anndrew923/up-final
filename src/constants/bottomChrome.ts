@@ -89,7 +89,13 @@ export const DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX =
 /** Join Arena floating CTA — aliases shared Dyno-hidden dock stack. */
 export const JOIN_ARENA_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
 export const JOIN_ARENA_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
-export const JOIN_ARENA_SCROLL_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX;
+/**
+ * Extra scroll air below identity / manage-link so the CTA gradient does not visually clip cards.
+ * WHY: Dock bar math clears the button; gradient fade still eats ~20px of perceived clearance.
+ */
+export const JOIN_ARENA_SCROLL_AIR_GAP_PX = 24;
+export const JOIN_ARENA_SCROLL_BOTTOM_PX =
+  DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX + JOIN_ARENA_SCROLL_AIR_GAP_PX; // 202
 
 /** CSS `calc` bottom / padding-bottom that clears chrome + device safe-area. */
 export function bottomChromeCalc(offsetPx: number): string {

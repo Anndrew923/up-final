@@ -102,11 +102,14 @@ describe('isOneRmCalculatorRoutePath', () => {
 });
 
 describe('isCompactShellRoutePath', () => {
-  it('includes home, ladder, join-arena, and tools tab only', () => {
+  it('includes home, ladder, and tools tab only', () => {
     expect(isCompactShellRoutePath(ROUTES.home)).toBe(true);
     expect(isCompactShellRoutePath(ROUTES.ladder)).toBe(true);
-    expect(isCompactShellRoutePath(ROUTES.joinArena)).toBe(true);
     expect(isCompactShellRoutePath(ROUTES.tools)).toBe(true);
+  });
+
+  it('keeps join-arena on full shell so HUD back clears page kicker', () => {
+    expect(isCompactShellRoutePath(ROUTES.joinArena)).toBe(false);
   });
 
   it('keeps calculator subpages on full shell so titles clear HUD', () => {

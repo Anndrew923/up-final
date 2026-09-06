@@ -12,7 +12,7 @@ export interface JoinArenaPlanPickerProps {
 }
 
 /**
- * Dual-track Pro plan cards — monthly vs annual (default annual).
+ * Dual-track Pro plan cards — annual (default, left) vs monthly.
  * WHY: Presentational only; purchase orchestration stays in JoinArenaPage / subscriptionService.
  */
 const JoinArenaPlanPicker: FC<JoinArenaPlanPickerProps> = ({
@@ -30,11 +30,6 @@ const JoinArenaPlanPicker: FC<JoinArenaPlanPickerProps> = ({
     hint?: string;
   }> = [
     {
-      id: 'monthly',
-      price: `$${PRO_SUBSCRIPTION_PLANS.monthly.priceUsd.toFixed(2)}`,
-      period: t('planMonthlyPeriod'),
-    },
-    {
       id: 'annual',
       price: `$${PRO_SUBSCRIPTION_PLANS.annual.priceUsd.toFixed(2)}`,
       period: t('planAnnualPeriod'),
@@ -42,6 +37,11 @@ const JoinArenaPlanPicker: FC<JoinArenaPlanPickerProps> = ({
       hint: t('planAnnualHint', {
         monthly: PRO_SUBSCRIPTION_PLANS.annual.monthlyEquivalentUsd.toFixed(2),
       }),
+    },
+    {
+      id: 'monthly',
+      price: `$${PRO_SUBSCRIPTION_PLANS.monthly.priceUsd.toFixed(2)}`,
+      period: t('planMonthlyPeriod'),
     },
   ];
 

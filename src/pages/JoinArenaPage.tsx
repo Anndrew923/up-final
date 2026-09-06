@@ -208,6 +208,8 @@ const JoinArenaPage: FC = () => {
   return (
     <>
       <main className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 bg-bg-base pt-1 text-zinc-100">
+        {/* WHY: Page uses ui-shell-compact (no extra top pad) while AppShell applies full pt-shell-top —
+            Join Arena is intentionally NOT in isCompactShellRoutePath so HUD back clears the kicker. */}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
           <div className="ui-magitek-grid absolute inset-0 opacity-[0.07]" />
           <div className="absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />
@@ -226,7 +228,10 @@ const JoinArenaPage: FC = () => {
           <h1 className="bg-gradient-to-r from-zinc-50 via-accent-primary to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-[0_0_28px_rgba(255,140,0,0.35)]">
             {t(titleKey)}
           </h1>
-          <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
+          {/* WHY: Paid funnels jump title → spec sheet; long blurbs steal fold space from plans/CTA. */}
+          {!proSubscribeFunnel ? (
+            <p className="text-pretty text-sm leading-snug text-zinc-400">{t(descriptionKey)}</p>
+          ) : null}
         </header>
 
         {banner === 'auth-ok' ? (
@@ -262,7 +267,7 @@ const JoinArenaPage: FC = () => {
           </p>
         ) : null}
 
-        {/* WHY: Single Pro kit panel — Core/Pro comparison removed to kill duplicate feature narrative. */}
+        {/* WHY: Compact Pro checklist — de-boxed so plan picker / invite code stay above the fold. */}
         <JoinArenaProFeatures />
 
         {showPlanPicker ? (
@@ -274,18 +279,6 @@ const JoinArenaPage: FC = () => {
         ) : null}
 
         {authStatus === 'signed-in' ? <PromoCodeRedeemPanel variant="link" /> : null}
-
-        <button
-          type="button"
-          className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/40 px-4 py-3 text-left text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:bg-zinc-900/60"
-          onClick={() => {
-            void openStoreSubscriptionManagement().catch(() => {
-              // Store / browser sheet failures are non-fatal; user can retry.
-            });
-          }}
-        >
-          {t('manageSubscription')}
-        </button>
 
         <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -326,6 +319,19 @@ const JoinArenaPage: FC = () => {
             />
           )}
         </section>
+
+        {/* WHY: De-emphasized vs purchase path — store manage must not compete with plan/CTA. */}
+        <button
+          type="button"
+          className="mx-auto block text-xs text-zinc-500 underline underline-offset-2 transition hover:text-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+          onClick={() => {
+            void openStoreSubscriptionManagement().catch(() => {
+              // Store / browser sheet failures are non-fatal; user can retry.
+            });
+          }}
+        >
+          {t('manageSubscription')}
+        </button>
 
         <ProSubscriptionResultModal
           open={resultModal.open}

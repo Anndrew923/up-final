@@ -9,6 +9,7 @@ import {
   DYNO_INTEL_TRIGGER_HEIGHT_PX,
   JOIN_ARENA_CTA_BAR_PX,
   JOIN_ARENA_CTA_BOTTOM_PX,
+  JOIN_ARENA_SCROLL_AIR_GAP_PX,
   JOIN_ARENA_SCROLL_BOTTOM_PX,
   LADDER_BRIDGE_AIR_GAP_PX,
   LADDER_BRIDGE_ARCH_DEPTH_PX,
@@ -67,7 +68,10 @@ describe('bottomChrome', () => {
 
   it('clears Join Arena floating CTA for AppShell scroll inset', () => {
     expect(JOIN_ARENA_CTA_BOTTOM_PX).toBe(BOTTOM_CHROME_STACK_PX);
-    expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBe(JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX);
+    expect(JOIN_ARENA_SCROLL_AIR_GAP_PX).toBe(24);
+    expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBe(
+      JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX + JOIN_ARENA_SCROLL_AIR_GAP_PX
+    );
     expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBeGreaterThan(APP_SHELL_SCROLL_BOTTOM_PX);
     expect(bottomChromeCalc(JOIN_ARENA_CTA_BOTTOM_PX)).toContain(
       'env(safe-area-inset-bottom, 0px)'

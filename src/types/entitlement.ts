@@ -8,7 +8,7 @@ export interface EntitlementState {
   /** RevenueCat / store billing expiry (ISO). */
   proExpiresAt: string | null;
   /**
-   * Coach invite promo expiry (ISO). Independent of RC.
+   * Invite / referral promo expiry (ISO). Independent of RC.
    * WHY: Effective Pro = max(proExpiresAt, promoExpiresAt).
    */
   promoExpiresAt: string | null;

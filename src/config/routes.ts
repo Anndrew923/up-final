@@ -50,12 +50,11 @@ export function isJoinArenaRoutePath(pathname: string): boolean {
   return pathname === ROUTES.joinArena || pathname.startsWith(`${ROUTES.joinArena}/`);
 }
 
-/** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / arena / tools tab). */
+/** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / ladder / tools tab). */
 export function isCompactShellRoutePath(pathname: string): boolean {
   return (
     isHomeRoutePath(pathname) ||
     isLadderRoutePath(pathname) ||
-    isJoinArenaRoutePath(pathname) ||
     isToolsTabRoutePath(pathname)
   );
 }
