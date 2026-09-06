@@ -11,7 +11,10 @@
       "pioneerBadge": "✦ 創始先鋒 · 終身天梯免費",
       "pioneerBadgeWithSeat": "✦ 創始先鋒 · NO. {{seat}} · 終身天梯免費",
       "pioneerHint": "您已鎖定創始特權，享有終身天梯登錄資格。Dyno Intel 深度推演與跨裝置雲端備份為 PRO 專屬特權。",
-      "seatsCountdown": "創始先鋒席位倒數中（限量 {{count}} 名）"
+      "stageEarly": "✦ 創始先鋒賽季 · 限量 {{count}} 席終身免費登錄",
+      "stageGrowth": "✦ 創始先鋒席位已認領突破 {{percent}}% · 鎖定終身天梯",
+      "stageClosing": "⚠️ 創始先鋒席位僅剩最後 {{remaining}} 席 · 額滿即恢復 PRO 專屬",
+      "stageEnded": "創始席位已額滿 · 天梯恢復為 PRO 專屬（先鋒終身通行仍有效）"
     },
     "kicker": "全球天梯",
     "title": "即時天梯",

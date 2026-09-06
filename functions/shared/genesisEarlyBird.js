@@ -18,6 +18,15 @@ export const GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT = 2000;
 
 export const GENESIS_EARLY_BIRD_META_PATH = "meta/genesisEarlyBird";
 export const GENESIS_EARLY_BIRD_SEATS_COLLECTION = "genesis_early_bird_seats";
+/**
+ * Public FOMO summary — signed-in clients may read; never expose raw claimedCount.
+ * WHY: Keep `meta/genesisEarlyBird` Admin-only while UI still gets staged disclosure.
+ */
+export const GENESIS_SEAT_PUBLIC_SUMMARY_PATH = "public_meta/genesisSeats";
+
+/** Tiered progressive disclosure thresholds (claimedCount). Server-authoritative. */
+export const GENESIS_SEAT_GROWTH_MIN = 300;
+export const GENESIS_SEAT_CLOSING_AFTER = 1500;
 
 export function resolveGenesisEarlyBirdSeatLimit() {
   const raw = process.env.GENESIS_EARLY_BIRD_SEAT_LIMIT;
@@ -25,6 +34,67 @@ export function resolveGenesisEarlyBirdSeatLimit() {
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed < 1) return GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT;
   return Math.floor(parsed);
+}
+
+/**
+ * Build the client-safe seat summary (no bare claimedCount).
+ * WHY: Cold-start FOMO without tiny live numbers; closing stage gets exact remaining only.
+ *
+ * @param {{
+ *   claimedCount: number;
+ *   seatLimit?: number;
+ *   paywallForced?: boolean;
+ *   now?: Date;
+ * }} input
+ * @returns {{
+ *   seatLimit: number;
+ *   stage: 'early' | 'growth' | 'closing' | 'ended';
+ *   percentBucket?: number;
+ *   remaining?: number;
+ *   updatedAt: string;
+ * }}
+ */
+export function buildGenesisSeatPublicSummary(input) {
+  const seatLimit =
+    Number.isFinite(input.seatLimit) && input.seatLimit >= 1
+      ? Math.floor(input.seatLimit)
+      : GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT;
+  const claimedCount = Number.isFinite(input.claimedCount)
+    ? Math.max(0, Math.floor(input.claimedCount))
+    : 0;
+  const updatedAt = (input.now ?? new Date()).toISOString();
+
+  if (input.paywallForced === true || claimedCount >= seatLimit) {
+    return { seatLimit, stage: "ended", updatedAt };
+  }
+
+  if (claimedCount < GENESIS_SEAT_GROWTH_MIN) {
+    return { seatLimit, stage: "early", updatedAt };
+  }
+
+  if (claimedCount <= GENESIS_SEAT_CLOSING_AFTER) {
+    // Floor to whole tens so UI never shows noisy single-digit percent swings.
+    const rawPct = (claimedCount / seatLimit) * 100;
+    const percentBucket = Math.max(10, Math.floor(rawPct / 10) * 10);
+    return { seatLimit, stage: "growth", percentBucket, updatedAt };
+  }
+
+  return {
+    seatLimit,
+    stage: "closing",
+    remaining: Math.max(0, seatLimit - claimedCount),
+    updatedAt,
+  };
+}
+
+/**
+ * @param {FirebaseFirestore.Transaction} tx
+ * @param {{ claimedCount: number; seatLimit: number; paywallForced?: boolean; now?: Date }} input
+ */
+function writeGenesisSeatPublicSummaryTx(tx, input) {
+  const publicRef = db.doc(GENESIS_SEAT_PUBLIC_SUMMARY_PATH);
+  // WHY: Full replace — merge would leave stale percentBucket/remaining across stage flips.
+  tx.set(publicRef, buildGenesisSeatPublicSummary(input));
 }
 
 /**
@@ -183,6 +253,12 @@ export async function claimGenesisEarlyBirdSeat(uid, options = {}) {
 
     const claimedCount = Number(metaSnap.data()?.claimedCount) || 0;
     if (claimedCount >= seatLimit) {
+      // WHY: Publish ended summary so clients stop FOMO countdown without reading private meta.
+      writeGenesisSeatPublicSummaryTx(tx, {
+        claimedCount,
+        seatLimit,
+        now: options.now ?? new Date(),
+      });
       return { ok: false, reason: "seats-full", claimedCount };
     }
 
@@ -204,6 +280,11 @@ export async function claimGenesisEarlyBirdSeat(uid, options = {}) {
       seatNumber: nextCount,
     });
     mirrorGenesisToUserTx(tx, uid, nextCount);
+    writeGenesisSeatPublicSummaryTx(tx, {
+      claimedCount: nextCount,
+      seatLimit,
+      now: options.now ?? new Date(),
+    });
 
     return {
       ok: true,

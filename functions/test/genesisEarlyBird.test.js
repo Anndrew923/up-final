@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildGenesisSeatPublicSummary,
   buildUserGenesisMirrorFields,
   GENESIS_EARLY_BIRD_SEAT_LIMIT_DEFAULT,
+  GENESIS_SEAT_CLOSING_AFTER,
+  GENESIS_SEAT_GROWTH_MIN,
   normalizeGenesisSeatNumber,
   resolveGenesisEarlyBirdSeatLimit,
   resolveGenesisUploadDecision,
@@ -20,6 +23,60 @@ describe("genesisEarlyBird decision matrix", () => {
     });
     assert.equal(normalizeGenesisSeatNumber(0), null);
     assert.equal(normalizeGenesisSeatNumber("7"), null);
+  });
+
+  it("builds staged public summary without exposing claimedCount", () => {
+    const now = new Date("2026-09-06T00:00:00.000Z");
+    const early = buildGenesisSeatPublicSummary({
+      claimedCount: GENESIS_SEAT_GROWTH_MIN - 1,
+      seatLimit: 2000,
+      now,
+    });
+    assert.equal(early.stage, "early");
+    assert.equal(early.seatLimit, 2000);
+    assert.equal(early.percentBucket, undefined);
+    assert.equal(early.remaining, undefined);
+    assert.equal("claimedCount" in early, false);
+
+    const growth = buildGenesisSeatPublicSummary({
+      claimedCount: GENESIS_SEAT_GROWTH_MIN,
+      seatLimit: 2000,
+      now,
+    });
+    assert.equal(growth.stage, "growth");
+    assert.equal(growth.percentBucket, 10);
+
+    const growthMid = buildGenesisSeatPublicSummary({
+      claimedCount: 800,
+      seatLimit: 2000,
+      now,
+    });
+    assert.equal(growthMid.stage, "growth");
+    assert.equal(growthMid.percentBucket, 40);
+
+    const closing = buildGenesisSeatPublicSummary({
+      claimedCount: GENESIS_SEAT_CLOSING_AFTER + 1,
+      seatLimit: 2000,
+      now,
+    });
+    assert.equal(closing.stage, "closing");
+    assert.equal(closing.remaining, 499);
+    assert.equal(closing.percentBucket, undefined);
+
+    const endedFull = buildGenesisSeatPublicSummary({
+      claimedCount: 2000,
+      seatLimit: 2000,
+      now,
+    });
+    assert.equal(endedFull.stage, "ended");
+
+    const endedPaywall = buildGenesisSeatPublicSummary({
+      claimedCount: 10,
+      seatLimit: 2000,
+      paywallForced: true,
+      now,
+    });
+    assert.equal(endedPaywall.stage, "ended");
   });
 
   it("defaults seat limit to 2000", () => {

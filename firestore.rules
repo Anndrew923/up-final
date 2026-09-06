@@ -126,6 +126,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Genesis FOMO display summary (stage / bucket / remaining). No bare claimedCount.
+    // WHY: Signed-in ladder visitors need staged copy without opening private meta/.
+    match /public_meta/genesisSeats {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
     // Per-uid early-bird seat claims (grandfather). Admin SDK only.
     match /genesis_early_bird_seats/{uid} {
       allow read, write: if false;

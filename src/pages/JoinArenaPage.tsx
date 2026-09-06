@@ -21,7 +21,9 @@ import {
 import { hasCoreAccess, isValidActiveProExpiry } from '../logic/core/entitlement';
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
+import { useGenesisSeatSummary } from '../hooks/useGenesisSeatSummary';
 import { useUiGate } from '../hooks/useUiGate';
+import { formatGenesisSeatSummaryCopy } from '../lib/genesisSeatSummaryCopy';
 import {
   joinArenaDescriptionKey,
   joinArenaGateFeature,
@@ -82,12 +84,19 @@ const JoinArenaPage: FC = () => {
   const photoURL = useAuthStore((s) => s.photoURL);
 
   const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const genesisSeatSummary = useGenesisSeatSummary();
 
   const uiGate = useUiGate(gateFeature);
   const coreOwned = hasCoreAccess(entitlement);
   const isBetaOpen = !MONETIZATION_CONFIG.leaderboardPaywallEnabled;
-  // WHY: Dyno / backup funnels must not inherit ladder beta copy — context-aware paywall isolation.
-  const showLadderBetaBanner = isBetaOpen && !isBackupFunnel && !isDynoFunnel;
+  // WHY: Dyno / backup funnels must not inherit ladder genesis copy — context-aware isolation.
+  // Show for all ladder funnel stages (including ended) so FOMO / cutover messaging stays aligned.
+  const showLadderBetaBanner = !isBackupFunnel && !isDynoFunnel;
+
+  const genesisBannerText = useMemo(
+    () => formatGenesisSeatSummaryCopy(t, genesisSeatSummary),
+    [genesisSeatSummary, t]
+  );
   const ctaMotionOn = !usePrefersReducedMotion();
   // WHY: Promo-only Pro must still see plans — only active store billing blocks repurchase.
   const hasActiveStoreBilling = isValidActiveProExpiry(storeBillingExpiresAt);
@@ -237,9 +246,15 @@ const JoinArenaPage: FC = () => {
         {showLadderBetaBanner ? (
           <p
             role="status"
-            className="rounded-xl border-2 border-emerald-400/50 bg-emerald-500/15 px-5 py-4 text-base font-semibold leading-snug text-emerald-50 shadow-[0_0_24px_rgba(52,211,153,0.15)]"
+            className={`rounded-xl border-2 px-5 py-4 text-base font-semibold leading-snug shadow-[0_0_24px_rgba(52,211,153,0.15)] ${
+              genesisSeatSummary.stage === 'closing'
+                ? 'border-amber-400/55 bg-amber-500/15 text-amber-50'
+                : genesisSeatSummary.stage === 'ended'
+                  ? 'border-zinc-500/50 bg-zinc-800/40 text-zinc-200 shadow-none'
+                  : 'border-emerald-400/50 bg-emerald-500/15 text-emerald-50'
+            }`}
           >
-            {t('betaOpenAccess', { count: MONETIZATION_CONFIG.genesisEarlyBirdSeatLimit })}
+            {genesisBannerText}
           </p>
         ) : null}
 

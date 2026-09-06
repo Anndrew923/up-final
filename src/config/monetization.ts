@@ -6,6 +6,9 @@
  * + `assertLadderUploadAllowed`). This client constant is UI copy / milestones only —
  * tampering it cannot create free seats after the server cap.
  *
+ * FOMO display reads `public_meta/genesisSeats` (staged summary) — never private
+ * `meta/genesisEarlyBird.claimedCount`.
+ *
  * Manual full cutover (optional, after seats fill or ops decides) still keeps these aligned:
  * 1) this flag → true
  * 2) Functions `LEADERBOARD_PAYWALL_ENABLED=true` (see `functions/.env.<projectId>`)

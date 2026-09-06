@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test test/*.test.js",
+    "smoke:genesis-seat": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node scripts/smokeGenesisSeatClaim.mjs",
     "lint": "node --check index.js && node --check ladder/submitShardCore.js",
     "migrate:pro-expiries": "node scripts/backfillProEntitlements.js",
     "migrate:pro-expiries:apply": "node scripts/backfillProEntitlements.js --apply",

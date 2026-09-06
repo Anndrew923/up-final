@@ -20,6 +20,10 @@ export const USER_PROFILE_BASELINE_DOC_ID = 'baseline';
 /** Pro structured sync: `users/{uid}/history/{recordId}` */
 export const USER_HISTORY_SUBCOLLECTION = 'history';
 
+/** Genesis FOMO display summary — signed-in read; Admin SDK writes only. */
+export const GENESIS_SEAT_PUBLIC_SUMMARY_COLLECTION = 'public_meta';
+export const GENESIS_SEAT_PUBLIC_SUMMARY_DOC_ID = 'genesisSeats';
+
 export function leaderboardEntriesCollectionPath(metric: string): string {
   return `${LEADERBOARDS_COLLECTION}/${metric}/${ENTRIES_SUBCOLLECTION}`;
 }

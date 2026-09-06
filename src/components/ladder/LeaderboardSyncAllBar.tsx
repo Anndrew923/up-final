@@ -2,12 +2,13 @@ import { type FC, useEffect, useMemo, useState } from 'react';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MONETIZATION_CONFIG } from '../../config/monetization';
 import { ROUTES } from '../../config/routes';
 import { formatRateLimitResetAt } from '../../lib/formatRateLimitResetAt';
+import { formatGenesisSeatSummaryCopy } from '../../lib/genesisSeatSummaryCopy';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { gateSheetKindFromUiGate } from '../../lib/uiGatePresentation';
 import { useUiGate } from '../../hooks/useUiGate';
+import { useGenesisSeatSummary } from '../../hooks/useGenesisSeatSummary';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
 import { useEntitlementStore } from '../../stores/entitlementStore';
@@ -42,6 +43,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const identity = useLadderIdentityReady();
   const isGenesisEarlyBird = useEntitlementStore((s) => s.isGenesisEarlyBird === true);
   const genesisSeatNumber = useEntitlementStore((s) => s.genesisSeatNumber);
+  const genesisSeatSummary = useGenesisSeatSummary();
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | 'gate' | null>(null);
@@ -83,6 +85,11 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     }
     return t('ladder.genesisEarlyBird.pioneerBadge');
   }, [genesisSeatNumber, isGenesisEarlyBird, t]);
+
+  const genesisSeatStatusText = useMemo(() => {
+    if (isGenesisEarlyBird) return null;
+    return formatGenesisSeatSummaryCopy(t, genesisSeatSummary);
+  }, [genesisSeatSummary, isGenesisEarlyBird, t]);
 
   const runSyncOrIdentityGate = () => {
     setTapHint(null);
@@ -131,11 +138,17 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
             {t('ladder.genesisEarlyBird.pioneerHint')}
           </p>
         </div>
-      ) : !MONETIZATION_CONFIG.leaderboardPaywallEnabled ? (
-        <p className="text-[11px] leading-relaxed text-cyan-200/75">
-          {t('ladder.genesisEarlyBird.seatsCountdown', {
-            count: MONETIZATION_CONFIG.genesisEarlyBirdSeatLimit,
-          })}
+      ) : genesisSeatStatusText ? (
+        <p
+          className={`text-[11px] leading-relaxed ${
+            genesisSeatSummary.stage === 'closing'
+              ? 'text-amber-200/90'
+              : genesisSeatSummary.stage === 'ended'
+                ? 'text-zinc-400'
+                : 'text-cyan-200/75'
+          }`}
+        >
+          {genesisSeatStatusText}
         </p>
       ) : null}
 

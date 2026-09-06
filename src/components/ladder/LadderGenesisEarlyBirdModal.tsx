@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useId, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { MONETIZATION_CONFIG } from '../../config/monetization';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useGenesisSeatSummary } from '../../hooks/useGenesisSeatSummary';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import { formatGenesisSeatSummaryCopy } from '../../lib/genesisSeatSummaryCopy';
 import { dismissLadderGenesisEarlyBird } from '../../services/ladderGenesisPrefService';
 
 export interface LadderGenesisEarlyBirdModalProps {
@@ -23,6 +24,7 @@ const LadderGenesisEarlyBirdModal: FC<LadderGenesisEarlyBirdModalProps> = ({ ope
   const dialogRef = useRef<HTMLDivElement>(null);
   const enterButtonRef = useRef<HTMLButtonElement>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const genesisSeatSummary = useGenesisSeatSummary();
 
   useFocusTrap(dialogRef, open);
   useShellScrollLock(open);
@@ -53,9 +55,12 @@ const LadderGenesisEarlyBirdModal: FC<LadderGenesisEarlyBirdModalProps> = ({ ope
     }
   }, [open]);
 
-  if (!open || typeof document === 'undefined') return null;
+  const stageStatusText = useMemo(
+    () => formatGenesisSeatSummaryCopy(t, genesisSeatSummary),
+    [genesisSeatSummary, t]
+  );
 
-  const seatLimit = MONETIZATION_CONFIG.genesisEarlyBirdSeatLimit;
+  if (!open || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
@@ -99,10 +104,21 @@ const LadderGenesisEarlyBirdModal: FC<LadderGenesisEarlyBirdModalProps> = ({ ope
           </header>
 
           <p
-            id={descId}
-            className="relative mt-4 text-pretty text-center text-sm leading-relaxed text-zinc-300"
+            className={`relative mt-4 text-pretty text-center text-sm font-semibold leading-relaxed ${
+              genesisSeatSummary.stage === 'closing'
+                ? 'text-amber-200'
+                : genesisSeatSummary.stage === 'ended'
+                  ? 'text-zinc-300'
+                  : 'text-cyan-100'
+            }`}
           >
-            {t('ladder.genesisEarlyBird.body', { count: seatLimit })}
+            {stageStatusText}
+          </p>
+          <p
+            id={descId}
+            className="relative mt-3 text-pretty text-center text-sm leading-relaxed text-zinc-300"
+          >
+            {t('ladder.genesisEarlyBird.body', { count: genesisSeatSummary.seatLimit })}
           </p>
           <p className="relative mt-2 text-center text-xs leading-relaxed text-zinc-500">
             {t('ladder.genesisEarlyBird.proNote')}

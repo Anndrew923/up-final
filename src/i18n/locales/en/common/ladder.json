@@ -11,7 +11,10 @@
       "pioneerBadge": "✦ Genesis Pioneer · Ladder Lifetime Free",
       "pioneerBadgeWithSeat": "✦ Genesis Pioneer · NO. {{seat}} · Ladder Lifetime Free",
       "pioneerHint": "Your founding seat is locked — lifetime ladder access is yours. Dyno Intel deep inference and cross-device cloud backup remain PRO exclusives.",
-      "seatsCountdown": "Genesis pioneer seats filling fast (limited to {{count}})"
+      "stageEarly": "✦ Genesis pioneer season · {{count}} lifetime-free seats",
+      "stageGrowth": "✦ Genesis seats past {{percent}}% claimed · lock lifetime ladder access",
+      "stageClosing": "⚠️ Only {{remaining}} Genesis seats left · Pro-exclusive after fill",
+      "stageEnded": "Genesis seats filled · Ladder is Pro-exclusive (pioneers keep lifetime access)"
     },
     "kicker": "Global Arena",
     "title": "Live Ladder",
