@@ -11,6 +11,8 @@ const revenueCat = vi.hoisted(() => ({
   logInRevenueCatUser: vi.fn().mockResolvedValue(undefined),
   purchaseRevenueCatPro: vi.fn(),
   restoreRevenueCatPurchases: vi.fn(),
+  readLocallySyncedReferrer: vi.fn(() => null),
+  setReferrerAttribute: vi.fn().mockResolvedValue(undefined),
 }));
 
 const syncProEntitlementToServer = vi.hoisted(() =>
@@ -38,6 +40,8 @@ vi.mock('../revenueCatService', () => ({
   logInRevenueCatUser: revenueCat.logInRevenueCatUser,
   purchaseRevenueCatPro: revenueCat.purchaseRevenueCatPro,
   restoreRevenueCatPurchases: revenueCat.restoreRevenueCatPurchases,
+  readLocallySyncedReferrer: revenueCat.readLocallySyncedReferrer,
+  setReferrerAttribute: revenueCat.setReferrerAttribute,
 }));
 
 vi.mock('../subscriptionSyncService', () => ({
@@ -100,6 +104,9 @@ describe('subscription service native purchase hard-sync', () => {
     revenueCat.purchaseRevenueCatPro.mockReset();
     revenueCat.restoreRevenueCatPurchases.mockReset();
     revenueCat.logInRevenueCatUser.mockClear();
+    revenueCat.readLocallySyncedReferrer.mockReturnValue(null);
+    revenueCat.setReferrerAttribute.mockReset();
+    revenueCat.setReferrerAttribute.mockResolvedValue(undefined);
     revenueCat.isRevenueCatConfiguredFromEnv.mockReturnValue(true);
     revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(true);
   });

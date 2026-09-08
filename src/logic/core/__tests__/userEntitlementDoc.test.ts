@@ -22,6 +22,9 @@ describe('parseServerProFromUserDoc', () => {
       proExpiresAt: '2099-01-01T00:00:00.000Z',
       rcExpiresAt: '2099-01-01T00:00:00.000Z',
       promoExpiresAt: null,
+      effectiveUntil: '2099-01-01T00:00:00.000Z',
+      promoCreditMs: null,
+      promoPaused: false,
       planId: 'up_pro_monthly',
     });
   });
@@ -65,6 +68,25 @@ describe('parseServerProFromUserDoc', () => {
     expect(parsed?.promoExpiresAt).toBe('2099-06-01T00:00:00.000Z');
     // WHY: Expired RC must not surface as store-billing mirror.
     expect(parsed?.rcExpiresAt).toBeNull();
+  });
+
+  it('prefers stacked effectiveUntil over max(store, promo)', () => {
+    const parsed = parseServerProFromUserDoc(
+      {
+        subscriptionStatus: 'pro',
+        proExpiresAt: '2026-07-01T00:00:00.000Z',
+        promoExpiresAt: '2026-07-10T00:00:00.000Z',
+        effectiveUntil: '2026-09-01T00:00:00.000Z',
+        promoCreditMs: 50 * 24 * 60 * 60 * 1000,
+        promoPaused: true,
+        planId: 'up_pro_monthly',
+      },
+      now
+    );
+    expect(parsed?.proExpiresAt).toBe('2026-09-01T00:00:00.000Z');
+    expect(parsed?.effectiveUntil).toBe('2026-09-01T00:00:00.000Z');
+    expect(parsed?.rcExpiresAt).toBe('2026-07-01T00:00:00.000Z');
+    expect(parsed?.promoPaused).toBe(true);
   });
 
   it('parses genesis early-bird mirror independently of Pro', () => {

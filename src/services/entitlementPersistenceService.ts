@@ -13,6 +13,9 @@ export type PersistedEntitlementSubset = Pick<
   | 'subscriptionStatus'
   | 'proExpiresAt'
   | 'promoExpiresAt'
+  | 'effectiveUntil'
+  | 'promoCreditMs'
+  | 'promoPaused'
   | 'planId'
   | 'isPro'
   | 'proPurchaseCooldownUntil'
@@ -58,6 +61,12 @@ function parseStoredEntitlement(raw: string | null): PersistedEntitlementSubset 
       subscriptionStatus,
       proExpiresAt: typeof parsed.proExpiresAt === 'string' ? parsed.proExpiresAt : null,
       promoExpiresAt: typeof parsed.promoExpiresAt === 'string' ? parsed.promoExpiresAt : null,
+      effectiveUntil: typeof parsed.effectiveUntil === 'string' ? parsed.effectiveUntil : null,
+      promoCreditMs:
+        typeof parsed.promoCreditMs === 'number' && Number.isFinite(parsed.promoCreditMs)
+          ? Math.max(0, parsed.promoCreditMs)
+          : null,
+      promoPaused: parsed.promoPaused === true,
       planId: typeof parsed.planId === 'string' ? parsed.planId : null,
       isPro: parsed.isPro === true,
       proPurchaseCooldownUntil:
@@ -76,6 +85,9 @@ export function savePersistedEntitlement(state: EntitlementState, uid?: string |
     subscriptionStatus: state.subscriptionStatus,
     proExpiresAt: state.proExpiresAt,
     promoExpiresAt: state.promoExpiresAt,
+    effectiveUntil: state.effectiveUntil ?? null,
+    promoCreditMs: state.promoCreditMs ?? null,
+    promoPaused: state.promoPaused === true,
     planId: state.planId,
     isPro: state.isPro,
     proPurchaseCooldownUntil: state.proPurchaseCooldownUntil,

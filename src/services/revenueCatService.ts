@@ -12,6 +12,8 @@ import {
   PRO_SUBSCRIPTION_PLANS,
   type ProSubscriptionPlanId,
 } from '../config/proSubscriptionPlans';
+import { normalizePromoCode } from '../logic/core/promoCode';
+import { safeGetItem, safeSetItem } from '../lib/safeLocalStorage';
 
 export interface RevenueCatEntitlementSnapshot {
   active: boolean;
@@ -166,4 +168,55 @@ export async function restoreRevenueCatPurchases(
   if (!ok) return null;
   const result = await Purchases.restorePurchases();
   return parseEntitlement(result.customerInfo);
+}
+
+/** Dashboard / analytics tag only — not the commission ledger SSOT. */
+export const RC_REFERRER_ATTRIBUTE_KEY = 'referrer';
+const RC_REFERRER_SYNC_PREFIX = 'up.final.rcReferrer.v1';
+
+function referrerSyncStorageKey(uid: string): string {
+  return `${RC_REFERRER_SYNC_PREFIX}:${uid}`;
+}
+
+export function readLocallySyncedReferrer(uid: string): string | null {
+  if (!uid) return null;
+  const stored = normalizePromoCode(safeGetItem(referrerSyncStorageKey(uid)) ?? '');
+  return stored || null;
+}
+
+function hasLocallySyncedReferrer(uid: string, code: string): boolean {
+  const clean = normalizePromoCode(code);
+  if (!uid || !clean) return false;
+  return readLocallySyncedReferrer(uid) === clean;
+}
+
+function markLocallySyncedReferrer(uid: string, code: string): void {
+  const clean = normalizePromoCode(code);
+  if (!uid || !clean) return;
+  safeSetItem(referrerSyncStorageKey(uid), clean);
+}
+
+/**
+ * Writes RevenueCat subscriber attribute `referrer`.
+ * Native-only, never throws — dashboard tag must not block redeem / session bind.
+ * Capacitor 13 has no `setSubscriberAttribute`; `setAttributes({ referrer })` is the SDK equivalent.
+ *
+ * @param appUserId Firebase uid. Prefer passing it so tagging does not depend on a prior `logIn`.
+ */
+export async function setReferrerAttribute(code: string, appUserId?: string): Promise<void> {
+  const clean = normalizePromoCode(code);
+  if (!clean) return;
+  try {
+    if (!isRevenueCatNativeBillingAvailable()) return;
+    const uid = (typeof appUserId === 'string' && appUserId.trim()) || configuredForUser;
+    if (!uid) return;
+    if (hasLocallySyncedReferrer(uid, clean)) return;
+    const ok = await ensureRevenueCatConfigured(uid);
+    if (!ok) return;
+    await Purchases.setAttributes({ [RC_REFERRER_ATTRIBUTE_KEY]: clean });
+    markLocallySyncedReferrer(uid, clean);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[revenuecat] setReferrerAttribute failed', { message });
+  }
 }

@@ -6,7 +6,11 @@ import {
   type ParsedGenesisEarlyBird,
   type ParsedServerProEntitlement,
 } from '../logic/core/userEntitlementDoc';
-import { hasProAccess, shouldBlockCrossPlatformProDowngrade } from '../logic/core/entitlement';
+import {
+  hasProAccess,
+  shouldBlockCrossPlatformProDowngrade,
+} from '../logic/core/entitlement';
+import { parseRedeemedReferrerCode } from '../logic/core/promoCode';
 import type { EntitlementState } from '../types/entitlement';
 import { getFirestoreDb } from './firebaseClient';
 import { USER_CLOUD_COLLECTION } from './firestorePaths';
@@ -35,6 +39,16 @@ export type ServerProHydrateResult =
   | { status: 'skipped'; reason: 'no-db-or-uid' | 'doc-missing' | 'read-error' };
 
 /**
+ * Last successful `users/{uid}` referrer parse in this JS session.
+ * WHY: Auth bootstrap hydrates then binds — a second getDoc for RC backfill is wasted spend.
+ */
+let lastHydratedReferrer: { uid: string; code: string | null } | null = null;
+
+function rememberHydratedReferrer(uid: string, code: string | null): void {
+  lastHydratedReferrer = { uid, code };
+}
+
+/**
  * Read authoritative Pro + Genesis fields from `users/{uid}` (owner-read allowed by rules).
  * WHY: Cross-platform SSOT — Android purchase must unlock iOS without local StoreKit receipt.
  * Scheme A: same doc also carries founding-seat mirror for ladder lifetime free.
@@ -49,11 +63,13 @@ export async function resolveServerProHydrate(uid: string): Promise<ServerProHyd
   try {
     const snap = await getDoc(doc(db, USER_CLOUD_COLLECTION, uid));
     if (!snap.exists()) {
+      rememberHydratedReferrer(uid, null);
       logEntitlementSync('firestore-hydrate-miss', { uid, reason: 'doc-missing' });
       return { status: 'skipped', reason: 'doc-missing' };
     }
 
     const data = snap.data() as FirestoreUserEntitlementFields;
+    rememberHydratedReferrer(uid, parseRedeemedReferrerCode(data));
     const genesis = parseGenesisEarlyBirdFromUserDoc(data);
     const parsed = parseServerProFromUserDoc(data);
     if (parsed) {
@@ -84,6 +100,31 @@ export async function fetchServerProEntitlement(
 ): Promise<ParsedServerProEntitlement | null> {
   const result = await resolveServerProHydrate(uid);
   return result.status === 'active' ? result.entitlement : null;
+}
+
+/**
+ * Owner-readable denormalized referrer on `users/{uid}`.
+ * WHY: Native bind cannot read Admin-only `user_attributions`.
+ */
+export async function fetchRedeemedReferrerCode(uid: string): Promise<string | null> {
+  if (!uid) return null;
+  if (lastHydratedReferrer?.uid === uid) return lastHydratedReferrer.code;
+  const db = getFirestoreDb();
+  if (!db) return null;
+  try {
+    const snap = await getDoc(doc(db, USER_CLOUD_COLLECTION, uid));
+    if (!snap.exists()) {
+      rememberHydratedReferrer(uid, null);
+      return null;
+    }
+    const code = parseRedeemedReferrerCode(snap.data() as FirestoreUserEntitlementFields);
+    rememberHydratedReferrer(uid, code);
+    return code;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logEntitlementSync('referrer-read-error', { uid, message });
+    return null;
+  }
 }
 
 /**

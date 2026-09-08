@@ -1,5 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
+import { normalizePromoCode } from '../logic/core/promoCode';
 import { getFirebaseAuth, getFirebaseFunctions } from './firebaseClient';
+import { setReferrerAttribute } from './revenueCatService';
 
 export type RedeemPromoCodeReason =
   | 'auth-required'
@@ -90,7 +92,8 @@ export function mapRedeemPromoCallableError(
 }
 
 /**
- * Redeems an invite / referral code via Callable (server writes attribution + promoExpiresAt).
+ * Redeems an invite / referral code via Callable (server writes attribution + promo grant).
+ * Native RevenueCat `referrer` tagging is best-effort and never blocks this result.
  */
 export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeResult> {
   const auth = getFirebaseAuth();
@@ -110,7 +113,7 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
     return { ok: false, reason: 'auth-required' };
   }
 
-  const code = rawCode.trim();
+  const code = normalizePromoCode(rawCode);
   if (!code) {
     return { ok: false, reason: 'invalid' };
   }
@@ -138,6 +141,11 @@ export async function redeemPromoCode(rawCode: string): Promise<RedeemPromoCodeR
         reason: mapRedeemPromoCallableError(err || 'failed', { hasGoogleSignedInUser }),
       };
     }
+    // WHY: RC dashboard tag is not the grant SSOT — never delay the redeem result on SDK I/O.
+    void setReferrerAttribute(code, signedInUser.uid).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn('[promo] setReferrerAttribute failed', { message });
+    });
     return {
       ok: true,
       promoExpiresAt: data.promoExpiresAt,

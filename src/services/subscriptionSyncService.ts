@@ -12,10 +12,13 @@ export type SyncProEntitlementResult =
       ok: true;
       active: boolean;
       subscriptionStatus: 'pro' | 'grace' | 'free';
-      /** Effective max(rc, promo) for hard-sync eligibility checks. */
+      /** Effective stacked (or legacy max) expiry for hard-sync eligibility checks. */
       proExpiresAt: string | null;
       promoExpiresAt: string | null;
       rcExpiresAt: string | null;
+      effectiveUntil?: string | null;
+      promoCreditMs?: number | null;
+      promoPaused?: boolean;
       planId: string | null;
     }
   | {
@@ -50,6 +53,9 @@ let syncProFn: ReturnType<
       proExpiresAt?: string | null;
       promoExpiresAt?: string | null;
       rcExpiresAt?: string | null;
+      effectiveUntil?: string | null;
+      promoCreditMs?: number | null;
+      promoPaused?: boolean;
       planId?: string | null;
     }
   >
@@ -109,6 +115,12 @@ export async function syncProEntitlementToServer(
       proExpiresAt: data.proExpiresAt ?? null,
       promoExpiresAt: data.promoExpiresAt ?? null,
       rcExpiresAt: data.rcExpiresAt ?? null,
+      effectiveUntil: data.effectiveUntil ?? data.proExpiresAt ?? null,
+      promoCreditMs:
+        typeof data.promoCreditMs === 'number' && Number.isFinite(data.promoCreditMs)
+          ? data.promoCreditMs
+          : null,
+      promoPaused: data.promoPaused === true,
       planId: data.planId ?? null,
     };
   } catch (err: unknown) {

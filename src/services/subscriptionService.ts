@@ -17,14 +17,20 @@ import {
   isRevenueCatNativeBillingAvailable,
   logInRevenueCatUser,
   purchaseRevenueCatPro,
+  readLocallySyncedReferrer,
   restoreRevenueCatPurchases,
+  setReferrerAttribute,
   type RevenueCatEntitlementSnapshot,
 } from './revenueCatService';
 import {
   syncProEntitlementToServer,
   type SyncProEntitlementResult,
 } from './subscriptionSyncService';
-import { logEntitlementSync, shouldPreserveLocalProAgainstInactiveStore } from './userEntitlementService';
+import {
+  fetchRedeemedReferrerCode,
+  logEntitlementSync,
+  shouldPreserveLocalProAgainstInactiveStore,
+} from './userEntitlementService';
 
 export type PurchaseProResult =
   | { ok: true }
@@ -92,6 +98,9 @@ type ConfirmedServerPro = {
   proExpiresAt: string;
   promoExpiresAt: string | null;
   rcExpiresAt: string | null;
+  effectiveUntil?: string | null;
+  promoCreditMs?: number | null;
+  promoPaused?: boolean;
   planId: string | null;
 };
 
@@ -151,6 +160,9 @@ function commitConfirmedProLocally(
     proExpiresAt: sync.proExpiresAt,
     rcExpiresAt: sync.rcExpiresAt,
     promoExpiresAt: sync.promoExpiresAt,
+    effectiveUntil: sync.effectiveUntil ?? sync.proExpiresAt,
+    promoCreditMs: sync.promoCreditMs,
+    promoPaused: sync.promoPaused,
     planId: sync.planId,
     armPurchaseCooldown: options.armPurchaseCooldown,
   });
@@ -324,5 +336,20 @@ export async function bindRevenueCatIdentityForSession(uid: string | null): Prom
     const message = error instanceof Error ? error.message : String(error);
     logEntitlementSync('rc-login-error', { uid, message });
     // Non-fatal — purchase/restore/refresh will retry logIn.
+  }
+  // WHY: Dashboard tag must not delay entitlement refresh after identity bind.
+  void backfillReferrerAttribute(uid);
+}
+
+async function backfillReferrerAttribute(uid: string): Promise<void> {
+  try {
+    // WHY: RC attributes are write-only. Local match means this Native session already tagged — skip Firestore + SDK.
+    if (readLocallySyncedReferrer(uid)) return;
+    const code = await fetchRedeemedReferrerCode(uid);
+    if (!code) return;
+    await setReferrerAttribute(code, uid);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logEntitlementSync('rc-referrer-sync-error', { uid, message });
   }
 }
