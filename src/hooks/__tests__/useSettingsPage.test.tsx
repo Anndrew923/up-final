@@ -160,4 +160,18 @@ describe('useSettingsPage reCalibrateBoot', () => {
 
     unmount();
   });
+
+  it('routes membership unlock through the paid pro-upsell funnel back to settings', () => {
+    const { getApi, unmount } = mountProbe();
+
+    act(() => {
+      getApi().goToProUpsell();
+    });
+
+    expect(navigate).toHaveBeenCalledWith(
+      `${ROUTES.joinArena}?from=pro-upsell&returnTo=${encodeURIComponent(ROUTES.settings)}`
+    );
+
+    unmount();
+  });
 });

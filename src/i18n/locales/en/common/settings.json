@@ -57,6 +57,18 @@
     "deleteAuthFail": "Unable to delete account. Try again later.",
     "deleteNotAllowed": "Only signed-in Google accounts can delete.",
     "adminSection": "Admin",
-    "openAdmin": "Admin Platform"
+    "openAdmin": "Admin Platform",
+    "membership": {
+      "sectionLabel": "Membership",
+      "planFree": "Current plan: Free",
+      "planPromo": "PRO Member (Trial)",
+      "planStore": "PRO Member (Active Subscription)",
+      "promoExpiry": "Valid until {{date}} ({{days}} days left)",
+      "storeRenewal": "Next charge / renews on {{date}}",
+      "promoPausedHint": "Trial days are paused and will resume after this billing period.",
+      "unlockPro": "Unlock PRO",
+      "subscribeNow": "Subscribe now",
+      "inviteHint": "After signing in, enter an invite code in the account section below to start a trial."
+    }
   }
 }

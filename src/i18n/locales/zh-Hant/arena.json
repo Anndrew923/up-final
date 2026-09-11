@@ -103,6 +103,8 @@
     "invalidExpiryFailTitle": "訂閱到期日尚未就緒",
     "invalidExpiryFailBody": "已偵測到商店訂閱，但缺少有效到期日，無法完成權益校準。請稍後再試，或到設定使用「恢復購買」。",
     "syncFailTitle": "伺服器同步尚未完成",
-    "syncFailBody": "商店訂閱已確認，但伺服器同步尚未完成。請稍候再試，或到設定使用「恢復購買」。"
+    "syncFailBody": "商店訂閱已確認，但伺服器同步尚未完成。請稍候再試，或到設定使用「恢復購買」。",
+    "noOfferingsFailTitle": "商店方案尚未載入",
+    "noOfferingsFailBody": "目前無法取得訂閱方案（RevenueCat Offering 為空或尚未設定）。請確認網路後重試；若持續失敗，請聯絡支援。"
   }
 }

@@ -57,6 +57,18 @@
     "deleteAuthFail": "目前無法完成帳號刪除，請稍後再試。",
     "deleteNotAllowed": "僅 Google 已登入帳號可使用刪除功能。",
     "adminSection": "管理員",
-    "openAdmin": "管理員平台"
+    "openAdmin": "管理員平台",
+    "membership": {
+      "sectionLabel": "會員方案",
+      "planFree": "目前方案：免費版",
+      "planPromo": "PRO 尊榮會員（體驗中）",
+      "planStore": "PRO 尊榮會員（正式訂閱中）",
+      "promoExpiry": "有效期限至：{{date}}（剩餘 {{days}} 天）",
+      "storeRenewal": "下一期扣款 / 到期日：{{date}}",
+      "promoPausedHint": "體驗天數已暫停，將於本期訂閱結束後接續。",
+      "unlockPro": "解鎖 PRO",
+      "subscribeNow": "立即訂閱",
+      "inviteHint": "登入後可於下方帳號區輸入邀請碼，啟用體驗期。"
+    }
   }
 }

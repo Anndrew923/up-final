@@ -14,12 +14,21 @@ import {
 } from '../config/proSubscriptionPlans';
 import { normalizePromoCode } from '../logic/core/promoCode';
 import { safeGetItem, safeSetItem } from '../lib/safeLocalStorage';
+import { hapticService } from './hapticService';
 
 export interface RevenueCatEntitlementSnapshot {
   active: boolean;
   productIdentifier: string | null;
   expiresDate: string | null;
 }
+
+/** Discriminated purchase outcome — never silent-null on missing offerings. */
+export type PurchaseRevenueCatProResult =
+  | { ok: true; snapshot: RevenueCatEntitlementSnapshot }
+  | {
+      ok: false;
+      reason: 'not-configured' | 'no-offerings' | 'no-package';
+    };
 
 let configuredForUser: string | null = null;
 let configureInFlight: Promise<boolean> | null = null;
@@ -145,20 +154,74 @@ function resolvePurchasePackage(
 /**
  * Purchases the selected Pro package from the current offering.
  * @param planOrPackageId `monthly` | `annual` | `$rc_monthly` | `$rc_annual` (default annual for new paywall).
+ *
+ * WHY: Never silently return null on missing offerings — callers must surface `no-offerings`
+ * so TestFlight debugging can distinguish "no StoreKit sheet" from a charged-but-unsynced fail.
  */
 export async function purchaseRevenueCatPro(
   appUserId: string,
   planOrPackageId: ProSubscriptionPlanId | string = DEFAULT_PRO_SUBSCRIPTION_PLAN
-): Promise<RevenueCatEntitlementSnapshot | null> {
+): Promise<PurchaseRevenueCatProResult> {
+  const preferredPackageId = resolvePackageId(planOrPackageId);
+  console.info('[purchase:rc]', {
+    phase: 'enter',
+    platform: Capacitor.getPlatform(),
+    isNative: Capacitor.isNativePlatform(),
+    configuredFromEnv: isRevenueCatConfiguredFromEnv(),
+    nativeBillingAvailable: isRevenueCatNativeBillingAvailable(),
+    preferredPackageId,
+    appUserIdPrefix: appUserId.slice(0, 6),
+  });
+
   const ok = await ensureRevenueCatConfigured(appUserId);
-  if (!ok) return null;
+  if (!ok) {
+    console.warn('[purchase:rc]', {
+      phase: 'configure-failed',
+      configuredFromEnv: isRevenueCatConfiguredFromEnv(),
+      isNative: Capacitor.isNativePlatform(),
+      hasIosKey: Boolean(env('VITE_RC_API_KEY_IOS')),
+      hasAndroidKey: Boolean(env('VITE_RC_API_KEY_ANDROID')),
+    });
+    return { ok: false, reason: 'not-configured' };
+  }
+
   const offerings = await Purchases.getOfferings();
   const current = offerings.current;
-  if (!current) return null;
-  const targetPackage = resolvePurchasePackage(current, resolvePackageId(planOrPackageId));
-  if (!targetPackage) return null;
+  const packageIds = current?.availablePackages.map((item) => item.identifier) ?? [];
+  console.info('[purchase:rc]', {
+    phase: 'offerings',
+    hasCurrent: Boolean(current),
+    currentIdentifier: current?.identifier ?? null,
+    packageCount: packageIds.length,
+    packageIds,
+    offeringKeys: Object.keys(offerings.all ?? {}),
+  });
+
+  if (!current) {
+    console.warn('[purchase:rc]', { phase: 'no-offerings', reason: 'current-null' });
+    return { ok: false, reason: 'no-offerings' };
+  }
+
+  const targetPackage = resolvePurchasePackage(current, preferredPackageId);
+  if (!targetPackage) {
+    console.warn('[purchase:rc]', {
+      phase: 'no-package',
+      preferredPackageId,
+      packageIds,
+    });
+    return { ok: false, reason: 'no-package' };
+  }
+
+  console.info('[purchase:rc]', {
+    phase: 'purchasePackage',
+    targetIdentifier: targetPackage.identifier,
+    productIdentifier: targetPackage.product?.identifier ?? null,
+  });
+  // WHY: Intent haptic only when StoreKit sheet is about to open — empty offerings must not vibrate.
+  void hapticService.triggerProPurchaseIntent();
+
   const result = await Purchases.purchasePackage({ aPackage: targetPackage });
-  return parseEntitlement(result.customerInfo);
+  return { ok: true, snapshot: parseEntitlement(result.customerInfo) };
 }
 
 export async function restoreRevenueCatPurchases(

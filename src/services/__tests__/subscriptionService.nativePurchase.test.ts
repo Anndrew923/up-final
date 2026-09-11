@@ -5,6 +5,8 @@ const memory = new Map<string, string>();
 
 const triggerProPurchaseCelebration = vi.fn().mockResolvedValue(undefined);
 
+const isCapacitorNativePlatform = vi.hoisted(() => vi.fn(() => true));
+
 const revenueCat = vi.hoisted(() => ({
   isRevenueCatConfiguredFromEnv: vi.fn(() => true),
   isRevenueCatNativeBillingAvailable: vi.fn(() => true),
@@ -32,6 +34,10 @@ vi.mock('../hapticService', () => ({
     triggerProPurchaseCelebration,
     triggerProPurchaseIntent: vi.fn().mockResolvedValue(undefined),
   },
+}));
+
+vi.mock('../../lib/capacitorPlatform', () => ({
+  isCapacitorNativePlatform: () => isCapacitorNativePlatform(),
 }));
 
 vi.mock('../revenueCatService', () => ({
@@ -109,6 +115,7 @@ describe('subscription service native purchase hard-sync', () => {
     revenueCat.setReferrerAttribute.mockResolvedValue(undefined);
     revenueCat.isRevenueCatConfiguredFromEnv.mockReturnValue(true);
     revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(true);
+    isCapacitorNativePlatform.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -121,9 +128,12 @@ describe('subscription service native purchase hard-sync', () => {
   it('awaits hard-sync retries before unlocking local Pro', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
-      active: true,
-      productIdentifier: 'up_pro_monthly',
-      expiresDate: '2099-01-01T00:00:00.000Z',
+      ok: true,
+      snapshot: {
+        active: true,
+        productIdentifier: 'up_pro_monthly',
+        expiresDate: '2099-01-01T00:00:00.000Z',
+      },
     });
     syncProEntitlementToServer
       .mockResolvedValueOnce({ ok: false, reason: 'verification-failed' })
@@ -159,9 +169,12 @@ describe('subscription service native purchase hard-sync', () => {
   it('keeps UI locked when hard-sync never confirms after charge', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
-      active: true,
-      productIdentifier: 'up_pro_monthly',
-      expiresDate: '2099-01-01T00:00:00.000Z',
+      ok: true,
+      snapshot: {
+        active: true,
+        productIdentifier: 'up_pro_monthly',
+        expiresDate: '2099-01-01T00:00:00.000Z',
+      },
     });
     syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
 
@@ -179,9 +192,12 @@ describe('subscription service native purchase hard-sync', () => {
   it('rejects active snapshot without a valid expiry before optimistic unlock', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
-      active: true,
-      productIdentifier: 'up_pro_monthly',
-      expiresDate: null,
+      ok: true,
+      snapshot: {
+        active: true,
+        productIdentifier: 'up_pro_monthly',
+        expiresDate: null,
+      },
     });
 
     const result = await purchaseProSubscription();
@@ -296,9 +312,12 @@ describe('subscription service native purchase hard-sync', () => {
   it('aborts hard-sync retries after purchaser signs out', async () => {
     seedSignedInBuyer();
     revenueCat.purchaseRevenueCatPro.mockResolvedValue({
-      active: true,
-      productIdentifier: 'up_pro_monthly',
-      expiresDate: '2099-01-01T00:00:00.000Z',
+      ok: true,
+      snapshot: {
+        active: true,
+        productIdentifier: 'up_pro_monthly',
+        expiresDate: '2099-01-01T00:00:00.000Z',
+      },
     });
     syncProEntitlementToServer.mockResolvedValue({ ok: false, reason: 'network' });
 
@@ -315,5 +334,69 @@ describe('subscription service native purchase hard-sync', () => {
     expect(result.ok).toBe(false);
     expect(syncProEntitlementToServer).toHaveBeenCalledTimes(1);
     expect(useEntitlementStore.getState().isPro).toBe(false);
+  });
+
+  it('allows promo-only Pro to purchase without already-pro block', async () => {
+    seedSignedInBuyer();
+    useEntitlementStore.getState().hydrateEntitlement({
+      purchaseStatus: 'owned',
+      subscriptionStatus: 'pro',
+      planId: null,
+      proExpiresAt: null,
+      promoExpiresAt: '2099-01-01T00:00:00.000Z',
+      effectiveUntil: '2099-01-01T00:00:00.000Z',
+      promoCreditMs: 60 * 24 * 60 * 60 * 1000,
+      promoPaused: false,
+    });
+    revenueCat.purchaseRevenueCatPro.mockResolvedValue({
+      ok: true,
+      snapshot: {
+        active: true,
+        productIdentifier: 'up_pro_annual',
+        expiresDate: '2099-06-01T00:00:00.000Z',
+      },
+    });
+    syncProEntitlementToServer.mockResolvedValue({
+      ok: true,
+      active: true,
+      subscriptionStatus: 'pro',
+      proExpiresAt: '2099-06-01T00:00:00.000Z',
+      promoExpiresAt: '2099-01-01T00:00:00.000Z',
+      rcExpiresAt: '2099-06-01T00:00:00.000Z',
+      planId: 'up_pro_annual',
+    });
+
+    const resultPromise = purchaseProSubscription('annual');
+    await vi.runAllTimersAsync();
+    const result = await resultPromise;
+
+    expect(result.ok).toBe(true);
+    expect(revenueCat.purchaseRevenueCatPro).toHaveBeenCalled();
+  });
+
+  it('surfaces no-offerings when RevenueCat returns empty current offering', async () => {
+    seedSignedInBuyer();
+    revenueCat.purchaseRevenueCatPro.mockResolvedValue({
+      ok: false,
+      reason: 'no-offerings',
+    });
+
+    const result = await purchaseProSubscription();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('no-offerings');
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
+  });
+
+  it('refuses native simulation when RC API key is missing from the bundle', async () => {
+    seedSignedInBuyer();
+    revenueCat.isRevenueCatConfiguredFromEnv.mockReturnValue(false);
+    revenueCat.isRevenueCatNativeBillingAvailable.mockReturnValue(false);
+    isCapacitorNativePlatform.mockReturnValue(true);
+
+    const result = await purchaseProSubscription();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toBe('billing-unavailable');
+    expect(revenueCat.purchaseRevenueCatPro).not.toHaveBeenCalled();
+    expect(syncProEntitlementToServer).not.toHaveBeenCalled();
   });
 });

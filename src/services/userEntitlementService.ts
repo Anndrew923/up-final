@@ -6,10 +6,7 @@ import {
   type ParsedGenesisEarlyBird,
   type ParsedServerProEntitlement,
 } from '../logic/core/userEntitlementDoc';
-import {
-  hasProAccess,
-  shouldBlockCrossPlatformProDowngrade,
-} from '../logic/core/entitlement';
+import { hasProAccess, shouldBlockCrossPlatformProDowngrade } from '../logic/core/entitlement';
 import { parseRedeemedReferrerCode } from '../logic/core/promoCode';
 import type { EntitlementState } from '../types/entitlement';
 import { getFirestoreDb } from './firebaseClient';
@@ -73,10 +70,14 @@ export async function resolveServerProHydrate(uid: string): Promise<ServerProHyd
     const genesis = parseGenesisEarlyBirdFromUserDoc(data);
     const parsed = parseServerProFromUserDoc(data);
     if (parsed) {
+      // WHY: `parsed.proExpiresAt` is the effective timer (legacy name). Log store vs gift
+      // mirrors separately so promo-only hydrates are not misread as active StoreKit billing.
       logEntitlementSync('firestore-hydrate-hit', {
         uid,
         subscriptionStatus: parsed.subscriptionStatus,
-        proExpiresAt: parsed.proExpiresAt,
+        effectiveUntil: parsed.effectiveUntil ?? parsed.proExpiresAt,
+        rcExpiresAt: parsed.rcExpiresAt,
+        promoExpiresAt: parsed.promoExpiresAt,
         isGenesisEarlyBird: genesis.isGenesisEarlyBird,
       });
       return { status: 'active', entitlement: parsed, genesis };

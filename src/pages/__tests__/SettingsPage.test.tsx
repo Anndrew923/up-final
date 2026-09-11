@@ -31,6 +31,13 @@ function baseSettingsState() {
     displayName: '',
     email: null,
     isAnonymous: true,
+    isPro: false,
+    membership: {
+      kind: 'free' as const,
+      displayDate: null,
+      remainingDays: null,
+      promoPaused: false,
+    },
     locale: 'zh-Hant' as const,
     soundEnabled: true,
     soundSettingsVisible: false,
@@ -46,6 +53,7 @@ function baseSettingsState() {
     goToContact: vi.fn(),
     goToPrivacyPolicy: vi.fn(),
     goToJoinArena: vi.fn(),
+    goToProUpsell: vi.fn(),
     reCalibrateBoot: vi.fn(),
     toggleLocale: vi.fn(),
     toggleSound: vi.fn(),
@@ -79,6 +87,93 @@ function renderPage(): { container: HTMLDivElement; unmount: () => void } {
     },
   };
 }
+
+describe('SettingsPage membership card', () => {
+  afterEach(() => {
+    mockUseSettingsPage.mockReset();
+    document.body.innerHTML = '';
+  });
+
+  it('renders free plan and unlocks Pro via Pro upsell funnel', () => {
+    const goToProUpsell = vi.fn();
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      goToProUpsell,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    expect(text).toContain('settings.membership.planFree');
+    expect(text).toContain('settings.membership.unlockPro');
+
+    const unlockBtn = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('settings.membership.unlockPro')
+    );
+    act(() => unlockBtn?.click());
+    expect(goToProUpsell).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+
+  it('renders promo expiry and subscribe CTA', () => {
+    const goToProUpsell = vi.fn();
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      isPro: true,
+      membership: {
+        kind: 'promo',
+        displayDate: '2026/07/31',
+        remainingDays: 45,
+        promoPaused: false,
+      },
+      goToProUpsell,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    expect(text).toContain('settings.membership.planPromo');
+    expect(text).toContain('settings.membership.promoExpiry');
+    expect(text).toContain('settings.membership.subscribeNow');
+
+    const subscribeBtn = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('settings.membership.subscribeNow')
+    );
+    act(() => subscribeBtn?.click());
+    expect(goToProUpsell).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+
+  it('renders store renewal with paused trial hint and manage subscription', () => {
+    const openManageSubscription = vi.fn().mockResolvedValue(undefined);
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      isPro: true,
+      membership: {
+        kind: 'store',
+        displayDate: '2026/07/01',
+        remainingDays: null,
+        promoPaused: true,
+      },
+      openManageSubscription,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    expect(text).toContain('settings.membership.planStore');
+    expect(text).toContain('settings.membership.storeRenewal');
+    expect(text).toContain('settings.membership.promoPausedHint');
+
+    const manageBtn = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('settings.manageSubscription')
+    );
+    expect(manageBtn).toBeDefined();
+    act(() => manageBtn?.click());
+    expect(openManageSubscription).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+});
 
 describe('SettingsPage section hints', () => {
   afterEach(() => {

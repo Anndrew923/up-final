@@ -22,7 +22,6 @@ import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { pushAndroidBackDismiss } from '../../lib/androidBackDismissStack';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
-import { hapticService } from '../../services/hapticService';
 import { purchaseProSubscription } from '../../services/subscriptionService';
 import { useAuthStore } from '../../stores/authStore';
 import { useDynoIntelLogStore } from '../../stores/dynoIntelLogStore';
@@ -218,11 +217,10 @@ const DynoIntelConsole = () => {
     setPaywallBillingError(false);
     setPaywallBusy(true);
     try {
-      void hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
         // WHY: Native RC configured but offerings/purchase unavailable — escalate with returnTo.
-        if (result.reason === 'billing-unavailable') {
+        if (result.reason === 'billing-unavailable' || result.reason === 'no-offerings') {
           openJoinArenaProFunnel();
           return;
         }
@@ -264,8 +262,7 @@ const DynoIntelConsole = () => {
   const hideTrigger =
     isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
 
-  const showCallout =
-    !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
+  const showCallout = !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
 
   const handleTriggerPress = useCallback(() => {
     if (!discovered) markDiscovered();

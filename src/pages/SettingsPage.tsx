@@ -1,12 +1,10 @@
 import { useEffect, useState, type CSSProperties, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
+import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
 import UserProIdentityRow from '../components/UserProIdentityRow';
-import {
-  APP_SHELL_SCROLL_BOTTOM_PX,
-  bottomChromeCalc,
-} from '../constants/bottomChrome';
+import { APP_SHELL_SCROLL_BOTTOM_PX, bottomChromeCalc } from '../constants/bottomChrome';
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 
@@ -28,6 +26,7 @@ const SettingsPage: FC = () => {
     email,
     isAnonymous,
     isPro,
+    membership,
     locale,
     soundEnabled,
     soundSettingsVisible,
@@ -43,6 +42,7 @@ const SettingsPage: FC = () => {
     goToContact,
     goToPrivacyPolicy,
     goToJoinArena,
+    goToProUpsell,
     goToAdmin,
     reCalibrateBoot,
     toggleLocale,
@@ -76,6 +76,15 @@ const SettingsPage: FC = () => {
         </p>
         <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
       </header>
+
+      <MembershipStatusCard
+        membership={membership}
+        onUnlockPro={goToProUpsell}
+        onSubscribe={goToProUpsell}
+        onManageSubscription={() => {
+          void openManageSubscription();
+        }}
+      />
 
       <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">

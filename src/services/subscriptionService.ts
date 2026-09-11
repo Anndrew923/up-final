@@ -1,13 +1,11 @@
-import {
-  hasCoreAccess,
-  hasProAccess,
-  isValidActiveProExpiry,
-} from '../logic/core/entitlement';
+import { hasCoreAccess, hasProAccess, isValidActiveProExpiry } from '../logic/core/entitlement';
 import { isProductAlreadyPurchasedError } from '../logic/core/revenueCatPurchaseErrors';
+import type { PurchaseProFailureReason } from '../logic/core/purchaseProUiFailure';
 import {
   DEFAULT_PRO_SUBSCRIPTION_PLAN,
   type ProSubscriptionPlanId,
 } from '../config/proSubscriptionPlans';
+import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
 import { useAuthStore } from '../stores/authStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { loadPersistedEntitlement } from './entitlementPersistenceService';
@@ -36,15 +34,7 @@ export type PurchaseProResult =
   | { ok: true }
   | {
       ok: false;
-      reason:
-        | 'core-required'
-        | 'already-pro'
-        | 'auth-required'
-        | 'billing-unavailable'
-        | 'no-receipt'
-        | 'invalid-expiry'
-        | 'sync-failed'
-        | 'failed';
+      reason: PurchaseProFailureReason;
     };
 
 /** Discrete restore outcomes for precise Settings / purchase UI copy. */
@@ -168,9 +158,7 @@ function commitConfirmedProLocally(
   });
 }
 
-function mapRestoreFailureToPurchaseReason(
-  outcome: RestorePurchasesOutcome
-): PurchaseProResult {
+function mapRestoreFailureToPurchaseReason(outcome: RestorePurchasesOutcome): PurchaseProResult {
   if (outcome === 'no_receipt') {
     return { ok: false, reason: 'no-receipt' };
   }
@@ -204,11 +192,29 @@ export async function purchaseProSubscription(
   planId: ProSubscriptionPlanId = DEFAULT_PRO_SUBSCRIPTION_PLAN
 ): Promise<PurchaseProResult> {
   const ent = useEntitlementStore.getState();
+  const configuredFromEnv = isRevenueCatConfiguredFromEnv();
+  const nativeBillingAvailable = isRevenueCatNativeBillingAvailable();
+  console.info('[purchase]', {
+    phase: 'enter',
+    planId,
+    configuredFromEnv,
+    nativeBillingAvailable,
+    hasProAccess: hasProAccess(ent),
+    storeExpiresAt: ent.proExpiresAt,
+    promoExpiresAt: ent.promoExpiresAt,
+    effectiveUntil: ent.effectiveUntil ?? null,
+    subscriptionStatus: ent.subscriptionStatus,
+  });
+
   if (!hasCoreAccess(ent)) {
     return { ok: false, reason: 'core-required' };
   }
   if (hasProAccess(ent) && isValidActiveProExpiry(ent.proExpiresAt)) {
     // WHY: Promo-only users must still convert to paid; only block active store billing.
+    console.warn('[purchase]', {
+      phase: 'blocked-already-pro',
+      storeExpiresAt: ent.proExpiresAt,
+    });
     return { ok: false, reason: 'already-pro' };
   }
 
@@ -217,7 +223,27 @@ export async function purchaseProSubscription(
     return { ok: false, reason: 'auth-required' };
   }
 
-  if (!isRevenueCatConfiguredFromEnv() || !isRevenueCatNativeBillingAvailable()) {
+  if (!configuredFromEnv || !nativeBillingAvailable) {
+    // WHY: Native shells must never fake a StoreKit charge when the RC API key is missing
+    // from the Vite bundle (e.g. VITE_RC_API_KEY_IOS unset). Simulation stays web/DEV-only.
+    if (isCapacitorNativePlatform()) {
+      console.warn('[purchase]', {
+        phase: 'native-rc-unconfigured',
+        configuredFromEnv,
+        nativeBillingAvailable,
+        hasIosKey: Boolean(import.meta.env.VITE_RC_API_KEY_IOS),
+        hasAndroidKey: Boolean(import.meta.env.VITE_RC_API_KEY_ANDROID),
+      });
+      return { ok: false, reason: 'billing-unavailable' };
+    }
+
+    console.warn('[purchase]', {
+      phase: 'simulation-fallback',
+      configuredFromEnv,
+      nativeBillingAvailable,
+      hasIosKey: Boolean(import.meta.env.VITE_RC_API_KEY_IOS),
+      hasAndroidKey: Boolean(import.meta.env.VITE_RC_API_KEY_ANDROID),
+    });
     const snapshot = buildSimulatedProSnapshot(planId);
     // WHY: Simulation is not a store receipt — only unlock after Firestore accepts the grant.
     const synced = await awaitHardSyncProEntitlement('client-simulation', snapshot, userId);
@@ -231,10 +257,15 @@ export async function purchaseProSubscription(
 
   try {
     await logInRevenueCatUser(userId);
-    const snapshot = await purchaseRevenueCatPro(userId, planId);
-    if (!snapshot) {
+    const purchase = await purchaseRevenueCatPro(userId, planId);
+    if (!purchase.ok) {
+      console.warn('[purchase]', { phase: 'rc-purchase-failed', reason: purchase.reason });
+      if (purchase.reason === 'no-offerings' || purchase.reason === 'no-package') {
+        return { ok: false, reason: 'no-offerings' };
+      }
       return { ok: false, reason: 'billing-unavailable' };
     }
+    const snapshot = purchase.snapshot;
     // WHY: Rigid expiry gate — active without expirationDate must not optimistically unlock UI.
     if (!isHardSyncEligibleSnapshot(snapshot)) {
       return { ok: false, reason: 'invalid-expiry' };
@@ -254,6 +285,8 @@ export async function purchaseProSubscription(
     if (isProductAlreadyPurchasedError(error)) {
       return restoreAfterAlreadyPurchased();
     }
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[purchase]', { phase: 'rc-purchase-exception', message });
     return { ok: false, reason: 'failed' };
   }
 }
