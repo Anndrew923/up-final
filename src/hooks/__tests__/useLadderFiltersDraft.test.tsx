@@ -41,6 +41,30 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
+function selectDetailedFilters(api: UseLadderFiltersDraftResult) {
+  api.setDraftDivision('stats_sbdTotal');
+  api.setDraftProject('deadlift');
+  api.setDraftGender('male');
+  api.setDraftAgeBucket('20-29');
+  api.setDraftHeightBucket('170-180');
+  api.setDraftWeightBucket('70-80kg');
+  api.setDraftJobCategory('engineering');
+  api.setDraftCountryCode('TW');
+  api.setDraftCity('Taipei');
+  api.setDraftDistrict('Xinyi');
+}
+
+function expectClearedTags(values: UseLadderFiltersDraftResult['applied']) {
+  expect(values.gender).toBe('all');
+  expect(values.ageBucket).toBe('all');
+  expect(values.heightBucket).toBe('all');
+  expect(values.weightBucket).toBe('all');
+  expect(values.jobCategory).toBe('all');
+  expect(values.countryCode).toBe('all');
+  expect(values.city).toBe('all');
+  expect(values.district).toBe('all');
+}
+
 describe('useLadderFiltersDraft', () => {
   it('resets project to division default when division changes', () => {
     const harness = renderHookHarness();
@@ -64,30 +88,78 @@ describe('useLadderFiltersDraft', () => {
 
     act(() => {
       harness.getCurrent()!.openSheet();
-      harness.getCurrent()!.setDraftDivision('stats_sbdTotal');
-      harness.getCurrent()!.setDraftProject('deadlift');
-      harness.getCurrent()!.setDraftGender('male');
-      harness.getCurrent()!.setDraftAgeBucket('20-29');
-      harness.getCurrent()!.setDraftHeightBucket('170-180');
-      harness.getCurrent()!.setDraftWeightBucket('70-80kg');
-      harness.getCurrent()!.setDraftJobCategory('engineering');
-      harness.getCurrent()!.setDraftCountryCode('TW');
-      harness.getCurrent()!.setDraftCity('Taipei');
-      harness.getCurrent()!.setDraftDistrict('Xinyi');
+    });
+    act(() => {
+      selectDetailedFilters(harness.getCurrent()!);
+    });
+    act(() => {
       harness.getCurrent()!.clearDraftFilters();
     });
 
     const current = harness.getCurrent()!;
     expect(current.draft.division).toBe('stats_sbdTotal');
     expect(current.draft.filterProject).toBe('deadlift');
-    expect(current.draft.gender).toBe('all');
-    expect(current.draft.ageBucket).toBe('all');
-    expect(current.draft.heightBucket).toBe('all');
-    expect(current.draft.weightBucket).toBe('all');
-    expect(current.draft.jobCategory).toBe('all');
-    expect(current.draft.countryCode).toBe('all');
-    expect(current.draft.city).toBe('all');
-    expect(current.draft.district).toBe('all');
+    expect(current.applied.division).toBe('ladderScore');
+    expect(current.applied.filterProject).toBe(getDefaultProjectForDivision('ladderScore'));
+    expectClearedTags(current.draft);
+    expectClearedTags(current.applied);
+    expect(current.sheetOpen).toBe(true);
+    expect(current.hasUnappliedChanges).toBe(true);
+
+    harness.unmount();
+  });
+
+  it('clearDraftFilters commits cleared tags immediately without a second apply', () => {
+    const onAppliedChange = vi.fn();
+    const harness = renderHookHarness(onAppliedChange);
+
+    act(() => {
+      harness.getCurrent()!.openSheet();
+    });
+    act(() => {
+      selectDetailedFilters(harness.getCurrent()!);
+    });
+    act(() => {
+      harness.getCurrent()!.applyDraft();
+    });
+
+    onAppliedChange.mockClear();
+
+    act(() => {
+      harness.getCurrent()!.openSheet();
+    });
+    act(() => {
+      harness.getCurrent()!.clearDraftFilters();
+    });
+
+    const current = harness.getCurrent()!;
+    expect(current.applied.division).toBe('stats_sbdTotal');
+    expect(current.applied.filterProject).toBe('deadlift');
+    expectClearedTags(current.applied);
+    expectClearedTags(current.draft);
+    expect(current.draft.division).toBe('stats_sbdTotal');
+    expect(current.draft.filterProject).toBe('deadlift');
+    expect(current.sheetOpen).toBe(true);
+    expect(current.hasUnappliedChanges).toBe(false);
+    expect(current.activeAppliedFilterCount).toBe(0);
+    expect(onAppliedChange).toHaveBeenCalledTimes(1);
+    expect(onAppliedChange).toHaveBeenCalledWith(current.applied);
+
+    harness.unmount();
+  });
+
+  it('does not notify when clear is a no-op', () => {
+    const onAppliedChange = vi.fn();
+    const harness = renderHookHarness(onAppliedChange);
+
+    act(() => {
+      harness.getCurrent()!.openSheet();
+      harness.getCurrent()!.clearDraftFilters();
+    });
+
+    expect(onAppliedChange).not.toHaveBeenCalled();
+    expect(harness.getCurrent()!.sheetOpen).toBe(true);
+    expect(harness.getCurrent()!.hasUnappliedChanges).toBe(false);
 
     harness.unmount();
   });
