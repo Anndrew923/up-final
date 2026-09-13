@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { useAndroidBackDismiss } from '../../hooks/useAndroidBackDismiss';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 
 export interface OptionSelectItem<T extends string> {
@@ -43,6 +44,9 @@ export default function OptionSelectSheet<T extends string>({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
+
+  // WHY: Nested under filter/profile sheets — later registration wins, so back closes this sheet first.
+  useAndroidBackDismiss(open, () => setOpen(false));
 
   const pick = (next: T | '') => {
     onChange(next);

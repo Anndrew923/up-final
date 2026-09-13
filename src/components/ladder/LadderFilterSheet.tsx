@@ -1,6 +1,7 @@
 import { memo, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useAndroidBackDismiss } from '../../hooks/useAndroidBackDismiss';
 import OptionSelectSheet from '../home/OptionSelectSheet';
 import { LADDER_DIVISION_IDS } from '../../logic/core/ladderShards';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
@@ -51,6 +52,9 @@ function LadderFilterSheetComponent({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
+
+  // WHY: Filter sheet sits on a tab root — back must close it before exit-confirm.
+  useAndroidBackDismiss(open, onClose);
 
   if (!open || typeof document === 'undefined') return null;
 
