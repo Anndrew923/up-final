@@ -7,6 +7,7 @@ import GripAssessmentPage from '../GripAssessmentPage';
 
 const mockUseGripAssessmentPage = vi.fn();
 const mockUseScoreMeaning = vi.fn();
+const breakthroughModalPropsLog: Array<{ milestoneHintLabel?: string | null }> = [];
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -45,7 +46,10 @@ vi.mock('../../components/assessment/AssessmentCeremonyOverlay', () => ({
 }));
 
 vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
-  default: () => null,
+  default: (props: { milestoneHintLabel?: string | null }) => {
+    breakthroughModalPropsLog.push({ milestoneHintLabel: props.milestoneHintLabel });
+    return null;
+  },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -104,6 +108,7 @@ function renderPage(): { container: HTMLDivElement; unmount: () => void } {
 afterEach(() => {
   mockUseGripAssessmentPage.mockReset();
   mockUseScoreMeaning.mockReset();
+  breakthroughModalPropsLog.length = 0;
 });
 
 describe('GripAssessmentPage performance spec', () => {
@@ -201,6 +206,9 @@ describe('GripAssessmentPage performance spec', () => {
     expect(text).toContain('Track Semi-Slick');
     expect(text).toMatch(/7 pts until next tier upgrade \(approx\. \+\d+(\.\d)? kg\)/);
     expect(text).not.toMatch(/7 pts until next tier upgrade$/m);
+    expect(breakthroughModalPropsLog.at(-1)?.milestoneHintLabel).toMatch(
+      /7 pts until next tier upgrade \(approx\. \+\d+(\.\d)? kg\)/
+    );
 
     unmount();
   });

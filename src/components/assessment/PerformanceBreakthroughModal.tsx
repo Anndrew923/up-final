@@ -28,6 +28,11 @@ export interface PerformanceBreakthroughModalProps {
   syncing?: boolean;
   /** Button 2 step 2: Route A coupled ladder sync (shares controller with page sync bar). */
   arenaSync?: AssessmentLadderSyncController;
+  /**
+   * Same upgrade-guide string as the page score-meaning panel (raw gap when available).
+   * Omitted → TachometerMilestoneBar keeps points-only breakthrough copy.
+   */
+  milestoneHintLabel?: string | null;
 }
 
 const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
@@ -39,6 +44,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   syncDisabled = false,
   syncing = false,
   arenaSync,
+  milestoneHintLabel = null,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
@@ -175,11 +181,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
               progress01={payload.milestone.progress01}
               remainingPoints={payload.milestone.remainingPoints}
               auraKey={payload.auraKey}
+              milestoneHintLabel={milestoneHintLabel}
             />
           </div>
 
           {hasActions ? (
-            <div className="mt-6 w-full">
+            <div className="mt-2 w-full">
               {showDashboardSync ? (
                 <button
                   type="button"

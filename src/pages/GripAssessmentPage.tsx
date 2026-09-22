@@ -98,6 +98,7 @@ const GripAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
       />
       <AssessmentAmbientGlow />
 

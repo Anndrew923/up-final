@@ -24,6 +24,7 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 import type { ExplosiveAssessmentTab } from '../hooks/useExplosiveAssessmentPage';
+import { useExplosiveMilestoneHint } from '../hooks/useExplosiveMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -149,6 +150,15 @@ const ExplosiveAssessmentPage: FC = () => {
   const interpretationScore = previewScore ?? axisAverageRaw;
   const heroScore = displayScore ?? interpretationScore;
   const scoreMeaning = useScoreMeaning('explosivePower', heroScore);
+  const nextMilestoneHint = useExplosiveMilestoneHint(
+    scoreMeaning,
+    {
+      verticalJumpInput: metricScoringInputs.verticalJumpInput,
+      standingLongJumpInput: metricScoringInputs.standingLongJumpInput,
+    },
+    profile,
+    profileReady
+  );
   const isSpecialtyOnlyPreview =
     previewBreakdown != null &&
     previewBreakdown.sprintRaw != null &&
@@ -165,6 +175,7 @@ const ExplosiveAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
       />
       <AssessmentAmbientGlow />
 
@@ -383,11 +394,7 @@ const ExplosiveAssessmentPage: FC = () => {
               tone="amber"
               headerLabel={t('explosive.performanceSpecHeader')}
               meaning={scoreMeaning}
-              milestoneHintLabel={
-                scoreMeaning.remainingPoints != null
-                  ? t('explosive.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
-                  : null
-              }
+              milestoneHintLabel={nextMilestoneHint}
             />
           ) : null}
 
