@@ -1,7 +1,7 @@
 {
   "name": "up-final",
   "private": true,
-  "version": "1.0.42",
+  "version": "1.0.41",
   "type": "module",
   "scripts": {
     "dev": "vite",

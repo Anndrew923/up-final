@@ -52,9 +52,20 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'grip.performanceSpecHeader') return 'PERFORMANCE SPEC / Potential Spec';
-      if (key === 'grip.nextMilestoneHint') return `Next Milestone: ${String(options?.points)}`;
+      if (key === 'grip.nextMilestoneHint') {
+        return `${String(options?.points)} pts until next tier upgrade`;
+      }
+      if (key === 'grip.nextMilestoneHintWithRaw') {
+        return `${String(options?.points)} pts until next tier upgrade (approx. +${String(options?.delta)} ${String(options?.unit)})`;
+      }
       if (key === 'home.profile.male') return 'Male';
       if (key === 'home.profile.female') return 'Female';
+      if (key === 'units.weight.kg') return 'kg';
+      if (key === 'units.weight.lb') return 'lb';
+      if (key === 'units.length.cm') return 'cm';
+      if (key === 'units.length.in') return 'in';
+      if (key === 'units.system.metric') return 'Metric';
+      if (key === 'units.system.imperial') return 'Imperial';
       return key;
     },
   }),
@@ -124,7 +135,7 @@ describe('GripAssessmentPage performance spec', () => {
     expect(text).toContain('PERFORMANCE SPEC / Potential Spec');
     expect(text).toContain('Pantheon Compression');
     expect(text).toContain('Model ceiling reached.');
-    expect(text).not.toContain('Next Milestone:');
+    expect(text).not.toContain('pts until next tier upgrade');
     expect(text).not.toContain('grip.metaWeight');
     expect(text).not.toContain('80');
 
@@ -158,6 +169,67 @@ describe('GripAssessmentPage performance spec', () => {
     expect(badge?.textContent).toBe('Male');
     expect(container.textContent).not.toContain('grip.metaWeight');
     expect(container.textContent).not.toContain('92.8');
+
+    unmount();
+  });
+
+  it('shows raw kg gap beside points when next milestone exists', () => {
+    mockUseGripAssessmentPage.mockReturnValue({
+      profile: { gender: 'male', weightKg: 75 },
+      profileReady: true,
+      peakInput: '45',
+      setPeakInput: vi.fn(),
+      previewScore: 63,
+      capNotice: null,
+      errorKey: null,
+      submitDone: false,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      persistToDashboard: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: 'Track Semi-Slick',
+      summary: 'Mountain drift copy.',
+      nextMilestone: 70,
+      remainingPoints: 7,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+
+    expect(text).toContain('Track Semi-Slick');
+    expect(text).toMatch(/7 pts until next tier upgrade \(approx\. \+\d+(\.\d)? kg\)/);
+    expect(text).not.toMatch(/7 pts until next tier upgrade$/m);
+
+    unmount();
+  });
+
+  it('falls back to points-only hint when peak input cannot resolve raw gap', () => {
+    mockUseGripAssessmentPage.mockReturnValue({
+      profile: { gender: 'male', weightKg: 75 },
+      profileReady: true,
+      peakInput: '',
+      setPeakInput: vi.fn(),
+      previewScore: 63,
+      capNotice: null,
+      errorKey: null,
+      submitDone: false,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      persistToDashboard: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: 'Track Semi-Slick',
+      summary: 'Mountain drift copy.',
+      nextMilestone: 70,
+      remainingPoints: 7,
+    });
+
+    const { container, unmount } = renderPage();
+    expect(container.textContent).toContain('7 pts until next tier upgrade');
+    expect(container.textContent).not.toContain('approx.');
 
     unmount();
   });

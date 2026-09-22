@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -17,6 +18,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
+import { useGripMilestoneHint } from '../hooks/useGripMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -77,6 +79,12 @@ const GripAssessmentPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? formatOverallResonanceScore(heroScore) : null;
   const scoreMeaning = useScoreMeaning('gripStrength', previewScore ?? heroScore);
+  const nextMilestoneHint = useGripMilestoneHint(
+    scoreMeaning,
+    peakInput,
+    profile,
+    profileReady
+  );
   const peakLabel = t('grip.peakLabel', { unit: labels.weight });
 
   return (
@@ -182,21 +190,12 @@ const GripAssessmentPage: FC = () => {
           ) : null}
 
           {previewScore !== null && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-blue-400/35 bg-zinc-950/85 p-4 shadow-[0_0_25px_rgba(59,130,246,0.15)]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/65 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-blue-300/90">
-                {t('grip.performanceSpecHeader')}
-              </p>
-              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
-                {scoreMeaning.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-blue-300">
-                  {t('grip.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                </p>
-              ) : null}
-            </section>
+            <AssessmentScoreMeaningPanel
+              tone="blue"
+              headerLabel={t('grip.performanceSpecHeader')}
+              meaning={scoreMeaning}
+              milestoneHintLabel={nextMilestoneHint}
+            />
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
