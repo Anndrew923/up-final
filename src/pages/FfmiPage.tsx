@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -14,6 +15,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useFfmiMilestoneHint } from '../hooks/useFfmiMilestoneHint';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -22,6 +24,7 @@ import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessment
 const FfmiPage: FC = () => {
   const { t } = useTranslation('common');
   const {
+    profile,
     profileReady,
     gender,
     bodyFatInput,
@@ -35,7 +38,6 @@ const FfmiPage: FC = () => {
     persistToDashboard,
     submitToRadar,
   } = useFfmiPage();
-
   const reveal = useAssessmentRevealFlow({
     pool: 'ffmi',
     metric: 'bodyFat',
@@ -57,6 +59,12 @@ const FfmiPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning('bodyFat', previewScore ?? heroScore);
+  const nextMilestoneHint = useFfmiMilestoneHint(
+    scoreMeaning,
+    bodyFatInput,
+    profile,
+    profileReady
+  );
 
   const ladderUploadBundle = useMemo(
     () => buildFfmiAssessmentSupplementalTargets(breakdown),
@@ -79,6 +87,7 @@ const FfmiPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!breakdown?.allowsRadarSubmit}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
       />
       <AssessmentAmbientGlow />
 
@@ -178,24 +187,12 @@ const FfmiPage: FC = () => {
                 ) : null}
 
                 {previewScore !== null && scoreMeaning ? (
-                  <section className="relative overflow-hidden rounded-xl border border-violet-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(167,139,250,0.22),0_0_28px_rgba(139,92,246,0.14)]">
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/65 to-transparent" />
-                    <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-violet-300/90">
-                      {t('ffmi.performanceSpecHeader')}
-                    </p>
-                    <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
-                      {scoreMeaning.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-300">
-                      {scoreMeaning.summary}
-                    </p>
-                    {scoreMeaning.nextMilestone !== null &&
-                    scoreMeaning.remainingPoints !== null ? (
-                      <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-violet-300">
-                        {t('ffmi.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                      </p>
-                    ) : null}
-                  </section>
+                  <AssessmentScoreMeaningPanel
+                    headerLabel={t('ffmi.performanceSpecHeader')}
+                    meaning={scoreMeaning}
+                    milestoneHintLabel={nextMilestoneHint}
+                    tone="violet"
+                  />
                 ) : null}
 
                 {categorySuffix && gender ? (

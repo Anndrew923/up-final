@@ -21,12 +21,12 @@ export function parseFfmiBodyFatPctInput(raw: string | null | undefined): number
 }
 
 /** Male curve: base 18.5 → 60 pts; linear to 25 → 100; beyond +5 pts per FFMI unit. */
-const MALE_BASE = 18.5;
-const MALE_MAX_NATURAL = 25;
+export const FFMI_PIECEWISE_MALE_BASE = 18.5;
+export const FFMI_PIECEWISE_MALE_MAX_NATURAL = 25;
 
 /** Female curve: base 15.5 → 60; linear to 21 → 100; beyond +5 per unit. */
-const FEMALE_BASE = 15.5;
-const FEMALE_MAX_NATURAL = 21;
+export const FFMI_PIECEWISE_FEMALE_BASE = 15.5;
+export const FFMI_PIECEWISE_FEMALE_MAX_NATURAL = 21;
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -52,20 +52,37 @@ export function computeAdjustedFfmi(heightM: number, weightKg: number, bodyFatPc
   return round2(adjusted);
 }
 
-function ffmiPiecewiseScore(adjustedFfmi: number, isMale: boolean): number {
+/** Piecewise adjusted-FFMI → score (exported for milestone invert round-trips). */
+export function ffmiPiecewiseScore(adjustedFfmi: number, isMale: boolean): number {
   if (adjustedFfmi <= 0) return 0;
 
   if (isMale) {
-    if (adjustedFfmi <= MALE_BASE) return (adjustedFfmi / MALE_BASE) * 60;
-    if (adjustedFfmi < MALE_MAX_NATURAL)
-      return 60 + ((adjustedFfmi - MALE_BASE) / (MALE_MAX_NATURAL - MALE_BASE)) * 40;
-    return 100 + (adjustedFfmi - MALE_MAX_NATURAL) * 5;
+    if (adjustedFfmi <= FFMI_PIECEWISE_MALE_BASE) {
+      return (adjustedFfmi / FFMI_PIECEWISE_MALE_BASE) * 60;
+    }
+    if (adjustedFfmi < FFMI_PIECEWISE_MALE_MAX_NATURAL) {
+      return (
+        60 +
+        ((adjustedFfmi - FFMI_PIECEWISE_MALE_BASE) /
+          (FFMI_PIECEWISE_MALE_MAX_NATURAL - FFMI_PIECEWISE_MALE_BASE)) *
+          40
+      );
+    }
+    return 100 + (adjustedFfmi - FFMI_PIECEWISE_MALE_MAX_NATURAL) * 5;
   }
 
-  if (adjustedFfmi <= FEMALE_BASE) return (adjustedFfmi / FEMALE_BASE) * 60;
-  if (adjustedFfmi < FEMALE_MAX_NATURAL)
-    return 60 + ((adjustedFfmi - FEMALE_BASE) / (FEMALE_MAX_NATURAL - FEMALE_BASE)) * 40;
-  return 100 + (adjustedFfmi - FEMALE_MAX_NATURAL) * 5;
+  if (adjustedFfmi <= FFMI_PIECEWISE_FEMALE_BASE) {
+    return (adjustedFfmi / FFMI_PIECEWISE_FEMALE_BASE) * 60;
+  }
+  if (adjustedFfmi < FFMI_PIECEWISE_FEMALE_MAX_NATURAL) {
+    return (
+      60 +
+      ((adjustedFfmi - FFMI_PIECEWISE_FEMALE_BASE) /
+        (FFMI_PIECEWISE_FEMALE_MAX_NATURAL - FFMI_PIECEWISE_FEMALE_BASE)) *
+        40
+    );
+  }
+  return 100 + (adjustedFfmi - FFMI_PIECEWISE_FEMALE_MAX_NATURAL) * 5;
 }
 
 export interface FfmiScoringBreakdown {

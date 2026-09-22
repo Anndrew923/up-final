@@ -10,6 +10,8 @@
     "previewLabel": "預覽分數",
     "performanceSpecHeader": "排量規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
+    "nextMilestoneHintWithFatLoss": "距離下一階升級尚需 {{points}} 分（維持當前體重，體脂率約需 -{{delta}}%）",
+    "nextMilestoneHintWithLeanGain": "距離下一階升級尚需 {{points}} 分（已達減脂極限，去脂體重約需 +{{delta}} {{unit}}）",
     "resultFfmi": "調整後 FFMI（顯示）",
     "resultRadarScore": "雷達用分",
     "radarScoreLockedLabel": "已鎖定",

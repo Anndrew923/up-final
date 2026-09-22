@@ -10,6 +10,8 @@
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "DISPLACEMENT SPEC / FFMI",
     "nextMilestoneHint": "{{points}} pts until next tier upgrade",
+    "nextMilestoneHintWithFatLoss": "{{points}} pts until next tier upgrade (maintaining current weight, body fat approx. -{{delta}}%)",
+    "nextMilestoneHintWithLeanGain": "{{points}} pts until next tier upgrade (fat-loss ceiling reached, lean mass approx. +{{delta}} {{unit}})",
     "resultFfmi": "Adjusted FFMI (Display)",
     "resultRadarScore": "Radar Score",
     "radarScoreLockedLabel": "Locked",
