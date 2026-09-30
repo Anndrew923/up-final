@@ -17,6 +17,7 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import SingleLiftMilestoneHint from '../components/strength/SingleLiftMilestoneHint';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -125,6 +126,7 @@ const StrengthAssessmentPage: FC = () => {
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="strength" />
+      {/* WHY: Breakthrough modal stays points-only for composite; no milestoneHintLabel. */}
       <PerformanceBreakthroughModal
         open={modalOpen}
         payload={modalPayload}
@@ -183,6 +185,8 @@ const StrengthAssessmentPage: FC = () => {
                 metricForm[lift].reps
               );
               const repsAccuracyNudgeId = `strength-reps-accuracy-${lift}`;
+              const scoredLiftReps = Number.parseInt(metricForm[lift].reps.trim(), 10);
+              const hasScoredLiftReps = Number.isInteger(scoredLiftReps) && scoredLiftReps >= 1;
               return (
                 <fieldset
                   key={lift}
@@ -306,6 +310,16 @@ const StrengthAssessmentPage: FC = () => {
                           {rowResult.finalScore.toFixed(2)}
                         </span>
                       </p>
+                      {rowResult && hasScoredLiftReps ? (
+                        <SingleLiftMilestoneHint
+                          liftType={lift}
+                          liftScore={rowResult.finalScore}
+                          currentWeightKg={rowResult.weightUsedKg}
+                          reps={scoredLiftReps}
+                          profile={profile}
+                          profileReady={profileReady}
+                        />
+                      ) : null}
                     </div>
                   ) : null}
                 </fieldset>
@@ -402,6 +416,7 @@ const StrengthAssessmentPage: FC = () => {
               </div>
             ) : null}
 
+            {/* WHY: Composite average stays points-only — raw Δkg lives on per-lift cards only. */}
             {combinedBreakdown && scoreMeaning ? (
               <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />

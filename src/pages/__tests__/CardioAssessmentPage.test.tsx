@@ -129,6 +129,7 @@ afterEach(() => {
 describe('CardioAssessmentPage', () => {
   it('shows performance spec and wires reveal flow on calculate', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: 3200,
@@ -179,6 +180,7 @@ describe('CardioAssessmentPage', () => {
 
   it('disables calculate when profile is incomplete', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: false,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -212,6 +214,7 @@ describe('CardioAssessmentPage', () => {
 
   it('routes score meaning to cardio on 5km tab', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -249,6 +252,7 @@ describe('CardioAssessmentPage', () => {
 
   it('exposes Cooper field hint control on cooper tab', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -288,6 +292,7 @@ describe('CardioAssessmentPage', () => {
 
   it('shows 5km WR floor amber hint when finish time is under model floor', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -320,6 +325,7 @@ describe('CardioAssessmentPage', () => {
 
   it('keeps 5km scoring anchors collapsed in reference by default', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,

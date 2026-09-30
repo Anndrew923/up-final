@@ -28,6 +28,8 @@
     "spectrumSub": "偵測五軸力量頻譜平衡度。",
     "performanceSpecHeader": "重載規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
+    "liftNextMilestoneHint": "距離下一階尚需 {{points}} 分",
+    "liftNextMilestoneHintWithRaw": "距離下一階尚需 {{points}} 分（約需 +{{delta}} {{unit}}）",
     "previewLabel": "雷達軸分數",
     "radarClampNote": "若平均超出單軸封頂（0–200），儲存至雷達時會套用封頂值。",
     "submitRadar": "寫入雷達（力量軸）",

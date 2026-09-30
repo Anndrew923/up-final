@@ -22,6 +22,7 @@
     "previewLabel": "預覽分數",
     "performanceSpecHeader": "外觀規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
+    "nextMilestoneHintWithRaw": "距離下一階升級尚需 {{points}} 分（維持當前體重，骨骼肌約需 +{{delta}} {{unit}}）",
     "breakdownLine": "SMM 分數：{{smmScore}} · 骨骼肌率：{{smPct}}% · SM% 分數：{{smPctScore}}",
     "calculate": "計算",
     "submitRadar": "寫入雷達（車體外觀軸）",
