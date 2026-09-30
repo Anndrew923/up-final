@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LadderIdentitySnapshot } from '../../hooks/useLadderIdentityReady';
 
@@ -10,21 +11,31 @@ export interface LadderIdentityChipProps {
 
 /**
  * Compact arena persona next to the sync CTA — reinforces that the same identity is uploaded.
+ * WHY: Broken avatar URLs must fall back to initial so the HUD never shows a broken-image glyph.
+ * failedForUrl (not a boolean) auto-recovers when avatarUrl changes — no syncing useEffect.
  */
 const LadderIdentityChip: FC<LadderIdentityChipProps> = ({ identity, onClick, className }) => {
   const { t } = useTranslation('common');
   const label = identity.displayName || t('ladder.syncAll.identityChipEmpty');
+  const avatarUrl = String(identity.avatarUrl ?? '').trim();
+  const [failedForUrl, setFailedForUrl] = useState<string | null>(null);
+  const showAvatar = Boolean(avatarUrl) && failedForUrl !== avatarUrl;
 
   const inner = (
     <>
       <span
-        className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent-info/40 bg-zinc-900 text-[11px] font-semibold uppercase text-zinc-200"
+        className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent-info/40 bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 text-[11px] font-semibold uppercase text-accent-info/90"
         aria-hidden
       >
-        {identity.avatarUrl ? (
-          <img src={identity.avatarUrl} alt="" className="h-full w-full object-cover" />
+        {showAvatar ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            className="h-full w-full object-cover"
+            onError={() => setFailedForUrl(avatarUrl)}
+          />
         ) : (
-          identity.initial
+          <span className="font-mono tracking-wide">{identity.initial}</span>
         )}
       </span>
       <span className="min-w-0 truncate text-xs font-medium text-zinc-300">{label}</span>
