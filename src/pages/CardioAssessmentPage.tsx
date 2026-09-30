@@ -14,6 +14,7 @@ import {
 } from '../components/assessment/AssessmentSegmentedControl';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
@@ -22,6 +23,7 @@ import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenc
 import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useAerobicMilestoneHint } from '../hooks/useAerobicMilestoneHint';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
@@ -112,6 +114,16 @@ const CardioAssessmentPage: FC = () => {
     profile,
     profileReady
   );
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'cardio',
+    // WHY: 5km specialty is not the radar cardio pantheon cell — hide Hall Spectrum on that tab.
+    scoreDisplay:
+      activeTab === 'cooper'
+        ? heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null)
+        : null,
+    decadeKey: activeTab === 'cooper' ? scoreMeaning?.decadeKey : null,
+    populationClass: activeTab === 'cooper' ? scoreMeaning?.populationClass : null,
+  });
 
   const segmentOptions = useMemo(
     () => [
@@ -150,6 +162,7 @@ const CardioAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
@@ -309,6 +322,7 @@ const CardioAssessmentPage: FC = () => {
                 populationClass={scoreMeaning?.populationClass}
                 decadeKey={scoreMeaning?.decadeKey}
                 className="mt-1"
+                {...hallSpectrum.badgeProps}
               />
             </div>
           ) : null}

@@ -8,6 +8,7 @@ import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHea
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
@@ -16,6 +17,7 @@ import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenc
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
@@ -82,6 +84,12 @@ const ArmSizeAssessmentPage: FC = () => {
   const interpretationScore = previewScore ?? submittedScore ?? persistedArmSizeScore ?? null;
   const heroScore = displayScore ?? interpretationScore;
   const scoreMeaning = useScoreMeaning('armSize', heroScore);
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'armSize',
+    scoreDisplay: heroScore != null ? heroScore.toFixed(2) : null,
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
@@ -94,6 +102,7 @@ const ArmSizeAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         arenaSync={ladderSync}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -173,6 +182,7 @@ const ArmSizeAssessmentPage: FC = () => {
                 populationClass={scoreMeaning?.populationClass}
                 decadeKey={scoreMeaning?.decadeKey}
                 className="mt-1"
+                {...hallSpectrum.badgeProps}
               />
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-300">

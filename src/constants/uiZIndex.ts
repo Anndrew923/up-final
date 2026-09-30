@@ -7,6 +7,11 @@ export const Z_INDEX_CLASS = {
   dynoIntelClearHistoryDialog: 'z-[250]',
   performanceBreakthroughModal: 'z-[240]',
   toolResultModal: 'z-[240]',
+  /**
+   * Single-axis hall spectrum drawer — below Dyno chat (`220`) and breakthrough (`240`)
+   * so CTA handoff (close drawer → open Dyno) cannot leave a higher scrim trapping focus.
+   */
+  hallOfFameSpectrumDrawer: 'z-[210]',
   /** Nested science/help sheet above somatotype report modal. */
   somatotypeScienceHelpSheet: 'z-[250]',
   ladderFilterSheet: 'z-[230]',

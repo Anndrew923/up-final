@@ -74,6 +74,20 @@
       "normBadgeCollapseAria": "收合「{{populationClass}}」級距說明",
       "summaryRegionAria": "「{{populationClass}}」級距說明"
     },
+    "hallSpectrum": {
+      "title": "{{axisTitle}} · 名人堂光譜",
+      "closeAria": "關閉名人堂光譜",
+      "ladderRegionAria": "單軸名人堂階梯",
+      "currentRungAria": "目前落點：{{populationClass}}",
+      "legalExpand": "展開免責全文",
+      "legalCollapse": "收合免責全文",
+      "teaserKicker": "DYNO INTEL 遙測",
+      "teaserLine": "拿掉感覺，用科學常模直面自我。",
+      "teaserCta": "免費解碼生理成色（每日剩餘 {{remaining}} 次）",
+      "teaserCtaArrow": "➔",
+      "teaserCtaAria": "開啟 Dyno Intel，免費解碼生理成色，今日剩餘 {{remaining}} 次",
+      "openBadgeAria": "開啟「{{populationClass}}」名人堂光譜"
+    },
     "ceremony": {
       "scanning": "診斷掃描中…",
       "overlayAria": "評測診斷掃描進行中",

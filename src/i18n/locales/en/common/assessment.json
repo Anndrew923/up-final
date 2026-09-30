@@ -74,6 +74,20 @@
       "normBadgeCollapseAria": "Collapse {{populationClass}} tier explanation",
       "summaryRegionAria": "{{populationClass}} tier explanation"
     },
+    "hallSpectrum": {
+      "title": "{{axisTitle}} · Hall Spectrum",
+      "closeAria": "Close hall-of-fame spectrum",
+      "ladderRegionAria": "Single-axis hall-of-fame ladder",
+      "currentRungAria": "Current rung: {{populationClass}}",
+      "legalExpand": "Expand full legal notice",
+      "legalCollapse": "Collapse legal notice",
+      "teaserKicker": "DYNO INTEL TELEMETRY",
+      "teaserLine": "Drop feelings. Face yourself through scientific norms.",
+      "teaserCta": "Free physiological decode ({{remaining}} left today)",
+      "teaserCtaArrow": "➔",
+      "teaserCtaAria": "Open Dyno Intel for a free physiological decode. {{remaining}} free uses left today",
+      "openBadgeAria": "Open {{populationClass}} hall-of-fame spectrum"
+    },
     "ceremony": {
       "scanning": "Diagnostic Scan In Progress…",
       "overlayAria": "Assessment diagnostic scan in progress",

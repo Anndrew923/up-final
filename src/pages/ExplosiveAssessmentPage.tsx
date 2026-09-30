@@ -9,6 +9,7 @@ import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHea
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import {
   AssessmentSegmentedControl,
   AssessmentTabPanel,
@@ -22,6 +23,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useExplosiveAssessmentPage } from '../hooks/useExplosiveAssessmentPage';
 import type { ExplosiveAssessmentTab } from '../hooks/useExplosiveAssessmentPage';
@@ -160,6 +162,17 @@ const ExplosiveAssessmentPage: FC = () => {
     profile,
     profileReady
   );
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'explosivePower',
+    scoreDisplay:
+      heroScore != null
+        ? heroScore.toFixed(2)
+        : axisAverageRaw != null
+          ? axisAverageRaw.toFixed(2)
+          : null,
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
   const isSpecialtyOnlyPreview =
     previewBreakdown != null &&
     previewBreakdown.sprintRaw != null &&
@@ -178,6 +191,7 @@ const ExplosiveAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
@@ -371,6 +385,7 @@ const ExplosiveAssessmentPage: FC = () => {
                       populationClass={scoreMeaning?.populationClass}
                       decadeKey={scoreMeaning?.decadeKey}
                       className="mt-1"
+                      {...hallSpectrum.badgeProps}
                     />
                   </div>
                 </>

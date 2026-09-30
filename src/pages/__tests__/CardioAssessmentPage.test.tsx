@@ -53,6 +53,10 @@ vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
   default: () => null,
 }));
 
+vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
+  default: () => null,
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {

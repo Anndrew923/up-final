@@ -30,6 +30,16 @@ describe('resolveNormBadgeToneClass', () => {
     expect(resolveNormBadgeToneClass('120')).toContain('violet');
     expect(resolveNormBadgeToneClass('150')).toContain('amber-300');
   });
+
+  it('appends hue-matched hover fills only when interactive', () => {
+    expect(resolveNormBadgeToneClass('60')).not.toContain('hover:bg-sky-500/20');
+    expect(resolveNormBadgeToneClass('60', true)).toContain('hover:bg-sky-500/20');
+    expect(resolveNormBadgeToneClass('80', true)).toContain('hover:bg-amber-500/20');
+    expect(resolveNormBadgeToneClass('100', true)).toContain('hover:bg-orange-500/20');
+    expect(resolveNormBadgeToneClass('120', true)).toContain('hover:bg-violet-500/20');
+    // WHY: Never force amber hover over non-amber decades (cn has no twMerge).
+    expect(resolveNormBadgeToneClass('60', true)).not.toContain('hover:bg-amber-500/20');
+  });
 });
 
 describe('NormBadgeChip', () => {

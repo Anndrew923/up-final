@@ -23,27 +23,33 @@ export interface NormBadgeChipProps {
 }
 
 /**
- * Decade → muted metal capsule tone.
- * WHY: Badge must read in 0.5s beside the score without competing with hero numerals.
+ * Decade → translucent metallic capsule tone.
+ * WHY: Must read in 0.5s beside the score with honor/instrument presence — never a dull brown slab.
+ * @param interactive When true, appends hue-matched hover fills (never force amber over sky/violet).
  */
-export function resolveNormBadgeToneClass(decadeKey: string | null | undefined): string {
+export function resolveNormBadgeToneClass(
+  decadeKey: string | null | undefined,
+  interactive = false
+): string {
   const decade = Number(decadeKey);
+  const hover = (fill: string) => (interactive ? ` ${fill}` : '');
+
   if (!Number.isFinite(decade) || decade < 60) {
-    return 'border-zinc-500/40 bg-zinc-800/70 text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+    return `border-zinc-400/45 bg-zinc-500/10 text-zinc-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]${hover('hover:bg-zinc-500/20')}`;
   }
   if (decade < 70) {
-    return 'border-sky-400/35 bg-sky-950/50 text-sky-200/90 shadow-[inset_0_1px_0_rgba(125,211,252,0.12)]';
+    return `border-sky-400/45 bg-sky-500/10 text-sky-300 shadow-[inset_0_1px_0_rgba(125,211,252,0.18)] drop-shadow-[0_0_6px_rgba(56,189,248,0.25)]${hover('hover:bg-sky-500/20')}`;
   }
   if (decade < 100) {
-    return 'border-amber-400/40 bg-amber-950/45 text-amber-200/90 shadow-[inset_0_1px_0_rgba(251,191,36,0.14)]';
+    return `border-amber-500/40 bg-amber-500/10 text-amber-300 shadow-[inset_0_1px_0_rgba(251,191,36,0.2)] drop-shadow-[0_0_6px_rgba(251,191,36,0.28)]${hover('hover:bg-amber-500/20')}`;
   }
   if (decade < 120) {
-    return 'border-orange-400/40 bg-orange-950/45 text-orange-200/90 shadow-[inset_0_1px_0_rgba(251,146,60,0.14)]';
+    return `border-orange-400/50 bg-orange-500/10 text-orange-300 shadow-[inset_0_1px_0_rgba(251,146,60,0.2)] drop-shadow-[0_0_6px_rgba(251,146,60,0.28)]${hover('hover:bg-orange-500/20')}`;
   }
   if (decade < 140) {
-    return 'border-violet-400/40 bg-violet-950/45 text-violet-200/90 shadow-[inset_0_1px_0_rgba(167,139,250,0.14)]';
+    return `border-violet-400/50 bg-violet-500/10 text-violet-300 shadow-[inset_0_1px_0_rgba(167,139,250,0.2)] drop-shadow-[0_0_6px_rgba(167,139,250,0.28)]${hover('hover:bg-violet-500/20')}`;
   }
-  return 'border-amber-300/45 bg-gradient-to-br from-amber-950/55 via-zinc-900/80 to-orange-950/40 text-amber-100/95 shadow-[inset_0_1px_0_rgba(253,230,138,0.18)]';
+  return `border-amber-300/55 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-orange-500/10 text-amber-200 shadow-[inset_0_1px_0_rgba(253,230,138,0.22)] drop-shadow-[0_0_8px_rgba(251,191,36,0.35)]${hover('hover:from-amber-500/25 hover:via-amber-500/10 hover:to-orange-500/15')}`;
 }
 
 const SIZE_CLASS: Record<NormBadgeChipSize, string> = {
@@ -53,12 +59,15 @@ const SIZE_CLASS: Record<NormBadgeChipSize, string> = {
 };
 
 const CHEVRON_CLASS: Record<NormBadgeChipSize, string> = {
-  sm: 'h-3 w-3 shrink-0 opacity-80',
-  md: 'h-3.5 w-3.5 shrink-0 opacity-80',
+  sm: 'h-3 w-3 shrink-0 opacity-90',
+  md: 'h-3.5 w-3.5 shrink-0 opacity-90',
 };
 
 const CHIP_BASE_CLASS =
   'inline-flex max-w-full shrink-0 items-center rounded-full border font-semibold';
+
+const INTERACTIVE_BASE_CLASS =
+  'cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60';
 
 const NormBadgeChip: FC<NormBadgeChipProps> = ({
   populationClass,
@@ -76,7 +85,7 @@ const NormBadgeChip: FC<NormBadgeChipProps> = ({
 
   const interactive = typeof onClick === 'function';
   const showChevronIcon = interactive && showChevron;
-  const toneClass = resolveNormBadgeToneClass(decadeKey);
+  const toneClass = resolveNormBadgeToneClass(decadeKey, interactive);
   const resolvedAriaLabel = String(ariaLabel ?? label).trim() || label;
 
   const content = (
@@ -100,7 +109,7 @@ const NormBadgeChip: FC<NormBadgeChipProps> = ({
         className={cn(
           CHIP_BASE_CLASS,
           SIZE_CLASS[size],
-          'cursor-pointer transition-opacity hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/50',
+          INTERACTIVE_BASE_CLASS,
           toneClass,
           className
         )}

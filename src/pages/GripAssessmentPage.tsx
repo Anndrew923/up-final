@@ -6,11 +6,13 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
@@ -86,6 +88,14 @@ const GripAssessmentPage: FC = () => {
     profile,
     profileReady
   );
+  const spectrumScoreDisplay =
+    heroScoreText ?? (previewScore != null ? formatOverallResonanceScore(previewScore) : null);
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'gripStrength',
+    scoreDisplay: spectrumScoreDisplay,
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
   const peakLabel = t('grip.peakLabel', { unit: labels.weight });
 
   return (
@@ -101,6 +111,7 @@ const GripAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -190,6 +201,7 @@ const GripAssessmentPage: FC = () => {
                 populationClass={scoreMeaning?.populationClass}
                 decadeKey={scoreMeaning?.decadeKey}
                 className="mt-1"
+                {...hallSpectrum.badgeProps}
               />
             </div>
           ) : null}

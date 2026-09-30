@@ -61,6 +61,10 @@ vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
   default: () => null,
 }));
 
+vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
+  default: () => null,
+}));
+
 vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
   default: () => null,
 }));

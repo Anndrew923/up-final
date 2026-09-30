@@ -102,13 +102,13 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
       userQuestion: string,
       promptTemplateId = DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID,
       modeOverride?: DynoIntelMode
-    ) => {
+    ): Promise<boolean> => {
       const effectiveMode = modeOverride ?? input.mode;
       const trimmedQuestion = userQuestion.trim();
-      if (!trimmedQuestion) return;
+      if (!trimmedQuestion) return false;
 
       // WHY: Ignore rapid re-submits while typing/loading — never open a second Callable.
-      if (statusRef.current === 'loading' || statusRef.current === 'typing') return;
+      if (statusRef.current === 'loading' || statusRef.current === 'typing') return false;
 
       const nowMs = Date.now();
       const priorDebounce = lastQuestionDebounceRef.current;
@@ -122,7 +122,8 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           showImmediately(cachedReply.commentary);
           setStatus('idle');
         }
-        return;
+        // WHY: Debounce replay is not a new acceptance — Spectrum flush must keep pending if any.
+        return false;
       }
       lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
 
@@ -132,13 +133,13 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
 
       if (!access.allowed) {
         // WHY: Auth loading is `pending` — no-op until the session is known.
-        if (access.blockReason === 'pending') return;
+        if (access.blockReason === 'pending') return false;
         if (access.blockReason === 'auth') {
           input.onAuthBlocked();
-          return;
+          return false;
         }
         input.onPaywallRequest('pro-required');
-        return;
+        return false;
       }
 
       if (input.quota.isSynced && input.quota.remaining <= 0) {
@@ -146,7 +147,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         if (input.quota.quotaTier === 'pro' || hasProFullAccess) {
           setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
           setStatus('error');
-          return;
+          return false;
         }
         // WHY: Unsettled free+0 may be a Pro subscriber mid-RC refresh — ask the server instead.
         if (
@@ -158,7 +159,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           })
         ) {
           input.onPaywallRequest('quota-exhausted');
-          return;
+          return false;
         }
       }
 
@@ -188,7 +189,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           latestRequestSequence.current !== requestSequence ||
           !input.quota.isSyncTokenCurrent(requestSyncToken)
         ) {
-          return;
+          return true;
         }
 
         if (!result.ok) {
@@ -215,20 +216,22 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             if (quotaTier === 'pro') {
               setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
               setStatus('error');
-            } else {
-              input.onPaywallRequest('quota-exhausted');
-              setStatus('idle');
+              return true;
             }
-            return;
+            // WHY: false — Spectrum pending must survive free-tier paywall so subscribe → chat can re-flush.
+            input.onPaywallRequest('quota-exhausted');
+            setStatus('idle');
+            return false;
           }
           if (result.reason === 'pro-required' || result.reason === 'core-required') {
             // WHY: Server may still emit legacy core-required; client constitution maps both to Pro paywall.
+            // false keeps Spectrum pending across the upgrade path (same as client-side gate).
             input.onPaywallRequest('pro-required');
             setStatus('idle');
-            return;
+            return false;
           }
           setStatus('idle');
-          return;
+          return true;
         }
 
         input.quota.applyServerQuota(
@@ -260,13 +263,14 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             displayMeta,
           });
         }
+        return true;
       } catch (error) {
         if (
           useAuthStore.getState().uid !== uid ||
           latestRequestSequence.current !== requestSequence ||
           !input.quota.isSyncTokenCurrent(requestSyncToken)
         ) {
-          return;
+          return true;
         }
         const mappedKey =
           error instanceof Error &&
@@ -276,6 +280,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             : null;
         setErrorMessageKey(mappedKey ?? 'dynoIntel.error.network');
         setStatus('error');
+        return true;
       }
     },
     [

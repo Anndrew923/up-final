@@ -17,8 +17,10 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
@@ -117,6 +119,14 @@ const StrengthAssessmentPage: FC = () => {
       ? interpretationScore.toFixed(2)
       : null;
   const scoreMeaning = useScoreMeaning('strength', liveScore ?? interpretationScore);
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'strength',
+    scoreDisplay:
+      heroScoreText ??
+      (combinedBreakdown != null ? combinedBreakdown.averageRaw.toFixed(2) : null),
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
@@ -132,6 +142,7 @@ const StrengthAssessmentPage: FC = () => {
         syncing={submitBusy}
         arenaSync={ladderSync}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -231,6 +242,7 @@ const StrengthAssessmentPage: FC = () => {
                     populationClass={scoreMeaning?.populationClass}
                     decadeKey={scoreMeaning?.decadeKey}
                     className="mt-1"
+                    {...hallSpectrum.badgeProps}
                   />
                   {combinedScore !== null &&
                   Math.abs(combinedScore - combinedBreakdown.averageRaw) > 0.001 ? (

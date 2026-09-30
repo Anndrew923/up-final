@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -17,6 +18,7 @@ import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useFfmiMilestoneHint } from '../hooks/useFfmiMilestoneHint';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -66,6 +68,12 @@ const FfmiPage: FC = () => {
     profile,
     profileReady
   );
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'bodyFat',
+    scoreDisplay: heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null),
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
 
   const ladderUploadBundle = useMemo(
     () => buildFfmiAssessmentSupplementalTargets(breakdown),
@@ -90,6 +98,7 @@ const FfmiPage: FC = () => {
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -186,6 +195,7 @@ const FfmiPage: FC = () => {
                       populationClass={scoreMeaning?.populationClass}
                       decadeKey={scoreMeaning?.decadeKey}
                       className="mt-1"
+                      {...hallSpectrum.badgeProps}
                     />
                   </div>
                 ) : null}

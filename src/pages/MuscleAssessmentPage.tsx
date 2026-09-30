@@ -6,6 +6,7 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -17,6 +18,7 @@ import AssessmentReferenceDisclosure, {
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
 import { useMuscleMilestoneHint } from '../hooks/useMuscleMilestoneHint';
@@ -97,6 +99,12 @@ const MuscleAssessmentPage: FC = () => {
     profile,
     profileReady
   );
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'muscleMass',
+    scoreDisplay: heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null),
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+  });
 
   const dualSovereignCeilingKey = resolveMuscleDualSovereignI18nKey(profile?.gender, 'ceiling');
   const dualSovereignExceedsKey = resolveMuscleDualSovereignI18nKey(
@@ -117,6 +125,7 @@ const MuscleAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -193,6 +202,7 @@ const MuscleAssessmentPage: FC = () => {
                 populationClass={scoreMeaning?.populationClass}
                 decadeKey={scoreMeaning?.decadeKey}
                 className="mt-1"
+                {...hallSpectrum.badgeProps}
               />
               {previewBreakdown ? (
                 <p className="mt-2 text-xs leading-relaxed text-zinc-500">
