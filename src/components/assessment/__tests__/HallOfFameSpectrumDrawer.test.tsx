@@ -221,4 +221,26 @@ describe('HallOfFameSpectrumDrawer', () => {
       )
     ).toBe(true);
   });
+
+  it('pins the Dyno CTA footer with the shared safe-area footer token', () => {
+    act(() => {
+      root.render(
+        <HallOfFameSpectrumDrawer
+          open
+          onClose={vi.fn()}
+          axisId="strength"
+          axisTitle="馬力"
+          scoreDisplay="76.80"
+          decadeKey="70"
+          populationClass="進階訓練者"
+          dynoRemaining={2}
+          onOpenDyno={vi.fn()}
+        />
+      );
+    });
+
+    const dialog = document.querySelector('[role="dialog"]');
+    const footer = dialog?.querySelector('footer');
+    expect(footer?.className).toContain('ui-modal-safe-footer');
+  });
 });

@@ -234,8 +234,8 @@ const HallOfFameSpectrumDrawer: FC<HallOfFameSpectrumDrawerProps> = ({
           </ol>
         </div>
 
-        {/* Footer — pinned */}
-        <footer className="shrink-0 border-t border-zinc-800/90 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,24px))]">
+        {/* Footer — pinned; ui-modal-safe-footer owns additive breath + safe-area inset. */}
+        <footer className="ui-modal-safe-footer shrink-0 border-t border-zinc-800/90 px-4">
           <div className="space-y-1">
             <p id={legalId} className="text-[11px] leading-relaxed text-zinc-500">
               {legalExpanded || !legalNeedsTruncate ? legalFull : legalPreview}
