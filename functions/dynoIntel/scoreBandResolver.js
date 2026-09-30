@@ -52,6 +52,7 @@ export function resolveSoulMatrixFieldKey(stream, genderTrack) {
   return `${stream}_${genderTrack}`;
 }
 
+// PARITY: Keep min/max/id in lockstep with client `src/logic/core/scoreMeaningCatalog.ts` → DECADE_AXIS_TIER_BANDS.
 const DECADE_AXIS_TIER_BANDS = [
   { id: "BASE", min: 0, max: 39.99 },
   { id: "TIER_40", min: 40, max: 49.99 },
@@ -113,6 +114,7 @@ export function resolveScoreBandId(metric, score) {
 /**
  * v3.3.2 — Maps resolver tierId to human-scale matrix decade key.
  * WHY: BASE/PANTHEON/grip 150+ must never miss the population matrix lookup.
+ * PARITY: Keep in lockstep with client `src/logic/core/humanScaleBandResolver.ts` → `resolveDecadeKeyFromBandId`.
  */
 export function resolveHumanScaleDecadeKey(tierId) {
   if (tierId === "BASE") return "0";
@@ -121,5 +123,8 @@ export function resolveHumanScaleDecadeKey(tierId) {
   const match = /^TIER_(\d+)$/.exec(tierId);
   if (!match) return "0";
   const decade = Math.floor(Number(match[1]) / 10) * 10;
-  return String(Math.max(0, Math.min(150, decade)));
+  const clamped = Math.max(0, Math.min(150, decade));
+  // WHY: Sub-40 synthetic ids collapse to the infant decade cell (same as client resolver).
+  if (clamped < 40) return "0";
+  return String(clamped);
 }

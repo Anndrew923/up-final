@@ -69,7 +69,10 @@
       "dashboardAndArenaSuccess": "Dashboard and Arena are in sync.",
       "syncing": "Syncing…",
       "peakReached": "Peak Sequence Reached",
-      "milestoneRemaining": "{{points}} pts until next tier"
+      "milestoneRemaining": "{{points}} pts until next tier",
+      "normBadgeExpandAria": "Expand {{populationClass}} tier explanation",
+      "normBadgeCollapseAria": "Collapse {{populationClass}} tier explanation",
+      "summaryRegionAria": "{{populationClass}} tier explanation"
     },
     "ceremony": {
       "scanning": "Diagnostic Scan In Progress…",

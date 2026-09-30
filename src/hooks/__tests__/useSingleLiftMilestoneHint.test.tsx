@@ -38,6 +38,9 @@ const profile: PhysicalProfile = {
 const meaning: ScoreMeaningResult = {
   title: 'Spec',
   summary: 'Summary',
+  bandId: 'TIER_70',
+  decadeKey: '70',
+  populationClass: '進階訓練者',
   nextMilestone: 80,
   remainingPoints: 6,
 };

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -184,9 +185,12 @@ const GripAssessmentPage: FC = () => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('grip.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? formatOverallResonanceScore(previewScore)}
-              </p>
+              <AssessmentHeroScoreWithNormBadge
+                scoreText={heroScoreText ?? formatOverallResonanceScore(previewScore)}
+                populationClass={scoreMeaning?.populationClass}
+                decadeKey={scoreMeaning?.decadeKey}
+                className="mt-1"
+              />
             </div>
           ) : null}
 

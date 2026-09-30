@@ -49,6 +49,9 @@ const lightHighTierProfile: PhysicalProfile = {
 const meaning: ScoreMeaningResult = {
   title: 'Spec',
   summary: 'Summary',
+  bandId: 'TIER_70',
+  decadeKey: '70',
+  populationClass: '進階訓練者',
   nextMilestone: 80,
   remainingPoints: 12,
 };
@@ -56,6 +59,9 @@ const meaning: ScoreMeaningResult = {
 const highTierMeaning: ScoreMeaningResult = {
   title: 'Spec',
   summary: 'Summary',
+  bandId: 'TIER_90',
+  decadeKey: '90',
+  populationClass: '凡人頂尖',
   nextMilestone: 100,
   remainingPoints: 4,
 };

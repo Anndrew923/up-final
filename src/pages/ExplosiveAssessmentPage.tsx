@@ -8,6 +8,7 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import {
   AssessmentSegmentedControl,
   AssessmentTabPanel,
@@ -365,9 +366,12 @@ const ExplosiveAssessmentPage: FC = () => {
                     <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                       {t('explosive.previewLabel')}
                     </p>
-                    <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                      {(heroScore ?? axisAverageRaw).toFixed(2)}
-                    </p>
+                    <AssessmentHeroScoreWithNormBadge
+                      scoreText={(heroScore ?? axisAverageRaw).toFixed(2)}
+                      populationClass={scoreMeaning?.populationClass}
+                      decadeKey={scoreMeaning?.decadeKey}
+                      className="mt-1"
+                    />
                   </div>
                 </>
               ) : null}

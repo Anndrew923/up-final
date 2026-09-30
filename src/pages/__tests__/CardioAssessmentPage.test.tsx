@@ -153,6 +153,9 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Thermal Elite',
       summary: 'Endurance axis stabilized.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 91,
       remainingPoints: 3,
     });
@@ -238,6 +241,9 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Cruise Tier',
       summary: '5km endurance copy path.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 80,
       remainingPoints: 8,
     });

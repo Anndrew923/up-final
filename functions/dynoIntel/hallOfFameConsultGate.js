@@ -58,6 +58,7 @@ const ROSTER_LEXICON_PATTERNS = [
 ];
 
 const SCORE_BAND_CUE =
+  // WHY: Include superseded 70-class aliases so SCORE_BAND intent still fires on old phrasing.
   /\d+\s*(?:多|幾)?\s*分|\d+\s*\+|in the \d+0?s|\d+0s|(?:above|over)\s*\d+|points?|地表最強|怪物領域|統計神話|歷史級別|超凡入聖|凡體覺醒|凡人頂尖|高階玩家|高級玩家|進階健身者|進階訓練者|大眾健康常模|新手村|新手期|探索期|嬰兒期/i;
 
 const KNOWN_CONSULT_AXES = new Set([
@@ -130,17 +131,18 @@ const TIER_PATTERNS = [
   },
   {
     decadeKey: "80",
-    label: "80-90（高級玩家）",
-    labelEn: "80-90 (Elite Player)",
+    label: "80-90（高階玩家）",
+    labelEn: "80-90 (High Tier)",
     pattern:
       /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s/i,
   },
   {
     decadeKey: "70",
     label: "70-80（進階訓練者）",
-    labelEn: "70-80 (Advanced Trainee)",
+    labelEn: "70-80 (Advanced Lifter)",
+    // WHY: Keep superseded class aliases (進階健身者 / Advanced Trainee) so old user phrasing still routes.
     pattern:
-      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
+      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|advanced\s+lifter|advanced\s+trainee|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
   },
   {
     decadeKey: "60",

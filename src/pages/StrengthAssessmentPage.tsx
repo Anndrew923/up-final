@@ -16,6 +16,7 @@ import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbien
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -225,9 +226,12 @@ const StrengthAssessmentPage: FC = () => {
                   <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                     {t('strength.previewLabel')}
                   </p>
-                  <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                    {heroScoreText ?? combinedBreakdown.averageRaw.toFixed(2)}
-                  </p>
+                  <AssessmentHeroScoreWithNormBadge
+                    scoreText={heroScoreText ?? combinedBreakdown.averageRaw.toFixed(2)}
+                    populationClass={scoreMeaning?.populationClass}
+                    decadeKey={scoreMeaning?.decadeKey}
+                    className="mt-1"
+                  />
                   {combinedScore !== null &&
                   Math.abs(combinedScore - combinedBreakdown.averageRaw) > 0.001 ? (
                     <p className="mt-1 text-xs text-zinc-500">{t('strength.radarClampNote')}</p>

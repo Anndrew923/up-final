@@ -15,6 +15,7 @@ import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
+import AssessmentHeroScoreWithNormBadge from './AssessmentHeroScoreWithNormBadge';
 
 export interface PerformanceBreakthroughModalProps {
   open: boolean;
@@ -48,12 +49,14 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
+  const summaryId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const arenaSyncRef = useRef(arenaSync);
   arenaSyncRef.current = arenaSync;
   const [syncPending, setSyncPending] = useState(false);
   const [pipelineBusy, setPipelineBusy] = useState(false);
   const [dashboardPersistedInSession, setDashboardPersistedInSession] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const {
     gateSheetOpen,
     gateSheetKind,
@@ -112,16 +115,26 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     }
   }, [arenaSync, isDashboardSyncing, isPipelineRunning, onPersistToDashboard, tryOpenGateSheet]);
 
+  const toggleSummaryExpanded = useCallback(() => {
+    setSummaryExpanded((prev) => !prev);
+  }, []);
+
+  // WHY: Each breakthrough reveal starts collapsed — prior expand state would steal dopamine focus.
   useEffect(() => {
-    if (!open) {
-      const id = window.setTimeout(() => {
-        setSyncPending(false);
-        setPipelineBusy(false);
-        setDashboardPersistedInSession(false);
-        resetGateSheet();
-      }, 0);
-      return () => window.clearTimeout(id);
-    }
+    if (!open) return;
+    setSummaryExpanded(false);
+  }, [open, payload?.metric, payload?.scoreDisplay, payload?.populationClass]);
+
+  useEffect(() => {
+    if (open) return;
+    const id = window.setTimeout(() => {
+      setSyncPending(false);
+      setPipelineBusy(false);
+      setDashboardPersistedInSession(false);
+      setSummaryExpanded(false);
+      resetGateSheet();
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [open, resetGateSheet]);
 
   useShellScrollLock(open);
@@ -139,6 +152,14 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
   const hasActions = showDashboardSync || showDashboardThenArena;
   const actionsBusy = isDashboardSyncing || isPipelineRunning;
+  const hasSummary = Boolean(String(payload.summary ?? '').trim());
+  const badgeAriaLabel = summaryExpanded
+    ? t('assessment.breakthrough.normBadgeCollapseAria', {
+        populationClass: payload.populationClass,
+      })
+    : t('assessment.breakthrough.normBadgeExpandAria', {
+        populationClass: payload.populationClass,
+      });
 
   return createPortal(
     <div
@@ -159,108 +180,145 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         className="relative z-10 w-full max-w-md motion-reduce:animate-none animate-breakthrough-enter will-change-[transform,opacity]"
         onClick={(event) => event.stopPropagation()}
       >
-        <AuraReactiveFrame auraKey={payload.auraKey}>
-          <header className="space-y-2 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-500">
-              {t('assessment.breakthrough.kicker')}
-            </p>
-            <h2 id={titleId} className="text-xl font-bold tracking-tight text-zinc-50">
-              {payload.title}
-            </h2>
-            <p className={`font-mono text-4xl font-bold tabular-nums text-aura-neon text-zinc-50`}>
-              {payload.scoreDisplay}
-            </p>
-          </header>
-
-          <p className="mt-4 text-center text-sm leading-relaxed text-zinc-300">
-            {payload.summary}
-          </p>
-
-          <div className="mt-6 border-t border-zinc-800/90 pt-5">
-            <TachometerMilestoneBar
-              progress01={payload.milestone.progress01}
-              remainingPoints={payload.milestone.remainingPoints}
-              auraKey={payload.auraKey}
-              milestoneHintLabel={milestoneHintLabel}
-            />
-          </div>
-
-          {hasActions ? (
-            <div className="mt-2 w-full">
-              {showDashboardSync ? (
-                <button
-                  type="button"
-                  className="w-full rounded-xl bg-amber-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-amber-400 disabled:pointer-events-none disabled:opacity-40"
-                  disabled={syncDisabled || actionsBusy}
-                  onClick={() => void handleDashboardSync()}
-                >
-                  {isDashboardSyncing
-                    ? t('assessment.breakthrough.syncing')
-                    : t('assessment.breakthrough.syncBtn')}
-                </button>
-              ) : null}
-
-              {showDashboardThenArena ? (
-                <button
-                  type="button"
-                  className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
-                  disabled={
-                    syncDisabled ||
-                    actionsBusy ||
-                    arenaSync.targetCount === 0 ||
-                    arenaSync.gate === 'no-score' ||
-                    arenaSync.gate === 'invalid-score'
-                  }
-                  onClick={() => void handleDashboardThenArena()}
-                >
-                  {isPipelineRunning
-                    ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
-                    : t('assessment.breakthrough.syncDashboardThenArena')}
-                </button>
-              ) : null}
-
-              {pipelineBanner !== 'none' ? (
-                <p
-                  className={`mt-3 text-sm ${
-                    pipelineBanner === 'full-success' ? 'text-emerald-400/90' : 'text-amber-300/90'
-                  }`}
-                  role="status"
-                >
-                  {pipelineBanner === 'full-success'
-                    ? t('assessment.breakthrough.dashboardAndArenaSuccess')
-                    : t('assessment.breakthrough.dashboardPersistedOnly')}
+        <AuraReactiveFrame auraKey={payload.auraKey} className="max-h-[min(88dvh,40rem)]">
+          {/*
+            WHY: Scroll the score/summary/tachometer column only — keep dual CTAs pinned so
+            expand never pushes primary actions below the fold on short mobile viewports.
+          */}
+          <div className="flex max-h-[min(88dvh,40rem)] flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <header className="space-y-2 text-center">
+                <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-zinc-500">
+                  {t('assessment.breakthrough.kicker')}
                 </p>
-              ) : null}
-
-              {showArenaFeedback && arenaSync?.summary ? (
-                <LadderSyncSummaryStatus
-                  className="mt-3"
-                  summary={arenaSync.summary}
-                  failures={arenaSync.failures}
-                  variant="assessment"
+                <h2 id={titleId} className="text-xl font-bold tracking-tight text-zinc-50">
+                  {payload.title}
+                </h2>
+                <AssessmentHeroScoreWithNormBadge
+                  variant="breakthrough"
+                  scoreText={payload.scoreDisplay}
+                  populationClass={payload.populationClass}
+                  decadeKey={payload.decadeKey}
+                  onBadgeClick={hasSummary ? toggleSummaryExpanded : undefined}
+                  badgeExpanded={summaryExpanded}
+                  showChevron={hasSummary}
+                  badgeAriaControls={hasSummary ? summaryId : undefined}
+                  badgeAriaLabel={hasSummary ? badgeAriaLabel : undefined}
                 />
+              </header>
+
+              {hasSummary ? (
+                <div
+                  className={`grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${
+                    summaryExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                  }`}
+                >
+                  <div
+                    className={`min-h-0 overflow-hidden ${summaryExpanded ? '' : 'pointer-events-none'}`}
+                    inert={summaryExpanded ? undefined : true}
+                  >
+                    <p
+                      id={summaryId}
+                      role="region"
+                      aria-label={t('assessment.breakthrough.summaryRegionAria', {
+                        populationClass: payload.populationClass,
+                      })}
+                      aria-hidden={!summaryExpanded}
+                      className="mt-4 text-center text-sm leading-relaxed text-zinc-300"
+                    >
+                      {payload.summary}
+                    </p>
+                  </div>
+                </div>
               ) : null}
 
-              <button
-                type="button"
-                className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
-                disabled={actionsBusy}
-                onClick={onClose}
-              >
-                {t('assessment.breakthrough.confirmDismiss')}
-              </button>
+              <div className="mt-6 border-t border-zinc-800/90 pt-5">
+                <TachometerMilestoneBar
+                  progress01={payload.milestone.progress01}
+                  remainingPoints={payload.milestone.remainingPoints}
+                  auraKey={payload.auraKey}
+                  milestoneHintLabel={milestoneHintLabel}
+                />
+              </div>
             </div>
-          ) : (
-            <div className="mt-6 w-full">
-              <button
-                type="button"
-                className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
-                onClick={onClose}
-              >
-                {t('assessment.breakthrough.confirmDismiss')}
-              </button>
-            </div>
-          )}
+
+            {hasActions ? (
+              <div className="mt-2 w-full shrink-0">
+                {showDashboardSync ? (
+                  <button
+                    type="button"
+                    className="w-full rounded-xl bg-amber-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-amber-400 disabled:pointer-events-none disabled:opacity-40"
+                    disabled={syncDisabled || actionsBusy}
+                    onClick={() => void handleDashboardSync()}
+                  >
+                    {isDashboardSyncing
+                      ? t('assessment.breakthrough.syncing')
+                      : t('assessment.breakthrough.syncBtn')}
+                  </button>
+                ) : null}
+
+                {showDashboardThenArena ? (
+                  <button
+                    type="button"
+                    className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
+                    disabled={
+                      syncDisabled ||
+                      actionsBusy ||
+                      arenaSync.targetCount === 0 ||
+                      arenaSync.gate === 'no-score' ||
+                      arenaSync.gate === 'invalid-score'
+                    }
+                    onClick={() => void handleDashboardThenArena()}
+                  >
+                    {isPipelineRunning
+                      ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
+                      : t('assessment.breakthrough.syncDashboardThenArena')}
+                  </button>
+                ) : null}
+
+                {pipelineBanner !== 'none' ? (
+                  <p
+                    className={`mt-3 text-sm ${
+                      pipelineBanner === 'full-success' ? 'text-emerald-400/90' : 'text-amber-300/90'
+                    }`}
+                    role="status"
+                  >
+                    {pipelineBanner === 'full-success'
+                      ? t('assessment.breakthrough.dashboardAndArenaSuccess')
+                      : t('assessment.breakthrough.dashboardPersistedOnly')}
+                  </p>
+                ) : null}
+
+                {showArenaFeedback && arenaSync?.summary ? (
+                  <LadderSyncSummaryStatus
+                    className="mt-3"
+                    summary={arenaSync.summary}
+                    failures={arenaSync.failures}
+                    variant="assessment"
+                  />
+                ) : null}
+
+                <button
+                  type="button"
+                  className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
+                  disabled={actionsBusy}
+                  onClick={onClose}
+                >
+                  {t('assessment.breakthrough.confirmDismiss')}
+                </button>
+              </div>
+            ) : (
+              <div className="mt-6 w-full shrink-0">
+                <button
+                  type="button"
+                  className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
+                  onClick={onClose}
+                >
+                  {t('assessment.breakthrough.confirmDismiss')}
+                </button>
+              </div>
+            )}
+          </div>
         </AuraReactiveFrame>
       </div>
 

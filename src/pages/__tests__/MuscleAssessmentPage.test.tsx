@@ -140,6 +140,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -159,6 +162,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -185,6 +191,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });

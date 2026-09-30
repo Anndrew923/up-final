@@ -7,6 +7,7 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
@@ -167,9 +168,12 @@ const ArmSizeAssessmentPage: FC = () => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('armSize.previewLabel')}
               </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">
-                {heroScore.toFixed(2)}
-              </p>
+              <AssessmentHeroScoreWithNormBadge
+                scoreText={heroScore.toFixed(2)}
+                populationClass={scoreMeaning?.populationClass}
+                decadeKey={scoreMeaning?.decadeKey}
+                className="mt-1"
+              />
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-300">
                   {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}

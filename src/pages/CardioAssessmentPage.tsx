@@ -13,6 +13,7 @@ import {
   AssessmentTabPanel,
 } from '../components/assessment/AssessmentSegmentedControl';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
@@ -303,9 +304,12 @@ const CardioAssessmentPage: FC = () => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('cardio.previewLabel')}
               </p>
-              <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? previewScore.toFixed(2)}
-              </p>
+              <AssessmentHeroScoreWithNormBadge
+                scoreText={heroScoreText ?? previewScore.toFixed(2)}
+                populationClass={scoreMeaning?.populationClass}
+                decadeKey={scoreMeaning?.decadeKey}
+                className="mt-1"
+              />
             </div>
           ) : null}
 

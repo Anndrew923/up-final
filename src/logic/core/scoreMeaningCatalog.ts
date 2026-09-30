@@ -12,6 +12,7 @@ export type AxisTitleMapping = Record<SixAxisMetric, readonly ScoreBand[]>;
 /**
  * Shared decade gates for six-axis + armSize (Score >= min).
  * WHY: Aligns with OVERALL_GRADE_TIERS left-digit UX; single source prevents axis/overall drift.
+ * PARITY: Keep min/max/id in lockstep with `functions/dynoIntel/scoreBandResolver.js` → DECADE_AXIS_TIER_BANDS.
  */
 export const DECADE_AXIS_TIER_BANDS: readonly ScoreBand[] = [
   { id: 'BASE', min: 0, max: 39.99 },

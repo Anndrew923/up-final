@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -187,9 +188,12 @@ const MuscleAssessmentPage: FC = () => {
               <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                 {t('muscle.previewLabel')}
               </p>
-              <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? previewScore.toFixed(2)}
-              </p>
+              <AssessmentHeroScoreWithNormBadge
+                scoreText={heroScoreText ?? previewScore.toFixed(2)}
+                populationClass={scoreMeaning?.populationClass}
+                decadeKey={scoreMeaning?.decadeKey}
+                className="mt-1"
+              />
               {previewBreakdown ? (
                 <p className="mt-2 text-xs leading-relaxed text-zinc-500">
                   {t('muscle.breakdownLine', {

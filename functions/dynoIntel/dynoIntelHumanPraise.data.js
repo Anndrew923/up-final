@@ -6,7 +6,7 @@
  */
 export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH = "【全人類官方 PR 值對照資料正在熱烈搜集中】\n\n當資料足夠，會在更新後解鎖；誠摯邀請你幫忙介紹新玩家，一同加速解鎖這座全球肉體極限座標！";
 
-export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN = "【Global Peer PR Percentile Data Is Actively Being Gathered】\nWhen sufficient data is accumulated, this feature will unlock via a backend sync. We sincerely invite you to recruit new players to accelerate the calibration of this ultimate coordinate of human physical limits!";
+export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN = "[GLOBAL PR PERCENTILE — CALIBRATING]\n\nNot enough peer data yet. This unlocks on a future sync — bring more lifters in and we get there faster.";
 
 export const DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH = "在名人堂聖殿中，你正與 {{names}} 站在同一個王座座標。";
 
@@ -56,7 +56,7 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
     "volume": "在 70 分以上時，訓練痕跡開始顯現，常常會被身邊的人詢問：「你有在健身喔？」這完全是你悉心鍛鍊成果的展現，你可以心安理得地享受這份成就感。你的外型已經明顯跟沒有訓練的玩家有所不同，雖然還沒到雜誌封面、健身網紅那麼精緻顯眼，但你已經掌握了正確方向，只要持續累積，進步到 80 分以上絕對是指日可待。"
   },
   "80": {
-    "populationClass": "高級玩家",
+    "populationClass": "高階玩家",
     "overall": "這個分數獲取不易，你的基因如果屬於一般水準，那肯定付出了大量的努力，就算基因相當優秀，也無法輕輕鬆鬆拿到80以上的評分。在這個區間，你肯定已經察覺，你常常是群眾中最強、最顯眼的，不只在生理上忍受訓練的辛苦和汗水，心理上也要忍受相對的犧牲，別人在玩、在享樂時，你依然訓練不輟，必須要給你一個respect！90分以上是凡人頂尖族群，想爬上去需要投入更大量的時間，因此很多運動愛好者都把80分這個區間設定為最終的目標，你已經漂亮的達標了！",
     "neuro": "你把「訓練」這個任務的優先權排在很多事情前面，光去健身房拍拍照、擺擺樣子，根本達不到目前的程度，相當值得嘉許。 80 分以上是群眾中的佼佼者，在健身房中已經被歸類為高手，在專項競技運動員中也是優秀的表現，許多優秀的籃球員、格鬥運動員或健美運動員的力量表現，就在這個範圍。同時， 80 分也是許多運動愛好者的終極目標，你已經漂亮地完成了！",
     "volume": "到了這個程度，你已經習慣獨自訓練了，畢竟願意花這麼多心思在鍛鍊的人已經相對稀少。 80 分以上的外型表現，在人群中已經是一大亮點，訓練痕跡清晰可見。如果沒有出類拔萃的基因，你就是靠著存粹的努力跟堅持走到這一步，而 90 分以上是凡人基因的最高殿堂，嘗試繼續向前吧！"
@@ -131,13 +131,13 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
     "volume": "Watching muscle rise or waist shrink, a quiet pride whispers: yes, you are doing well. Others may not notice, but you feel your body changing. You may have trained for a while; partners who once promised to join may have quit — but effort does not betray you. Your body is improving significantly. At this stage you are getting skilled; the energy you invest converts into results. Keep marching toward 70."
   },
   "70": {
-    "populationClass": "Advanced Trainee",
+    "populationClass": "Advanced Lifter",
     "overall": "Consistent training, diet control, and staying healthy enough to avoid injury — that is how you got here. You deserve a thumbs-up. In a commercial gym you are very likely one of the strongest players, and training marks are easy for others to notice. Your athletic output is already competitive in specialty sports. Climbing further will cost significantly more time and sharper technique — set a higher goal. Are you ready?",
     "neuro": "At this score, your athletic performance already belongs to the outstanding gym cohort. Most people need careful training to earn 70+. Watch this stage carefully: many players taste rapid progress and rush — injury arrives fast. Stay grounded to keep progressing. Applied to competitive specialty sports with refined skill, you have already entered advanced territory.",
     "volume": "Past 70, training marks begin to show — people often ask, \"Do you work out?\" That is the fruit of careful training; enjoy it with a clear conscience. Your look already differs from untrained players. You may not be magazine-cover sharp yet, but you have the right direction — keep stacking, and breaking 80 is absolutely on the clock."
   },
   "80": {
-    "populationClass": "Elite Player",
+    "populationClass": "High Tier",
     "overall": "This score is hard to earn. If your genetics are average, you have poured in massive effort; even with excellent genetics, nobody coasts past 80. In this band you are often the strongest and most visible in the crowd. Physically you endure sweat; mentally you endure sacrifice — while others play, you still train. Respect! Ninety-plus is the peak-mortal cohort and demands far more time, so many enthusiasts treat the 80s as their final goal — and you have already hit it cleanly!",
     "neuro": "You ranked \"training\" above many other priorities. Gym selfies and posing cannot reach this level — that deserves praise. Eighty-plus puts you among the elite of the crowd: labeled advanced in the gym, and strong among specialty athletes. Many excellent basketball, combat, or physique athletes sit in this range. Eighty is also many enthusiasts' ultimate goal — and you finished it beautifully!",
     "volume": "At this level you are used to training alone — people willing to invest this much are relatively rare. An 80+ physique is already a major spotlight in any crowd, with clear training marks. Without outstanding genetics, pure effort and persistence got you here. Ninety-plus is the highest hall of mortal genetics — try to keep going!"

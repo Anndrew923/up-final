@@ -69,7 +69,10 @@
       "dashboardAndArenaSuccess": "本機主控台與天梯已同步完成。",
       "syncing": "數據灌注中",
       "peakReached": "已達巔峰序列",
-      "milestoneRemaining": "距離下一階升級尚需 {{points}} 分"
+      "milestoneRemaining": "距離下一階升級尚需 {{points}} 分",
+      "normBadgeExpandAria": "展開「{{populationClass}}」級距說明",
+      "normBadgeCollapseAria": "收合「{{populationClass}}」級距說明",
+      "summaryRegionAria": "「{{populationClass}}」級距說明"
     },
     "ceremony": {
       "scanning": "診斷掃描中…",

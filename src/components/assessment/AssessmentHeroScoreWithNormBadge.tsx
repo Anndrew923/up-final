@@ -1,0 +1,78 @@
+import type { FC } from 'react';
+import { cn } from '../../lib/cn';
+import NormBadgeChip, { type NormBadgeChipSize } from '../common/NormBadgeChip';
+
+export interface AssessmentHeroScoreWithNormBadgeProps {
+  scoreText: string;
+  populationClass?: string | null;
+  decadeKey?: string | null;
+  /**
+   * preview — assessment page hero (text-2xl).
+   * breakthrough — modal celebration numeral (text-4xl, centered).
+   */
+  variant?: 'preview' | 'breakthrough';
+  /** Override badge size; breakthrough defaults to md for modal touch targets. */
+  badgeSize?: NormBadgeChipSize;
+  className?: string;
+  /** Optional badge interactivity — assessment pages omit; breakthrough modal wires expand. */
+  onBadgeClick?: () => void;
+  badgeExpanded?: boolean;
+  showChevron?: boolean;
+  badgeAriaControls?: string;
+  badgeAriaLabel?: string;
+}
+
+const SCORE_CLASS: Record<
+  NonNullable<AssessmentHeroScoreWithNormBadgeProps['variant']>,
+  string
+> = {
+  preview: 'font-mono text-2xl tabular-nums leading-none text-accent-info',
+  breakthrough:
+    'font-mono text-4xl font-bold tabular-nums leading-none text-aura-neon text-zinc-50',
+};
+
+/**
+ * Single mount point for hero score + physiological norm badge.
+ * WHY: Seven assessment pages + breakthrough modal shared the same row; centralizing prevents drift.
+ */
+const AssessmentHeroScoreWithNormBadge: FC<AssessmentHeroScoreWithNormBadgeProps> = ({
+  scoreText,
+  populationClass = null,
+  decadeKey = null,
+  variant = 'preview',
+  badgeSize,
+  className,
+  onBadgeClick,
+  badgeExpanded = false,
+  showChevron = false,
+  badgeAriaControls,
+  badgeAriaLabel,
+}) => {
+  const resolvedBadgeSize: NormBadgeChipSize =
+    badgeSize ?? (variant === 'breakthrough' ? 'md' : 'sm');
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        // WHY: Preview may wrap on narrow heroes; breakthrough keeps score+badge as one celebratory row.
+        variant === 'preview' ? 'flex-wrap' : 'flex-nowrap justify-center gap-2.5',
+        className
+      )}
+    >
+      <p className={SCORE_CLASS[variant]}>{scoreText}</p>
+      <NormBadgeChip
+        populationClass={populationClass ?? ''}
+        decadeKey={decadeKey}
+        size={resolvedBadgeSize}
+        onClick={onBadgeClick}
+        expanded={badgeExpanded}
+        showChevron={showChevron}
+        ariaControls={badgeAriaControls}
+        ariaLabel={badgeAriaLabel}
+      />
+    </div>
+  );
+};
+
+export default AssessmentHeroScoreWithNormBadge;

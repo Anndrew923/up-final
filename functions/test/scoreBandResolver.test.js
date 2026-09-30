@@ -1,5 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   resolveHumanScaleDecadeKey,
   resolveScoreBandId,
@@ -9,6 +12,14 @@ import {
   SOUL_STREAM_NEURO,
   SOUL_STREAM_VOLUME,
 } from "../dynoIntel/scoreBandResolver.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const decadeParity = JSON.parse(
+  readFileSync(
+    join(__dirname, "../../src/logic/core/fixtures/humanScaleDecadeParity.json"),
+    "utf8"
+  )
+);
 
 describe("resolveSoulStream v3.5.1", () => {
   it("routes strength, explosivePower, gripStrength to neuro stream", () => {
@@ -51,6 +62,12 @@ describe("resolveSoulMatrixFieldKey v3.5.1", () => {
 });
 
 describe("resolveHumanScaleDecadeKey v3.3.2", () => {
+  it("locks bandId → decadeKey parity table with client humanScaleBandResolver", () => {
+    for (const [bandId, decadeKey] of decadeParity.bandIdToDecade) {
+      assert.equal(resolveHumanScaleDecadeKey(bandId), decadeKey);
+    }
+  });
+
   it("maps BASE to decade key 0", () => {
     assert.equal(resolveHumanScaleDecadeKey("BASE"), "0");
   });

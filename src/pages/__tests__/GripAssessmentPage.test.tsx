@@ -129,6 +129,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Pantheon Compression',
       summary: 'Model ceiling reached.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -164,6 +167,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -196,6 +202,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Track Semi-Slick',
       summary: 'Mountain drift copy.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 70,
       remainingPoints: 7,
     });
@@ -231,6 +240,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Track Semi-Slick',
       summary: 'Mountain drift copy.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 70,
       remainingPoints: 7,
     });
