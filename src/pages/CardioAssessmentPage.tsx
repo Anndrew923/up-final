@@ -22,6 +22,7 @@ import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecRef
 import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
+import { useAerobicMilestoneHint } from '../hooks/useAerobicMilestoneHint';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import type { CardioTab } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -35,6 +36,7 @@ const CardioAssessmentPage: FC = () => {
   const [cooperInfoOpen, setCooperInfoOpen] = useState(false);
   const [run5kmInfoOpen, setRun5kmInfoOpen] = useState(false);
   const {
+    profile,
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
@@ -100,6 +102,15 @@ const CardioAssessmentPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning(scoreMeaningMetric, previewScore ?? heroScore);
+  const nextMilestoneHint = useAerobicMilestoneHint(
+    scoreMeaning,
+    activeTab,
+    distanceInput,
+    runMinutesInput,
+    runSecondsInput,
+    profile,
+    profileReady
+  );
 
   const segmentOptions = useMemo(
     () => [
@@ -136,6 +147,7 @@ const CardioAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
       />
       <AssessmentAmbientGlow />
 
@@ -307,9 +319,9 @@ const CardioAssessmentPage: FC = () => {
                 {scoreMeaning.title}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
+              {nextMilestoneHint ? (
                 <p className="mt-2.5 border-t border-zinc-800/90 pt-2.5 text-xs font-medium text-cyan-300">
-                  {t('cardio.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
+                  {nextMilestoneHint}
                 </p>
               ) : null}
             </section>

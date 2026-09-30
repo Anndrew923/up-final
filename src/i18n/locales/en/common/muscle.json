@@ -22,6 +22,7 @@
     "previewLabel": "Preview Score",
     "performanceSpecHeader": "EXTERIOR SPEC / SMM",
     "nextMilestoneHint": "{{points}} pts until next tier upgrade",
+    "nextMilestoneHintWithRaw": "{{points}} pts until next tier upgrade (maintaining current weight, skeletal muscle approx. +{{delta}} {{unit}})",
     "breakdownLine": "SMM score: {{smmScore}} · SM%: {{smPct}} · SM% score: {{smPctScore}}",
     "calculate": "Calculate",
     "submitRadar": "Save to Radar · CHSS",

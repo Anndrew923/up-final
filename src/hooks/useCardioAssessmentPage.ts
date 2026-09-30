@@ -24,6 +24,7 @@ import {
 import { navigateHomeWithResonance } from '../services/radarResonanceNavigation';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
+import type { PhysicalProfile } from '../types/userProfile';
 import { useScoreStore } from '../stores/scoreStore';
 
 /** Page/hook alias — same union as `CardioAssessmentTab` in scoring core. */
@@ -32,6 +33,7 @@ export type CardioTab = CardioAssessmentTab;
 export type CardioPageErrorKey = CardioAssessmentComputeError | null;
 
 export interface UseCardioAssessmentPageResult {
+  profile: PhysicalProfile | null;
   profileReady: boolean;
   /** Cooper tab only: parsed distance exceeds world-record-aligned model ceiling. */
   cooperDistanceOverCap: boolean;
@@ -232,6 +234,7 @@ export function useCardioAssessmentPage(): UseCardioAssessmentPageResult {
   }, [navigate, persistToDashboard]);
 
   return {
+    profile,
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,

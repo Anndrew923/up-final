@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
@@ -17,6 +18,7 @@ import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssess
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useMuscleAssessmentPage } from '../hooks/useMuscleAssessmentPage';
+import { useMuscleMilestoneHint } from '../hooks/useMuscleMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildMuscleAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import {
@@ -88,6 +90,12 @@ const MuscleAssessmentPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning('muscleMass', previewScore ?? heroScore);
+  const nextMilestoneHint = useMuscleMilestoneHint(
+    scoreMeaning,
+    smmInput,
+    profile,
+    profileReady
+  );
 
   const dualSovereignCeilingKey = resolveMuscleDualSovereignI18nKey(profile?.gender, 'ceiling');
   const dualSovereignExceedsKey = resolveMuscleDualSovereignI18nKey(
@@ -106,6 +114,7 @@ const MuscleAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady || scoreLocked}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
       />
       <AssessmentAmbientGlow />
 
@@ -194,21 +203,12 @@ const MuscleAssessmentPage: FC = () => {
           ) : null}
 
           {previewScore !== null && !scoreLocked && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
-                {t('muscle.performanceSpecHeader')}
-              </p>
-              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
-                {scoreMeaning.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-orange-300">
-                  {t('muscle.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                </p>
-              ) : null}
-            </section>
+            <AssessmentScoreMeaningPanel
+              headerLabel={t('muscle.performanceSpecHeader')}
+              meaning={scoreMeaning}
+              milestoneHintLabel={nextMilestoneHint}
+              tone="orange"
+            />
           ) : null}
 
           <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
