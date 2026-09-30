@@ -1,6 +1,6 @@
 {
   "assessment": {
-    "title": "性能測功機 //\u00a0DYNO",
+    "title": "性能測功機 // DYNO",
     "referenceInfo": {
       "title": "評測參考資料",
       "toggleExpand": "展開資料",
@@ -19,7 +19,8 @@
       "cardio": "續航",
       "muscleMass": "車體外觀",
       "bodyFat": "引擎排量",
-      "gripStrength": "抓地"
+      "gripStrength": "抓地",
+      "armSize": "輪框"
     },
     "ffmi": {
       "kicker": "換算",
@@ -74,6 +75,10 @@
       "normBadgeCollapseAria": "收合「{{populationClass}}」級距說明",
       "summaryRegionAria": "「{{populationClass}}」級距說明"
     },
+    "viewCalculationDetails": "查看換算明細",
+    "hideCalculationDetails": "隱藏換算明細",
+    "calculateRadarWithAxis": "計算評測（{{axis}}） ➔",
+    "writeToRadarWithAxis": "寫入雷達（{{axis}}） ➔",
     "hallSpectrum": {
       "title": "{{axisTitle}} · 名人堂光譜",
       "closeAria": "關閉名人堂光譜",

@@ -2,13 +2,17 @@ import type { FC, ReactNode } from 'react';
 import { CollapsibleActionRow } from './CollapsibleActionRow';
 import { CollapsibleChevron } from './CollapsibleChevron';
 import { onCollapsibleToggleKeyDown } from '../lib/collapsibleKeyboard';
+import { cn } from '../lib/cn';
 
 export interface DisclosurePanelProps {
   /** Stable prefix; renders `{instanceId}-toggle` and `{instanceId}-panel` for a11y wiring. */
   instanceId: string;
   expanded: boolean;
   onToggle: () => void;
-  title: ReactNode;
+  /**
+   * Visible title for `card` variant. Optional for `link` (ghost toggle uses expand/collapse labels).
+   */
+  title?: ReactNode;
   toggleExpandLabel: string;
   toggleCollapseLabel: string;
   /** Optional one-line hint shown only when collapsed (e.g. what fields live inside). */
@@ -28,9 +32,15 @@ export interface DisclosurePanelProps {
    * `chevron` — title-row chevron only; labels stay in aria-label for a11y.
    */
   actionMode?: 'labeled' | 'chevron';
+  /**
+   * `card` — bordered panel shell (default, home/tools/reference).
+   * `link` — borderless ghost toggle for assessment calculation details (de-boxing).
+   */
+  variant?: 'card' | 'link';
 }
 
 const defaultPanelBodyClassName = 'space-y-2 px-4 pb-4 pt-3 text-sm leading-relaxed text-zinc-400';
+const linkPanelBodyClassName = 'space-y-2 pt-2 text-sm leading-relaxed text-zinc-400';
 
 /**
  * Presentational collapsible used on assessment pages and home profile advanced fields.
@@ -46,16 +56,57 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   headerAccessory,
   headerAccessoryLabel,
   children,
-  panelBodyClassName = defaultPanelBodyClassName,
+  panelBodyClassName,
   actionMode = 'labeled',
+  variant = 'card',
 }) => {
   const toggleId = `${instanceId}-toggle`;
   const panelId = `${instanceId}-panel`;
   const actionLabel = expanded ? toggleCollapseLabel : toggleExpandLabel;
   const chevronOnly = actionMode === 'chevron';
+  const isLink = variant === 'link';
   const ariaLabel = [actionLabel, !expanded ? collapsedHint : null, headerAccessoryLabel]
     .filter((part): part is string => Boolean(part && part.trim()))
     .join('. ');
+  const resolvedBodyClass =
+    panelBodyClassName ?? (isLink ? linkPanelBodyClassName : defaultPanelBodyClassName);
+
+  if (isLink) {
+    return (
+      <div className="min-w-0">
+        <button
+          type="button"
+          className={cn(
+            'inline-flex max-w-full items-center gap-1.5 rounded-md py-1 text-left text-xs tracking-wide text-zinc-500 transition-colors',
+            'hover:text-zinc-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60'
+          )}
+          aria-expanded={expanded}
+          aria-controls={panelId}
+          aria-label={ariaLabel}
+          id={toggleId}
+          onClick={onToggle}
+          onKeyDown={(e) => onCollapsibleToggleKeyDown(e, onToggle)}
+        >
+          <span className="font-mono text-[10px] text-zinc-600" aria-hidden>
+            {expanded ? '▾' : '▸'}
+          </span>
+          <span className="min-w-0 truncate">{actionLabel}</span>
+        </button>
+        <div
+          id={panelId}
+          role="region"
+          aria-labelledby={toggleId}
+          hidden={!expanded}
+          className={cn(
+            'origin-top transition-opacity duration-200 ease-out',
+            expanded ? 'opacity-100' : 'opacity-0'
+          )}
+        >
+          <div className={resolvedBodyClass}>{children}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
@@ -71,7 +122,7 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
       >
         <span className="flex w-full items-center justify-between gap-3">
           <span className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="min-w-0 truncate font-medium text-zinc-200">{title}</span>
+            <span className="min-w-0 truncate font-medium text-zinc-200">{title ?? actionLabel}</span>
             {headerAccessory}
           </span>
           {chevronOnly ? <CollapsibleChevron expanded={expanded} /> : null}
@@ -96,7 +147,7 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
         hidden={!expanded}
         className="border-t border-zinc-700/60"
       >
-        <div className={panelBodyClassName}>{children}</div>
+        <div className={resolvedBodyClass}>{children}</div>
       </div>
     </div>
   );

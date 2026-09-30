@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
@@ -17,7 +16,7 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
@@ -194,59 +193,37 @@ const GripAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {previewScore !== null ? (
-            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('grip.previewLabel')}
-              </p>
-              <AssessmentHeroScoreWithNormBadge
-                scoreText={heroScoreText ?? formatOverallResonanceScore(previewScore)}
-                populationClass={scoreMeaning?.populationClass}
-                decadeKey={scoreMeaning?.decadeKey}
-                className="mt-1"
-                {...hallSpectrum.badgeProps}
-              />
-            </div>
-          ) : null}
-
           {previewScore !== null && scoreMeaning ? (
             <AssessmentScoreMeaningPanel
               tone="blue"
-              headerLabel={t('grip.performanceSpecHeader')}
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
               hallEntry={hallSpectrum.headerActionProps}
+              hero={{
+                scoreText: heroScoreText ?? formatOverallResonanceScore(previewScore),
+                populationClass: scoreMeaning.populationClass,
+                decadeKey: scoreMeaning.decadeKey,
+                ...hallSpectrum.badgeProps,
+              }}
             />
           ) : null}
 
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              axisLabel={t('assessment.axis.gripStrength')}
+              hasScore={previewScore !== null}
               disabled={revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('grip.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={revealBlocking}
-              onClick={submitToRadar}
-            >
-              {t('grip.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {t('grip.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {t('grip.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

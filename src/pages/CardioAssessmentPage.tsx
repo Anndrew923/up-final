@@ -13,16 +13,15 @@ import {
   AssessmentTabPanel,
 } from '../components/assessment/AssessmentSegmentedControl';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
-import { HallSpectrumEntryButton } from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -316,72 +315,37 @@ const CardioAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {previewScore !== null ? (
-            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-3 py-2.5">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('cardio.previewLabel')}
-              </p>
-              <AssessmentHeroScoreWithNormBadge
-                scoreText={heroScoreText ?? previewScore.toFixed(2)}
-                populationClass={scoreMeaning?.populationClass}
-                decadeKey={scoreMeaning?.decadeKey}
-                className="mt-1"
-                {...hallSpectrum.badgeProps}
-              />
-            </div>
-          ) : null}
-
           {previewScore !== null && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-3.5 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/65 to-transparent" />
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-                <p className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
-                  {t('cardio.performanceSpecHeader')}
-                </p>
-                {hallSpectrum.headerActionProps ? (
-                  <HallSpectrumEntryButton {...hallSpectrum.headerActionProps} />
-                ) : null}
-              </div>
-              <h3 className="mt-1.5 text-base font-semibold tracking-tight text-zinc-50">
-                {scoreMeaning.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {nextMilestoneHint ? (
-                <p className="mt-2.5 border-t border-zinc-800/90 pt-2.5 text-xs font-medium text-cyan-300">
-                  {nextMilestoneHint}
-                </p>
-              ) : null}
-            </section>
+            <AssessmentScoreMeaningPanel
+              tone="cyan"
+              meaning={scoreMeaning}
+              milestoneHintLabel={nextMilestoneHint}
+              hallEntry={hallSpectrum.headerActionProps}
+              hero={{
+                scoreText: heroScoreText ?? previewScore.toFixed(2),
+                populationClass: scoreMeaning.populationClass,
+                decadeKey: scoreMeaning.decadeKey,
+                ...hallSpectrum.badgeProps,
+              }}
+            />
           ) : null}
 
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800/80 pt-3">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              axisLabel={t('assessment.axis.cardio')}
+              hasScore={previewScore !== null}
               disabled={(isCooperTab && !profileReady) || revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('cardio.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={(isCooperTab && !profileReady) || revealBlocking}
-              onClick={submitAssessment}
-            >
-              {isSpecialtyTab ? t('cardio.submitSpecialty') : t('cardio.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           {/* WHY: Scheme C keeps the form clean — scoring anchors live in the shared collapsible footer. */}
           <AssessmentReferenceFooter>

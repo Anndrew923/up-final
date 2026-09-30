@@ -1,11 +1,10 @@
 import type { FC } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
@@ -13,7 +12,8 @@ import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -26,6 +26,7 @@ import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessment
 
 const FfmiPage: FC = () => {
   const { t } = useTranslation('common');
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const {
     profile,
     profileReady,
@@ -138,19 +139,6 @@ const FfmiPage: FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="ui-btn ui-btn-primary"
-                disabled={revealBlocking}
-                onClick={() => {
-                  void revealCalculate();
-                }}
-              >
-                {t('ffmi.calculate')}
-              </button>
-            </div>
-
             {errorKey ? (
               <p className="text-sm text-red-300" role="alert">
                 {t(`ffmi.errors.${errorKey}`)}
@@ -159,59 +147,58 @@ const FfmiPage: FC = () => {
 
             {breakdown ? (
               <div className="space-y-4 border-t border-zinc-800 pt-6">
-                <dl className="grid gap-3 text-sm md:grid-cols-2">
-                  <div>
-                    <dt className="text-zinc-500">{t('ffmi.resultFfmi')}</dt>
-                    <dd className="font-mono text-lg text-zinc-100">{breakdown.rawAdjustedFfmi}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-zinc-500">{t('ffmi.resultRadarScore')}</dt>
-                    <dd className="font-mono text-lg text-accent-primary">
-                      {breakdown.allowsRadarSubmit ? (
-                        (heroScoreText ?? breakdown.submittedScore.toFixed(2))
-                      ) : (
-                        <span className="text-zinc-500">{t('ffmi.radarScoreLockedLabel')}</span>
-                      )}
-                    </dd>
-                  </div>
-                  {breakdown.limitedByHumanCap ? (
-                    <>
-                      <div>
-                        <dt className="text-zinc-500">{t('ffmi.resultScoreUncapped')}</dt>
-                        <dd className="font-mono text-zinc-300">{breakdown.uncappedScore}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-zinc-500">{t('ffmi.resultFfmiCapped')}</dt>
-                        <dd className="font-mono text-zinc-300">{breakdown.cappedAdjustedFfmi}</dd>
-                      </div>
-                    </>
-                  ) : null}
-                </dl>
-
-                {previewScore !== null ? (
-                  <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                      {t('ffmi.previewLabel')}
-                    </p>
-                    <AssessmentHeroScoreWithNormBadge
-                      scoreText={heroScoreText ?? previewScore.toFixed(2)}
-                      populationClass={scoreMeaning?.populationClass}
-                      decadeKey={scoreMeaning?.decadeKey}
-                      className="mt-1"
-                      {...hallSpectrum.badgeProps}
-                    />
-                  </div>
-                ) : null}
-
                 {previewScore !== null && scoreMeaning ? (
                   <AssessmentScoreMeaningPanel
-                    headerLabel={t('ffmi.performanceSpecHeader')}
                     meaning={scoreMeaning}
                     milestoneHintLabel={nextMilestoneHint}
                     tone="violet"
                     hallEntry={hallSpectrum.headerActionProps}
+                    hero={{
+                      scoreText: heroScoreText ?? previewScore.toFixed(2),
+                      populationClass: scoreMeaning.populationClass,
+                      decadeKey: scoreMeaning.decadeKey,
+                      ...hallSpectrum.badgeProps,
+                    }}
                   />
                 ) : null}
+
+                <DisclosurePanel
+                  instanceId="ffmi-calc-details"
+                  expanded={detailsOpen}
+                  onToggle={() => setDetailsOpen((v) => !v)}
+                  toggleExpandLabel={t('assessment.viewCalculationDetails')}
+                  toggleCollapseLabel={t('assessment.hideCalculationDetails')}
+                  variant="link"
+                >
+                  <dl className="grid gap-3 text-sm md:grid-cols-2">
+                    <div>
+                      <dt className="text-zinc-500">{t('ffmi.resultFfmi')}</dt>
+                      <dd className="font-mono text-lg text-zinc-100">{breakdown.rawAdjustedFfmi}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">{t('ffmi.resultRadarScore')}</dt>
+                      <dd className="font-mono text-lg text-accent-primary">
+                        {breakdown.allowsRadarSubmit ? (
+                          heroScoreText ?? breakdown.submittedScore.toFixed(2)
+                        ) : (
+                          <span className="text-zinc-500">{t('ffmi.radarScoreLockedLabel')}</span>
+                        )}
+                      </dd>
+                    </div>
+                    {breakdown.limitedByHumanCap ? (
+                      <>
+                        <div>
+                          <dt className="text-zinc-500">{t('ffmi.resultScoreUncapped')}</dt>
+                          <dd className="font-mono text-zinc-300">{breakdown.uncappedScore}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-zinc-500">{t('ffmi.resultFfmiCapped')}</dt>
+                          <dd className="font-mono text-zinc-300">{breakdown.cappedAdjustedFfmi}</dd>
+                        </div>
+                      </>
+                    ) : null}
+                  </dl>
+                </DisclosurePanel>
 
                 {categorySuffix && gender ? (
                   <p className="text-sm text-zinc-400">
@@ -237,24 +224,22 @@ const FfmiPage: FC = () => {
                     </ul>
                   </aside>
                 ) : null}
-
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    className="ui-btn ui-btn-primary disabled:opacity-40"
-                    disabled={!breakdown.allowsRadarSubmit || revealBlocking}
-                    onClick={submitToRadar}
-                  >
-                    {t('ffmi.submitRadar')}
-                  </button>
-                </div>
-                {submitDone ? (
-                  <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
-                ) : null}
-
-                <LeaderboardAssessmentSyncBar syncController={ladderSync} />
               </div>
             ) : null}
+
+            <div className="space-y-3">
+              <AssessmentWriteToRadarButton
+                axisLabel={t('assessment.axis.bodyFat')}
+                hasScore={previewScore !== null}
+                disabled={revealBlocking}
+                onClick={() => {
+                  void revealCalculate();
+                }}
+              />
+              {submitDone ? (
+                <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
+              ) : null}
+            </div>
 
             <AssessmentReferenceFooter>
               <FfmiEducationPanels />

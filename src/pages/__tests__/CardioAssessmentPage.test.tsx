@@ -60,9 +60,14 @@ vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'cardio.performanceSpecHeader') return 'PERFORMANCE SPEC / Thermal Spec';
+      if (key === 'assessment.calculateRadarWithAxis') {
+        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.writeToRadarWithAxis') {
+        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.axis.cardio') return 'Stint';
       if (key === 'cardio.nextMilestoneHint') return `Next Milestone: ${String(options?.points)}`;
-      if (key === 'cardio.calculate') return 'Calculate';
       return key;
     },
   }),
@@ -95,10 +100,6 @@ vi.mock('../../components/DisclosurePanel', () => ({
       {expanded ? <div data-testid="disclosure-body">{children}</div> : null}
     </div>
   ),
-}));
-
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
-  default: () => <div data-testid="leaderboard-sync-bar" />,
 }));
 
 function renderPage(): { container: HTMLDivElement; unmount: () => void } {
@@ -169,23 +170,28 @@ describe('CardioAssessmentPage', () => {
 
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('cooper', 88.5);
     expect(lastRevealFlowMetric).toBe('cooper');
-    expect(text).toContain('PERFORMANCE SPEC / Thermal Spec');
+    expect(text).toContain('88.50');
+    expect(text).toContain('高階玩家');
     expect(text).toContain('Thermal Elite');
     expect(text).toContain('Next Milestone: 3');
+    expect(text).not.toContain('PERFORMANCE SPEC / Thermal Spec');
 
-    const calculateBtn = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Calculate')
+    expect(text).toContain('Write to Radar (Stint)');
+    expect(text).not.toContain('Calculate Assessment');
+
+    const writeBtn = Array.from(container.querySelectorAll('button')).find((el) =>
+      el.textContent?.includes('Write to Radar')
     );
-    expect(calculateBtn).toBeDefined();
+    expect(writeBtn).toBeDefined();
     act(() => {
-      calculateBtn!.click();
+      writeBtn!.click();
     });
     expect(mockRevealCalculate).toHaveBeenCalledTimes(1);
 
     unmount();
   });
 
-  it('disables calculate when profile is incomplete', () => {
+  it('disables write-to-radar CTA when profile is incomplete', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
       profile: null,
       profileReady: false,
@@ -211,10 +217,11 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue(null);
 
     const { container, unmount } = renderPage();
-    const calculateBtn = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Calculate')
+    const cta = Array.from(container.querySelectorAll('button')).find((el) =>
+      el.textContent?.includes('Calculate Assessment')
     );
-    expect(calculateBtn?.disabled).toBe(true);
+    expect(cta?.disabled).toBe(true);
+    expect(container.textContent).not.toContain('Write to Radar');
 
     unmount();
   });

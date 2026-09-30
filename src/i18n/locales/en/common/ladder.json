@@ -44,8 +44,6 @@
       "syncFailed": "Sync did not update the ladder. Check the details below, or continue and retry from Filters.",
       "syncNoOp": "No shard writes were needed. If rankings still look stale, open Filters and sync again later."
     },
-
-
     "activeFilterCount": "{{count}} active",
     "floatingRank": {
       "filteredRankShort": "Filtered #{{rank}}",
@@ -163,9 +161,6 @@
       "identityPatched": "Score unchanged — display name / anonymity synced across boards."
     },
     "assessmentSync": {
-      "noTargetsTap": "Calculate a valid score on this page first, then sync to ladder.",
-      "button": "Sync to Ladder",
-      "busy": "Syncing…",
       "successSummary": "Updated this page's shards, overall score, and public six-axis profile."
     },
     "divisions": {

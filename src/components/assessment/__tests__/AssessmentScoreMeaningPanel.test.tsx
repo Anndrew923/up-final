@@ -78,4 +78,52 @@ describe('AssessmentScoreMeaningPanel', () => {
     expect(container.querySelector('button')).toBeNull();
     expect(container.textContent).toContain('PERFORMANCE SPEC');
   });
+
+  it('integrates hero score + NormBadge in the header and demotes headerLabel', () => {
+    const onBadge = vi.fn();
+    const onHall = vi.fn();
+    act(() => {
+      root.render(
+        <AssessmentScoreMeaningPanel
+          headerLabel="SHOULD NOT SHOW"
+          meaning={meaning}
+          tone="blue"
+          hero={{
+            scoreText: '87.80',
+            populationClass: '高階玩家',
+            decadeKey: '80',
+            onBadgeClick: onBadge,
+            showChevron: true,
+            badgeSize: 'md',
+            chevronTone: 'forward',
+            badgeAriaLabel: '開啟「高階玩家」名人堂光譜',
+          }}
+          hallEntry={{
+            onClick: onHall,
+            label: '名人堂光譜 ➔',
+            ariaLabel: '開啟名人堂常模光譜',
+          }}
+        />
+      );
+    });
+
+    expect(container.textContent).toContain('87.80');
+    expect(container.textContent).toContain('高階玩家');
+    expect(container.textContent).toContain('凡體覺醒');
+    expect(container.textContent).not.toContain('SHOULD NOT SHOW');
+
+    const badge = container.querySelector('button[aria-label="開啟「高階玩家」名人堂光譜"]');
+    expect(badge).not.toBeNull();
+    act(() => {
+      badge?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onBadge).toHaveBeenCalledTimes(1);
+
+    const hall = container.querySelector('button[aria-label="開啟名人堂常模光譜"]');
+    expect(hall).not.toBeNull();
+    act(() => {
+      hall?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onHall).toHaveBeenCalledTimes(1);
+  });
 });

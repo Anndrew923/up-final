@@ -19,7 +19,8 @@
       "cardio": "Stint",
       "muscleMass": "Exterior",
       "bodyFat": "Displacement",
-      "gripStrength": "Traction"
+      "gripStrength": "Traction",
+      "armSize": "Rim Spec"
     },
     "ffmi": {
       "kicker": "Calculated",
@@ -74,6 +75,10 @@
       "normBadgeCollapseAria": "Collapse {{populationClass}} tier explanation",
       "summaryRegionAria": "{{populationClass}} tier explanation"
     },
+    "viewCalculationDetails": "View calculation details",
+    "hideCalculationDetails": "Hide calculation details",
+    "calculateRadarWithAxis": "Calculate Assessment ({{axis}}) ➔",
+    "writeToRadarWithAxis": "Write to Radar ({{axis}}) ➔",
     "hallSpectrum": {
       "title": "{{axisTitle}} · Hall Spectrum",
       "closeAria": "Close hall-of-fame spectrum",

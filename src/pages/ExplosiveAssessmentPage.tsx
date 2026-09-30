@@ -8,7 +8,6 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import {
   AssessmentSegmentedControl,
@@ -19,7 +18,8 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -35,6 +35,7 @@ import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/asses
 const ExplosiveAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const {
     profile,
@@ -355,43 +356,61 @@ const ExplosiveAssessmentPage: FC = () => {
           ) : null}
 
           {previewBreakdown ? (
-            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-3 py-2.5">
+            <div className="space-y-3">
+              {hasRadarAxisPreview &&
+              axisAverageRaw != null &&
+              heroScore !== null &&
+              scoreMeaning &&
+              !isSpecialtyOnlyPreview ? (
+                <AssessmentScoreMeaningPanel
+                  tone="amber"
+                  meaning={scoreMeaning}
+                  milestoneHintLabel={nextMilestoneHint}
+                  hallEntry={hallSpectrum.headerActionProps}
+                  hero={{
+                    scoreText: heroScore.toFixed(2),
+                    populationClass: scoreMeaning.populationClass,
+                    decadeKey: scoreMeaning.decadeKey,
+                    ...hallSpectrum.badgeProps,
+                  }}
+                />
+              ) : null}
+
               {hasRadarAxisPreview && axisAverageRaw != null ? (
-                <>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                    {t('explosive.branchScoresHeading')}
-                  </p>
-                  <ul className="space-y-1 text-sm text-zinc-300">
-                    <li className="flex justify-between gap-4 font-mono tabular-nums">
-                      <span className="text-zinc-400">{t('explosive.branchVerticalJumpShort')}</span>
-                      <span>{fmtBranch(previewBreakdown.verticalJumpRaw)}</span>
-                    </li>
-                    <li className="flex justify-between gap-4 font-mono tabular-nums">
-                      <span className="text-zinc-400">
-                        {t('explosive.branchStandingLongJumpShort')}
-                      </span>
-                      <span>{fmtBranch(previewBreakdown.standingLongJumpRaw)}</span>
-                    </li>
-                  </ul>
-                  <div className="border-t border-zinc-700/80 pt-2">
-                    <p className="text-xs text-zinc-400">{t('explosive.averageRawLabel')}</p>
-                    <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
-                      {axisAverageRaw.toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="border-t border-zinc-700/80 pt-2">
+                <DisclosurePanel
+                  instanceId="explosive-calc-details"
+                  expanded={detailsOpen}
+                  onToggle={() => setDetailsOpen((v) => !v)}
+                  toggleExpandLabel={t('assessment.viewCalculationDetails')}
+                  toggleCollapseLabel={t('assessment.hideCalculationDetails')}
+                  variant="link"
+                >
+                  <div className="space-y-2">
                     <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                      {t('explosive.previewLabel')}
+                      {t('explosive.branchScoresHeading')}
                     </p>
-                    <AssessmentHeroScoreWithNormBadge
-                      scoreText={(heroScore ?? axisAverageRaw).toFixed(2)}
-                      populationClass={scoreMeaning?.populationClass}
-                      decadeKey={scoreMeaning?.decadeKey}
-                      className="mt-1"
-                      {...hallSpectrum.badgeProps}
-                    />
+                    <ul className="space-y-1 text-sm text-zinc-300">
+                      <li className="flex justify-between gap-4 font-mono tabular-nums">
+                        <span className="text-zinc-400">
+                          {t('explosive.branchVerticalJumpShort')}
+                        </span>
+                        <span>{fmtBranch(previewBreakdown.verticalJumpRaw)}</span>
+                      </li>
+                      <li className="flex justify-between gap-4 font-mono tabular-nums">
+                        <span className="text-zinc-400">
+                          {t('explosive.branchStandingLongJumpShort')}
+                        </span>
+                        <span>{fmtBranch(previewBreakdown.standingLongJumpRaw)}</span>
+                      </li>
+                    </ul>
+                    <div className="border-t border-zinc-800/80 pt-2">
+                      <p className="text-xs text-zinc-400">{t('explosive.averageRawLabel')}</p>
+                      <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
+                        {axisAverageRaw.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                </>
+                </DisclosurePanel>
               ) : null}
 
               {previewBreakdown.sprintRaw != null ? (
@@ -411,46 +430,24 @@ const ExplosiveAssessmentPage: FC = () => {
             </div>
           ) : null}
 
-          {heroScore !== null && scoreMeaning && !isSpecialtyOnlyPreview ? (
-            <AssessmentScoreMeaningPanel
-              tone="amber"
-              headerLabel={t('explosive.performanceSpecHeader')}
-              meaning={scoreMeaning}
-              milestoneHintLabel={nextMilestoneHint}
-              hallEntry={hallSpectrum.headerActionProps}
-            />
-          ) : null}
-
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800/80 pt-3">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              axisLabel={t('assessment.axis.explosivePower')}
+              hasScore={heroScore !== null}
               disabled={tabDisabled}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('explosive.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={tabDisabled}
-              onClick={submitAssessment}
-            >
-              {isSpecialtyTab ? t('explosive.submitSpecialty') : t('explosive.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {isSpecialtyTab || isSpecialtyOnlyPreview
+                  ? t('explosive.submitDoneSpecialtyOnly')
+                  : t('explosive.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {isSpecialtyTab || isSpecialtyOnlyPreview
-                ? t('explosive.submitDoneSpecialtyOnly')
-                : t('explosive.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

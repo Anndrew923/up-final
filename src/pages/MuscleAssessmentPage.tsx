@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
@@ -16,7 +15,8 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -33,6 +33,7 @@ import {
 const MuscleAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [standardsInfoOpen, setStandardsInfoOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const {
     profileReady,
@@ -195,68 +196,57 @@ const MuscleAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {previewScore !== null && !scoreLocked ? (
-            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('muscle.previewLabel')}
-              </p>
-              <AssessmentHeroScoreWithNormBadge
-                scoreText={heroScoreText ?? previewScore.toFixed(2)}
-                populationClass={scoreMeaning?.populationClass}
-                decadeKey={scoreMeaning?.decadeKey}
-                className="mt-1"
-                {...hallSpectrum.badgeProps}
+          {previewScore !== null && !scoreLocked && scoreMeaning ? (
+            <div className="space-y-2">
+              <AssessmentScoreMeaningPanel
+                meaning={scoreMeaning}
+                milestoneHintLabel={nextMilestoneHint}
+                tone="orange"
+                hallEntry={hallSpectrum.headerActionProps}
+                hero={{
+                  scoreText: heroScoreText ?? previewScore.toFixed(2),
+                  populationClass: scoreMeaning.populationClass,
+                  decadeKey: scoreMeaning.decadeKey,
+                  ...hallSpectrum.badgeProps,
+                }}
               />
               {previewBreakdown ? (
-                <p className="mt-2 text-xs leading-relaxed text-zinc-500">
-                  {t('muscle.breakdownLine', {
-                    smmScore: previewBreakdown.smmScoreRaw.toFixed(2),
-                    smPct: previewBreakdown.smPercent.toFixed(2),
-                    smPctScore: previewBreakdown.smPercentScoreRaw.toFixed(2),
-                  })}
-                </p>
+                <DisclosurePanel
+                  instanceId="muscle-calc-details"
+                  expanded={detailsOpen}
+                  onToggle={() => setDetailsOpen((v) => !v)}
+                  toggleExpandLabel={t('assessment.viewCalculationDetails')}
+                  toggleCollapseLabel={t('assessment.hideCalculationDetails')}
+                  variant="link"
+                >
+                  <p className="text-xs leading-relaxed text-zinc-400">
+                    {t('muscle.breakdownLine', {
+                      smmScore: previewBreakdown.smmScoreRaw.toFixed(2),
+                      smPct: previewBreakdown.smPercent.toFixed(2),
+                      smPctScore: previewBreakdown.smPercentScoreRaw.toFixed(2),
+                    })}
+                  </p>
+                </DisclosurePanel>
               ) : null}
             </div>
           ) : null}
 
-          {previewScore !== null && !scoreLocked && scoreMeaning ? (
-            <AssessmentScoreMeaningPanel
-              headerLabel={t('muscle.performanceSpecHeader')}
-              meaning={scoreMeaning}
-              milestoneHintLabel={nextMilestoneHint}
-              tone="orange"
-              hallEntry={hallSpectrum.headerActionProps}
-            />
-          ) : null}
-
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary disabled:pointer-events-none disabled:opacity-40"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              axisLabel={t('assessment.axis.muscleMass')}
+              hasScore={previewScore !== null && !scoreLocked}
               disabled={!profileReady || revealBlocking || scoreLocked}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('muscle.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn disabled:pointer-events-none disabled:opacity-40"
-              disabled={!profileReady || revealBlocking || scoreLocked}
-              onClick={submitToRadar}
-            >
-              {t('muscle.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {t('muscle.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {t('muscle.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

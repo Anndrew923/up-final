@@ -1,6 +1,9 @@
 import type { FC } from 'react';
 import type { ScoreMeaningResult } from '../../hooks/useScoreMeaning';
 import { cn } from '../../lib/cn';
+import AssessmentHeroScoreWithNormBadge, {
+  type AssessmentHeroScoreWithNormBadgeProps,
+} from './AssessmentHeroScoreWithNormBadge';
 
 export type AssessmentScoreMeaningTone = 'orange' | 'cyan' | 'blue' | 'violet' | 'amber' | 'slate';
 
@@ -57,8 +60,20 @@ export interface HallSpectrumEntryAction {
   ariaLabel?: string;
 }
 
+/**
+ * Integrated radar-axis score + NormBadge for the honor-core header.
+ * WHY: Collapses the old isolated preview row into the spec card and kills box-in-box fatigue.
+ */
+export type AssessmentScoreMeaningHero = {
+  scoreText: string;
+  populationClass?: string | null;
+  decadeKey?: string | null;
+} & Pick<
+  AssessmentHeroScoreWithNormBadgeProps,
+  'onBadgeClick' | 'showChevron' | 'badgeAriaLabel' | 'badgeSize' | 'chevronTone'
+>;
+
 export interface AssessmentScoreMeaningPanelProps {
-  headerLabel: string;
   meaning: ScoreMeaningResult;
   /** Omit when at max tier (no next milestone). */
   milestoneHintLabel?: string | null;
@@ -68,13 +83,20 @@ export interface AssessmentScoreMeaningPanelProps {
    * WHY: Null/undefined hides the CTA (incomplete score, 5km specialty, etc.).
    */
   hallEntry?: HallSpectrumEntryAction | null;
+  /** Integrated hero score + NormBadge (left column). Preferred over demoted headerLabel. */
+  hero?: AssessmentScoreMeaningHero | null;
+  /**
+   * Optional mono kicker — only rendered when `hero` is absent.
+   * WHY: Demoted; integrated hero replaces the old headerLabel + isolated score stack.
+   */
+  headerLabel?: string;
 }
 
-/** Shared ghost CTA class for panel + handwritten Strength/Cardio headers. */
+/** Shared ghost CTA class for Hall Spectrum entry buttons. */
 export const HALL_SPECTRUM_ENTRY_BUTTON_CLASS =
   'inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-md border border-amber-500/40 px-2.5 text-xs font-medium tracking-wide text-amber-300 transition-colors hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60';
 
-/** Spec-card / handwritten header Hall entry — keeps seven pages visually identical. */
+/** Spec-card Hall entry — keeps seven pages + breakthrough modal visually identical. */
 export const HallSpectrumEntryButton: FC<HallSpectrumEntryAction & { className?: string }> = ({
   onClick,
   label,
@@ -92,13 +114,15 @@ export const HallSpectrumEntryButton: FC<HallSpectrumEntryAction & { className?:
 );
 
 const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
-  headerLabel,
   meaning,
   milestoneHintLabel = null,
   tone,
   hallEntry = null,
+  hero = null,
+  headerLabel,
 }) => {
   const styles = TONE_STYLES[tone];
+  const hasHero = hero != null && String(hero.scoreText).trim().length > 0;
 
   return (
     <section
@@ -108,19 +132,36 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
         className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${styles.gradient} to-transparent`}
         aria-hidden
       />
-      {/* WHY: Rigid 2-col grid — never flex-wrap header title + Hall CTA on narrow phones. */}
+      {/* WHY: Rigid 2-col grid — never flex-wrap hero/score + Hall CTA on narrow phones. */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-        <p
-          className={cn(
-            'min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em]',
-            styles.header
-          )}
-        >
-          {headerLabel}
-        </p>
+        {hasHero && hero ? (
+          <AssessmentHeroScoreWithNormBadge
+            scoreText={hero.scoreText}
+            populationClass={hero.populationClass}
+            decadeKey={hero.decadeKey}
+            variant="panel"
+            badgeSize={hero.badgeSize}
+            onBadgeClick={hero.onBadgeClick}
+            showChevron={hero.showChevron}
+            chevronTone={hero.chevronTone}
+            badgeAriaLabel={hero.badgeAriaLabel}
+            className="min-w-0"
+          />
+        ) : headerLabel ? (
+          <p
+            className={cn(
+              'min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em]',
+              styles.header
+            )}
+          >
+            {headerLabel}
+          </p>
+        ) : (
+          <span className="min-w-0" />
+        )}
         {hallEntry ? <HallSpectrumEntryButton {...hallEntry} /> : null}
       </div>
-      <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">{meaning.title}</h3>
+      <h3 className="mt-3 text-base font-semibold tracking-tight text-zinc-50">{meaning.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">{meaning.summary}</p>
       {milestoneHintLabel != null &&
       meaning.nextMilestone !== null &&

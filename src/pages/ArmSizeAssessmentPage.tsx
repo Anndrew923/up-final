@@ -7,14 +7,13 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
@@ -175,68 +174,48 @@ const ArmSizeAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {heroScore !== null ? (
-            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('armSize.previewLabel')}
-              </p>
-              <AssessmentHeroScoreWithNormBadge
-                scoreText={heroScore.toFixed(2)}
-                populationClass={scoreMeaning?.populationClass}
-                decadeKey={scoreMeaning?.decadeKey}
-                className="mt-1"
-                {...hallSpectrum.badgeProps}
+          {heroScore !== null && scoreMeaning ? (
+            <div className="space-y-2">
+              <AssessmentScoreMeaningPanel
+                tone="slate"
+                meaning={scoreMeaning}
+                milestoneHintLabel={
+                  scoreMeaning.remainingPoints != null
+                    ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
+                    : null
+                }
+                hallEntry={hallSpectrum.headerActionProps}
+                hero={{
+                  scoreText: heroScore.toFixed(2),
+                  populationClass: scoreMeaning.populationClass,
+                  decadeKey: scoreMeaning.decadeKey,
+                  ...hallSpectrum.badgeProps,
+                }}
               />
               {submittedScore !== null && submittedScore !== previewScore ? (
-                <p className="text-sm text-zinc-300">
+                <p className="text-sm text-zinc-400">
                   {t('armSize.submittedScoreLabel', { score: submittedScore.toFixed(2) })}
                 </p>
               ) : null}
             </div>
           ) : null}
 
-          {heroScore !== null && scoreMeaning ? (
-            <AssessmentScoreMeaningPanel
-              tone="slate"
-              headerLabel={t('armSize.performanceSpecHeader')}
-              meaning={scoreMeaning}
-              milestoneHintLabel={
-                scoreMeaning.remainingPoints != null
-                  ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
-                  : null
-              }
-              hallEntry={hallSpectrum.headerActionProps}
-            />
-          ) : null}
-
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              axisLabel={t('assessment.axis.armSize')}
+              hasScore={heroScore !== null}
               disabled={revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('armSize.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={revealBlocking}
-              onClick={persistToDashboard}
-            >
-              {t('armSize.saveLeaderboard')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {t('armSize.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {t('armSize.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

@@ -59,7 +59,13 @@ vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'grip.performanceSpecHeader') return 'PERFORMANCE SPEC / Potential Spec';
+      if (key === 'assessment.calculateRadarWithAxis') {
+        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.writeToRadarWithAxis') {
+        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.axis.gripStrength') return 'Traction';
       if (key === 'grip.nextMilestoneHint') {
         return `${String(options?.points)} pts until next tier upgrade`;
       }
@@ -81,10 +87,6 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../components/DisclosurePanel', () => ({
   DisclosurePanel: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-}));
-
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
-  default: () => <div data-testid="leaderboard-sync-bar" />,
 }));
 
 function renderPage(): { container: HTMLDivElement; unmount: () => void } {
@@ -144,9 +146,13 @@ describe('GripAssessmentPage performance spec', () => {
     const text = container.textContent ?? '';
 
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 191);
-    expect(text).toContain('PERFORMANCE SPEC / Potential Spec');
+    expect(text).toContain('191.00');
+    expect(text).toContain('高階玩家');
+    expect(text).toContain('Write to Radar (Traction)');
+    expect(text).not.toContain('Calculate Assessment');
     expect(text).toContain('Pantheon Compression');
     expect(text).toContain('Model ceiling reached.');
+    expect(text).not.toContain('PERFORMANCE SPEC / Potential Spec');
     expect(text).not.toContain('pts until next tier upgrade');
     expect(text).not.toContain('grip.metaWeight');
     expect(text).not.toContain('80');
@@ -184,6 +190,8 @@ describe('GripAssessmentPage performance spec', () => {
     expect(badge?.textContent).toBe('Male');
     expect(container.textContent).not.toContain('grip.metaWeight');
     expect(container.textContent).not.toContain('92.8');
+    expect(container.textContent).toContain('Calculate Assessment (Traction)');
+    expect(container.textContent).not.toContain('Write to Radar');
 
     unmount();
   });

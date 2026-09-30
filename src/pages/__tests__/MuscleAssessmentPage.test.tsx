@@ -65,16 +65,19 @@ vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
   default: () => null,
 }));
 
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
-  default: () => null,
-}));
-
 const SMM_CEILING_COPY = 'Scoring SMM cap: 100 kg for your sex';
 const SMM_PREAMBLE_COPY = 'Ceiling 100/67';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
+      if (key === 'assessment.calculateRadarWithAxis') {
+        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.writeToRadarWithAxis') {
+        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+      }
+      if (key === 'assessment.axis.muscleMass') return 'Exterior';
       if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
         return `Ceiling ${String(options?.maleMax)}/${String(options?.femaleMax)}`;
       }
