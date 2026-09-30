@@ -21,12 +21,15 @@ vi.mock('react-i18next', () => ({
       }
       if (key === 'assessment.hallSpectrum.legalExpand') return 'Expand legal';
       if (key === 'assessment.hallSpectrum.legalCollapse') return 'Collapse legal';
-      if (key === 'assessment.hallSpectrum.teaserKicker') return 'DYNO INTEL TELEMETRY';
+      if (key === 'assessment.hallSpectrum.teaserKicker') return 'DYNO INTEL';
       if (key === 'assessment.hallSpectrum.teaserLine') {
         return 'Drop feelings. Face yourself through scientific norms.';
       }
       if (key === 'assessment.hallSpectrum.teaserCta') {
-        return `Free decode (${String(options?.remaining ?? '')} left)`;
+        return 'Decode physiology';
+      }
+      if (key === 'assessment.hallSpectrum.teaserCtaRemaining') {
+        return `${String(options?.remaining ?? '')} left`;
       }
       if (key === 'assessment.hallSpectrum.teaserCtaArrow') return '➔';
       if (key === 'assessment.hallSpectrum.teaserCtaAria') {
@@ -102,7 +105,7 @@ describe('HallOfFameSpectrumDrawer', () => {
     expect(dialog).not.toBeNull();
     expect(dialog?.textContent).toContain('76.80');
     expect(dialog?.textContent).toContain('進階訓練者');
-    expect(dialog?.textContent).toContain('DYNO INTEL TELEMETRY');
+    expect(dialog?.textContent).toContain('DYNO INTEL');
     expect(dialog?.textContent).toContain('Drop feelings');
 
     const current = document.querySelector('[aria-current="step"]');
@@ -242,5 +245,39 @@ describe('HallOfFameSpectrumDrawer', () => {
     const dialog = document.querySelector('[role="dialog"]');
     const footer = dialog?.querySelector('footer');
     expect(footer?.className).toContain('ui-modal-safe-footer');
+  });
+
+  it('splits Dyno CTA into primary action and remaining quota pill', () => {
+    act(() => {
+      root.render(
+        <HallOfFameSpectrumDrawer
+          open
+          onClose={vi.fn()}
+          axisId="strength"
+          axisTitle="馬力"
+          scoreDisplay="76.80"
+          decadeKey="70"
+          populationClass="進階訓練者"
+          dynoRemaining={25}
+          onOpenDyno={vi.fn()}
+        />
+      );
+    });
+
+    const cta = Array.from(document.querySelectorAll('button')).find((el) =>
+      el.getAttribute('aria-label')?.includes('Open Dyno')
+    );
+    expect(cta).toBeDefined();
+    expect(cta?.className).toContain('justify-between');
+    expect(cta?.getAttribute('aria-label')).toContain('25 left');
+
+    const actionCluster = cta?.querySelector(':scope > span:first-child');
+    const quotaPill = cta?.querySelector(':scope > span:last-child');
+    expect(actionCluster?.textContent).toContain('Decode physiology');
+    expect(actionCluster?.textContent).toContain('➔');
+    expect(actionCluster?.textContent).not.toContain('25');
+    expect(quotaPill?.textContent).toBe('25 left');
+    expect(quotaPill?.className).toContain('tabular-nums');
+    expect(quotaPill?.className).toContain('shrink-0');
   });
 });

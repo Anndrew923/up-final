@@ -108,7 +108,7 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /110-120 \(Transcendent Sanctification\)/);
+    assert.match(enReply.commentary, /110-120 \(Transcendent\)/);
     assert.match(enReply.commentary, /Pantheon benchmarking/i);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
     assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);

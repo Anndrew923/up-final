@@ -60,10 +60,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+        return `Calculate ${String(options?.axis ?? '')} ➔`;
       }
       if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
       }
       if (key === 'assessment.axis.gripStrength') return 'Traction';
       if (key === 'grip.nextMilestoneHint') {
@@ -148,8 +148,8 @@ describe('GripAssessmentPage performance spec', () => {
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 191);
     expect(text).toContain('191.00');
     expect(text).toContain('高階玩家');
-    expect(text).toContain('Write to Radar (Traction)');
-    expect(text).not.toContain('Calculate Assessment');
+    expect(text).toContain('Write Traction to Radar');
+    expect(text).not.toContain('Calculate Traction');
     expect(text).toContain('Pantheon Compression');
     expect(text).toContain('Model ceiling reached.');
     expect(text).not.toContain('PERFORMANCE SPEC / Potential Spec');
@@ -190,8 +190,8 @@ describe('GripAssessmentPage performance spec', () => {
     expect(badge?.textContent).toBe('Male');
     expect(container.textContent).not.toContain('grip.metaWeight');
     expect(container.textContent).not.toContain('92.8');
-    expect(container.textContent).toContain('Calculate Assessment (Traction)');
-    expect(container.textContent).not.toContain('Write to Radar');
+    expect(container.textContent).toContain('Calculate Traction');
+    expect(container.textContent).not.toContain('Write Traction to Radar');
 
     unmount();
   });

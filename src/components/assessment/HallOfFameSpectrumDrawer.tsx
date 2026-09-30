@@ -263,15 +263,21 @@ const HallOfFameSpectrumDrawer: FC<HallOfFameSpectrumDrawerProps> = ({
             <p className="mt-1.5 text-sm leading-snug text-zinc-200">
               {t('assessment.hallSpectrum.teaserLine')}
             </p>
+            {/* WHY: Split action vs quota — a single long CTA wraps on 375–390px and EN locales. */}
             <button
               type="button"
-              className="mt-3 w-full rounded-lg border border-amber-500/50 bg-amber-500/5 px-3 py-2.5 text-left text-sm font-semibold tracking-tight text-amber-300 transition hover:border-amber-400/70 hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60"
+              className="mt-3 flex w-full items-center justify-between gap-2 rounded-lg border border-amber-500/50 bg-amber-500/5 px-3 py-2.5 text-sm font-semibold tracking-tight text-amber-300 transition hover:border-amber-400/70 hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60"
               aria-label={t('assessment.hallSpectrum.teaserCtaAria', { remaining })}
               onClick={handleOpenDyno}
             >
-              {t('assessment.hallSpectrum.teaserCta', { remaining })}
-              <span className="ml-1 text-amber-400/80" aria-hidden>
-                {t('assessment.hallSpectrum.teaserCtaArrow')}
+              <span className="flex min-w-0 items-center gap-1 overflow-hidden">
+                <span className="truncate">{t('assessment.hallSpectrum.teaserCta')}</span>
+                <span className="shrink-0 text-amber-400/80" aria-hidden>
+                  {t('assessment.hallSpectrum.teaserCtaArrow')}
+                </span>
+              </span>
+              <span className="shrink-0 rounded-md border border-amber-500/35 px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums text-amber-400/80">
+                {t('assessment.hallSpectrum.teaserCtaRemaining', { remaining })}
               </span>
             </button>
           </div>

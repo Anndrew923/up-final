@@ -61,10 +61,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+        return `Calculate ${String(options?.axis ?? '')} ➔`;
       }
       if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
       }
       if (key === 'assessment.axis.cardio') return 'Stint';
       if (key === 'cardio.nextMilestoneHint') return `Next Milestone: ${String(options?.points)}`;
@@ -176,11 +176,11 @@ describe('CardioAssessmentPage', () => {
     expect(text).toContain('Next Milestone: 3');
     expect(text).not.toContain('PERFORMANCE SPEC / Thermal Spec');
 
-    expect(text).toContain('Write to Radar (Stint)');
-    expect(text).not.toContain('Calculate Assessment');
+    expect(text).toContain('Write Stint to Radar');
+    expect(text).not.toContain('Calculate Stint');
 
     const writeBtn = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Write to Radar')
+      el.textContent?.includes('Write Stint to Radar')
     );
     expect(writeBtn).toBeDefined();
     act(() => {
@@ -218,10 +218,10 @@ describe('CardioAssessmentPage', () => {
 
     const { container, unmount } = renderPage();
     const cta = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Calculate Assessment')
+      el.textContent?.includes('Calculate Stint')
     );
     expect(cta?.disabled).toBe(true);
-    expect(container.textContent).not.toContain('Write to Radar');
+    expect(container.textContent).not.toContain('Write Stint to Radar');
 
     unmount();
   });

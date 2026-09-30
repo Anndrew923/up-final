@@ -83,9 +83,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "150",
     label: "150+（地表最強）",
-    labelEn: "150+ (Apex of the Earth)",
+    labelEn: "150+ (Earth Apex)",
     pattern:
-      /150\s*(?:\+|分?以上)|150以上|150多|150幾|一百五十多|地表最強|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s/i,
+      /150\s*(?:\+|分?以上)|150以上|150多|150幾|一百五十多|地表最強|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s|earth\s*apex|apex\s+of\s+the\s+earth/i,
   },
   {
     decadeKey: "140",
@@ -97,9 +97,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "130",
     label: "130-140（統計神話）",
-    labelEn: "130-140 (Statistical Myth)",
+    labelEn: "130-140 (Mythic)",
     pattern:
-      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s/i,
+      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s|mythic|statistical\s+myth/i,
   },
   {
     decadeKey: "120",
@@ -111,16 +111,16 @@ const TIER_PATTERNS = [
   {
     decadeKey: "110",
     label: "110-120（超凡入聖）",
-    labelEn: "110-120 (Transcendent Sanctification)",
+    labelEn: "110-120 (Transcendent)",
     pattern:
-      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s/i,
+      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s|transcendent(?:\s+sanctification)?/i,
   },
   {
     decadeKey: "100",
     label: "100-110（凡體覺醒）",
-    labelEn: "100-110 (Mortal Awakening)",
+    labelEn: "100-110 (Awakening)",
     pattern:
-      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s/i,
+      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s|mortal\s+awakening|\bawakening\b/i,
   },
   {
     decadeKey: "90",
@@ -147,9 +147,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "60",
     label: "60-70（大眾健康常模）",
-    labelEn: "60-70 (General Health Norm)",
+    labelEn: "60-70 (Health Norm)",
     pattern:
-      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s/i,
+      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s|health\s+norm|general\s+health\s+norm/i,
   },
   {
     decadeKey: "50",
@@ -161,9 +161,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "40",
     label: "40-50（探索期）",
-    labelEn: "40-50 (Exploration Phase)",
+    labelEn: "40-50 (Exploration)",
     pattern:
-      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s/i,
+      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s|exploration(?:\s+phase)?/i,
   },
   {
     decadeKey: "0",

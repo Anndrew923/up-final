@@ -12,10 +12,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+        return `Calculate ${String(options?.axis ?? '')} ➔`;
       }
       if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
       }
       return key;
     },
@@ -54,8 +54,8 @@ describe('AssessmentWriteToRadarButton', () => {
     const button = container.querySelector('button');
     expect(button?.className).toContain('w-full');
     expect(button?.className).toContain('bg-amber-500');
-    expect(button?.textContent).toContain('Calculate Assessment (馬力)');
-    expect(button?.textContent).not.toContain('Write to Radar');
+    expect(button?.textContent).toContain('Calculate 馬力 ➔');
+    expect(button?.textContent).not.toContain('Write');
 
     act(() => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -70,8 +70,8 @@ describe('AssessmentWriteToRadarButton', () => {
       );
     });
 
-    expect(container.querySelector('button')?.textContent).toContain('Write to Radar (Traction)');
-    expect(container.textContent).not.toContain('Calculate Assessment');
+    expect(container.querySelector('button')?.textContent).toContain('Write Traction to Radar ➔');
+    expect(container.textContent).not.toContain('Calculate');
   });
 
   it('honors disabled state', () => {

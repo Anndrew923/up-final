@@ -72,10 +72,10 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate Assessment (${String(options?.axis ?? '')}) ➔`;
+        return `Calculate ${String(options?.axis ?? '')} ➔`;
       }
       if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write to Radar (${String(options?.axis ?? '')}) ➔`;
+        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
       }
       if (key === 'assessment.axis.muscleMass') return 'Exterior';
       if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
