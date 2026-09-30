@@ -12,6 +12,23 @@ describe('useDynoIntelLaunchStore', () => {
     expect(state.pendingPrompt).toBe('decode me');
     expect(state.requestId).toBe(1);
 
+    // WHY: Identical pending must not bump — ghost double-tap would schedule parallel flushes.
+    useDynoIntelLaunchStore.getState().requestLaunch('decode me');
+    expect(useDynoIntelLaunchStore.getState().requestId).toBe(1);
+  });
+
+  it('bumps requestId when the pending prompt changes', () => {
+    useDynoIntelLaunchStore.getState().requestLaunch('first decode');
+    useDynoIntelLaunchStore.getState().requestLaunch('second decode');
+    expect(useDynoIntelLaunchStore.getState()).toMatchObject({
+      pendingPrompt: 'second decode',
+      requestId: 2,
+    });
+  });
+
+  it('rebumps after clearPending even for the same prompt text', () => {
+    useDynoIntelLaunchStore.getState().requestLaunch('decode me');
+    useDynoIntelLaunchStore.getState().clearPending();
     useDynoIntelLaunchStore.getState().requestLaunch('decode me');
     expect(useDynoIntelLaunchStore.getState().requestId).toBe(2);
   });

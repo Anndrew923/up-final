@@ -36,6 +36,7 @@ import { checkAndTouchDynoQuestionDebounce } from "./questionDebounce.js";
 import { buildDynoIntelInferenceContext } from "./pruneScoringMethodologyBriefs.js";
 import { normalizeDynoIntelQuestion } from "./normalizeDynoIntelQuestion.js";
 import { validateDynoIntelContext } from "./validateContext.js";
+import { resolveDynoDebouncedQuotaAction } from "./resolveDynoDebouncedQuotaAction.js";
 
 /**
  * WHY: Gemini inference credential lives in Secret Manager, never plaintext env.
@@ -227,29 +228,45 @@ export const dynoIntelChat = onCall(
     const cached = isHallConsult ? null : await loadDynoIntelCache(cacheHash);
 
     // WHY: 10s same-question debounce — replay 48h cache without a second quota burn / Gemini call.
-    // If debounced but cache is cold (first ask failed / still writing), fall through so retries work.
+    // Concurrent re-entry while cache is still cold must NOT fall through into consumeDynoQuota.
     const debounce = isHallConsult
       ? { debounced: false }
       : await checkAndTouchDynoQuestionDebounce(uid, userQuestion, now);
-    if (debounce.debounced && cached) {
-      const { data } = await loadDynoRateLimitDoc(uid);
-      const limitSnap = checkDynoIntelDailyLimit(data, hasProQuota, now);
-      recordDynoIntelRouteTelemetry({
-        route: "debounce-cache",
-        intent: inferenceContext.intent,
-        uid,
-        userQuestion,
+
+    if (debounce.debounced) {
+      const { data: rateSnap } = await loadDynoRateLimitDoc(uid);
+      const limitSnap = checkDynoIntelDailyLimit(rateSnap, hasProQuota, now);
+      const pendingReservationCount = Object.keys(limitSnap.bucket.pendingReservations).length;
+      const debounceAction = resolveDynoDebouncedQuotaAction({
+        debounced: true,
+        hasCachedReply: Boolean(cached),
+        pendingReservationCount,
       });
-      return buildDynoChatSuccess(
-        {
-          remaining: limitSnap.remaining,
-          limit: limitSnap.limit,
-          quotaTier: limitSnap.quotaTier,
-          resetAt: limitSnap.resetAt,
-        },
-        finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
-        { fromCache: true }
-      );
+
+      if (debounceAction === "replay-cache") {
+        recordDynoIntelRouteTelemetry({
+          route: "debounce-cache",
+          intent: inferenceContext.intent,
+          uid,
+          userQuestion,
+        });
+        return buildDynoChatSuccess(
+          {
+            remaining: limitSnap.remaining,
+            limit: limitSnap.limit,
+            quotaTier: limitSnap.quotaTier,
+            resetAt: limitSnap.resetAt,
+          },
+          finalizeDynoIntelCallableReply(cached, inferenceContext, userQuestion),
+          { fromCache: true }
+        );
+      }
+
+      if (debounceAction === "block-in-flight") {
+        // WHY: Sibling request still owns the seat — abort without a second reservation.
+        throw new HttpsError("aborted", "request-in-progress");
+      }
+      // allow-consume: prior attempt released without cache — fall through for one retry.
     }
 
     if (cached) {

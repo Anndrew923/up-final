@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { mapDynoIntelCallableErrorToMessageKey } from '../../services/dynoIntelService';
+import {
+  isDynoIntelInProgressAbort,
+  mapDynoIntelCallableErrorToMessageKey,
+} from '../../services/dynoIntelService';
 
 describe('mapDynoIntelCallableErrorToMessageKey', () => {
   it('maps failed-precondition to gemini not configured copy', () => {
@@ -40,5 +43,23 @@ describe('mapDynoIntelCallableErrorToMessageKey', () => {
 
   it('returns null for unknown transport failures', () => {
     expect(mapDynoIntelCallableErrorToMessageKey({ code: 'functions/internal' })).toBeNull();
+  });
+
+  it('returns null for in-progress abort so UI stays quiet', () => {
+    expect(
+      mapDynoIntelCallableErrorToMessageKey({
+        code: 'functions/aborted',
+        message: 'request-in-progress',
+      })
+    ).toBeNull();
+  });
+});
+
+describe('isDynoIntelInProgressAbort', () => {
+  it('detects aborted in-flight duplicates', () => {
+    expect(
+      isDynoIntelInProgressAbort({ code: 'functions/aborted', message: 'request-in-progress' })
+    ).toBe(true);
+    expect(isDynoIntelInProgressAbort({ code: 'functions/internal' })).toBe(false);
   });
 });

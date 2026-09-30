@@ -24,7 +24,6 @@ import {
   resolveDynoIntelDisplayMeta,
   type DynoIntelDisplayMeta,
 } from '../logic/core/resolveDynoIntelDisplayMeta';
-import { requestDynoIntelChat } from '../services/dynoIntelService';
 import { useAuthStore } from '../stores/authStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -32,8 +31,16 @@ import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useTypewriterText } from './useTypewriterText';
 import type { DynoIntelQuotaState } from './useDynoIntelQuota';
 import type { DynoIntelPaywallReason } from '../types/dynoIntelPaywall';
+import { isDynoIntelInProgressAbort, requestDynoIntelChat } from '../services/dynoIntelService';
 
 export type DynoIntelChatStatus = 'idle' | 'loading' | 'typing' | 'error';
+
+export interface DynoIntelSendQuestionOptions {
+  promptTemplateId?: string;
+  modeOverride?: DynoIntelMode;
+  /** Callable idempotency / reservation key (e.g. Spectrum `spectrum-launch-{n}`). */
+  requestId?: string;
+}
 
 function resolveServerQuotaTier(
   quotaTier: unknown,
@@ -100,10 +107,12 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const sendQuestion = useCallback(
     async (
       userQuestion: string,
-      promptTemplateId = DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID,
-      modeOverride?: DynoIntelMode
+      options?: DynoIntelSendQuestionOptions
     ): Promise<boolean> => {
-      const effectiveMode = modeOverride ?? input.mode;
+      const effectiveMode = options?.modeOverride ?? input.mode;
+      const promptTemplateId =
+        options?.promptTemplateId ?? DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID;
+      const requestId = options?.requestId;
       const trimmedQuestion = userQuestion.trim();
       if (!trimmedQuestion) return false;
 
@@ -125,7 +134,6 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         // WHY: Debounce replay is not a new acceptance — Spectrum flush must keep pending if any.
         return false;
       }
-      lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
 
       const requestSyncToken = input.quota.syncToken;
       const requestSequence = ++latestRequestSequence.current;
@@ -163,6 +171,10 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         }
       }
 
+      // WHY: Only arm debounce after gates pass — paywall/auth rejects must not block
+      // Spectrum re-flush after subscribe within the 10s window.
+      lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
+
       const context = input.enrichContext(input.resolveContext(effectiveMode), trimmedQuestion);
       const displayMeta = resolveDynoIntelDisplayMeta(context, trimmedQuestion);
 
@@ -183,6 +195,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           userQuestion: trimmedQuestion,
           mode: effectiveMode,
           priorTurn,
+          ...(requestId ? { requestId } : {}),
         });
         if (
           useAuthStore.getState().uid !== uid ||
@@ -271,6 +284,11 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           !input.quota.isSyncTokenCurrent(requestSyncToken)
         ) {
           return true;
+        }
+        // WHY: Sibling Spectrum/client re-entry aborted server-side — not a user-facing failure.
+        if (isDynoIntelInProgressAbort(error)) {
+          setStatus('idle');
+          return false;
         }
         const mappedKey =
           error instanceof Error &&

@@ -29,7 +29,7 @@ describe('AssessmentScoreMeaningPanel', () => {
     title: '凡體覺醒',
     summary: 'Summary copy.',
     bandId: 'TIER_100',
-    decadeKey: '100',
+    decadeKey: '100' as const,
     populationClass: '凡體覺醒',
     nextMilestone: null,
     remainingPoints: null,

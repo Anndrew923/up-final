@@ -17,6 +17,16 @@ import {
   resolveDynoIntelSheetEntry,
   shouldOpenDynoIntelQuotaExhaustedPaywall,
 } from '../../logic/core/dynoIntelGates';
+import {
+  buildDynoIntelLaunchRequestId,
+  claimDynoIntelLaunchFlush,
+  markDynoIntelLaunchFlushAccepted,
+  releaseDynoIntelLaunchFlushInFlight,
+  resetDynoIntelLaunchFlushInFlight,
+  shouldClearChatForSpectrumOpen,
+  shouldRetryLaunchFlushAfterRelease,
+  type DynoIntelLaunchFlushLock,
+} from '../../logic/core/dynoIntelLaunchFlush';
 import { DYNO_INTEL_LOCAL_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { pushAndroidBackDismiss } from '../../lib/androidBackDismissStack';
@@ -153,6 +163,11 @@ const DynoIntelConsole = () => {
     clearChat();
   }, [clearChat, getMostRecentLog, loadLocalLogs, restoreFromLog]);
 
+  const launchFlushLockRef = useRef<DynoIntelLaunchFlushLock>({
+    flushedLaunchRequestId: 0,
+    inFlightLaunchRequestId: 0,
+  });
+
   const openSheetWithGate = useCallback(() => {
     const entry = resolveDynoIntelSheetEntry(
       DYNO_INFERENCE_MODE,
@@ -189,8 +204,18 @@ const DynoIntelConsole = () => {
     }
     setSheetView('chat');
     // WHY: Spectrum decode must not ride under a restored prior log; normal trigger still restores.
-    if (useDynoIntelLaunchStore.getState().pendingPrompt) {
-      clearChat();
+    // Skip clearChat while auto-flush is in flight — resetting status to idle re-opens a double-send window.
+    const launchState = useDynoIntelLaunchStore.getState();
+    if (launchState.pendingPrompt) {
+      if (
+        shouldClearChatForSpectrumOpen(
+          launchFlushLockRef.current.inFlightLaunchRequestId,
+          launchState.requestId,
+          true
+        )
+      ) {
+        clearChat();
+      }
     } else {
       restoreLatestLog();
     }
@@ -211,6 +236,8 @@ const DynoIntelConsole = () => {
 
   const handleSheetClose = useCallback(() => {
     clearPendingLaunch();
+    // WHY: Abandoning the sheet must drop zombie in-flight claims so the next launch can claim.
+    resetDynoIntelLaunchFlushInFlight(launchFlushLockRef.current);
     closeSheet();
     setSheetView('chat');
     setPaywallBillingError(false);
@@ -219,7 +246,12 @@ const DynoIntelConsole = () => {
 
   const openSheetWithGateRef = useRef(openSheetWithGate);
   openSheetWithGateRef.current = openSheetWithGate;
-  const flushedLaunchRequestIdRef = useRef(0);
+  const sendQuestionRef = useRef(sendQuestion);
+  sendQuestionRef.current = sendQuestion;
+  const clearPendingLaunchRef = useRef(clearPendingLaunch);
+  clearPendingLaunchRef.current = clearPendingLaunch;
+  /** Bumped when a superseded launch must retry after an older in-flight flush settles. */
+  const [flushRetryToken, setFlushRetryToken] = useState(0);
 
   // WHY: Assessment Hall Spectrum CTA queues a prompt; Console owns gated open + auto-send.
   // Also re-runs when auth leaves `loading` so bootstrap-pending launches are not dropped.
@@ -230,21 +262,44 @@ const DynoIntelConsole = () => {
     openSheetWithGateRef.current();
   }, [launchRequestId, authStatus]);
 
-  // WHY: Flush only after sendQuestion accepts gates — keep pending across paywall/auth early returns.
+  // WHY: Sync in-flight claim before await — sendQuestion identity churn must not double-bill.
+  // Paywall/auth rejection releases in-flight so subscribe → chat can re-flush the same launch.
   useEffect(() => {
     if (!sheetOpen || sheetView !== 'chat' || !pendingPrompt) return;
-    if (flushedLaunchRequestIdRef.current === launchRequestId) return;
+    const lock = launchFlushLockRef.current;
+    if (!claimDynoIntelLaunchFlush(lock, launchRequestId)) return;
     const prompt = pendingPrompt;
     const requestId = launchRequestId;
+    const idempotencyKey = buildDynoIntelLaunchRequestId(requestId);
     setSuggestionsDismissed(true);
     void (async () => {
-      const accepted = await sendQuestion(prompt);
-      if (!accepted) return;
-      if (useDynoIntelLaunchStore.getState().requestId !== requestId) return;
-      flushedLaunchRequestIdRef.current = requestId;
-      clearPendingLaunch();
+      try {
+        const accepted = await sendQuestionRef.current(prompt, { requestId: idempotencyKey });
+        if (!accepted) {
+          releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+          return;
+        }
+        const launchState = useDynoIntelLaunchStore.getState();
+        if (launchState.requestId !== requestId) {
+          releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+          if (
+            shouldRetryLaunchFlushAfterRelease({
+              completedLaunchRequestId: requestId,
+              currentLaunchRequestId: launchState.requestId,
+              hasPendingPrompt: Boolean(launchState.pendingPrompt),
+            })
+          ) {
+            setFlushRetryToken((token) => token + 1);
+          }
+          return;
+        }
+        markDynoIntelLaunchFlushAccepted(lock, requestId);
+        clearPendingLaunchRef.current();
+      } catch {
+        releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+      }
     })();
-  }, [clearPendingLaunch, launchRequestId, pendingPrompt, sendQuestion, sheetOpen, sheetView]);
+  }, [flushRetryToken, launchRequestId, pendingPrompt, sheetOpen, sheetView]);
 
   // WHY: Android back must close Dyno before tab-root ExitConfirm — register only while open.
   useEffect(() => {
@@ -259,6 +314,7 @@ const DynoIntelConsole = () => {
     // WHY: Soft-dismiss abandons Spectrum decode — clearing prevents a chat-view flush that then
     // re-opens paywall and permanently loses the prompt.
     clearPendingLaunch();
+    resetDynoIntelLaunchFlushInFlight(launchFlushLockRef.current);
     setSheetView('chat');
     setPaywallBillingError(false);
   }, [clearPendingLaunch]);
