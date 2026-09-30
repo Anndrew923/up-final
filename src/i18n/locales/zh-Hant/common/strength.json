@@ -12,6 +12,8 @@
     "repsAccuracyNudge": "次數愈少，估計 1RM 通常愈準。若你有更低次數、接近力竭的組數，建議改填該組重量與次數。",
     "fieldsHint": "性別、年齡、體重取自首頁身體資料。若要跳過某一項，請將該項重量與次數皆留空。次數大於 10 不予接受（次最大估計品質）。各動作另有重量模型上限，超過時計分與儲存會封頂並顯示提示。",
     "calculateThisLift": "計算此項",
+    "lockIn": "鎖定戰果",
+    "lockedSuccess": "✓ 已鎖定",
     "singleOneRmLabel": "估計 1RM",
     "singleOneRmValue": "{{value}} {{unit}}",
     "singleScoreLabel": "單項分數",

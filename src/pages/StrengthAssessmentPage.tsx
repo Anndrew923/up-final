@@ -15,20 +15,14 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
-import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
-import SingleLiftMilestoneHint from '../components/strength/SingleLiftMilestoneHint';
+import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { useUnit } from '../hooks/useUnit';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
-import {
-  shouldShowStrengthRepsAccuracyNudge,
-  STRENGTH_ASSESSMENT_MAX_REPS,
-  type StrengthSingleLiftError,
-} from '../logic/core/strengthAssessment';
 import type { FormatUnitOptions } from '../logic/core/unitConverters';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
@@ -62,6 +56,8 @@ const StrengthAssessmentPage: FC = () => {
     perLiftResult,
     perLiftError,
     calculateLift,
+    isLiftArmed,
+    isLiftLocked,
     combinedScore,
     combinedBreakdown,
     combinedError,
@@ -97,8 +93,6 @@ const StrengthAssessmentPage: FC = () => {
       ? t('home.profile.female')
       : t('home.profile.male');
 
-  const singleErr = (code: StrengthSingleLiftError) =>
-    t(`strength.singleErrors.${code}`, { unit: labels.weight });
   const ladderUploadBundle = useMemo(
     () =>
       buildStrengthAssessmentSupplementalTargets({
@@ -176,155 +170,28 @@ const StrengthAssessmentPage: FC = () => {
             <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
           </div>
           <div className="grid gap-3">
-            {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
-              const rowResult = perLiftResult[lift];
-              const rowErr = perLiftError[lift];
-              // WHY: Nudge parser expects kg-like weight; display form may be lbs.
-              const showRepsAccuracyNudge = shouldShowStrengthRepsAccuracyNudge(
-                metricForm[lift].weight,
-                metricForm[lift].reps
-              );
-              const repsAccuracyNudgeId = `strength-reps-accuracy-${lift}`;
-              const scoredLiftReps = Number.parseInt(metricForm[lift].reps.trim(), 10);
-              const hasScoredLiftReps = Number.isInteger(scoredLiftReps) && scoredLiftReps >= 1;
-              return (
-                <fieldset
-                  key={lift}
-                  className="space-y-2 rounded-xl border border-zinc-800/80 bg-bg-panel/40 p-3"
-                >
-                  <legend className="text-sm font-medium text-zinc-200">
-                    {t(`strength.lifts.${lift}`)}
-                  </legend>
-                  {/*
-                    WHY grid-cols-2 without sm:: force weight|reps side-by-side on ~390px so five
-                    lift cards stay compact — sm: breakpoint previously stacked them on mobile.
-                  */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <label
-                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
-                      htmlFor={`st-w-${lift}`}
-                    >
-                      <span>{t('strength.weightLabel', { unit: labels.weight })}</span>
-                      <HeroNumberInput
-                        id={`st-w-${lift}`}
-                        inputMode="decimal"
-                        min={0}
-                        step={0.5}
-                        density="compact"
-                        className="w-full max-w-full"
-                        placeholder={t('strength.weightPlaceholder')}
-                        value={form[lift].weight}
-                        onChange={(e) => setWeight(lift, e.target.value)}
-                        disabled={revealBlocking}
-                        aria-label={t('strength.weightAria', {
-                          lift: t(`strength.lifts.${lift}`),
-                          unit: labels.weight,
-                        })}
-                      />
-                    </label>
-                    <label
-                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
-                      htmlFor={`st-r-${lift}`}
-                    >
-                      <span>{t('strength.repsLabel')}</span>
-                      <input
-                        id={`st-r-${lift}`}
-                        type="number"
-                        inputMode="numeric"
-                        min={1}
-                        max={STRENGTH_ASSESSMENT_MAX_REPS}
-                        step={1}
-                        className="ui-input w-full"
-                        placeholder={t('strength.repsPlaceholder')}
-                        value={form[lift].reps}
-                        onChange={(e) => setReps(lift, e.target.value)}
-                        disabled={revealBlocking}
-                        aria-label={t('strength.repsAria', { lift: t(`strength.lifts.${lift}`) })}
-                        aria-describedby={showRepsAccuracyNudge ? repsAccuracyNudgeId : undefined}
-                      />
-                    </label>
-                  </div>
-
-                  {showRepsAccuracyNudge ? (
-                    <p id={repsAccuracyNudgeId} className="text-xs leading-relaxed text-zinc-500">
-                      {t('strength.repsAccuracyNudge')}
-                    </p>
-                  ) : null}
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      className="ui-btn ui-btn-primary text-sm"
-                      disabled={!profileReady || revealBlocking}
-                      onClick={() => calculateLift(lift)}
-                    >
-                      {t('strength.calculateThisLift')}
-                    </button>
-                  </div>
-
-                  {rowErr ? (
-                    <p className="text-sm text-red-400" role="alert">
-                      {singleErr(rowErr)}
-                    </p>
-                  ) : null}
-
-                  {rowResult ? (
-                    <div
-                      className="space-y-1.5 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2"
-                      role="status"
-                    >
-                      {rowResult.weightCapped ? (
-                        <p
-                          className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
-                          role="status"
-                        >
-                          {t('strength.capWeightNotice', {
-                            lift: t(`strength.lifts.${lift}`),
-                            input: formatWeight(rowResult.weightInputKg, {
-                              includeUnit: false,
-                              digits: 1,
-                            }),
-                            max: formatWeight(rowResult.modelMaxKg, {
-                              includeUnit: false,
-                              digits: 1,
-                            }),
-                            unit: labels.weight,
-                          })}
-                        </p>
-                      ) : null}
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                        {t('strength.singleOneRmLabel')}
-                      </p>
-                      <p className="font-mono text-2xl font-bold tabular-nums text-accent-info">
-                        {t('strength.singleOneRmValue', {
-                          value: formatWeight(rowResult.oneRepMax, {
-                            includeUnit: false,
-                            digits: 1,
-                          }),
-                          unit: labels.weight,
-                        })}
-                      </p>
-                      <p className="font-mono text-sm tabular-nums text-zinc-300">
-                        <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
-                        <span className="font-semibold text-zinc-100">
-                          {rowResult.finalScore.toFixed(2)}
-                        </span>
-                      </p>
-                      {rowResult && hasScoredLiftReps ? (
-                        <SingleLiftMilestoneHint
-                          liftType={lift}
-                          liftScore={rowResult.finalScore}
-                          currentWeightKg={rowResult.weightUsedKg}
-                          reps={scoredLiftReps}
-                          profile={profile}
-                          profileReady={profileReady}
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
-                </fieldset>
-              );
-            })}
+            {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => (
+              <StrengthLiftCard
+                key={lift}
+                lift={lift}
+                weightUnit={labels.weight}
+                weightValue={form[lift].weight}
+                repsValue={form[lift].reps}
+                metricWeight={metricForm[lift].weight}
+                metricReps={metricForm[lift].reps}
+                profileReady={profileReady}
+                inputsDisabled={revealBlocking}
+                isArmed={isLiftArmed(lift)}
+                isLocked={isLiftLocked(lift)}
+                result={perLiftResult[lift]}
+                error={perLiftError[lift]}
+                profile={profile}
+                onWeightChange={(value) => setWeight(lift, value)}
+                onRepsChange={(value) => setReps(lift, value)}
+                onCalculate={() => calculateLift(lift)}
+                formatWeight={formatWeight}
+              />
+            ))}
           </div>
 
           <div className="space-y-4 border-t border-zinc-800 pt-4">

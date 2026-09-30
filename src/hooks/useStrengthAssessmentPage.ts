@@ -38,6 +38,19 @@ export type PerLiftScore = {
   modelMaxKg: number;
 };
 
+/** Pure Armed & Lock-In phase — testable without React; keeps card button state deterministic. */
+export type StrengthLiftLockPhase = 'clean' | 'armed' | 'locked';
+
+export function resolveStrengthLiftLockPhase(
+  dirty: boolean,
+  hasResult: boolean
+): StrengthLiftLockPhase {
+  // WHY: Result presence wins — edit path always clears result before marking dirty.
+  if (hasResult) return 'locked';
+  if (dirty) return 'armed';
+  return 'clean';
+}
+
 export interface StrengthRadarPoint {
   key: StrengthLiftKey;
   label: string;
@@ -64,7 +77,15 @@ export interface UseStrengthAssessmentPageResult {
   setReps: (lift: StrengthLiftKey, value: string) => void;
   perLiftResult: Partial<Record<StrengthLiftKey, PerLiftScore>>;
   perLiftError: Partial<Record<StrengthLiftKey, StrengthSingleLiftError>>;
-  calculateLift: (lift: StrengthLiftKey) => void;
+  /** Returns true when the lift locked in successfully (for Impact ceremony). */
+  calculateLift: (lift: StrengthLiftKey) => boolean;
+  /**
+   * Armed = user edited since last lock and result is cleared.
+   * WHY: Avoid lighting all five cards on hydrate — only explicit edits arm.
+   */
+  isLiftArmed: (lift: StrengthLiftKey) => boolean;
+  /** Locked = computed result present and form not dirty. */
+  isLiftLocked: (lift: StrengthLiftKey) => boolean;
   combinedScore: number | null;
   combinedBreakdown: StrengthAssessmentBreakdown | null;
   combinedError: StrengthAssessmentComputeError | null;
@@ -100,6 +121,8 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const [perLiftError, setPerLiftError] = useState<
     Partial<Record<StrengthLiftKey, StrengthSingleLiftError>>
   >({});
+  /** Per-lift edit flag — empty on mount / hydrate so cards stay Clean until user edits. */
+  const [dirtyLifts, setDirtyLifts] = useState<Partial<Record<StrengthLiftKey, boolean>>>({});
 
   const [combinedScore, setCombinedScore] = useState<number | null>(null);
   const [combinedBreakdown, setCombinedBreakdown] = useState<StrengthAssessmentBreakdown | null>(
@@ -135,6 +158,8 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   const clearAllComputed = useCallback(() => {
     setPerLiftResult({});
     setPerLiftError({});
+    // WHY: unit / profile / storage hydrate must reset Armed — otherwise stale dirty lights up.
+    setDirtyLifts({});
     clearCombined();
   }, [clearCombined]);
 
@@ -156,22 +181,28 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     queueMicrotask(() => clearAllComputed());
   }, [unitSystem, clearAllComputed]);
 
+  const markLiftDirty = useCallback((lift: StrengthLiftKey) => {
+    setDirtyLifts((d) => (d[lift] ? d : { ...d, [lift]: true }));
+  }, []);
+
   const setWeight = useCallback(
     (lift: StrengthLiftKey, value: string) => {
       setForm((f) => ({ ...f, [lift]: { ...f[lift], weight: value } }));
+      markLiftDirty(lift);
       clearLiftComputed(lift);
       clearCombined();
     },
-    [clearLiftComputed, clearCombined]
+    [markLiftDirty, clearLiftComputed, clearCombined]
   );
 
   const setReps = useCallback(
     (lift: StrengthLiftKey, value: string) => {
       setForm((f) => ({ ...f, [lift]: { ...f[lift], reps: value } }));
+      markLiftDirty(lift);
       clearLiftComputed(lift);
       clearCombined();
     },
-    [clearLiftComputed, clearCombined]
+    [markLiftDirty, clearLiftComputed, clearCombined]
   );
 
   const profileReady = isPhysicalProfileComplete(profile);
@@ -225,7 +256,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
   }, [clearLiveStrengthScore, livePreviewScore, setLiveStrengthScore]);
 
   const calculateLift = useCallback(
-    (lift: StrengthLiftKey) => {
+    (lift: StrengthLiftKey): boolean => {
       clearCombined();
       setPerLiftError((e) => {
         const next = { ...e };
@@ -245,7 +276,7 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
           return next;
         });
         setPerLiftError((e) => ({ ...e, [lift]: res.error }));
-        return;
+        return false;
       }
       setPerLiftResult((r) => ({
         ...r,
@@ -258,8 +289,29 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
           modelMaxKg: res.modelMaxKg,
         },
       }));
+      setDirtyLifts((d) => {
+        if (!d[lift]) return d;
+        const next = { ...d };
+        delete next[lift];
+        return next;
+      });
+      return true;
     },
     [metricForm, profile, profileReady, clearCombined]
+  );
+
+  const isLiftArmed = useCallback(
+    (lift: StrengthLiftKey) =>
+      resolveStrengthLiftLockPhase(Boolean(dirtyLifts[lift]), Boolean(perLiftResult[lift])) ===
+      'armed',
+    [dirtyLifts, perLiftResult]
+  );
+
+  const isLiftLocked = useCallback(
+    (lift: StrengthLiftKey) =>
+      resolveStrengthLiftLockPhase(Boolean(dirtyLifts[lift]), Boolean(perLiftResult[lift])) ===
+      'locked',
+    [dirtyLifts, perLiftResult]
   );
 
   const strengthRadarPoints = useMemo<StrengthRadarPoint[]>(() => {
@@ -370,6 +422,8 @@ export function useStrengthAssessmentPage(): UseStrengthAssessmentPageResult {
     perLiftResult,
     perLiftError,
     calculateLift,
+    isLiftArmed,
+    isLiftLocked,
     combinedScore,
     combinedBreakdown,
     combinedError,

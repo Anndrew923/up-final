@@ -12,6 +12,8 @@
     "repsAccuracyNudge": "Lower reps yield more reliable 1RM estimates. Prefer a heavier near-failure set when available.",
     "fieldsHint": "Uses sex, age, and weight from Home profile. Leave both fields empty to skip a lift. Reps capped at 10; model ceilings clamp excess weight with on-screen notice.",
     "calculateThisLift": "Calculate This Lift",
+    "lockIn": "LOCK IN",
+    "lockedSuccess": "✓ Locked",
     "singleOneRmLabel": "Est. 1RM",
     "singleOneRmValue": "{{value}} {{unit}}",
     "singleScoreLabel": "Lift Score",
