@@ -73,7 +73,7 @@ vi.mock('react-i18next', () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
       if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
-      if (key === 'assessment.axis.muscleMass') return 'Exterior';
+      if (key === 'assessment.axis.muscleMass') return 'Build';
       if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
         return `Ceiling ${String(options?.maleMax)}/${String(options?.femaleMax)}`;
       }

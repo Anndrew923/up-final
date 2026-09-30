@@ -107,25 +107,25 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
 
 export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
   "0": {
-    "populationClass": "Infant Phase",
+    "populationClass": "Rookie",
     "overall": "In the world of physical training, you are currently in an infant stage; it may sound fragile, but it means you have enormous room to grow. Find an experienced training partner to keep everything safe; once you begin systematic training, you will feel rapid progress — grow up fast!",
     "neuro": "At this stage, progress usually comes very quickly. Once you master neural recruitment and drill your training movements, you can climb immediately; in other words, you are not lacking strength — you simply have not learned how to express force yet. We sincerely recommend an experienced training partner or professional coach: your scores can rise fast with visible gains.",
     "volume": "The body is the accumulation of past habits — this score is the presentation of how you have been living. If you are willing to make even small changes, your score will soar and break through 40 quickly. We sincerely recommend an experienced training partner or coach to help you build an initial training and nutrition framework so you can raise your score fast, become stronger, and healthier."
   },
   "40": {
-    "populationClass": "Exploration",
+    "populationClass": "Exploring",
     "overall": "At this stage, get to know your body well, diligently refine training movements, start paying attention to diet pairing, and explore how training and nutrition affect your body. With the right pairing, advancing past 50 is inevitable. This journey has only just begun — explore with passion!",
     "neuro": "This is where most people begin. You simply started later — you will not stay here forever, and you can climb soon. At this stage, heavy learning and practice are necessary. We sincerely recommend an experienced training partner to help you build an initial movement framework so you can progress safely and quickly while avoiding injury.",
     "volume": "You know you have just begun, so do not obsess over this stage's score — training results need time to settle. At this stage, build new eating habits and time allocation, prioritize nutrition, and invest time in training. For a great physique, mindset must be correct: this plan is not a sprint, but a marathon. Stay consistent — 50 is absolutely achievable."
   },
   "50": {
-    "populationClass": "Novice Village",
+    "populationClass": "Novice",
     "overall": "Once your score passes 50, you are already at the public average. Compared with elites you may feel like you are still in the novice village, but your current athletic output is already more than enough for daily life. With the right methods, effort and return are highly proportional at this stage — reaching 60 is right around the corner!",
     "neuro": "This stage is where most fitness enthusiasts live — it means you are steadily finding your footing at the public average. Do not think this score is nothing: you are already stronger than most beginners, with real control of loads and technical skill. Seeing gods online may make you feel small, but your current strength already helps daily life and health. Stay consistent — there is still plenty of room above.",
     "volume": "Not seeing obvious physique change yet is completely normal. Skyscrapers rise from flat ground — what looks flat now is the foundation you just poured, ready to launch. This is the stage where people quit most easily, because change feels half-there. What matters most is conviction: you can break past 60. Do not stop here."
   },
   "60": {
-    "populationClass": "Health Norm",
+    "populationClass": "Everyday Fit",
     "overall": "Among training enthusiasts, your performance is already an excellent cohort. Most people who do not train — or train too rarely — never reach this score, which proves your investment is paying off. If you got here easily, your genetics are outstanding and worth developing. Climbing past 70 takes accumulated time and steady effort; for average genetics, 70 is a challenging target.",
     "neuro": "Reaching this point means your outputs have clearly separated from beginners. Players who never train or only train occasionally cannot hold 60+ unless they have elite genetics. You already train regularly, watch your diet, and feel yourself getting stronger — effort returns. Looking forward to your next floor: 70 is not out of reach; it is the reward of people who work.",
     "volume": "Watching muscle rise or waist shrink, a quiet pride whispers: yes, you are doing well. Others may not notice, but you feel your body changing. You may have trained for a while; partners who once promised to join may have quit — but effort does not betray you. Your body is improving significantly. At this stage you are getting skilled; the energy you invest converts into results. Keep marching toward 70."
@@ -137,19 +137,19 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
     "volume": "Past 70, training marks begin to show — people often ask, \"Do you work out?\" That is the fruit of careful training; enjoy it with a clear conscience. Your look already differs from untrained players. You may not be magazine-cover sharp yet, but you have the right direction — keep stacking, and breaking 80 is absolutely on the clock."
   },
   "80": {
-    "populationClass": "High Tier",
+    "populationClass": "Gym Strong",
     "overall": "This score is hard to earn. If your genetics are average, you have poured in massive effort; even with excellent genetics, nobody coasts past 80. In this band you are often the strongest and most visible in the crowd. Physically you endure sweat; mentally you endure sacrifice — while others play, you still train. Respect! Ninety-plus is the peak-mortal cohort and demands far more time, so many enthusiasts treat the 80s as their final goal — and you have already hit it cleanly!",
     "neuro": "You ranked \"training\" above many other priorities. Gym selfies and posing cannot reach this level — that deserves praise. Eighty-plus puts you among the elite of the crowd: labeled advanced in the gym, and strong among specialty athletes. Many excellent basketball, combat, or physique athletes sit in this range. Eighty is also many enthusiasts' ultimate goal — and you finished it beautifully!",
     "volume": "At this level you are used to training alone — people willing to invest this much are relatively rare. An 80+ physique is already a major spotlight in any crowd, with clear training marks. Without outstanding genetics, pure effort and persistence got you here. Ninety-plus is the highest hall of mortal genetics — try to keep going!"
   },
   "90": {
-    "populationClass": "Peak Mortal",
+    "populationClass": "Mortal Peak",
     "overall": "Unless you won the genetic lottery, this score is already the mortal summit! You do not need my praise — you stopped caring long ago. You focused on challenging yourself and clearing hard gates to earn this. Climbing further is no longer proportional to investment, and may need rarer genetics — but even if you stop here, you are already outstanding! If reaching this score felt easy, you have chosen genetics — we are watching you break the mortal ceiling!",
     "neuro": "If your genetics are ordinary, this achievement means you have already poured extreme effort and developed your body to its talent limit. This output is more than enough for any specialty sport — often elite in any group. Climbing further takes matching talent, not effort alone — but do not lose heart: your work and output are already one in ten thousand. If getting here felt easy, you have uncommon talent — keep sprinting! The mortal ceiling is only your starting line!",
     "volume": "Whatever the genetics, reaching this level requires strict discipline and sacrifice; you gave up mediocre entertainment and social life and poured time into building your body. What makes you outstanding is not only flesh, but will. Going higher needs one-in-ten-thousand genetics — but whether or not you climb further, in any crowd you are already often among the most elite physiques, impossible to ignore."
   },
   "100": {
-    "populationClass": "Awakening",
+    "populationClass": "Breakout",
     "overall": "Crossing the 100-point threshold is no longer territory ordinary people can reach. Only gifted genetics plus relentless training and sacrifice can earn this score. With this physical capacity, specialty sports usually see outstanding results. I believe you are already a highly professional athlete — no more advice needed; keep marching toward your own goal!",
     "neuro": "Crossing 100 means you have formally entered a domain only extraordinary genetics can step into. In this band your force output surpasses most players — in any gym or ordinary field you are already classified as a powerhouse. For specialty athletes this level can dominate; for strength athletes it is a solid foundation to start shining. You have uncommon talent and work — this is already a mortal forbidden zone!",
     "volume": "Pushing physique refinement, loaded muscle, or cardio capacity past 100 means that beyond discipline you also carry enviable high-tier talent. Your body control has moved past mere health and strength. In any crowd your training marks and presence are unmistakable — even creating a dimensional visual pressure. Your physical state has already transcended the ordinary mortal."
@@ -179,7 +179,7 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
     "volume": "This physique has long transcended \"perfect aesthetics\" and evolved into a pure monster totem. In this band, your invested time and near-mad discipline border on a curse. What you see in the mirror is a miracle compound of extreme sacrifice and monster-tier genetics. Your shredded lines, massive muscle, or VO2 are a non-human body pushed to the limit. In any crowd, stares of shock, envy, fear, worship, or curiosity arrive from every direction — because you are the monster!"
   },
   "150": {
-    "populationClass": "Earth Apex",
+    "populationClass": "Apex",
     "overall": "No player with this score has appeared in the database yet — massive muscle mass and massive oxygen uptake conflict physiologically. If such a monster-like player truly appears, load the data into the host and preserve it forever.",
     "neuro": "Here is the supreme dome of carbon-based flesh — the Apex of the Earth title is yours. Scoring 150+ means your absolute force output can stand face-to-face with the highest legends in human sports history. \"Strongest\" is no longer an adjective; it is a fact. Among the world's strongest, you are an undisputed hegemon — you put gravity under your feet with flesh alone. The ceiling mortals spend a lifetime looking up at is you. Your performance is a planetary asset.",
     "volume": "This is not a physique stacked by discipline alone — it is the Creator's most perfect work, rivaling world records. Your state defeated billions and claimed the supreme Apex of the Earth title. When you reach this achievement, history has already engraved you; time and aging cannot erase your peak. Humanity always chases beyond limits — you are the synonym of the limit, destined never to be forgotten. Enjoy the supreme honor that belongs only to you on this Earth. You are the strongest physique on the surface of the planet!"

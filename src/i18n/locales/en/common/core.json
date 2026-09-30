@@ -49,11 +49,11 @@
         "desc": "Tracks aerobic ceiling and heat management. Higher = longer stints at redline."
       },
       "muscleMass": {
-        "label": "Exterior Spectrum (CHSS)",
+        "label": "Build Spectrum (CHSS)",
         "desc": "Tracks SMM relative to height. Higher = fuller exterior profile and structural load capacity."
       },
       "bodyFat": {
-        "label": "Displacement Spectrum (P2W)",
+        "label": "Density Spectrum (P2W)",
         "desc": "Tracks FFMI from profile and body fat. Higher = larger powerplant and stronger power-to-weight."
       },
       "gripStrength": {
@@ -354,7 +354,7 @@
       },
       "muscleMass": {
         "BASE": {
-          "title": "Stock Plain Exterior",
+          "title": "Bone Stock",
           "summary": "[STOCK CONFIG] Factory paint only. No visual tension in body lines—massive exterior upgrade headroom ahead."
         },
         "TIER_40": {
@@ -406,7 +406,7 @@
           "summary": "[PLANETARY ASSET] Spec overflow. PANTHEON · Ultimate Starship Concept carbon synced—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; surface miracle."
         },
         "PANTHEON": {
-          "title": "Pantheon Myth Exterior",
+          "title": "Pantheon Myth Build",
           "summary": "[PANTHEON WIDEBODY] Spec archived. Myth-tier ultimate physique visual—handful on Earth carry this exterior."
         }
       },

@@ -38,14 +38,14 @@ export const SIX_AXIS_LEXICON_MAPPING_RULES: Record<SixAxisMetric, SixAxisLexico
     zhInputMustNotMatch: /外觀|車體|圍度/,
     zhOutputMustMatch: /車體外觀/,
     enInputMustMatch: /Muscle Mass/i,
-    enOutputMustMatch: /Exterior/i,
+    enOutputMustMatch: /Build/i,
   },
   bodyFat: {
     zhInputMustMatch: /FFMI/,
     zhInputMustNotMatch: /排量|引擎|體脂/,
     zhOutputMustMatch: /引擎排量/,
     enInputMustMatch: /FFMI/i,
-    enOutputMustMatch: /Displacement/i,
+    enOutputMustMatch: /Density/i,
   },
   gripStrength: {
     zhInputMustMatch: /握力/,

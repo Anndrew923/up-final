@@ -130,7 +130,7 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /90-100 \(Peak Mortal\)/);
+    assert.match(enReply.commentary, /90-100 \(Mortal Peak\)/);
     assert.match(enReply.commentary, /Pantheon benchmarking/i);
     assert.match(enReply.commentary, /entertainment purposes\.$/);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
@@ -271,7 +271,7 @@ describe("hallOfFameConsultGate", () => {
       "Hall of Fame names above 80 for strength?"
     );
     assert.ok(reply);
-    assert.match(reply.commentary, /80-90 \(High Tier\)/);
+    assert.match(reply.commentary, /80-90 \(Gym Strong\)/);
     assert.match(reply.commentary, /strength Pantheon benchmarking/i);
     assert.match(reply.commentary, /Representative names currently available/);
     assert.match(reply.commentary, /entertainment purposes\.$/);

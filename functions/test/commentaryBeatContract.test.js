@@ -425,7 +425,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const parts = resolveHumanBriefPartsFromContext(macroCtx);
     assert.ok(parts);
-    assert.match(parts.segment1Core, /genetic lottery|Peak Mortal/i);
+    assert.match(parts.segment1Core, /genetic lottery|Mortal Peak/i);
     assert.doesNotMatch(parts.segment1Core, /regional multi-event benchmark with excellent/i);
     assert.match(parts.prSegment, /GLOBAL PR PERCENTILE — CALIBRATING/);
     assert.match(parts.legalSegment, /career-peak states/);
@@ -468,10 +468,10 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(segment1, /[\u4e00-\u9fff]/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
     assert.match(segment1, /maps to|Against same-age norms/i);
-    assert.match(segment1, /High Tier/i);
+    assert.match(segment1, /Gym Strong/i);
     assert.match(
       segment1,
-      /Against same-age competitive norms, your absolute strength performance maps to High Tier/
+      /Against same-age competitive norms, your absolute strength performance maps to Gym Strong/
     );
     assert.doesNotMatch(segment1, /performance {2}maps/);
   });
@@ -485,13 +485,13 @@ describe("dynoIntelHumanBriefs v3", () => {
 
   it("v5.3 — EN scale matrix 0–150 decades overlay epic praise (parity with zh-Hant)", () => {
     const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
-    assert.match(row90.summaryHuman, /genetic lottery|Peak Mortal/i);
+    assert.match(row90.summaryHuman, /genetic lottery|Mortal Peak/i);
     assert.ok(row90.summaryHuman.length > 120);
     const row100 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["100"];
     assert.match(row100.summaryHuman, /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.ok(row100.summaryHuman.length > 120);
     const row0 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["0"];
-    assert.match(row0.summaryHuman, /Infant Phase|enormous room to grow/i);
+    assert.match(row0.summaryHuman, /Rookie|enormous room to grow/i);
     assert.ok(row0.summaryHuman.length > 80);
   });
 });

@@ -12,21 +12,21 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
       if (key === 'assessment.hallSpectrum.title') {
-        return `${String(options?.axisTitle ?? '')} · Hall Spectrum`;
+        return `${String(options?.axisTitle ?? '')} · Hall Ladder`;
       }
       if (key === 'assessment.hallSpectrum.closeAria') return 'Close spectrum';
       if (key === 'assessment.hallSpectrum.ladderRegionAria') return 'Ladder';
       if (key === 'assessment.hallSpectrum.currentRungAria') {
         return `Current: ${String(options?.populationClass ?? '')}`;
       }
-      if (key === 'assessment.hallSpectrum.legalExpand') return 'Expand legal';
-      if (key === 'assessment.hallSpectrum.legalCollapse') return 'Collapse legal';
+      if (key === 'assessment.hallSpectrum.legalExpand') return 'Legal';
+      if (key === 'assessment.hallSpectrum.legalCollapse') return 'Hide legal';
       if (key === 'assessment.hallSpectrum.teaserKicker') return 'DYNO INTEL';
       if (key === 'assessment.hallSpectrum.teaserLine') {
         return 'Drop feelings. Face yourself through scientific norms.';
       }
       if (key === 'assessment.hallSpectrum.teaserCta') {
-        return 'Decode physiology';
+        return 'Decode my tier';
       }
       if (key === 'assessment.hallSpectrum.teaserCtaRemaining') {
         return `${String(options?.remaining ?? '')} left`;
@@ -143,7 +143,7 @@ describe('HallOfFameSpectrumDrawer', () => {
     });
 
     const expandLegal = Array.from(document.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Expand legal')
+      el.textContent?.includes('Legal')
     );
     expect(expandLegal).toBeDefined();
     act(() => {
@@ -151,7 +151,7 @@ describe('HallOfFameSpectrumDrawer', () => {
     });
     expect(
       Array.from(document.querySelectorAll('button')).some((el) =>
-        el.textContent?.includes('Collapse legal')
+        el.textContent?.includes('Hide legal')
       )
     ).toBe(true);
 
@@ -273,7 +273,7 @@ describe('HallOfFameSpectrumDrawer', () => {
 
     const actionCluster = cta?.querySelector(':scope > span:first-child');
     const quotaPill = cta?.querySelector(':scope > span:last-child');
-    expect(actionCluster?.textContent).toContain('Decode physiology');
+    expect(actionCluster?.textContent).toContain('Decode my tier');
     expect(actionCluster?.textContent).toContain('➔');
     expect(actionCluster?.textContent).not.toContain('25');
     expect(quotaPill?.textContent).toBe('25 left');

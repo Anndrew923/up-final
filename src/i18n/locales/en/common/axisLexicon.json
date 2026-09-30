@@ -15,8 +15,8 @@
         "strength": "Horsepower",
         "explosivePower": "Torque",
         "cardio": "Stint",
-        "muscleMass": "Exterior",
-        "bodyFat": "Displacement",
+        "muscleMass": "Build",
+        "bodyFat": "Density",
         "gripStrength": "Traction"
       },
       "code": {
