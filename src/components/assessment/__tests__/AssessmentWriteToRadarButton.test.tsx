@@ -10,13 +10,9 @@ import AssessmentWriteToRadarButton from '../AssessmentWriteToRadarButton';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate ${String(options?.axis ?? '')} ➔`;
-      }
-      if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
-      }
+    t: (key: string) => {
+      if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
+      if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
       return key;
     },
   }),
@@ -42,20 +38,14 @@ describe('AssessmentWriteToRadarButton', () => {
   it('shows calculate copy when hasScore is false', () => {
     const onClick = vi.fn();
     act(() => {
-      root.render(
-        <AssessmentWriteToRadarButton
-          axisLabel="馬力"
-          hasScore={false}
-          onClick={onClick}
-        />
-      );
+      root.render(<AssessmentWriteToRadarButton hasScore={false} onClick={onClick} />);
     });
 
     const button = container.querySelector('button');
     expect(button?.className).toContain('w-full');
     expect(button?.className).toContain('bg-amber-500');
-    expect(button?.textContent).toContain('Calculate 馬力 ➔');
-    expect(button?.textContent).not.toContain('Write');
+    expect(button?.className).toContain('text-center');
+    expect(button?.textContent).toBe('Calculate ➔');
 
     act(() => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -65,20 +55,15 @@ describe('AssessmentWriteToRadarButton', () => {
 
   it('shows write-to-radar copy when hasScore is true', () => {
     act(() => {
-      root.render(
-        <AssessmentWriteToRadarButton axisLabel="Traction" hasScore />
-      );
+      root.render(<AssessmentWriteToRadarButton hasScore />);
     });
 
-    expect(container.querySelector('button')?.textContent).toContain('Write Traction to Radar ➔');
-    expect(container.textContent).not.toContain('Calculate');
+    expect(container.querySelector('button')?.textContent).toBe('Write to Radar ➔');
   });
 
   it('honors disabled state', () => {
     act(() => {
-      root.render(
-        <AssessmentWriteToRadarButton axisLabel="Stint" hasScore={false} disabled />
-      );
+      root.render(<AssessmentWriteToRadarButton hasScore={false} disabled />);
     });
     expect(container.querySelector('button')?.disabled).toBe(true);
   });

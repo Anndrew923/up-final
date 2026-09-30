@@ -233,7 +233,6 @@ const MuscleAssessmentPage: FC = () => {
 
           <div className="space-y-3">
             <AssessmentWriteToRadarButton
-              axisLabel={t('assessment.axis.muscleMass')}
               hasScore={previewScore !== null && !scoreLocked}
               disabled={!profileReady || revealBlocking || scoreLocked}
               onClick={() => {

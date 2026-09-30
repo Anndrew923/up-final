@@ -229,7 +229,6 @@ const FfmiPage: FC = () => {
 
             <div className="space-y-3">
               <AssessmentWriteToRadarButton
-                axisLabel={t('assessment.axis.bodyFat')}
                 hasScore={previewScore !== null}
                 disabled={revealBlocking}
                 onClick={() => {

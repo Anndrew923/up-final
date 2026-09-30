@@ -432,7 +432,6 @@ const ExplosiveAssessmentPage: FC = () => {
 
           <div className="space-y-3">
             <AssessmentWriteToRadarButton
-              axisLabel={t('assessment.axis.explosivePower')}
               hasScore={heroScore !== null}
               disabled={tabDisabled}
               onClick={() => {

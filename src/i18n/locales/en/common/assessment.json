@@ -77,8 +77,8 @@
     },
     "viewCalculationDetails": "View details",
     "hideCalculationDetails": "Hide calculation details",
-    "calculateRadarWithAxis": "Calculate {{axis}} ➔",
-    "writeToRadarWithAxis": "Write {{axis}} to Radar ➔",
+    "calculateRadarAction": "Calculate ➔",
+    "writeToRadarAction": "Write to Radar ➔",
     "hallSpectrum": {
       "title": "{{axisTitle}} · Hall Spectrum",
       "closeAria": "Close hall-of-fame spectrum",

@@ -210,7 +210,6 @@ const GripAssessmentPage: FC = () => {
 
           <div className="space-y-3">
             <AssessmentWriteToRadarButton
-              axisLabel={t('assessment.axis.gripStrength')}
               hasScore={previewScore !== null}
               disabled={revealBlocking}
               onClick={() => {

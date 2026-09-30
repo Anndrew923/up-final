@@ -222,20 +222,12 @@ const StrengthAssessmentPage: FC = () => {
 
             {combinedBreakdown ? (
               <div className="space-y-3">
-                <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                    {t('strength.spectrumKicker')}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                    {t('strength.spectrumSub')}
-                  </p>
-                  <HexRadarChart
-                    points={strengthRadarPoints}
-                    scaleMax={100}
-                    className="mx-auto mt-2 w-full max-w-[240px] shrink-0"
-                    aria-label={t('strength.radarAria')}
-                  />
-                </div>
+                <HexRadarChart
+                  points={strengthRadarPoints}
+                  scaleMax={100}
+                  className="mx-auto w-full max-w-[240px] shrink-0"
+                  aria-label={t('strength.radarAria')}
+                />
 
                 {scoreMeaning ? (
                   <AssessmentScoreMeaningPanel
@@ -310,7 +302,6 @@ const StrengthAssessmentPage: FC = () => {
 
             <div className="space-y-3">
               <AssessmentWriteToRadarButton
-                axisLabel={t('assessment.axis.strength')}
                 hasScore={combinedBreakdown != null}
                 disabled={!profileReady || submitBusy || revealBlocking}
                 onClick={() => {

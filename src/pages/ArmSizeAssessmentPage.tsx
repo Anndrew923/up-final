@@ -202,7 +202,6 @@ const ArmSizeAssessmentPage: FC = () => {
 
           <div className="space-y-3">
             <AssessmentWriteToRadarButton
-              axisLabel={t('assessment.axis.armSize')}
               hasScore={heroScore !== null}
               disabled={revealBlocking}
               onClick={() => {

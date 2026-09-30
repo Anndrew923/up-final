@@ -77,8 +77,8 @@
     },
     "viewCalculationDetails": "查看換算明細",
     "hideCalculationDetails": "隱藏換算明細",
-    "calculateRadarWithAxis": "計算評測（{{axis}}） ➔",
-    "writeToRadarWithAxis": "寫入雷達（{{axis}}） ➔",
+    "calculateRadarAction": "計算評測 ➔",
+    "writeToRadarAction": "寫入雷達 ➔",
     "hallSpectrum": {
       "title": "{{axisTitle}} · 名人堂光譜",
       "closeAria": "關閉名人堂光譜",

@@ -71,12 +71,8 @@ const SMM_PREAMBLE_COPY = 'Ceiling 100/67';
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'assessment.calculateRadarWithAxis') {
-        return `Calculate ${String(options?.axis ?? '')} ➔`;
-      }
-      if (key === 'assessment.writeToRadarWithAxis') {
-        return `Write ${String(options?.axis ?? '')} to Radar ➔`;
-      }
+      if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
+      if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
       if (key === 'assessment.axis.muscleMass') return 'Exterior';
       if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
         return `Ceiling ${String(options?.maleMax)}/${String(options?.femaleMax)}`;

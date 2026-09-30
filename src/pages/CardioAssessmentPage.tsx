@@ -332,7 +332,6 @@ const CardioAssessmentPage: FC = () => {
 
           <div className="space-y-3">
             <AssessmentWriteToRadarButton
-              axisLabel={t('assessment.axis.cardio')}
               hasScore={previewScore !== null}
               disabled={(isCooperTab && !profileReady) || revealBlocking}
               onClick={() => {
