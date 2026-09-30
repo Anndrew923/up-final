@@ -1,6 +1,9 @@
 import type { FC } from 'react';
 import { cn } from '../../lib/cn';
-import NormBadgeChip, { type NormBadgeChipSize } from '../common/NormBadgeChip';
+import NormBadgeChip, {
+  type NormBadgeChevronTone,
+  type NormBadgeChipSize,
+} from '../common/NormBadgeChip';
 
 export interface AssessmentHeroScoreWithNormBadgeProps {
   scoreText: string;
@@ -18,6 +21,8 @@ export interface AssessmentHeroScoreWithNormBadgeProps {
   onBadgeClick?: () => void;
   badgeExpanded?: boolean;
   showChevron?: boolean;
+  /** expand (modal accordion) vs forward (Hall spectrum drawer). Default expand. */
+  chevronTone?: NormBadgeChevronTone;
   badgeAriaControls?: string;
   badgeAriaLabel?: string;
 }
@@ -45,6 +50,7 @@ const AssessmentHeroScoreWithNormBadge: FC<AssessmentHeroScoreWithNormBadgeProps
   onBadgeClick,
   badgeExpanded = false,
   showChevron = false,
+  chevronTone = 'expand',
   badgeAriaControls,
   badgeAriaLabel,
 }) => {
@@ -68,6 +74,7 @@ const AssessmentHeroScoreWithNormBadge: FC<AssessmentHeroScoreWithNormBadgeProps
         onClick={onBadgeClick}
         expanded={badgeExpanded}
         showChevron={showChevron}
+        chevronTone={chevronTone}
         ariaControls={badgeAriaControls}
         ariaLabel={badgeAriaLabel}
       />

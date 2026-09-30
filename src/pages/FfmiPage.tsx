@@ -73,6 +73,7 @@ const FfmiPage: FC = () => {
     scoreDisplay: heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null),
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
 
   const ladderUploadBundle = useMemo(
@@ -97,6 +98,8 @@ const FfmiPage: FC = () => {
         syncDisabled={!breakdown?.allowsRadarSubmit}
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -206,6 +209,7 @@ const FfmiPage: FC = () => {
                     meaning={scoreMeaning}
                     milestoneHintLabel={nextMilestoneHint}
                     tone="violet"
+                    hallEntry={hallSpectrum.headerActionProps}
                   />
                 ) : null}
 

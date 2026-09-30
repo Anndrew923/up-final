@@ -16,6 +16,7 @@ import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import AuraReactiveFrame from './AuraReactiveFrame';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 import AssessmentHeroScoreWithNormBadge from './AssessmentHeroScoreWithNormBadge';
+import { HallSpectrumEntryButton } from './AssessmentScoreMeaningPanel';
 
 export interface PerformanceBreakthroughModalProps {
   open: boolean;
@@ -34,6 +35,16 @@ export interface PerformanceBreakthroughModalProps {
    * Omitted → TachometerMilestoneBar keeps points-only breakthrough copy.
    */
   milestoneHintLabel?: string | null;
+  /**
+   * Scheme B inside breakthrough — opens Hall spectrum after immersive summary expand.
+   * WHY: Norm badge stays expand-only; Hall gets a dedicated CTA (null/undefined hides it).
+   */
+  onOpenHallSpectrum?: () => void;
+  /**
+   * True while HallOfFameSpectrumDrawer covers this modal (z-245 over z-240).
+   * WHY: Disable focus trap + Escape so nested Hall owns dismiss; avoids closing both layers.
+   */
+  spectrumOverlayOpen?: boolean;
 }
 
 const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
@@ -46,6 +57,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   syncing = false,
   arenaSync,
   milestoneHintLabel = null,
+  onOpenHallSpectrum,
+  spectrumOverlayOpen = false,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
@@ -65,7 +78,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     confirmGateSheet,
     resetGateSheet,
   } = useLadderUploadGateSheet(ROUTES.ladder);
-  useFocusTrap(dialogRef, open);
+  // WHY: Mirror SomatotypeReportModal nested-sheet pattern — parent trap yields while Hall is on top.
+  useFocusTrap(dialogRef, open && !spectrumOverlayOpen);
 
   const isDashboardSyncing = syncing || syncPending;
   const isArenaSyncing = arenaSync?.busy ?? false;
@@ -142,11 +156,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      // WHY: Hall drawer also listens on window Escape — yield while it is the top scrim.
+      if (event.key === 'Escape' && !spectrumOverlayOpen) onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose]);
+  }, [open, onClose, spectrumOverlayOpen]);
 
   if (!open || !payload || typeof document === 'undefined') return null;
 
@@ -228,6 +243,17 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                     >
                       {payload.summary}
                     </p>
+                    {/* WHY: Hall entry only after dopamine summary read — badge stays expand-only. */}
+                    {summaryExpanded && onOpenHallSpectrum ? (
+                      <div className="mt-4 px-1">
+                        <HallSpectrumEntryButton
+                          className="w-full justify-center rounded-lg"
+                          onClick={onOpenHallSpectrum}
+                          label={t('assessment.hallSpectrum.viewEntry')}
+                          ariaLabel={t('assessment.hallSpectrum.viewEntryAria')}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ) : null}

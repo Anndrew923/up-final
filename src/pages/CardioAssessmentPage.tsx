@@ -15,6 +15,7 @@ import {
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
+import { HallSpectrumEntryButton } from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
@@ -123,6 +124,7 @@ const CardioAssessmentPage: FC = () => {
         : null,
     decadeKey: activeTab === 'cooper' ? scoreMeaning?.decadeKey : null,
     populationClass: activeTab === 'cooper' ? scoreMeaning?.populationClass : null,
+    onBeforeOpenDyno: closeModal,
   });
 
   const segmentOptions = useMemo(
@@ -161,6 +163,8 @@ const CardioAssessmentPage: FC = () => {
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -330,9 +334,14 @@ const CardioAssessmentPage: FC = () => {
           {previewScore !== null && scoreMeaning ? (
             <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-3.5 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/65 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
-                {t('cardio.performanceSpecHeader')}
-              </p>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                <p className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
+                  {t('cardio.performanceSpecHeader')}
+                </p>
+                {hallSpectrum.headerActionProps ? (
+                  <HallSpectrumEntryButton {...hallSpectrum.headerActionProps} />
+                ) : null}
+              </div>
               <h3 className="mt-1.5 text-base font-semibold tracking-tight text-zinc-50">
                 {scoreMeaning.title}
               </h3>

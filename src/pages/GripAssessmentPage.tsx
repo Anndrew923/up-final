@@ -95,6 +95,7 @@ const GripAssessmentPage: FC = () => {
     scoreDisplay: spectrumScoreDisplay,
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
   const peakLabel = t('grip.peakLabel', { unit: labels.weight });
 
@@ -110,6 +111,8 @@ const GripAssessmentPage: FC = () => {
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -212,6 +215,7 @@ const GripAssessmentPage: FC = () => {
               headerLabel={t('grip.performanceSpecHeader')}
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
+              hallEntry={hallSpectrum.headerActionProps}
             />
           ) : null}
 

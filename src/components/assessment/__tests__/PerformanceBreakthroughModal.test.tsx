@@ -25,6 +25,8 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.kicker') return 'Axis Breakthrough';
       if (key === 'assessment.breakthrough.confirmDismiss') return 'CONFIRM';
       if (key === 'assessment.breakthrough.syncBtn') return 'Sync';
+      if (key === 'assessment.hallSpectrum.viewEntry') return '名人堂光譜 ➔';
+      if (key === 'assessment.hallSpectrum.viewEntryAria') return '開啟名人堂常模光譜';
       return key;
     },
   }),
@@ -186,5 +188,92 @@ describe('PerformanceBreakthroughModal summary disclosure', () => {
         el.textContent?.includes('應預設收折')
       )
     ).toBe(false);
+  });
+
+  it('shows Hall spectrum CTA only while summary is expanded and wires onOpenHallSpectrum', () => {
+    const onOpenHallSpectrum = vi.fn();
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onOpenHallSpectrum={onOpenHallSpectrum}
+        />
+      );
+    });
+
+    expect(
+      Array.from(document.querySelectorAll('button')).find(
+        (el) => el.getAttribute('aria-label') === '開啟名人堂常模光譜'
+      )
+    ).toBeUndefined();
+
+    const badge = Array.from(document.querySelectorAll('button')).find((el) =>
+      el.getAttribute('aria-label')?.includes('Expand')
+    );
+    act(() => {
+      badge?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const hallCta = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.getAttribute('aria-label') === '開啟名人堂常模光譜'
+    );
+    expect(hallCta).toBeDefined();
+    expect(hallCta?.textContent).toContain('名人堂光譜');
+
+    act(() => {
+      hallCta?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onOpenHallSpectrum).toHaveBeenCalledTimes(1);
+
+    const collapseBadge = Array.from(document.querySelectorAll('button')).find((el) =>
+      el.getAttribute('aria-label')?.includes('Collapse')
+    );
+    act(() => {
+      collapseBadge?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(
+      Array.from(document.querySelectorAll('button')).find(
+        (el) => el.getAttribute('aria-label') === '開啟名人堂常模光譜'
+      )
+    ).toBeUndefined();
+  });
+
+  it('does not dismiss breakthrough on Escape while spectrum overlay is open', () => {
+    const onClose = vi.fn();
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={onClose}
+          spectrumOverlayOpen
+        />
+      );
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(onClose).not.toHaveBeenCalled();
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={onClose}
+          spectrumOverlayOpen={false}
+        />
+      );
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

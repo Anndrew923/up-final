@@ -104,6 +104,7 @@ const MuscleAssessmentPage: FC = () => {
     scoreDisplay: heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null),
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
 
   const dualSovereignCeilingKey = resolveMuscleDualSovereignI18nKey(profile?.gender, 'ceiling');
@@ -124,6 +125,8 @@ const MuscleAssessmentPage: FC = () => {
         syncDisabled={!profileReady || scoreLocked}
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -222,6 +225,7 @@ const MuscleAssessmentPage: FC = () => {
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
               tone="orange"
+              hallEntry={hallSpectrum.headerActionProps}
             />
           ) : null}
 

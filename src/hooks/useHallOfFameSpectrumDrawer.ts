@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AssessmentHeroScoreWithNormBadgeProps } from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import type { HallOfFameSpectrumDrawerProps } from '../components/assessment/HallOfFameSpectrumDrawer';
@@ -14,6 +14,20 @@ export interface UseHallOfFameSpectrumDrawerInput {
   scoreDisplay: string | null | undefined;
   decadeKey: string | null | undefined;
   populationClass: string | null | undefined;
+  /**
+   * Runs before Dyno launch (e.g. close breakthrough modal so z-220 chat is not trapped under z-240).
+   */
+  onBeforeOpenDyno?: () => void;
+}
+
+/**
+ * Spec-card header CTA — null when Hall entry must stay hidden (incomplete score / 5km).
+ * Structurally matches AssessmentScoreMeaningPanel `hallEntry` (no component import from hook).
+ */
+export interface HallSpectrumHeaderActionProps {
+  onClick: () => void;
+  label: string;
+  ariaLabel: string;
 }
 
 function resolveSpectrumAxisTitle(axisId: HallOfFameSpectrumAxisId, t: (key: string) => string): string {
@@ -23,20 +37,25 @@ function resolveSpectrumAxisTitle(axisId: HallOfFameSpectrumAxisId, t: (key: str
 }
 
 /**
- * Assessment-page bridge for NormBadge → Hall spectrum drawer → Dyno decode CTA.
- * WHY: Seven pages share the same open/quota/prefill contract; keep pages presentational.
+ * Assessment-page bridge for NormBadge + Spec-card CTA → Hall spectrum drawer → Dyno decode.
+ * WHY: Seven pages share open/quota/prefill; dual entry (B primary / A secondary) stays in one hook.
  */
 export function useHallOfFameSpectrumDrawer(input: UseHallOfFameSpectrumDrawerInput): {
   badgeProps: Pick<
     AssessmentHeroScoreWithNormBadgeProps,
-    'onBadgeClick' | 'showChevron' | 'badgeAriaLabel'
+    'onBadgeClick' | 'showChevron' | 'badgeAriaLabel' | 'badgeSize' | 'chevronTone'
   >;
+  headerActionProps: HallSpectrumHeaderActionProps | null;
   drawerProps: HallOfFameSpectrumDrawerProps;
+  canOpen: boolean;
+  openDrawer: () => void;
 } {
   const { t, i18n } = useTranslation('common');
   const quota = useDynoIntelQuota();
   const requestLaunch = useDynoIntelLaunchStore((s) => s.requestLaunch);
   const [open, setOpen] = useState(false);
+  const onBeforeOpenDynoRef = useRef(input.onBeforeOpenDyno);
+  onBeforeOpenDynoRef.current = input.onBeforeOpenDyno;
 
   const scoreDisplay = String(input.scoreDisplay ?? '').trim();
   const decadeKey = String(input.decadeKey ?? '').trim();
@@ -57,6 +76,8 @@ export function useHallOfFameSpectrumDrawer(input: UseHallOfFameSpectrumDrawerIn
 
   const handleOpenDyno = useCallback(() => {
     // WHY: Drawer already closed itself before invoking onOpenDyno — only hand off the prompt.
+    // Pages may close breakthrough first so Dyno (z-220) is not trapped under modal (z-240).
+    onBeforeOpenDynoRef.current?.();
     const locale = i18n?.language === 'zh-Hant' ? 'zh-Hant' : 'en';
     const prompt = buildHallSpectrumDecodePrompt({
       axisLabel: axisTitle,
@@ -74,12 +95,24 @@ export function useHallOfFameSpectrumDrawer(input: UseHallOfFameSpectrumDrawerIn
     () => ({
       onBadgeClick: canOpen ? openDrawer : undefined,
       showChevron: canOpen,
+      // WHY: Assessment Hall entry needs md touch target + forward chevron (not modal expand ∨).
+      badgeSize: 'md' as const,
+      chevronTone: 'forward' as const,
       badgeAriaLabel: canOpen
         ? t('assessment.hallSpectrum.openBadgeAria', { populationClass })
         : undefined,
     }),
     [canOpen, openDrawer, populationClass, t]
   );
+
+  const headerActionProps = useMemo((): HallSpectrumHeaderActionProps | null => {
+    if (!canOpen) return null;
+    return {
+      onClick: openDrawer,
+      label: t('assessment.hallSpectrum.viewEntry'),
+      ariaLabel: t('assessment.hallSpectrum.viewEntryAria'),
+    };
+  }, [canOpen, openDrawer, t]);
 
   const drawerProps: HallOfFameSpectrumDrawerProps = {
     open,
@@ -93,5 +126,5 @@ export function useHallOfFameSpectrumDrawer(input: UseHallOfFameSpectrumDrawerIn
     onOpenDyno: handleOpenDyno,
   };
 
-  return { badgeProps, drawerProps };
+  return { badgeProps, headerActionProps, drawerProps, canOpen, openDrawer };
 }

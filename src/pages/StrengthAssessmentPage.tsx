@@ -18,6 +18,7 @@ import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHea
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import AssessmentHeroScoreWithNormBadge from '../components/assessment/AssessmentHeroScoreWithNormBadge';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
+import { HallSpectrumEntryButton } from '../components/assessment/AssessmentScoreMeaningPanel';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
@@ -126,6 +127,7 @@ const StrengthAssessmentPage: FC = () => {
       (combinedBreakdown != null ? combinedBreakdown.averageRaw.toFixed(2) : null),
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
 
   return (
@@ -141,6 +143,8 @@ const StrengthAssessmentPage: FC = () => {
         syncDisabled={!profileReady}
         syncing={submitBusy}
         arenaSync={ladderSync}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -303,9 +307,14 @@ const StrengthAssessmentPage: FC = () => {
             {combinedBreakdown && scoreMeaning ? (
               <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
-                  {t('strength.performanceSpecHeader')}
-                </p>
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                  <p className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
+                    {t('strength.performanceSpecHeader')}
+                  </p>
+                  {hallSpectrum.headerActionProps ? (
+                    <HallSpectrumEntryButton {...hallSpectrum.headerActionProps} />
+                  ) : null}
+                </div>
                 <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
                   {scoreMeaning.title}
                 </h3>

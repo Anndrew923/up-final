@@ -101,6 +101,26 @@ describe('NormBadgeChip', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('uses forward chevron without aria-expanded for Hall spectrum entry', () => {
+    act(() => {
+      root.render(
+        <NormBadgeChip
+          populationClass="凡體覺醒"
+          decadeKey="100"
+          onClick={vi.fn()}
+          showChevron
+          chevronTone="forward"
+          ariaLabel="開啟名人堂光譜"
+        />
+      );
+    });
+
+    const button = container.querySelector('button');
+    expect(button?.getAttribute('aria-expanded')).toBeNull();
+    expect(button?.getAttribute('aria-controls')).toBeNull();
+    expect(container.querySelector('svg')).not.toBeNull();
+  });
+
   it('returns null for empty populationClass', () => {
     act(() => {
       root.render(<NormBadgeChip populationClass="   " />);

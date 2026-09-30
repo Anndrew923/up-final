@@ -86,7 +86,9 @@
       "teaserCta": "免費解碼生理成色（每日剩餘 {{remaining}} 次）",
       "teaserCtaArrow": "➔",
       "teaserCtaAria": "開啟 Dyno Intel，免費解碼生理成色，今日剩餘 {{remaining}} 次",
-      "openBadgeAria": "開啟「{{populationClass}}」名人堂光譜"
+      "openBadgeAria": "開啟「{{populationClass}}」名人堂光譜",
+      "viewEntry": "名人堂光譜 ➔",
+      "viewEntryAria": "開啟名人堂常模光譜"
     },
     "ceremony": {
       "scanning": "診斷掃描中…",

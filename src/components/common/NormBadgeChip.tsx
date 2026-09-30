@@ -3,6 +3,8 @@ import { cn } from '../../lib/cn';
 import CollapsibleChevron from '../CollapsibleChevron';
 
 export type NormBadgeChipSize = 'sm' | 'md';
+/** expand — breakthrough accordion ∨; forward — Hall spectrum opens a new layer ›. */
+export type NormBadgeChevronTone = 'expand' | 'forward';
 
 export interface NormBadgeChipProps {
   populationClass: string;
@@ -17,6 +19,11 @@ export interface NormBadgeChipProps {
   onClick?: () => void;
   expanded?: boolean;
   showChevron?: boolean;
+  /**
+   * expand (default) — CollapsibleChevron for modal accordion.
+   * forward — right chevron for Hall drawer entry (does not rotate).
+   */
+  chevronTone?: NormBadgeChevronTone;
   ariaControls?: string;
   /** Accessible name override (e.g. expand/collapse hint). Falls back to populationClass. */
   ariaLabel?: string;
@@ -69,6 +76,17 @@ const CHIP_BASE_CLASS =
 const INTERACTIVE_BASE_CLASS =
   'cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60';
 
+/** Forward › — Hall spectrum opens a new layer; never rotates with accordion state. */
+const ForwardChevron: FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+    <path
+      fillRule="evenodd"
+      d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
 const NormBadgeChip: FC<NormBadgeChipProps> = ({
   populationClass,
   decadeKey = null,
@@ -77,6 +95,7 @@ const NormBadgeChip: FC<NormBadgeChipProps> = ({
   onClick,
   expanded = false,
   showChevron = false,
+  chevronTone = 'expand',
   ariaControls,
   ariaLabel,
 }) => {
@@ -87,12 +106,17 @@ const NormBadgeChip: FC<NormBadgeChipProps> = ({
   const showChevronIcon = interactive && showChevron;
   const toneClass = resolveNormBadgeToneClass(decadeKey, interactive);
   const resolvedAriaLabel = String(ariaLabel ?? label).trim() || label;
+  const isExpandTone = chevronTone === 'expand';
 
   const content = (
     <>
       <span className="truncate">{label}</span>
       {showChevronIcon ? (
-        <CollapsibleChevron expanded={expanded} className={CHEVRON_CLASS[size]} />
+        isExpandTone ? (
+          <CollapsibleChevron expanded={expanded} className={CHEVRON_CLASS[size]} />
+        ) : (
+          <ForwardChevron className={CHEVRON_CLASS[size]} />
+        )
       ) : null}
     </>
   );
@@ -115,8 +139,8 @@ const NormBadgeChip: FC<NormBadgeChipProps> = ({
         )}
         // WHY: Prefer aria-label only — native title tooltip fights expand/collapse naming.
         aria-label={resolvedAriaLabel}
-        aria-expanded={expanded}
-        aria-controls={ariaControls}
+        aria-expanded={isExpandTone ? expanded : undefined}
+        aria-controls={isExpandTone ? ariaControls : undefined}
         onClick={handleClick}
       >
         {content}

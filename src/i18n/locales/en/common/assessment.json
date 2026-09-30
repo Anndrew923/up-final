@@ -86,7 +86,9 @@
       "teaserCta": "Free physiological decode ({{remaining}} left today)",
       "teaserCtaArrow": "➔",
       "teaserCtaAria": "Open Dyno Intel for a free physiological decode. {{remaining}} free uses left today",
-      "openBadgeAria": "Open {{populationClass}} hall-of-fame spectrum"
+      "openBadgeAria": "Open {{populationClass}} hall-of-fame spectrum",
+      "viewEntry": "Hall of Fame ➔",
+      "viewEntryAria": "Open Hall of Fame spectrum"
     },
     "ceremony": {
       "scanning": "Diagnostic Scan In Progress…",

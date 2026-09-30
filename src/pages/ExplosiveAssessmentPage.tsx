@@ -172,6 +172,7 @@ const ExplosiveAssessmentPage: FC = () => {
           : null,
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
   const isSpecialtyOnlyPreview =
     previewBreakdown != null &&
@@ -190,6 +191,8 @@ const ExplosiveAssessmentPage: FC = () => {
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
         milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -414,6 +417,7 @@ const ExplosiveAssessmentPage: FC = () => {
               headerLabel={t('explosive.performanceSpecHeader')}
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
+              hallEntry={hallSpectrum.headerActionProps}
             />
           ) : null}
 

@@ -89,6 +89,7 @@ const ArmSizeAssessmentPage: FC = () => {
     scoreDisplay: heroScore != null ? heroScore.toFixed(2) : null,
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
   });
 
   return (
@@ -101,6 +102,8 @@ const ArmSizeAssessmentPage: FC = () => {
         onSyncToDashboard={submitToRadar}
         onPersistToDashboard={persistToDashboard}
         arenaSync={ladderSync}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -202,6 +205,7 @@ const ArmSizeAssessmentPage: FC = () => {
                   ? t('armSize.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
                   : null
               }
+              hallEntry={hallSpectrum.headerActionProps}
             />
           ) : null}
 

@@ -16,6 +16,8 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.hallSpectrum.openBadgeAria') {
         return `Open ${String(options?.populationClass ?? '')}`;
       }
+      if (key === 'assessment.hallSpectrum.viewEntry') return '名人堂光譜 ➔';
+      if (key === 'assessment.hallSpectrum.viewEntryAria') return '開啟名人堂常模光譜';
       return key;
     },
     i18n: { language: 'zh-Hant' },
@@ -37,14 +39,17 @@ vi.mock('../useDynoIntelQuota', () => ({
 
 function HookProbe({
   onSample,
+  onBeforeOpenDyno,
 }: {
   onSample: (value: ReturnType<typeof useHallOfFameSpectrumDrawer>) => void;
+  onBeforeOpenDyno?: () => void;
 }) {
   const value = useHallOfFameSpectrumDrawer({
     axisId: 'strength',
     scoreDisplay: '76.80',
     decadeKey: '70',
     populationClass: '進階訓練者',
+    onBeforeOpenDyno,
   });
   onSample(value);
   return null;
@@ -90,9 +95,14 @@ describe('useHallOfFameSpectrumDrawer', () => {
       root.render(<HookProbe onSample={(value) => { latest = value; }} />);
     });
 
+    expect(latest?.canOpen).toBe(true);
     expect(latest?.badgeProps.onBadgeClick).toBeTypeOf('function');
     expect(latest?.badgeProps.showChevron).toBe(true);
+    expect(latest?.badgeProps.badgeSize).toBe('md');
+    expect(latest?.badgeProps.chevronTone).toBe('forward');
     expect(latest?.badgeProps.badgeAriaLabel).toContain('進階訓練者');
+    expect(latest?.headerActionProps?.label).toBe('名人堂光譜 ➔');
+    expect(latest?.headerActionProps?.ariaLabel).toBe('開啟名人堂常模光譜');
     expect(latest?.drawerProps.open).toBe(false);
     expect(latest?.drawerProps.dynoRemaining).toBe(2);
     expect(latest?.drawerProps.axisTitle).toBe('馬力');
@@ -103,13 +113,26 @@ describe('useHallOfFameSpectrumDrawer', () => {
     expect(latest?.drawerProps.open).toBe(true);
   });
 
+  it('opens the drawer from the spec-card header action', () => {
+    act(() => {
+      root.render(<HookProbe onSample={(value) => { latest = value; }} />);
+    });
+
+    act(() => {
+      latest?.headerActionProps?.onClick();
+    });
+    expect(latest?.drawerProps.open).toBe(true);
+  });
+
   it('stays non-interactive without a complete score payload', () => {
     act(() => {
       root.render(<IncompleteProbe onSample={(value) => { latest = value; }} />);
     });
 
+    expect(latest?.canOpen).toBe(false);
     expect(latest?.badgeProps.onBadgeClick).toBeUndefined();
     expect(latest?.badgeProps.showChevron).toBe(false);
+    expect(latest?.headerActionProps).toBeNull();
   });
 
   it('queues a Dyno decode prompt on CTA handoff', async () => {
@@ -130,5 +153,29 @@ describe('useHallOfFameSpectrumDrawer', () => {
     expect(launch.pendingPrompt).toContain('馬力');
     expect(launch.pendingPrompt).toContain('76.80');
     expect(launch.pendingPrompt).toContain('進階訓練者');
+  });
+
+  it('runs onBeforeOpenDyno before queuing the Dyno launch', async () => {
+    const onBeforeOpenDyno = vi.fn();
+    act(() => {
+      root.render(
+        <HookProbe
+          onSample={(value) => {
+            latest = value;
+          }}
+          onBeforeOpenDyno={onBeforeOpenDyno}
+        />
+      );
+    });
+
+    act(() => {
+      latest?.drawerProps.onOpenDyno();
+    });
+    expect(onBeforeOpenDyno).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(useDynoIntelLaunchStore.getState().requestId).toBe(1);
   });
 });
