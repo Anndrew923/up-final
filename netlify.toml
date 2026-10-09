@@ -1,3 +1,6 @@
 [build]
-  command = "npm run build"
+  # WHY: Web/Hosting must refuse a production bundle without App Check site key
+  # (see scripts/verify-ladder-production-env.mjs + docs/PRODUCTION_SECURITY_ROLLOUT.md).
+  # Plain `npm run build` is for native/cap sync and skips the REQUIRE_WEB_APP_CHECK gate.
+  command = "npm run build:web"
   publish = "dist"
