@@ -62,6 +62,28 @@ describe("hallOfFameConsultGate", () => {
     assert.equal(resolveHallOfFameConsultTier("Who else is in the 90s?")?.decadeKey, "90");
     assert.equal(resolveHallOfFameConsultTier("我想知道更多80多分的運動員")?.decadeKey, "80");
     assert.equal(resolveHallOfFameConsultTier("Tell me more about players in the 110s")?.decadeKey, "110");
+    assert.equal(resolveHallOfFameConsultTier("進階訓練者有哪些名人？")?.decadeKey, "70");
+    assert.equal(resolveHallOfFameConsultTier("進階健身者還有誰？")?.decadeKey, "70");
+    assert.equal(resolveHallOfFameConsultTier("Advanced Lifter hall of fame names?")?.decadeKey, "70");
+    assert.equal(resolveHallOfFameConsultTier("Advanced Trainee names?")?.decadeKey, "70");
+  });
+
+  it("locks decade-70 consult labels to official populationClass copy", () => {
+    const zhReply = resolveHallOfFameConsultReply(
+      { ...baseContext, overallScore: 75 },
+      "70分以上有哪些名人？"
+    );
+    assert.ok(zhReply);
+    assert.match(zhReply.commentary, /70-80（進階訓練者）/);
+    assert.doesNotMatch(zhReply.commentary, /進階健身者/);
+
+    const enReply = resolveHallOfFameConsultReply(
+      { ...baseContext, locale: "en", overallScore: 75 },
+      "Hall of Fame names in the 70s?"
+    );
+    assert.ok(enReply);
+    assert.match(enReply.commentary, /70-80 \(Advanced Lifter\)/);
+    assert.doesNotMatch(enReply.commentary, /Advanced Trainee/);
   });
 
   it("derives decade from live axis score via floor(score/10)*10", () => {
@@ -75,7 +97,7 @@ describe("hallOfFameConsultGate", () => {
     const zhReply = resolveHallOfFameConsultReply(baseContext, "我想知道更多80多分的運動員");
     assert.ok(zhReply);
     assert.equal(zhReply.hallOfFameConsultReply, true);
-    assert.match(zhReply.commentary, /80-90（高級玩家）/);
+    assert.match(zhReply.commentary, /80-90（高階玩家）/);
     assert.match(zhReply.commentary, /萬神殿對帳權限/);
     assert.doesNotMatch(zhReply.commentary, /以同齡一般人來看/);
     assert.doesNotMatch(zhReply.commentary, /進階訓練者/);
@@ -86,7 +108,7 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /110-120 \(Transcendent Sanctification\)/);
+    assert.match(enReply.commentary, /110-120 \(Transcendent\)/);
     assert.match(enReply.commentary, /Pantheon benchmarking/i);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
     assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);
@@ -96,7 +118,7 @@ describe("hallOfFameConsultGate", () => {
     const zhReply = resolveHallOfFameConsultReply(baseContext, "還有誰也是80多分？");
     assert.ok(zhReply);
     assert.equal(zhReply.hallOfFameConsultReply, true);
-    assert.match(zhReply.commentary, /80-90（高級玩家）/);
+    assert.match(zhReply.commentary, /80-90（高階玩家）/);
     assert.match(zhReply.commentary, /萬神殿對帳權限/);
     assert.match(zhReply.commentary, /僅供天梯對帳與娛樂參考。$/);
     assert.doesNotMatch(zhReply.commentary, /以同齡一般人來看/);
@@ -108,7 +130,7 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /90-100 \(Peak Mortal\)/);
+    assert.match(enReply.commentary, /90-100 \(Mortal Peak\)/);
     assert.match(enReply.commentary, /Pantheon benchmarking/i);
     assert.match(enReply.commentary, /entertainment purposes\.$/);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
@@ -171,7 +193,7 @@ describe("hallOfFameConsultGate", () => {
       userQuestion: "我的心肺如何？",
     });
     assert.ok(reply);
-    assert.match(reply.commentary, /80-90（高級玩家）/);
+    assert.match(reply.commentary, /80-90（高階玩家）/);
     assert.match(reply.commentary, /萬神殿對帳權限/);
     assert.doesNotMatch(reply.commentary, /心肺機能萬神殿/);
     assert.doesNotMatch(reply.commentary, /尚未解鎖該重力場/);
@@ -249,7 +271,7 @@ describe("hallOfFameConsultGate", () => {
       "Hall of Fame names above 80 for strength?"
     );
     assert.ok(reply);
-    assert.match(reply.commentary, /80-90 \(Elite Player\)/);
+    assert.match(reply.commentary, /80-90 \(Gym Strong\)/);
     assert.match(reply.commentary, /strength Pantheon benchmarking/i);
     assert.match(reply.commentary, /Representative names currently available/);
     assert.match(reply.commentary, /entertainment purposes\.$/);

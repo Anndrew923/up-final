@@ -31,6 +31,7 @@ export type FfmiPageErrorKey =
 export type FfmiCategorySuffix = FfmiMaleCategorySuffix | FfmiFemaleCategorySuffix;
 
 export interface UseFfmiPageResult {
+  profile: PhysicalProfile | null;
   profileReady: boolean;
   gender: 'male' | 'female' | null;
   bodyFatInput: string;
@@ -157,6 +158,7 @@ export function useFfmiPage(): UseFfmiPageResult {
   }, [navigate, persistToDashboard]);
 
   return {
+    profile,
     profileReady,
     gender: profile && profileReady ? profile.gender : null,
     bodyFatInput,

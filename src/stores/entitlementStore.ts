@@ -28,12 +28,15 @@ import type { EntitlementState, PurchaseStatus, SubscriptionStatus } from '../ty
 export interface ServerProEntitlementCommit {
   subscriptionStatus: 'pro' | 'grace';
   /**
-   * Effective access expiry (max rc/promo) — used when rc/promo mirrors are omitted.
-   * Prefer passing `rcExpiresAt` + `promoExpiresAt` explicitly.
+   * Effective stacked access expiry — used when rc/promo mirrors are omitted.
+   * Prefer passing `rcExpiresAt` + `promoExpiresAt` + `effectiveUntil` explicitly.
    */
   proExpiresAt: string;
   rcExpiresAt?: string | null;
   promoExpiresAt?: string | null;
+  effectiveUntil?: string | null;
+  promoCreditMs?: number | null;
+  promoPaused?: boolean;
   planId: string | null;
   /**
    * Purchase path arms the 5-minute reconcile shield; restore/bootstrap should not.
@@ -84,6 +87,9 @@ const defaultState: EntitlementState = {
   isPro: false,
   proExpiresAt: null,
   promoExpiresAt: null,
+  effectiveUntil: null,
+  promoCreditMs: null,
+  promoPaused: false,
   planId: null,
   lastCheckedAt: null,
   proPurchaseCooldownUntil: null,
@@ -111,6 +117,12 @@ function normalizeEntitlementState(state: EntitlementState): EntitlementState {
       ...state,
       purchaseStatus: 'owned',
       promoExpiresAt: state.promoExpiresAt ?? null,
+      effectiveUntil: state.effectiveUntil ?? null,
+      promoCreditMs:
+        typeof state.promoCreditMs === 'number' && Number.isFinite(state.promoCreditMs)
+          ? Math.max(0, state.promoCreditMs)
+          : null,
+      promoPaused: state.promoPaused === true,
       proPurchaseCooldownUntil: state.proPurchaseCooldownUntil ?? null,
       isGenesisEarlyBird: state.isGenesisEarlyBird === true,
       genesisSeatNumber:
@@ -149,7 +161,7 @@ function normalizeProExpiry(state: EntitlementState): EntitlementState {
   }
   if (next.subscriptionStatus !== 'pro' && next.subscriptionStatus !== 'grace') {
     // Promo-only defense: elevate status when promo window is still live.
-    if (isPromoExpiryActive(next.promoExpiresAt)) {
+    if (isPromoExpiryActive(next)) {
       return { ...next, subscriptionStatus: 'pro' };
     }
     return next;
@@ -200,8 +212,8 @@ function snapshotToEntitlementPatch(
       lastCheckedAt: new Date().toISOString(),
     };
   }
-  // WHY: Inactive RC must not clear coach promo — keep Pro when promo window remains.
-  if (isPromoExpiryActive(previous.promoExpiresAt)) {
+  // WHY: Inactive RC must not clear coach promo — keep Pro when gift credit remains.
+  if (isPromoExpiryActive(previous)) {
     return {
       subscriptionStatus: 'pro',
       planId: null,
@@ -213,6 +225,10 @@ function snapshotToEntitlementPatch(
     subscriptionStatus: 'free',
     planId: null,
     proExpiresAt: null,
+    promoExpiresAt: null,
+    effectiveUntil: null,
+    promoCreditMs: null,
+    promoPaused: false,
     lastCheckedAt: new Date().toISOString(),
   };
 }
@@ -223,6 +239,9 @@ function clearProSubscriptionFields(state: EntitlementState): EntitlementState {
     subscriptionStatus: 'free',
     proExpiresAt: null,
     promoExpiresAt: null,
+    effectiveUntil: null,
+    promoCreditMs: null,
+    promoPaused: false,
     planId: null,
     proPurchaseCooldownUntil: null,
     // WHY: Stale lastCheckedAt from a prior uid would look "settled" before this session's RC refresh.
@@ -267,19 +286,30 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
   },
   commitServerProEntitlement(payload) {
     set((state) => {
-      // WHY: Store RC + promo mirrors separately; hasProAccess uses max().
+      // WHY: Store RC + promo mirrors separately; hasProAccess prefers stacked effectiveUntil.
       const promoExpiresAt =
         payload.promoExpiresAt !== undefined
           ? payload.promoExpiresAt
           : (state.promoExpiresAt ?? null);
       const proExpiresAt =
         payload.rcExpiresAt !== undefined ? payload.rcExpiresAt : payload.proExpiresAt;
+      const effectiveUntil =
+        payload.effectiveUntil !== undefined
+          ? payload.effectiveUntil
+          : (payload.proExpiresAt ?? state.effectiveUntil ?? null);
 
       return normalizeEntitlementState({
         ...state,
         subscriptionStatus: payload.subscriptionStatus,
         proExpiresAt,
         promoExpiresAt,
+        effectiveUntil,
+        promoCreditMs:
+          payload.promoCreditMs !== undefined
+            ? payload.promoCreditMs
+            : (state.promoCreditMs ?? null),
+        promoPaused:
+          payload.promoPaused !== undefined ? payload.promoPaused : Boolean(state.promoPaused),
         planId: payload.planId,
         // WHY: Opt-in only — restore/bootstrap must not inherit the post-charge shield.
         proPurchaseCooldownUntil: payload.armPurchaseCooldown
@@ -307,6 +337,9 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
           subscriptionStatus: cached.subscriptionStatus,
           proExpiresAt: cached.proExpiresAt,
           promoExpiresAt: cached.promoExpiresAt ?? null,
+          effectiveUntil: cached.effectiveUntil ?? null,
+          promoCreditMs: cached.promoCreditMs ?? null,
+          promoPaused: cached.promoPaused === true,
           planId: cached.planId,
           proPurchaseCooldownUntil: cached.proPurchaseCooldownUntil ?? null,
           isGenesisEarlyBird: cached.isGenesisEarlyBird === true,
@@ -373,6 +406,10 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
             result.entitlement.promoExpiresAt !== undefined
               ? result.entitlement.promoExpiresAt
               : (state.promoExpiresAt ?? null),
+          effectiveUntil:
+            result.entitlement.effectiveUntil ?? result.entitlement.proExpiresAt ?? null,
+          promoCreditMs: result.entitlement.promoCreditMs ?? null,
+          promoPaused: result.entitlement.promoPaused === true,
           planId: result.entitlement.planId,
           isGenesisEarlyBird: result.genesis?.isGenesisEarlyBird === true,
           genesisSeatNumber: result.genesis?.genesisSeatNumber ?? null,
@@ -392,6 +429,9 @@ export const useEntitlementStore = create<EntitlementStore>((set) => ({
                 subscriptionStatus: 'free' as const,
                 proExpiresAt: null,
                 promoExpiresAt: null,
+                effectiveUntil: null,
+                promoCreditMs: null,
+                promoPaused: false,
                 planId: null,
                 proPurchaseCooldownUntil: null,
               }

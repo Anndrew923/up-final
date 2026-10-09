@@ -25,15 +25,26 @@ export type FirestoreUserEntitlementFields = {
   is_genesis_early_bird?: boolean | null;
   genesisSeatNumber?: number | null;
   genesis_seat_number?: number | null;
+  effectiveUntil?: string | null;
+  effectiveUntilMs?: number | null;
+  promoCreditMs?: number | null;
+  promoPaused?: boolean | null;
+  promoCreditAsOfMs?: number | null;
+  /** Denormalized coach invite for Native RC backfill. Not the commission ledger SSOT. */
+  referrer?: string | null;
+  redeemedCode?: string | null;
 };
 
 export type ParsedServerProEntitlement = {
   subscriptionStatus: 'pro' | 'grace';
-  /** Effective max(rc, promo) for client timers / hasProAccess. */
+  /** Effective stacked (or legacy max) expiry for client timers / hasProAccess. */
   proExpiresAt: string;
   /** RC billing mirror (may be null when promo-only). */
   rcExpiresAt: string | null;
   promoExpiresAt: string | null;
+  effectiveUntil: string | null;
+  promoCreditMs: number | null;
+  promoPaused: boolean;
   planId: string | null;
 };
 
@@ -120,19 +131,39 @@ export function parseServerProFromUserDoc(
 
   const rcRaw = resolveProExpiresAt(data);
   const promoExpiresAt = resolvePromoExpiresAt(data);
+  const effectiveUntil = resolveIsoOrMs(
+    data?.effectiveUntil ?? undefined,
+    data?.effectiveUntilMs ?? undefined
+  );
+  const promoCreditMs =
+    typeof data.promoCreditMs === 'number' && Number.isFinite(data.promoCreditMs)
+      ? Math.max(0, data.promoCreditMs)
+      : null;
+  const promoPaused = data.promoPaused === true;
   // WHY: Expired RC must not stay as a live store-billing mirror (blocks convert + false already-pro).
   const rcExpiresAt =
     rcRaw && Date.parse(rcRaw) >= now.getTime() ? rcRaw : null;
-  const effectiveIso = resolveEffectiveProExpiryIso({
-    proExpiresAt: rcRaw,
-    promoExpiresAt,
-  });
-  if (!effectiveIso) return null;
+  const effectiveIso = resolveEffectiveProExpiryIso(
+    {
+      proExpiresAt: rcRaw,
+      promoExpiresAt,
+      effectiveUntil,
+      effectiveUntilMs: data.effectiveUntilMs ?? null,
+      promoCreditMs,
+      promoPaused,
+      promoCreditAsOfMs: data.promoCreditAsOfMs ?? null,
+    },
+    now
+  );
+  if (!effectiveIso || Date.parse(effectiveIso) < now.getTime()) return null;
 
   let subscriptionStatus = resolveSubscriptionStatus(data);
-  // Promo-only docs may briefly lack status; treat as pro when effective window is valid.
+  // Promo-only / credit-only docs may briefly lack status; treat as pro when gift remains.
   if (subscriptionStatus !== 'pro' && subscriptionStatus !== 'grace') {
-    if (!promoExpiresAt || Date.parse(promoExpiresAt) < now.getTime()) return null;
+    const creditActive =
+      (promoCreditMs != null && promoCreditMs > 0) ||
+      Boolean(promoExpiresAt && Date.parse(promoExpiresAt) >= now.getTime());
+    if (!creditActive) return null;
     subscriptionStatus = 'pro';
   }
 
@@ -142,6 +173,9 @@ export function parseServerProFromUserDoc(
     isPro: false,
     proExpiresAt: rcExpiresAt,
     promoExpiresAt,
+    effectiveUntil: effectiveIso,
+    promoCreditMs,
+    promoPaused,
     planId: data.planId ?? data.plan_id ?? null,
     lastCheckedAt: null,
     proPurchaseCooldownUntil: null,
@@ -155,6 +189,9 @@ export function parseServerProFromUserDoc(
     proExpiresAt: effectiveIso,
     rcExpiresAt,
     promoExpiresAt,
+    effectiveUntil: effectiveIso,
+    promoCreditMs,
+    promoPaused,
     planId: ent.planId,
   };
 }

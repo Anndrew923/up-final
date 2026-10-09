@@ -7,6 +7,7 @@ import GripAssessmentPage from '../GripAssessmentPage';
 
 const mockUseGripAssessmentPage = vi.fn();
 const mockUseScoreMeaning = vi.fn();
+const breakthroughModalPropsLog: Array<{ milestoneHintLabel?: string | null }> = [];
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -45,16 +46,36 @@ vi.mock('../../components/assessment/AssessmentCeremonyOverlay', () => ({
 }));
 
 vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
+  default: (props: { milestoneHintLabel?: string | null }) => {
+    breakthroughModalPropsLog.push({ milestoneHintLabel: props.milestoneHintLabel });
+    return null;
+  },
+}));
+
+vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
   default: () => null,
 }));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'grip.performanceSpecHeader') return 'PERFORMANCE SPEC / Potential Spec';
-      if (key === 'grip.nextMilestoneHint') return `Next Milestone: ${String(options?.points)}`;
+      if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
+      if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
+      if (key === 'assessment.axis.gripStrength') return 'Traction';
+      if (key === 'grip.nextMilestoneHint') {
+        return `${String(options?.points)} pts until next tier upgrade`;
+      }
+      if (key === 'grip.nextMilestoneHintWithRaw') {
+        return `${String(options?.points)} pts until next tier upgrade (approx. +${String(options?.delta)} ${String(options?.unit)})`;
+      }
       if (key === 'home.profile.male') return 'Male';
       if (key === 'home.profile.female') return 'Female';
+      if (key === 'units.weight.kg') return 'kg';
+      if (key === 'units.weight.lb') return 'lb';
+      if (key === 'units.length.cm') return 'cm';
+      if (key === 'units.length.in') return 'in';
+      if (key === 'units.system.metric') return 'Metric';
+      if (key === 'units.system.imperial') return 'Imperial';
       return key;
     },
   }),
@@ -62,10 +83,6 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../components/DisclosurePanel', () => ({
   DisclosurePanel: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-}));
-
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
-  default: () => <div data-testid="leaderboard-sync-bar" />,
 }));
 
 function renderPage(): { container: HTMLDivElement; unmount: () => void } {
@@ -93,6 +110,7 @@ function renderPage(): { container: HTMLDivElement; unmount: () => void } {
 afterEach(() => {
   mockUseGripAssessmentPage.mockReset();
   mockUseScoreMeaning.mockReset();
+  breakthroughModalPropsLog.length = 0;
 });
 
 describe('GripAssessmentPage performance spec', () => {
@@ -113,6 +131,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Pantheon Compression',
       summary: 'Model ceiling reached.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -121,10 +142,14 @@ describe('GripAssessmentPage performance spec', () => {
     const text = container.textContent ?? '';
 
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('gripStrength', 191);
-    expect(text).toContain('PERFORMANCE SPEC / Potential Spec');
+    expect(text).toContain('191.00');
+    expect(text).toContain('高階玩家');
+    expect(text).toContain('Write to Radar ➔');
+    expect(text).not.toContain('Calculate ➔');
     expect(text).toContain('Pantheon Compression');
     expect(text).toContain('Model ceiling reached.');
-    expect(text).not.toContain('Next Milestone:');
+    expect(text).not.toContain('PERFORMANCE SPEC / Potential Spec');
+    expect(text).not.toContain('pts until next tier upgrade');
     expect(text).not.toContain('grip.metaWeight');
     expect(text).not.toContain('80');
 
@@ -148,6 +173,9 @@ describe('GripAssessmentPage performance spec', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -158,6 +186,78 @@ describe('GripAssessmentPage performance spec', () => {
     expect(badge?.textContent).toBe('Male');
     expect(container.textContent).not.toContain('grip.metaWeight');
     expect(container.textContent).not.toContain('92.8');
+    expect(container.textContent).toContain('Calculate ➔');
+    expect(container.textContent).not.toContain('Write to Radar ➔');
+
+    unmount();
+  });
+
+  it('shows raw kg gap beside points when next milestone exists', () => {
+    mockUseGripAssessmentPage.mockReturnValue({
+      profile: { gender: 'male', weightKg: 75 },
+      profileReady: true,
+      peakInput: '45',
+      setPeakInput: vi.fn(),
+      previewScore: 63,
+      capNotice: null,
+      errorKey: null,
+      submitDone: false,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      persistToDashboard: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: 'Track Semi-Slick',
+      summary: 'Mountain drift copy.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
+      nextMilestone: 70,
+      remainingPoints: 7,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+
+    expect(text).toContain('Track Semi-Slick');
+    expect(text).toMatch(/7 pts until next tier upgrade \(approx\. \+\d+(\.\d)? kg\)/);
+    expect(text).not.toMatch(/7 pts until next tier upgrade$/m);
+    expect(breakthroughModalPropsLog.at(-1)?.milestoneHintLabel).toMatch(
+      /7 pts until next tier upgrade \(approx\. \+\d+(\.\d)? kg\)/
+    );
+
+    unmount();
+  });
+
+  it('falls back to points-only hint when peak input cannot resolve raw gap', () => {
+    mockUseGripAssessmentPage.mockReturnValue({
+      profile: { gender: 'male', weightKg: 75 },
+      profileReady: true,
+      peakInput: '',
+      setPeakInput: vi.fn(),
+      previewScore: 63,
+      capNotice: null,
+      errorKey: null,
+      submitDone: false,
+      clearError: vi.fn(),
+      calculate: vi.fn(),
+      persistToDashboard: vi.fn(),
+      submitToRadar: vi.fn(),
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: 'Track Semi-Slick',
+      summary: 'Mountain drift copy.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
+      nextMilestone: 70,
+      remainingPoints: 7,
+    });
+
+    const { container, unmount } = renderPage();
+    expect(container.textContent).toContain('7 pts until next tier upgrade');
+    expect(container.textContent).not.toContain('approx.');
 
     unmount();
   });

@@ -35,7 +35,6 @@ import {
 import { resolveJoinArenaPrimaryCtaKey } from '../lib/joinArenaPrimaryCta';
 import { navigateFromUiGate } from '../lib/uiGateNavigation';
 import { usePrefersReducedMotion } from '../lib/motionPreference';
-import { hapticService } from '../services/hapticService';
 import { openStoreSubscriptionManagement } from '../services/storeSubscriptionManageService';
 import { purchaseProSubscription } from '../services/subscriptionService';
 import {
@@ -146,7 +145,6 @@ const JoinArenaPage: FC = () => {
         setResultModal({ open: true, kind: 'failure', failureReason: 'core' });
         return;
       }
-      hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription(selectedPlan);
       if (!result.ok) {
         setResultModal({

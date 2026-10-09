@@ -1,6 +1,6 @@
 {
   "assessment": {
-    "title": "性能測功機 //\u00a0DYNO",
+    "title": "性能測功機 // DYNO",
     "referenceInfo": {
       "title": "評測參考資料",
       "toggleExpand": "展開資料",
@@ -19,7 +19,8 @@
       "cardio": "續航",
       "muscleMass": "車體外觀",
       "bodyFat": "引擎排量",
-      "gripStrength": "抓地"
+      "gripStrength": "抓地",
+      "armSize": "輪框"
     },
     "ffmi": {
       "kicker": "換算",
@@ -69,7 +70,31 @@
       "dashboardAndArenaSuccess": "本機主控台與天梯已同步完成。",
       "syncing": "數據灌注中",
       "peakReached": "已達巔峰序列",
-      "milestoneRemaining": "距離下一階升級尚需 {{points}} 分"
+      "milestoneRemaining": "距離下一階升級尚需 {{points}} 分",
+      "normBadgeExpandAria": "展開「{{populationClass}}」級距說明",
+      "normBadgeCollapseAria": "收合「{{populationClass}}」級距說明",
+      "summaryRegionAria": "「{{populationClass}}」級距說明"
+    },
+    "viewCalculationDetails": "查看換算明細",
+    "hideCalculationDetails": "隱藏換算明細",
+    "calculateRadarAction": "計算評測 ➔",
+    "writeToRadarAction": "寫入雷達 ➔",
+    "hallSpectrum": {
+      "title": "{{axisTitle}} · 名人堂光譜",
+      "closeAria": "關閉名人堂光譜",
+      "ladderRegionAria": "單軸名人堂階梯",
+      "currentRungAria": "目前落點：{{populationClass}}",
+      "legalExpand": "展開免責全文",
+      "legalCollapse": "收合免責全文",
+      "teaserKicker": "DYNO INTEL 遙測",
+      "teaserLine": "拿掉感覺，用科學常模直面自我。",
+      "teaserCta": "免費解碼生理成色",
+      "teaserCtaRemaining": "剩 {{remaining}}",
+      "teaserCtaArrow": "➔",
+      "teaserCtaAria": "開啟 Dyno Intel，免費解碼生理成色，今日剩餘 {{remaining}} 次",
+      "openBadgeAria": "開啟「{{populationClass}}」名人堂光譜",
+      "viewEntry": "名人堂光譜 ➔",
+      "viewEntryAria": "開啟名人堂常模光譜"
     },
     "ceremony": {
       "scanning": "診斷掃描中…",

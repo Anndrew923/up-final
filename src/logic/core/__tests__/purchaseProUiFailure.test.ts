@@ -12,6 +12,7 @@ describe('mapPurchaseProFailureToUi', () => {
     expect(mapPurchaseProFailureToUi('auth-required')).toBe('auth');
     expect(mapPurchaseProFailureToUi('core-required')).toBe('core');
     expect(mapPurchaseProFailureToUi('billing-unavailable')).toBe('billing');
+    expect(mapPurchaseProFailureToUi('no-offerings')).toBe('no-offerings');
     expect(mapPurchaseProFailureToUi('failed')).toBe('billing');
     expect(mapPurchaseProFailureToUi('already-pro')).toBe('billing');
   });

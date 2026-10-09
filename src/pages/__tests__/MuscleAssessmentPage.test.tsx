@@ -61,7 +61,7 @@ vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
   default: () => null,
 }));
 
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
+vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
   default: () => null,
 }));
 
@@ -71,6 +71,9 @@ const SMM_PREAMBLE_COPY = 'Ceiling 100/67';
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
+      if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
+      if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
+      if (key === 'assessment.axis.muscleMass') return 'Build';
       if (key === 'muscle.standardsInfo.dualSovereignPreamble') {
         return `Ceiling ${String(options?.maleMax)}/${String(options?.femaleMax)}`;
       }
@@ -140,6 +143,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -159,6 +165,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });
@@ -185,6 +194,9 @@ describe('MuscleAssessmentPage reference disclosure', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: null,
       summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: null,
       remainingPoints: null,
     });

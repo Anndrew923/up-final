@@ -59,6 +59,13 @@ function failureCopyKeys(reason: ProSubscriptionFailureReason): {
       body: 'subscriptionResult.syncFailBody',
     };
   }
+  if (reason === 'no-offerings') {
+    return {
+      kicker: 'subscriptionResult.failKicker',
+      title: 'subscriptionResult.noOfferingsFailTitle',
+      body: 'subscriptionResult.noOfferingsFailBody',
+    };
+  }
   return {
     kicker: 'subscriptionResult.failKicker',
     title: 'subscriptionResult.failTitle',

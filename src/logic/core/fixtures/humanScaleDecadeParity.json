@@ -1,0 +1,25 @@
+{
+  "_comment": "PARITY lock — client resolveDecadeKeyFromBandId ↔ functions resolveHumanScaleDecadeKey. Both test suites must assert this table.",
+  "bandIdToDecade": [
+    ["BASE", "0"],
+    ["TIER_40", "40"],
+    ["TIER_50", "50"],
+    ["TIER_60", "60"],
+    ["TIER_70", "70"],
+    ["TIER_80", "80"],
+    ["TIER_90", "90"],
+    ["TIER_100", "100"],
+    ["TIER_110", "110"],
+    ["TIER_120", "120"],
+    ["TIER_130", "130"],
+    ["TIER_140", "140"],
+    ["LEGEND", "150"],
+    ["PANTHEON", "150"],
+    ["TIER_150", "150"],
+    ["TIER_160", "150"],
+    ["TIER_170", "150"],
+    ["TIER_30", "0"],
+    ["", "0"],
+    ["UNKNOWN", "0"]
+  ]
+}

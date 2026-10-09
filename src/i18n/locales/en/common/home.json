@@ -4,7 +4,7 @@
       "kicker": "Body baseline",
       "title": "Body Profile",
       "completeBadge": "Baseline locked.",
-      "incompleteHint": "Add body data so assessments can score your metrics.",
+      "incompleteHint": "Add body data to unlock scoring.",
       "gender": "Sex",
       "age": "Age (years)",
       "height": "Height",
@@ -82,8 +82,8 @@
       "saving": "Saving…",
       "saved": "Profile saved.",
       "errors": {
-        "required-gender": "Select a sex.",
-        "required-age": "Enter your age.",
+        "required-gender": "Sex required.",
+        "required-age": "Age required.",
         "required-height": "Enter height ({{unit}}).",
         "required-weight": "Enter weight ({{unit}}).",
         "invalid-gender": "Sex must be male or female.",
@@ -116,7 +116,7 @@
       "errorSave": "Could not save. Try again."
     },
     "consoleKicker": "Main console",
-    "radarOverview": "PERFORMANCE DASHBOARD",
+    "radarOverview": "PERFORMANCE MAP",
     "radarAria": "Six-axis hex radar chart",
     "diagnostics": {
       "kicker": "Identity archetype",
@@ -135,12 +135,12 @@
         "boot": "Chassis power-on…",
         "charge": "Six-axis charge…",
         "count": "Calibrating index…",
-        "reveal": "Homologation readout"
+        "reveal": "Spec readout"
       }
     },
-    "overallAverage": "Performance Index",
+    "overallAverage": "Chassis Index",
     "overallGrade": {
-      "kicker": "HOMOLOGATION GRADE",
+      "kicker": "SPEC GRADE",
       "viewDetailHint": "Tap for grade details",
       "carSpecLabel": "Chassis Code",
       "priceLabel": "Est. Value",
@@ -251,8 +251,8 @@
         "strength": "Horsepower",
         "explosivePower": "Torque",
         "cardio": "Stint",
-        "muscleMass": "Exterior",
-        "bodyFat": "Displacement",
+        "muscleMass": "Build",
+        "bodyFat": "Density",
         "gripStrength": "Traction"
       },
       "axisChart": {

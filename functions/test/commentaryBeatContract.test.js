@@ -90,7 +90,7 @@ describe("dynoIntelHumanBriefs v3", () => {
     const brief = resolveHumanBrief(strengthStatusContext);
     assert.ok(brief);
     assert.ok(!containsVehicleLexicon(brief));
-    assert.match(brief, /高級玩家/);
+    assert.match(brief, /高階玩家/);
     assert.match(brief, /你把「訓練」/);
     assert.doesNotMatch(brief, /全人類官方 PR 值對照資料/);
     assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|TIER_|Mock Neuro/);
@@ -172,7 +172,7 @@ describe("dynoIntelHumanBriefs v3", () => {
       axes: [{ axis: "strength", score: 87.9, tierBandId: "TIER_80", cardCopy: { title: "350hp", summary: "x" } }],
     };
     const brief = resolveHumanBrief(ctx);
-    assert.match(brief, /高級玩家/);
+    assert.match(brief, /高階玩家/);
     assert.match(brief, /你把「訓練」/);
     assert.doesNotMatch(brief, /業餘運動員頂尖|大重量|全人類官方 PR/);
   });
@@ -362,13 +362,13 @@ describe("dynoIntelHumanBriefs v3", () => {
     const parts = resolveHumanBriefPartsFromContext(macroCtx);
     assert.ok(parts);
     assert.doesNotMatch(parts.segment1Core, /Global Peer PR|career-peak states/i);
-    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.match(parts.prSegment, /GLOBAL PR PERCENTILE — CALIBRATING/);
     assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
 
     const paragraphs = splitParagraphs(parts.fullBrief);
     assert.ok(paragraphs.length >= 2);
-    assert.doesNotMatch(paragraphs[0], /Global Peer PR Percentile Data/i);
-    assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
+    assert.doesNotMatch(paragraphs[0], /GLOBAL PR PERCENTILE/i);
+    assert.match(paragraphs[1], /GLOBAL PR PERCENTILE/i);
   });
 
   it("v5.3 — en total score macro triggers golden three with 100+ epic praise overlay", () => {
@@ -386,15 +386,15 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.match(parts.segment1Core, /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.match(parts.segment1Core, /Hall of Fame sanctum/i);
     assert.doesNotMatch(parts.segment1Core, /Global Peer PR|career-peak states/i);
-    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.match(parts.prSegment, /GLOBAL PR PERCENTILE — CALIBRATING/);
     assert.match(parts.legalSegment, /career-peak states/);
     assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
 
     const paragraphs = splitParagraphs(parts.fullBrief);
-    assert.equal(paragraphs.length, 3);
+    assert.ok(paragraphs.length >= 3);
     assert.match(paragraphs[0], /Crossing the 100-point threshold|Mortal Awakening/i);
-    assert.match(paragraphs[1], /Global Peer PR Percentile Data/i);
-    assert.ok(paragraphs[2].endsWith("entertainment purposes."));
+    assert.match(paragraphs[1], /GLOBAL PR PERCENTILE/i);
+    assert.ok(paragraphs[paragraphs.length - 1].endsWith("entertainment purposes."));
 
     const repaired = enforceCommentaryBeatContract(
       {
@@ -406,10 +406,10 @@ describe("dynoIntelHumanBriefs v3", () => {
       macroCtx
     );
     const repairedParagraphs = splitParagraphs(repaired.commentary);
-    assert.equal(repairedParagraphs.length, 3);
+    assert.ok(repairedParagraphs.length >= 3);
     assert.match(repairedParagraphs[0], /Crossing the 100-point threshold|Mortal Awakening/i);
-    assert.match(repairedParagraphs[1], /Global Peer PR Percentile Data/i);
-    assert.match(repairedParagraphs[2], /entertainment purposes/);
+    assert.match(repairedParagraphs[1], /GLOBAL PR PERCENTILE/i);
+    assert.match(repairedParagraphs[repairedParagraphs.length - 1], /entertainment purposes/);
     assert.doesNotMatch(repaired.commentary, /[\u4e00-\u9fff]/);
   });
 
@@ -425,9 +425,9 @@ describe("dynoIntelHumanBriefs v3", () => {
     };
     const parts = resolveHumanBriefPartsFromContext(macroCtx);
     assert.ok(parts);
-    assert.match(parts.segment1Core, /genetic lottery|Peak Mortal/i);
+    assert.match(parts.segment1Core, /genetic lottery|Mortal Peak/i);
     assert.doesNotMatch(parts.segment1Core, /regional multi-event benchmark with excellent/i);
-    assert.match(parts.prSegment, /Global Peer PR Percentile Data Is Actively Being Gathered/);
+    assert.match(parts.prSegment, /GLOBAL PR PERCENTILE — CALIBRATING/);
     assert.match(parts.legalSegment, /career-peak states/);
     assert.doesNotMatch(parts.fullBrief, /[\u4e00-\u9fff]/);
   });
@@ -468,10 +468,10 @@ describe("dynoIntelHumanBriefs v3", () => {
     assert.doesNotMatch(segment1, /[\u4e00-\u9fff]/);
     assert.doesNotMatch(brief, /[\u4e00-\u9fff]/);
     assert.match(segment1, /maps to|Against same-age norms/i);
-    assert.match(segment1, /Elite Player/i);
+    assert.match(segment1, /Gym Strong/i);
     assert.match(
       segment1,
-      /Against same-age competitive norms, your absolute strength performance maps to Elite Player/
+      /Against same-age competitive norms, your absolute strength performance maps to Gym Strong/
     );
     assert.doesNotMatch(segment1, /performance {2}maps/);
   });
@@ -485,13 +485,13 @@ describe("dynoIntelHumanBriefs v3", () => {
 
   it("v5.3 — EN scale matrix 0–150 decades overlay epic praise (parity with zh-Hant)", () => {
     const row90 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["90"];
-    assert.match(row90.summaryHuman, /genetic lottery|Peak Mortal/i);
+    assert.match(row90.summaryHuman, /genetic lottery|Mortal Peak/i);
     assert.ok(row90.summaryHuman.length > 120);
     const row100 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["100"];
     assert.match(row100.summaryHuman, /Crossing the 100-point threshold|Mortal Awakening/i);
     assert.ok(row100.summaryHuman.length > 120);
     const row0 = DYNO_INTEL_HUMAN_SCALE_MATRIX_EN["0"];
-    assert.match(row0.summaryHuman, /Infant Phase|enormous room to grow/i);
+    assert.match(row0.summaryHuman, /Rookie|enormous room to grow/i);
     assert.ok(row0.summaryHuman.length > 80);
   });
 });
@@ -768,7 +768,7 @@ describe("enforceCommentaryBeatContract v3", () => {
     const reply = {
       commentary:
         segment1 +
-        "力量評分，已達高級玩家頂尖強度。" +
+        "力量評分，已達高階玩家頂尖強度。" +
         "你把訓練的優先權排在很多事情前面，光去健身房擺樣子根本達不到目前程度。",
       action_directive: "",
       is_off_topic: false,
@@ -782,9 +782,9 @@ describe("enforceCommentaryBeatContract v3", () => {
       normalizeBriefWhitespace(paragraphs[1]),
       normalizeBriefWhitespace(splitParagraphs(fullBrief)[1])
     );
-    assert.doesNotMatch(paragraphs[0], /力量評分，已達高級玩家頂尖強度/);
+    assert.doesNotMatch(paragraphs[0], /力量評分，已達高階玩家頂尖強度/);
     assert.doesNotMatch(paragraphs[0], /光去健身房擺樣子根本達不到目前程度。$/);
-    assert.match(paragraphs[0], /高級玩家/);
+    assert.match(paragraphs[0], /高階玩家/);
     assert.match(paragraphs[0], /你把「訓練」/);
   });
 

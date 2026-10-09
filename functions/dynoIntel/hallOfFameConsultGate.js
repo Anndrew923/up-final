@@ -58,6 +58,7 @@ const ROSTER_LEXICON_PATTERNS = [
 ];
 
 const SCORE_BAND_CUE =
+  // WHY: Include superseded 70-class aliases so SCORE_BAND intent still fires on old phrasing.
   /\d+\s*(?:多|幾)?\s*分|\d+\s*\+|in the \d+0?s|\d+0s|(?:above|over)\s*\d+|points?|地表最強|怪物領域|統計神話|歷史級別|超凡入聖|凡體覺醒|凡人頂尖|高階玩家|高級玩家|進階健身者|進階訓練者|大眾健康常模|新手村|新手期|探索期|嬰兒期/i;
 
 const KNOWN_CONSULT_AXES = new Set([
@@ -82,9 +83,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "150",
     label: "150+（地表最強）",
-    labelEn: "150+ (Apex of the Earth)",
+    labelEn: "150+ (Apex)",
     pattern:
-      /150\s*(?:\+|分?以上)|150以上|150多|150幾|一百五十多|地表最強|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s/i,
+      /150\s*(?:\+|分?以上)|150以上|150多|150幾|一百五十多|地表最強|a2|(?:above|over)\s*150|150\s*points?|150s|in the 150s|earth\s*apex|apex\s+of\s+the\s+earth|\bapex\b/i,
   },
   {
     decadeKey: "140",
@@ -96,9 +97,9 @@ const TIER_PATTERNS = [
   {
     decadeKey: "130",
     label: "130-140（統計神話）",
-    labelEn: "130-140 (Statistical Myth)",
+    labelEn: "130-140 (Mythic)",
     pattern:
-      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s/i,
+      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s|mythic|statistical\s+myth/i,
   },
   {
     decadeKey: "120",
@@ -110,65 +111,66 @@ const TIER_PATTERNS = [
   {
     decadeKey: "110",
     label: "110-120（超凡入聖）",
-    labelEn: "110-120 (Transcendent Sanctification)",
+    labelEn: "110-120 (Transcendent)",
     pattern:
-      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s/i,
+      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s|transcendent(?:\s+sanctification)?/i,
   },
   {
     decadeKey: "100",
     label: "100-110（凡體覺醒）",
-    labelEn: "100-110 (Mortal Awakening)",
+    labelEn: "100-110 (Breakout)",
     pattern:
-      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s/i,
+      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s|mortal\s+awakening|\bawakening\b|\bbreakout\b/i,
   },
   {
     decadeKey: "90",
     label: "90-100（凡人頂尖）",
-    labelEn: "90-100 (Peak Mortal)",
+    labelEn: "90-100 (Mortal Peak)",
     pattern:
-      /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|凡人頂尖|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s/i,
+      /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|凡人頂尖|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s|peak\s+mortal|mortal\s+peak/i,
   },
   {
     decadeKey: "80",
-    label: "80-90（高級玩家）",
-    labelEn: "80-90 (Elite Player)",
+    label: "80-90（高階玩家）",
+    labelEn: "80-90 (Gym Strong)",
     pattern:
-      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s/i,
+      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s|high\s+tier|gym\s+strong/i,
   },
   {
     decadeKey: "70",
     label: "70-80（進階訓練者）",
-    labelEn: "70-80 (Advanced Trainee)",
+    labelEn: "70-80 (Advanced Lifter)",
+    // WHY: Keep superseded class aliases (進階健身者 / Advanced Trainee) so old user phrasing still routes.
     pattern:
-      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
+      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|advanced\s+lifter|advanced\s+trainee|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
   },
   {
     decadeKey: "60",
     label: "60-70（大眾健康常模）",
-    labelEn: "60-70 (General Health Norm)",
+    labelEn: "60-70 (Everyday Fit)",
     pattern:
-      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s/i,
+      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s|health\s+norm|general\s+health\s+norm|everyday\s+fit/i,
   },
   {
     decadeKey: "50",
     label: "50-60（新手村）",
-    labelEn: "50-60 (Novice Village)",
+    labelEn: "50-60 (Novice)",
     pattern:
-      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|新手村|(?:above|over)\s*50|50\s*points?|50s|in the 50s/i,
+      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|新手村|(?:above|over)\s*50|50\s*points?|50s|in the 50s|novice(?:\s+village)?/i,
   },
   {
     decadeKey: "40",
     label: "40-50（探索期）",
-    labelEn: "40-50 (Exploration Phase)",
+    labelEn: "40-50 (Exploring)",
     pattern:
-      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s/i,
+      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s|exploration(?:\s+phase)?|exploring/i,
   },
   {
     decadeKey: "0",
     label: "0-40（嬰兒期）",
-    labelEn: "0-40 (Infant Phase)",
+    labelEn: "0-40 (Rookie)",
     pattern:
-      /(?:^|[^\d])(?:0|0\s*[-~～到至]\s*40|40分以下|嬰兒期)(?:[^\d]|$)|(?:above|over)\s*0\b|in the (?:0|teens)|0s\b/i,
+      /(?:^|[^\d])(?:0|0\s*[-~～到至]\s*40|40分以下|嬰兒期)(?:[^\d]|$)|(?:above|over)\s*0\b|in the (?:0|teens)|0s\b|infant\s+phase|\brookie\b/i,
   },
 ];
 

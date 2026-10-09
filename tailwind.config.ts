@@ -144,6 +144,11 @@ export default {
           '0%': { transform: 'translate3d(0, 100%, 0)', opacity: '0' },
           '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
         },
+        /** Hall spectrum bottom drawer — restrained rise (reduced-motion skips via class). */
+        'hall-spectrum-enter': {
+          '0%': { transform: 'translate3d(0, 12%, 0)', opacity: '0' },
+          '100%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
+        },
         'toast-slide-out': {
           '0%': { transform: 'translate3d(0, 0, 0)', opacity: '1' },
           '100%': { transform: 'translate3d(0, 100%, 0)', opacity: '0' },
@@ -179,6 +184,7 @@ export default {
         'arena-telemetry-pulse': 'arena-telemetry-pulse 2.4s ease-in-out infinite',
         'toast-slide-in': 'toast-slide-in 300ms ease-out forwards',
         'toast-slide-out': 'toast-slide-out 250ms ease-in forwards',
+        'hall-spectrum-enter': 'hall-spectrum-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
         'unseen-glow': 'unseen-glow 2.8s ease-out forwards',
       },
     },

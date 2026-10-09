@@ -1,4 +1,8 @@
 import type { TFunction } from 'i18next';
+import {
+  resolveHumanScaleMetaFromBandId,
+  type HumanScaleDecadeKey,
+} from './humanScaleBandResolver';
 import { resolvePerformanceAuraForMetric, type PerformanceAuraKey } from './performanceAura';
 import { translateScoreBandMeaning } from './scoreMeaningCopy';
 import { resolveScoreMeaningMilestone, type ScoreMeaningBandMetric } from './scoreMeaningCatalog';
@@ -18,6 +22,9 @@ export interface PerformanceBreakthroughPayload {
   scoreDisplay: string;
   title: string;
   summary: string;
+  bandId: string;
+  decadeKey: HumanScaleDecadeKey;
+  populationClass: string;
   auraKey: PerformanceAuraKey;
   auraLabel: string;
   milestone: PerformanceBreakthroughMilestone;
@@ -50,6 +57,8 @@ export function buildPerformanceBreakthroughPayload(
     metric,
     safeScore
   );
+  // WHY: Reuse milestone bandId — avoid a second scoreMeaningCatalog walk.
+  const { decadeKey, populationClass } = resolveHumanScaleMetaFromBandId(t, currentBand.id);
 
   return {
     metric,
@@ -57,6 +66,9 @@ export function buildPerformanceBreakthroughPayload(
     scoreDisplay: safeScore.toFixed(scoreDecimals),
     title: meaning.title,
     summary: meaning.summary,
+    bandId: currentBand.id,
+    decadeKey,
+    populationClass,
     auraKey,
     auraLabel: resolvedAura,
     milestone: {

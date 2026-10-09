@@ -35,9 +35,8 @@ export interface UseLadderFiltersDraftResult {
   applyDraft: () => void;
 }
 
-const DEFAULT_VALUES: LadderFilterValues = {
-  division: 'ladderScore',
-  filterProject: getDefaultProjectForDivision('ladderScore'),
+/** Demographic tags only. Division and project are ranking axes, not clearable chips. */
+const CLEARED_TAG_FIELDS = {
   gender: 'all',
   ageBucket: 'all',
   heightBucket: 'all',
@@ -46,6 +45,22 @@ const DEFAULT_VALUES: LadderFilterValues = {
   countryCode: 'all',
   city: 'all',
   district: 'all',
+} as const satisfies Pick<
+  LadderFilterValues,
+  | 'gender'
+  | 'ageBucket'
+  | 'heightBucket'
+  | 'weightBucket'
+  | 'jobCategory'
+  | 'countryCode'
+  | 'city'
+  | 'district'
+>;
+
+const DEFAULT_VALUES: LadderFilterValues = {
+  division: 'ladderScore',
+  filterProject: getDefaultProjectForDivision('ladderScore'),
+  ...CLEARED_TAG_FIELDS,
 };
 
 function resolveProjectForDivision(
@@ -67,6 +82,16 @@ function normalizeDraft(input: LadderFilterValues): LadderFilterValues {
     city: input.countryCode === 'all' ? 'all' : input.city,
     district: input.countryCode === 'all' ? 'all' : input.district,
   };
+}
+
+function withClearedTags(values: LadderFilterValues): LadderFilterValues {
+  return normalizeDraft({ ...values, ...CLEARED_TAG_FIELDS });
+}
+
+function countActiveTags(values: LadderFilterValues): number {
+  return (Object.keys(CLEARED_TAG_FIELDS) as Array<keyof typeof CLEARED_TAG_FIELDS>).filter(
+    (key) => values[key] !== 'all'
+  ).length;
 }
 
 function isSameFilterValues(a: LadderFilterValues, b: LadderFilterValues): boolean {
@@ -156,18 +181,18 @@ export function useLadderFiltersDraft(
   }, []);
 
   const clearDraftFilters = useCallback(() => {
-    setDraft((prev) => ({
-      ...prev,
-      gender: 'all',
-      ageBucket: 'all',
-      heightBucket: 'all',
-      weightBucket: 'all',
-      jobCategory: 'all',
-      countryCode: 'all',
-      city: 'all',
-      district: 'all',
-    }));
-  }, []);
+    // WHY: Clear is a commit, not a draft reset — tags drop without a second Apply.
+    // Division/project stay per store so an unapplied ranking edit is neither
+    // committed nor discarded. Unchanged stores are skipped so a no-op clear
+    // does not reset pagination or refetch.
+    const nextApplied = withClearedTags(applied);
+    const nextDraft = withClearedTags(draft);
+    if (!isSameFilterValues(nextDraft, draft)) setDraft(nextDraft);
+    if (!isSameFilterValues(nextApplied, applied)) {
+      setApplied(nextApplied);
+      onAppliedChange?.(nextApplied);
+    }
+  }, [applied, draft, onAppliedChange]);
 
   const applyDraft = useCallback(() => {
     const nextApplied = normalizeDraft(draft);
@@ -183,18 +208,7 @@ export function useLadderFiltersDraft(
     return !isSameFilterValues(normalizedDraft, normalizedApplied);
   }, [applied, draft]);
 
-  const activeAppliedFilterCount = useMemo(() => {
-    let count = 0;
-    if (applied.gender !== 'all') count++;
-    if (applied.ageBucket !== 'all') count++;
-    if (applied.heightBucket !== 'all') count++;
-    if (applied.weightBucket !== 'all') count++;
-    if (applied.jobCategory !== 'all') count++;
-    if (applied.countryCode !== 'all') count++;
-    if (applied.city !== 'all') count++;
-    if (applied.district !== 'all') count++;
-    return count;
-  }, [applied]);
+  const activeAppliedFilterCount = useMemo(() => countActiveTags(applied), [applied]);
 
   const draftProjectControlValue = useMemo(
     () => resolveProjectForDivision(draft.division, draft.filterProject),

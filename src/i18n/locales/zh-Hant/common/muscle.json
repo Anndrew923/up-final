@@ -19,12 +19,9 @@
       "dualSovereignMale": "【男性 {{max}} kg 雙主宰常模】① 絕對體量主宰：Hafthor Bjornsson（魔山，世界大力士 WSM 冠軍，具備地星最重骨骼架構下之非人哉純肌肉絕對總量）；② 純肌肉密度主宰：Ronnie Coleman（羅尼・庫爾曼，八屆奧林匹亞大賽冠軍，在極限超低體脂率下將極高純骨骼肌塞滿常規骨架的純肉體極限）。",
       "dualSovereignFemale": "【女性 {{max}} kg 雙主宰常模】① 絕對體量女神：Nataliya Kuznetsova（「俄羅斯亞馬遜」，歷史上體重最重、骨骼肌總重最極端的 IFBB Pro 職業女子健美與健力傳奇）；② 純肌肉密度女神：Iris Kyle（艾瑞斯・凱爾，10 屆奧林匹亞大賽 Ms. Olympia 總冠軍，在極限低體脂下將純骨骼肌堆疊到極限的紀錄保持者）。"
     },
-    "previewLabel": "預覽分數",
-    "performanceSpecHeader": "外觀規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
+    "nextMilestoneHintWithRaw": "距離下一階升級尚需 {{points}} 分（維持當前體重，骨骼肌約需 +{{delta}} {{unit}}）",
     "breakdownLine": "SMM 分數：{{smmScore}} · 骨骼肌率：{{smPct}}% · SM% 分數：{{smPctScore}}",
-    "calculate": "計算",
-    "submitRadar": "寫入雷達（車體外觀軸）",
     "submitDone": "已儲存 — 首頁雷達與合併分數將使用此車體外觀軸。",
     "profileIncompleteHint": "肌肉量換算需要首頁身體資料齊全（性別、年齡、身高、體重）。",
     "ctaProfile": "前往首頁填寫身體資料",

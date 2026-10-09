@@ -80,7 +80,7 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(grip?.body).toMatch(/CoC/);
     expect(grip?.body).toMatch(/Magnus Samuelsson/);
     expect(grip?.body).toMatch(/1\.4/);
-    expect(grip?.body).toMatch(/160/);
+    expect(grip?.body).toMatch(/200/);
 
     const muscle = briefs.find((b) => b.metric === 'muscleMass');
     expect(muscle?.body).toMatch(/Hafthor|魔山/);
@@ -104,7 +104,7 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(grip?.body).toMatch(/CoC|Captains of Crush/i);
     expect(grip?.body).toMatch(/Magnus Samuelsson/);
     expect(grip?.body).toMatch(/1\.4/);
-    expect(grip?.body).toMatch(/160/);
+    expect(grip?.body).toMatch(/200/);
 
     const muscle = briefs.find((b) => b.metric === 'muscleMass');
     expect(muscle?.body).toMatch(/Hafthor Bjornsson|The Mountain/i);

@@ -7,7 +7,6 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { DisclosurePanel } from '../components/DisclosurePanel';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
 import HexRadarChart from '../components/radar/HexRadarChart';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
@@ -15,19 +14,18 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
-import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { useUnit } from '../hooks/useUnit';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
-import {
-  shouldShowStrengthRepsAccuracyNudge,
-  STRENGTH_ASSESSMENT_MAX_REPS,
-  type StrengthSingleLiftError,
-} from '../logic/core/strengthAssessment';
 import type { FormatUnitOptions } from '../logic/core/unitConverters';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
@@ -61,6 +59,8 @@ const StrengthAssessmentPage: FC = () => {
     perLiftResult,
     perLiftError,
     calculateLift,
+    isLiftArmed,
+    isLiftLocked,
     combinedScore,
     combinedBreakdown,
     combinedError,
@@ -96,8 +96,6 @@ const StrengthAssessmentPage: FC = () => {
       ? t('home.profile.female')
       : t('home.profile.male');
 
-  const singleErr = (code: StrengthSingleLiftError) =>
-    t(`strength.singleErrors.${code}`, { unit: labels.weight });
   const ladderUploadBundle = useMemo(
     () =>
       buildStrengthAssessmentSupplementalTargets({
@@ -121,10 +119,20 @@ const StrengthAssessmentPage: FC = () => {
       ? interpretationScore.toFixed(2)
       : null;
   const scoreMeaning = useScoreMeaning('strength', liveScore ?? interpretationScore);
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'strength',
+    scoreDisplay:
+      heroScoreText ??
+      (combinedBreakdown != null ? combinedBreakdown.averageRaw.toFixed(2) : null),
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
+  });
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="strength" />
+      {/* WHY: Breakthrough modal stays points-only for composite; no milestoneHintLabel. */}
       <PerformanceBreakthroughModal
         open={modalOpen}
         payload={modalPayload}
@@ -134,7 +142,10 @@ const StrengthAssessmentPage: FC = () => {
         syncDisabled={!profileReady}
         syncing={submitBusy}
         arenaSync={ladderSync}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -174,143 +185,28 @@ const StrengthAssessmentPage: FC = () => {
             <UnitSystemToggle value={unitSystem} onChange={setUnitSystem} compact />
           </div>
           <div className="grid gap-3">
-            {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => {
-              const rowResult = perLiftResult[lift];
-              const rowErr = perLiftError[lift];
-              // WHY: Nudge parser expects kg-like weight; display form may be lbs.
-              const showRepsAccuracyNudge = shouldShowStrengthRepsAccuracyNudge(
-                metricForm[lift].weight,
-                metricForm[lift].reps
-              );
-              const repsAccuracyNudgeId = `strength-reps-accuracy-${lift}`;
-              return (
-                <fieldset
-                  key={lift}
-                  className="space-y-2 rounded-xl border border-zinc-800/80 bg-bg-panel/40 p-3"
-                >
-                  <legend className="text-sm font-medium text-zinc-200">
-                    {t(`strength.lifts.${lift}`)}
-                  </legend>
-                  {/*
-                    WHY grid-cols-2 without sm:: force weight|reps side-by-side on ~390px so five
-                    lift cards stay compact — sm: breakpoint previously stacked them on mobile.
-                  */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <label
-                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
-                      htmlFor={`st-w-${lift}`}
-                    >
-                      <span>{t('strength.weightLabel', { unit: labels.weight })}</span>
-                      <HeroNumberInput
-                        id={`st-w-${lift}`}
-                        inputMode="decimal"
-                        min={0}
-                        step={0.5}
-                        density="compact"
-                        className="w-full max-w-full"
-                        placeholder={t('strength.weightPlaceholder')}
-                        value={form[lift].weight}
-                        onChange={(e) => setWeight(lift, e.target.value)}
-                        disabled={revealBlocking}
-                        aria-label={t('strength.weightAria', {
-                          lift: t(`strength.lifts.${lift}`),
-                          unit: labels.weight,
-                        })}
-                      />
-                    </label>
-                    <label
-                      className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400"
-                      htmlFor={`st-r-${lift}`}
-                    >
-                      <span>{t('strength.repsLabel')}</span>
-                      <input
-                        id={`st-r-${lift}`}
-                        type="number"
-                        inputMode="numeric"
-                        min={1}
-                        max={STRENGTH_ASSESSMENT_MAX_REPS}
-                        step={1}
-                        className="ui-input w-full"
-                        placeholder={t('strength.repsPlaceholder')}
-                        value={form[lift].reps}
-                        onChange={(e) => setReps(lift, e.target.value)}
-                        disabled={revealBlocking}
-                        aria-label={t('strength.repsAria', { lift: t(`strength.lifts.${lift}`) })}
-                        aria-describedby={showRepsAccuracyNudge ? repsAccuracyNudgeId : undefined}
-                      />
-                    </label>
-                  </div>
-
-                  {showRepsAccuracyNudge ? (
-                    <p id={repsAccuracyNudgeId} className="text-xs leading-relaxed text-zinc-500">
-                      {t('strength.repsAccuracyNudge')}
-                    </p>
-                  ) : null}
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      className="ui-btn ui-btn-primary text-sm"
-                      disabled={!profileReady || revealBlocking}
-                      onClick={() => calculateLift(lift)}
-                    >
-                      {t('strength.calculateThisLift')}
-                    </button>
-                  </div>
-
-                  {rowErr ? (
-                    <p className="text-sm text-red-400" role="alert">
-                      {singleErr(rowErr)}
-                    </p>
-                  ) : null}
-
-                  {rowResult ? (
-                    <div
-                      className="space-y-1.5 rounded-lg border border-zinc-700/90 bg-bg-panel/60 px-3 py-2"
-                      role="status"
-                    >
-                      {rowResult.weightCapped ? (
-                        <p
-                          className="rounded-md border border-amber-500/35 bg-amber-500/10 px-2.5 py-2 text-xs leading-relaxed text-amber-100/95"
-                          role="status"
-                        >
-                          {t('strength.capWeightNotice', {
-                            lift: t(`strength.lifts.${lift}`),
-                            input: formatWeight(rowResult.weightInputKg, {
-                              includeUnit: false,
-                              digits: 1,
-                            }),
-                            max: formatWeight(rowResult.modelMaxKg, {
-                              includeUnit: false,
-                              digits: 1,
-                            }),
-                            unit: labels.weight,
-                          })}
-                        </p>
-                      ) : null}
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                        {t('strength.singleOneRmLabel')}
-                      </p>
-                      <p className="font-mono text-2xl font-bold tabular-nums text-accent-info">
-                        {t('strength.singleOneRmValue', {
-                          value: formatWeight(rowResult.oneRepMax, {
-                            includeUnit: false,
-                            digits: 1,
-                          }),
-                          unit: labels.weight,
-                        })}
-                      </p>
-                      <p className="font-mono text-sm tabular-nums text-zinc-300">
-                        <span className="text-zinc-500">{t('strength.singleScoreLabel')}</span>{' '}
-                        <span className="font-semibold text-zinc-100">
-                          {rowResult.finalScore.toFixed(2)}
-                        </span>
-                      </p>
-                    </div>
-                  ) : null}
-                </fieldset>
-              );
-            })}
+            {STRENGTH_LIFT_KEYS.map((lift: StrengthLiftKey) => (
+              <StrengthLiftCard
+                key={lift}
+                lift={lift}
+                weightUnit={labels.weight}
+                weightValue={form[lift].weight}
+                repsValue={form[lift].reps}
+                metricWeight={metricForm[lift].weight}
+                metricReps={metricForm[lift].reps}
+                profileReady={profileReady}
+                inputsDisabled={revealBlocking}
+                isArmed={isLiftArmed(lift)}
+                isLocked={isLiftLocked(lift)}
+                result={perLiftResult[lift]}
+                error={perLiftError[lift]}
+                profile={profile}
+                onWeightChange={(value) => setWeight(lift, value)}
+                onRepsChange={(value) => setReps(lift, value)}
+                onCalculate={() => calculateLift(lift)}
+                formatWeight={formatWeight}
+              />
+            ))}
           </div>
 
           <div className="space-y-4 border-t border-zinc-800 pt-4">
@@ -325,145 +221,114 @@ const StrengthAssessmentPage: FC = () => {
             ) : null}
 
             {combinedBreakdown ? (
-              <div className="space-y-3 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-                <div className="border-t border-zinc-700/80 pt-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                    {t('strength.spectrumKicker')}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                    {t('strength.spectrumSub')}
-                  </p>
-                  <HexRadarChart
-                    points={strengthRadarPoints}
-                    scaleMax={100}
-                    className="mx-auto mt-2 w-full max-w-[240px] shrink-0"
-                    aria-label={t('strength.radarAria')}
+              <div className="space-y-3">
+                <HexRadarChart
+                  points={strengthRadarPoints}
+                  scaleMax={100}
+                  className="mx-auto w-full max-w-[240px] shrink-0"
+                  aria-label={t('strength.radarAria')}
+                />
+
+                {scoreMeaning ? (
+                  <AssessmentScoreMeaningPanel
+                    tone="orange"
+                    meaning={scoreMeaning}
+                    milestoneHintLabel={
+                      scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null
+                        ? t('strength.nextMilestoneHint', { points: scoreMeaning.remainingPoints })
+                        : null
+                    }
+                    hallEntry={hallSpectrum.headerActionProps}
+                    hero={{
+                      scoreText: heroScoreText ?? combinedBreakdown.averageRaw.toFixed(2),
+                      populationClass: scoreMeaning.populationClass,
+                      decadeKey: scoreMeaning.decadeKey,
+                      ...hallSpectrum.badgeProps,
+                    }}
                   />
-                </div>
-                <div className="border-t border-zinc-700/80 pt-3">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                    {t('strength.previewLabel')}
+                ) : null}
+
+                {combinedScore !== null &&
+                Math.abs(combinedScore - combinedBreakdown.averageRaw) > 0.001 ? (
+                  <p className="text-xs text-zinc-500">{t('strength.radarClampNote')}</p>
+                ) : null}
+
+                <DisclosurePanel
+                  instanceId="strength-combined-details"
+                  expanded={combinedDetailsOpen}
+                  onToggle={() => setCombinedDetailsOpen((v) => !v)}
+                  toggleExpandLabel={t('assessment.viewCalculationDetails')}
+                  toggleCollapseLabel={t('assessment.hideCalculationDetails')}
+                  variant="link"
+                >
+                  <ul className="space-y-2 text-sm text-zinc-300">
+                    {combinedBreakdown.branches.map((b) => (
+                      <li
+                        key={b.lift}
+                        className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
+                      >
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
+                          {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
+                            <p className="text-[11px] leading-relaxed text-amber-100/90">
+                              {t('strength.capWeightNotice', {
+                                lift: t(`strength.lifts.${b.lift}`),
+                                input: formatWeight(b.inputWeightKg, {
+                                  includeUnit: false,
+                                  digits: 1,
+                                }),
+                                max: formatWeight(b.modelMaxKg, {
+                                  includeUnit: false,
+                                  digits: 1,
+                                }),
+                                unit: labels.weight,
+                              })}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
+                          {fmtBranchLine(t, b, formatWeight, labels.weight)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
+                  <p className="font-mono text-lg tabular-nums text-zinc-100">
+                    {combinedBreakdown.averageRaw.toFixed(2)}
                   </p>
-                  <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                    {heroScoreText ?? combinedBreakdown.averageRaw.toFixed(2)}
-                  </p>
-                  {combinedScore !== null &&
-                  Math.abs(combinedScore - combinedBreakdown.averageRaw) > 0.001 ? (
-                    <p className="mt-1 text-xs text-zinc-500">{t('strength.radarClampNote')}</p>
-                  ) : null}
-                </div>
-                <div className="border-t border-zinc-700/80 pt-3">
-                  <DisclosurePanel
-                    instanceId="strength-combined-details"
-                    expanded={combinedDetailsOpen}
-                    onToggle={() => setCombinedDetailsOpen((v) => !v)}
-                    title={t('strength.combinedDetailsTitle')}
-                    toggleExpandLabel={t('strength.combinedDetailsExpand')}
-                    toggleCollapseLabel={t('strength.combinedDetailsCollapse')}
-                    panelBodyClassName="space-y-3 px-4 pb-4 pt-3"
-                  >
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                      {combinedBreakdown.branches.map((b) => (
-                        <li
-                          key={b.lift}
-                          className="flex flex-col gap-1 border-b border-zinc-800/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-4"
-                        >
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <span className="text-zinc-400">{t(`strength.lifts.${b.lift}`)}</span>
-                            {b.weightCapped && b.inputWeightKg != null && b.modelMaxKg != null ? (
-                              <p className="text-[11px] leading-relaxed text-amber-100/90">
-                                {t('strength.capWeightNotice', {
-                                  lift: t(`strength.lifts.${b.lift}`),
-                                  input: formatWeight(b.inputWeightKg, {
-                                    includeUnit: false,
-                                    digits: 1,
-                                  }),
-                                  max: formatWeight(b.modelMaxKg, {
-                                    includeUnit: false,
-                                    digits: 1,
-                                  }),
-                                  unit: labels.weight,
-                                })}
-                              </p>
-                            ) : null}
-                          </div>
-                          <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-200 sm:text-right">
-                            {fmtBranchLine(t, b, formatWeight, labels.weight)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="text-xs text-zinc-400">{t('strength.averageRawLabel')}</p>
-                    <p className="font-mono text-lg tabular-nums text-zinc-100">
-                      {combinedBreakdown.averageRaw.toFixed(2)}
-                    </p>
-                  </DisclosurePanel>
-                </div>
+                </DisclosurePanel>
               </div>
             ) : null}
 
-            {combinedBreakdown && scoreMeaning ? (
-              <section className="relative overflow-hidden rounded-xl border border-orange-400/35 bg-zinc-950/85 p-4 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-orange-300/90">
-                  {t('strength.performanceSpecHeader')}
-                </p>
-                <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
-                  {scoreMeaning.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-                {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                  <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-orange-300">
-                    {t('strength.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                  </p>
-                ) : null}
-              </section>
-            ) : null}
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="ui-btn ui-btn-primary"
+            <div className="space-y-3">
+              <AssessmentWriteToRadarButton
+                hasScore={combinedBreakdown != null}
                 disabled={!profileReady || submitBusy || revealBlocking}
                 onClick={() => {
                   void revealCalculate();
                 }}
-              >
-                {t('strength.calculateCombined')}
-              </button>
-              <button
-                type="button"
-                className="ui-btn"
-                disabled={!profileReady || submitBusy || revealBlocking}
-                onClick={() => {
-                  void submitToRadar();
-                }}
-              >
-                {submitBusy ? t('strength.submitRadarBusy') : t('strength.submitRadar')}
-              </button>
+              />
+
+              {submitNotice?.kind === 'success' && submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {t('strength.submitDoneWithScore', {
+                    score: (submitNotice.savedScore ?? combinedScore ?? 0).toFixed(2),
+                  })}
+                </p>
+              ) : null}
+              {submitNotice?.kind === 'error' ? (
+                <p
+                  className="text-sm text-amber-300 transition-opacity duration-300 ease-out"
+                  role="status"
+                >
+                  {t('strength.submitFailedWithReason', {
+                    reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`, {
+                      unit: labels.weight,
+                    }),
+                  })}
+                </p>
+              ) : null}
             </div>
-
-            {submitNotice?.kind === 'success' && submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {t('strength.submitDoneWithScore', {
-                  score: (submitNotice.savedScore ?? combinedScore ?? 0).toFixed(2),
-                })}
-              </p>
-            ) : null}
-            {submitNotice?.kind === 'error' ? (
-              <p
-                className="text-sm text-amber-300 transition-opacity duration-300 ease-out"
-                role="status"
-              >
-                {t('strength.submitFailedWithReason', {
-                  reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`, {
-                    unit: labels.weight,
-                  }),
-                })}
-              </p>
-            ) : null}
-
-            <LeaderboardAssessmentSyncBar syncController={ladderSync} />
           </div>
 
           <AssessmentReferenceFooter>

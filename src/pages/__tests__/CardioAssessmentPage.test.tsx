@@ -53,12 +53,17 @@ vi.mock('../../components/assessment/PerformanceBreakthroughModal', () => ({
   default: () => null,
 }));
 
+vi.mock('../../components/assessment/HallOfFameSpectrumDrawer', () => ({
+  default: () => null,
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'cardio.performanceSpecHeader') return 'PERFORMANCE SPEC / Thermal Spec';
+      if (key === 'assessment.calculateRadarAction') return 'Calculate ➔';
+      if (key === 'assessment.writeToRadarAction') return 'Write to Radar ➔';
+      if (key === 'assessment.axis.cardio') return 'Stint';
       if (key === 'cardio.nextMilestoneHint') return `Next Milestone: ${String(options?.points)}`;
-      if (key === 'cardio.calculate') return 'Calculate';
       return key;
     },
   }),
@@ -93,10 +98,6 @@ vi.mock('../../components/DisclosurePanel', () => ({
   ),
 }));
 
-vi.mock('../../components/ladder/LeaderboardAssessmentSyncBar', () => ({
-  default: () => <div data-testid="leaderboard-sync-bar" />,
-}));
-
 function renderPage(): { container: HTMLDivElement; unmount: () => void } {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -129,6 +130,7 @@ afterEach(() => {
 describe('CardioAssessmentPage', () => {
   it('shows performance spec and wires reveal flow on calculate', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: 3200,
@@ -152,6 +154,9 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Thermal Elite',
       summary: 'Endurance axis stabilized.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 91,
       remainingPoints: 3,
     });
@@ -161,24 +166,30 @@ describe('CardioAssessmentPage', () => {
 
     expect(mockUseScoreMeaning).toHaveBeenCalledWith('cooper', 88.5);
     expect(lastRevealFlowMetric).toBe('cooper');
-    expect(text).toContain('PERFORMANCE SPEC / Thermal Spec');
+    expect(text).toContain('88.50');
+    expect(text).toContain('高階玩家');
     expect(text).toContain('Thermal Elite');
     expect(text).toContain('Next Milestone: 3');
+    expect(text).not.toContain('PERFORMANCE SPEC / Thermal Spec');
 
-    const calculateBtn = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Calculate')
+    expect(text).toContain('Write to Radar ➔');
+    expect(text).not.toContain('Calculate ➔');
+
+    const writeBtn = Array.from(container.querySelectorAll('button')).find((el) =>
+      el.textContent?.includes('Write to Radar ➔')
     );
-    expect(calculateBtn).toBeDefined();
+    expect(writeBtn).toBeDefined();
     act(() => {
-      calculateBtn!.click();
+      writeBtn!.click();
     });
     expect(mockRevealCalculate).toHaveBeenCalledTimes(1);
 
     unmount();
   });
 
-  it('disables calculate when profile is incomplete', () => {
+  it('disables write-to-radar CTA when profile is incomplete', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: false,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -202,16 +213,18 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue(null);
 
     const { container, unmount } = renderPage();
-    const calculateBtn = Array.from(container.querySelectorAll('button')).find((el) =>
-      el.textContent?.includes('Calculate')
+    const cta = Array.from(container.querySelectorAll('button')).find((el) =>
+      el.textContent?.includes('Calculate ➔')
     );
-    expect(calculateBtn?.disabled).toBe(true);
+    expect(cta?.disabled).toBe(true);
+    expect(container.textContent).not.toContain('Write to Radar ➔');
 
     unmount();
   });
 
   it('routes score meaning to cardio on 5km tab', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -235,6 +248,9 @@ describe('CardioAssessmentPage', () => {
     mockUseScoreMeaning.mockReturnValue({
       title: 'Cruise Tier',
       summary: '5km endurance copy path.',
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
       nextMilestone: 80,
       remainingPoints: 8,
     });
@@ -249,6 +265,7 @@ describe('CardioAssessmentPage', () => {
 
   it('exposes Cooper field hint control on cooper tab', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -288,6 +305,7 @@ describe('CardioAssessmentPage', () => {
 
   it('shows 5km WR floor amber hint when finish time is under model floor', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,
@@ -320,6 +338,7 @@ describe('CardioAssessmentPage', () => {
 
   it('keeps 5km scoring anchors collapsed in reference by default', () => {
     mockUseCardioAssessmentPage.mockReturnValue({
+      profile: null,
       profileReady: true,
       cooperDistanceOverCap: false,
       cooperCapMeters: null,

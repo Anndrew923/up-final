@@ -20,6 +20,41 @@ function isAnonymousProvider(request) {
   return provider === "anonymous" || !provider;
 }
 
+const EMPTY_SYNC_PAYLOAD = {
+  ok: true,
+  active: false,
+  subscriptionStatus: "free",
+  proExpiresAt: null,
+  promoExpiresAt: null,
+  rcExpiresAt: null,
+  effectiveUntil: null,
+  promoCreditMs: null,
+  promoPaused: false,
+  planId: null,
+};
+
+function clientSyncPayloadFromEntitlement(applied, nowMs = Date.now()) {
+  if (!applied) return { ...EMPTY_SYNC_PAYLOAD };
+  const effectiveIso = applied.effectiveProExpiresAt ?? applied.effectiveUntil ?? null;
+  const active =
+    (applied.subscriptionStatus === "pro" || applied.subscriptionStatus === "grace") &&
+    typeof effectiveIso === "string" &&
+    Date.parse(effectiveIso) > nowMs;
+  return {
+    ok: true,
+    active: Boolean(active),
+    subscriptionStatus: active ? applied.subscriptionStatus : "free",
+    // WHY: `proExpiresAt` remains the effective timer for existing clients.
+    proExpiresAt: active ? effectiveIso : null,
+    promoExpiresAt: applied.promoExpiresAt ?? null,
+    rcExpiresAt: applied.proExpiresAt ?? null,
+    effectiveUntil: active ? (applied.effectiveUntil ?? effectiveIso) : null,
+    promoCreditMs: typeof applied.promoCreditMs === "number" ? applied.promoCreditMs : null,
+    promoPaused: applied.promoPaused === true,
+    planId: active ? applied.planId : null,
+  };
+}
+
 /**
  * Activates Pro on the server after a verified purchase or emulator-only simulation.
  * WHY: Prevents "local Pro UI / Callable pro-required" split-brain.
@@ -65,34 +100,12 @@ export const syncProSubscription = onCall(
       } else if (!verified.active) {
         if (!shouldClearProWhenRevenueCatInactive(intent)) {
           // Soft-miss for purchase confirmation — client will retry; webhook may win.
-          return {
-            ok: true,
-            active: false,
-            subscriptionStatus: "free",
-            proExpiresAt: null,
-            promoExpiresAt: null,
-            rcExpiresAt: null,
-            planId: null,
-          };
+          return { ...EMPTY_SYNC_PAYLOAD };
         }
         // WHY: Restore/refresh is an authoritative inactive signal. Revoke both
         // local mirrors before returning a successful reconciliation result.
         const reconciled = await clearProEntitlementFromUser(uid, { verifiedAtMs });
-        const effectiveIso = reconciled?.effectiveProExpiresAt ?? null;
-        const active =
-          Boolean(reconciled) &&
-          (reconciled.subscriptionStatus === "pro" || reconciled.subscriptionStatus === "grace") &&
-          typeof effectiveIso === "string" &&
-          Date.parse(effectiveIso) > Date.now();
-        return {
-          ok: true,
-          active: Boolean(active),
-          subscriptionStatus: active ? reconciled.subscriptionStatus : "free",
-          proExpiresAt: active ? effectiveIso : null,
-          promoExpiresAt: reconciled?.promoExpiresAt ?? null,
-          rcExpiresAt: reconciled?.proExpiresAt ?? null,
-          planId: active ? reconciled.planId : null,
-        };
+        return clientSyncPayloadFromEntitlement(reconciled);
       } else {
         if (!verified.expiresDate) {
           throw new HttpsError("failed-precondition", "pro-expiry-missing");
@@ -124,21 +137,6 @@ export const syncProSubscription = onCall(
       planId,
       verifiedAtMs,
     });
-
-    const effectiveIso = applied.effectiveProExpiresAt;
-    const active =
-      (applied.subscriptionStatus === "pro" || applied.subscriptionStatus === "grace") &&
-      typeof effectiveIso === "string" &&
-      Date.parse(effectiveIso) > Date.now();
-    return {
-      ok: true,
-      active,
-      subscriptionStatus: active ? applied.subscriptionStatus : "free",
-      // WHY: Client timers + hasProAccess use effective max(rc, promo).
-      proExpiresAt: active ? effectiveIso : null,
-      promoExpiresAt: applied.promoExpiresAt ?? null,
-      rcExpiresAt: applied.proExpiresAt ?? null,
-      planId: active ? applied.planId : null,
-    };
+    return clientSyncPayloadFromEntitlement(applied);
   }
 );

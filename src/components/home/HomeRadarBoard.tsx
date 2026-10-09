@@ -16,10 +16,16 @@ import type { PhysicalProfile } from '../../types/userProfile';
 import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
+import { RADAR_CARD_V2 } from '../radar/radarVisualTokens';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
+import { cn } from '../../lib/cn';
+
+/** Fixed mobile HUD density — 375–430 stays two columns inside the inset panel. */
+const AXIS_HUD_COLS = 2;
 
 /**
- * Fitness-style console slice: radar card + overall — data via `useCoreSixRadar` only.
+ * Console instrument cluster as one `ui-card` — same shell language as body / ladder home cards.
+ * WHY: Borderless bleed felt floating against Pro + profile cards; one cabin restores cohesion.
  */
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation('common');
@@ -76,28 +82,28 @@ export const HomeRadarBoard: FC = () => {
     genderGroup,
   });
 
+  const ritualFade = `transition-opacity duration-300 motion-reduce:transition-none ${
+    ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
+  }`;
+
   return (
     <>
       <section
-        className={`relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel shadow-[inset_0_1px_0_rgba(56,189,248,0.14),inset_0_0_40px_rgba(59,130,246,0.07),0_0_34px_rgba(56,189,248,0.08)] motion-safe:transition-[box-shadow,border-color] motion-safe:duration-[480ms] ${isBlocking ? 'pointer-events-none select-none' : ''}`}
+        className={`ui-card relative overflow-hidden ${isBlocking ? 'pointer-events-none select-none' : ''}`}
         aria-busy={isBlocking}
       >
+        {/* WHY: Scan grid stays clipped inside the card — never bleeds onto the shell background. */}
         <div
-          className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.06)_0_1px,transparent_1px_20px),repeating-linear-gradient(90deg,rgba(255,255,255,0.06)_0_1px,transparent_1px_20px)] opacity-[0.08]"
+          className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(255,255,255,0.05)_0_1px,transparent_1px_24px),repeating-linear-gradient(90deg,rgba(255,255,255,0.05)_0_1px,transparent_1px_24px)]"
+          style={{ opacity: RADAR_CARD_V2.opacity.gridOverlay }}
           aria-hidden
         />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
-        <div className="pointer-events-none absolute left-3 top-3 h-8 w-8 rounded-tl-lg border-l border-t border-accent-primary/45" />
-        <div className="pointer-events-none absolute right-3 top-3 h-8 w-8 rounded-tr-lg border-r border-t border-accent-primary/45" />
-        <div className="pointer-events-none absolute bottom-3 left-3 h-8 w-8 rounded-bl-lg border-b border-l border-accent-primary/45" />
-        <div className="pointer-events-none absolute bottom-3 right-3 h-8 w-8 rounded-br-lg border-b border-r border-accent-primary/45" />
-        <div className="pointer-events-none absolute left-4 top-4 h-5 w-5 rounded-tl-md border-l border-t border-accent-info/50" />
-        <div className="pointer-events-none absolute right-4 top-4 h-5 w-5 rounded-tr-md border-r border-t border-accent-info/50" />
-        <div className="pointer-events-none absolute bottom-4 left-4 h-5 w-5 rounded-bl-md border-b border-l border-accent-info/50" />
-        <div className="pointer-events-none absolute bottom-4 right-4 h-5 w-5 rounded-br-md border-b border-r border-accent-info/50" />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-primary/40 to-transparent"
+          aria-hidden
+        />
 
-        {/* Compact shell already clears HUD; keep only light kicker breathing room inside the card. */}
-        <div className="relative px-4 pb-4 pt-3 md:px-6">
+        <div className="relative">
           <p className="mb-1 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
             {t('home.consoleKicker', { ns: 'common' })}
           </p>
@@ -105,20 +111,63 @@ export const HomeRadarBoard: FC = () => {
             {t('home.radarOverview', { ns: 'common' })}
           </h2>
 
-          <div className="mt-3 flex flex-col items-center gap-4">
+          <div className="mt-3 flex flex-col items-center gap-3">
+            {/* 1. Radar */}
             <div
               id={ONBOARDING_RADAR_TARGET_ID}
-              className={`w-full transition-opacity duration-300 motion-reduce:transition-none ${
-                ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
-              }`}
+              className={`w-full ${ritualFade}`}
               aria-hidden={ritualOpen}
             >
               <HexRadarChart
                 points={localizedRadarPoints}
                 scaleMax={scaleMax}
-                className="mx-auto aspect-square w-full max-w-[280px] shrink-0"
+                className="mx-auto aspect-square w-full max-w-[260px] shrink-0"
                 aria-label={t('home.radarAria', { ns: 'common' })}
               />
+            </div>
+
+            {/* 2. Overall → 3. Six-axis HUD → 4. Diagnostics CTA */}
+            <div className={`w-full space-y-2.5 ${ritualFade}`} aria-hidden={ritualOpen}>
+              <div className="text-center">
+                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                  {t('home.overallAverage', { ns: 'common' })}
+                </p>
+                <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-accent-info drop-shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:text-6xl">
+                  {formatOverallResonanceScore(overallScore)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-zinc-800/40 bg-zinc-950/60 p-3">
+                <ul className="grid grid-cols-2 text-[11px]">
+                  {SIX_AXIS_METRICS.map((key, index) => {
+                    const isLastRow = index >= SIX_AXIS_METRICS.length - AXIS_HUD_COLS;
+                    const isEndCol = index % AXIS_HUD_COLS === AXIS_HUD_COLS - 1;
+                    return (
+                      <li
+                        key={key}
+                        className={cn(
+                          'px-2 py-2 text-center text-zinc-400',
+                          !isEndCol && 'border-r border-zinc-800/40',
+                          !isLastRow && 'border-b border-zinc-800/40'
+                        )}
+                      >
+                        <SixAxisDataGridLabel metric={key} className="justify-center" />
+                        <span
+                          title={t(`${getAxisMeaningI18nPrefix(key)}.desc`, { ns: 'common' })}
+                          className={cn(
+                            'mt-0.5 block font-mono text-sm font-semibold tabular-nums',
+                            (valueByKey[key] ?? 0) > 100
+                              ? 'text-accent-info drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]'
+                              : 'text-zinc-100'
+                          )}
+                        >
+                          {valueByKey[key] ?? 0}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
 
               <HomeDiagnosticsPanel
                 disabled={isBlocking}
@@ -128,47 +177,8 @@ export const HomeRadarBoard: FC = () => {
               />
             </div>
 
-            <div
-              className={`w-full max-w-md space-y-4 transition-opacity duration-300 motion-reduce:transition-none ${
-                ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
-              }`}
-              aria-hidden={ritualOpen}
-            >
-              <div className="text-center">
-                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-                  {t('home.overallAverage', { ns: 'common' })}
-                </p>
-                <p className="mt-2 font-mono text-5xl font-semibold tabular-nums text-accent-info sm:text-6xl">
-                  {formatOverallResonanceScore(overallScore)}
-                </p>
-              </div>
-
-              <ul className="grid grid-cols-2 gap-1.5 text-[11px] sm:grid-cols-3">
-                {SIX_AXIS_METRICS.map((key) => (
-                  <li
-                    key={key}
-                    className="rounded-md border border-zinc-800/70 bg-bg-panel/40 px-2 py-1.5 text-center text-zinc-400"
-                  >
-                    <SixAxisDataGridLabel metric={key} />
-                    <span
-                      title={t(`${getAxisMeaningI18nPrefix(key)}.desc`, { ns: 'common' })}
-                      className={`mt-0.5 block font-mono tabular-nums ${
-                        (valueByKey[key] ?? 0) > 100 ? 'text-accent-info' : 'text-zinc-200'
-                      }`}
-                    >
-                      {valueByKey[key] ?? 0}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div
-              className={`w-full border-t border-zinc-800/80 pt-2 transition-opacity duration-300 motion-reduce:transition-none ${
-                ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
-              }`}
-              aria-hidden={ritualOpen}
-            >
+            {/* 5. Ladder sync — secondary footer inside the same cabin */}
+            <div className={`w-full border-t border-zinc-800/60 pt-2.5 ${ritualFade}`} aria-hidden={ritualOpen}>
               <LeaderboardSyncAllBar />
             </div>
           </div>

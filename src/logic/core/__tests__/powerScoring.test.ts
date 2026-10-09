@@ -19,8 +19,14 @@ import {
   tryComputeExplosiveAssessmentScore,
   VERTICAL_JUMP_STANDARDS_MALE,
 } from '../powerScoring';
+import {
+  invertSljScoreToCm,
+  invertVjumpScoreToCm,
+  resolveExplosiveMilestoneRawGap,
+} from '../powerMilestoneGap';
 import { clampScoreMapValue } from '../scoring';
 import { EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS } from '../explosiveInputCaps';
+import { resolveScoreMeaningMilestone } from '../scoreMeaningCatalog';
 
 describe('getPowerAgeRange', () => {
   it('maps 13–15 to 12-15 bucket', () => {
@@ -437,5 +443,138 @@ describe('resolveExplosiveLadderScoreBundle', () => {
       explosivePower: { standingLongJumpCm: 390 },
     });
     expect(b.broad).toBe(200);
+  });
+});
+
+describe('invertVjumpScoreToCm / invertSljScoreToCm', () => {
+  const maleVj2130 = VERTICAL_JUMP_STANDARDS_MALE['21-30'];
+  const maleSlj2130 = STANDING_LONG_JUMP_STANDARDS_MALE['21-30'];
+
+  it('returns null for non-positive targets', () => {
+    expect(invertVjumpScoreToCm(0, maleVj2130)).toBeNull();
+    expect(invertSljScoreToCm(-1, maleSlj2130)).toBeNull();
+  });
+
+  it('inverts linear-band anchors (male 21–30)', () => {
+    expect(invertVjumpScoreToCm(50, maleVj2130)).toBe(50);
+    expect(invertVjumpScoreToCm(100, maleVj2130)).toBe(70);
+    expect(invertSljScoreToCm(50, maleSlj2130)).toBe(220);
+    expect(invertSljScoreToCm(100, maleSlj2130)).toBe(270);
+  });
+
+  it('round-trips overflow checkpoints (forward(invert(score)) >= score)', () => {
+    for (const score of [100, 133.44, 175]) {
+      const cm = invertVjumpScoreToCm(score, maleVj2130);
+      expect(cm).not.toBeNull();
+      expect(calculateVjumpScore(cm!, maleVj2130)).toBeGreaterThanOrEqual(score);
+    }
+    for (const score of [100, 122.81, 185]) {
+      const cm = invertSljScoreToCm(score, maleSlj2130);
+      expect(cm).not.toBeNull();
+      expect(calculateSljScore(cm!, maleSlj2130)).toBeGreaterThanOrEqual(score);
+    }
+  });
+
+  it('returns null when target exceeds score at input ceiling', () => {
+    const ceiling = calculateVjumpScore(135, maleVj2130);
+    expect(invertVjumpScoreToCm(ceiling + 1, maleVj2130, 135)).toBeNull();
+  });
+});
+
+describe('resolveExplosiveMilestoneRawGap', () => {
+  const profile: PhysicalProfile = {
+    gender: 'male',
+    age: 25,
+    heightCm: 175,
+    weightKg: 75,
+    updatedAt: '',
+  };
+
+  it('exposes dual or-path deltas toward the next decade gate', () => {
+    const currentVjCm = 50;
+    const currentSljCm = 220;
+    const breakdown = calculateExplosivePowerBreakdown({
+      verticalJumpCm: currentVjCm,
+      standingLongJumpCm: currentSljCm,
+      sprintSeconds: null,
+      profile,
+    });
+    expect(breakdown?.averageRaw).toBe(50);
+    const { nextMilestone } = resolveScoreMeaningMilestone(
+      'explosivePower',
+      breakdown!.averageRaw!
+    );
+    expect(nextMilestone).toBe(60);
+
+    const gap = resolveExplosiveMilestoneRawGap({
+      targetCompositeScore: nextMilestone!,
+      currentVjCm,
+      currentSljCm,
+      profile,
+    });
+    expect(gap).not.toBeNull();
+    expect(gap!.unit).toBe('cm');
+    expect(gap!.vJumpDeltaCm).toBeGreaterThanOrEqual(0.1);
+    expect(gap!.bJumpDeltaCm).toBeGreaterThanOrEqual(0.1);
+
+    const std = getPowerStandardsForProfile(profile)!;
+    const clearedViaVj = calculateVjumpScore(
+      currentVjCm + gap!.vJumpDeltaCm!,
+      std.vjump
+    );
+    expect((clearedViaVj + 50) / 2).toBeGreaterThanOrEqual(60);
+    const clearedViaSlj = calculateSljScore(
+      currentSljCm + gap!.bJumpDeltaCm!,
+      std.slj
+    );
+    expect((50 + clearedViaSlj) / 2).toBeGreaterThanOrEqual(60);
+  });
+
+  it('still offers a path when one jump is missing (counts as 0)', () => {
+    const gap = resolveExplosiveMilestoneRawGap({
+      targetCompositeScore: 40,
+      currentVjCm: 50,
+      currentSljCm: null,
+      profile,
+    });
+    expect(gap).not.toBeNull();
+    // Composite is 25; need 40 → VJ-only or fill SLJ from zero.
+    expect(gap!.vJumpDeltaCm).toBeGreaterThanOrEqual(0.1);
+    expect(gap!.bJumpDeltaCm).toBeGreaterThanOrEqual(0.1);
+  });
+
+  it('returns null when both jumps are empty', () => {
+    expect(
+      resolveExplosiveMilestoneRawGap({
+        targetCompositeScore: 50,
+        currentVjCm: null,
+        currentSljCm: null,
+        profile,
+      })
+    ).toBeNull();
+  });
+
+  it('returns null when already past required cm on both paths', () => {
+    const gap = resolveExplosiveMilestoneRawGap({
+      targetCompositeScore: 50,
+      currentVjCm: 70,
+      currentSljCm: 270,
+      profile,
+    });
+    // Average is already 100 — both single-path requirements are already met.
+    expect(gap).toBeNull();
+  });
+
+  it('keeps the reachable path when the other leg alone cannot clear the gate', () => {
+    // needScore = 2*150 − 50 = 250 each side; SLJ@390 ≈ 241 < 250, VJ@135 ≈ 273 ≥ 250.
+    const gap = resolveExplosiveMilestoneRawGap({
+      targetCompositeScore: 150,
+      currentVjCm: 50,
+      currentSljCm: 220,
+      profile,
+    });
+    expect(gap).not.toBeNull();
+    expect(gap!.bJumpDeltaCm).toBeNull();
+    expect(gap!.vJumpDeltaCm).toBeGreaterThanOrEqual(0.1);
   });
 });

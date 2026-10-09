@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -17,15 +17,25 @@ import {
   resolveDynoIntelSheetEntry,
   shouldOpenDynoIntelQuotaExhaustedPaywall,
 } from '../../logic/core/dynoIntelGates';
+import {
+  buildDynoIntelLaunchRequestId,
+  claimDynoIntelLaunchFlush,
+  markDynoIntelLaunchFlushAccepted,
+  releaseDynoIntelLaunchFlushInFlight,
+  resetDynoIntelLaunchFlushInFlight,
+  shouldClearChatForSpectrumOpen,
+  shouldRetryLaunchFlushAfterRelease,
+  type DynoIntelLaunchFlushLock,
+} from '../../logic/core/dynoIntelLaunchFlush';
 import { DYNO_INTEL_LOCAL_LOG_CAP } from '../../logic/core/dynoIntelLogLimits';
 import type { DynoIntelMode } from '../../logic/core/dynoIntelTypes';
 import { pushAndroidBackDismiss } from '../../lib/androidBackDismissStack';
 import { navigateFromUiGate } from '../../lib/uiGateNavigation';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
-import { hapticService } from '../../services/hapticService';
 import { purchaseProSubscription } from '../../services/subscriptionService';
 import { useAuthStore } from '../../stores/authStore';
 import { useDynoIntelLogStore } from '../../stores/dynoIntelLogStore';
+import { useDynoIntelLaunchStore } from '../../stores/dynoIntelLaunchStore';
 import { useEntitlementStore } from '../../stores/entitlementStore';
 import { selectEntitlementState } from '../../stores/entitlementSelectors';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
@@ -60,6 +70,9 @@ const DynoIntelConsole = () => {
   const getMostRecentLog = useDynoIntelLogStore((s) => s.getMostRecent);
   const clearLocalLogs = useDynoIntelLogStore((s) => s.clearLocalLogs);
   const logStorageError = useDynoIntelLogStore((s) => s.storageError);
+  const launchRequestId = useDynoIntelLaunchStore((s) => s.requestId);
+  const pendingPrompt = useDynoIntelLaunchStore((s) => s.pendingPrompt);
+  const clearPendingLaunch = useDynoIntelLaunchStore((s) => s.clearPending);
 
   const [sheetView, setSheetView] = useState<DynoIntelSheetView>('chat');
   const [paywallReason, setPaywallReason] = useState<DynoIntelPaywallReason>('pro-required');
@@ -111,17 +124,20 @@ const DynoIntelConsole = () => {
   );
 
   const handleAuthBlocked = useCallback(() => {
+    // WHY: Spectrum handoff cannot complete without auth — drop pending so it does not surprise later.
+    clearPendingLaunch();
     setAuthGateOpen(true);
-  }, []);
+  }, [clearPendingLaunch]);
 
   /**
    * Full-page Pro funnel only when native billing cannot complete in-sheet
    * (e.g. RevenueCat offerings missing). WHY: Preserve surface via allowlisted `returnTo`.
    */
   const openJoinArenaProFunnel = useCallback(() => {
+    clearPendingLaunch();
     closeSheet();
     navigate(joinArenaPath('dyno-intel', pathname));
-  }, [closeSheet, navigate, pathname]);
+  }, [clearPendingLaunch, closeSheet, navigate, pathname]);
 
   const chat = useDynoIntelChat({
     mode: DYNO_INFERENCE_MODE,
@@ -147,6 +163,11 @@ const DynoIntelConsole = () => {
     clearChat();
   }, [clearChat, getMostRecentLog, loadLocalLogs, restoreFromLog]);
 
+  const launchFlushLockRef = useRef<DynoIntelLaunchFlushLock>({
+    flushedLaunchRequestId: 0,
+    inFlightLaunchRequestId: 0,
+  });
+
   const openSheetWithGate = useCallback(() => {
     const entry = resolveDynoIntelSheetEntry(
       DYNO_INFERENCE_MODE,
@@ -155,13 +176,16 @@ const DynoIntelConsole = () => {
       isAnonymous
     );
     if (!entry.access.allowed) {
-      // WHY: Bootstrap pending must never open auth gate or Pro paywall.
-      if (entry.access.blockReason === 'pending') return;
+      // WHY: Auth bootstrap `pending` — keep Spectrum prompt and retry when authStatus settles.
+      if (entry.access.blockReason === 'pending') {
+        return;
+      }
       if (entry.access.blockReason === 'auth') {
         handleAuthBlocked();
         return;
       }
       // WHY: Unauthenticated is auth sheet; missing Pro stays in Bottom Sheet paywall (Spotify-style).
+      // Keep pendingPrompt through Pro paywall so subscribe → chat can still auto-send decode.
       openPaywall('pro-required');
       return;
     }
@@ -174,14 +198,31 @@ const DynoIntelConsole = () => {
         remaining: quota.remaining,
       })
     ) {
+      // Keep pendingPrompt — after Pro subscribe / reset, chat open can flush the decode.
       openPaywall('quota-exhausted');
       return;
     }
     setSheetView('chat');
-    restoreLatestLog();
+    // WHY: Spectrum decode must not ride under a restored prior log; normal trigger still restores.
+    // Skip clearChat while auto-flush is in flight — resetting status to idle re-opens a double-send window.
+    const launchState = useDynoIntelLaunchStore.getState();
+    if (launchState.pendingPrompt) {
+      if (
+        shouldClearChatForSpectrumOpen(
+          launchFlushLockRef.current.inFlightLaunchRequestId,
+          launchState.requestId,
+          true
+        )
+      ) {
+        clearChat();
+      }
+    } else {
+      restoreLatestLog();
+    }
     openSheet();
   }, [
     authStatus,
+    clearChat,
     entitlement,
     entitlementRefreshing,
     handleAuthBlocked,
@@ -194,11 +235,71 @@ const DynoIntelConsole = () => {
   ]);
 
   const handleSheetClose = useCallback(() => {
+    clearPendingLaunch();
+    // WHY: Abandoning the sheet must drop zombie in-flight claims so the next launch can claim.
+    resetDynoIntelLaunchFlushInFlight(launchFlushLockRef.current);
     closeSheet();
     setSheetView('chat');
     setPaywallBillingError(false);
     setSuggestionsDismissed(false);
-  }, [closeSheet]);
+  }, [clearPendingLaunch, closeSheet]);
+
+  const openSheetWithGateRef = useRef(openSheetWithGate);
+  openSheetWithGateRef.current = openSheetWithGate;
+  const sendQuestionRef = useRef(sendQuestion);
+  sendQuestionRef.current = sendQuestion;
+  const clearPendingLaunchRef = useRef(clearPendingLaunch);
+  clearPendingLaunchRef.current = clearPendingLaunch;
+  /** Bumped when a superseded launch must retry after an older in-flight flush settles. */
+  const [flushRetryToken, setFlushRetryToken] = useState(0);
+
+  // WHY: Assessment Hall Spectrum CTA queues a prompt; Console owns gated open + auto-send.
+  // Also re-runs when auth leaves `loading` so bootstrap-pending launches are not dropped.
+  useEffect(() => {
+    if (launchRequestId <= 0) return;
+    if (!useDynoIntelLaunchStore.getState().pendingPrompt) return;
+    if (authStatus === 'loading') return;
+    openSheetWithGateRef.current();
+  }, [launchRequestId, authStatus]);
+
+  // WHY: Sync in-flight claim before await — sendQuestion identity churn must not double-bill.
+  // Paywall/auth rejection releases in-flight so subscribe → chat can re-flush the same launch.
+  useEffect(() => {
+    if (!sheetOpen || sheetView !== 'chat' || !pendingPrompt) return;
+    const lock = launchFlushLockRef.current;
+    if (!claimDynoIntelLaunchFlush(lock, launchRequestId)) return;
+    const prompt = pendingPrompt;
+    const requestId = launchRequestId;
+    const idempotencyKey = buildDynoIntelLaunchRequestId(requestId);
+    setSuggestionsDismissed(true);
+    void (async () => {
+      try {
+        const accepted = await sendQuestionRef.current(prompt, { requestId: idempotencyKey });
+        if (!accepted) {
+          releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+          return;
+        }
+        const launchState = useDynoIntelLaunchStore.getState();
+        if (launchState.requestId !== requestId) {
+          releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+          if (
+            shouldRetryLaunchFlushAfterRelease({
+              completedLaunchRequestId: requestId,
+              currentLaunchRequestId: launchState.requestId,
+              hasPendingPrompt: Boolean(launchState.pendingPrompt),
+            })
+          ) {
+            setFlushRetryToken((token) => token + 1);
+          }
+          return;
+        }
+        markDynoIntelLaunchFlushAccepted(lock, requestId);
+        clearPendingLaunchRef.current();
+      } catch {
+        releaseDynoIntelLaunchFlushInFlight(lock, requestId);
+      }
+    })();
+  }, [flushRetryToken, launchRequestId, pendingPrompt, sheetOpen, sheetView]);
 
   // WHY: Android back must close Dyno before tab-root ExitConfirm — register only while open.
   useEffect(() => {
@@ -210,19 +311,22 @@ const DynoIntelConsole = () => {
   }, [handleSheetClose, sheetOpen]);
 
   const handlePaywallDismiss = useCallback(() => {
+    // WHY: Soft-dismiss abandons Spectrum decode — clearing prevents a chat-view flush that then
+    // re-opens paywall and permanently loses the prompt.
+    clearPendingLaunch();
+    resetDynoIntelLaunchFlushInFlight(launchFlushLockRef.current);
     setSheetView('chat');
     setPaywallBillingError(false);
-  }, []);
+  }, [clearPendingLaunch]);
 
   const handlePaywallSubscribe = useCallback(async () => {
     setPaywallBillingError(false);
     setPaywallBusy(true);
     try {
-      void hapticService.triggerProPurchaseIntent();
       const result = await purchaseProSubscription();
       if (!result.ok) {
         // WHY: Native RC configured but offerings/purchase unavailable — escalate with returnTo.
-        if (result.reason === 'billing-unavailable') {
+        if (result.reason === 'billing-unavailable' || result.reason === 'no-offerings') {
           openJoinArenaProFunnel();
           return;
         }
@@ -232,11 +336,16 @@ const DynoIntelConsole = () => {
       // WHY: Hard-sync purchase already committed Firestore SSOT into the store — do not
       // refreshEntitlement() here or a lagging RC snapshot can race-overwrite the new Pro grant.
       setSheetView('chat');
-      restoreLatestLog();
+      // WHY: Spectrum decode must not flash under a restored prior log after subscribe.
+      if (useDynoIntelLaunchStore.getState().pendingPrompt) {
+        clearChat();
+      } else {
+        restoreLatestLog();
+      }
     } finally {
       setPaywallBusy(false);
     }
-  }, [openJoinArenaProFunnel, restoreLatestLog]);
+  }, [clearChat, openJoinArenaProFunnel, restoreLatestLog]);
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
@@ -264,8 +373,7 @@ const DynoIntelConsole = () => {
   const hideTrigger =
     isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
 
-  const showCallout =
-    !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
+  const showCallout = !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
 
   const handleTriggerPress = useCallback(() => {
     if (!discovered) markDiscovered();

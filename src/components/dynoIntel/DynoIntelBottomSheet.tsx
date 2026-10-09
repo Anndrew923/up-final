@@ -252,7 +252,7 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
               />
             </div>
 
-            <footer className="shrink-0 border-t border-zinc-800/80 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+            <footer className="ui-modal-safe-footer shrink-0 border-t border-zinc-800/80 px-4">
               <DynoIntelSuggestionChips
                 items={suggestionItems}
                 visible={showSuggestionChips}

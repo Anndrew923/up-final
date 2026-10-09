@@ -24,7 +24,6 @@ import {
   resolveDynoIntelDisplayMeta,
   type DynoIntelDisplayMeta,
 } from '../logic/core/resolveDynoIntelDisplayMeta';
-import { requestDynoIntelChat } from '../services/dynoIntelService';
 import { useAuthStore } from '../stores/authStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 import { useEntitlementStore } from '../stores/entitlementStore';
@@ -32,8 +31,16 @@ import { selectEntitlementState } from '../stores/entitlementSelectors';
 import { useTypewriterText } from './useTypewriterText';
 import type { DynoIntelQuotaState } from './useDynoIntelQuota';
 import type { DynoIntelPaywallReason } from '../types/dynoIntelPaywall';
+import { isDynoIntelInProgressAbort, requestDynoIntelChat } from '../services/dynoIntelService';
 
 export type DynoIntelChatStatus = 'idle' | 'loading' | 'typing' | 'error';
+
+export interface DynoIntelSendQuestionOptions {
+  promptTemplateId?: string;
+  modeOverride?: DynoIntelMode;
+  /** Callable idempotency / reservation key (e.g. Spectrum `spectrum-launch-{n}`). */
+  requestId?: string;
+}
 
 function resolveServerQuotaTier(
   quotaTier: unknown,
@@ -100,15 +107,17 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
   const sendQuestion = useCallback(
     async (
       userQuestion: string,
-      promptTemplateId = DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID,
-      modeOverride?: DynoIntelMode
-    ) => {
-      const effectiveMode = modeOverride ?? input.mode;
+      options?: DynoIntelSendQuestionOptions
+    ): Promise<boolean> => {
+      const effectiveMode = options?.modeOverride ?? input.mode;
+      const promptTemplateId =
+        options?.promptTemplateId ?? DYNO_INTEL_DEFAULT_PROMPT_TEMPLATE_ID;
+      const requestId = options?.requestId;
       const trimmedQuestion = userQuestion.trim();
-      if (!trimmedQuestion) return;
+      if (!trimmedQuestion) return false;
 
       // WHY: Ignore rapid re-submits while typing/loading — never open a second Callable.
-      if (statusRef.current === 'loading' || statusRef.current === 'typing') return;
+      if (statusRef.current === 'loading' || statusRef.current === 'typing') return false;
 
       const nowMs = Date.now();
       const priorDebounce = lastQuestionDebounceRef.current;
@@ -122,9 +131,9 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           showImmediately(cachedReply.commentary);
           setStatus('idle');
         }
-        return;
+        // WHY: Debounce replay is not a new acceptance — Spectrum flush must keep pending if any.
+        return false;
       }
-      lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
 
       const requestSyncToken = input.quota.syncToken;
       const requestSequence = ++latestRequestSequence.current;
@@ -132,13 +141,13 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
 
       if (!access.allowed) {
         // WHY: Auth loading is `pending` — no-op until the session is known.
-        if (access.blockReason === 'pending') return;
+        if (access.blockReason === 'pending') return false;
         if (access.blockReason === 'auth') {
           input.onAuthBlocked();
-          return;
+          return false;
         }
         input.onPaywallRequest('pro-required');
-        return;
+        return false;
       }
 
       if (input.quota.isSynced && input.quota.remaining <= 0) {
@@ -146,7 +155,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
         if (input.quota.quotaTier === 'pro' || hasProFullAccess) {
           setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
           setStatus('error');
-          return;
+          return false;
         }
         // WHY: Unsettled free+0 may be a Pro subscriber mid-RC refresh — ask the server instead.
         if (
@@ -158,9 +167,13 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           })
         ) {
           input.onPaywallRequest('quota-exhausted');
-          return;
+          return false;
         }
       }
+
+      // WHY: Only arm debounce after gates pass — paywall/auth rejects must not block
+      // Spectrum re-flush after subscribe within the 10s window.
+      lastQuestionDebounceRef.current = { question: trimmedQuestion, atMs: nowMs };
 
       const context = input.enrichContext(input.resolveContext(effectiveMode), trimmedQuestion);
       const displayMeta = resolveDynoIntelDisplayMeta(context, trimmedQuestion);
@@ -182,13 +195,14 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
           userQuestion: trimmedQuestion,
           mode: effectiveMode,
           priorTurn,
+          ...(requestId ? { requestId } : {}),
         });
         if (
           useAuthStore.getState().uid !== uid ||
           latestRequestSequence.current !== requestSequence ||
           !input.quota.isSyncTokenCurrent(requestSyncToken)
         ) {
-          return;
+          return true;
         }
 
         if (!result.ok) {
@@ -215,20 +229,22 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             if (quotaTier === 'pro') {
               setErrorMessageKey('dynoIntel.error.quotaExhaustedPro');
               setStatus('error');
-            } else {
-              input.onPaywallRequest('quota-exhausted');
-              setStatus('idle');
+              return true;
             }
-            return;
+            // WHY: false — Spectrum pending must survive free-tier paywall so subscribe → chat can re-flush.
+            input.onPaywallRequest('quota-exhausted');
+            setStatus('idle');
+            return false;
           }
           if (result.reason === 'pro-required' || result.reason === 'core-required') {
             // WHY: Server may still emit legacy core-required; client constitution maps both to Pro paywall.
+            // false keeps Spectrum pending across the upgrade path (same as client-side gate).
             input.onPaywallRequest('pro-required');
             setStatus('idle');
-            return;
+            return false;
           }
           setStatus('idle');
-          return;
+          return true;
         }
 
         input.quota.applyServerQuota(
@@ -260,13 +276,19 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             displayMeta,
           });
         }
+        return true;
       } catch (error) {
         if (
           useAuthStore.getState().uid !== uid ||
           latestRequestSequence.current !== requestSequence ||
           !input.quota.isSyncTokenCurrent(requestSyncToken)
         ) {
-          return;
+          return true;
+        }
+        // WHY: Sibling Spectrum/client re-entry aborted server-side — not a user-facing failure.
+        if (isDynoIntelInProgressAbort(error)) {
+          setStatus('idle');
+          return false;
         }
         const mappedKey =
           error instanceof Error &&
@@ -276,6 +298,7 @@ export function useDynoIntelChat(input: UseDynoIntelChatInput) {
             : null;
         setErrorMessageKey(mappedKey ?? 'dynoIntel.error.network');
         setStatus('error');
+        return true;
       }
     },
     [

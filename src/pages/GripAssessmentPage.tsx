@@ -4,19 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremonyOverlay';
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
 import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
+import { useGripMilestoneHint } from '../hooks/useGripMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -77,6 +81,21 @@ const GripAssessmentPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? formatOverallResonanceScore(heroScore) : null;
   const scoreMeaning = useScoreMeaning('gripStrength', previewScore ?? heroScore);
+  const nextMilestoneHint = useGripMilestoneHint(
+    scoreMeaning,
+    peakInput,
+    profile,
+    profileReady
+  );
+  const spectrumScoreDisplay =
+    heroScoreText ?? (previewScore != null ? formatOverallResonanceScore(previewScore) : null);
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'gripStrength',
+    scoreDisplay: spectrumScoreDisplay,
+    decadeKey: scoreMeaning?.decadeKey,
+    populationClass: scoreMeaning?.populationClass,
+    onBeforeOpenDyno: closeModal,
+  });
   const peakLabel = t('grip.peakLabel', { unit: labels.weight });
 
   return (
@@ -90,7 +109,11 @@ const GripAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-8">
@@ -170,63 +193,36 @@ const GripAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {previewScore !== null ? (
-            <div className="space-y-2 rounded-lg border border-zinc-700 bg-bg-panel/80 px-4 py-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('grip.previewLabel')}
-              </p>
-              <p className="font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? formatOverallResonanceScore(previewScore)}
-              </p>
-            </div>
-          ) : null}
-
           {previewScore !== null && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-blue-400/35 bg-zinc-950/85 p-4 shadow-[0_0_25px_rgba(59,130,246,0.15)]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/65 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-blue-300/90">
-                {t('grip.performanceSpecHeader')}
-              </p>
-              <h3 className="mt-2 text-base font-semibold tracking-tight text-zinc-50">
-                {scoreMeaning.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-blue-300">
-                  {t('grip.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                </p>
-              ) : null}
-            </section>
+            <AssessmentScoreMeaningPanel
+              tone="blue"
+              meaning={scoreMeaning}
+              milestoneHintLabel={nextMilestoneHint}
+              hallEntry={hallSpectrum.headerActionProps}
+              hero={{
+                scoreText: heroScoreText ?? formatOverallResonanceScore(previewScore),
+                populationClass: scoreMeaning.populationClass,
+                decadeKey: scoreMeaning.decadeKey,
+                ...hallSpectrum.badgeProps,
+              }}
+            />
           ) : null}
 
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              hasScore={previewScore !== null}
               disabled={revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('grip.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={revealBlocking}
-              onClick={submitToRadar}
-            >
-              {t('grip.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {t('grip.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {t('grip.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

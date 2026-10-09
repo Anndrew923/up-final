@@ -1,7 +1,7 @@
 /**
  * redeemPromoCode — coach invite → 60-day promo Pro + 12-month attribution.
  * WHY: Client must never write promo_codes / attributions; all grants go through this Callable.
- * Attribution + promoExpiresAt are written in ONE transaction to avoid locked attribution without grant.
+ * Attribution + stacked promoCreditMs / effectiveUntil are written in ONE transaction.
  *
  * Anti-abuse:
  * - UID hourly attempt cap (failed guesses burn quota) via promo_redeem_rate_limits.
@@ -18,7 +18,7 @@ import {
   USER_ATTRIBUTIONS_COLLECTION,
 } from "../shared/constants.js";
 import { db, FieldValue } from "../shared/admin.js";
-import { resolvePromoExpiresAtIso, safeDate } from "../shared/proExpiry.js";
+import { applyPromoGrant, MS_PER_DAY, safeDate, stackingFieldsFromSnapshot } from "../shared/proExpiry.js";
 import {
   consumePromoRedeemAttempt,
   isPromoRedemptionCapacityExhausted,
@@ -32,10 +32,6 @@ function isAnonymousProvider(request) {
 function normalizePromoCode(raw) {
   if (typeof raw !== "string") return "";
   return raw.trim().toUpperCase();
-}
-
-function addDaysIso(fromMs, days) {
-  return new Date(fromMs + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function addMonthsIso(fromMs, months) {
@@ -157,15 +153,11 @@ export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
     const commissionRate = resolveCommissionRate(promo);
 
     const userData = userSnap.data() ?? {};
-    const existingPromoIso = resolvePromoExpiresAtIso(userData);
-    const existingPromoMs = safeDate(existingPromoIso)?.getTime() ?? 0;
-    const grantUntilMs = Date.parse(addDaysIso(now, grantDays));
-    // WHY: Never shorten an existing longer promo window on re-entry paths.
-    const nextPromoMs = Math.max(existingPromoMs, grantUntilMs);
-    if (!Number.isFinite(nextPromoMs) || nextPromoMs <= now) {
+    const stacked = applyPromoGrant(userData, grantDays * MS_PER_DAY, now);
+    if (!stacked.effectiveUntilMs || stacked.effectiveUntilMs <= now) {
       throw new HttpsError("failed-precondition", "invalid-promo-grant");
     }
-    const nextPromoIso = new Date(nextPromoMs).toISOString();
+    const nextPromoIso = stacked.promoExpiresAt ?? stacked.effectiveUntil;
     const attributionEndsAt = addMonthsIso(now, attributionMonths);
     const redeemedAt = new Date(now).toISOString();
 
@@ -194,8 +186,10 @@ export const redeemPromoCode = onCall(CALLABLE_OPTS, async (request) => {
         userId: uid,
         subscriptionStatus: "pro",
         isPro: true,
-        promoExpiresAt: nextPromoIso,
-        promoExpiresAtMs: nextPromoMs,
+        // WHY: user_attributions is Admin-only. Native bind hydrates referrer from this owner-readable denormalized pair.
+        referrer: code,
+        redeemedCode: code,
+        ...stackingFieldsFromSnapshot(stacked),
         entitlementVerifiedAtMs: writeVersion,
         updatedAt: redeemedAt,
         purchase_status: FieldValue.delete(),

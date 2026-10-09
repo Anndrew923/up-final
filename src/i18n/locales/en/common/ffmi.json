@@ -6,10 +6,9 @@
     "bodyFatLabel": "Body Fat Percentage",
     "bodyFatPlaceholder": "e.g. 15",
     "bodyFatUnit": "%",
-    "calculate": "Calculate",
-    "previewLabel": "Preview Score",
-    "performanceSpecHeader": "DISPLACEMENT SPEC / FFMI",
     "nextMilestoneHint": "{{points}} pts until next tier upgrade",
+    "nextMilestoneHintWithFatLoss": "{{points}} pts until next tier upgrade (maintaining current weight, body fat approx. -{{delta}}%)",
+    "nextMilestoneHintWithLeanGain": "{{points}} pts until next tier upgrade (fat-loss ceiling reached, lean mass approx. +{{delta}} {{unit}})",
     "resultFfmi": "Adjusted FFMI (Display)",
     "resultRadarScore": "Radar Score",
     "radarScoreLockedLabel": "Locked",
@@ -20,14 +19,13 @@
     "worldRecordLockIntro": "Adjusted FFMI exceeds the human-limit anchor for your sex. Adjust body fat or profile before saving to radar.",
     "anchorMale": "Male human-limit anchor (FFMI {{value}}).",
     "anchorFemale": "Female human-limit anchor (FFMI {{value}}).",
-    "submitRadar": "Save to Radar · P2W",
     "submitDone": "Stored locally — Home radar updated.",
     "ctaProfile": "Fill Physical Profile on Home",
     "errors": {
       "missing-profile": "Profile incomplete — add sex, age, height, and weight on Home.",
       "missing-body-fat": "Enter body fat percentage.",
       "invalid-body-fat": "Body fat must be 3–60%.",
-      "need-calculate": "Calculate once before saving.",
+      "need-calculate": "Complete a radar write (scan) before saving.",
       "world-record-lock": "FFMI above human-limit anchor — adjust body fat or profile before saving."
     },
     "info": {

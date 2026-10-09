@@ -13,15 +13,19 @@ import {
   AssessmentTabPanel,
 } from '../components/assessment/AssessmentSegmentedControl';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
+import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
+import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import { ROUTES } from '../config/routes';
 import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
-import LeaderboardAssessmentSyncBar from '../components/ladder/LeaderboardAssessmentSyncBar';
+import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
+import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
+import { useAerobicMilestoneHint } from '../hooks/useAerobicMilestoneHint';
 import { useCardioAssessmentPage } from '../hooks/useCardioAssessmentPage';
 import type { CardioTab } from '../hooks/useCardioAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
@@ -35,6 +39,7 @@ const CardioAssessmentPage: FC = () => {
   const [cooperInfoOpen, setCooperInfoOpen] = useState(false);
   const [run5kmInfoOpen, setRun5kmInfoOpen] = useState(false);
   const {
+    profile,
     profileReady,
     cooperDistanceOverCap,
     cooperCapMeters,
@@ -100,6 +105,26 @@ const CardioAssessmentPage: FC = () => {
   const heroScore = displayScore ?? previewScore;
   const heroScoreText = heroScore != null ? heroScore.toFixed(2) : null;
   const scoreMeaning = useScoreMeaning(scoreMeaningMetric, previewScore ?? heroScore);
+  const nextMilestoneHint = useAerobicMilestoneHint(
+    scoreMeaning,
+    activeTab,
+    distanceInput,
+    runMinutesInput,
+    runSecondsInput,
+    profile,
+    profileReady
+  );
+  const hallSpectrum = useHallOfFameSpectrumDrawer({
+    axisId: 'cardio',
+    // WHY: 5km specialty is not the radar cardio pantheon cell — hide Hall Spectrum on that tab.
+    scoreDisplay:
+      activeTab === 'cooper'
+        ? heroScoreText ?? (previewScore != null ? previewScore.toFixed(2) : null)
+        : null,
+    decadeKey: activeTab === 'cooper' ? scoreMeaning?.decadeKey : null,
+    populationClass: activeTab === 'cooper' ? scoreMeaning?.populationClass : null,
+    onBeforeOpenDyno: closeModal,
+  });
 
   const segmentOptions = useMemo(
     () => [
@@ -136,7 +161,11 @@ const CardioAssessmentPage: FC = () => {
         onPersistToDashboard={persistToDashboard}
         syncDisabled={!profileReady}
         arenaSync={ladderSync}
+        milestoneHintLabel={nextMilestoneHint}
+        onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
+        spectrumOverlayOpen={hallSpectrum.drawerProps.open}
       />
+      <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
 
       <ShellFlowStack gapClassName="space-y-5">
@@ -286,63 +315,36 @@ const CardioAssessmentPage: FC = () => {
             </p>
           ) : null}
 
-          {previewScore !== null ? (
-            <div className="rounded-lg border border-zinc-700 bg-bg-panel/80 px-3 py-2.5">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
-                {t('cardio.previewLabel')}
-              </p>
-              <p className="mt-1 font-mono text-2xl tabular-nums text-accent-info">
-                {heroScoreText ?? previewScore.toFixed(2)}
-              </p>
-            </div>
-          ) : null}
-
           {previewScore !== null && scoreMeaning ? (
-            <section className="relative overflow-hidden rounded-xl border border-accent-info/35 bg-zinc-950/85 p-3.5 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/65 to-transparent" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-300/90">
-                {t('cardio.performanceSpecHeader')}
-              </p>
-              <h3 className="mt-1.5 text-base font-semibold tracking-tight text-zinc-50">
-                {scoreMeaning.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-300">{scoreMeaning.summary}</p>
-              {scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null ? (
-                <p className="mt-2.5 border-t border-zinc-800/90 pt-2.5 text-xs font-medium text-cyan-300">
-                  {t('cardio.nextMilestoneHint', { points: scoreMeaning.remainingPoints })}
-                </p>
-              ) : null}
-            </section>
+            <AssessmentScoreMeaningPanel
+              tone="cyan"
+              meaning={scoreMeaning}
+              milestoneHintLabel={nextMilestoneHint}
+              hallEntry={hallSpectrum.headerActionProps}
+              hero={{
+                scoreText: heroScoreText ?? previewScore.toFixed(2),
+                populationClass: scoreMeaning.populationClass,
+                decadeKey: scoreMeaning.decadeKey,
+                ...hallSpectrum.badgeProps,
+              }}
+            />
           ) : null}
 
-          <div className="flex flex-wrap gap-2 border-t border-zinc-800/80 pt-3">
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
+          <div className="space-y-3">
+            <AssessmentWriteToRadarButton
+              hasScore={previewScore !== null}
               disabled={(isCooperTab && !profileReady) || revealBlocking}
               onClick={() => {
                 void revealCalculate();
               }}
-            >
-              {t('cardio.calculate')}
-            </button>
-            <button
-              type="button"
-              className="ui-btn"
-              disabled={(isCooperTab && !profileReady) || revealBlocking}
-              onClick={submitAssessment}
-            >
-              {isSpecialtyTab ? t('cardio.submitSpecialty') : t('cardio.submitRadar')}
-            </button>
+            />
+
+            {submitDone ? (
+              <p className="text-sm text-accent-info" role="status">
+                {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
+              </p>
+            ) : null}
           </div>
-
-          {submitDone ? (
-            <p className="text-sm text-accent-info" role="status">
-              {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
-            </p>
-          ) : null}
-
-          <LeaderboardAssessmentSyncBar syncController={ladderSync} />
 
           {/* WHY: Scheme C keeps the form clean — scoring anchors live in the shared collapsible footer. */}
           <AssessmentReferenceFooter>

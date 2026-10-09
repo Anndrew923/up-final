@@ -17,13 +17,14 @@
       "strength": "Horsepower",
       "explosivePower": "Torque",
       "cardio": "Stint",
-      "muscleMass": "Exterior",
-      "bodyFat": "Displacement",
-      "gripStrength": "Traction"
+      "muscleMass": "Build",
+      "bodyFat": "Density",
+      "gripStrength": "Traction",
+      "armSize": "Arm"
     },
     "ffmi": {
       "kicker": "Calculated",
-      "title": "FFMI (Displacement // P2W)"
+      "title": "FFMI (Density // P2W)"
     },
     "cardio": {
       "kicker": "Endurance",
@@ -31,7 +32,7 @@
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle Mass (Exterior // CHSS)"
+      "title": "Muscle Mass (Build // CHSS)"
     },
     "explosive": {
       "kicker": "Power",
@@ -62,17 +63,41 @@
       "kicker": "Axis Breakthrough",
       "closeAria": "Close breakthrough card",
       "confirmDismiss": "CONFIRM",
-      "syncBtn": "Sync to Dashboard",
-      "syncDashboardThenArena": "SYNC DASHBOARD + ARENA",
-      "syncDashboardThenArenaBusy": "Syncing dashboard + Arena…",
+      "syncBtn": "Sync Dashboard",
+      "syncDashboardThenArena": "Sync Dashboard + Arena",
+      "syncDashboardThenArenaBusy": "Syncing…",
       "dashboardPersistedOnly": "Dashboard updated locally. Arena upload incomplete or skipped — see details below.",
       "dashboardAndArenaSuccess": "Dashboard and Arena are in sync.",
       "syncing": "Syncing…",
-      "peakReached": "Peak Sequence Reached",
-      "milestoneRemaining": "{{points}} pts until next tier"
+      "peakReached": "Peak reached",
+      "milestoneRemaining": "{{points}} pts until next tier",
+      "normBadgeExpandAria": "Expand {{populationClass}} tier explanation",
+      "normBadgeCollapseAria": "Collapse {{populationClass}} tier explanation",
+      "summaryRegionAria": "{{populationClass}} tier explanation"
+    },
+    "viewCalculationDetails": "View details",
+    "hideCalculationDetails": "Hide calculation details",
+    "calculateRadarAction": "Calculate ➔",
+    "writeToRadarAction": "Write to Radar ➔",
+    "hallSpectrum": {
+      "title": "{{axisTitle}} · Hall Ladder",
+      "closeAria": "Close hall ladder",
+      "ladderRegionAria": "Single-axis hall ladder",
+      "currentRungAria": "Current rung: {{populationClass}}",
+      "legalExpand": "Legal",
+      "legalCollapse": "Hide legal",
+      "teaserKicker": "DYNO INTEL",
+      "teaserLine": "Drop feelings. Face yourself through scientific norms.",
+      "teaserCta": "Decode my tier",
+      "teaserCtaRemaining": "{{remaining}} left",
+      "teaserCtaArrow": "➔",
+      "teaserCtaAria": "Open Dyno Intel to decode my tier. {{remaining}} free uses left today",
+      "openBadgeAria": "Open {{populationClass}} hall ladder",
+      "viewEntry": "Hall of Fame ➔",
+      "viewEntryAria": "Open Hall of Fame"
     },
     "ceremony": {
-      "scanning": "Diagnostic Scan In Progress…",
+      "scanning": "Scanning…",
       "overlayAria": "Assessment diagnostic scan in progress",
       "messages": {
         "strength": {
@@ -109,20 +134,20 @@
           "m0": "Reading Skeletal Muscle Mass Signal…",
           "m1": "Calibrating SMM / SM% Dual-Branch Model…",
           "m2": "Matching Age-Group Norm Anchors…",
-          "m3": "Scanning Exterior-Axis Dynamic Range…",
+          "m3": "Scanning Build-Axis Dynamic Range…",
           "m4": "Verifying SMM Input and Sex Ceiling…",
-          "m5": "Synthesizing Exterior-Axis Preview Score…",
-          "m6": "Locking Exterior-Spec Output…",
+          "m5": "Synthesizing Build-Axis Preview Score…",
+          "m6": "Locking Build-Spec Output…",
           "m7": "Completing Muscle Diagnostic Sequence…"
         },
         "ffmi": {
           "m0": "Reading Body-Fat and Lean-Mass Inputs…",
           "m1": "Calibrating FFMI Conversion Curve…",
           "m2": "Matching Height Adjustment and Sex Anchors…",
-          "m3": "Scanning Displacement-Spectrum Dynamic Range…",
+          "m3": "Scanning Density-Spectrum Dynamic Range…",
           "m4": "Verifying World-Record Ceiling Logic…",
-          "m5": "Synthesizing Displacement-Axis Preview Score…",
-          "m6": "Locking Displacement-Spec Output…",
+          "m5": "Synthesizing Density-Axis Preview Score…",
+          "m6": "Locking Density-Spec Output…",
           "m7": "Completing FFMI Diagnostic Sequence…"
         },
         "explosive": {

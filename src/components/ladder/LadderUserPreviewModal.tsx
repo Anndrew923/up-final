@@ -1,5 +1,7 @@
 import type { FC } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAndroidBackDismiss } from '../../hooks/useAndroidBackDismiss';
+import { usePullDownDismiss } from '../../hooks/usePullDownDismiss';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { useCurrentUserIsAdmin } from '../../hooks/useCurrentUserIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +22,7 @@ import type { LeaderboardShardId } from '../../logic/core/ladderShards';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
+import { handleLadderPreviewBack } from './ladderPreviewBackDismiss';
 
 export interface LadderUserPreviewModalProps {
   open: boolean;
@@ -64,9 +67,29 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
 
   useShellScrollLock(open);
 
+  const closeReportSheet = useCallback(() => {
+    setReportSheetOpen(false);
+  }, []);
+
+  const dismissOnHardwareBack = useCallback(() => {
+    handleLadderPreviewBack({
+      reportSheetOpen,
+      closeReport: closeReportSheet,
+      closePreview: onClose,
+    });
+  }, [closeReportSheet, onClose, reportSheetOpen]);
+
+  // WHY: Hardware back must peel the report sheet, then the profile, before exit-confirm.
+  useAndroidBackDismiss(open, dismissOnHardwareBack);
+
+  // WHY: Report sheet covers the card. Disabling the gesture avoids dismissing the profile underneath it.
+  const { offset: pullOffset, dragging: pullDragging, handleProps: pullHandleProps } =
+    usePullDownDismiss(open && !reportSheetOpen, onClose);
+
   useEffect(() => {
     if (!open) {
       setUidCopied(false);
+      setReportSheetOpen(false);
       if (copyResetTimerRef.current != null) {
         window.clearTimeout(copyResetTimerRef.current);
         copyResetTimerRef.current = null;
@@ -171,9 +194,22 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
         aria-label={t('ladder.userPreview.close', { ns: 'common' })}
         onClick={onClose}
       />
-      <section className="ui-card relative z-10 max-h-[88vh] w-full max-w-lg overflow-y-auto border-zinc-700/90 bg-bg-card/95 p-4">
-        <header className="mb-3 flex items-start justify-between gap-2">
-          <div>
+      <section
+        className={`ui-card relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden border-zinc-700/90 bg-bg-card/95 ${
+          pullDragging ? '' : 'transition-transform duration-200 ease-out'
+        }`}
+        style={pullOffset > 0 ? { transform: `translateY(${pullOffset}px)` } : undefined}
+      >
+        {/* WHY: Gesture lives on the handle only so the scroll pane below can pan the radar. */}
+        <div
+          className="flex min-h-11 shrink-0 touch-none select-none items-center justify-center"
+          {...pullHandleProps}
+        >
+          <span className="h-1 w-10 rounded-full bg-zinc-500/50" aria-hidden />
+        </div>
+        {/* WHY: 2-col grid keeps 關閉 from wrapping under the name on narrow widths, and stays outside the scroll pane. */}
+        <header className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4 px-4 pb-3">
+          <div className="min-w-0">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-info">
               {t('ladder.userPreview.kicker', { ns: 'common' })}
             </p>
@@ -185,6 +221,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
             {t('cancel', { ns: 'common' })}
           </button>
         </header>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-4 [-webkit-overflow-scrolling:touch]">
 
         {showAdminUid ? (
           <div className="mb-3 rounded-md border border-accent-info/30 bg-accent-info/5 p-3">
@@ -424,6 +461,7 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
             ) : null}
           </div>
         )}
+        </div>
       </section>
 
       {targetUid ? (

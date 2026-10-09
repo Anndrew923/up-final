@@ -54,7 +54,7 @@ const gripMethodologyBriefs = [
     metric: "gripStrength",
     title: "評測參考資料",
     body:
-      "計算式：score = peakKg × 1.4（女性再乘 1.6）。資料來源背書：IronMind Captains of Crush (CoC) 菁英適格者數據。",
+      "計算式採雙段斜率：男性 ≤72 kg 為 peakKg × 1.4 × W_factor；>72 kg 為精英斜率。女性 ≤45 kg 為 peakKg × 2.24 × W_factor。模型上限男性 200 kg、女性 110 kg。資料來源背書：IronMind Captains of Crush (CoC) 菁英適格者數據。",
   },
 ];
 

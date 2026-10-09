@@ -59,11 +59,11 @@ vi.mock('react-i18next', () => ({
         'assessment.sixAxisSnapshot.saveSnapshot': 'Snapshot Status to Logs',
         'assessment.sixAxisSnapshot.saveDone': 'Snapshot archived',
         'axisLexicon.output.full.strength': 'Horsepower',
-        'axisLexicon.output.full.bodyFat': 'Displacement',
+        'axisLexicon.output.full.bodyFat': 'Density',
         'axisLexicon.output.full.cardio': 'Stint',
         'axisLexicon.output.full.gripStrength': 'Traction',
         'axisLexicon.output.full.explosivePower': 'Torque',
-        'axisLexicon.output.full.muscleMass': 'Exterior',
+        'axisLexicon.output.full.muscleMass': 'Build',
       };
       return map[key] ?? key;
     },

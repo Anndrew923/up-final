@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   applyGripPeakCap,
   calculateGripStrengthScore,
-  GRIP_MAX_PEAK_KG,
 } from '../logic/core/gripStrength';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
-import { clampScoreMapValue } from '../logic/core/scoring';
 import {
   formatWeightInput,
   parseInputToMetric,
@@ -107,10 +105,10 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       setCapNotice(null);
       return;
     }
-    const capped = applyGripPeakCap(peakKg);
+    const capped = applyGripPeakCap(peakKg, profile.gender);
     const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
     setPreviewScore(score);
-    setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
+    setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: capped.maxKg } : null);
   }, [peakInput, profile, profileReady, unitSystem]);
 
   const persistToDashboard = useCallback((): boolean => {
@@ -125,13 +123,14 @@ export function useGripAssessmentPage(): UseGripAssessmentPageResult {
       setErrorKey('invalid-peak');
       return false;
     }
-    const capped = applyGripPeakCap(peakKg);
+    const capped = applyGripPeakCap(peakKg, profile.gender);
     const score = calculateGripStrengthScore(peakKg, profile.weightKg, profile.gender);
     // WHY: Always persist metric kg so unit toggles never rewrite the stored source of truth.
     saveGripInputs({ peakKg: capped.usedKg, genderSnapshot: profile.gender });
-    setStoreScore('gripStrength', clampScoreMapValue(score));
+    // WHY: calculateGripStrengthScore already clamps to SCORE_AXIS_MAX; scoreStore.setScore clamps again.
+    setStoreScore('gripStrength', score);
     setPreviewScore(score);
-    setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: GRIP_MAX_PEAK_KG } : null);
+    setCapNotice(capped.capped ? { inputKg: capped.inputKg, maxKg: capped.maxKg } : null);
     setSubmitDone(true);
     queueStructuredProfileAfterRadarSubmit();
     return true;

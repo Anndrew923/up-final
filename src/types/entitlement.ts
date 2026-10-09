@@ -8,10 +8,19 @@ export interface EntitlementState {
   /** RevenueCat / store billing expiry (ISO). */
   proExpiresAt: string | null;
   /**
-   * Invite / referral promo expiry (ISO). Independent of RC.
-   * WHY: Effective Pro = max(proExpiresAt, promoExpiresAt).
+   * Invite / referral promo expiry (ISO). Independent gift calendar when unpaused.
+   * WHY: Dual-read fallback for docs without `effectiveUntil`.
    */
   promoExpiresAt: string | null;
+  /**
+   * Stacked access end (store + frozen credit, or remaining gift).
+   * WHY: Prefer this over max(store, promo) so overlapping gift days are not eaten.
+   */
+  effectiveUntil?: string | null;
+  /** Frozen / remaining gift milliseconds. */
+  promoCreditMs?: number | null;
+  /** True while store billing is active and credit is not consuming. */
+  promoPaused?: boolean;
   planId: string | null;
   lastCheckedAt: string | null;
   /**

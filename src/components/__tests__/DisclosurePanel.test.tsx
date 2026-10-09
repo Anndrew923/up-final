@@ -89,4 +89,36 @@ describe('DisclosurePanel actionMode', () => {
     });
     container.remove();
   });
+
+  it('link variant is borderless and shows expand label as a ghost toggle', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    act(() => {
+      root.render(
+        <DisclosurePanel
+          instanceId="test-link"
+          expanded={false}
+          onToggle={vi.fn()}
+          toggleExpandLabel="查看換算明細"
+          toggleCollapseLabel="隱藏換算明細"
+          variant="link"
+        >
+          <p>detail body</p>
+        </DisclosurePanel>
+      );
+    });
+
+    const shell = container.firstElementChild as HTMLElement | null;
+    expect(shell?.className).not.toContain('border');
+    expect(shell?.className).not.toContain('rounded-xl');
+    expect(container.textContent).toContain('查看換算明細');
+    const region = container.querySelector('#test-link-panel');
+    expect(region?.hasAttribute('hidden')).toBe(true);
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

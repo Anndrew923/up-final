@@ -20,13 +20,13 @@ export function hasCoreFromUserDoc(data) {
 }
 
 /**
- * Effective Pro = max(rcExpiresAt, promoExpiresAt) still in the future.
- * WHY: Promo-only users keep access after RC clear; paid users keep RC window.
+ * Effective Pro = stacked (or legacy max) expiry still in the future.
+ * WHY: Promo-only users keep access after RC clear; paid users keep RC window + frozen credit.
  */
 export function hasProFromUserDoc(data, now = new Date()) {
   if (!hasCoreFromUserDoc(data)) return false;
 
-  const effectiveMs = resolveEffectiveProExpiryMs(data);
+  const effectiveMs = resolveEffectiveProExpiryMs(data, now);
   if (effectiveMs == null || effectiveMs < now.getTime()) return false;
 
   const subscriptionStatus = data?.subscriptionStatus ?? data?.subscription_status;

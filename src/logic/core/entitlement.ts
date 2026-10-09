@@ -82,7 +82,7 @@ export function shouldBlockCrossPlatformProDowngrade(
 ): boolean {
   if (snapshotActive) return false;
   if (shouldBlockProReconcileDowngrade(ent, snapshotActive, now)) return true;
-  if (isPromoExpiryActive(ent.promoExpiresAt, now)) return true;
+  if (isPromoExpiryActive(ent, now)) return true;
   return hasProAccess(ent, now);
 }
 
@@ -166,15 +166,15 @@ export function hasCoreAccess(ent: EntitlementState): boolean {
 }
 
 /**
- * Effective Pro = now < max(rcExpiresAt, promoExpiresAt).
+ * Effective Pro = now < stacked (or legacy max) expiry.
  * Status pro/grace is preferred; active promo alone is accepted as defense in depth.
  */
 export function hasProAccess(ent: EntitlementState, now: Date = new Date()): boolean {
-  const effectiveMs = resolveEffectiveProExpiryMs(ent);
+  const effectiveMs = resolveEffectiveProExpiryMs(ent, now);
   if (effectiveMs == null || effectiveMs < now.getTime()) return false;
 
   if (ent.subscriptionStatus === 'pro' || ent.subscriptionStatus === 'grace') return true;
-  return isPromoExpiryActive(ent.promoExpiresAt, now);
+  return isPromoExpiryActive(ent, now);
 }
 
 export function canAccessLeaderboard(ent: EntitlementState, now: Date = new Date()): boolean {

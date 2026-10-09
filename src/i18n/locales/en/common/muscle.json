@@ -19,12 +19,9 @@
       "dualSovereignMale": "[Male {{max}} kg Dual Legends] 1) Absolute Mass Ceiling: Hafthor Bjornsson (The Mountain, WSM Champion, carrying inhuman total muscle mass on the heaviest skeletal frame on record); 2) Pure Muscle Density Ceiling: Ronnie Coleman (8-time Mr. Olympia, the absolute physiological limit of packing extraordinary shredded skeletal muscle into a standard frame at near-zero body fat).",
       "dualSovereignFemale": "[Female {{max}} kg Dual Goddesses] 1) Absolute Mass Goddess: Nataliya Kuznetsova (\"Russian Amazonka\", IFBB Pro), the heaviest and most extremely muscular professional female bodybuilder in history; 2) Pure Muscle Density Goddess: Iris Kyle (10-time Ms. Olympia Champion), record-holder for stacking pure skeletal muscle to the physiological limit at extremely low body fat."
     },
-    "previewLabel": "Preview Score",
-    "performanceSpecHeader": "EXTERIOR SPEC / SMM",
     "nextMilestoneHint": "{{points}} pts until next tier upgrade",
+    "nextMilestoneHintWithRaw": "{{points}} pts until next tier upgrade (maintaining current weight, skeletal muscle approx. +{{delta}} {{unit}})",
     "breakdownLine": "SMM score: {{smmScore}} · SM%: {{smPct}} · SM% score: {{smPctScore}}",
-    "calculate": "Calculate",
-    "submitRadar": "Save to Radar · CHSS",
     "submitDone": "Saved — Home radar and merged scores use this exterior axis.",
     "profileIncompleteHint": "Complete Home profile (sex, age, height, weight) for muscle scoring.",
     "ctaProfile": "Open Home Profile",

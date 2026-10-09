@@ -52,12 +52,22 @@ function readFirebaseErrorMessage(error: unknown): string | null {
   return typeof message === 'string' ? message : null;
 }
 
+/** Soft in-flight lock from CF — UI should stay quiet (no network error toast). */
+export function isDynoIntelInProgressAbort(error: unknown): boolean {
+  const code = readFirebaseErrorCode(error);
+  const message = readFirebaseErrorMessage(error) ?? '';
+  return code === 'functions/aborted' || message.includes('request-in-progress');
+}
+
 /**
  * Maps Callable transport failures to i18n keys — avoids mislabeling Gemini/config 400s as generic network loss.
  */
 export function mapDynoIntelCallableErrorToMessageKey(error: unknown): string | null {
   const code = readFirebaseErrorCode(error);
   const message = readFirebaseErrorMessage(error) ?? '';
+  if (isDynoIntelInProgressAbort(error)) {
+    return null;
+  }
   if (code === 'functions/failed-precondition') {
     return 'dynoIntel.error.geminiNotConfigured';
   }
@@ -69,10 +79,6 @@ export function mapDynoIntelCallableErrorToMessageKey(error: unknown): string | 
   }
   if (code === 'functions/resource-exhausted') {
     return 'dynoIntel.error.geminiQuotaExhausted';
-  }
-  // WHY: Same-question debounce / in-flight lock — UI should stay quiet, not show a hard error.
-  if (code === 'functions/aborted' || message.includes('request-in-progress')) {
-    return null;
   }
   if (code === 'functions/internal') {
     if (message.includes('DYNO_INTEL_INFERENCE_MALFORMED')) {

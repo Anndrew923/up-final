@@ -6,10 +6,9 @@
     "bodyFatLabel": "體脂率",
     "bodyFatPlaceholder": "例如 15",
     "bodyFatUnit": "%",
-    "calculate": "計算",
-    "previewLabel": "預覽分數",
-    "performanceSpecHeader": "排量規格",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
+    "nextMilestoneHintWithFatLoss": "距離下一階升級尚需 {{points}} 分（維持當前體重，體脂率約需 -{{delta}}%）",
+    "nextMilestoneHintWithLeanGain": "距離下一階升級尚需 {{points}} 分（已達減脂極限，去脂體重約需 +{{delta}} {{unit}}）",
     "resultFfmi": "調整後 FFMI（顯示）",
     "resultRadarScore": "雷達用分",
     "radarScoreLockedLabel": "已鎖定",
@@ -20,14 +19,13 @@
     "worldRecordLockIntro": "目前調整後 FFMI 超過人體極限錨點，為避免雷達尺度失真，暫無法寫入雷達；請調整體脂率或身體資料至上限內後再儲存。",
     "anchorMale": "男性人體極限錨點（FFMI {{value}}）。",
     "anchorFemale": "女性人體極限錨點（FFMI {{value}}）。",
-    "submitRadar": "寫入雷達（引擎排量軸）",
     "submitDone": "已寫入本機 — 首頁雷達將更新。",
     "ctaProfile": "前往首頁填寫身體資料",
     "errors": {
       "missing-profile": "身體資料未齊 — 請先在首頁填寫性別、年齡、身高、體重。",
       "missing-body-fat": "請填寫體脂率。",
       "invalid-body-fat": "體脂率需介於 3 與 60%。",
-      "need-calculate": "請先按「計算」再儲存。",
+      "need-calculate": "請先完成「寫入雷達」掃描後再儲存。",
       "world-record-lock": "調整後 FFMI 超過人體極限錨點 — 請先調整體脂或身體資料後再寫入雷達。"
     },
     "info": {

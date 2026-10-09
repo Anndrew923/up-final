@@ -8,6 +8,11 @@ export interface TachometerMilestoneBarProps {
   remainingPoints: number | null;
   auraKey?: PerformanceAuraKey;
   animate?: boolean;
+  /**
+   * Optional axis-specific upgrade guide (e.g. grip kg / explosive cm deltas).
+   * When set, replaces the default points-only breakthrough copy below the bar.
+   */
+  milestoneHintLabel?: string | null;
 }
 
 function prefersReducedMotion(): boolean {
@@ -23,6 +28,7 @@ const TachometerMilestoneBar: FC<TachometerMilestoneBarProps> = ({
   remainingPoints,
   auraKey = 'none',
   animate = true,
+  milestoneHintLabel = null,
 }) => {
   const { t } = useTranslation('common');
   const theme = AURA_THEME[auraKey];
@@ -40,8 +46,14 @@ const TachometerMilestoneBar: FC<TachometerMilestoneBarProps> = ({
     return () => window.cancelAnimationFrame(id);
   }, [skipFillAnimation, safeProgress]);
 
+  const hintLabel = atPeak
+    ? t('assessment.breakthrough.peakReached')
+    : milestoneHintLabel != null && milestoneHintLabel !== ''
+      ? milestoneHintLabel
+      : t('assessment.breakthrough.milestoneRemaining', { points: remainingPoints });
+
   return (
-    <div className="space-y-2" style={auraNeonCssVars(theme.neonRgb)}>
+    <div style={auraNeonCssVars(theme.neonRgb)}>
       <div className="relative h-4 overflow-hidden rounded-full bg-zinc-900/90 ring-1 ring-inset ring-zinc-700/60">
         <div
           className={`pointer-events-none absolute inset-y-0 left-0 w-full origin-left rounded-full ${theme.barFill} tachometer-fill-glow motion-reduce:transition-none transition-transform duration-[880ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform`}
@@ -62,10 +74,15 @@ const TachometerMilestoneBar: FC<TachometerMilestoneBarProps> = ({
           ))}
         </div>
       </div>
-      <p className="text-center text-[10px] leading-snug text-zinc-500/55">
-        {atPeak
-          ? t('assessment.breakthrough.peakReached')
-          : t('assessment.breakthrough.milestoneRemaining', { points: remainingPoints })}
+      {/*
+        WHY: Amber copy matches AssessmentScoreMeaningPanel mission-target chroma; no chip/box —
+        full-width centered plain text avoids asymmetric capsule / false-button silhouette.
+      */}
+      <p
+        className="mt-3.5 mb-5 flex w-full items-center justify-center text-center text-xs font-medium tracking-wide text-amber-300 text-balance leading-relaxed"
+        data-testid="tachometer-milestone-hint"
+      >
+        {hintLabel}
       </p>
     </div>
   );

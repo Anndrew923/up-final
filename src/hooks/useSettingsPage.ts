@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { ROUTES } from '../config/routes';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import i18n, { toSupportedLng, type SupportedLng } from '../i18n';
 import { markUserLocaleOverride } from '../i18n/language';
+import { resolveMembershipStatus, type MembershipStatusView } from '../logic/core/membershipStatus';
+import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { deleteSignedInAccount } from '../services/accountDeletionService';
 import {
   isNativeAppleSignInAvailable,
@@ -14,14 +17,14 @@ import {
 } from '../services/firebaseClient';
 import { openStoreSubscriptionManagement } from '../services/storeSubscriptionManageService';
 import { restorePurchasesFromDevice } from '../services/subscriptionService';
-import { useBootSequence } from './useBootSequence';
-import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
-import { useAuthStore } from '../stores/authStore';
-import { useEntitlementStore } from '../stores/entitlementStore';
-import { SOUND_PIPELINE_TACTICALLY_SILENCED } from '../logic/core/soundGate';
 import { sensoryPreferences } from '../services/sensoryPreferences';
 import { soundService } from '../services/soundService';
+import { useAuthStore } from '../stores/authStore';
+import { selectEntitlementState } from '../stores/entitlementSelectors';
+import { useEntitlementStore } from '../stores/entitlementStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
+import { useBootSequence } from './useBootSequence';
+import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
 
 export type SettingsBanner =
   | 'idle'
@@ -56,6 +59,8 @@ export interface SettingsPageState {
   email: string | null;
   isAnonymous: boolean;
   isPro: boolean;
+  /** Projected membership card state (free / promo / store). */
+  membership: MembershipStatusView;
   locale: SupportedLng;
   soundEnabled: boolean;
   /** False while `SOUND_PIPELINE_TACTICALLY_SILENCED` — hides misleading sound toggle. */
@@ -77,6 +82,8 @@ export interface SettingsPageState {
   goToContact(): void;
   goToPrivacyPolicy(): void;
   goToJoinArena(): void;
+  /** Membership card unlock / trial-convert — paid Pro funnel, returns to Settings. */
+  goToProUpsell(): void;
   goToAdmin(): void;
   reCalibrateBoot(): void;
   toggleLocale(): void;
@@ -99,7 +106,9 @@ export function useSettingsPage(): SettingsPageState {
   const photoURL = useAuthStore((s) => s.photoURL);
   const email = useAuthStore((s) => s.email);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
-  const isPro = useEntitlementStore((s) => s.isPro);
+  const entitlement = useEntitlementStore(useShallow(selectEntitlementState));
+  const isPro = entitlement.isPro;
+  const membership = useMemo(() => resolveMembershipStatus(entitlement), [entitlement]);
   const dynoIntelLogCount = useDynoIntelLogStore((s) => s.entries.length);
   const clearDynoIntelHistory = useDynoIntelLogStore((s) => s.clearLocalLogs);
   const [busyAction, setBusyAction] = useState<SettingsBusyAction>('none');
@@ -132,6 +141,7 @@ export function useSettingsPage(): SettingsPageState {
       email,
       isAnonymous,
       isPro,
+      membership,
       locale,
       soundEnabled,
       soundSettingsVisible: !SOUND_PIPELINE_TACTICALLY_SILENCED,
@@ -156,6 +166,11 @@ export function useSettingsPage(): SettingsPageState {
       },
       goToJoinArena() {
         navigate(joinArenaPath('settings'));
+      },
+      goToProUpsell() {
+        // WHY: Membership unlock/subscribe must use the paid funnel — `settings` inherits
+        // ladder early-bird CTA and can skip purchase for Genesis seats.
+        navigate(joinArenaPath('pro-upsell', ROUTES.settings));
       },
       goToAdmin() {
         navigate(ROUTES.admin);
@@ -307,6 +322,7 @@ export function useSettingsPage(): SettingsPageState {
       email,
       isAnonymous,
       isPro,
+      membership,
       locale,
       soundEnabled,
       busyAction,

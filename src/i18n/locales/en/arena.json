@@ -103,6 +103,8 @@
     "invalidExpiryFailTitle": "Subscription expiry not ready",
     "invalidExpiryFailBody": "A store subscription was found, but it has no valid expiry date for entitlement sync. Retry shortly, or use Restore Purchases in Settings.",
     "syncFailTitle": "Server sync incomplete",
-    "syncFailBody": "The store subscription was confirmed, but server sync is not finished yet. Retry shortly, or use Restore Purchases in Settings."
+    "syncFailBody": "The store subscription was confirmed, but server sync is not finished yet. Retry shortly, or use Restore Purchases in Settings.",
+    "noOfferingsFailTitle": "Store plans unavailable",
+    "noOfferingsFailBody": "No subscription packages were loaded (RevenueCat offering empty or misconfigured). Check your network and retry. Contact support if this persists."
   }
 }

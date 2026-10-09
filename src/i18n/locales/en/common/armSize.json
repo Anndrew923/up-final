@@ -17,12 +17,8 @@
     },
     "capNoticeTitle": "Ladder Value Capped",
     "capNoticeBody": "Raw score above axis ceiling (200) stores as 200 for ladder submission.",
-    "previewLabel": "Preview Score",
-    "performanceSpecHeader": "PERFORMANCE SPEC / Rim Spec",
     "nextMilestoneHint": "Next Milestone: {{points}} pts until next tier upgrade.",
     "submittedScoreLabel": "Ladder submission value: {{score}}",
-    "calculate": "Calculate",
-    "saveLeaderboard": "Submit Arm Spec",
     "submitDone": "Saved. Switch the ladder metric to Arm Size to view your ranking.",
     "errors": {
       "invalid-arm-cm": "Enter positive upper-arm circumference in {{unit}}.",
