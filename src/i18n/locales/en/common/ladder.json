@@ -74,6 +74,7 @@
     },
     "moderation": {
       "block": "Block",
+      "unblock": "Unblock",
       "report": "Report",
       "reportTitle": "Report arena user",
       "reportDescription": "Choose a report type. Your identity is not shared with the reported user.",

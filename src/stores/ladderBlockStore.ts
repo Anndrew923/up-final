@@ -1,43 +1,50 @@
 import { create } from 'zustand';
-import { filterBlockedLeaderboardRows, isUidBlocked } from '../logic/core/ladderBlockList';
+import {
+  blockedEntriesToUidSet,
+  filterBlockedLeaderboardRows,
+  isUidBlocked,
+  type LadderBlockedEntry,
+} from '../logic/core/ladderBlockList';
 import type { LeaderboardEntry } from '../services/leaderboardCacheService';
 import {
-  addBlockedUid,
-  loadBlockedUids,
-  removeBlockedUid,
+  addBlockedEntry,
+  loadBlockedEntries,
+  removeBlockedEntry,
 } from '../services/ladderBlockListService';
 
 export interface LadderBlockStore {
-  blockedUids: string[];
+  blockedEntries: LadderBlockedEntry[];
   blockedSet: ReadonlySet<string>;
   hydrated: boolean;
   hydrate(): void;
-  block(uid: string): void;
+  block(uid: string, displayName?: string): void;
   unblock(uid: string): void;
   isBlocked(uid: string | null | undefined): boolean;
   filterRows<T extends Pick<LeaderboardEntry, 'uid'>>(rows: T[]): T[];
 }
 
-function toSet(uids: string[]): ReadonlySet<string> {
-  return new Set(uids);
+function snapshot(entries: LadderBlockedEntry[]) {
+  return {
+    blockedEntries: entries,
+    blockedSet: blockedEntriesToUidSet(entries),
+  };
 }
 
 export const useLadderBlockStore = create<LadderBlockStore>((set, get) => ({
-  blockedUids: [],
+  blockedEntries: [],
   blockedSet: new Set(),
   hydrated: false,
   hydrate() {
     if (get().hydrated) return;
-    const blockedUids = loadBlockedUids();
-    set({ blockedUids, blockedSet: toSet(blockedUids), hydrated: true });
+    set({ ...snapshot(loadBlockedEntries()), hydrated: true });
   },
-  block(uid: string) {
-    const next = addBlockedUid(uid, get().blockedUids);
-    set({ blockedUids: next, blockedSet: toSet(next) });
+  block(uid: string, displayName = '') {
+    const next = addBlockedEntry({ uid, displayName }, get().blockedEntries);
+    set(snapshot(next));
   },
   unblock(uid: string) {
-    const next = removeBlockedUid(uid, get().blockedUids);
-    set({ blockedUids: next, blockedSet: toSet(next) });
+    const next = removeBlockedEntry(uid, get().blockedEntries);
+    set(snapshot(next));
   },
   isBlocked(uid) {
     return isUidBlocked(get().blockedSet, uid);

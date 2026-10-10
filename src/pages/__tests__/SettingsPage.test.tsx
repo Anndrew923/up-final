@@ -1,8 +1,9 @@
 /* @vitest-environment jsdom */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SettingsPage from '../SettingsPage';
+import { useLadderBlockStore } from '../../stores/ladderBlockStore';
 
 const mockUseSettingsPage = vi.fn();
 
@@ -21,7 +22,12 @@ const RE_CALIBRATE_LABELS: Record<string, string> = {
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => RE_CALIBRATE_LABELS[key] ?? key,
+    t: (key: string, opts?: { count?: number }) => {
+      if (key === 'settings.blocked_count' && opts?.count != null) {
+        return `${opts.count} 人`;
+      }
+      return RE_CALIBRATE_LABELS[key] ?? key;
+    },
   }),
 }));
 
@@ -87,6 +93,14 @@ function renderPage(): { container: HTMLDivElement; unmount: () => void } {
     },
   };
 }
+
+beforeEach(() => {
+  useLadderBlockStore.setState({
+    blockedEntries: [],
+    blockedSet: new Set(),
+    hydrated: false,
+  });
+});
 
 describe('SettingsPage membership card', () => {
   afterEach(() => {
@@ -192,8 +206,16 @@ describe('SettingsPage section hints', () => {
     expect(text).not.toContain('settings.infoHint');
     expect(text).not.toContain('settings.supportHint');
     expect(text).not.toContain('settings.system.reCalibrateHint');
+    expect(text).toContain('settings.sectionAccountPro');
+    expect(text).toContain('settings.sectionLadderPrivacy');
+    expect(text).toContain('settings.sectionLocalDiagnostics');
+    expect(text).toContain('settings.sectionPreferences');
     expect(text).toContain('settings.languageSection');
-    expect(text).toContain('settings.infoSection');
+    expect(text).toContain('settings.supportSection');
+    expect(text).toContain('settings.openAbout');
+    expect(text).toContain('settings.blocked_users_title');
+    expect(text).toContain('settings.blocked_empty');
+    expect(text).toContain('0 人');
 
     unmount();
   });
@@ -205,7 +227,7 @@ describe('SettingsPage re-calibrate control', () => {
     document.body.innerHTML = '';
   });
 
-  it('renders ui-btn affordance with aria-hidden arrow and invokes handler', () => {
+  it('renders diagnostics list row and invokes handler', () => {
     const reCalibrateBoot = vi.fn();
     mockUseSettingsPage.mockReturnValue({
       ...baseSettingsState(),
@@ -218,19 +240,9 @@ describe('SettingsPage re-calibrate control', () => {
     );
 
     expect(calibrateBtn).toBeDefined();
-    expect(calibrateBtn?.className).toContain('ui-btn');
-    expect(calibrateBtn?.className).toContain('w-full');
-    expect(calibrateBtn?.className).toContain('items-center');
-    expect(calibrateBtn?.className).toContain('justify-between');
-    expect(calibrateBtn?.className).toContain('border-accent-primary/40');
     expect(calibrateBtn?.textContent).toContain('重新通電');
     expect(calibrateBtn?.textContent).toContain('RE-CALIBRATION');
-
-    const labelRow = calibrateBtn?.querySelector('.flex.items-center.gap-2');
-    expect(labelRow?.childElementCount).toBe(2);
-
-    const arrow = calibrateBtn?.querySelector('[aria-hidden="true"]');
-    expect(arrow?.textContent).toBe('→');
+    expect(calibrateBtn?.textContent).toContain('›');
 
     act(() => {
       calibrateBtn?.click();
@@ -280,7 +292,7 @@ describe('SettingsPage local history control', () => {
 
     const { container, unmount } = renderPage();
     const clearAction = Array.from(container.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('settings.clearDynoHistoryAction')
+      button.textContent?.includes('settings.clearDynoHistoryTitle')
     );
     expect(clearAction).toBeDefined();
 
@@ -292,6 +304,46 @@ describe('SettingsPage local history control', () => {
     );
     act(() => confirm?.click());
     expect(clearDynoIntelHistory).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+});
+
+describe('SettingsPage IA Phase A', () => {
+  afterEach(() => {
+    mockUseSettingsPage.mockReset();
+    document.body.innerHTML = '';
+  });
+
+  it('keeps sign-out in the danger zone and blocked list under ladder privacy', () => {
+    const signOut = vi.fn();
+    mockUseSettingsPage.mockReturnValue({
+      ...baseSettingsState(),
+      canSignOut: true,
+      canSignIn: false,
+      authStatus: 'signed-in',
+      isAnonymous: false,
+      displayName: 'Tester',
+      signOut,
+    });
+    useLadderBlockStore.setState({
+      blockedEntries: [{ uid: 'u1', displayName: 'A' }],
+      blockedSet: new Set(['u1']),
+      hydrated: true,
+    });
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    expect(text).toContain('settings.dangerZone');
+    expect(text).toContain('1 人');
+    expect(text).not.toContain('settings.blocked_empty');
+
+    const signOutBtn = Array.from(container.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('settings.signOut')
+    );
+    expect(signOutBtn).toBeDefined();
+    act(() => signOutBtn?.click());
+    expect(signOut).toHaveBeenCalledTimes(1);
 
     unmount();
   });
