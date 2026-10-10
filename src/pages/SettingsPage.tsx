@@ -1,12 +1,18 @@
 import { useEffect, useState, type CSSProperties, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import DynoIntelClearHistoryDialog from '../components/dynoIntel/DynoIntelClearHistoryDialog';
+import LadderBlockedUsersSheet from '../components/ladder/LadderBlockedUsersSheet';
 import MembershipStatusCard from '../components/membership/MembershipStatusCard';
 import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
+import SettingsFeedbackBanners from '../components/settings/SettingsFeedbackBanners';
+import SettingsListRow from '../components/settings/SettingsListRow';
+import SettingsSectionCard from '../components/settings/SettingsSectionCard';
+import { SettingsGlyph } from '../components/settings/settingsRowIcons';
 import UserProIdentityRow from '../components/UserProIdentityRow';
 import { APP_SHELL_SCROLL_BOTTOM_PX, bottomChromeCalc } from '../constants/bottomChrome';
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { useSettingsPage } from '../hooks/useSettingsPage';
+import { useLadderBlockStore } from '../stores/ladderBlockStore';
 
 const RESTORE_TOAST_MS = 3500;
 
@@ -19,6 +25,9 @@ const SettingsPage: FC = () => {
   const { t } = useTranslation('common');
   const [restoreToastVisible, setRestoreToastVisible] = useState(false);
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
+  const [blockedUsersSheetOpen, setBlockedUsersSheetOpen] = useState(false);
+  const hydrateBlockedUids = useLadderBlockStore((s) => s.hydrate);
+  const blockedUidCount = useLadderBlockStore((s) => s.blockedEntries.length);
   const {
     authStatus,
     displayName,
@@ -58,6 +67,12 @@ const SettingsPage: FC = () => {
     adminCheckReady,
   } = useSettingsPage();
   const isLinkedSignedIn = authStatus === 'signed-in' && !isAnonymous;
+  const localeBadge =
+    locale === 'zh-Hant' ? t('settings.localeBadgeZh') : t('settings.localeBadgeEn');
+
+  useEffect(() => {
+    hydrateBlockedUids();
+  }, [hydrateBlockedUids]);
 
   useEffect(() => {
     if (banner !== 'restore-ok') return;
@@ -69,7 +84,7 @@ const SettingsPage: FC = () => {
   }, [banner]);
 
   return (
-    <main className="ui-shell relative max-w-3xl space-y-8 text-zinc-100">
+    <main className="ui-shell relative max-w-3xl space-y-6 text-zinc-100">
       <header className="space-y-2">
         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent-info">
           {t('settings.kicker')}
@@ -77,282 +92,195 @@ const SettingsPage: FC = () => {
         <h1 className="text-3xl font-bold tracking-tight text-zinc-50">{t('settings.title')}</h1>
       </header>
 
-      <MembershipStatusCard
-        membership={membership}
-        onUnlockPro={goToProUpsell}
-        onSubscribe={goToProUpsell}
-        onManageSubscription={() => {
-          void openManageSubscription();
-        }}
-      />
+      {/* S1 — Account & Subscription */}
+      <SettingsSectionCard title={t('settings.sectionAccountPro')}>
+        <MembershipStatusCard
+          embedded
+          membership={membership}
+          onUnlockPro={goToProUpsell}
+          onSubscribe={goToProUpsell}
+        />
 
-      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.languageSection')}
-        </h2>
-        <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-4">
-          <span className="rounded-full border border-zinc-700 bg-bg-panel/70 px-3 py-1 text-xs text-zinc-300">
-            {t('settings.languageCurrent', { locale: locale === 'zh-Hant' ? '繁中' : 'English' })}
-          </span>
-          <button
-            type="button"
-            className="ui-btn border-accent-info/40 text-accent-info hover:bg-accent-info/10"
-            onClick={toggleLocale}
-          >
-            {t('settings.languageToggle')}
-          </button>
-        </div>
-      </section>
-
-      {soundSettingsVisible ? (
-        <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            {t('settings.soundSection')}
-          </h2>
-          <div className="flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-4">
-            <span className="rounded-full border border-zinc-700 bg-bg-panel/70 px-3 py-1 text-xs text-zinc-300">
-              {soundEnabled ? t('settings.soundOn') : t('settings.soundOff')}
-            </span>
-            <button type="button" className="ui-btn" onClick={toggleSound}>
-              {t('settings.soundToggle')}
-            </button>
+        <div className="space-y-3 px-4 py-3">
+          <div className="rounded-lg border border-zinc-700/80 bg-bg-panel/70 px-3 py-2.5">
+            {isLinkedSignedIn ? (
+              <UserProIdentityRow
+                isPro={isPro}
+                avatarSize="md"
+                avatarUrl={photoURL}
+                avatarFallback={resolveIdentityInitial(displayName, email)}
+                name={t('settings.signedInAs', { name: displayName })}
+                nameClassName="text-sm text-zinc-200"
+                subtitle={email}
+              />
+            ) : (
+              <>
+                <p className="text-sm text-zinc-200">
+                  {authStatus === 'loading' ? t('settings.loadingAuth') : t('settings.signedOut')}
+                </p>
+                {email ? <p className="text-xs text-zinc-400">{email}</p> : null}
+              </>
+            )}
           </div>
-        </section>
-      ) : null}
 
-      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.localDataSection')}
-        </h2>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800 pt-4">
-          <div>
-            <p className="text-sm text-zinc-200">{t('settings.clearDynoHistoryTitle')}</p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-              {t('settings.clearDynoHistoryHint', { count: dynoIntelLogCount })}
-            </p>
-          </div>
-          <button
-            type="button"
-            className="ui-btn shrink-0 border-red-400/35 text-red-200 hover:bg-red-950/35 disabled:opacity-40"
-            disabled={dynoIntelLogCount === 0}
-            onClick={() => setClearHistoryDialogOpen(true)}
-          >
-            {t('settings.clearDynoHistoryAction')}
-          </button>
+          <SettingsFeedbackBanners banner={banner} />
+
+          {canSignIn ? (
+            <div className="flex flex-wrap gap-2">
+              {showAppleSignIn ? (
+                <button
+                  type="button"
+                  className="ui-btn ui-btn-primary"
+                  onClick={() => void signInApple()}
+                  disabled={!canSignIn}
+                >
+                  {busyAction === 'sign-in-apple'
+                    ? t('settings.signInBusy')
+                    : t('settings.signInApple')}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={`ui-btn ${showAppleSignIn ? '' : 'ui-btn-primary'}`}
+                onClick={() => void signInGoogle()}
+                disabled={!canSignIn}
+              >
+                {busyAction === 'sign-in' ? t('settings.signInBusy') : t('settings.signInGoogle')}
+              </button>
+            </div>
+          ) : null}
+
+          {isLinkedSignedIn ? <PromoCodeRedeemPanel variant="inline" /> : null}
         </div>
-      </section>
 
-      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.infoSection')}
-        </h2>
-        <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-          <button type="button" className="ui-btn" onClick={goToAbout}>
-            {t('settings.openAbout')}
-          </button>
-          <button type="button" className="ui-btn" onClick={goToPrivacyPolicy}>
-            {t('settings.openPrivacyPolicy')}
-          </button>
-        </div>
-      </section>
+        <SettingsListRow
+          icon={<SettingsGlyph label="RC" />}
+          title={
+            busyAction === 'restore-purchases'
+              ? t('settings.restorePurchasesBusy')
+              : t('settings.restorePurchases')
+          }
+          disabled={!canRestorePurchases}
+          onClick={() => void restorePurchases()}
+        />
+        <SettingsListRow
+          icon={<SettingsGlyph label="SUB" />}
+          title={t('settings.manageSubscription')}
+          onClick={() => void openManageSubscription()}
+        />
+        <SettingsListRow
+          icon={<SettingsGlyph label="AR" />}
+          title={t('settings.manageArena')}
+          onClick={goToJoinArena}
+        />
+      </SettingsSectionCard>
 
-      <button
-        type="button"
-        className="ui-btn flex w-full items-center justify-between border-accent-primary/40 bg-zinc-950/50 px-4 py-4 text-accent-primary transition-colors hover:bg-accent-primary/5 active:scale-[0.98]"
-        onClick={reCalibrateBoot}
-      >
-        <span className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-zinc-100">
-            {t('settings.system.reCalibrate')}
-          </span>
-          <span className="rounded-full border border-accent-primary/30 bg-accent-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-accent-primary/90">
-            {t('settings.system.reCalibrateKicker')}
-          </span>
-        </span>
-        <span className="shrink-0 text-xs text-zinc-500" aria-hidden>
-          →
-        </span>
-      </button>
+      {/* S2 — Ladder & Privacy */}
+      <SettingsSectionCard title={t('settings.sectionLadderPrivacy')}>
+        <SettingsListRow
+          icon={<SettingsGlyph label="BL" />}
+          title={t('settings.blocked_users_title')}
+          subtitle={blockedUidCount === 0 ? t('settings.blocked_empty') : undefined}
+          badge={t('settings.blocked_count', { count: blockedUidCount })}
+          onClick={() => setBlockedUsersSheetOpen(true)}
+        />
+      </SettingsSectionCard>
 
-      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.supportSection')}
-        </h2>
-        <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-          <button type="button" className="ui-btn" onClick={goToContact}>
-            {t('settings.contactUs')}
-          </button>
-        </div>
-      </section>
+      {/* Preferences — language / sound */}
+      <SettingsSectionCard title={t('settings.sectionPreferences')}>
+        <SettingsListRow
+          icon={<SettingsGlyph label="LN" />}
+          title={t('settings.languageSection')}
+          badge={localeBadge}
+          onClick={toggleLocale}
+        />
+        {soundSettingsVisible ? (
+          <SettingsListRow
+            icon={<SettingsGlyph label="FX" />}
+            title={t('settings.soundSection')}
+            badge={soundEnabled ? t('settings.soundOn') : t('settings.soundOff')}
+            onClick={toggleSound}
+          />
+        ) : null}
+      </SettingsSectionCard>
+
+      {/* S3 — Local Data & Diagnostics */}
+      <SettingsSectionCard title={t('settings.sectionLocalDiagnostics')}>
+        <SettingsListRow
+          icon={<SettingsGlyph label="DY" />}
+          title={t('settings.clearDynoHistoryTitle')}
+          subtitle={t('settings.clearDynoHistoryHint', { count: dynoIntelLogCount })}
+          badge={dynoIntelLogCount > 0 ? String(dynoIntelLogCount) : undefined}
+          disabled={dynoIntelLogCount === 0}
+          onClick={() => setClearHistoryDialogOpen(true)}
+        />
+        <SettingsListRow
+          icon={<SettingsGlyph label="BOOT" />}
+          title={t('settings.system.reCalibrate')}
+          badge={t('settings.system.reCalibrateKicker')}
+          onClick={reCalibrateBoot}
+        />
+      </SettingsSectionCard>
+
+      {/* Support */}
+      <SettingsSectionCard title={t('settings.supportSection')}>
+        <SettingsListRow
+          icon={<SettingsGlyph label="AB" />}
+          title={t('settings.openAbout')}
+          onClick={goToAbout}
+        />
+        <SettingsListRow
+          icon={<SettingsGlyph label="PR" />}
+          title={t('settings.openPrivacyPolicy')}
+          onClick={goToPrivacyPolicy}
+        />
+        <SettingsListRow
+          icon={<SettingsGlyph label="MSG" />}
+          title={t('settings.contactUs')}
+          onClick={goToContact}
+        />
+      </SettingsSectionCard>
 
       {adminCheckReady && isAdmin ? (
-        <section className="space-y-4 rounded-2xl border border-accent-info/30 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-accent-info">
-            {t('settings.adminSection')}
-          </h2>
-          <div className="border-t border-zinc-800 pt-4">
-            <button
-              type="button"
-              className="ui-btn w-full border-accent-info/40 text-accent-info hover:bg-accent-info/10"
-              onClick={goToAdmin}
-            >
-              {t('settings.openAdmin')}
-            </button>
-          </div>
-        </section>
+        <SettingsSectionCard title={t('settings.adminSection')} variant="accent">
+          <SettingsListRow
+            icon={<SettingsGlyph label="AD" />}
+            title={t('settings.openAdmin')}
+            onClick={goToAdmin}
+          />
+        </SettingsSectionCard>
       ) : null}
 
-      <section className="space-y-4 rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.accountSection')}
-        </h2>
-
-        <div className="space-y-1 rounded-lg border border-zinc-700 bg-bg-panel/70 px-4 py-3">
-          {isLinkedSignedIn ? (
-            <UserProIdentityRow
-              isPro={isPro}
-              avatarSize="md"
-              avatarUrl={photoURL}
-              avatarFallback={resolveIdentityInitial(displayName, email)}
-              name={t('settings.signedInAs', { name: displayName })}
-              nameClassName="text-sm text-zinc-200"
-              subtitle={email}
-            />
-          ) : (
-            <>
-              <p className="text-sm text-zinc-200">
-                {authStatus === 'loading' ? t('settings.loadingAuth') : t('settings.signedOut')}
-              </p>
-              {email ? <p className="text-xs text-zinc-400">{email}</p> : null}
-            </>
-          )}
-        </div>
-
-        {banner === 'sign-in-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.signInFail')}</p>
-        ) : null}
-        {banner === 'sign-in-apple-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.signInAppleFail')}</p>
-        ) : null}
-        {banner === 'sign-out-ok' ? (
-          <p className="text-sm text-emerald-400">{t('settings.signOutOk')}</p>
-        ) : null}
-        {banner === 'sign-out-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.signOutFail')}</p>
-        ) : null}
-        {banner === 'restore-empty' ? (
-          <p className="text-sm text-zinc-400">{t('settings.restorePurchasesEmpty')}</p>
-        ) : null}
-        {banner === 'restore-invalid-expiry' ? (
-          <p className="text-sm text-amber-300">{t('settings.restorePurchasesInvalidExpiry')}</p>
-        ) : null}
-        {banner === 'restore-sync-failed' ? (
-          <p className="text-sm text-amber-300">{t('settings.restorePurchasesSyncFailed')}</p>
-        ) : null}
-        {banner === 'restore-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.restorePurchasesFail')}</p>
-        ) : null}
-        {banner === 'delete-success' ? (
-          <p className="text-sm text-emerald-400">{t('settings.deleteSuccess')}</p>
-        ) : null}
-        {banner === 'delete-requires-recent-login' ? (
-          <p className="text-sm text-amber-300">{t('settings.deleteRequiresRecentLogin')}</p>
-        ) : null}
-        {banner === 'delete-reauth-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.deleteReauthFail')}</p>
-        ) : null}
-        {banner === 'delete-cloud-partial' ? (
-          <p className="text-sm text-amber-300">{t('settings.deleteCloudPartial')}</p>
-        ) : null}
-        {banner === 'delete-auth-fail' ? (
-          <p className="text-sm text-rose-400">{t('settings.deleteAuthFail')}</p>
-        ) : null}
-        {banner === 'delete-not-allowed' ? (
-          <p className="text-sm text-zinc-300">{t('settings.deleteNotAllowed')}</p>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2 border-t border-zinc-800 pt-4">
-          {showAppleSignIn ? (
-            <button
-              type="button"
-              className="ui-btn ui-btn-primary"
-              onClick={() => void signInApple()}
-              disabled={!canSignIn}
-            >
-              {busyAction === 'sign-in-apple'
-                ? t('settings.signInBusy')
-                : t('settings.signInApple')}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={`ui-btn ${showAppleSignIn ? '' : 'ui-btn-primary'}`}
-            onClick={() => void signInGoogle()}
-            disabled={!canSignIn}
-          >
-            {busyAction === 'sign-in' ? t('settings.signInBusy') : t('settings.signInGoogle')}
-          </button>
-          <button
-            type="button"
-            className="ui-btn"
-            onClick={() => void signOut()}
+      {/*
+        WHY: Extra top padding isolates Danger from Support — avoid fighting space-y with !mt.
+      */}
+      <div className="pt-4">
+        <SettingsSectionCard title={t('settings.dangerZone')} variant="danger">
+          <SettingsListRow
+            icon={<SettingsGlyph label="OUT" />}
+            title={busyAction === 'sign-out' ? t('settings.signOutBusy') : t('settings.signOut')}
+            destructive
+            showChevron={false}
             disabled={!canSignOut}
-          >
-            {busyAction === 'sign-out' ? t('settings.signOutBusy') : t('settings.signOut')}
-          </button>
-          <button type="button" className="ui-btn" onClick={goToJoinArena}>
-            {t('settings.manageArena')}
-          </button>
-        </div>
-
-        {isLinkedSignedIn ? <PromoCodeRedeemPanel variant="inline" /> : null}
-
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-xl border border-zinc-700/60 bg-zinc-950/40 px-4 py-3.5 text-left transition hover:border-zinc-500 hover:bg-zinc-900/60 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={() => void restorePurchases()}
-          disabled={!canRestorePurchases}
-        >
-          <span className="text-sm font-medium text-zinc-300">
-            {busyAction === 'restore-purchases'
-              ? t('settings.restorePurchasesBusy')
-              : t('settings.restorePurchases')}
-          </span>
-          <span className="text-xs text-zinc-500" aria-hidden>
-            →
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-xl border border-zinc-700/60 bg-zinc-950/40 px-4 py-3.5 text-left transition hover:border-zinc-500 hover:bg-zinc-900/60"
-          onClick={() => void openManageSubscription()}
-        >
-          <span className="text-sm font-medium text-zinc-300">
-            {t('settings.manageSubscription')}
-          </span>
-          <span className="text-xs text-zinc-500" aria-hidden>
-            →
-          </span>
-        </button>
-
-        <div className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
-            {t('settings.dangerZone')}
-          </p>
-          <p className="text-sm text-zinc-300">{t('settings.deleteHint')}</p>
-          <button
-            type="button"
-            className="ui-btn border-rose-400/60 text-rose-300 hover:bg-rose-500/10"
-            onClick={() => void deleteAccount()}
+            onClick={() => void signOut()}
+          />
+          <div className="px-4 py-3">
+            <p className="text-xs leading-relaxed text-zinc-400">{t('settings.deleteHint')}</p>
+          </div>
+          <SettingsListRow
+            icon={<SettingsGlyph label="DEL" />}
+            title={
+              busyAction === 'delete-account'
+                ? t('settings.deleteBusy')
+                : t('settings.deleteAccountAction')
+            }
+            destructive
+            showChevron={false}
             disabled={!canDeleteAccount}
-          >
-            {busyAction === 'delete-account'
-              ? t('settings.deleteBusy')
-              : t('settings.deleteAccountAction')}
-          </button>
-        </div>
-      </section>
+            onClick={() => void deleteAccount()}
+          />
+        </SettingsSectionCard>
+      </div>
 
       {restoreToastVisible ? (
         <div
@@ -371,6 +299,10 @@ const SettingsPage: FC = () => {
           clearDynoIntelHistory();
           setClearHistoryDialogOpen(false);
         }}
+      />
+      <LadderBlockedUsersSheet
+        open={blockedUsersSheetOpen}
+        onClose={() => setBlockedUsersSheetOpen(false)}
       />
     </main>
   );

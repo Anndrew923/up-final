@@ -6,7 +6,13 @@ export interface MembershipStatusCardProps {
   membership: MembershipStatusView;
   onUnlockPro(): void;
   onSubscribe(): void;
-  onManageSubscription(): void;
+  /** Required for standalone card store CTA; unused when `embedded` (list rows own manage). */
+  onManageSubscription?: () => void;
+  /**
+   * When true, omit outer section chrome so the card can nest inside SettingsSectionCard.
+   * Store manage CTA is also omitted — Settings list rows own navigation actions.
+   */
+  embedded?: boolean;
 }
 
 const PLAN_TITLE_KEY: Record<MembershipCardKind, string> = {
@@ -25,23 +31,23 @@ const MembershipStatusCard: FC<MembershipStatusCardProps> = ({
   onUnlockPro,
   onSubscribe,
   onManageSubscription,
+  embedded = false,
 }) => {
   const { t } = useTranslation('common');
   const isProKind = membership.kind === 'promo' || membership.kind === 'store';
+  const showPrimaryCta = membership.kind === 'free' || membership.kind === 'promo';
+  // WHY: Embedded Settings S1 already exposes manage-subscription as a list row.
+  const showStoreManage =
+    membership.kind === 'store' && !embedded && typeof onManageSubscription === 'function';
 
-  return (
-    <section
-      className={`space-y-4 rounded-2xl border p-6 shadow-panel backdrop-blur ${
-        isProKind
-          ? 'border-emerald-400/30 bg-gradient-to-br from-emerald-950/40 via-bg-card/95 to-bg-card/95'
-          : 'border-zinc-800 bg-bg-card/95'
-      }`}
-      aria-label={t('settings.membership.sectionLabel')}
-    >
+  const body = (
+    <>
       <div className="space-y-1">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          {t('settings.membership.sectionLabel')}
-        </h2>
+        {!embedded ? (
+          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            {t('settings.membership.sectionLabel')}
+          </h2>
+        ) : null}
         <p
           className={`text-base font-semibold ${isProKind ? 'text-emerald-100' : 'text-zinc-100'}`}
         >
@@ -76,23 +82,55 @@ const MembershipStatusCard: FC<MembershipStatusCardProps> = ({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2 border-t border-zinc-800/80 pt-4">
-        {membership.kind === 'free' ? (
-          <button type="button" className="ui-btn ui-btn-primary" onClick={onUnlockPro}>
-            {t('settings.membership.unlockPro')}
-          </button>
-        ) : null}
-        {membership.kind === 'promo' ? (
-          <button type="button" className="ui-btn ui-btn-primary" onClick={onSubscribe}>
-            {t('settings.membership.subscribeNow')}
-          </button>
-        ) : null}
-        {membership.kind === 'store' ? (
-          <button type="button" className="ui-btn" onClick={onManageSubscription}>
-            {t('settings.manageSubscription')}
-          </button>
-        ) : null}
+      {showPrimaryCta || showStoreManage ? (
+        <div
+          className={`flex flex-wrap gap-2 ${
+            embedded ? 'pt-1' : 'border-t border-zinc-800/80 pt-4'
+          }`}
+        >
+          {membership.kind === 'free' ? (
+            <button type="button" className="ui-btn ui-btn-primary" onClick={onUnlockPro}>
+              {t('settings.membership.unlockPro')}
+            </button>
+          ) : null}
+          {membership.kind === 'promo' ? (
+            <button type="button" className="ui-btn ui-btn-primary" onClick={onSubscribe}>
+              {t('settings.membership.subscribeNow')}
+            </button>
+          ) : null}
+          {showStoreManage ? (
+            <button type="button" className="ui-btn" onClick={onManageSubscription}>
+              {t('settings.manageSubscription')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div
+        className={`space-y-3 px-4 py-3 ${
+          isProKind ? 'bg-gradient-to-br from-emerald-950/35 via-transparent to-transparent' : ''
+        }`}
+        aria-label={t('settings.membership.sectionLabel')}
+      >
+        {body}
       </div>
+    );
+  }
+
+  return (
+    <section
+      className={`space-y-4 rounded-2xl border p-6 shadow-panel backdrop-blur ${
+        isProKind
+          ? 'border-emerald-400/30 bg-gradient-to-br from-emerald-950/40 via-bg-card/95 to-bg-card/95'
+          : 'border-zinc-800 bg-bg-card/95'
+      }`}
+      aria-label={t('settings.membership.sectionLabel')}
+    >
+      {body}
     </section>
   );
 };

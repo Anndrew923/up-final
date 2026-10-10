@@ -17,6 +17,8 @@ export const Z_INDEX_CLASS = {
   /** Nested science/help sheet above somatotype report modal. */
   somatotypeScienceHelpSheet: 'z-[250]',
   ladderFilterSheet: 'z-[230]',
+  /** Settings → blocked ladder UIDs manager (local-only list). */
+  ladderBlockedUsersSheet: 'z-[230]',
   /**
    * Soft ladder-tags prompt — below `optionSelectSheet` so nested job/country sheets stay on top.
    */

@@ -74,6 +74,7 @@
     },
     "moderation": {
       "block": "屏蔽",
+      "unblock": "解除屏蔽",
       "report": "檢舉",
       "reportTitle": "檢舉戰場用戶",
       "reportDescription": "請選擇檢舉類型。我們不會向對方透露你的身分。",

@@ -134,7 +134,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
 
   const handleBlock = () => {
     if (!targetUid) return;
-    blockUid(targetUid);
+    // WHY: Persist displayName locally so Settings unblock list is human-readable (no cloud fetch).
+    blockUid(targetUid, user?.displayName?.trim() || '');
     onBlocked?.();
     onClose();
   };
