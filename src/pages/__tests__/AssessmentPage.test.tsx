@@ -20,6 +20,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'hero',
       colSpan: 2,
       layer: 'power',
+      glanceLabel: '81.57',
+      glanceFilled: true,
     },
     {
       key: 'grip',
@@ -28,6 +30,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'standard',
       colSpan: 1,
       layer: 'power',
+      glanceLabel: '91.00',
+      glanceFilled: true,
     },
     {
       key: 'explosive',
@@ -36,6 +40,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'standard',
       colSpan: 1,
       layer: 'power',
+      glanceLabel: 'Pending',
+      glanceFilled: false,
     },
     {
       key: 'muscle',
@@ -44,6 +50,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'capsule',
       colSpan: 1,
       layer: 'chassis',
+      glanceLabel: '63.73',
+      glanceFilled: true,
     },
     {
       key: 'ffmi',
@@ -52,6 +60,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'standard',
       colSpan: 1,
       layer: 'chassis',
+      glanceLabel: '84.80',
+      glanceFilled: true,
     },
     {
       key: 'cardio',
@@ -60,6 +70,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'capsule',
       colSpan: 2,
       layer: 'chassis',
+      glanceLabel: '113.33',
+      glanceFilled: true,
     },
     {
       key: 'armSize',
@@ -68,6 +80,8 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
       size: 'capsule',
       colSpan: 1,
       layer: 'specialty',
+      glanceLabel: 'Pending',
+      glanceFilled: false,
     },
   ],
 }));
@@ -91,7 +105,17 @@ vi.mock('../../stores/historyStore', () => ({
 }));
 
 vi.mock('../../components/assessment/AssessmentLobbyCard', () => ({
-  AssessmentLobbyCard: ({ title }: { title: string }) => <div>{title}</div>,
+  AssessmentLobbyCard: ({
+    title,
+    glanceLabel,
+  }: {
+    title: string;
+    glanceLabel: string;
+  }) => (
+    <div>
+      {title} {glanceLabel}
+    </div>
+  ),
 }));
 
 vi.mock('../../components/assessment/SomatotypeLabEntryCard', () => ({
@@ -112,7 +136,6 @@ vi.mock('react-i18next', () => ({
         'assessment.lobby.layerSpecialty': 'Specialty & Lab',
         'assessment.sixAxisSnapshot.title': 'Performance Snapshot',
         'assessment.sixAxisSnapshot.hudHint': 'Tactical readout',
-        'assessment.sixAxisSnapshot.collapsedHint': 'Expand for six-axis values',
         'assessment.sixAxisSnapshot.toggleExpand': 'Expand performance snapshot',
         'assessment.sixAxisSnapshot.toggleCollapse': 'Collapse performance snapshot',
         'assessment.sixAxisSnapshot.saveSnapshot': 'Snapshot Status to Logs',
@@ -171,7 +194,10 @@ describe('AssessmentPage three-layer lobby + six-axis snapshot', () => {
     );
     expect(container.querySelector('[data-testid="somatotype-entry"]')).toBeTruthy();
     expect(container.textContent).toContain('Strength');
+    expect(container.textContent).toContain('81.57');
+    expect(container.textContent).not.toContain('81.57 HP');
     expect(container.textContent).toContain('Arm Size');
+    expect(container.textContent).toContain('Pending');
 
     const toggle = container.querySelector(
       '#dyno-six-axis-snapshot-toggle'
@@ -182,6 +208,7 @@ describe('AssessmentPage three-layer lobby + six-axis snapshot', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(container.textContent).toContain('Performance Snapshot');
     expect(container.textContent).toContain('Tactical readout');
+    expect(container.textContent).not.toContain('Expand for six-axis values');
     expect(panel?.hasAttribute('hidden')).toBe(true);
     expect(panel?.textContent).toContain('Horsepower');
     expect(panel?.textContent).toContain('81.57');

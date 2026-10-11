@@ -14,7 +14,6 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'tools.somatotypeLab.kicker': 'MORPHOLOGY LAB',
         'tools.somatotypeLab.entry.title': 'Enter Somatochart',
       };
       return map[key] ?? key;
@@ -56,6 +55,8 @@ describe('SomatotypeLabEntryCard', () => {
     expect(link?.getAttribute('href')).toBe(ROUTES.somatotypeLab);
     expect(link?.getAttribute('aria-label')).toBe('Enter Somatochart');
     expect(container.textContent).toContain('Enter Somatochart');
+    expect(container.textContent).not.toContain('MORPHOLOGY LAB');
+    expect(container.textContent).not.toContain('人體形態學實驗室');
     expect(container.textContent).not.toContain('Unlock');
     expect(container.textContent).not.toContain('解鎖');
     unmount();

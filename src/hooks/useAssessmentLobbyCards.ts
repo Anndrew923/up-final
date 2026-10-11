@@ -8,6 +8,8 @@ import {
   type AssessmentLobbyLayer,
 } from '../config/assessmentLobby';
 import type { RoutePath } from '../config/routes';
+import { buildLobbyGlanceStatus } from '../logic/core/resolveLobbyGlanceStatus';
+import type { ScoreMap } from '../types/scoring';
 
 export interface AssessmentLobbyCardModel {
   key: AssessmentLobbyCardKey;
@@ -16,22 +18,35 @@ export interface AssessmentLobbyCardModel {
   size: AssessmentLobbyCardSize;
   colSpan: 1 | 2;
   layer: AssessmentLobbyLayer;
+  /** Glanceable right-rail label (pure 2dp score, or unset copy). */
+  glanceLabel: string;
+  /** True when a measured score is shown (high-contrast mono). */
+  glanceFilled: boolean;
 }
 
-/** Lobby cards in Bento visual order — title + size/span/layer from `LOBBY_BENTO_LAYOUT`. */
-export function useAssessmentLobbyCards(): AssessmentLobbyCardModel[] {
+/**
+ * Lobby cards in Bento visual order.
+ * WHY scores are injected: AssessmentPage already owns `useMergedScoresFromLocalStores`
+ * for the HUD snapshot — reuse that map so we do not double-subscribe local stores.
+ */
+export function useAssessmentLobbyCards(scores: ScoreMap): AssessmentLobbyCardModel[] {
   const { t } = useTranslation('common');
 
-  return useMemo(
-    () =>
-      LOBBY_BENTO_LAYOUT.map((slot) => ({
+  return useMemo(() => {
+    const emptyLabel = t('assessment.lobby.glanceUnset');
+
+    return LOBBY_BENTO_LAYOUT.map((slot) => {
+      const glance = buildLobbyGlanceStatus(slot.key, scores, emptyLabel);
+      return {
         key: slot.key,
         to: ASSESSMENT_LOBBY_ROUTES[slot.key],
         title: t(`assessment.${slot.key}.title`),
         size: slot.size,
         colSpan: slot.colSpan,
         layer: slot.layer,
-      })),
-    [t]
-  );
+        glanceLabel: glance.label,
+        glanceFilled: glance.filled,
+      };
+    });
+  }, [t, scores]);
 }

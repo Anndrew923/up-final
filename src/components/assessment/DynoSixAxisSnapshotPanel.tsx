@@ -4,6 +4,7 @@ import {
   SIX_AXIS_SNAPSHOT_LEFT_AXES,
   SIX_AXIS_SNAPSHOT_RIGHT_AXES,
 } from '../../config/assessmentLobby';
+import { formatAxisScoreReadout } from '../../logic/core/formatAxisScoreReadout';
 import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import { DisclosurePanel } from '../DisclosurePanel';
 import { DynoSixAxisRadarIcon } from './DynoSixAxisRadarIcon';
@@ -14,11 +15,6 @@ export interface DynoSixAxisSnapshotPanelProps {
   onSaveSnapshot: () => void;
 }
 
-function formatAxisValue(value: number | undefined): string {
-  if (value == null || !Number.isFinite(value)) return '—';
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
-}
-
 interface AxisReadoutProps {
   label: string;
   value: number | undefined;
@@ -27,7 +23,7 @@ interface AxisReadoutProps {
 const AxisReadout: FC<AxisReadoutProps> = ({ label, value }) => (
   <div className="space-y-1 rounded-xl border border-zinc-800/70 bg-zinc-950/40 px-3 py-2.5">
     <p className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">{label}</p>
-    <p className="font-mono text-sm tabular-nums text-zinc-300">{formatAxisValue(value)}</p>
+    <p className="font-mono text-sm tabular-nums text-zinc-300">{formatAxisScoreReadout(value)}</p>
   </div>
 );
 
@@ -91,7 +87,6 @@ export const DynoSixAxisSnapshotPanel: FC<DynoSixAxisSnapshotPanelProps> = ({
         }
         toggleExpandLabel={t('assessment.sixAxisSnapshot.toggleExpand')}
         toggleCollapseLabel={t('assessment.sixAxisSnapshot.toggleCollapse')}
-        collapsedHint={t('assessment.sixAxisSnapshot.collapsedHint')}
         actionMode="chevron"
         shellClassName="relative overflow-hidden rounded-xl border border-amber-500/35 bg-gradient-to-br from-amber-950/30 via-zinc-950/80 to-cyan-950/25 shadow-[0_0_28px_rgba(245,158,11,0.12),0_0_20px_rgba(34,211,238,0.06)]"
         headerClassName="hover:bg-amber-500/[0.06]"

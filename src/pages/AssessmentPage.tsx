@@ -24,6 +24,8 @@ function LobbyLayerGrid({ cards }: { cards: AssessmentLobbyCardModel[] }) {
           cardKey={card.key}
           to={card.to}
           title={card.title}
+          glanceLabel={card.glanceLabel}
+          glanceFilled={card.glanceFilled}
           size={card.size}
           className={cn(card.colSpan === 2 && 'col-span-2')}
         />
@@ -43,7 +45,7 @@ export default function AssessmentPage() {
   const [justSaved, setJustSaved] = useState(false);
   const mergedScores = useMergedScoresFromLocalStores();
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
-  const lobbyCards = useAssessmentLobbyCards();
+  const lobbyCards = useAssessmentLobbyCards(mergedScores);
   const saveToastTimerRef = useRef<number | null>(null);
 
   const { powerCards, chassisCards, specialtyCards } = useMemo(() => {
@@ -115,6 +117,8 @@ export default function AssessmentPage() {
               cardKey={card.key}
               to={card.to}
               title={card.title}
+              glanceLabel={card.glanceLabel}
+              glanceFilled={card.glanceFilled}
               size={card.size}
               className={cn(card.colSpan === 2 && 'col-span-2', 'h-full')}
             />

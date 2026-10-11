@@ -21,7 +21,12 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 function renderCard(
-  props?: Partial<{ size: 'hero' | 'standard' | 'capsule'; title: string }>
+  props?: Partial<{
+    size: 'hero' | 'standard' | 'capsule';
+    title: string;
+    glanceLabel: string;
+    glanceFilled: boolean;
+  }>
 ): { container: HTMLDivElement; unmount: () => void } {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -37,6 +42,8 @@ function renderCard(
                 cardKey="strength"
                 to={ROUTES.strength}
                 title={props?.title ?? 'Strength test'}
+                glanceLabel={props?.glanceLabel ?? 'Pending'}
+                glanceFilled={props?.glanceFilled ?? false}
                 size={props?.size}
               />
             }
@@ -61,16 +68,71 @@ afterEach(() => {
 });
 
 describe('AssessmentLobbyCard', () => {
-  it('renders navigable link with title and ambient glow', () => {
-    const { container, unmount } = renderCard();
+  it('renders navigable link with title, glance rail, and ambient glow', () => {
+    const { container, unmount } = renderCard({
+      glanceLabel: '81.57',
+      glanceFilled: true,
+    });
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
     expect(link?.className).toContain('ui-lobby-card');
+    expect(link?.className).toContain('justify-between');
     expect(link?.getAttribute('href')).toContain('strength');
-    expect(link?.getAttribute('aria-label')).toBe('Strength test');
+    expect(link?.getAttribute('aria-label')).toBe('Strength test, 81.57');
     expect(container.textContent).toContain('Strength test');
+    expect(container.textContent).toContain('81.57');
+    expect(container.textContent).not.toContain('HP');
+    expect(container.textContent).toContain('›');
     expect(container.querySelector('.ui-lobby-card__ambient')).not.toBeNull();
     expect(container.querySelector('.ui-lobby-card__beam-wrap')).toBeNull();
+    unmount();
+  });
+
+  it('tones down unset glance labels', () => {
+    const { container, unmount } = renderCard({
+      glanceLabel: 'Pending',
+      glanceFilled: false,
+    });
+    const glance = Array.from(container.querySelectorAll('span')).find(
+      (el) => el.textContent === 'Pending'
+    );
+    expect(glance?.className).toContain('text-zinc-600');
+    expect(glance?.className).toContain('text-xs');
+    expect(glance?.className).toContain('font-mono');
+    expect(glance?.className).not.toContain('text-amber-400');
+    unmount();
+  });
+
+  it('elevates filled glance as amber mono value (hero bolder)', () => {
+    const { container, unmount } = renderCard({
+      glanceLabel: '81.57',
+      glanceFilled: true,
+      size: 'hero',
+    });
+    const glance = Array.from(container.querySelectorAll('span')).find(
+      (el) => el.textContent === '81.57'
+    );
+    expect(glance?.className).toContain('text-amber-400/90');
+    expect(glance?.className).toContain('font-mono');
+    expect(glance?.className).toContain('text-base');
+    expect(glance?.className).toContain('font-bold');
+    expect(container.querySelector('h2')?.className).toContain('font-medium');
+    unmount();
+  });
+
+  it('uses semibold sm glance on standard filled cards', () => {
+    const { container, unmount } = renderCard({
+      glanceLabel: '91.00',
+      glanceFilled: true,
+      size: 'standard',
+    });
+    const glance = Array.from(container.querySelectorAll('span')).find(
+      (el) => el.textContent === '91.00'
+    );
+    expect(glance?.className).toContain('text-amber-400/90');
+    expect(glance?.className).toContain('text-sm');
+    expect(glance?.className).toContain('font-semibold');
+    expect(glance?.className).not.toContain('text-base');
     unmount();
   });
 
@@ -125,36 +187,12 @@ describe('AssessmentLobbyCard', () => {
     unmount();
   });
 
-  it('splits localized title into main and subtitle tiers', () => {
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
-    act(() => {
-      root.render(
-        <MemoryRouter initialEntries={['/assessment']}>
-          <Routes>
-            <Route
-              path="/assessment"
-              element={
-                <AssessmentLobbyCard
-                  cardKey="strength"
-                  to={ROUTES.strength}
-                  title="五項力量（整車馬力 // HP）"
-                />
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      );
-    });
-    expect(container.textContent).toContain('五項力量');
-    expect(container.textContent).toContain('整車馬力 // HP');
+  it('renders a pure single-line title without subtitle tier', () => {
+    const { container, unmount } = renderCard({ title: '五項力量', glanceLabel: '未測' });
     expect(container.querySelector('h2')?.textContent).toBe('五項力量');
-    expect(container.querySelector('p.text-\\[11px\\]')?.textContent).toBe('整車馬力 // HP');
-    act(() => {
-      root.unmount();
-    });
-    container.remove();
+    expect(container.querySelector('p')).toBeNull();
+    expect(container.textContent).not.toContain('整車馬力');
+    unmount();
   });
 
   it('navigates on keyboard activation', () => {

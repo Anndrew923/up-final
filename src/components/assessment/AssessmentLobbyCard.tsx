@@ -7,13 +7,16 @@ import {
 } from '../../config/assessmentLobby';
 import { buildLobbyCardAuraSurfaceStyle } from '../../config/sharedAxisAccentTokens';
 import { cn } from '../../lib/cn';
-import { splitAssessmentLobbyTitle } from '../../lib/splitAssessmentLobbyTitle';
 import type { RoutePath } from '../../config/routes';
 
 export interface AssessmentLobbyCardProps {
   cardKey: AssessmentLobbyCardKey;
   to: RoutePath;
   title: string;
+  /** Right-rail glance label from `useAssessmentLobbyCards` (pure 2dp score or unset). */
+  glanceLabel: string;
+  /** High-contrast when a measured score is present. */
+  glanceFilled: boolean;
   size?: AssessmentLobbyCardSize;
   className?: string;
 }
@@ -27,23 +30,30 @@ function isModifiedPointerEvent(event: {
   return Boolean(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
 }
 
-// WHY: `cn` does not tw-merge — radius must live only in SIZE_SHELL (not base + override).
+/**
+ * WHY single-line titles (Plan A) + right glance (Phase 2): Metaphor subtitles removed;
+ * status density moves to mono readout so the Bento does not feel hollow.
+ * WHY label/value material split: Title stays zinc medium; filled glance is amber mono so
+ * the score reads as the primary datum without competing with the axis name.
+ * WHY: `cn` does not tw-merge — radius must live only in SIZE_SHELL (not base + override).
+ */
 const SIZE_SHELL: Record<AssessmentLobbyCardSize, string> = {
-  hero: 'min-h-[4.75rem] rounded-2xl p-4 pl-5 sm:min-h-[5.25rem] sm:p-5 sm:pl-6',
-  standard: 'rounded-2xl p-3 pl-4',
-  capsule: 'min-h-0 rounded-xl py-2.5 pl-3.5 pr-3 sm:py-2.5',
+  hero: 'min-h-[4.25rem] rounded-2xl px-5 py-4 sm:min-h-[4.75rem] sm:px-6 sm:py-5',
+  standard: 'min-h-[3.5rem] rounded-2xl px-4 py-3.5',
+  capsule: 'min-h-[3rem] rounded-xl px-3.5 py-3 sm:min-h-[3.125rem]',
 };
 
 const SIZE_TITLE: Record<AssessmentLobbyCardSize, string> = {
-  hero: 'text-sm font-bold sm:text-base',
-  standard: 'text-xs font-semibold sm:text-sm',
-  capsule: 'text-[11px] font-semibold sm:text-xs',
+  hero: 'text-sm font-medium sm:text-base',
+  standard: 'text-xs font-medium sm:text-sm',
+  capsule: 'text-[11px] font-medium sm:text-xs',
 };
 
-const SIZE_SUB: Record<AssessmentLobbyCardSize, string> = {
-  hero: 'text-xs text-zinc-400 sm:text-[13px]',
-  standard: 'text-[11px] text-zinc-500',
-  capsule: 'text-[10px] text-zinc-500',
+/** Filled glance weight/size — hero is the flagship rail. */
+const SIZE_GLANCE_FILLED: Record<AssessmentLobbyCardSize, string> = {
+  hero: 'text-base font-bold',
+  standard: 'text-sm font-semibold',
+  capsule: 'text-sm font-semibold',
 };
 
 /**
@@ -58,6 +68,8 @@ export function AssessmentLobbyCard({
   cardKey,
   to,
   title,
+  glanceLabel,
+  glanceFilled,
   size = 'standard',
   className,
 }: AssessmentLobbyCardProps) {
@@ -66,8 +78,8 @@ export function AssessmentLobbyCard({
     (): CSSProperties => buildLobbyCardAuraSurfaceStyle(resolveAssessmentLobbyAccentRgb(cardKey)),
     [cardKey]
   );
-  const { main: titleMain, sub: titleSub } = splitAssessmentLobbyTitle(title);
   const isHero = size === 'hero';
+  const ariaLabel = `${title}, ${glanceLabel}`;
 
   const goToAssessment = useCallback(() => navigate(to), [navigate, to]);
 
@@ -92,13 +104,13 @@ export function AssessmentLobbyCard({
   return (
     <Link
       to={to}
-      aria-label={title}
+      aria-label={ariaLabel}
       style={surfaceStyle}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
         // WHY no overflow-hidden: outer breathe/glow must paint past the shell; beam clips itself.
-        'ui-lobby-card group relative block touch-manipulation border',
+        'ui-lobby-card group relative flex items-center justify-between gap-3 touch-manipulation border',
         'backdrop-blur-sm',
         'transition-[border-color,transform] duration-300 active:scale-[0.99]',
         SIZE_SHELL[size],
@@ -113,26 +125,30 @@ export function AssessmentLobbyCard({
 
       <span aria-hidden className="ui-lobby-card__ambient" />
 
-      <div className="relative z-10 flex h-full flex-col justify-center leading-tight">
-        <h2
+      <h2
+        className={cn(
+          'relative z-10 min-w-0 flex-1 truncate text-zinc-100 transition-colors group-hover:text-zinc-50',
+          SIZE_TITLE[size]
+        )}
+      >
+        {title}
+      </h2>
+
+      <span className="relative z-10 flex shrink-0 items-center">
+        <span
           className={cn(
-            'truncate text-zinc-100 transition-colors group-hover:text-zinc-50',
-            SIZE_TITLE[size]
+            'font-mono tabular-nums tracking-tight',
+            glanceFilled
+              ? cn('text-amber-400/90', SIZE_GLANCE_FILLED[size])
+              : 'text-xs text-zinc-600'
           )}
         >
-          {titleMain}
-        </h2>
-        {titleSub ? (
-          <p
-            className={cn(
-              'truncate transition-colors group-hover:text-zinc-400',
-              SIZE_SUB[size]
-            )}
-          >
-            {titleSub}
-          </p>
-        ) : null}
-      </div>
+          {glanceLabel}
+        </span>
+        <span aria-hidden className="ml-1.5 text-xs text-zinc-600">
+          ›
+        </span>
+      </span>
     </Link>
   );
 }

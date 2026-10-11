@@ -9,12 +9,12 @@
     "lobby": {
       "layerPower": "Power Output",
       "layerChassis": "Chassis & Endurance",
-      "layerSpecialty": "Specialty & Lab"
+      "layerSpecialty": "Specialty & Lab",
+      "glanceUnset": "Pending"
     },
     "sixAxisSnapshot": {
       "title": "Performance Snapshot",
       "hudHint": "Tactical readout",
-      "collapsedHint": "Expand to view six-axis values and archive a snapshot",
       "toggleExpand": "Expand performance snapshot",
       "toggleCollapse": "Collapse performance snapshot",
       "saveSnapshot": "Save Snapshot",
@@ -31,31 +31,31 @@
     },
     "ffmi": {
       "kicker": "Calculated",
-      "title": "FFMI (Density // P2W)"
+      "title": "FFMI"
     },
     "cardio": {
       "kicker": "Endurance",
-      "title": "Cardio Endurance (Stint // STINT)"
+      "title": "Cardio Endurance"
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle Mass (Build // CHSS)"
+      "title": "Muscle Mass"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Explosive Power (Torque // TRQ)"
+      "title": "Explosive Power"
     },
     "strength": {
       "kicker": "Strength",
-      "title": "Max Strength (Horsepower // HP)"
+      "title": "Max Strength"
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip Test (Traction // GRIP)"
+      "title": "Grip Test"
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm Size Test (Rim Size // RIMS)"
+      "title": "Arm Size Test"
     },
     "auras": {
       "none": "None",
