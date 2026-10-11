@@ -49,8 +49,9 @@ describe('useConsoleAxisViewMode', () => {
 
   afterEach(() => {
     if (root) {
+      const mounted = root;
       act(() => {
-        root.unmount();
+        mounted.unmount();
       });
     }
     container?.remove();
@@ -61,7 +62,8 @@ describe('useConsoleAxisViewMode', () => {
   function mount(): void {
     container = document.createElement('div');
     document.body.appendChild(container);
-    root = createRoot(container);
+    const nextRoot = createRoot(container);
+    root = nextRoot;
 
     function Harness() {
       latest = useConsoleAxisViewMode();
@@ -69,7 +71,7 @@ describe('useConsoleAxisViewMode', () => {
     }
 
     act(() => {
-      root!.render(<Harness />);
+      nextRoot.render(<Harness />);
     });
   }
 

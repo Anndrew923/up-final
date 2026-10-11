@@ -99,8 +99,9 @@ describe('HomeRadarBoard console axis view', () => {
 
   afterEach(() => {
     if (root) {
+      const mounted = root;
       act(() => {
-        root.unmount();
+        mounted.unmount();
       });
     }
     container?.remove();
@@ -110,9 +111,10 @@ describe('HomeRadarBoard console axis view', () => {
   function renderBoard(): void {
     container = document.createElement('div');
     document.body.appendChild(container);
-    root = createRoot(container);
+    const nextRoot = createRoot(container);
+    root = nextRoot;
     act(() => {
-      root.render(
+      nextRoot.render(
         <I18nextProvider i18n={i18n}>
           <MemoryRouter>
             <HomeRadarBoard />
