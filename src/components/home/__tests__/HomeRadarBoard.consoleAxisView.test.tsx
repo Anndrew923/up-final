@@ -137,6 +137,17 @@ describe('HomeRadarBoard console axis view', () => {
     expect(container!.querySelector('.ui-console-radar-aura')).not.toBeNull();
   });
 
+  it('centers the radar title on a balanced 1fr_auto_1fr title row', () => {
+    renderBoard();
+    const titleRow = container!.querySelector('[data-testid="console-title-row"]');
+    expect(titleRow?.className).toContain('grid-cols-[1fr_auto_1fr]');
+    expect(titleRow?.querySelector('h2')?.textContent).toBe('性能儀表');
+    expect(titleRow?.querySelector('h2')?.className).toContain('justify-self-center');
+    const trailing = titleRow?.children[2] as HTMLElement | undefined;
+    expect(trailing?.className).toContain('justify-end');
+    expect(trailing?.querySelector('[role="group"]')).not.toBeNull();
+  });
+
   it('switches to telemetry lexicon, persists mode, and arms charge + sheen ritual', async () => {
     const { hapticService } = await import('../../../services/hapticService');
     renderBoard();

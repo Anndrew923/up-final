@@ -118,16 +118,27 @@ export const HomeRadarBoard: FC = () => {
           <p className="mb-1 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
             {t('home.consoleKicker', { ns: 'common' })}
           </p>
-          {/* WHY grid (not absolute/px-pad): keeps title + pill on one row without wrap on narrow phones. */}
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            <h2 className="min-w-0 text-center font-semibold tracking-tight text-zinc-100">
+          {/*
+            WHY 1fr_auto_1fr: title sits on the true horizontal midline (same axis as kicker + radar),
+            while the pill docks to the trailing 1fr — 2-col [1fr_auto] was shoving the h2 left.
+          */}
+          <div
+            data-testid="console-title-row"
+            className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"
+          >
+            {/* Mirror trailing track so the auto title column stays on the card midline. */}
+            <span aria-hidden className="min-w-0" />
+            <h2 className="justify-self-center text-center font-semibold tracking-tight text-zinc-100">
               {t('home.radarOverview', { ns: 'common' })}
             </h2>
-            <ConsoleAxisViewToggle
-              value={viewMode}
-              onChange={setViewMode}
-              disabled={isBlocking || ritualOpen}
-            />
+            {/* WHY min-w-0: shrink-0 pill must not inflate the trailing 1fr past the card edge. */}
+            <div className="flex min-w-0 justify-end">
+              <ConsoleAxisViewToggle
+                value={viewMode}
+                onChange={setViewMode}
+                disabled={isBlocking || ritualOpen}
+              />
+            </div>
           </div>
 
           <div className="mt-3 flex flex-col items-center gap-3">
