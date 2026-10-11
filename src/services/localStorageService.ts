@@ -13,12 +13,17 @@ import {
   isLocalHistoryRecord,
   type LocalHistoryRecord,
 } from '../logic/core/localHistoryRecord';
+import {
+  parseConsoleAxisViewMode,
+  type ConsoleAxisViewMode,
+} from '../logic/core/consoleAxisViewMode';
 import { clearAllDynoIntelLogs, hasAnyDynoIntelLogs } from './dynoIntelLogPersistence';
 import { clearSpecBadgeSeen } from './specBadgeSeenService';
 import { clearTrainingFootprint } from './trainingFootprintService';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
 export { isLocalHistoryRecord, type LocalHistoryRecord } from '../logic/core/localHistoryRecord';
+export type { ConsoleAxisViewMode } from '../logic/core/consoleAxisViewMode';
 
 const STORAGE_KEYS = {
   profile: 'up.profile',
@@ -28,6 +33,7 @@ const STORAGE_KEYS = {
   ffmiDraft: 'up.ffmiDraft',
   cardioInputs: 'up.cardioInputs',
   cardioActiveTab: 'up.cardioActiveTab',
+  consoleAxisViewMode: 'up.consoleAxisViewMode',
   muscleInputs: 'up.muscleInputs',
   powerInputs: 'up.powerInputs',
   strengthInputs: 'up.strengthInputs',
@@ -56,6 +62,10 @@ export const LOCAL_CARDIO_INPUTS_CHANGED_EVENT = 'up-final-cardio-inputs-changed
 
 export const CARDIO_ACTIVE_TAB_STORAGE_KEY = STORAGE_KEYS.cardioActiveTab;
 export const LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT = 'up-final-cardio-active-tab-changed';
+
+export const CONSOLE_AXIS_VIEW_MODE_STORAGE_KEY = STORAGE_KEYS.consoleAxisViewMode;
+export const LOCAL_CONSOLE_AXIS_VIEW_MODE_CHANGED_EVENT =
+  'up-final-console-axis-view-mode-changed';
 
 export type PersistedCardioActiveTab = CardioAssessmentTab;
 
@@ -207,6 +217,27 @@ export function subscribeCardioActiveTab(onChange: () => void): () => void {
   if (typeof window === 'undefined') return () => {};
   window.addEventListener(LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT, onChange);
   return () => window.removeEventListener(LOCAL_CARDIO_ACTIVE_TAB_CHANGED_EVENT, onChange);
+}
+
+function notifyConsoleAxisViewModeObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_CONSOLE_AXIS_VIEW_MODE_CHANGED_EVENT));
+}
+
+export function saveConsoleAxisViewMode(mode: ConsoleAxisViewMode): void {
+  safeSetItem(STORAGE_KEYS.consoleAxisViewMode, mode);
+  notifyConsoleAxisViewModeObservers();
+}
+
+export function loadConsoleAxisViewMode(): ConsoleAxisViewMode {
+  return parseConsoleAxisViewMode(safeGetItem(STORAGE_KEYS.consoleAxisViewMode));
+}
+
+export function subscribeConsoleAxisViewMode(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_CONSOLE_AXIS_VIEW_MODE_CHANGED_EVENT, onChange);
+  return () =>
+    window.removeEventListener(LOCAL_CONSOLE_AXIS_VIEW_MODE_CHANGED_EVENT, onChange);
 }
 
 export function saveMuscleInputs(inputs: MuscleInputsPersisted): void {

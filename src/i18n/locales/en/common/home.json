@@ -118,6 +118,15 @@
     "consoleKicker": "Main console",
     "radarOverview": "PERFORMANCE MAP",
     "radarAria": "Six-axis hex radar chart",
+    "consoleAxisView": {
+      "ariaLabel": "Toggle fitness and telemetry view",
+      "fitness": "Fitness",
+      "telemetry": "Telemetry",
+      "overallAverage": {
+        "fitness": "Overall Power Index",
+        "telemetry": "Overall Vehicle Index"
+      }
+    },
     "diagnostics": {
       "kicker": "Identity archetype",
       "panelTitle": "Full Spec Diagnostics",
@@ -138,7 +147,7 @@
         "reveal": "Spec readout"
       }
     },
-    "overallAverage": "Chassis Index",
+    "overallAverage": "Overall Vehicle Index",
     "overallGrade": {
       "kicker": "SPEC GRADE",
       "viewDetailHint": "Tap for grade details",
@@ -256,12 +265,12 @@
         "gripStrength": "Traction"
       },
       "axisChart": {
-        "strength": "HP",
-        "explosivePower": "TRQ",
-        "cardio": "STINT",
-        "muscleMass": "CHSS",
-        "bodyFat": "P2W",
-        "gripStrength": "GRIP"
+        "strength": "Strength",
+        "explosivePower": "Explosive",
+        "cardio": "Cardio",
+        "muscleMass": "Muscle",
+        "bodyFat": "FFMI",
+        "gripStrength": "Grip"
       }
     }
   }

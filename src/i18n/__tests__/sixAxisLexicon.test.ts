@@ -7,6 +7,8 @@ import {
   SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS,
 } from '../sixAxisLexiconRules';
 import { resolveSixAxisDataGridLabelParts } from '../resolveSixAxisDataGridLabel';
+import { resolveSixAxisChartLabel } from '../resolveSixAxisChartLabel';
+import { resolveSixAxisInputShortLabel } from '../resolveSixAxisInputShortLabel';
 import type { SixAxisMetric } from '../../types/scoring';
 
 type LocaleBundle = typeof zhHantCommon;
@@ -93,9 +95,10 @@ describe('six-axis lexicon dual-track mapping', () => {
     }
   );
 
-  it('zh-Hant output.chart keeps compact radar vertex labels without polluting output.full', () => {
-    expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).toBe('排量');
-    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).toBe('外觀');
+  it('zh-Hant output.chart uses fitness-first compact vertices without polluting output.full', () => {
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).toBe('FFMI');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).toBe('肌肉量');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'strength')).toBe('力量');
     expect(readLexicon(zhHantCommon, 'output', 'full', 'bodyFat')).toBe('引擎排量');
     expect(readLexicon(zhHantCommon, 'output', 'full', 'muscleMass')).toBe('車體外觀');
     expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).not.toBe(
@@ -106,14 +109,16 @@ describe('six-axis lexicon dual-track mapping', () => {
     );
   });
 
-  it('en output.chart mirrors output.code for scan-friendly radar vertices', () => {
+  it('en output.chart uses fitness-first compact vertices (not mechanical codes)', () => {
     for (const metric of SIX_AXIS_METRICS) {
-      expect(readLexicon(enCommon, 'output', 'chart', metric)).toBe(
-        (enCommon.axisLexicon as { output: { code: Record<SixAxisMetric, string> } }).output.code[
-          metric
-        ]
-      );
+      const chart = readLexicon(enCommon, 'output', 'chart', metric);
+      const code = (enCommon.axisLexicon as { output: { code: Record<SixAxisMetric, string> } })
+        .output.code[metric];
+      expect(chart).not.toBe(code);
+      expect(chart.length).toBeGreaterThan(0);
     }
+    expect(readLexicon(enCommon, 'output', 'chart', 'strength')).toBe('Strength');
+    expect(readLexicon(enCommon, 'output', 'chart', 'bodyFat')).toBe('FFMI');
   });
 
   it.each(SIX_AXIS_METRICS)(
@@ -129,8 +134,8 @@ describe('six-axis lexicon dual-track mapping', () => {
   );
 
   it('i18n.t resolves home.radar.axisChart at runtime (no raw key leak)', () => {
-    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).toBe('馬力');
-    expect(i18n.t('home.radar.axisChart.bodyFat', { ns: 'common' })).toBe('排量');
+    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).toBe('力量');
+    expect(i18n.t('home.radar.axisChart.bodyFat', { ns: 'common' })).toBe('FFMI');
     expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).not.toContain('axisChart');
   });
 
@@ -152,7 +157,7 @@ describe('six-axis lexicon dual-track mapping', () => {
   });
 
   it.each(SIX_AXIS_METRICS)(
-    'home data grid label parts mirror axisLexicon chart, input.short, and code for %s',
+    'console grid parts + chart/input resolvers stay lexicon-aligned for %s',
     (metric) => {
       const tZh = i18n.getFixedT('zh-Hant', 'common');
       const tEn = i18n.getFixedT('en', 'common');
@@ -162,11 +167,30 @@ describe('six-axis lexicon dual-track mapping', () => {
         [enCommon, tEn],
       ] as const) {
         const parts = resolveSixAxisDataGridLabelParts(t, metric);
-        expect(parts.chart).toBe(readNestedString(bundle, 'home.radar.axisChart', metric));
-        expect(parts.chart).toBe(readLexicon(bundle, 'output', 'chart', metric));
-        expect(parts.inputShort).toBe(readLexicon(bundle, 'input', 'short', metric));
+        const axisLexicon = bundle.axisLexicon as {
+          input: { short: Record<SixAxisMetric, string>; grid: Record<SixAxisMetric, string> };
+          output: {
+            mechShort: Record<SixAxisMetric, string>;
+            telemetryGrid: Record<SixAxisMetric, string>;
+          };
+        };
+        expect(resolveSixAxisChartLabel(t, metric)).toBe(
+          readNestedString(bundle, 'home.radar.axisChart', metric)
+        );
+        expect(resolveSixAxisChartLabel(t, metric)).toBe(
+          readLexicon(bundle, 'output', 'chart', metric)
+        );
+        expect(resolveSixAxisInputShortLabel(t, metric)).toBe(axisLexicon.input.short[metric]);
+        expect(parts.gridPrimary).toBe(axisLexicon.input.grid[metric]);
+        expect(parts.mechShort).toBe(axisLexicon.output.mechShort[metric]);
         expect(parts.code).toBe(readOutputCode(bundle, metric));
-        expect(parts.chart).not.toBe(parts.inputShort);
+        expect(parts.gridPrimary).not.toBe(parts.mechShort);
+
+        // WHY: Telemetry console primary must end with canonical // CODE (no legacy BOOST/AERO).
+        const telemetryPrimary = axisLexicon.output.telemetryGrid[metric];
+        const code = readOutputCode(bundle, metric);
+        expect(telemetryPrimary).toMatch(new RegExp(`//\\s*${code}$`));
+        expect(telemetryPrimary).not.toMatch(/\b(BOOST|AERO|TORQUE|RIMS)\b/);
       }
     }
   );

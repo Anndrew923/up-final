@@ -8,6 +8,14 @@
         "muscleMass": "Muscle Mass",
         "bodyFat": "FFMI",
         "gripStrength": "Grip Str."
+      },
+      "grid": {
+        "strength": "Max Strength",
+        "explosivePower": "Explosive Power",
+        "cardio": "Cardio Endurance",
+        "muscleMass": "Muscle Mass",
+        "bodyFat": "FFMI",
+        "gripStrength": "Grip Test"
       }
     },
     "output": {
@@ -27,13 +35,29 @@
         "bodyFat": "P2W",
         "gripStrength": "GRIP"
       },
+      "mechShort": {
+        "strength": "Horsepower",
+        "explosivePower": "Torque",
+        "cardio": "Stint",
+        "muscleMass": "Build",
+        "bodyFat": "Density",
+        "gripStrength": "Traction"
+      },
+      "telemetryGrid": {
+        "strength": "Horsepower // HP",
+        "explosivePower": "Torque // TRQ",
+        "cardio": "Stint // STINT",
+        "muscleMass": "Build // CHSS",
+        "bodyFat": "Density // P2W",
+        "gripStrength": "Traction // GRIP"
+      },
       "chart": {
-        "strength": "HP",
-        "explosivePower": "TRQ",
-        "cardio": "STINT",
-        "muscleMass": "CHSS",
-        "bodyFat": "P2W",
-        "gripStrength": "GRIP"
+        "strength": "Strength",
+        "explosivePower": "Explosive",
+        "cardio": "Cardio",
+        "muscleMass": "Muscle",
+        "bodyFat": "FFMI",
+        "gripStrength": "Grip"
       }
     }
   }

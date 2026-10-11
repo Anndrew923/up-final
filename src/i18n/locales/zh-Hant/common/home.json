@@ -118,6 +118,15 @@
     "consoleKicker": "主控台",
     "radarOverview": "性能儀表",
     "radarAria": "六維雷達圖",
+    "consoleAxisView": {
+      "ariaLabel": "體能與遙測檢視切換",
+      "fitness": "體能",
+      "telemetry": "遙測",
+      "overallAverage": {
+        "fitness": "綜合戰力指數",
+        "telemetry": "整車性能指數"
+      }
+    },
     "diagnostics": {
       "kicker": "適格者相性代號",
       "panelTitle": "執行全規格診斷",
@@ -256,12 +265,12 @@
         "gripStrength": "抓地"
       },
       "axisChart": {
-        "strength": "馬力",
-        "explosivePower": "扭矩",
-        "cardio": "續航",
-        "muscleMass": "外觀",
-        "bodyFat": "排量",
-        "gripStrength": "抓地"
+        "strength": "力量",
+        "explosivePower": "爆發力",
+        "cardio": "心肺",
+        "muscleMass": "肌肉量",
+        "bodyFat": "FFMI",
+        "gripStrength": "握力"
       }
     }
   }

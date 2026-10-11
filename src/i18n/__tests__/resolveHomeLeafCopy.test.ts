@@ -7,9 +7,10 @@ describe('resolveHomeLeafCopy', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  it('resolves home.overallAverage for zh-Hant', () => {
+  it('resolves home.overallAverage for zh-Hant (telemetry leaf)', () => {
     const label = resolveHomeLeafString(i18n.t.bind(i18n), 'overallAverage');
-    expect(label).toContain('性能指數');
+    expect(label).toBe('整車性能指數');
     expect(label).not.toContain('home.overallAverage');
+    expect(label).not.toBe('綜合戰力指數');
   });
 });

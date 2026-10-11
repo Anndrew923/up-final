@@ -1,35 +1,36 @@
 import type { TFunction } from 'i18next';
 import type { SixAxisMetric } from '../types/scoring';
-import { resolveSixAxisChartLabel } from './resolveSixAxisChartLabel';
-import { resolveSixAxisInputShortLabel } from './resolveSixAxisInputShortLabel';
 
 export interface SixAxisDataGridLabelParts {
-  chart: string;
-  inputShort: string;
+  /** Console / ladder 2×3 primary fitness display name. */
+  gridPrimary: string;
+  /** Compact mechanical noun for secondary annotation. */
+  mechShort: string;
   code: string;
 }
 
 /**
- * Home / ladder data-grid label parts (WHY): One scan line bridges radar chart copy,
- * fitness input.short, and output.code — `home.radar.axisChart` stays chart parity source.
+ * Console data-grid label parts (WHY): Fitness-first primary + mechanical `// CODE noun`.
+ * Radar vertices resolve via `resolveSixAxisChartLabel` — kept out of this object so grid
+ * renders do not pay for unused chart/input.short lookups.
  */
 export function resolveSixAxisDataGridLabelParts(
   t: TFunction,
   metric: SixAxisMetric
 ): SixAxisDataGridLabelParts {
   return {
-    chart: resolveSixAxisChartLabel(t, metric),
-    inputShort: resolveSixAxisInputShortLabel(t, metric),
+    gridPrimary: t(`axisLexicon.input.grid.${metric}`, { ns: 'common' }),
+    mechShort: t(`axisLexicon.output.mechShort.${metric}`, { ns: 'common' }),
     code: t(`axisLexicon.output.code.${metric}`, { ns: 'common' }),
   };
 }
 
-/** Visible grid label — rigid dual-track (WHY): 2×3 data grid stays symmetric; locale keeps chart ≠ input.short. */
-export function formatSixAxisDataGridVisibleLabel(parts: SixAxisDataGridLabelParts): string {
-  return `${parts.chart} · ${parts.inputShort}`;
+/** Secondary mechanical annotation — e.g. `// HP 馬力`. */
+export function formatSixAxisDataGridMechAnnotation(parts: SixAxisDataGridLabelParts): string {
+  return `// ${parts.code} ${parts.mechShort}`;
 }
 
-/** Hover spec sheet — mirrors visible collapse, then appends // CODE for power users. */
-export function formatSixAxisDataGridTitle(parts: SixAxisDataGridLabelParts): string {
-  return `${formatSixAxisDataGridVisibleLabel(parts)} // ${parts.code}`;
+/** Collapsed dual-track string for title / tests — primary · // CODE mech. */
+export function formatSixAxisDataGridVisibleLabel(parts: SixAxisDataGridLabelParts): string {
+  return `${parts.gridPrimary} · ${formatSixAxisDataGridMechAnnotation(parts)}`;
 }

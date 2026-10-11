@@ -8,6 +8,14 @@
         "muscleMass": "肌肉總量",
         "bodyFat": "FFMI",
         "gripStrength": "握力"
+      },
+      "grid": {
+        "strength": "五項力量",
+        "explosivePower": "爆發力",
+        "cardio": "心肺耐力",
+        "muscleMass": "肌肉總量",
+        "bodyFat": "FFMI",
+        "gripStrength": "握力評測"
       }
     },
     "output": {
@@ -27,13 +35,29 @@
         "bodyFat": "P2W",
         "gripStrength": "GRIP"
       },
-      "chart": {
+      "mechShort": {
         "strength": "馬力",
         "explosivePower": "扭矩",
         "cardio": "續航",
         "muscleMass": "外觀",
         "bodyFat": "排量",
         "gripStrength": "抓地"
+      },
+      "telemetryGrid": {
+        "strength": "整車馬力 // HP",
+        "explosivePower": "瞬態扭矩 // TRQ",
+        "cardio": "核心續航 // STINT",
+        "muscleMass": "車體外觀 // CHSS",
+        "bodyFat": "引擎排量 // P2W",
+        "gripStrength": "機械抓地力 // GRIP"
+      },
+      "chart": {
+        "strength": "力量",
+        "explosivePower": "爆發力",
+        "cardio": "心肺",
+        "muscleMass": "肌肉量",
+        "bodyFat": "FFMI",
+        "gripStrength": "握力"
       }
     }
   }

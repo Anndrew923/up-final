@@ -1,6 +1,9 @@
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 
-/** Design intent (WHY): Guardrails for dual-track lexicon — input stays fitness-science, output stays mechanical. */
+/**
+ * Design intent (WHY): Guardrails for dual-track lexicon —
+ * `input.*` / `output.chart` stay fitness-science; `output.full` / `mechShort` / `code` stay mechanical.
+ */
 export interface SixAxisLexiconMappingRule {
   zhInputMustMatch: RegExp;
   zhInputMustNotMatch?: RegExp;
@@ -63,7 +66,10 @@ export const SIX_AXIS_OUTPUT_FULL_MIRROR_KEYS = [
   'ladder.metrics',
 ] as const;
 
-/** Chart vertex labels: runtime reads `home.radar.axisChart`; must stay parity-locked to `axisLexicon.output.chart`. */
+/**
+ * Chart vertex labels (fitness-first): runtime reads `home.radar.axisChart`;
+ * must stay parity-locked to `axisLexicon.output.chart`.
+ */
 export const SIX_AXIS_OUTPUT_CHART_MIRROR_KEY = 'home.radar.axisChart' as const;
 
 export { SIX_AXIS_METRICS };

@@ -4,17 +4,27 @@ import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
+import ConsoleAxisViewToggle from './ConsoleAxisViewToggle';
+import ConsoleSheenLayer from './ConsoleSheenLayer';
 import { SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
+import { useConsoleAxisViewMode } from '../../hooks/useConsoleAxisViewMode';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
+import { formatConsoleAxisHudValue } from '../../logic/core/consoleAxisViewMode';
 import { formatOverallResonanceScore } from '../../logic/core/scoring';
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
 import { getAxisMeaningI18nPrefix } from '../../logic/core/scoreMeaningCatalog';
 import LeaderboardSyncAllBar from '../ladder/LeaderboardSyncAllBar';
-import { loadPhysicalProfile, subscribePhysicalProfile } from '../../services/localStorageService';
+import {
+  loadPhysicalProfile,
+  subscribePhysicalProfile,
+} from '../../services/localStorageService';
 import type { PhysicalProfile } from '../../types/userProfile';
 import { ONBOARDING_RADAR_TARGET_ID } from '../../constants/onboardingTargets';
-import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import {
+  resolveConsoleOverallAverageLabel,
+  resolveConsoleRadarVertexLabel,
+} from '../../i18n/resolveConsoleAxisViewLabels';
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { RADAR_CARD_V2 } from '../radar/radarVisualTokens';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
@@ -30,6 +40,7 @@ const AXIS_HUD_COLS = 2;
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation('common');
   const { radarPoints, overallScore, scaleMax } = useCoreSixRadar();
+  const { viewMode, isSurging, setViewMode } = useConsoleAxisViewMode();
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
     loadPhysicalProfile()
   );
@@ -44,9 +55,9 @@ export const HomeRadarBoard: FC = () => {
     () =>
       radarPoints.map((point) => ({
         ...point,
-        label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
+        label: resolveConsoleRadarVertexLabel(t, point.key as SixAxisMetric, viewMode),
       })),
-    [radarPoints, t]
+    [radarPoints, t, viewMode]
   );
 
   const valueByKey = useMemo(() => {
@@ -107,38 +118,83 @@ export const HomeRadarBoard: FC = () => {
           <p className="mb-1 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
             {t('home.consoleKicker', { ns: 'common' })}
           </p>
-          <h2 className="text-center font-semibold tracking-tight text-zinc-100">
-            {t('home.radarOverview', { ns: 'common' })}
-          </h2>
+          {/* WHY grid (not absolute/px-pad): keeps title + pill on one row without wrap on narrow phones. */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <h2 className="min-w-0 text-center font-semibold tracking-tight text-zinc-100">
+              {t('home.radarOverview', { ns: 'common' })}
+            </h2>
+            <ConsoleAxisViewToggle
+              value={viewMode}
+              onChange={setViewMode}
+              disabled={isBlocking || ritualOpen}
+            />
+          </div>
 
           <div className="mt-3 flex flex-col items-center gap-3">
-            {/* 1. Radar */}
+            {/* 1. Radar — S-Mode recalibrate / ambience live on the shell only (SVG math untouched). */}
             <div
               id={ONBOARDING_RADAR_TARGET_ID}
-              className={`w-full ${ritualFade}`}
+              data-console-mode={viewMode}
+              className={cn(
+                'ui-console-radar-stage ui-console-telemetry-surge w-full rounded-2xl',
+                ritualFade,
+                isSurging && 'is-surging'
+              )}
               aria-hidden={ritualOpen}
             >
-              <HexRadarChart
-                points={localizedRadarPoints}
-                scaleMax={scaleMax}
-                className="mx-auto aspect-square w-full max-w-[260px] shrink-0"
-                aria-label={t('home.radarAria', { ns: 'common' })}
-              />
+              <div className="ui-console-radar-aura" aria-hidden />
+              <ConsoleSheenLayer />
+              <div
+                className={cn(
+                  'ui-console-radar-pulse mx-auto w-full max-w-[260px]',
+                  isSurging && 'is-pulsing'
+                )}
+              >
+                <div key={`radar-${viewMode}`} className="ui-console-lexicon-fade">
+                  <HexRadarChart
+                    points={localizedRadarPoints}
+                    scaleMax={scaleMax}
+                    className="aspect-square w-full shrink-0"
+                    aria-label={t('home.radarAria', { ns: 'common' })}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* 2. Overall → 3. Six-axis HUD → 4. Diagnostics CTA */}
             <div className={`w-full space-y-2.5 ${ritualFade}`} aria-hidden={ritualOpen}>
-              <div className="text-center">
-                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-                  {t('home.overallAverage', { ns: 'common' })}
-                </p>
-                <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-accent-info drop-shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:text-6xl">
-                  {formatOverallResonanceScore(overallScore)}
-                </p>
+              {/* WHY no ui-console-telemetry-surge: border flash needs a bordered shell; sheen uses .is-surging alone. */}
+              <div
+                className={cn(
+                  'ui-console-rev-up relative text-center',
+                  isSurging && 'is-surging is-revving'
+                )}
+              >
+                <ConsoleSheenLayer />
+                <div
+                  key={`overall-${viewMode}`}
+                  className="ui-console-lexicon-fade relative z-[1]"
+                >
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                    {resolveConsoleOverallAverageLabel(t, viewMode)}
+                  </p>
+                  <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-accent-info drop-shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:text-6xl">
+                    {formatOverallResonanceScore(overallScore)}
+                  </p>
+                </div>
               </div>
 
-              <div className="rounded-xl border border-zinc-800/40 bg-zinc-950/60 p-3">
-                <ul className="grid grid-cols-2 text-[11px]">
+              <div
+                className={cn(
+                  'ui-console-telemetry-surge relative rounded-xl border border-zinc-800/40 bg-zinc-950/60 p-3',
+                  isSurging && 'is-surging'
+                )}
+              >
+                <ConsoleSheenLayer />
+                <ul
+                  key={`grid-${viewMode}`}
+                  className="ui-console-lexicon-fade relative z-[1] grid grid-cols-2 text-[11px]"
+                >
                   {SIX_AXIS_METRICS.map((key, index) => {
                     const isLastRow = index >= SIX_AXIS_METRICS.length - AXIS_HUD_COLS;
                     const isEndCol = index % AXIS_HUD_COLS === AXIS_HUD_COLS - 1;
@@ -151,7 +207,11 @@ export const HomeRadarBoard: FC = () => {
                           !isLastRow && 'border-b border-zinc-800/40'
                         )}
                       >
-                        <SixAxisDataGridLabel metric={key} className="justify-center" />
+                        <SixAxisDataGridLabel
+                          metric={key}
+                          viewMode={viewMode}
+                          className="items-center justify-center text-center"
+                        />
                         <span
                           title={t(`${getAxisMeaningI18nPrefix(key)}.desc`, { ns: 'common' })}
                           className={cn(
@@ -161,7 +221,7 @@ export const HomeRadarBoard: FC = () => {
                               : 'text-zinc-100'
                           )}
                         >
-                          {valueByKey[key] ?? 0}
+                          {formatConsoleAxisHudValue(valueByKey[key] ?? 0)}
                         </span>
                       </li>
                     );
