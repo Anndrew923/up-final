@@ -13,8 +13,62 @@ const mockAddHistoryRecord = vi.fn();
 
 vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
   useAssessmentLobbyCards: () => [
-    { key: 'strength', to: '/strength', title: 'Strength' },
-    { key: 'grip', to: '/grip', title: 'Grip' },
+    {
+      key: 'strength',
+      to: '/strength',
+      title: 'Strength',
+      size: 'hero',
+      colSpan: 2,
+      layer: 'power',
+    },
+    {
+      key: 'grip',
+      to: '/grip',
+      title: 'Grip',
+      size: 'standard',
+      colSpan: 1,
+      layer: 'power',
+    },
+    {
+      key: 'explosive',
+      to: '/explosive',
+      title: 'Explosive',
+      size: 'standard',
+      colSpan: 1,
+      layer: 'power',
+    },
+    {
+      key: 'muscle',
+      to: '/muscle',
+      title: 'Muscle',
+      size: 'capsule',
+      colSpan: 1,
+      layer: 'chassis',
+    },
+    {
+      key: 'ffmi',
+      to: '/ffmi',
+      title: 'FFMI',
+      size: 'standard',
+      colSpan: 1,
+      layer: 'chassis',
+    },
+    {
+      key: 'cardio',
+      to: '/cardio',
+      title: 'Cardio',
+      size: 'capsule',
+      colSpan: 2,
+      layer: 'chassis',
+    },
+    {
+      key: 'armSize',
+      to: '/arm-size',
+      title: 'Arm Size',
+      size: 'capsule',
+      colSpan: 1,
+      layer: 'specialty',
+    },
   ],
 }));
 
@@ -53,7 +107,12 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'assessment.title': 'DYNO',
+        'assessment.lobby.layerPower': 'Power Output',
+        'assessment.lobby.layerChassis': 'Chassis & Endurance',
+        'assessment.lobby.layerSpecialty': 'Specialty & Lab',
         'assessment.sixAxisSnapshot.title': 'Performance Snapshot',
+        'assessment.sixAxisSnapshot.hudHint': 'Tactical readout',
+        'assessment.sixAxisSnapshot.collapsedHint': 'Expand for six-axis values',
         'assessment.sixAxisSnapshot.toggleExpand': 'Expand performance snapshot',
         'assessment.sixAxisSnapshot.toggleCollapse': 'Collapse performance snapshot',
         'assessment.sixAxisSnapshot.saveSnapshot': 'Snapshot Status to Logs',
@@ -97,9 +156,22 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('AssessmentPage read-only six-axis snapshot', () => {
-  it('keeps axis readouts and archive button collapsed by default', () => {
+describe('AssessmentPage three-layer lobby + six-axis snapshot', () => {
+  it('renders layered sections, separators, specialty lab, and collapsed HUD snapshot', () => {
     const { container, unmount } = renderPage();
+
+    const sectionLabels = Array.from(container.querySelectorAll('section')).map((el) =>
+      el.getAttribute('aria-label')
+    );
+    expect(sectionLabels).toContain('Power Output');
+    expect(sectionLabels).toContain('Chassis & Endurance');
+    expect(sectionLabels).toContain('Specialty & Lab');
+    expect(container.querySelectorAll('[aria-hidden="true"].border-t').length).toBeGreaterThanOrEqual(
+      2
+    );
+    expect(container.querySelector('[data-testid="somatotype-entry"]')).toBeTruthy();
+    expect(container.textContent).toContain('Strength');
+    expect(container.textContent).toContain('Arm Size');
 
     const toggle = container.querySelector(
       '#dyno-six-axis-snapshot-toggle'
@@ -109,10 +181,10 @@ describe('AssessmentPage read-only six-axis snapshot', () => {
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(container.textContent).toContain('Performance Snapshot');
+    expect(container.textContent).toContain('Tactical readout');
     expect(panel?.hasAttribute('hidden')).toBe(true);
     expect(panel?.textContent).toContain('Horsepower');
     expect(panel?.textContent).toContain('81.57');
-    expect(panel?.textContent).toContain('Snapshot Status to Logs');
     expect(container.querySelectorAll('input')).toHaveLength(0);
 
     unmount();

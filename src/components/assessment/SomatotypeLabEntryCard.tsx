@@ -5,8 +5,8 @@ import { ROUTES } from '../../config/routes';
 
 /**
  * Assessment-lobby portal into the somatotype lab.
- * WHY: Inclusive acquisition CTA on the Dyno assessment page (verb-led unlock
- * copy). Tools lobby uses the noun lab title instead — no hardcore / ladder coupling.
+ * WHY: Open-entry copy (not paywall “unlock”) — lab is local Core surface; Tools
+ * uses the noun lab title, Dyno uses verb-led enter for the same route.
  */
 export const SomatotypeLabEntryCard: FC = () => {
   const { t } = useTranslation('common');
@@ -16,7 +16,7 @@ export const SomatotypeLabEntryCard: FC = () => {
     <Link
       to={ROUTES.somatotypeLab}
       aria-label={title}
-      className="group relative block overflow-hidden border border-zinc-700/90 bg-gradient-to-br from-zinc-950 via-zinc-900/90 to-black p-4 transition-colors hover:border-zinc-500/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 sm:p-5"
+      className="group relative flex h-full min-h-[3.25rem] flex-col justify-center overflow-hidden rounded-xl border border-zinc-700/90 bg-gradient-to-br from-zinc-950 via-zinc-900/90 to-black p-3.5 transition-colors hover:border-zinc-500/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 sm:p-4"
     >
       <span
         aria-hidden

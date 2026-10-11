@@ -1,18 +1,43 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessmentLobbyCard } from '../components/assessment/AssessmentLobbyCard';
 import DynoSixAxisSnapshotPanel from '../components/assessment/DynoSixAxisSnapshotPanel';
 import { SomatotypeLabEntryCard } from '../components/assessment/SomatotypeLabEntryCard';
-import { useAssessmentLobbyCards } from '../hooks/useAssessmentLobbyCards';
+import {
+  useAssessmentLobbyCards,
+  type AssessmentLobbyCardModel,
+} from '../hooks/useAssessmentLobbyCards';
 import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLocalStores';
-import { ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY } from '../config/assessmentLobby';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
+import { cn } from '../lib/cn';
 import { generateLocalId } from '../lib/generateLocalId';
 import { useHistoryStore } from '../stores/historyStore';
 
 const SAVE_TOAST_MS = 2400;
 
-/** Dyno lobby — assessment cards first; six-axis board is read-only merged status + snapshot. */
+function LobbyLayerGrid({ cards }: { cards: AssessmentLobbyCardModel[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {cards.map((card) => (
+        <AssessmentLobbyCard
+          key={card.key}
+          cardKey={card.key}
+          to={card.to}
+          title={card.title}
+          size={card.size}
+          className={cn(card.colSpan === 2 && 'col-span-2')}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Tech divider between IA layers — margin owns vertical rhythm (parent stack has no space-y). */
+function LobbyLayerDivider() {
+  return <div className="my-4 border-t border-zinc-800/80" aria-hidden />;
+}
+
+/** Dyno lobby — three-layer IA + HUD six-axis snapshot; radar axis order stays config-decoupled. */
 export default function AssessmentPage() {
   const { t } = useTranslation('common');
   const [justSaved, setJustSaved] = useState(false);
@@ -20,6 +45,18 @@ export default function AssessmentPage() {
   const addHistoryRecord = useHistoryStore((s) => s.addHistoryRecord);
   const lobbyCards = useAssessmentLobbyCards();
   const saveToastTimerRef = useRef<number | null>(null);
+
+  const { powerCards, chassisCards, specialtyCards } = useMemo(() => {
+    const power: AssessmentLobbyCardModel[] = [];
+    const chassis: AssessmentLobbyCardModel[] = [];
+    const specialty: AssessmentLobbyCardModel[] = [];
+    for (const card of lobbyCards) {
+      if (card.layer === 'power') power.push(card);
+      else if (card.layer === 'chassis') chassis.push(card);
+      else specialty.push(card);
+    }
+    return { powerCards: power, chassisCards: chassis, specialtyCards: specialty };
+  }, [lobbyCards]);
 
   useEffect(
     () => () => {
@@ -55,23 +92,36 @@ export default function AssessmentPage() {
         </h1>
       </section>
 
-      <section className="grid grid-cols-2 gap-3">
-        {lobbyCards.map((card) => (
-          <AssessmentLobbyCard
-            key={card.key}
-            cardKey={card.key}
-            to={card.to}
-            title={card.title}
-            className={
-              card.key === ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY ? 'col-span-2' : undefined
-            }
-          />
-        ))}
-      </section>
+      <div>
+        <section aria-label={t('assessment.lobby.layerPower')}>
+          <LobbyLayerGrid cards={powerCards} />
+        </section>
 
-      <section>
-        <SomatotypeLabEntryCard />
-      </section>
+        <LobbyLayerDivider />
+
+        <section aria-label={t('assessment.lobby.layerChassis')}>
+          <LobbyLayerGrid cards={chassisCards} />
+        </section>
+
+        <LobbyLayerDivider />
+
+        <section
+          aria-label={t('assessment.lobby.layerSpecialty')}
+          className="grid grid-cols-2 gap-3"
+        >
+          {specialtyCards.map((card) => (
+            <AssessmentLobbyCard
+              key={card.key}
+              cardKey={card.key}
+              to={card.to}
+              title={card.title}
+              size={card.size}
+              className={cn(card.colSpan === 2 && 'col-span-2', 'h-full')}
+            />
+          ))}
+          <SomatotypeLabEntryCard />
+        </section>
+      </div>
 
       <DynoSixAxisSnapshotPanel
         scores={mergedScores}

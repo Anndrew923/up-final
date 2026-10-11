@@ -6,8 +6,15 @@
       "toggleExpand": "展開資料",
       "toggleCollapse": "收合資料"
     },
+    "lobby": {
+      "layerPower": "動能輸出",
+      "layerChassis": "基底與續航",
+      "layerSpecialty": "專項與實驗室"
+    },
     "sixAxisSnapshot": {
       "title": "目前性能六軸快照",
+      "hudHint": "戰情摘要",
+      "collapsedHint": "展開檢視六軸讀值並封存快照",
       "toggleExpand": "展開性能六軸快照",
       "toggleCollapse": "收合性能六軸快照",
       "saveSnapshot": "封存目前性能快照至日誌",
@@ -48,7 +55,7 @@
     },
     "armSize": {
       "kicker": "圍度",
-      "title": "臂圍評測（輪轂吋數 // RIMS）"
+      "title": "臂圍評測（輪框吋數 // RIMS）"
     },
     "auras": {
       "none": "無",

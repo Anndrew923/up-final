@@ -9,26 +9,36 @@ import {
   type AxisAccentRgb,
 } from './sharedAxisAccentTokens';
 
-export const ASSESSMENT_LOBBY_CARD_KEYS = [
-  'strength',
-  'grip',
-  'ffmi',
-  'explosive',
-  'cardio',
-  'muscle',
-  'armSize',
+/**
+ * Dyno lobby visual SSOT — three-layer Bento with asymmetric weights.
+ * WHY: Decoupled from `SIX_AXIS_LOBBY_GRID_ORDER` so snapshot + radar axis order stay stable.
+ */
+export const LOBBY_BENTO_LAYOUT = [
+  { key: 'strength', size: 'hero', colSpan: 2, layer: 'power' },
+  { key: 'grip', size: 'standard', colSpan: 1, layer: 'power' },
+  { key: 'explosive', size: 'standard', colSpan: 1, layer: 'power' },
+  // Chassis layer: CHSS ∥ P2W, then full-width STINT capsule.
+  { key: 'muscle', size: 'capsule', colSpan: 1, layer: 'chassis' },
+  { key: 'ffmi', size: 'standard', colSpan: 1, layer: 'chassis' },
+  { key: 'cardio', size: 'capsule', colSpan: 2, layer: 'chassis' },
+  { key: 'armSize', size: 'capsule', colSpan: 1, layer: 'specialty' },
 ] as const;
 
-export type AssessmentLobbyCardKey = (typeof ASSESSMENT_LOBBY_CARD_KEYS)[number];
+export type LobbyBentoSlot = (typeof LOBBY_BENTO_LAYOUT)[number];
+export type AssessmentLobbyCardKey = LobbyBentoSlot['key'];
+export type AssessmentLobbyCardSize = LobbyBentoSlot['size'];
+/** Semantic layers for Dyno lobby IA (power → chassis → specialty). */
+export type AssessmentLobbyLayer = LobbyBentoSlot['layer'];
 
-/** Lobby card that spans both columns at the bottom of the grid. */
-export const ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY =
-  'armSize' as const satisfies AssessmentLobbyCardKey;
+/** All lobby keys — derived from Bento layout so visual order and key set cannot drift. */
+export const ASSESSMENT_LOBBY_CARD_KEYS: readonly AssessmentLobbyCardKey[] = LOBBY_BENTO_LAYOUT.map(
+  (slot) => slot.key
+);
 
 /**
- * Six-axis order as a row-major 2-column map matching lobby card positions
- * (L→R, T→B). Excludes `armSize` (leaderboard-only). Do not reuse `SIX_AXIS_METRICS`
- * here — that order drives radar vertices and history columns globally.
+ * Six-axis order for the read-only snapshot panel (L→R, T→B in a 2-col map).
+ * WHY: Must NOT track Bento visual order — radar vertices / history columns stay global.
+ * Excludes `armSize` (leaderboard specialty). Do not reuse `SIX_AXIS_METRICS` here.
  */
 export const SIX_AXIS_LOBBY_GRID_ORDER = [
   'strength',
@@ -41,7 +51,7 @@ export const SIX_AXIS_LOBBY_GRID_ORDER = [
 
 /**
  * Six-axis snapshot columns derived from the lobby map (even → left, odd → right).
- * WHY: Single source of truth so the read-only Dyno snapshot panel stays locked to the card grid.
+ * WHY: Single source of truth so the read-only Dyno snapshot panel stays locked to this map.
  */
 export const SIX_AXIS_SNAPSHOT_LEFT_AXES = [
   SIX_AXIS_LOBBY_GRID_ORDER[0],
@@ -65,7 +75,7 @@ export const ASSESSMENT_LOBBY_ROUTES: Record<AssessmentLobbyCardKey, RoutePath> 
   ffmi: ROUTES.ffmi,
 };
 
-/** Lobby card key → Core Six metric (armSize excluded — leaderboard-only footer). */
+/** Lobby card key → Core Six metric (armSize excluded — leaderboard specialty). */
 export const ASSESSMENT_LOBBY_SIX_AXIS_MAP = {
   strength: 'strength',
   grip: 'gripStrength',
@@ -76,8 +86,9 @@ export const ASSESSMENT_LOBBY_SIX_AXIS_MAP = {
 } as const satisfies Record<Exclude<AssessmentLobbyCardKey, 'armSize'>, SixAxisMetric>;
 
 /**
- * Per-dimension StatusBar glow (WHY): Rigid seven-hue grid from `sharedAxisAccentTokens` —
- * lobby status bars and radar dominant stroke stay parity-locked.
+ * Per-axis Tailwind accent class map (WHY): Lobby cards render glow via RGB CSS vars now,
+ * but this map stays as the seven-hue parity lock with radar / diagnostic scan tokens
+ * (unique bg + glow rgba contract enforced in sharedAxisAccentTokens tests).
  */
 export const ASSESSMENT_LOBBY_STATUS_BAR_CLASS: Record<AssessmentLobbyCardKey, string> = {
   strength: getSixAxisLobbyStatusBarClass(ASSESSMENT_LOBBY_SIX_AXIS_MAP.strength),

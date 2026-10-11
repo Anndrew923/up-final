@@ -170,4 +170,150 @@
       linear-gradient(120deg, rgba(0, 191, 255, 0.15) 0%, transparent 50%),
       linear-gradient(-40deg, rgba(255, 140, 0, 0.12), transparent 55%);
   }
+
+  /**
+   * Assessment lobby cards — CSS-only ambient glow + hero border beam.
+   * WHY: Soft left-weighted aura replaces the hard 3px status bar; GPU transform/opacity
+   * keeps motion cheap. Axis hue comes from --lobby-accent-rgb on the element.
+   * WHY no overflow:hidden on the card: outer box-shadow breathe must paint outside the shell;
+   * beam-wrap clips itself.
+   */
+  .ui-lobby-card {
+    --lobby-accent-rgb: 245, 158, 11;
+    --lobby-border-hover: rgba(245, 158, 11, 0.5);
+    --lobby-glow-hover: rgba(245, 158, 11, 0.32);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 0 18px -6px rgba(var(--lobby-accent-rgb), 0.28),
+      0 10px 28px rgba(0, 0, 0, 0.35);
+    animation: ui-lobby-card-breathe 7s ease-in-out infinite;
+  }
+
+  @keyframes ui-lobby-card-breathe {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+        0 0 14px -6px rgba(var(--lobby-accent-rgb), 0.2),
+        0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.045) inset,
+        0 0 28px -4px rgba(var(--lobby-accent-rgb), 0.42),
+        0 12px 32px rgba(0, 0, 0, 0.38);
+    }
+  }
+
+  /**
+   * WHY animation:none (not play-state:paused): keyframed box-shadow otherwise keeps winning
+   * over :hover shadow, so the hover neon boost never shows.
+   */
+  .ui-lobby-card:hover {
+    animation: none;
+    border-color: var(--lobby-border-hover);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 0 24px var(--lobby-glow-hover),
+      0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .ui-lobby-card:hover .ui-lobby-card__ambient {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ui-lobby-card__ambient {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(120% 85% at 0% 50%, rgba(var(--lobby-accent-rgb), 0.26), transparent 58%),
+      radial-gradient(70% 55% at 100% 0%, rgba(var(--lobby-accent-rgb), 0.1), transparent 52%);
+    opacity: 0.82;
+    animation: ui-lobby-ambient-breathe 7s ease-in-out infinite;
+  }
+
+  @keyframes ui-lobby-ambient-breathe {
+    0%,
+    100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /**
+   * Hero border beam (WHY): Masked rotating conic ring — only the 1px edge shows motion;
+   * transform:rotate stays on the compositor (no layout thrash / no JS libs).
+   */
+  .ui-lobby-card__beam-wrap {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    overflow: hidden;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  .ui-lobby-card__beam {
+    position: absolute;
+    inset: -45%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg 300deg,
+      rgba(var(--lobby-accent-rgb), 0.08) 318deg,
+      rgba(var(--lobby-accent-rgb), 0.95) 338deg,
+      rgba(255, 255, 255, 0.65) 346deg,
+      rgba(var(--lobby-accent-rgb), 0.95) 354deg,
+      transparent 360deg
+    );
+    animation: ui-lobby-beam-spin 4.5s linear infinite;
+  }
+
+  @keyframes ui-lobby-beam-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ui-lobby-card {
+      animation: none;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.035) inset,
+        0 0 20px -4px rgba(var(--lobby-accent-rgb), 0.32),
+        0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .ui-lobby-card:hover {
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+        0 0 24px var(--lobby-glow-hover),
+        0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .ui-lobby-card__ambient {
+      animation: none;
+      opacity: 0.88;
+    }
+
+    .ui-lobby-card__beam {
+      animation: none;
+      opacity: 0.4;
+      transform: none;
+    }
+  }
 }

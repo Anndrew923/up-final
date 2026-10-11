@@ -6,8 +6,15 @@
       "toggleExpand": "Show References",
       "toggleCollapse": "Hide References"
     },
+    "lobby": {
+      "layerPower": "Power Output",
+      "layerChassis": "Chassis & Endurance",
+      "layerSpecialty": "Specialty & Lab"
+    },
     "sixAxisSnapshot": {
       "title": "Performance Snapshot",
+      "hudHint": "Tactical readout",
+      "collapsedHint": "Expand to view six-axis values and archive a snapshot",
       "toggleExpand": "Expand performance snapshot",
       "toggleCollapse": "Collapse performance snapshot",
       "saveSnapshot": "Save Snapshot",
@@ -48,7 +55,7 @@
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm Size Test (Forged Rims)"
+      "title": "Arm Size Test (Rim Size // RIMS)"
     },
     "auras": {
       "none": "None",

@@ -2,8 +2,10 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 import { useHistoryStore } from '../stores/historyStore';
 import {
   canRunStructuredUserSync,
+  probeStructuredCloudStatus,
   runStructuredBackup,
   runStructuredRestore,
+  type StructuredCloudStatus,
 } from './userStructuredSyncService';
 
 export type CloudSyncOutcome =
@@ -12,6 +14,9 @@ export type CloudSyncOutcome =
       ok: false;
       reason: 'unavailable' | 'empty-restore' | 'auth-failed' | 'permission-denied' | 'unknown';
     };
+
+/** Facade alias — same shape as structured baseline probe. */
+export type CloudSyncStatus = StructuredCloudStatus;
 
 type CloudSyncErrorReason = Extract<CloudSyncOutcome, { ok: false }>['reason'];
 
@@ -36,6 +41,23 @@ function mapCloudSyncError(error: unknown): CloudSyncErrorReason {
     return 'permission-denied';
   }
   return 'unknown';
+}
+
+/**
+ * Read-only cloud snapshot probe for status UI.
+ * WHY: Non-Pro / anonymous must generate zero Firestore reads (cost guardrail).
+ */
+export async function fetchCloudSyncStatus(): Promise<CloudSyncStatus> {
+  const empty: CloudSyncStatus = { exists: false, cloudUpdatedAt: null };
+  try {
+    const ent = useEntitlementStore.getState();
+    if (!canRunStructuredUserSync(ent)) {
+      return empty;
+    }
+    return await probeStructuredCloudStatus(ent);
+  } catch {
+    return empty;
+  }
 }
 
 /**

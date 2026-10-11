@@ -4,12 +4,17 @@ import { useEntitlementStore } from '../../stores/entitlementStore';
 
 vi.mock('../userStructuredSyncService', () => ({
   canRunStructuredUserSync: vi.fn(),
+  probeStructuredCloudStatus: vi.fn(),
   runStructuredBackup: vi.fn(),
   runStructuredRestore: vi.fn(),
 }));
 
 import * as structured from '../userStructuredSyncService';
-import { backupLocalToCloud, restoreCloudToLocal } from '../cloudSyncService';
+import {
+  backupLocalToCloud,
+  fetchCloudSyncStatus,
+  restoreCloudToLocal,
+} from '../cloudSyncService';
 
 function proEntitlement(): EntitlementState {
   return {
@@ -30,6 +35,36 @@ describe('cloudSyncService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useEntitlementStore.getState().hydrateEntitlement(proEntitlement());
+  });
+
+  it('fetchCloudSyncStatus skips Firestore probe when structured sync cannot run', async () => {
+    vi.mocked(structured.canRunStructuredUserSync).mockReturnValue(false);
+    const r = await fetchCloudSyncStatus();
+    expect(r).toEqual({ exists: false, cloudUpdatedAt: null });
+    expect(structured.probeStructuredCloudStatus).not.toHaveBeenCalled();
+  });
+
+  it('fetchCloudSyncStatus returns probe result for eligible Pro session', async () => {
+    vi.mocked(structured.canRunStructuredUserSync).mockReturnValue(true);
+    vi.mocked(structured.probeStructuredCloudStatus).mockResolvedValue({
+      exists: true,
+      cloudUpdatedAt: '2026-10-10T10:30:00.000Z',
+    });
+    const r = await fetchCloudSyncStatus();
+    expect(r).toEqual({
+      exists: true,
+      cloudUpdatedAt: '2026-10-10T10:30:00.000Z',
+    });
+    expect(structured.probeStructuredCloudStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('fetchCloudSyncStatus returns empty status when probe throws', async () => {
+    vi.mocked(structured.canRunStructuredUserSync).mockReturnValue(true);
+    vi.mocked(structured.probeStructuredCloudStatus).mockRejectedValue(
+      new Error('cloud-auth-required')
+    );
+    const r = await fetchCloudSyncStatus();
+    expect(r).toEqual({ exists: false, cloudUpdatedAt: null });
   });
 
   it('backup returns unavailable when structured sync cannot run', async () => {

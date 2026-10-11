@@ -7,6 +7,7 @@ import {
 } from '../assessmentLobby';
 import {
   buildDiagnosticScanAccentStyles,
+  buildLobbyCardAuraSurfaceStyle,
   getSixAxisAccentRgb,
   getSixAxisLobbyStatusBarClass,
   getSixAxisRadarPalette,
@@ -68,4 +69,14 @@ describe('sharedAxisAccentTokens', () => {
       );
     }
   );
+
+  it.each(SIX_AXIS_METRICS)('lobby card aura surface exposes CSS rgb vars for %s', (metric) => {
+    const rgb = getSixAxisAccentRgb(metric);
+    const surface = buildLobbyCardAuraSurfaceStyle(rgb);
+    expect(surface['--lobby-accent-rgb']).toBe(`${rgb.r}, ${rgb.g}, ${rgb.b}`);
+    expect(surface['--lobby-border-hover']).toBe(`rgba(${rgb.r},${rgb.g},${rgb.b},0.5)`);
+    expect(surface['--lobby-glow-hover']).toBe(`rgba(${rgb.r},${rgb.g},${rgb.b},0.32)`);
+    expect(surface.backgroundImage).toContain('linear-gradient');
+    expect(surface.borderColor).toBe(`rgba(${rgb.r},${rgb.g},${rgb.b},0.22)`);
+  });
 });

@@ -20,7 +20,9 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-function renderCard(): { container: HTMLDivElement; unmount: () => void } {
+function renderCard(
+  props?: Partial<{ size: 'hero' | 'standard' | 'capsule'; title: string }>
+): { container: HTMLDivElement; unmount: () => void } {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
@@ -34,7 +36,8 @@ function renderCard(): { container: HTMLDivElement; unmount: () => void } {
               <AssessmentLobbyCard
                 cardKey="strength"
                 to={ROUTES.strength}
-                title="Strength test"
+                title={props?.title ?? 'Strength test'}
+                size={props?.size}
               />
             }
           />
@@ -58,14 +61,16 @@ afterEach(() => {
 });
 
 describe('AssessmentLobbyCard', () => {
-  it('renders navigable link with title and status bar', () => {
+  it('renders navigable link with title and ambient glow', () => {
     const { container, unmount } = renderCard();
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
+    expect(link?.className).toContain('ui-lobby-card');
     expect(link?.getAttribute('href')).toContain('strength');
     expect(link?.getAttribute('aria-label')).toBe('Strength test');
     expect(container.textContent).toContain('Strength test');
-    expect(container.querySelector('span[aria-hidden]')).not.toBeNull();
+    expect(container.querySelector('.ui-lobby-card__ambient')).not.toBeNull();
+    expect(container.querySelector('.ui-lobby-card__beam-wrap')).toBeNull();
     unmount();
   });
 
@@ -74,7 +79,22 @@ describe('AssessmentLobbyCard', () => {
     const link = container.querySelector('a') as HTMLAnchorElement;
     expect(link.style.backgroundImage).toContain('linear-gradient');
     expect(link.style.borderColor).toMatch(/^rgba?\(/);
+    expect(link.style.getPropertyValue('--lobby-accent-rgb')).toMatch(/^\d+,\s*\d+,\s*\d+$/);
     expect(link.style.getPropertyValue('--lobby-border-hover')).toMatch(/^rgba?\(/);
+    unmount();
+  });
+
+  it('mounts hero border beam only for hero size', () => {
+    const { container, unmount } = renderCard({ size: 'hero' });
+    expect(container.querySelector('.ui-lobby-card__beam-wrap')).not.toBeNull();
+    expect(container.querySelector('.ui-lobby-card__beam')).not.toBeNull();
+    unmount();
+  });
+
+  it('does not clip outer glow with overflow-hidden on the shell', () => {
+    const { container, unmount } = renderCard();
+    const link = container.querySelector('a');
+    expect(link?.className.split(/\s+/)).not.toContain('overflow-hidden');
     unmount();
   });
 

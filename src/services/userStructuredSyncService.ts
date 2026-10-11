@@ -349,6 +349,45 @@ export async function pushStructuredHistoryRecord(
   );
 }
 
+export type StructuredCloudStatus = {
+  exists: boolean;
+  cloudUpdatedAt: string | null;
+};
+
+/** Shared schema gate for baseline reads (probe / restore / listener merge). */
+function readStructuredProfileBaseline(
+  snap: DocumentSnapshot
+): StructuredProfileFirestoreV1 | null {
+  if (!snap.exists()) return null;
+  const data = snap.data() as StructuredProfileFirestoreV1;
+  if (
+    data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
+    typeof data.updatedAt !== 'string'
+  ) {
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Read-only baseline probe for Tools cloud-sync status UI.
+ * WHY: Cost guardrail — callers must pass only when `canRunStructuredUserSync` is true;
+ * this helper re-checks and never writes.
+ */
+export async function probeStructuredCloudStatus(
+  ent: EntitlementState
+): Promise<StructuredCloudStatus> {
+  if (!canRunStructuredUserSync(ent)) {
+    return { exists: false, cloudUpdatedAt: null };
+  }
+  const db = getFirestoreDb();
+  if (!db) return { exists: false, cloudUpdatedAt: null };
+  const uid = requireNonAnonymousUid();
+  const data = readStructuredProfileBaseline(await getDoc(profileRef(db, uid)));
+  if (!data) return { exists: false, cloudUpdatedAt: null };
+  return { exists: true, cloudUpdatedAt: data.updatedAt };
+}
+
 /**
  * Full backup: migrate legacy blob if present, push profile + all history docs.
  */
@@ -396,15 +435,8 @@ export async function runStructuredRestore(ent: EntitlementState): Promise<boole
   if (!isStructuredSyncSessionCurrent(session)) {
     throw new Error('structured-sync-session-changed');
   }
-  if (!profileSnap.exists()) {
-    return false;
-  }
-
-  const data = profileSnap.data() as StructuredProfileFirestoreV1;
-  if (
-    data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
-    typeof data.updatedAt !== 'string'
-  ) {
+  const data = readStructuredProfileBaseline(profileSnap);
+  if (!data) {
     return false;
   }
 
@@ -453,16 +485,11 @@ export function tryApplyRemoteProfileFromSnapshot(
   expectedSession?: StructuredSyncSession
 ): boolean {
   if (expectedSession && !isStructuredSyncSessionCurrent(expectedSession)) return false;
-  if (!canRunStructuredUserSync(ent) || !snap.exists()) return false;
+  if (!canRunStructuredUserSync(ent)) return false;
   const uid = expectedSession?.uid ?? getCurrentFirebaseUser()?.uid;
   if (!uid) return false;
-  const data = snap.data() as StructuredProfileFirestoreV1;
-  if (
-    data.schemaVersion !== STRUCTURED_PROFILE_SCHEMA_VERSION ||
-    typeof data.updatedAt !== 'string'
-  ) {
-    return false;
-  }
+  const data = readStructuredProfileBaseline(snap);
+  if (!data) return false;
   const localMark = readWatermark(uid);
   if (!isRemoteNewer(data.updatedAt, localMark)) {
     return false;

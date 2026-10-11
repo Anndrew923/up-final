@@ -139,22 +139,25 @@ export function buildDiagnosticScanAccentStyles(rgb: AxisAccentRgb): DiagnosticS
 export interface LobbyCardAuraSurfaceStyle {
   backgroundImage: string;
   borderColor: string;
+  /** Comma-separated RGB channel triplet for CSS `rgba(var(--lobby-accent-rgb), a)`. */
+  '--lobby-accent-rgb': string;
   '--lobby-border-hover': string;
   '--lobby-glow-hover': string;
 }
 
 /**
- * Per-card aurora shell (WHY): StatusBar alone felt thin; gradient + neon border carry axis hue
- * across the full tap target without hurting zinc title contrast on `#111111` card base.
+ * Per-card aurora shell (WHY): Ambient glow + beam layers read axis hue via CSS vars;
+ * gradient + neon border keep zinc title contrast on zinc-950 card base.
  */
 export function buildLobbyCardAuraSurfaceStyle(rgb: AxisAccentRgb): LobbyCardAuraSurfaceStyle {
   const { r, g, b } = rgb;
   return {
     backgroundImage: [
-      `linear-gradient(to bottom right, rgba(${r},${g},${b},0.14) 0%, transparent 55%)`,
-      'linear-gradient(to bottom right, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.9) 100%)',
+      `linear-gradient(to bottom right, rgba(${r},${g},${b},0.16) 0%, transparent 55%)`,
+      'linear-gradient(to bottom right, rgba(9,9,11,0.96) 0%, rgba(9,9,11,0.9) 100%)',
     ].join(', '),
-    borderColor: `rgba(${r},${g},${b},0.2)`,
+    borderColor: `rgba(${r},${g},${b},0.22)`,
+    '--lobby-accent-rgb': `${r}, ${g}, ${b}`,
     '--lobby-border-hover': `rgba(${r},${g},${b},0.5)`,
     '--lobby-glow-hover': `rgba(${r},${g},${b},0.32)`,
   };

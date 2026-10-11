@@ -2,29 +2,67 @@ import { describe, expect, it } from 'vitest';
 import { SIX_AXIS_METRICS } from '../../types/scoring';
 import {
   ASSESSMENT_LOBBY_CARD_KEYS,
-  ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY,
   ASSESSMENT_LOBBY_ROUTES,
   ASSESSMENT_LOBBY_STATUS_BAR_CLASS,
+  LOBBY_BENTO_LAYOUT,
   SIX_AXIS_LOBBY_GRID_ORDER,
   SIX_AXIS_SNAPSHOT_LEFT_AXES,
   SIX_AXIS_SNAPSHOT_RIGHT_AXES,
 } from '../assessmentLobby';
 
 describe('assessmentLobby config', () => {
-  it('places ffmi in row 2 and armSize as the full-width bottom card', () => {
-    expect(ASSESSMENT_LOBBY_CARD_KEYS).toEqual([
+  it('defines three-layer Bento with chassis as CHSS∥P2W then full-width STINT', () => {
+    expect(LOBBY_BENTO_LAYOUT.map((slot) => slot.key)).toEqual([
       'strength',
       'grip',
-      'ffmi',
       'explosive',
-      'cardio',
       'muscle',
+      'ffmi',
+      'cardio',
       'armSize',
     ]);
-    expect(ASSESSMENT_LOBBY_FULL_WIDTH_CARD_KEY).toBe('armSize');
+    expect(LOBBY_BENTO_LAYOUT.filter((s) => s.layer === 'power').map((s) => s.key)).toEqual([
+      'strength',
+      'grip',
+      'explosive',
+    ]);
+    expect(LOBBY_BENTO_LAYOUT.filter((s) => s.layer === 'chassis').map((s) => s.key)).toEqual([
+      'muscle',
+      'ffmi',
+      'cardio',
+    ]);
+    expect(LOBBY_BENTO_LAYOUT.filter((s) => s.layer === 'specialty').map((s) => s.key)).toEqual([
+      'armSize',
+    ]);
+    expect(LOBBY_BENTO_LAYOUT[0]).toEqual({
+      key: 'strength',
+      size: 'hero',
+      colSpan: 2,
+      layer: 'power',
+    });
+    expect(LOBBY_BENTO_LAYOUT.find((s) => s.key === 'muscle')).toMatchObject({
+      size: 'capsule',
+      colSpan: 1,
+      layer: 'chassis',
+    });
+    expect(LOBBY_BENTO_LAYOUT.find((s) => s.key === 'ffmi')).toMatchObject({
+      size: 'standard',
+      colSpan: 1,
+      layer: 'chassis',
+    });
+    expect(LOBBY_BENTO_LAYOUT.find((s) => s.key === 'cardio')).toMatchObject({
+      size: 'capsule',
+      colSpan: 2,
+      layer: 'chassis',
+    });
   });
 
-  it('orders six-axis lobby map to mirror the radar card grid', () => {
+  it('derives ASSESSMENT_LOBBY_CARD_KEYS from Bento layout order', () => {
+    expect(ASSESSMENT_LOBBY_CARD_KEYS).toEqual(LOBBY_BENTO_LAYOUT.map((slot) => slot.key));
+    expect(new Set(ASSESSMENT_LOBBY_CARD_KEYS).size).toBe(ASSESSMENT_LOBBY_CARD_KEYS.length);
+  });
+
+  it('keeps six-axis snapshot order decoupled from Bento visual order', () => {
     expect(SIX_AXIS_LOBBY_GRID_ORDER).toEqual([
       'strength',
       'gripStrength',
@@ -35,6 +73,12 @@ describe('assessmentLobby config', () => {
     ]);
     expect(new Set(SIX_AXIS_LOBBY_GRID_ORDER).size).toBe(SIX_AXIS_METRICS.length);
     expect([...SIX_AXIS_LOBBY_GRID_ORDER].sort()).toEqual([...SIX_AXIS_METRICS].sort());
+    // Bento chassis pairs muscle∥ffmi then full-width cardio — snapshot map stays legacy order.
+    expect(LOBBY_BENTO_LAYOUT.map((s) => s.key).slice(3, 6)).toEqual([
+      'muscle',
+      'ffmi',
+      'cardio',
+    ]);
   });
 
   it('derives six-axis snapshot columns from the lobby row-major map', () => {

@@ -27,6 +27,10 @@ export interface DisclosurePanelProps {
   children: ReactNode;
   /** Tailwind classes for the padded body wrapper around `children`. */
   panelBodyClassName?: string;
+  /** Optional override for the outer card shell (border / glow). Card variant only. */
+  shellClassName?: string;
+  /** Optional override for the header toggle button. Card variant only. */
+  headerClassName?: string;
   /**
    * `labeled` — text + chevron action row (default, home/tools).
    * `chevron` — title-row chevron only; labels stay in aria-label for a11y.
@@ -57,6 +61,8 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   headerAccessoryLabel,
   children,
   panelBodyClassName,
+  shellClassName,
+  headerClassName,
   actionMode = 'labeled',
   variant = 'card',
 }) => {
@@ -109,10 +115,18 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-700/70 bg-bg-panel/40">
+    <div
+      className={
+        shellClassName ?? 'rounded-xl border border-zinc-700/70 bg-bg-panel/40'
+      }
+    >
       <button
         type="button"
-        className="flex w-full flex-col gap-2 px-4 py-3 text-left text-sm text-zinc-300 transition-colors hover:bg-zinc-800/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60"
+        className={cn(
+          // WHY: `cn` does not tw-merge — default hover must not fight custom headerClassName.
+          'flex w-full flex-col gap-2 px-4 py-3 text-left text-sm text-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60',
+          headerClassName ?? 'hover:bg-zinc-800/50'
+        )}
         aria-expanded={expanded}
         aria-controls={panelId}
         aria-label={ariaLabel}
@@ -122,7 +136,7 @@ export const DisclosurePanel: FC<DisclosurePanelProps> = ({
       >
         <span className="flex w-full items-center justify-between gap-3">
           <span className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="min-w-0 truncate font-medium text-zinc-200">{title ?? actionLabel}</span>
+            <span className="min-w-0 flex-1 font-medium text-zinc-200">{title ?? actionLabel}</span>
             {headerAccessory}
           </span>
           {chevronOnly ? <CollapsibleChevron expanded={expanded} /> : null}

@@ -4,69 +4,75 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ToolsPage from '../ToolsPage';
-import enTools from '../../i18n/locales/en/common/tools.json';
-
-const mockUseUiGate = vi.fn();
-const mockUseVehicleCodexScores = vi.fn();
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('../../hooks/useUiGate', () => ({
-  useUiGate: () => mockUseUiGate(),
-}));
+const mockUseVehicleCodexScores = vi.fn();
+const mockUseCloudSyncCard = vi.fn();
 
 vi.mock('../../hooks/useVehicleCodexScores', () => ({
   useVehicleCodexScores: () => mockUseVehicleCodexScores(),
 }));
 
-vi.mock('../../services/cloudSyncService', () => ({
-  backupLocalToCloud: vi.fn(),
-  restoreCloudToLocal: vi.fn(),
+vi.mock('../../hooks/useCloudSyncCard', () => ({
+  useCloudSyncCard: () => mockUseCloudSyncCard(),
 }));
 
 vi.mock('../../components/tools/VehicleSpecificationCodex', () => ({
   VehicleSpecificationCodex: () => <div data-testid="vehicle-codex" />,
 }));
 
-vi.mock('../../components/ladder/LeaderboardGateSheet', () => ({
+vi.mock('../../components/tools/CloudSyncRestoreConfirmDialog', () => ({
   default: () => null,
 }));
-
-const SYNC_RESTORE_WARNING = enTools.tools.syncInfo.restoreWarning;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (options?.ns === 'common' || key.startsWith('tools.') || key.startsWith('assessment.')) {
-        const map: Record<string, string> = {
-          'tools.syncTitle': 'Cloud Sync',
-          'tools.syncInfo.panelTitle': 'Sync Details',
-          'tools.syncInfo.toggleExpand': 'Show sync details',
-          'tools.syncInfo.toggleCollapse': 'Hide sync details',
-          'tools.syncInfo.restoreWarning': SYNC_RESTORE_WARNING,
-          'tools.syncInfo.scopeFootprint': enTools.tools.syncInfo.scopeFootprint,
-          'tools.syncInfo.scopeBadges': enTools.tools.syncInfo.scopeBadges,
-          'tools.syncBackup': 'Backup Now',
-          'tools.syncRestore': 'Restore',
-          'tools.syncUpgrade': 'Unlock Pro',
-          'tools.kicker': 'Utility Deck',
-          'tools.title': 'Tools & Cloud Sync',
-          'tools.calculators.title': 'Training Calculators',
-          'tools.calculators.oneRm.title': '1RM Calculator',
-          'tools.calculators.plates.title': 'Plate Calculator',
-          'tools.somatotypeLab.title': 'Somatochart',
-          'tools.codex.panelTitle': 'Vehicle Codex',
-          'assessment.referenceInfo.toggleExpand': 'Expand',
-          'assessment.referenceInfo.toggleCollapse': 'Collapse',
-        };
-        if (map[key]) return map[key];
+      if (key === 'tools.sync.status.updatedAt' && options?.time) {
+        return `Cloud Backup · ${String(options.time)}`;
       }
-      return key;
+      const map: Record<string, string> = {
+        'tools.syncTitle': 'Cloud Sync',
+        'tools.syncBackup': 'Backup to Cloud',
+        'tools.syncRestore': 'Restore from Cloud',
+        'tools.syncUpgrade': 'Upgrade to PRO',
+        'tools.sync.status.locked': 'Cloud backup is a PRO feature.',
+        'tools.sync.status.loading': 'Checking cloud snapshot status…',
+        'tools.sync.status.empty': 'No cloud backup yet',
+        'tools.sync.footerHint': '※ Restoring will overwrite local data',
+        'tools.kicker': 'Utility Deck',
+        'tools.title': 'Tools & Cloud Sync',
+        'tools.calculators.title': 'Training Calculators',
+        'tools.calculators.oneRm.title': '1RM Calculator',
+        'tools.calculators.plates.title': 'Plate Calculator',
+        'tools.somatotypeLab.title': 'Somatochart',
+        'tools.codex.panelTitle': 'Vehicle Codex',
+        'assessment.referenceInfo.toggleExpand': 'Expand',
+        'assessment.referenceInfo.toggleCollapse': 'Collapse',
+      };
+      return map[key] ?? key;
     },
   }),
 }));
+
+function baseCardModel(overrides: Record<string, unknown> = {}) {
+  return {
+    canSync: true,
+    statusLoading: false,
+    busy: false,
+    status: { exists: false, cloudUpdatedAt: null },
+    feedback: null,
+    restoreConfirmOpen: false,
+    requestBackup: vi.fn(),
+    requestRestore: vi.fn(),
+    confirmRestore: vi.fn(),
+    cancelRestore: vi.fn(),
+    ...overrides,
+  };
+}
 
 function renderPage(): { container: HTMLDivElement; unmount: () => void } {
   const container = document.createElement('div');
@@ -96,84 +102,61 @@ describe('ToolsPage cloud sync card', () => {
     vi.clearAllMocks();
   });
 
-  it('keeps sync info DisclosurePanel collapsed by default', () => {
-    mockUseUiGate.mockReturnValue({ kind: 'none' });
+  it('shows compact status and footer for Pro-eligible users with a snapshot', () => {
     mockUseVehicleCodexScores.mockReturnValue({});
-
-    const { container, unmount } = renderPage();
-    const toggle = container.querySelector('#tools-cloud-sync-info-toggle');
-    const panel = container.querySelector('#tools-cloud-sync-info-panel');
-
-    expect(toggle).not.toBeNull();
-    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
-    expect(toggle?.getAttribute('aria-label')).toBe('Show sync details');
-    expect(container.textContent).not.toContain('Show sync details');
-    expect(panel).not.toBeNull();
-    expect(panel?.hasAttribute('hidden')).toBe(true);
-
-    unmount();
-  });
-
-  it('does not render legacy syncBody copy', () => {
-    mockUseUiGate.mockReturnValue({ kind: 'none' });
-    mockUseVehicleCodexScores.mockReturnValue({});
-
-    const { container, unmount } = renderPage();
-
-    expect(container.textContent).not.toContain('tools.syncBody');
-    expect(container.textContent).not.toContain('Pro syncs profile and history to cloud.');
-
-    unmount();
-  });
-
-  it('expands sync info panel and reveals restore warning on toggle', () => {
-    mockUseUiGate.mockReturnValue({ kind: 'pro' });
-    mockUseVehicleCodexScores.mockReturnValue({});
-
-    const { container, unmount } = renderPage();
-    const toggle = container.querySelector('#tools-cloud-sync-info-toggle') as HTMLButtonElement;
-
-    act(() => {
-      toggle.click();
-    });
-
-    const panel = container.querySelector('#tools-cloud-sync-info-panel');
-
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(panel?.hasAttribute('hidden')).toBe(false);
-    expect(container.textContent).toContain(SYNC_RESTORE_WARNING);
-    expect(container.textContent).toContain(enTools.tools.syncInfo.scopeFootprint);
-    expect(container.textContent).toContain(enTools.tools.syncInfo.scopeBadges);
-
-    unmount();
-  });
-
-  it('keeps backup and restore actions visible when collapsed', () => {
-    mockUseUiGate.mockReturnValue({ kind: 'none' });
-    mockUseVehicleCodexScores.mockReturnValue({});
-
-    const { container, unmount } = renderPage();
-
-    const buttonLabels = Array.from(container.querySelectorAll('button')).map(
-      (el) => el.textContent
+    mockUseCloudSyncCard.mockReturnValue(
+      baseCardModel({
+        canSync: true,
+        status: { exists: true, cloudUpdatedAt: '2026-10-10T10:30:00.000Z' },
+      })
     );
-    expect(buttonLabels).toContain('Backup Now');
-    expect(buttonLabels).toContain('Restore');
+
+    const { container, unmount } = renderPage();
+
+    expect(container.textContent).toContain('Cloud Backup ·');
+    expect(container.textContent).toContain('Backup to Cloud');
+    expect(container.textContent).toContain('Restore from Cloud');
+    expect(container.textContent).toContain('※ Restoring will overwrite local data');
+    expect(container.textContent).not.toContain('Upgrade to PRO');
 
     unmount();
   });
 
-  it('does not render preemptive pro banner or collapsed hint when gated', () => {
-    mockUseUiGate.mockReturnValue({ kind: 'pro', joinArenaFrom: 'backup' });
+  it('disables backup/restore and shows upgrade CTA when not Pro-eligible', () => {
     mockUseVehicleCodexScores.mockReturnValue({});
+    mockUseCloudSyncCard.mockReturnValue(
+      baseCardModel({
+        canSync: false,
+        status: { exists: false, cloudUpdatedAt: null },
+      })
+    );
+
+    const { container, unmount } = renderPage();
+    const buttons = Array.from(container.querySelectorAll('button'));
+    const backup = buttons.find((b) => b.textContent === 'Backup to Cloud');
+    const restore = buttons.find((b) => b.textContent === 'Restore from Cloud');
+
+    expect(container.textContent).toContain('Cloud backup is a PRO feature.');
+    expect(backup?.disabled).toBe(true);
+    expect(restore?.disabled).toBe(true);
+    expect(container.textContent).toContain('Upgrade to PRO');
+
+    unmount();
+  });
+
+  it('shows empty backup status for Pro users without cloud data', () => {
+    mockUseVehicleCodexScores.mockReturnValue({});
+    mockUseCloudSyncCard.mockReturnValue(
+      baseCardModel({
+        canSync: true,
+        status: { exists: false, cloudUpdatedAt: null },
+      })
+    );
 
     const { container, unmount } = renderPage();
 
-    expect(container.textContent).not.toContain('Cloud sync requires Pro');
-    expect(container.textContent).not.toContain(
-      'Backup scope, restore behavior, and requirements'
-    );
-    expect(container.textContent).toContain('Unlock Pro');
+    expect(container.textContent).toContain('No cloud backup yet');
+    expect(container.textContent).not.toContain('Upgrade to PRO');
 
     unmount();
   });
