@@ -10,7 +10,7 @@
       "body": "系統喚醒完畢，載具待命——準備榨出你的極限馬力。"
     },
     "profileInput": {
-      "kicker": "{{phase}} 01.5 · 規格登錄",
+      "kicker": "{{phase}} 01.5 · 規格建檔",
       "body": "輸入性別、年齡、身高、體重，鎖定六軸評測對照基準。",
       "lockHint": "載具規格未寫入。請儲存參數以解鎖通電程序。"
     },
@@ -19,7 +19,7 @@
       "protocolDesc": "六軸由運動科學引擎換算，參數鎖定後續對照基準。",
       "protocolExpand": "展開協議細節",
       "protocolCollapse": "收合協議細節",
-      "authorityFooter": "⚠️ 分數對照實時數據，通電後直接對照 Dyno。",
+      "authorityFooter": "⚠️ 分數對照即時數據，通電後直接對照 Dyno。",
       "features": {
         "strength": {
           "label": "力量／最大馬力",

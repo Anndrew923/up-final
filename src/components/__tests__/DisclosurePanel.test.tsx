@@ -23,7 +23,7 @@ describe('DisclosurePanel actionMode', () => {
           instanceId="test-disclosure"
           expanded={false}
           onToggle={vi.fn()}
-          title="當前性能六軸快照"
+          title="目前性能六軸快照"
           toggleExpandLabel="展開性能六軸快照"
           toggleCollapseLabel="收合性能六軸快照"
           actionMode={actionMode}
@@ -54,7 +54,7 @@ describe('DisclosurePanel actionMode', () => {
 
   it('chevron mode hides expand copy but keeps it on aria-label', () => {
     const { container, unmount } = mount('chevron');
-    expect(container.textContent).toContain('當前性能六軸快照');
+    expect(container.textContent).toContain('目前性能六軸快照');
     expect(container.textContent).not.toContain('展開性能六軸快照');
     expect(container.querySelector('button')?.getAttribute('aria-label')).toBe(
       '展開性能六軸快照'

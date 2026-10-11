@@ -30,7 +30,7 @@ describe('onboarding baseline i18n', () => {
       expect(copy.features.strength.label).toContain('力量');
       expect(copy.features.ffmi.label).toContain('FFMI');
       expect(copy.features.ffmi.desc).toContain('無脂肪質量指數');
-      expect(copy.authorityFooter).toContain('實時數據');
+      expect(copy.authorityFooter).toContain('即時數據');
     });
 
     it('formatOnboardingBaselineFeatureLabel uses CJK brackets', () => {

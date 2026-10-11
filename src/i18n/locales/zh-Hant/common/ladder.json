@@ -4,14 +4,14 @@
     "genesisEarlyBird": {
       "kicker": "創世專案 · 早鳥席位",
       "title": "⚡ 創世天梯專案：早鳥席位卡位中",
-      "body": "前 {{count}} 名登錄玩家於創世開放期間，享有「全球天梯」免費通行。達標後天梯將改為 Pro 專屬，早期參戰者將保留優先通行權。",
+      "body": "前 {{count}} 名註冊玩家於創世開放期間，享有「全球天梯」免費通行。達標後天梯將改為 Pro 專屬，早期參戰者將保留優先通行權。",
       "proNote": "註：DYNO INTEL 智慧分析等 Pro 功能仍需訂閱。",
       "dontShowAgain": "已了解，不再提示",
       "enterCta": "進入天梯（開始參戰）",
       "pioneerBadge": "✦ 創始先鋒 · 終身天梯免費",
       "pioneerBadgeWithSeat": "✦ 創始先鋒 · NO. {{seat}} · 終身天梯免費",
-      "pioneerHint": "您已鎖定創始特權，享有終身天梯登錄資格。Dyno Intel 深度推演與跨裝置雲端備份為 PRO 專屬特權。",
-      "stageEarly": "✦ 創始先鋒賽季 · 限量 {{count}} 席終身免費登錄",
+      "pioneerHint": "您已鎖定創始特權，享有終身天梯通行資格。Dyno Intel 深度推演與跨裝置雲端備份為 PRO 專屬特權。",
+      "stageEarly": "✦ 創始先鋒賽季 · 限量 {{count}} 席終身免費通行資格",
       "stageGrowth": "✦ 創始先鋒席位已認領突破 {{percent}}% · 鎖定終身天梯",
       "stageClosing": "⚠️ 創始先鋒席位僅剩最後 {{remaining}} 席 · 額滿即恢復 PRO 專屬",
       "stageEnded": "創始席位已額滿 · 天梯恢復為 PRO 專屬（先鋒終身通行仍有效）"
@@ -47,7 +47,7 @@
     "activeFilterCount": "已選 {{count}} 項",
     "floatingRank": {
       "filteredRankShort": "子榜 #{{rank}}",
-      "notRankedUnderFilters": "當前篩選條件下未入榜",
+      "notRankedUnderFilters": "目前篩選條件下未入榜",
       "cta": "點擊跳到我的那一列"
     },
     "userPreview": {
@@ -73,8 +73,8 @@
       "shardDriftWarning": "本榜登記分（{{listed}}）與公開檔案此軸分數（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以對齊列表與個人檔。"
     },
     "moderation": {
-      "block": "屏蔽",
-      "unblock": "解除屏蔽",
+      "block": "封鎖",
+      "unblock": "解除封鎖",
       "report": "檢舉",
       "reportTitle": "檢舉戰場用戶",
       "reportDescription": "請選擇檢舉類型。我們不會向對方透露你的身分。",

@@ -7,10 +7,10 @@
       "toggleCollapse": "收合資料"
     },
     "sixAxisSnapshot": {
-      "title": "當前性能六軸快照",
+      "title": "目前性能六軸快照",
       "toggleExpand": "展開性能六軸快照",
       "toggleCollapse": "收合性能六軸快照",
-      "saveSnapshot": "封存當前性能快照至日誌",
+      "saveSnapshot": "封存目前性能快照至日誌",
       "saveDone": "快照成功封存"
     },
     "axis": {

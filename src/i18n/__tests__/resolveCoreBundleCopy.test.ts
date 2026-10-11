@@ -9,7 +9,7 @@ describe('resolveCoreBundleCopy', () => {
 
   it('resolves identity.liveSpecKicker for zh-Hant', () => {
     const kicker = resolveIdentityString(i18n.t.bind(i18n), 'liveSpecKicker');
-    expect(kicker).toContain('實時載具規格');
+    expect(kicker).toContain('即時載具規格');
     expect(kicker).not.toContain('identity.liveSpec');
   });
 });

@@ -328,7 +328,7 @@ const JoinArenaPage: FC = () => {
             });
           }}
         >
-          {t('manageSubscription')}
+          {t('settings.manageSubscription', { ns: 'common' })}
         </button>
 
         <ProSubscriptionResultModal

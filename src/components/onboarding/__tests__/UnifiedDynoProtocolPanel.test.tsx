@@ -66,6 +66,6 @@ describe('UnifiedDynoProtocolPanel', () => {
     const detailPanel = document.getElementById('onboarding-dyno-protocol-panel');
     expect(detailPanel?.hasAttribute('hidden')).toBe(false);
     expect(container.textContent).toContain('DOTS 對沖體重');
-    expect(container.textContent).toContain('實時數據');
+    expect(container.textContent).toContain('即時數據');
   });
 });

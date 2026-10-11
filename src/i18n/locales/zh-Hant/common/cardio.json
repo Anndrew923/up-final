@@ -44,7 +44,7 @@
       "overflow": "快於 100 分基準可獲溢出加分；未設性別預設男性。",
       "ceilingLabel": "成績天花板",
       "ceiling": "上限男 {{maleFloor}}／女 {{femaleFloor}}，超越鎖定最高分。",
-      "specialtyNote": "專項選填 — 僅本地與天梯，不計入六軸雷達。"
+      "specialtyNote": "專項選填 — 僅本機與天梯，不計入六軸雷達。"
     },
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
     "nextMilestoneHintWithRaw5km": "距離下一階升級尚需 {{points}} 分（5km 約需快 {{timeString}}）",

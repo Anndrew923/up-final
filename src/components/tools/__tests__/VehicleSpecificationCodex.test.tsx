@@ -36,7 +36,7 @@ vi.mock('react-i18next', () => ({
         'tools.codex.mainTitle': '載具全規格整備圖鑑',
         'tools.codex.panelTitle': '圖鑑',
         'tools.codex.tierRange': '階層區間',
-        'tools.codex.activeSetup': '當前載具設定',
+        'tools.codex.activeSetup': '目前載具設定',
         'tools.codex.tabs.strength': 'STRENGTH',
         'tools.codex.systems.strength': '底盤剛性',
       };
@@ -85,7 +85,7 @@ describe('VehicleSpecificationCodex', () => {
     expect(container.textContent).toContain('載具全規格整備圖鑑');
     expect(container.textContent).not.toContain('開放式 Dyno');
     expect(container.textContent).toContain('350hp雙門跑車');
-    expect(container.textContent).toContain('當前載具設定');
+    expect(container.textContent).toContain('目前載具設定');
     expect(container.querySelector('[aria-current="true"]')).not.toBeNull();
     unmount();
   });
