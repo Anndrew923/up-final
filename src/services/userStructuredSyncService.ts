@@ -69,7 +69,7 @@ import { safeGetItem, safeSetItem } from '../lib/safeLocalStorage';
 import { useEntitlementStore } from '../stores/entitlementStore';
 import { useScoreStore } from '../stores/scoreStore';
 import type { ScoreMap } from '../types/scoring';
-import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
+import { sanitizeLocalHistoryRecord } from '../logic/core/localHistoryRecord';
 import {
   emptyTrainingFootprint,
   mergeTrainingFootprintStates,
@@ -272,9 +272,10 @@ export async function migrateLegacyBlobToStructuredIfPresent(
   const hist = Array.isArray(parsed.history) ? parsed.history : [];
   const batchEntries: Array<{ record: LocalHistoryRecord; cloudAt: string }> = [];
   for (const row of hist) {
-    if (!isLocalHistoryRecord(row)) continue;
+    const sanitized = sanitizeLocalHistoryRecord(row);
+    if (!sanitized) continue;
     batchEntries.push({
-      record: row,
+      record: sanitized,
       cloudAt: migratedAt,
     });
   }

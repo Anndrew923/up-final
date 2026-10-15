@@ -3,12 +3,64 @@
     "kicker": "本機日誌庫",
     "title": "測功日誌 // DYNO LOGS",
     "empty": "尚無六軸快照。前往「測功」分頁完成評測並儲存第一筆。",
-    "colDate": "儲存時間",
     "colOverall": "總分",
-    "colActions": "操作",
     "delete": "刪除",
     "deleteConfirm": "確定要刪除這筆快照嗎？此操作無法復原。",
     "valueEmpty": "—",
+    "card": {
+      "axis": {
+        "strength": "力量",
+        "explosivePower": "爆發",
+        "cardio": "心肺",
+        "muscleMass": "肌量",
+        "bodyFat": "FFMI",
+        "gripStrength": "握力"
+      }
+    },
+    "rawTelemetry": {
+      "badge": "細項",
+      "scoresOnly": "純分數紀錄 · 此筆未封存原始物理細項",
+      "archiveEmpty": "已標記封存 · 此筆尚無可顯示的物理細項",
+      "expand": "展開原始細項",
+      "collapse": "收合原始細項",
+      "liftSet": "{{weight}} kg × {{reps}} (1RM {{oneRm}}kg)",
+      "lifts": {
+        "benchPress": "臥推",
+        "squat": "深蹲",
+        "deadlift": "硬舉",
+        "latPulldown": "下拉",
+        "shoulderPress": "肩推"
+      },
+      "sections": {
+        "strength": "力量",
+        "power": "爆發力",
+        "cardio": "心肺",
+        "physique": "體態 / FFMI",
+        "grip": "握力"
+      },
+      "fields": {
+        "verticalJump": "垂直跳",
+        "standingLongJump": "立定跳",
+        "sprint": "100 m",
+        "cooperDistance": "Cooper",
+        "run5KmTime": "5 km",
+        "run5KmPace": "配速",
+        "bodyFatPct": "體脂",
+        "smm": "SMM",
+        "armCircumference": "臂圍",
+        "height": "身高",
+        "weight": "體重",
+        "gripPeak": "握力峰值"
+      },
+      "units": {
+        "kg": "kg",
+        "cm": "cm",
+        "m": "m",
+        "sec": "s",
+        "pct": "%",
+        "perKm": "/km"
+      }
+    },
     "footprint": {
       "kicker": "LOCAL RHYTHM",
       "title": "測功節奏",

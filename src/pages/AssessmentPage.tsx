@@ -11,6 +11,7 @@ import { useMergedScoresFromLocalStores } from '../hooks/useMergedScoresFromLoca
 import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { cn } from '../lib/cn';
 import { generateLocalId } from '../lib/generateLocalId';
+import { loadAssessmentRawInputsSnapshotFromDevice } from '../services/localStorageService';
 import { useHistoryStore } from '../stores/historyStore';
 
 const SAVE_TOAST_MS = 2400;
@@ -70,11 +71,14 @@ export default function AssessmentPage() {
   );
 
   const saveSnapshotToHistory = useCallback(() => {
+    // WHY: Freeze current *Inputs at archive time — live drafts are LWW overwrite and must not rewrite past logs.
+    const rawInputs = loadAssessmentRawInputsSnapshotFromDevice();
     addHistoryRecord({
       id: generateLocalId(),
       createdAt: new Date().toISOString(),
       scores: { ...mergedScores },
       overallScore: calculateSixAxisOverall(mergedScores),
+      ...(rawInputs ? { rawInputs } : {}),
     });
     setJustSaved(true);
     if (saveToastTimerRef.current !== null) {

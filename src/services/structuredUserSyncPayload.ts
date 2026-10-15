@@ -2,6 +2,7 @@
  * Wire-format types + parsers for Pro structured Firestore sync.
  * Lives under services/ (not types/) because payloads align with localStorage domain types.
  */
+import type { AssessmentRawInputsV1 } from '../types/assessmentRawInputs';
 import type { ScoreMap } from '../types/scoring';
 import type { PhysicalProfile } from '../types/userProfile';
 import type { CardioInputsPersisted } from '../types/cardioInputs';
@@ -11,7 +12,10 @@ import type { StrengthInputsPersisted } from '../types/strengthInputs';
 import type { GripInputsPersisted } from '../types/gripInputs';
 import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { FfmiDraft, LocalHistoryRecord, LocalProfile } from './localStorageService';
-import { isLocalHistoryRecord } from '../logic/core/localHistoryRecord';
+import {
+  isAssessmentRawInputsV1,
+  isLocalHistoryRecord,
+} from '../logic/core/localHistoryRecord';
 import type { TrainingFootprintState } from '../logic/core/trainingFootprint';
 
 export const STRUCTURED_PROFILE_SCHEMA_VERSION = 1 as const;
@@ -42,6 +46,8 @@ export interface StructuredHistoryFirestoreV1 {
   scores: ScoreMap;
   overallScore: number;
   note?: string;
+  /** Optional — scores-only cloud docs remain valid without this field. */
+  rawInputs?: AssessmentRawInputsV1;
 }
 
 export function historyRecordToFirestore(
@@ -56,6 +62,10 @@ export function historyRecordToFirestore(
     scores: record.scores,
     overallScore: record.overallScore,
     ...(record.note !== undefined ? { note: record.note } : {}),
+    // WHY: Defense in depth — never push a corrupt telemetry blob even if a caller bypassed the typed path.
+    ...(record.rawInputs !== undefined && isAssessmentRawInputsV1(record.rawInputs)
+      ? { rawInputs: record.rawInputs }
+      : {}),
   };
 }
 
@@ -75,5 +85,7 @@ export function parseFirestoreHistoryDoc(raw: unknown): LocalHistoryRecord | nul
     overallScore: d.overallScore as number,
   };
   if (typeof d.note === 'string') rec.note = d.note;
+  // WHY: Pass through only when shape is valid — corrupt rawInputs must not poison local restore.
+  if (isAssessmentRawInputsV1(d.rawInputs)) rec.rawInputs = d.rawInputs;
   return isLocalHistoryRecord(rec) ? rec : null;
 }

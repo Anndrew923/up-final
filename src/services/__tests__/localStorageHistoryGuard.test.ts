@@ -40,4 +40,30 @@ describe('local history runtime guard', () => {
     );
     expect(loadHistory()).toEqual([validRecord('ok')]);
   });
+
+  it('round-trips optional rawInputs and keeps scores-only rows', () => {
+    const withRaw: LocalHistoryRecord = {
+      ...validRecord('with-raw'),
+      rawInputs: {
+        schemaVersion: 1,
+        grip: { peakKg: 48 },
+        ffmi: { bodyFatPct: 14 },
+      },
+    };
+    appendHistory(withRaw);
+    appendHistory(validRecord('scores-only'));
+    const loaded = loadHistory();
+    expect(loaded).toEqual([validRecord('scores-only'), withRaw]);
+  });
+
+  it('keeps score rows and strips corrupt rawInputs on load', () => {
+    storage.set(
+      HISTORY_KEY,
+      JSON.stringify([
+        validRecord('ok'),
+        { ...validRecord('bad-raw'), rawInputs: { schemaVersion: 1, grip: 123 } },
+      ])
+    );
+    expect(loadHistory()).toEqual([validRecord('ok'), validRecord('bad-raw')]);
+  });
 });

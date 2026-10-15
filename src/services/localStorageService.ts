@@ -9,20 +9,26 @@ import type { ArmSizeInputsPersisted } from '../types/armSizeInputs';
 import type { SomatotypeLabInputsPersisted } from '../types/somatotypeLabInputs';
 import type { PhysicalProfile } from '../types/userProfile';
 import type { SomatotypeLabSnapshot } from '../logic/core/somatotypeLab';
+import { buildAssessmentRawInputsSnapshot } from '../logic/core/buildAssessmentRawInputsSnapshot';
 import {
-  isLocalHistoryRecord,
+  sanitizeLocalHistoryRecord,
   type LocalHistoryRecord,
 } from '../logic/core/localHistoryRecord';
 import {
   parseConsoleAxisViewMode,
   type ConsoleAxisViewMode,
 } from '../logic/core/consoleAxisViewMode';
+import type { AssessmentRawInputsV1 } from '../types/assessmentRawInputs';
 import { clearAllDynoIntelLogs, hasAnyDynoIntelLogs } from './dynoIntelLogPersistence';
 import { clearSpecBadgeSeen } from './specBadgeSeenService';
 import { clearTrainingFootprint } from './trainingFootprintService';
 import { safeGetItem, safeRemoveItem, safeSetItem } from '../lib/safeLocalStorage';
 
-export { isLocalHistoryRecord, type LocalHistoryRecord } from '../logic/core/localHistoryRecord';
+export {
+  isLocalHistoryRecord,
+  sanitizeLocalHistoryRecord,
+  type LocalHistoryRecord,
+} from '../logic/core/localHistoryRecord';
 export type { ConsoleAxisViewMode } from '../logic/core/consoleAxisViewMode';
 
 const STORAGE_KEYS = {
@@ -361,7 +367,26 @@ export function saveHistory(records: LocalHistoryRecord[]): void {
 export function loadHistory(): LocalHistoryRecord[] {
   const parsed = safeParse<unknown>(safeGetItem(STORAGE_KEYS.history), []);
   if (!Array.isArray(parsed)) return [];
-  return parsed.filter(isLocalHistoryRecord).slice(0, LOCAL_HISTORY_MAX_RECORDS);
+  return parsed
+    .map(sanitizeLocalHistoryRecord)
+    .filter((row): row is LocalHistoryRecord => row !== null)
+    .slice(0, LOCAL_HISTORY_MAX_RECORDS);
+}
+
+/**
+ * Device-side pack for lobby history archive — keeps pages free of multi-key localStorage I/O.
+ */
+export function loadAssessmentRawInputsSnapshotFromDevice(): AssessmentRawInputsV1 | undefined {
+  return buildAssessmentRawInputsSnapshot({
+    strengthInputs: loadStrengthInputs(),
+    powerInputs: loadPowerInputs(),
+    cardioInputs: loadCardioInputs(),
+    muscleInputs: loadMuscleInputs(),
+    gripInputs: loadGripInputs(),
+    armSizeInputs: loadArmSizeInputs(),
+    ffmiDraft: loadFfmiDraft(),
+    physicalProfile: loadPhysicalProfile(),
+  });
 }
 
 export function appendHistory(
@@ -370,7 +395,9 @@ export function appendHistory(
 ): LocalHistoryRecord[] {
   const current = loadHistory();
   const safeMax = Math.max(0, Math.min(maxRecords, LOCAL_HISTORY_MAX_RECORDS));
-  const next = [record, ...current].filter(isLocalHistoryRecord).slice(0, safeMax);
+  // WHY: Sanitize incoming (strip corrupt optional fields) instead of silently dropping a whole save.
+  const incoming = sanitizeLocalHistoryRecord(record);
+  const next = (incoming ? [incoming, ...current] : current).slice(0, safeMax);
   saveHistory(next);
   return next;
 }

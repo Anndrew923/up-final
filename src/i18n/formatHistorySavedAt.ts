@@ -1,23 +1,14 @@
-import { toSupportedLng } from './language';
-
-/** BCP 47 tag for `Intl` / `toLocaleString` — aligned with app bundles, not OS default. */
-export function historySavedAtLocaleTag(i18nLanguage: string | undefined): string {
-  return toSupportedLng(i18nLanguage) === 'zh-Hant' ? 'zh-TW' : 'en-US';
-}
-
 /**
- * Formats an ISO timestamp for the history table; falls back to raw string if unparsable.
- * Uses explicit options so EN/zh-TW stay readable and consistent across engines.
+ * Compact card header timestamp (`YYYY.MM.DD HH:mm` in device local time).
+ * WHY: Dot separators + fixed width fit 360px headers without truncate / ellipsis.
  */
-export function formatHistorySavedAt(iso: string, i18nLanguage: string | undefined): string {
+export function formatHistoryCardSavedAt(iso: string): string {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return iso;
-  const locale = historySavedAtLocaleTag(i18nLanguage);
-  return d.toLocaleString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${y}.${mo}.${day} ${h}:${min}`;
 }

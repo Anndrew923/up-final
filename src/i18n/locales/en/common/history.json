@@ -3,12 +3,64 @@
     "kicker": "LOCAL LOG ARCHIVE",
     "title": "Dyno Logs",
     "empty": "No six-axis snapshots yet. Open the Dyno tab, run an assessment, and save your first snapshot.",
-    "colDate": "Saved At",
     "colOverall": "Overall",
-    "colActions": "Actions",
     "delete": "Delete",
     "deleteConfirm": "Are you sure you want to delete this snapshot? This action cannot be undone.",
     "valueEmpty": "—",
+    "card": {
+      "axis": {
+        "strength": "STR",
+        "explosivePower": "PWR",
+        "cardio": "END",
+        "muscleMass": "SMM",
+        "bodyFat": "FFMI",
+        "gripStrength": "GRP"
+      }
+    },
+    "rawTelemetry": {
+      "badge": "RAW",
+      "scoresOnly": "Scores-only log · no raw physical inputs archived",
+      "archiveEmpty": "Archive marked · no displayable physical fields on this entry",
+      "expand": "Expand raw telemetry",
+      "collapse": "Collapse raw telemetry",
+      "liftSet": "{{weight}} kg × {{reps}} (1RM {{oneRm}}kg)",
+      "lifts": {
+        "benchPress": "Bench Press",
+        "squat": "Squat",
+        "deadlift": "Deadlift",
+        "latPulldown": "Lat Pulldown",
+        "shoulderPress": "Overhead Press"
+      },
+      "sections": {
+        "strength": "Strength",
+        "power": "Power",
+        "cardio": "Cardio",
+        "physique": "Physique / FFMI",
+        "grip": "Grip"
+      },
+      "fields": {
+        "verticalJump": "V-Jump",
+        "standingLongJump": "Broad Jump",
+        "sprint": "100 m",
+        "cooperDistance": "Cooper",
+        "run5KmTime": "5 km",
+        "run5KmPace": "Pace",
+        "bodyFatPct": "Body fat",
+        "smm": "SMM",
+        "armCircumference": "Arm",
+        "height": "Height",
+        "weight": "Weight",
+        "gripPeak": "Peak grip"
+      },
+      "units": {
+        "kg": "kg",
+        "cm": "cm",
+        "m": "m",
+        "sec": "s",
+        "pct": "%",
+        "perKm": "/km"
+      }
+    },
     "footprint": {
       "kicker": "LOCAL RHYTHM",
       "title": "Dyno Rhythm",

@@ -5,7 +5,6 @@ import { I18nextProvider } from 'react-i18next';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n';
-import { resolveSixAxisInputShortLabel } from '../../i18n/resolveSixAxisInputShortLabel';
 import type { LocalHistoryRecord } from '../../logic/core/localHistoryRecord';
 import { HISTORY_TI_PLATE_GRAD_ID } from '../../components/history/TitaniumBadgeDefs';
 import { WEEKLY_RHYTHM_TARGET } from '../../logic/core/trainingFootprint';
@@ -84,7 +83,7 @@ describe('HistoryPage', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  it('renders fitness-science axis headers, not mechanical output labels', async () => {
+  it('renders mobile log cards with six-axis bento and no horizontal table', async () => {
     const t = i18n.getFixedT('zh-Hant', 'common');
     const { container, root } = renderHistoryPage();
 
@@ -92,15 +91,22 @@ describe('HistoryPage', () => {
       await Promise.resolve();
     });
 
-    const headerText = container.querySelector('thead')?.textContent ?? '';
-    for (const metric of SIX_AXIS_METRICS) {
-      const scienceLabel = resolveSixAxisInputShortLabel(t, metric);
-      expect(headerText).toContain(scienceLabel);
-    }
+    expect(container.querySelector('table')).toBeNull();
+    expect(container.querySelector('.overflow-x-auto')).toBeNull();
+    expect(container.querySelector('main')?.className).toContain('max-w-md');
+    expect(container.querySelector('[data-testid="history-log-card-list"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="history-log-card"]')).toBeTruthy();
 
-    expect(headerText).not.toContain('馬力');
-    expect(headerText).not.toContain('車體外觀');
-    expect(headerText).not.toContain('引擎排量');
+    const axisGrid = container.querySelector('[data-testid="history-card-axis-grid"]');
+    expect(axisGrid?.className).toContain('grid-cols-3');
+    expect(axisGrid?.children.length).toBe(SIX_AXIS_METRICS.length);
+    for (const metric of SIX_AXIS_METRICS) {
+      expect(axisGrid?.textContent).toContain(t(`history.card.axis.${metric}`));
+    }
+    expect(axisGrid?.textContent).not.toContain('馬力');
+    expect(axisGrid?.textContent).not.toContain('車體外觀');
+    expect(axisGrid?.textContent).not.toContain('引擎排量');
+    expect(container.textContent).toContain('95.71');
 
     act(() => root.unmount());
   });
