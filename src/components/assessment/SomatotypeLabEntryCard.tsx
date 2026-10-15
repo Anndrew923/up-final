@@ -5,8 +5,9 @@ import { ROUTES } from '../../config/routes';
 
 /**
  * Assessment-lobby portal into the somatotype lab.
- * WHY: Open-entry copy (not paywall “unlock”) — lab is local Core surface; Tools
- * uses the noun lab title, Dyno uses verb-led enter for the same route.
+ * WHY: Open-entry copy (not paywall “unlock”) — lab is local Core surface.
+ * EN lobby uses the compact noun (“Somatochart”) to avoid dual-column wrap;
+ * zh-Hant keeps the verb-led enter phrase. Tools page still owns the full lab title.
  * WHY no kicker: Plan A keeps the specialty capsule to a single high-contrast CTA line.
  */
 export const SomatotypeLabEntryCard: FC = () => {

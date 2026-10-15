@@ -11,6 +11,13 @@ import {
   type AssessmentLobbyCardModel,
 } from '../useAssessmentLobbyCards';
 
+/** Locale switch under I18next must stay inside act when harness may still be mounted. */
+async function changeLanguage(lng: string): Promise<void> {
+  await act(async () => {
+    await i18n.changeLanguage(lng);
+  });
+}
+
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true;
@@ -88,5 +95,20 @@ describe('useAssessmentLobbyCards', () => {
     }
 
     harness.unmount();
+  });
+
+  it('resolves compact EN lobby titles for dual-column cards', async () => {
+    await changeLanguage('en');
+    const harness = renderHookHarness({});
+    try {
+      const byKey = Object.fromEntries(harness.getCurrent().map((c) => [c.key, c.title]));
+      expect(byKey.grip).toBe('Grip');
+      expect(byKey.explosive).toBe('Power');
+      expect(byKey.muscle).toBe('Muscle');
+      expect(byKey.armSize).toBe('Arm');
+    } finally {
+      harness.unmount();
+      await changeLanguage('zh-Hant');
+    }
   });
 });

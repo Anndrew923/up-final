@@ -137,22 +137,66 @@ describe('HomeRadarBoard console axis view', () => {
     expect(container!.querySelector('.ui-console-radar-aura')).not.toBeNull();
   });
 
-  it('centers the radar title on a balanced 1fr_auto_1fr title row', () => {
+  it('stacks a full-width centered title above the view toggle', () => {
     renderBoard();
     const titleRow = container!.querySelector('[data-testid="console-title-row"]');
-    expect(titleRow?.className).toContain('grid-cols-[1fr_auto_1fr]');
-    expect(titleRow?.querySelector('h2')?.textContent).toBe('性能儀表');
-    expect(titleRow?.querySelector('h2')?.className).toContain('justify-self-center');
-    const trailing = titleRow?.children[2] as HTMLElement | undefined;
-    expect(trailing?.className).toContain('justify-end');
+    expect(titleRow?.className).toContain('flex');
+    expect(titleRow?.className).toContain('flex-col');
+    expect(titleRow?.className).toContain('items-center');
+    expect(titleRow?.children).toHaveLength(2);
+    const title = titleRow?.querySelector('h2');
+    expect(title?.textContent).toBe('性能儀表');
+    expect(title?.className).toContain('w-full');
+    expect(title?.className).toContain('text-center');
+    const trailing = titleRow?.querySelector(
+      '[data-testid="console-axis-view-toggle"]'
+    ) as HTMLElement | null;
+    expect(trailing?.className).toContain('mt-1.5');
+    expect(trailing?.className).toContain('justify-center');
     expect(trailing?.querySelector('[role="group"]')).not.toBeNull();
+  });
+
+  it('renders the full EN console title on its own row above the view toggle', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en');
+    });
+    try {
+      renderBoard();
+      const titleRow = container!.querySelector('[data-testid="console-title-row"]');
+      expect(titleRow?.className).toContain('flex-col');
+      expect(titleRow?.children).toHaveLength(2);
+      expect(titleRow?.querySelector('h2')?.textContent).toBe('PERFORMANCE MAP');
+      expect(titleRow?.querySelector('h2')?.className).toContain('w-full');
+      expect(titleRow?.querySelector('h2')?.className).toContain('text-center');
+      const liveToggle = titleRow?.querySelector('[data-testid="console-axis-view-toggle"]');
+      expect(liveToggle?.className).toContain('justify-center');
+      expect(liveToggle?.querySelector('[role="group"]')).not.toBeNull();
+      expect(liveToggle?.textContent).toContain('Fitness');
+      expect(liveToggle?.textContent).toContain('Telemetry');
+    } finally {
+      // WHY unmount before locale restore: changeLanguage notifies live subscribers and must not race act().
+      if (root) {
+        const mounted = root;
+        act(() => {
+          mounted.unmount();
+        });
+        root = undefined;
+      }
+      container?.remove();
+      container = undefined;
+      await act(async () => {
+        await i18n.changeLanguage('zh-Hant');
+      });
+    }
   });
 
   it('switches to telemetry lexicon, persists mode, and arms charge + sheen ritual', async () => {
     const { hapticService } = await import('../../../services/hapticService');
     renderBoard();
 
-    const telemetryBtn = Array.from(container!.querySelectorAll('button')).find(
+    // WHY scope to live toggle: keeps the interaction contract pinned to the dedicated toggle row.
+    const liveToggle = container!.querySelector('[data-testid="console-axis-view-toggle"]');
+    const telemetryBtn = Array.from(liveToggle?.querySelectorAll('button') ?? []).find(
       (btn) => btn.textContent === '遙測'
     );
     expect(telemetryBtn).toBeTruthy();

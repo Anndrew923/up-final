@@ -39,11 +39,11 @@
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle Mass"
+      "title": "Muscle"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Explosive Power"
+      "title": "Power"
     },
     "strength": {
       "kicker": "Strength",
@@ -51,11 +51,11 @@
     },
     "grip": {
       "kicker": "Grip",
-      "title": "Grip Test"
+      "title": "Grip"
     },
     "armSize": {
       "kicker": "Circumference",
-      "title": "Arm Size Test"
+      "title": "Arm"
     },
     "auras": {
       "none": "None",

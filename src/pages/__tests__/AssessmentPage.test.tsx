@@ -36,7 +36,7 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
     {
       key: 'explosive',
       to: '/explosive',
-      title: 'Explosive',
+      title: 'Power',
       size: 'standard',
       colSpan: 1,
       layer: 'power',
@@ -76,7 +76,7 @@ vi.mock('../../hooks/useAssessmentLobbyCards', () => ({
     {
       key: 'armSize',
       to: '/arm-size',
-      title: 'Arm Size',
+      title: 'Arm',
       size: 'capsule',
       colSpan: 1,
       layer: 'specialty',
@@ -196,7 +196,8 @@ describe('AssessmentPage three-layer lobby + six-axis snapshot', () => {
     expect(container.textContent).toContain('Strength');
     expect(container.textContent).toContain('81.57');
     expect(container.textContent).not.toContain('81.57 HP');
-    expect(container.textContent).toContain('Arm Size');
+    expect(container.textContent).toContain('Arm');
+    expect(container.textContent).toContain('Power');
     expect(container.textContent).toContain('Pending');
 
     const toggle = container.querySelector(

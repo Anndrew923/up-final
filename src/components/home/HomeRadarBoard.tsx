@@ -119,20 +119,15 @@ export const HomeRadarBoard: FC = () => {
             {t('home.consoleKicker', { ns: 'common' })}
           </p>
           {/*
-            WHY 1fr_auto_1fr: title sits on the true horizontal midline (same axis as kicker + radar),
-            while the pill docks to the trailing 1fr — 2-col [1fr_auto] was shoving the h2 left.
+            WHY 2-row header: single-row flex reserved the trailing pill width and shoved the
+            title off the radar's vertical center. Full-width centered title restores that axis;
+            toggle owns its own row so EN/ZH never compete horizontally at ~360px.
           */}
-          <div
-            data-testid="console-title-row"
-            className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"
-          >
-            {/* Mirror trailing track so the auto title column stays on the card midline. */}
-            <span aria-hidden className="min-w-0" />
-            <h2 className="justify-self-center text-center font-semibold tracking-tight text-zinc-100">
+          <div data-testid="console-title-row" className="flex flex-col items-center">
+            <h2 className="w-full text-center font-semibold tracking-tight text-zinc-100">
               {t('home.radarOverview', { ns: 'common' })}
             </h2>
-            {/* WHY min-w-0: shrink-0 pill must not inflate the trailing 1fr past the card edge. */}
-            <div className="flex min-w-0 justify-end">
+            <div className="mt-1.5 flex justify-center" data-testid="console-axis-view-toggle">
               <ConsoleAxisViewToggle
                 value={viewMode}
                 onChange={setViewMode}
