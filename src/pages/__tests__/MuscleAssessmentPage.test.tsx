@@ -42,6 +42,12 @@ vi.mock('../../hooks/useAssessmentRevealFlow', () => ({
 
 vi.mock('../../hooks/useLeaderboardSyncAssessmentPage', () => ({
   useLeaderboardSyncAssessmentPage: () => ({
+    wantsGlobalLadder: true,
+    setWantsGlobalLadder: vi.fn(),
+    hasGuild: false,
+    publishMode: 'global' as const,
+    lastCloudOutcome: null,
+    overallScore: 0,
     syncPage: vi.fn(),
     busy: false,
     summary: null,

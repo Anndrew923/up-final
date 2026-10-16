@@ -28,6 +28,7 @@ const CrewHqCard: FC = () => {
             ? t('crew.hq.subtitleJoined', { tag: guild.tag, name: guild.name })
             : t('crew.hq.subtitleEmpty')}
         </p>
+        <p className="text-[11px] leading-relaxed text-zinc-500">{t('crew.hq.privacyNote')}</p>
       </header>
 
       <div className="mt-5">

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   buildLeaderboardSyncTargets,
+  createEmptyLeaderboardSyncRunSummary,
   type LadderSyncShardFailure,
   type LeaderboardSyncRunSummary,
 } from '../logic/core/leaderboardSyncTargets';
@@ -10,7 +11,13 @@ import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
+import { syncGuildLadderScore } from '../services/guildCallableService';
+import {
+  fetchUserGuildBinding,
+  invalidateGuildLadderCache,
+} from '../services/guildLadderCacheService';
 import { getLadderUploadIdentity } from '../services/ladderIdentityService';
+import { loadWantsGlobalLadderPublish } from '../services/ladderPublishPreferenceStorage';
 import {
   checkFullSyncAllowed,
   recordFullSyncAllowed,
@@ -104,12 +111,13 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     summaryState?.signature === targetsSignature ? summaryState.failures : [];
 
   useEffect(() => {
-    if (!uid || isAnonymous || gate !== 'ok') {
+    if (!uid || isAnonymous) {
       setFullSyncBlock(null);
       return;
     }
+    // Guild-only Sync All reuses the same full-sync budget — keep cooldown visible even when Pro gate ≠ ok.
     refreshFullSyncBlock(uid);
-  }, [uid, isAnonymous, gate, refreshFullSyncBlock]);
+  }, [uid, isAnonymous, refreshFullSyncBlock]);
 
   const goJoinArena = useCallback(() => {
     navigate(joinArenaPath('ladder'));
@@ -117,10 +125,64 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
 
   const syncAll = useCallback(async () => {
     setSummaryState(null);
-    if (targets.length === 0 || gate !== 'ok') return;
 
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
+
+    // Privacy: sticky opt-out must not be bypassed by Home/Ladder Sync All.
+    if (!loadWantsGlobalLadderPublish()) {
+      const fullSyncGate = checkFullSyncAllowed(user.uid);
+      if (!fullSyncGate.allowed) {
+        setFullSyncBlock(fullSyncGate);
+        return;
+      }
+      setBusy(true);
+      try {
+        const binding = await fetchUserGuildBinding(user.uid);
+        if (!binding?.guildId || !(overallScore > 0)) {
+          const empty = createEmptyLeaderboardSyncRunSummary();
+          setSummaryState({ signature: targetsSignature, summary: empty, failures: [] });
+          onFinishedRef.current?.();
+          return;
+        }
+        const identity = getLadderUploadIdentity();
+        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+        const result = await syncGuildLadderScore({
+          ladderScore: overallScore,
+          displayName: identity?.displayName,
+          avatarUrl: identity?.avatarUrl,
+          isAnonymous: profile?.isAnonymousInLadder === true,
+        });
+        if (result.ok && !result.skipped) {
+          recordFullSyncAllowed(user.uid);
+          refreshFullSyncBlock(user.uid);
+          invalidateGuildLadderCache(result.guildId ?? undefined);
+          const tally = createEmptyLeaderboardSyncRunSummary();
+          tally.attempted = 1;
+          tally.updated = 1;
+          setSummaryState({ signature: targetsSignature, summary: tally, failures: [] });
+          void hapticService.trigger('success');
+        } else if (!result.ok) {
+          setSummaryState({
+            signature: targetsSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [{ metric: 'ladderScore', reason: result.reason }],
+          });
+        } else {
+          setSummaryState({
+            signature: targetsSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [],
+          });
+        }
+        onFinishedRef.current?.();
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (targets.length === 0 || gate !== 'ok') return;
 
     const fullSyncGate = checkFullSyncAllowed(user.uid);
     if (!fullSyncGate.allowed) {
@@ -173,7 +235,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature, merged, refreshFullSyncBlock]);
+  }, [targets, gate, targetsSignature, merged, overallScore, refreshFullSyncBlock]);
 
   return {
     syncAll,

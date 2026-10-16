@@ -4,6 +4,7 @@ import { useLeaderboardAccess } from '../../hooks/useLeaderboardAccess';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
+import { loadWantsGlobalLadderPublish } from '../../services/ladderPublishPreferenceStorage';
 import LadderIdentitySheet from './LadderIdentitySheet';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
@@ -82,6 +83,11 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
     setHint(null);
     handledSummaryRef.current = null;
     clearFeedback();
+    // Privacy: crew-only sync must not require Pro gate or Arena identity.
+    if (!loadWantsGlobalLadderPublish()) {
+      void syncAll();
+      return;
+    }
     if (gate !== 'ok') {
       setHint(t(`ladder.upload.gate.${gate}`));
       return;

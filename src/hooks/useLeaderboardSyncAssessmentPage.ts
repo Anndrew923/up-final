@@ -3,8 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import type { AssessmentLadderUploadBundle } from '../logic/core/assessmentLadderSupplemental';
 import { mergeMergedScoresForAssessmentUpload } from '../logic/core/assessmentLadderSupplemental';
 import {
+  resolvePublishMode,
+  type LadderPublishPreference,
+} from '../logic/core/ladderPublishPreference';
+import {
   buildLeaderboardSyncTargets,
   coupleAssessmentSyncTargetsWithOverall,
+  createEmptyLeaderboardSyncRunSummary,
   mergeLeaderboardSyncTargetsWithSupplemental,
   pickLeaderboardSyncTargetsForAssessmentScope,
   type AssessmentLadderSyncScope,
@@ -17,7 +22,17 @@ import { calculateSixAxisOverall } from '../logic/core/scoring';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { hapticService } from '../services/hapticService';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
+import { syncGuildLadderScore } from '../services/guildCallableService';
+import {
+  fetchUserGuildBinding,
+  invalidateGuildLadderCache,
+} from '../services/guildLadderCacheService';
 import { getLadderUploadIdentity } from '../services/ladderIdentityService';
+import {
+  LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT,
+  loadWantsGlobalLadderPublish,
+  saveWantsGlobalLadderPublish,
+} from '../services/ladderPublishPreferenceStorage';
 import { runLeaderboardBatchUpload } from '../services/leaderboardBatchUploadService';
 import { queueStructuredProfileAfterRadarSubmit } from '../services/structuredSyncAfterRadarSubmit';
 import {
@@ -35,8 +50,23 @@ import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
 /** Shared ladder sync API for assessment page bar + breakthrough modal (single hook instance). */
 export type AssessmentLadderSyncController = Pick<
   ReturnType<typeof useLeaderboardSyncAssessmentPage>,
-  'syncPage' | 'busy' | 'summary' | 'failures' | 'gate' | 'targetCount' | 'goJoinArena' | 'clearFeedback'
+  | 'syncPage'
+  | 'busy'
+  | 'summary'
+  | 'failures'
+  | 'gate'
+  | 'targetCount'
+  | 'overallScore'
+  | 'goJoinArena'
+  | 'clearFeedback'
+  | 'wantsGlobalLadder'
+  | 'setWantsGlobalLadder'
+  | 'hasGuild'
+  | 'publishMode'
+  | 'lastCloudOutcome'
 >;
+
+export type AssessmentSyncCloudOutcome = 'arena' | 'guild' | 'local' | null;
 
 export interface UseLeaderboardSyncAssessmentPageOptions {
   scope: AssessmentLadderSyncScope;
@@ -52,6 +82,7 @@ export interface UseLeaderboardSyncAssessmentPageOptions {
 
 /**
  * One button → sequential uploads for every ladder shard that belongs to the current assessment page.
+ * Privacy Phase 1: may instead sync crew-only overall score or skip cloud entirely.
  */
 export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAssessmentPageOptions) {
   const navigate = useNavigate();
@@ -61,6 +92,49 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   }, [options.onFinished]);
 
   const merged = useMergedScoresFromLocalStores();
+  const authUid = useAuthStore((s) => s.uid);
+
+  const [wantsGlobalLadder, setWantsGlobalLadderState] = useState(() =>
+    loadWantsGlobalLadderPublish()
+  );
+  /** null = binding still loading — prevents local-only flash for crew members. */
+  const [hasGuild, setHasGuild] = useState<boolean | null>(null);
+  const [lastCloudOutcome, setLastCloudOutcome] = useState<AssessmentSyncCloudOutcome>(null);
+
+  const setWantsGlobalLadder = useCallback((next: boolean) => {
+    setWantsGlobalLadderState(next);
+    saveWantsGlobalLadderPublish(next);
+  }, []);
+
+  useEffect(() => {
+    const onPrefChanged = () => {
+      setWantsGlobalLadderState(loadWantsGlobalLadderPublish());
+    };
+    window.addEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
+    return () => {
+      window.removeEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!authUid) {
+      setHasGuild(false);
+      return;
+    }
+    setHasGuild(null);
+    void fetchUserGuildBinding(authUid).then((binding) => {
+      if (!cancelled) setHasGuild(Boolean(binding?.guildId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authUid]);
+
+  const publishMode = useMemo(
+    () => resolvePublishMode(wantsGlobalLadder, hasGuild),
+    [wantsGlobalLadder, hasGuild]
+  );
 
   const effectiveBundle = useMemo((): AssessmentLadderUploadBundle | null => {
     if (options.uploadBundle) return options.uploadBundle;
@@ -126,7 +200,10 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     failures: LadderSyncShardFailure[];
   } | null>(null);
 
-  const clearFeedback = useCallback(() => setSummaryState(null), []);
+  const clearFeedback = useCallback(() => {
+    setSummaryState(null);
+    setLastCloudOutcome(null);
+  }, []);
   const summary = summaryState?.signature === targetsSignature ? summaryState.summary : null;
   const failures =
     summaryState?.signature === targetsSignature ? summaryState.failures : [];
@@ -139,22 +216,87 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   const mergedForUploadRef = useRef(mergedForUpload);
   const targetsSignatureRef = useRef(targetsSignature);
   const gateRef = useRef(gate);
+  const publishModeRef = useRef(publishMode);
+  const overallScoreRef = useRef(overallScore);
   targetsRef.current = targets;
   mergedForUploadRef.current = mergedForUpload;
   targetsSignatureRef.current = targetsSignature;
   gateRef.current = gate;
+  publishModeRef.current = publishMode;
+  overallScoreRef.current = overallScore;
 
   const syncPage = useCallback(async () => {
+    const mode: LadderPublishPreference = publishModeRef.current;
     const activeTargets = targetsRef.current;
     const activeMerged = mergedForUploadRef.current;
     const activeSignature = targetsSignatureRef.current;
     const activeGate = gateRef.current;
+    const activeOverall = overallScoreRef.current;
 
     setSummaryState(null);
-    if (activeTargets.length === 0 || activeGate !== 'ok') return;
+    setLastCloudOutcome(null);
+
+    // Binding still resolving — modal disables CTA; no-op if called early.
+    if (mode === 'pending') return;
+
+    // Local-only: caller already persisted dashboard; no cloud I/O.
+    if (mode === 'local-only') {
+      setLastCloudOutcome('local');
+      onFinishedRef.current?.();
+      return;
+    }
 
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
+
+    if (mode === 'guild-only') {
+      if (!Number.isFinite(activeOverall) || activeOverall <= 0) return;
+      setBusy(true);
+      try {
+        // WHY: Crew sync must not require Arena identity sheet — Free trainees may lack nickname.
+        const identity = getLadderUploadIdentity();
+        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+        const result = await syncGuildLadderScore({
+          ladderScore: activeOverall,
+          displayName: identity?.displayName,
+          avatarUrl: identity?.avatarUrl,
+          isAnonymous: profile?.isAnonymousInLadder === true,
+        });
+        if (!result.ok) {
+          setSummaryState({
+            signature: activeSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [{ metric: 'ladderScore', reason: result.reason }],
+          });
+          setLastCloudOutcome(null);
+          return;
+        }
+        if (result.skipped) {
+          // Soft-skip (no-guild / not-member) is not a successful "local privacy" path.
+          setLastCloudOutcome(null);
+          onFinishedRef.current?.();
+          return;
+        }
+        invalidateGuildLadderCache(result.guildId ?? undefined);
+        const tally = createEmptyLeaderboardSyncRunSummary();
+        tally.attempted = 1;
+        tally.updated = 1;
+        setSummaryState({
+          signature: activeSignature,
+          summary: tally,
+          failures: [],
+        });
+        setLastCloudOutcome('guild');
+        void hapticService.trigger('success');
+        onFinishedRef.current?.();
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    // Global public ladder path (unchanged batch contract).
+    if (activeTargets.length === 0 || activeGate !== 'ok') return;
 
     const snap = readEntitlementSnapshot();
 
@@ -181,6 +323,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         summary: batch.summary,
         failures: batch.failures,
       });
+      setLastCloudOutcome('arena');
       if (
         batch.summary.updated > 0 ||
         (batch.summary.avatarPatched ?? 0) > 0 ||
@@ -194,7 +337,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
           updated: false,
         });
       }
-      queueStructuredProfileAfterRadarSubmit(batch);
+      void queueStructuredProfileAfterRadarSubmit(batch);
       onFinishedRef.current?.();
     } finally {
       setBusy(false);
@@ -208,7 +351,13 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     failures,
     gate,
     targetCount: targets.length,
+    overallScore,
     goJoinArena,
     clearFeedback,
+    wantsGlobalLadder,
+    setWantsGlobalLadder,
+    hasGuild,
+    publishMode,
+    lastCloudOutcome,
   };
 }

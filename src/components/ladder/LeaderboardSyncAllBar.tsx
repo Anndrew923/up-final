@@ -11,6 +11,7 @@ import { useUiGate } from '../../hooks/useUiGate';
 import { useGenesisSeatSummary } from '../../hooks/useGenesisSeatSummary';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
+import { loadWantsGlobalLadderPublish } from '../../services/ladderPublishPreferenceStorage';
 import { useEntitlementStore } from '../../stores/entitlementStore';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderIdentitySheet from './LadderIdentitySheet';
@@ -93,8 +94,16 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
 
   const runSyncOrIdentityGate = () => {
     setTapHint(null);
+    // Shared full-sync budget applies to guild-only path too (cost guardrail).
     if (fullSyncBlocked) {
       setTapHint('cooldown');
+      return;
+    }
+    // Privacy Phase 1: guild-only / local skip must not open Pro or Arena identity sheets.
+    const privacyGuildOnly = !loadWantsGlobalLadderPublish();
+    if (privacyGuildOnly) {
+      clearFeedback();
+      void syncAll();
       return;
     }
     if (targetCount === 0) {

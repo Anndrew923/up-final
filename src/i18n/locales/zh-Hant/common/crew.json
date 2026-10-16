@@ -6,7 +6,8 @@
       "subtitleEmpty": "建立或加入戰隊，開啟私有學員天梯",
       "subtitleJoined": "{{tag}} · {{name}}",
       "enter": "進入總部",
-      "openAria": "開啟戰隊總部"
+      "openAria": "開啟戰隊總部",
+      "privacyNote": "可於設定關閉全球天梯公開，仍僅同步戰隊私榜"
     },
     "page": {
       "kicker": "CREW HQ",

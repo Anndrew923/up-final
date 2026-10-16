@@ -16,4 +16,9 @@ describe('resolveBreakthroughArenaPipelineBanner', () => {
     const summary = { ...createEmptyLeaderboardSyncRunSummary(), attempted: 3, unchanged: 3 };
     expect(resolveBreakthroughArenaPipelineBanner(true, summary)).toBe('dashboard-only');
   });
+
+  it('returns guild-success / local-success from cloud outcome', () => {
+    expect(resolveBreakthroughArenaPipelineBanner(true, null, 'guild')).toBe('guild-success');
+    expect(resolveBreakthroughArenaPipelineBanner(true, null, 'local')).toBe('local-success');
+  });
 });

@@ -5,6 +5,12 @@ import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
+import {
+  resolvePublishBusyCopyKey,
+  resolvePublishCtaCopyKey,
+  resolvePublishHintCopyKey,
+  resolvePublishSuccessBannerKey,
+} from '../../logic/core/ladderPublishPreference';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -86,14 +92,20 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const isPipelineRunning = pipelineBusy || isArenaSyncing;
   const showDashboardThenArena = onPersistToDashboard != null && arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
+  const publishMode = arenaSync?.publishMode ?? 'global';
+  const wantsGlobalLadder = arenaSync?.wantsGlobalLadder ?? true;
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
   );
   const pipelineBanner = resolveBreakthroughArenaPipelineBanner(
     dashboardPersistedInSession,
-    arenaSync?.summary
+    arenaSync?.summary,
+    arenaSync?.lastCloudOutcome ?? null
   );
+  const secondaryCtaLabelKey = resolvePublishCtaCopyKey(publishMode);
+  const secondaryBusyLabelKey = resolvePublishBusyCopyKey(publishMode);
+  const publishHintKey = resolvePublishHintCopyKey(publishMode);
 
   const handleDashboardSync = useCallback(async () => {
     if (!onSyncToDashboard || isDashboardSyncing || isPipelineRunning) return;
@@ -107,8 +119,17 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
   const handleDashboardThenArena = useCallback(async () => {
     if (!onPersistToDashboard || !arenaSync || isDashboardSyncing || isPipelineRunning) return;
-    if (arenaSync.targetCount === 0) return;
-    if (tryOpenGateSheet(arenaSync.gate)) return;
+
+    const mode = arenaSync.publishMode;
+    if (mode === 'pending') return;
+
+    if (mode === 'guild-only' && !(arenaSync.overallScore > 0)) return;
+
+    // Global path keeps Pro / score gates; guild-only + local-only skip public ladder gate.
+    if (mode === 'global') {
+      if (arenaSync.targetCount === 0) return;
+      if (tryOpenGateSheet(arenaSync.gate)) return;
+    }
 
     setPipelineBusy(true);
     setDashboardPersistedInSession(false);
@@ -283,35 +304,63 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                   </button>
                 ) : null}
 
-                {showDashboardThenArena ? (
-                  <button
-                    type="button"
-                    className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
-                    disabled={
-                      syncDisabled ||
-                      actionsBusy ||
-                      arenaSync.targetCount === 0 ||
-                      arenaSync.gate === 'no-score' ||
-                      arenaSync.gate === 'invalid-score'
-                    }
-                    onClick={() => void handleDashboardThenArena()}
-                  >
-                    {isPipelineRunning
-                      ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
-                      : t('assessment.breakthrough.syncDashboardThenArena')}
-                  </button>
+                {showDashboardThenArena && arenaSync ? (
+                  <div className="mt-2 space-y-2">
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-zinc-800/90 bg-zinc-950/50 px-3 py-2.5">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500/40"
+                        checked={wantsGlobalLadder}
+                        disabled={actionsBusy}
+                        onChange={(e) => arenaSync.setWantsGlobalLadder(e.target.checked)}
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-xs font-medium text-zinc-200">
+                          {t('assessment.breakthrough.publishGlobalCheckbox')}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-relaxed text-zinc-500">
+                          {t(publishHintKey)}
+                        </span>
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
+                      disabled={
+                        syncDisabled ||
+                        actionsBusy ||
+                        publishMode === 'pending' ||
+                        (publishMode === 'global' &&
+                          (arenaSync.targetCount === 0 ||
+                            arenaSync.gate === 'no-score' ||
+                            arenaSync.gate === 'invalid-score')) ||
+                        (publishMode === 'guild-only' && !(arenaSync.overallScore > 0))
+                      }
+                      onClick={() => void handleDashboardThenArena()}
+                    >
+                      {isPipelineRunning ? t(secondaryBusyLabelKey) : t(secondaryCtaLabelKey)}
+                    </button>
+                  </div>
                 ) : null}
 
                 {pipelineBanner !== 'none' ? (
                   <p
                     className={`mt-3 text-sm ${
-                      pipelineBanner === 'full-success' ? 'text-emerald-400/90' : 'text-amber-300/90'
+                      pipelineBanner === 'full-success' ||
+                      pipelineBanner === 'guild-success' ||
+                      pipelineBanner === 'local-success'
+                        ? 'text-emerald-400/90'
+                        : 'text-amber-300/90'
                     }`}
                     role="status"
                   >
                     {pipelineBanner === 'full-success'
-                      ? t('assessment.breakthrough.dashboardAndArenaSuccess')
-                      : t('assessment.breakthrough.dashboardPersistedOnly')}
+                      ? t(resolvePublishSuccessBannerKey('global'))
+                      : pipelineBanner === 'guild-success'
+                        ? t(resolvePublishSuccessBannerKey('guild-only'))
+                        : pipelineBanner === 'local-success'
+                          ? t(resolvePublishSuccessBannerKey('local-only'))
+                          : t('assessment.breakthrough.dashboardPersistedOnly')}
                   </p>
                 ) : null}
 

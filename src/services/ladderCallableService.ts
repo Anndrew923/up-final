@@ -133,6 +133,60 @@ export async function callLadderReportUser(params: {
   }
 }
 
+export type WithdrawPublicPresenceResult =
+  | {
+      ok: true;
+      previewDeleted: boolean;
+      shardsDeleted: number;
+      avatarStorageCleared: boolean;
+    }
+  | { ok: false; reason: 'unavailable' | 'auth-required' | 'unknown' };
+
+let withdrawPublicPresenceFn: HttpsCallable<
+  Record<string, never>,
+  {
+    ok?: boolean;
+    previewDeleted?: boolean;
+    shardsDeleted?: number;
+    avatarStorageCleared?: boolean;
+  }
+> | null = null;
+
+function getWithdrawPublicPresenceCallable() {
+  const functions = getFirebaseFunctions();
+  if (!functions) return null;
+  if (!withdrawPublicPresenceFn) {
+    withdrawPublicPresenceFn = httpsCallable(functions, 'ladderWithdrawPublicPresence');
+  }
+  return withdrawPublicPresenceFn;
+}
+
+/**
+ * Privacy Phase 2 — erase caller's public ladder entries + preview (not guild members).
+ */
+export async function callLadderWithdrawPublicPresence(): Promise<WithdrawPublicPresenceResult> {
+  const callable = getWithdrawPublicPresenceCallable();
+  if (!callable) return { ok: false, reason: 'unavailable' };
+  try {
+    await prepareLadderCallableSession();
+    const { data } = await callable({});
+    if (data?.ok === true) {
+      return {
+        ok: true,
+        previewDeleted: data.previewDeleted === true,
+        shardsDeleted: Number(data.shardsDeleted) || 0,
+        avatarStorageCleared: data.avatarStorageCleared === true,
+      };
+    }
+    return { ok: false, reason: 'unknown' };
+  } catch (err) {
+    logLadderCallableError('ladderWithdrawPublicPresence', err);
+    const raw = err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : '';
+    if (raw.includes('unauthenticated')) return { ok: false, reason: 'auth-required' };
+    return { ok: false, reason: 'unknown' };
+  }
+}
+
 function normalizeBatchSummary(raw: LeaderboardSyncRunSummary | undefined): LeaderboardSyncRunSummary {
   const base = raw ?? createEmptyLeaderboardSyncRunSummary();
   return {

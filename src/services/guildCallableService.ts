@@ -241,3 +241,56 @@ export async function disbandGuild(): Promise<GuildCallableResult> {
     return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
   }
 }
+
+type SyncGuildScoreResponse = {
+  ok: boolean;
+  skipped?: boolean;
+  reason?: string;
+  guildId?: string | null;
+  ladderScore?: number;
+  error?: string;
+};
+
+/**
+ * Privacy Phase 1 — update crew private ladder overall score only.
+ * Free members allowed; never writes public leaderboard shards.
+ */
+export async function syncGuildLadderScore(input: {
+  ladderScore: number;
+  displayName?: string;
+  avatarUrl?: string;
+  isAnonymous?: boolean;
+}): Promise<
+  GuildCallableResult<{
+    skipped: boolean;
+    guildId: string | null;
+    ladderScore?: number;
+    skipReason?: string;
+  }>
+> {
+  const functions = getFirebaseFunctions();
+  if (!functions) return functionsUnavailable();
+  try {
+    await prepareGuildCallableSession();
+    const callable = httpsCallable<typeof input, SyncGuildScoreResponse>(
+      functions,
+      'syncGuildLadderScore'
+    );
+    const { data } = await callable(input);
+    if (data.ok === true) {
+      return {
+        ok: true,
+        skipped: data.skipped === true,
+        guildId: data.guildId ?? null,
+        ladderScore: data.ladderScore,
+        skipReason: typeof data.reason === 'string' ? data.reason : undefined,
+      };
+    }
+    return {
+      ok: false,
+      reason: mapGuildCallableError(data.error ?? data.reason ?? 'failed'),
+    };
+  } catch (err) {
+    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+  }
+}

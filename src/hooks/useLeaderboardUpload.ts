@@ -9,13 +9,17 @@ import {
 import type { LeaderboardShardId } from '../logic/core/ladderShards';
 import { joinArenaPath } from '../lib/joinArenaNavigation';
 import { getCurrentFirebaseUser } from '../services/firebaseClient';
+import { syncGuildLadderScore } from '../services/guildCallableService';
 import { getLadderUploadIdentity } from '../services/ladderIdentityService';
 import {
   submitLeaderboardScore,
   type SubmitLeaderboardResult,
 } from '../services/leaderboardService';
 import { invalidateGuildLadderCache } from '../services/guildLadderCacheService';
+import { loadWantsGlobalLadderPublish } from '../services/ladderPublishPreferenceStorage';
+import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
+import { loadPhysicalProfile } from '../services/localStorageService';
 import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import type { EntitlementState } from '../types/entitlement';
@@ -34,6 +38,7 @@ export function resolveLeaderboardUploadGate(
 
 /**
  * Pro + signed-in upload to `leaderboardService` (display name from auth store; ladder identity merged in service).
+ * Privacy Phase 2: when global publish is OFF, block public shard writes; overall may still sync crew.
  */
 export function useLeaderboardUpload() {
   const navigate = useNavigate();
@@ -42,10 +47,74 @@ export function useLeaderboardUpload() {
 
   const upload = useCallback(async (metric: LeaderboardShardId, score: number) => {
     setLastResult(null);
-    if (resolveLeaderboardUploadGate(score) !== 'ok') return;
 
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
+
+    // Privacy: do not write public shards when sticky preference is off.
+    if (!loadWantsGlobalLadderPublish()) {
+      if (metric !== LEADERBOARD_SHARD_OVERALL || !(score > 0)) {
+        setLastResult({
+          ok: false,
+          reason: 'unknown',
+          updated: false,
+          previousScore: null,
+          submittedScore: null,
+        });
+        return;
+      }
+      setBusy(true);
+      try {
+        const identity = getLadderUploadIdentity();
+        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+        const result = await syncGuildLadderScore({
+          ladderScore: score,
+          displayName: identity?.displayName,
+          avatarUrl: identity?.avatarUrl,
+          isAnonymous: profile?.isAnonymousInLadder === true,
+        });
+        if (result.ok && !result.skipped) {
+          invalidateGuildLadderCache(result.guildId ?? undefined);
+          const okResult: SubmitLeaderboardResult = {
+            ok: true,
+            updated: true,
+            previousScore: null,
+            submittedScore: score,
+            improved: true,
+          };
+          setLastResult(okResult);
+          hapticService.fireLeaderboardUploadResult(okResult);
+        } else if (result.ok && result.skipped) {
+          // Soft-skip (no guild) — privacy path succeeded as local no-op, not a hard failure.
+          setLastResult({
+            ok: true,
+            reason: 'unchanged',
+            updated: false,
+            previousScore: null,
+            submittedScore: score,
+          });
+        } else {
+          const failed: SubmitLeaderboardResult = {
+            ok: false,
+            reason: 'unknown',
+            updated: false,
+            previousScore: null,
+            submittedScore: null,
+          };
+          setLastResult(failed);
+          hapticService.fireLeaderboardUploadResult(failed);
+        }
+      } catch {
+        const failed = { ok: false, reason: 'unknown' as const, updated: false };
+        setLastResult(failed);
+        hapticService.fireLeaderboardUploadResult(failed);
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (resolveLeaderboardUploadGate(score) !== 'ok') return;
 
     const identity = getLadderUploadIdentity();
     // WHY: Hard gate — empty display name must never reach Firestore as a ghost nickname.

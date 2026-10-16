@@ -13,6 +13,7 @@ setGlobalOptions({
 export { ladderSubmitShard } from "./ladder/submitShard.js";
 export { ladderSyncPreview } from "./ladder/syncPreviewCallable.js";
 export { ladderSyncBatch } from "./ladder/syncBatchCallable.js";
+export { ladderWithdrawPublicPresence } from "./ladder/withdrawPublicPresenceCallable.js";
 export { ladderReportUser } from "./ladder/reportUserCallable.js";
 export {
   getAdminLadderReports,
@@ -34,3 +35,4 @@ export { leaveGuild } from "./guild/leaveGuildCallable.js";
 export { kickGuildMember } from "./guild/kickMemberCallable.js";
 export { renameGuild } from "./guild/renameGuildCallable.js";
 export { disbandGuild } from "./guild/disbandGuildCallable.js";
+export { syncGuildLadderScore } from "./guild/syncGuildScoreCallable.js";

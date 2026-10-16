@@ -7,14 +7,23 @@ import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
 import SettingsFeedbackBanners from '../components/settings/SettingsFeedbackBanners';
 import SettingsListRow from '../components/settings/SettingsListRow';
 import SettingsSectionCard from '../components/settings/SettingsSectionCard';
+import WithdrawPublicPresenceDialog from '../components/settings/WithdrawPublicPresenceDialog';
 import { SettingsGlyph } from '../components/settings/settingsRowIcons';
 import UserProIdentityRow from '../components/UserProIdentityRow';
 import { APP_SHELL_SCROLL_BOTTOM_PX, bottomChromeCalc } from '../constants/bottomChrome';
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { useSettingsPage } from '../hooks/useSettingsPage';
+import { callLadderWithdrawPublicPresence } from '../services/ladderCallableService';
+import { clearLeaderboardReadCaches } from '../services/leaderboardService';
+import {
+  LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT,
+  loadWantsGlobalLadderPublish,
+  saveWantsGlobalLadderPublish,
+} from '../services/ladderPublishPreferenceStorage';
 import { useLadderBlockStore } from '../stores/ladderBlockStore';
 
 const RESTORE_TOAST_MS = 3500;
+const WITHDRAW_TOAST_MS = 3500;
 
 /** Clears BottomNav + DYNO hex + Dyno Intel chip (+ safe-area). */
 const RESTORE_TOAST_BOTTOM_STYLE = {
@@ -26,6 +35,33 @@ const SettingsPage: FC = () => {
   const [restoreToastVisible, setRestoreToastVisible] = useState(false);
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const [blockedUsersSheetOpen, setBlockedUsersSheetOpen] = useState(false);
+  const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
+  const [withdrawDialogMode, setWithdrawDialogMode] = useState<'opt-out' | 'erase-only'>(
+    'opt-out'
+  );
+  const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [withdrawToast, setWithdrawToast] = useState<
+    'ok' | 'partial' | 'fail' | 'auth' | null
+  >(null);
+  const [wantsGlobalLadder, setWantsGlobalLadder] = useState(() =>
+    loadWantsGlobalLadderPublish()
+  );
+
+  useEffect(() => {
+    const onPrefChanged = () => {
+      setWantsGlobalLadder(loadWantsGlobalLadderPublish());
+    };
+    window.addEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
+    return () => {
+      window.removeEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!withdrawToast) return;
+    const timer = window.setTimeout(() => setWithdrawToast(null), WITHDRAW_TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [withdrawToast]);
   const hydrateBlockedUids = useLadderBlockStore((s) => s.hydrate);
   const blockedUidCount = useLadderBlockStore((s) => s.blockedEntries.length);
   const {
@@ -178,6 +214,51 @@ const SettingsPage: FC = () => {
       {/* S2 — Ladder & Privacy */}
       <SettingsSectionCard title={t('settings.sectionLadderPrivacy')}>
         <SettingsListRow
+          icon={<SettingsGlyph label="GL" />}
+          title={t('settings.publishGlobalLadderTitle')}
+          subtitle={t('settings.publishGlobalLadderHint')}
+          badge={
+            wantsGlobalLadder
+              ? t('settings.publishGlobalLadderOn')
+              : t('settings.publishGlobalLadderOff')
+          }
+          showChevron={false}
+          disabled={withdrawBusy}
+          onClick={() => {
+            if (wantsGlobalLadder) {
+              // Local preference may turn off without wipe; wipe path requires linked auth.
+              setWithdrawDialogMode('opt-out');
+              setWithdrawDialogOpen(true);
+              return;
+            }
+            setWantsGlobalLadder(true);
+            saveWantsGlobalLadderPublish(true);
+          }}
+        />
+        {!wantsGlobalLadder ? (
+          <SettingsListRow
+            icon={<SettingsGlyph label="ER" />}
+            title={t('settings.withdrawPublic.eraseHistoryTitle')}
+            subtitle={t('settings.withdrawPublic.eraseHistoryHint')}
+            showChevron={false}
+            disabled={withdrawBusy}
+            onClick={() => {
+              // Keep row tappable when signed-out so auth toast can surface (disabled would swallow clicks).
+              if (!isLinkedSignedIn) {
+                setWithdrawToast('auth');
+                return;
+              }
+              setWithdrawDialogMode('erase-only');
+              setWithdrawDialogOpen(true);
+            }}
+          />
+        ) : null}
+        <div className="border-t border-zinc-800/80 px-4 py-2.5">
+          <p className="text-[11px] leading-relaxed text-zinc-500">
+            {t('settings.anonymousLadderHint')}
+          </p>
+        </div>
+        <SettingsListRow
           icon={<SettingsGlyph label="BL" />}
           title={t('settings.blocked_users_title')}
           subtitle={blockedUidCount === 0 ? t('settings.blocked_empty') : undefined}
@@ -292,6 +373,71 @@ const SettingsPage: FC = () => {
           {t('settings.restorePurchasesSuccess')}
         </div>
       ) : null}
+      {withdrawToast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={RESTORE_TOAST_BOTTOM_STYLE}
+          className={`pointer-events-none fixed inset-x-4 z-[1100] mx-auto max-w-md rounded-xl border px-4 py-3 text-center text-sm font-medium shadow backdrop-blur-md ${
+            withdrawToast === 'ok' || withdrawToast === 'partial'
+              ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-50'
+              : 'border-rose-400/40 bg-rose-500/15 text-rose-50'
+          }`}
+        >
+          {withdrawToast === 'ok'
+            ? t('settings.withdrawPublic.toastOk')
+            : withdrawToast === 'partial'
+              ? t('settings.withdrawPublic.toastPartial')
+              : withdrawToast === 'auth'
+                ? t('settings.withdrawPublic.toastAuthRequired')
+                : t('settings.withdrawPublic.toastFail')}
+        </div>
+      ) : null}
+      <WithdrawPublicPresenceDialog
+        open={withdrawDialogOpen}
+        busy={withdrawBusy}
+        mode={withdrawDialogMode}
+        onCancel={() => {
+          if (withdrawBusy) return;
+          setWithdrawDialogOpen(false);
+        }}
+        onPreferOffOnly={() => {
+          if (withdrawBusy) return;
+          setWantsGlobalLadder(false);
+          saveWantsGlobalLadderPublish(false);
+          setWithdrawDialogOpen(false);
+        }}
+        onWithdraw={() => {
+          if (withdrawBusy) return;
+          if (!isLinkedSignedIn) {
+            setWithdrawToast('auth');
+            return;
+          }
+          void (async () => {
+            setWithdrawBusy(true);
+            try {
+              const result = await callLadderWithdrawPublicPresence();
+              if (!result.ok) {
+                // WHY: Keep preference unchanged on wipe failure so user can retry or choose "off only".
+                setWithdrawToast(result.reason === 'auth-required' ? 'auth' : 'fail');
+                return;
+              }
+              if (withdrawDialogMode === 'opt-out') {
+                setWantsGlobalLadder(false);
+                saveWantsGlobalLadderPublish(false);
+              }
+              clearLeaderboardReadCaches();
+              setWithdrawDialogOpen(false);
+              // Firestore wipe succeeded; Storage avatar wipe is best-effort.
+              setWithdrawToast(result.avatarStorageCleared ? 'ok' : 'partial');
+            } catch {
+              setWithdrawToast('fail');
+            } finally {
+              setWithdrawBusy(false);
+            }
+          })();
+        }}
+      />
       <DynoIntelClearHistoryDialog
         open={clearHistoryDialogOpen}
         onCancel={() => setClearHistoryDialogOpen(false)}
