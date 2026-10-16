@@ -14,6 +14,8 @@ import {
   submitLeaderboardScore,
   type SubmitLeaderboardResult,
 } from '../services/leaderboardService';
+import { invalidateGuildLadderCache } from '../services/guildLadderCacheService';
+import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import type { EntitlementState } from '../types/entitlement';
@@ -63,6 +65,14 @@ export function useLeaderboardUpload() {
       });
       setLastResult(result);
       hapticService.fireLeaderboardUploadResult(result);
+      // WHY: Server fan-out updates guild members[] (score or identity); drop 5m TTL.
+      if (
+        result.ok &&
+        metric === LEADERBOARD_SHARD_OVERALL &&
+        (result.updated || result.avatarPatched || result.identityPatched)
+      ) {
+        invalidateGuildLadderCache();
+      }
     } catch {
       const failed = { ok: false, reason: 'unknown' as const, updated: false };
       setLastResult(failed);

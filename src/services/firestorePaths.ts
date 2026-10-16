@@ -24,6 +24,24 @@ export const USER_HISTORY_SUBCOLLECTION = 'history';
 export const GENESIS_SEAT_PUBLIC_SUMMARY_COLLECTION = 'public_meta';
 export const GENESIS_SEAT_PUBLIC_SUMMARY_DOC_ID = 'genesisSeats';
 
+/**
+ * Crew / private guild — Admin SDK writes only; client reads `guilds/{id}` via getDoc.
+ * @see `src/types/guild.ts`
+ */
+export const GUILDS_COLLECTION = 'guilds';
+/** Invite-code → guildId lookup; doc id = normalized 6-char code. Client deny-all. */
+export const GUILD_INVITE_CODES_COLLECTION = 'guild_invite_codes';
+/** Per-uid join attempt windows — Admin SDK only (failed guesses burn quota). */
+export const GUILD_JOIN_RATE_LIMITS_COLLECTION = 'guild_join_rate_limits';
+
 export function leaderboardEntriesCollectionPath(metric: string): string {
   return `${LEADERBOARDS_COLLECTION}/${metric}/${ENTRIES_SUBCOLLECTION}`;
+}
+
+export function guildDocPath(guildId: string): string {
+  return `${GUILDS_COLLECTION}/${guildId}`;
+}
+
+export function guildInviteCodeDocPath(code: string): string {
+  return `${GUILD_INVITE_CODES_COLLECTION}/${code}`;
 }

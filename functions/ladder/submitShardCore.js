@@ -34,6 +34,7 @@ import {
   applyLadderIdentityLockToUpload,
   loadLadderIdentityLock,
 } from "../shared/ladderIdentityLock.js";
+import { fanOutLadderScoreToGuild } from "../guild/guildScoreFanOut.js";
 
 function entryRef(metric, uid) {
   return db
@@ -272,6 +273,19 @@ export async function runLadderSubmitShard(request) {
     const avatarPatched = result.outcome === "avatar-patched";
     const identityPatched =
       result.outcome === "identity-patched" || result.identityPatched === true;
+    // WHY: Score-equal nickname/avatar changes must still refresh denormalized crew rows.
+    if (
+      metric === "ladderScore" &&
+      (result.outcome === "avatar-patched" || result.outcome === "identity-patched")
+    ) {
+      await fanOutLadderScoreToGuild({
+        uid,
+        ladderScore: score,
+        displayName,
+        avatarUrl,
+        isAnonymous: profile?.isAnonymousInLadder === true,
+      });
+    }
     return {
       ok: true,
       reason:
@@ -314,6 +328,18 @@ export async function runLadderSubmitShard(request) {
       avatarUrl,
       profile,
       isPro,
+    });
+  }
+
+  // WHY: Crew private ladder is denormalized — update after global write succeeds.
+  // Fan-out never throws; failures must not roll back this ladder submit.
+  if (metric === "ladderScore") {
+    await fanOutLadderScoreToGuild({
+      uid,
+      ladderScore: score,
+      displayName,
+      avatarUrl,
+      isAnonymous: profile?.isAnonymousInLadder === true,
     });
   }
 

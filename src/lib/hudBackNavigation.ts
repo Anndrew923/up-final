@@ -1,5 +1,6 @@
 import {
   ROUTES,
+  isCrewRoutePath,
   isJoinArenaRoutePath,
   isOneRmCalculatorRoutePath,
   isPlateCalculatorRoutePath,
@@ -44,7 +45,8 @@ export function resolveHudBackFallback(pathname: string, search = ''): RoutePath
     isOneRmCalculatorRoutePath(pathname) ||
     isPlateCalculatorRoutePath(pathname) ||
     pathname === ROUTES.somatotypeLab ||
-    pathname.startsWith(`${ROUTES.somatotypeLab}/`)
+    pathname.startsWith(`${ROUTES.somatotypeLab}/`) ||
+    isCrewRoutePath(pathname)
   ) {
     return ROUTES.tools;
   }

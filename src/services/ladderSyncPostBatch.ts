@@ -16,6 +16,8 @@ import {
   clearLeaderboardReadCaches,
   syncLeaderboardPreviewFullSixAxis,
 } from './leaderboardService';
+import { invalidateGuildLadderCache } from './guildLadderCacheService';
+import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 
 export const LADDER_CACHE_INVALIDATED_EVENT = 'up-final-ladder-cache-invalidated';
 
@@ -57,6 +59,16 @@ export async function runLeaderboardBatchPostUpload(options: {
     clearLeaderboardReadCaches(metric);
   }
   notifyLadderCacheInvalidated(metrics);
+
+  // Batch path: server fan-out runs inside ladderScore shard submit (score + identity patches).
+  if (
+    options.targets.some((t) => t.metric === LEADERBOARD_SHARD_OVERALL) &&
+    (options.summary.updated > 0 ||
+      (options.summary.avatarPatched ?? 0) > 0 ||
+      (options.summary.identityPatched ?? 0) > 0)
+  ) {
+    invalidateGuildLadderCache();
+  }
 
   const serverSyncedPreview =
     options.serverSyncedPreview ??

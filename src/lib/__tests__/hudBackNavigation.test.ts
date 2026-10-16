@@ -29,6 +29,11 @@ describe('resolveHudBackFallback', () => {
     expect(resolveHudBackFallback(ROUTES.somatotypeLab)).toBe(ROUTES.tools);
   });
 
+  it('returns tools deck for Crew HQ', () => {
+    expect(resolveHudBackFallback(ROUTES.crew)).toBe(ROUTES.tools);
+    expect(resolveHudBackFallback(`${ROUTES.crew}/manage`)).toBe(ROUTES.tools);
+  });
+
   it('returns settings for settings-stack pages', () => {
     expect(resolveHudBackFallback(ROUTES.about)).toBe(ROUTES.settings);
     expect(resolveHudBackFallback(ROUTES.contact)).toBe(ROUTES.settings);

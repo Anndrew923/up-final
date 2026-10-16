@@ -40,6 +40,7 @@ const ArmSizeAssessmentPage = lazy(() => import('./pages/ArmSizeAssessmentPage')
 const OneRmCalculatorPage = lazy(() => import('./pages/OneRmCalculatorPage'));
 const PlateCalculatorPage = lazy(() => import('./pages/PlateCalculatorPage'));
 const SomatotypeLabPage = lazy(() => import('./pages/SomatotypeLabPage'));
+const CrewPage = lazy(() => import('./pages/CrewPage'));
 
 const NAV_TAB_PAGE: Record<NavItemKey, ComponentType> = {
   home: HomePage,
@@ -173,6 +174,10 @@ function MainAppRoutes({ isGoogleSignedIn }: { isGoogleSignedIn: boolean }) {
         <Route
           path={toRelativeRoutePath(ROUTES.somatotypeLab)}
           element={withRouteSuspense(<SomatotypeLabPage />)}
+        />
+        <Route
+          path={toRelativeRoutePath(ROUTES.crew)}
+          element={withRouteSuspense(<CrewPage />)}
         />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>

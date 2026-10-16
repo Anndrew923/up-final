@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { VehicleSpecificationCodex } from '../components/tools/VehicleSpecificationCodex';
 import CloudSyncCard from '../components/tools/CloudSyncCard';
+import CrewHqCard from '../components/tools/CrewHqCard';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { useCloudSyncCard } from '../hooks/useCloudSyncCard';
 import { useVehicleCodexScores } from '../hooks/useVehicleCodexScores';
@@ -84,6 +85,8 @@ export default function ToolsPage() {
             </DisclosurePanel>
           </article>
         </section>
+
+        <CrewHqCard />
 
         <CloudSyncCard {...cloudSync} />
       </ShellFlowStack>

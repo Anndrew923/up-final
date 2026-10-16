@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ROUTES,
   isCompactShellRoutePath,
+  isCrewRoutePath,
   isHomeRoutePath,
   isHudBackRoutePath,
   isJoinArenaRoutePath,
@@ -118,6 +119,10 @@ describe('isCompactShellRoutePath', () => {
     expect(isCompactShellRoutePath(ROUTES.somatotypeLab)).toBe(false);
   });
 
+  it('keeps Crew HQ on full shell so title clears HUD', () => {
+    expect(isCompactShellRoutePath(ROUTES.crew)).toBe(false);
+  });
+
   it('rejects other primary tabs', () => {
     expect(isCompactShellRoutePath(ROUTES.history)).toBe(false);
     expect(isCompactShellRoutePath(ROUTES.assessment)).toBe(false);
@@ -139,10 +144,23 @@ describe('isHudBackRoutePath', () => {
     expect(isHudBackRoutePath(ROUTES.joinArena)).toBe(true);
     expect(isHudBackRoutePath(ROUTES.oneRmCalculator)).toBe(true);
     expect(isHudBackRoutePath(ROUTES.ffmi)).toBe(true);
+    expect(isHudBackRoutePath(ROUTES.crew)).toBe(true);
   });
 
   it('hides back on auth entry routes', () => {
     expect(isHudBackRoutePath(ROUTES.root)).toBe(false);
     expect(isHudBackRoutePath(ROUTES.authChoice)).toBe(false);
+  });
+});
+
+describe('isCrewRoutePath', () => {
+  it('matches crew root and nested paths', () => {
+    expect(isCrewRoutePath(ROUTES.crew)).toBe(true);
+    expect(isCrewRoutePath(`${ROUTES.crew}/manage`)).toBe(true);
+  });
+
+  it('rejects other routes', () => {
+    expect(isCrewRoutePath(ROUTES.tools)).toBe(false);
+    expect(isCrewRoutePath('/crewmate')).toBe(false);
   });
 });

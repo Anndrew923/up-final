@@ -49,6 +49,7 @@ import {
   resolveLeaderboardMaxPage,
   shouldShowLadderFloatingRankBar,
 } from '../logic/core/ladderFilteredRank';
+import { formatCompactRelativeTime } from '../logic/core/formatCompactRelativeTime';
 import { ladderIdentityInitial } from '../logic/core/ladderUploadPolicy';
 import { detectPromotion } from '../logic/core/leaderboardProgress';
 import { useLeaderboardCeremonyStore } from '../stores/leaderboardCeremonyStore';
@@ -80,24 +81,6 @@ function formatLeaderboardRowScore(
   return String(scoreBest);
 }
 
-function formatCompactUpdatedAt(updatedAt: string): string {
-  const ts = new Date(updatedAt).getTime();
-  if (!Number.isFinite(ts)) return '--';
-  const now = Date.now();
-  const diffMs = Math.max(0, now - ts);
-  const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return `${sec}s`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m`;
-  const hour = Math.floor(min / 60);
-  if (hour < 24) return `${hour}h`;
-  const day = Math.floor(hour / 24);
-  if (day < 7) return `${day}d`;
-  const date = new Date(ts);
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const dayOfMonth = String(date.getDate()).padStart(2, '0');
-  return `${month}/${dayOfMonth}`;
-}
 
 /**
  * Leaderboard arena — loads rankings via `leaderboardService` (Firestore when configured).
@@ -741,7 +724,7 @@ export default function LadderPage() {
                 const scoreClass = isRank1
                   ? 'text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]'
                   : 'text-accent-primary group-hover:text-cyan-300';
-                const compactUpdatedAt = formatCompactUpdatedAt(row.updatedAt);
+                const compactUpdatedAt = formatCompactRelativeTime(row.updatedAt);
                 return (
                   <li
                     key={row.uid}

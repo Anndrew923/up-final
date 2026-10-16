@@ -20,6 +20,31 @@ vi.mock('../../hooks/useCloudSyncCard', () => ({
   useCloudSyncCard: () => mockUseCloudSyncCard(),
 }));
 
+/** Avoid Firestore binding reads while rendering Garage chrome in unit tests. */
+vi.mock('../../hooks/useCrewGuild', () => ({
+  useCrewGuild: () => ({
+    status: 'empty',
+    guild: null,
+    role: null,
+    isCoach: false,
+    isPro: false,
+    fromCache: false,
+    rankedMembers: [],
+    authUid: null,
+    busy: false,
+    refreshing: false,
+    actionError: null,
+    clearActionError: vi.fn(),
+    refresh: vi.fn(),
+    create: vi.fn(),
+    join: vi.fn(),
+    leave: vi.fn(),
+    kick: vi.fn(),
+    rename: vi.fn(),
+    disband: vi.fn(),
+  }),
+}));
+
 vi.mock('../../components/tools/VehicleSpecificationCodex', () => ({
   VehicleSpecificationCodex: () => <div data-testid="vehicle-codex" />,
 }));
@@ -52,6 +77,10 @@ vi.mock('react-i18next', () => ({
         'tools.codex.panelTitle': 'Vehicle Codex',
         'assessment.referenceInfo.toggleExpand': 'Expand',
         'assessment.referenceInfo.toggleCollapse': 'Collapse',
+        'crew.hq.code': 'CREW HQ',
+        'crew.hq.title': 'Crew HQ',
+        'crew.hq.subtitleEmpty': 'Create or join a crew',
+        'crew.hq.openAria': 'Open Crew HQ',
       };
       return map[key] ?? key;
     },

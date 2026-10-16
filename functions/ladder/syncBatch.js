@@ -233,6 +233,8 @@ export async function runLadderSyncBatch(request) {
     };
 
     try {
+      // Guild score fan-out runs inside `runLadderSubmitShard` when metric=ladderScore
+      // and outcome=updated (best-effort; never fails this batch).
       const result = await runLadderSubmitShard(shardRequest);
       applyShardResult(tally, failures, metric, result);
     } catch (err) {

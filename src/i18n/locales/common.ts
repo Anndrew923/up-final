@@ -2,6 +2,7 @@ import enCore from './en/common/core.json';
 import enHome from './en/common/home.json';
 import enLadder from './en/common/ladder.json';
 import enTools from './en/common/tools.json';
+import enCrew from './en/common/crew.json';
 import enAssessment from './en/common/assessment.json';
 import enStrength from './en/common/strength.json';
 import enGrip from './en/common/grip.json';
@@ -25,6 +26,7 @@ import zhCore from './zh-Hant/common/core.json';
 import zhHome from './zh-Hant/common/home.json';
 import zhLadder from './zh-Hant/common/ladder.json';
 import zhTools from './zh-Hant/common/tools.json';
+import zhCrew from './zh-Hant/common/crew.json';
 import zhAssessment from './zh-Hant/common/assessment.json';
 import zhStrength from './zh-Hant/common/strength.json';
 import zhGrip from './zh-Hant/common/grip.json';
@@ -75,6 +77,7 @@ export const enCommon = mergeCommonSections([
   { name: 'home', content: enHome },
   { name: 'ladder', content: enLadder },
   { name: 'tools', content: enTools },
+  { name: 'crew', content: enCrew },
   { name: 'assessment', content: enAssessment },
   { name: 'strength', content: enStrength },
   { name: 'grip', content: enGrip },
@@ -101,6 +104,7 @@ export const zhHantCommon = mergeCommonSections([
   { name: 'home', content: zhHome },
   { name: 'ladder', content: zhLadder },
   { name: 'tools', content: zhTools },
+  { name: 'crew', content: zhCrew },
   { name: 'assessment', content: zhAssessment },
   { name: 'strength', content: zhStrength },
   { name: 'grip', content: zhGrip },

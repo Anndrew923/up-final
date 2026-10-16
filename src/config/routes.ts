@@ -29,6 +29,8 @@ export const ROUTES = {
   oneRmCalculator: '/tools/one-rm' as const,
   plateCalculator: '/tools/plates' as const,
   somatotypeLab: '/tools/somatotype-lab' as const,
+  /** Crew HQ — Garage subpage (not a bottom tab; HUD back → tools). */
+  crew: '/crew' as const,
   ...NAV_ROUTE_MAP,
 } as const;
 
@@ -118,4 +120,9 @@ export function isPlateCalculatorRoutePath(pathname: string): boolean {
 /** True for `/tools/one-rm` 1RM calculator. */
 export function isOneRmCalculatorRoutePath(pathname: string): boolean {
   return pathname === ROUTES.oneRmCalculator || pathname.startsWith(`${ROUTES.oneRmCalculator}/`);
+}
+
+/** True for `/crew` Crew HQ (Garage subpage). */
+export function isCrewRoutePath(pathname: string): boolean {
+  return pathname === ROUTES.crew || pathname.startsWith(`${ROUTES.crew}/`);
 }

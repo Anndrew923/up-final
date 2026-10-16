@@ -96,6 +96,23 @@ export const PROMO_REDEEM_RATE_LIMITS_COLLECTION = "promo_redeem_rate_limits";
 /** Rolling hourly attempt cap (success + failure). */
 export const PROMO_REDEEM_MAX_ATTEMPTS_PER_HOUR = 10;
 
+/**
+ * Crew / private guild — Admin SDK writes only.
+ * Keep in sync with `src/types/guild.ts` + `src/services/firestorePaths.ts`.
+ */
+export const GUILDS_COLLECTION = "guilds";
+export const GUILD_INVITE_CODES_COLLECTION = "guild_invite_codes";
+export const GUILD_JOIN_RATE_LIMITS_COLLECTION = "guild_join_rate_limits";
+export const GUILD_MAX_MEMBERS = 30;
+/** Rolling hourly join attempts (success + invalid code). */
+export const GUILD_JOIN_MAX_ATTEMPTS_PER_HOUR = 10;
+/** Invite-code mint retries when `guild_invite_codes/{code}` collides. */
+export const GUILD_INVITE_CODE_MAX_MINT_ATTEMPTS = 5;
+export const GUILD_NAME_MIN_LEN = 2;
+export const GUILD_NAME_MAX_LEN = 24;
+export const GUILD_TAG_MIN_LEN = 2;
+export const GUILD_TAG_MAX_LEN = 4;
+
 /** Store cut before coach share — price * (1 - cut) * coachRate. */
 export const COMMISSION_PLATFORM_CUT = 0.15;
 export const COMMISSION_COACH_SHARE_DEFAULT = 0.5;

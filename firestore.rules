@@ -217,5 +217,25 @@ service cloud.firestore {
     match /commission_logs/{eventId} {
       allow read, write: if false;
     }
+
+    // Crew / private guild — member/coach may read; all writes via Callable (Admin SDK).
+    match /guilds/{guildId} {
+      allow read: if signedIn()
+        && (
+          resource.data.coachUid == request.auth.uid
+          || request.auth.uid in resource.data.memberUids
+        );
+      allow create, update, delete: if false;
+    }
+
+    // Invite-code lookup — never client-readable (prevents enumeration).
+    match /guild_invite_codes/{code} {
+      allow read, write: if false;
+    }
+
+    // Per-uid join attempt windows — Admin SDK only.
+    match /guild_join_rate_limits/{uid} {
+      allow read, write: if false;
+    }
   }
 }

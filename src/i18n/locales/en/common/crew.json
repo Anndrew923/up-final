@@ -1,0 +1,98 @@
+{
+  "crew": {
+    "hq": {
+      "title": "Crew HQ",
+      "code": "CREW HQ",
+      "subtitleEmpty": "Create or join a crew for a private trainee ladder",
+      "subtitleJoined": "{{tag}} · {{name}}",
+      "enter": "Enter HQ",
+      "openAria": "Open Crew HQ"
+    },
+    "page": {
+      "kicker": "CREW HQ",
+      "title": "Crew Headquarters",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing…",
+      "loadError": "Could not load crew data. Try again later.",
+      "fromCache": "Cached"
+    },
+    "empty": {
+      "joinTitle": "Join a crew",
+      "joinHint": "Enter the 6-character invite code from your coach",
+      "codeLabel": "Invite code",
+      "codePlaceholder": "e.g. ABC-DEF",
+      "joinCta": "Join crew",
+      "joining": "Joining…",
+      "createTitle": "Create a crew",
+      "createHint": "PRO only · one crew per account",
+      "createCta": "Create crew",
+      "creating": "Creating…",
+      "nameLabel": "Crew name",
+      "namePlaceholder": "e.g. Iron Crew",
+      "tagLabel": "Crew tag",
+      "tagPlaceholder": "2–4 chars (e.g. ARN)",
+      "tagHint": "Same alphabet as invite codes (no 0 O 1 I L)",
+      "proRequired": "Creating a crew requires PRO",
+      "upgradeCta": "Upgrade to PRO"
+    },
+    "banner": {
+      "members": "{{count}} / {{max}} members",
+      "inviteLabel": "Invite code",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFail": "Could not copy — select manually"
+    },
+    "ladder": {
+      "title": "Private trainee ladder",
+      "subtitle": "Sorted by overall score · single read",
+      "empty": "No scores yet. Complete assessments and upload to appear here.",
+      "you": "You"
+    },
+    "leave": {
+      "cta": "Leave crew",
+      "confirmTitle": "Leave this crew?",
+      "confirmBody": "You will need a new invite code to rejoin.",
+      "confirm": "Leave",
+      "cancel": "Cancel",
+      "leaving": "Leaving…"
+    },
+    "manage": {
+      "openAria": "Open crew management",
+      "openLabel": "Manage",
+      "title": "Crew management",
+      "close": "Close",
+      "roster": "Roster",
+      "kick": "Remove",
+      "kicking": "Removing…",
+      "kickConfirm": "Remove {{name}}?",
+      "renameTitle": "Rename crew",
+      "renameCta": "Save name",
+      "renaming": "Saving…",
+      "tagTitle": "Edit tag",
+      "dangerTitle": "Danger zone",
+      "disbandCta": "Disband crew",
+      "disbandConfirmTitle": "Disband this crew?",
+      "disbandConfirmBody": "All members are removed and the invite code is voided. This cannot be undone.",
+      "disbandConfirm": "Disband",
+      "disbanding": "Disbanding…"
+    },
+    "errors": {
+      "auth-required": "Sign in with Google first",
+      "pro-required": "PRO required to create a crew",
+      "already-in-guild": "You already belong to a crew",
+      "not-in-guild": "You are not in a crew",
+      "not-coach": "Only the coach can do this",
+      "coach-cannot-leave": "Coaches must disband the crew",
+      "guild-full": "Crew is full (max 30)",
+      "invalid-code": "Invalid invite code",
+      "invalid-name": "Invalid crew name",
+      "invalid-tag": "Invalid crew tag",
+      "not-found": "Crew not found",
+      "rate-limited": "Too many attempts — try again later",
+      "cannot-kick-self": "Cannot remove yourself",
+      "app-check": "Security check failed — try again",
+      "unavailable": "Service unavailable",
+      "failed": "Something went wrong — try again"
+    }
+  }
+}
