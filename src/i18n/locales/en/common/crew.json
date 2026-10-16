@@ -38,9 +38,17 @@
     },
     "ladder": {
       "title": "Private trainee ladder",
-      "subtitle": "Sorted by overall score · single read",
+      "subtitle": "Axis sort · single read",
       "empty": "No scores yet. Complete assessments and upload to appear here.",
-      "you": "You"
+      "you": "You",
+      "dimensionAria": "Sort club ladder by dimension",
+      "dimOverall": "Overall",
+      "openDetailAria": "View {{name}}'s six-axis radar",
+      "detailKicker": "CLUB",
+      "detailClose": "Close",
+      "detailOverall": "Overall {{score}}",
+      "detailRadarAria": "{{name}} six-axis radar",
+      "detailNoRadar": "No six-axis sync yet. Complete assessments and sync to the club to show the radar."
     },
     "leave": {
       "cta": "Leave Club",

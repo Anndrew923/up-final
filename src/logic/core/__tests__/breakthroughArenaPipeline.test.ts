@@ -17,8 +17,7 @@ describe('resolveBreakthroughArenaPipelineBanner', () => {
     expect(resolveBreakthroughArenaPipelineBanner(true, summary)).toBe('dashboard-only');
   });
 
-  it('returns guild-success / local-success from cloud outcome', () => {
+  it('returns guild-success from guild cloud outcome', () => {
     expect(resolveBreakthroughArenaPipelineBanner(true, null, 'guild')).toBe('guild-success');
-    expect(resolveBreakthroughArenaPipelineBanner(true, null, 'local')).toBe('local-success');
   });
 });

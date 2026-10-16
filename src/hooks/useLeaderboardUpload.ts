@@ -16,13 +16,14 @@ import {
   type SubmitLeaderboardResult,
 } from '../services/leaderboardService';
 import { invalidateGuildLadderCache } from '../services/guildLadderCacheService';
-import { loadWantsGlobalLadderPublish } from '../services/ladderPublishPreferenceStorage';
 import { buildLeaderboardProfileProjection } from '../logic/core/leaderboardProfileProjection';
 import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 import { loadPhysicalProfile } from '../services/localStorageService';
+import { getMergedScoresSnapshotForRadar } from '../services/mergedLocalScoresSnapshot';
 import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import type { EntitlementState } from '../types/entitlement';
+import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
 
 export type { LeaderboardUploadGate } from '../logic/core/ladderUploadGate';
 
@@ -37,13 +38,81 @@ export function resolveLeaderboardUploadGate(
 }
 
 /**
- * Pro + signed-in upload to `leaderboardService` (display name from auth store; ladder identity merged in service).
- * Privacy Phase 2: when global publish is OFF, block public shard writes; overall may still sync crew.
+ * Intent-driven single-shard upload.
+ * - `upload` → public shards (Pro + identity)
+ * - `uploadGuildOnly` → club roster + six-axis radarScores (Free OK)
+ * WHY: Batch Sync All / assessment page use dedicated hooks; this remains the per-shard intent API.
  */
 export function useLeaderboardUpload() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [lastResult, setLastResult] = useState<SubmitLeaderboardResult | null>(null);
+
+  const uploadGuildOnly = useCallback(async (score: number) => {
+    setLastResult(null);
+    const user = getCurrentFirebaseUser();
+    if (!user || user.isAnonymous) return;
+    if (!(score > 0)) {
+      setLastResult({
+        ok: false,
+        reason: 'unknown',
+        updated: false,
+        previousScore: null,
+        submittedScore: null,
+      });
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const identity = getLadderUploadIdentity();
+      const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+      const radarScores = sanitizeGuildRadarScores(getMergedScoresSnapshotForRadar());
+      const result = await syncGuildLadderScore({
+        ladderScore: score,
+        displayName: identity?.displayName,
+        avatarUrl: identity?.avatarUrl,
+        isAnonymous: profile?.isAnonymousInLadder === true,
+        ...(radarScores ? { radarScores } : {}),
+      });
+      if (result.ok && !result.skipped) {
+        invalidateGuildLadderCache(result.guildId ?? undefined);
+        const okResult: SubmitLeaderboardResult = {
+          ok: true,
+          updated: true,
+          previousScore: null,
+          submittedScore: score,
+          improved: true,
+        };
+        setLastResult(okResult);
+        hapticService.fireLeaderboardUploadResult(okResult);
+      } else if (result.ok && result.skipped) {
+        setLastResult({
+          ok: true,
+          reason: 'unchanged',
+          updated: false,
+          previousScore: null,
+          submittedScore: score,
+        });
+      } else {
+        const failed: SubmitLeaderboardResult = {
+          ok: false,
+          reason: 'unknown',
+          updated: false,
+          previousScore: null,
+          submittedScore: null,
+        };
+        setLastResult(failed);
+        hapticService.fireLeaderboardUploadResult(failed);
+      }
+    } catch {
+      const failed = { ok: false, reason: 'unknown' as const, updated: false };
+      setLastResult(failed);
+      hapticService.fireLeaderboardUploadResult(failed);
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
   const upload = useCallback(async (metric: LeaderboardShardId, score: number) => {
     setLastResult(null);
@@ -51,73 +120,9 @@ export function useLeaderboardUpload() {
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    // Privacy: do not write public shards when sticky preference is off.
-    if (!loadWantsGlobalLadderPublish()) {
-      if (metric !== LEADERBOARD_SHARD_OVERALL || !(score > 0)) {
-        setLastResult({
-          ok: false,
-          reason: 'unknown',
-          updated: false,
-          previousScore: null,
-          submittedScore: null,
-        });
-        return;
-      }
-      setBusy(true);
-      try {
-        const identity = getLadderUploadIdentity();
-        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
-        const result = await syncGuildLadderScore({
-          ladderScore: score,
-          displayName: identity?.displayName,
-          avatarUrl: identity?.avatarUrl,
-          isAnonymous: profile?.isAnonymousInLadder === true,
-        });
-        if (result.ok && !result.skipped) {
-          invalidateGuildLadderCache(result.guildId ?? undefined);
-          const okResult: SubmitLeaderboardResult = {
-            ok: true,
-            updated: true,
-            previousScore: null,
-            submittedScore: score,
-            improved: true,
-          };
-          setLastResult(okResult);
-          hapticService.fireLeaderboardUploadResult(okResult);
-        } else if (result.ok && result.skipped) {
-          // Soft-skip (no guild) — privacy path succeeded as local no-op, not a hard failure.
-          setLastResult({
-            ok: true,
-            reason: 'unchanged',
-            updated: false,
-            previousScore: null,
-            submittedScore: score,
-          });
-        } else {
-          const failed: SubmitLeaderboardResult = {
-            ok: false,
-            reason: 'unknown',
-            updated: false,
-            previousScore: null,
-            submittedScore: null,
-          };
-          setLastResult(failed);
-          hapticService.fireLeaderboardUploadResult(failed);
-        }
-      } catch {
-        const failed = { ok: false, reason: 'unknown' as const, updated: false };
-        setLastResult(failed);
-        hapticService.fireLeaderboardUploadResult(failed);
-      } finally {
-        setBusy(false);
-      }
-      return;
-    }
-
     if (resolveLeaderboardUploadGate(score) !== 'ok') return;
 
     const identity = getLadderUploadIdentity();
-    // WHY: Hard gate — empty display name must never reach Firestore as a ghost nickname.
     if (!identity) return;
 
     setBusy(true);
@@ -134,7 +139,6 @@ export function useLeaderboardUpload() {
       });
       setLastResult(result);
       hapticService.fireLeaderboardUploadResult(result);
-      // WHY: Server fan-out updates guild members[] (score or identity); drop 5m TTL.
       if (
         result.ok &&
         metric === LEADERBOARD_SHARD_OVERALL &&
@@ -157,5 +161,5 @@ export function useLeaderboardUpload() {
 
   const clearFeedback = useCallback(() => setLastResult(null), []);
 
-  return { upload, busy, lastResult, goJoinArena, clearFeedback };
+  return { upload, uploadGuildOnly, busy, lastResult, goJoinArena, clearFeedback };
 }

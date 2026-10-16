@@ -35,6 +35,7 @@ import {
   loadLadderIdentityLock,
 } from "../shared/ladderIdentityLock.js";
 import { fanOutLadderScoreToGuild } from "../guild/guildScoreFanOut.js";
+import { sanitizeGuildRadarScores } from "../guild/guildRadarScores.js";
 
 function entryRef(metric, uid) {
   return db
@@ -107,6 +108,10 @@ export async function runLadderSubmitShard(request) {
   const avatarUrl = locked.avatarUrl;
   const profile = locked.profile;
   const skipPreviewUpdate = data.skipPreviewUpdate === true;
+  // Club C1: optional six-axis embed on ladderScore fan-out (never reads public preview doc).
+  const guildRadarScores = sanitizeGuildRadarScores(
+    data.radarScores ?? data.mergedScores
+  );
 
   if (!isValidShardId(metric)) {
     return {
@@ -284,6 +289,7 @@ export async function runLadderSubmitShard(request) {
         displayName,
         avatarUrl,
         isAnonymous: profile?.isAnonymousInLadder === true,
+        radarScores: guildRadarScores,
       });
     }
     return {
@@ -340,6 +346,7 @@ export async function runLadderSubmitShard(request) {
       displayName,
       avatarUrl,
       isAnonymous: profile?.isAnonymousInLadder === true,
+      radarScores: guildRadarScores,
     });
   }
 

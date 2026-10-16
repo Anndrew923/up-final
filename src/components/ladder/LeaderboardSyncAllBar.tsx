@@ -11,7 +11,6 @@ import { useUiGate } from '../../hooks/useUiGate';
 import { useGenesisSeatSummary } from '../../hooks/useGenesisSeatSummary';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
-import { loadWantsGlobalLadderPublish } from '../../services/ladderPublishPreferenceStorage';
 import { useEntitlementStore } from '../../stores/entitlementStore';
 import LeaderboardGateSheet from './LeaderboardGateSheet';
 import LadderIdentitySheet from './LadderIdentitySheet';
@@ -27,10 +26,8 @@ export interface LeaderboardSyncAllBarProps {
 }
 
 /**
- * Compact Sync Capsule for Home CONSOLE + Ladder full-sync.
- * WHY: Match assessment Sync Capsule — no always-on gate/DEV chrome; click opens
- * Gate Sheet / Identity Sheet / cooldown·no-targets hints.
- * Genesis pioneers see lifetime-ladder badge + Pro upsell copy for Dyno / cloud.
+ * Intent-driven Sync Capsule — global (Pro) vs club-only when hasGuild.
+ * WHY: Button = destination; no sticky publish preference.
  */
 const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   onFinished,
@@ -48,16 +45,29 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
   const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | 'gate' | null>(null);
-  const { syncAll, busy, summary, failures, fullSyncBlock, gate, targetCount, goJoinArena, clearFeedback } =
-    useLeaderboardSyncAll({
-      onFinished,
-    });
+  const {
+    syncGlobal,
+    syncGuildOnly,
+    busy,
+    summary,
+    failures,
+    fullSyncBlock,
+    gate,
+    targetCount,
+    hasGuild,
+    goJoinArena,
+    clearFeedback,
+  } = useLeaderboardSyncAll({
+    onFinished,
+  });
 
   const fullSyncBlocked = Boolean(fullSyncBlock && !fullSyncBlock.allowed);
   const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
   const gateSheetKind = gateSheetKindFromUiGate(uiGate);
   const showReadyCapsule = gate === 'ok' && identity.ready;
+  /** pending → single global button (no flash of club CTA). */
+  const showClubCapsule = hasGuild === true;
 
   useEffect(() => {
     setTapHint(null);
@@ -92,18 +102,10 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     return formatGenesisSeatSummaryCopy(t, genesisSeatSummary);
   }, [genesisSeatSummary, isGenesisEarlyBird, t]);
 
-  const runSyncOrIdentityGate = () => {
+  const runGlobalSyncOrGates = () => {
     setTapHint(null);
-    // Shared full-sync budget applies to guild-only path too (cost guardrail).
     if (fullSyncBlocked) {
       setTapHint('cooldown');
-      return;
-    }
-    // Privacy Phase 1: guild-only / local skip must not open Pro or Arena identity sheets.
-    const privacyGuildOnly = !loadWantsGlobalLadderPublish();
-    if (privacyGuildOnly) {
-      clearFeedback();
-      void syncAll();
       return;
     }
     if (targetCount === 0) {
@@ -115,17 +117,25 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         setGateSheetOpen(true);
         return;
       }
-      // WHY: no-score / invalid-score have no sheet — surface tap hint instead of a silent no-op.
       setTapHint('gate');
       return;
     }
-    // WHY: Name is the hard upload gate — open the drawer in-place; never navigate away from radar.
     if (!identity.ready) {
       setIdentitySheetOpen(true);
       return;
     }
     clearFeedback();
-    void syncAll();
+    void syncGlobal();
+  };
+
+  const runGuildSync = () => {
+    setTapHint(null);
+    if (fullSyncBlocked) {
+      setTapHint('cooldown');
+      return;
+    }
+    clearFeedback();
+    void syncGuildOnly();
   };
 
   return (
@@ -177,20 +187,32 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
         </p>
       ) : null}
 
-      <div className="flex min-w-0 items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             type="button"
             className="ui-btn border-accent-primary/40 text-accent-primary"
             disabled={disabled}
-            onClick={runSyncOrIdentityGate}
+            onClick={runGlobalSyncOrGates}
           >
             {busy
               ? t('ladder.syncAll.busy')
-              : identity.ready
-                ? t('ladder.syncAll.button')
-                : t('ladder.syncAll.buttonSetupIdentity')}
+              : !identity.ready
+                ? t('ladder.syncAll.buttonSetupIdentity')
+                : showClubCapsule
+                  ? t('ladder.syncAll.buttonGlobal')
+                  : t('ladder.syncAll.button')}
           </button>
+          {showClubCapsule ? (
+            <button
+              type="button"
+              className="ui-btn border-cyan-500/30 bg-transparent text-cyan-200/90 hover:bg-cyan-500/10"
+              disabled={disabled}
+              onClick={runGuildSync}
+            >
+              {busy ? t('ladder.syncAll.busy') : t('ladder.syncAll.buttonGuild')}
+            </button>
+          ) : null}
           {gate === 'pro' ? (
             <button type="button" className="ui-btn text-xs" onClick={goJoinArena}>
               {t('ladder.upload.joinArena')}
@@ -201,7 +223,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
           <LadderIdentityChip
             identity={identity}
             onClick={() => setIdentitySheetOpen(true)}
-            className="shrink-0"
+            className="shrink-0 self-end sm:self-auto"
           />
         ) : null}
       </div>

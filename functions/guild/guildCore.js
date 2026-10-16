@@ -12,6 +12,7 @@ import {
   ONE_HOUR_MS,
 } from "../shared/constants.js";
 import { GUILD_INVITE_CODE_ALPHABET } from "./guildInviteCode.js";
+import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
 
 const TAG_ALPHABET_SET = new Set(GUILD_INVITE_CODE_ALPHABET.split(""));
 
@@ -136,6 +137,7 @@ export function sanitizeAvatarUrl(raw) {
  *   displayName: string;
  *   avatarUrl?: string;
  *   ladderScore?: number;
+ *   radarScores?: unknown;
  *   updatedAt: string;
  * }} input
  */
@@ -149,6 +151,8 @@ export function buildMemberSnapshot(input) {
   };
   const avatarUrl = sanitizeAvatarUrl(input.avatarUrl);
   if (avatarUrl) snapshot.avatarUrl = avatarUrl;
+  const radarScores = sanitizeGuildRadarScores(input.radarScores);
+  if (radarScores) snapshot.radarScores = radarScores;
   return snapshot;
 }
 

@@ -105,7 +105,11 @@ export default function CrewPage() {
         {showJoined && crew.guild ? (
           <>
             <CrewIdentityBanner guild={crew.guild} />
-            <CrewPrivateLadder members={crew.rankedMembers} authUid={crew.authUid} />
+            <CrewPrivateLadder
+              members={crew.rankedMembers}
+              authUid={crew.authUid}
+              guildTag={crew.guild.tag}
+            />
 
             {!crew.isCoach ? (
               <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-4">

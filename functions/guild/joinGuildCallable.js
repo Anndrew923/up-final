@@ -18,6 +18,7 @@ import {
   sanitizeAvatarUrl,
   sanitizeDisplayName,
 } from "./guildCore.js";
+import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
 import { isValidInviteCodeShape, normalizeInviteCode } from "./guildInviteCode.js";
 import { userGuildBindPatch } from "./guildUserFields.js";
 
@@ -73,6 +74,7 @@ export async function runJoinGuild(request) {
   const displayName = sanitizeDisplayName(data.displayName, uid);
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const ladderScore = Number(data.ladderScore);
+  const radarScores = sanitizeGuildRadarScores(data.radarScores);
   const inviteRef = db.collection(GUILD_INVITE_CODES_COLLECTION).doc(code);
 
   try {
@@ -113,6 +115,7 @@ export async function runJoinGuild(request) {
         displayName,
         avatarUrl,
         ladderScore: Number.isFinite(ladderScore) ? ladderScore : 0,
+        radarScores,
         updatedAt: nowIso,
       });
       const appended = appendGuildMember(guildData, snapshot);

@@ -220,6 +220,10 @@ export async function runLadderSyncBatch(request) {
     }
 
     tally.attempted += 1;
+    const previewMerged =
+      data.preview && typeof data.preview === "object"
+        ? data.preview.mergedScores
+        : undefined;
     const shardRequest = {
       auth: request.auth,
       data: {
@@ -229,6 +233,10 @@ export async function runLadderSyncBatch(request) {
         avatarUrl: data.avatarUrl,
         profile: data.profile,
         skipPreviewUpdate: true,
+        // Club C1: overall fan-out needs six-axis map from batch preview payload.
+        ...(metric === "ladderScore" && previewMerged && typeof previewMerged === "object"
+          ? { mergedScores: previewMerged }
+          : {}),
       },
     };
 

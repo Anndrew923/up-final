@@ -23,6 +23,7 @@ import {
   sanitizeAvatarUrl,
   sanitizeDisplayName,
 } from "./guildCore.js";
+import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
 import { userGuildBindPatch } from "./guildUserFields.js";
 
 /**
@@ -45,6 +46,7 @@ export async function runCreateGuild(request) {
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const seedScore = Number(data.ladderScore);
   const ladderScore = Number.isFinite(seedScore) ? Math.max(0, seedScore) : 0;
+  const radarScores = sanitizeGuildRadarScores(data.radarScores);
   const userRef = db.collection("users").doc(uid);
 
   for (let attempt = 0; attempt < GUILD_INVITE_CODE_MAX_MINT_ATTEMPTS; attempt += 1) {
@@ -81,6 +83,7 @@ export async function runCreateGuild(request) {
           displayName,
           avatarUrl,
           ladderScore,
+          radarScores,
           updatedAt: nowIso,
         });
         const guildId = guildRef.id;

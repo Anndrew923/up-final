@@ -46,6 +46,24 @@ describe("applyMemberLadderScorePatch", () => {
     assert.equal(result.members[2].uid, "m2");
   });
 
+  it("embeds radarScores when provided", () => {
+    const result = applyMemberLadderScorePatch(baseGuild, "m1", {
+      ladderScore: 55,
+      radarScores: {
+        strength: 80,
+        explosivePower: 70,
+        cardio: 60,
+        muscleMass: 50,
+        bodyFat: 40,
+        gripStrength: 30,
+      },
+      updatedAt: "t2",
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.members.find((m) => m.uid === "m1").radarScores.strength, 80);
+    assert.equal(result.members.find((m) => m.uid === "m1").radarScores.gripStrength, 30);
+  });
+
   it("clears avatar when anonymous", () => {
     const withAvatar = {
       ...baseGuild,

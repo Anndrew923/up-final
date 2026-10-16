@@ -15,6 +15,8 @@ import type {
   SubmitLeaderboardOptions,
   SubmitLeaderboardResult,
 } from './leaderboardService';
+import { getMergedScoresSnapshotForRadar } from './mergedLocalScoresSnapshot';
+import { LEADERBOARD_SHARD_OVERALL } from '../logic/core/assessmentLeaderboardShards';
 
 /**
  * Refresh Auth + App Check tokens immediately before ladder Callables.
@@ -32,6 +34,9 @@ type LadderSubmitShardPayload = {
   profile?: Partial<LadderProfileProjection>;
   skipPreviewUpdate?: boolean;
   skipOverallPreviewSync?: boolean;
+  /** Club C1 — feed guild fan-out six-axis without a preview-doc read. */
+  mergedScores?: ScoreMap;
+  radarScores?: ScoreMap;
 };
 
 type LadderSyncPreviewPayload = {
@@ -210,7 +215,7 @@ export async function callLadderSubmitShard(params: {
   const { input, options } = params;
   try {
     await prepareLadderCallableSession();
-    const { data } = await callable({
+    const payload: LadderSubmitShardPayload = {
       metric: input.metric,
       score: input.score,
       displayName: input.displayName,
@@ -218,7 +223,12 @@ export async function callLadderSubmitShard(params: {
       profile: input.profile,
       skipPreviewUpdate: options?.skipPreviewUpdate,
       skipOverallPreviewSync: options?.skipOverallPreviewSync,
-    });
+    };
+    // WHY: Overall shard fan-out embeds radar into guilds.members[] — client must supply scores.
+    if (input.metric === LEADERBOARD_SHARD_OVERALL) {
+      payload.mergedScores = getMergedScoresSnapshotForRadar();
+    }
+    const { data } = await callable(payload);
     return data;
   } catch (err) {
     logLadderCallableError('ladderSubmitShard', err);

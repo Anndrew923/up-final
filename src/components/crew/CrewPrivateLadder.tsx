@@ -1,20 +1,52 @@
-import { type FC } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProAvatarRing from '../ProAvatarRing';
 import { formatCompactRelativeTime } from '../../logic/core/formatCompactRelativeTime';
 import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
+import {
+  CLUB_LADDER_DIMENSIONS,
+  type ClubLadderDimension,
+  guildMemberDimensionScore,
+  sortGuildMembersByDimension,
+} from '../../logic/core/guildRadarScores';
 import type { GuildMemberSnapshot } from '../../types/guild';
+import type { SixAxisMetric } from '../../types/scoring';
+import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import CrewMemberRadarSheet from './CrewMemberRadarSheet';
 
 export interface CrewPrivateLadderProps {
   members: GuildMemberSnapshot[];
   authUid: string | null;
+  /** Club tag for detail sheet eyebrow (e.g. ARN). */
+  guildTag?: string;
 }
 
 /**
- * Private crew ladder — visual parity with LadderPage rank rows (tier borders + mono score).
+ * Private club ladder — overall + axis funnel (client sort) + radar sheet (embedded scores).
  */
-const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({ members, authUid }) => {
+const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
+  members,
+  authUid,
+  guildTag = '',
+}) => {
   const { t } = useTranslation('common');
+  const [dimension, setDimension] = useState<ClubLadderDimension>('overall');
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+
+  const labelForDimension = (dim: ClubLadderDimension): string => {
+    if (dim === 'overall') return t('crew.ladder.dimOverall');
+    return resolveSixAxisChartLabel(t, dim as SixAxisMetric);
+  };
+
+  const ranked = useMemo(
+    () => sortGuildMembersByDimension(members, dimension),
+    [members, dimension]
+  );
+
+  const selectedIndex = selectedUid
+    ? ranked.findIndex((m) => m.uid === selectedUid)
+    : -1;
+  const selectedMember = selectedIndex >= 0 ? ranked[selectedIndex] : null;
 
   return (
     <section className="ui-card space-y-4 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
@@ -28,19 +60,49 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({ members, authUid }) => 
         </div>
       </div>
 
-      {members.length === 0 ? (
+      {/* C2 — dimension funnel (client-only sort). */}
+      <div
+        className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        role="tablist"
+        aria-label={t('crew.ladder.dimensionAria')}
+      >
+        {CLUB_LADDER_DIMENSIONS.map((dim) => {
+          const active = dim === dimension;
+          return (
+            <button
+              key={dim}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={`shrink-0 rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold tracking-wide transition-colors ${
+                active
+                  ? 'bg-cyan-500/20 text-cyan-200 ring-1 ring-cyan-400/50'
+                  : 'bg-zinc-900/60 text-zinc-400 ring-1 ring-zinc-700/80 hover:text-zinc-200'
+              }`}
+              onClick={() => setDimension(dim)}
+            >
+              {labelForDimension(dim)}
+            </button>
+          );
+        })}
+      </div>
+
+      {ranked.length === 0 ? (
         <p className="rounded-lg border border-zinc-700/90 bg-zinc-900/40 px-4 py-6 text-center text-sm leading-relaxed text-zinc-400">
           {t('crew.ladder.empty')}
         </p>
       ) : (
         <ul className="space-y-2">
-          {members.map((row, index) => {
+          {ranked.map((row, index) => {
             const rank = index + 1;
             const isRank1 = rank === 1;
             const isRank2 = rank === 2;
             const isRank3 = rank === 3;
             const isMe = row.uid === authUid;
             const displayName = row.displayName || row.uid;
+            const dimScore = guildMemberDimensionScore(row, dimension);
+            const scoreText =
+              dimScore == null ? '—' : dimScore.toFixed(2);
             const rowTierClass = isRank1
               ? 'bg-gradient-to-r from-amber-500/10 to-bg-panel/40 border-l-4 border-l-amber-500 border-y border-r border-y-amber-500/20 border-r-amber-500/20'
               : isRank2
@@ -64,8 +126,11 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({ members, authUid }) => 
 
             return (
               <li key={row.uid} className="list-none">
-                <div
-                  className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-sm sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
+                <button
+                  type="button"
+                  className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
+                  onClick={() => setSelectedUid(row.uid)}
+                  aria-label={t('crew.ladder.openDetailAria', { name: displayName })}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <span
@@ -98,7 +163,7 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({ members, authUid }) => 
                     <p
                       className={`font-mono text-xs font-semibold tabular-nums sm:text-base ${scoreClass}`}
                     >
-                      {Number.isFinite(row.ladderScore) ? row.ladderScore.toFixed(2) : '—'}
+                      {scoreText}
                     </p>
                     <p
                       className="hidden text-[10px] text-zinc-500 sm:block"
@@ -107,12 +172,20 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({ members, authUid }) => 
                       {formatCompactRelativeTime(row.updatedAt)}
                     </p>
                   </div>
-                </div>
+                </button>
               </li>
             );
           })}
         </ul>
       )}
+
+      <CrewMemberRadarSheet
+        open={selectedMember != null}
+        member={selectedMember}
+        rank={selectedIndex >= 0 ? selectedIndex + 1 : null}
+        guildTag={guildTag}
+        onClose={() => setSelectedUid(null)}
+      />
     </section>
   );
 };

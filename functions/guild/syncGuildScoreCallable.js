@@ -11,6 +11,7 @@ import {
   sanitizeDisplayName,
 } from "./guildCore.js";
 import { fanOutLadderScoreToGuild } from "./guildScoreFanOut.js";
+import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
 
 /**
  * Pure request normalize for unit tests (no Firestore).
@@ -22,6 +23,7 @@ import { fanOutLadderScoreToGuild } from "./guildScoreFanOut.js";
  *   displayName: string;
  *   avatarUrl: string | null;
  *   isAnonymous: boolean;
+ *   radarScores?: Record<string, number>;
  * } | { ok: false; reason: string }}
  */
 export function normalizeSyncGuildScoreRequest(data, uid) {
@@ -36,12 +38,14 @@ export function normalizeSyncGuildScoreRequest(data, uid) {
   const displayName = sanitizeDisplayName(data.displayName, uid);
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const isAnonymous = data.isAnonymous === true || data.isAnonymousInLadder === true;
+  const radarScores = sanitizeGuildRadarScores(data.radarScores);
   return {
     ok: true,
     ladderScore,
     displayName,
     avatarUrl: avatarUrl || null,
     isAnonymous,
+    ...(radarScores ? { radarScores } : {}),
   };
 }
 
@@ -95,6 +99,7 @@ export async function runSyncGuildLadderScore(request) {
       displayName: normalized.displayName,
       avatarUrl: normalized.avatarUrl,
       isAnonymous: normalized.isAnonymous,
+      radarScores: normalized.radarScores,
     });
     return mapFanOutToSyncGuildScoreResponse(result, normalized.ladderScore);
   } catch (err) {

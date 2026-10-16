@@ -17,7 +17,6 @@ import {
   invalidateGuildLadderCache,
 } from '../services/guildLadderCacheService';
 import { getLadderUploadIdentity } from '../services/ladderIdentityService';
-import { loadWantsGlobalLadderPublish } from '../services/ladderPublishPreferenceStorage';
 import {
   checkFullSyncAllowed,
   recordFullSyncAllowed,
@@ -33,6 +32,7 @@ import {
 } from '../services/localStorageService';
 import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
+import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
 
@@ -43,8 +43,8 @@ export interface UseLeaderboardSyncAllOptions {
 }
 
 /**
- * Sequential multi-shard ladder upload using the same merged score map as Home radar.
- * Respects `submitLeaderboardScore` + per-shard rate limits; summarizes outcomes for UI.
+ * Intent-driven Sync All — `syncGlobal` (Pro shards + fan-out) vs `syncGuildOnly` (club roster).
+ * WHY: Button = intent; never a sticky publish preference.
  */
 export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   const navigate = useNavigate();
@@ -78,6 +78,24 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   const uid = useAuthStore((s) => s.uid);
   const authStatus = useAuthStore((s) => s.status);
   const isAnonymous = useAuthStore((s) => s.isAnonymous);
+
+  /** null = binding loading — UI must not flash dual capsules. */
+  const [hasGuild, setHasGuild] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!uid || isAnonymous) {
+      setHasGuild(false);
+      return;
+    }
+    setHasGuild(null);
+    void fetchUserGuildBinding(uid).then((binding) => {
+      if (!cancelled) setHasGuild(Boolean(binding?.guildId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [uid, isAnonymous]);
 
   const gate = useMemo(() => {
     if (targets.length === 0) return 'no-score' as const;
@@ -115,7 +133,6 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
       setFullSyncBlock(null);
       return;
     }
-    // Guild-only Sync All reuses the same full-sync budget — keep cooldown visible even when Pro gate ≠ ok.
     refreshFullSyncBlock(uid);
   }, [uid, isAnonymous, refreshFullSyncBlock]);
 
@@ -123,65 +140,68 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     navigate(joinArenaPath('ladder'));
   }, [navigate]);
 
-  const syncAll = useCallback(async () => {
+  const syncGuildOnly = useCallback(async () => {
     setSummaryState(null);
-
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    // Privacy: sticky opt-out must not be bypassed by Home/Ladder Sync All.
-    if (!loadWantsGlobalLadderPublish()) {
-      const fullSyncGate = checkFullSyncAllowed(user.uid);
-      if (!fullSyncGate.allowed) {
-        setFullSyncBlock(fullSyncGate);
-        return;
-      }
-      setBusy(true);
-      try {
-        const binding = await fetchUserGuildBinding(user.uid);
-        if (!binding?.guildId || !(overallScore > 0)) {
-          const empty = createEmptyLeaderboardSyncRunSummary();
-          setSummaryState({ signature: targetsSignature, summary: empty, failures: [] });
-          onFinishedRef.current?.();
-          return;
-        }
-        const identity = getLadderUploadIdentity();
-        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
-        const result = await syncGuildLadderScore({
-          ladderScore: overallScore,
-          displayName: identity?.displayName,
-          avatarUrl: identity?.avatarUrl,
-          isAnonymous: profile?.isAnonymousInLadder === true,
-        });
-        if (result.ok && !result.skipped) {
-          recordFullSyncAllowed(user.uid);
-          refreshFullSyncBlock(user.uid);
-          invalidateGuildLadderCache(result.guildId ?? undefined);
-          const tally = createEmptyLeaderboardSyncRunSummary();
-          tally.attempted = 1;
-          tally.updated = 1;
-          setSummaryState({ signature: targetsSignature, summary: tally, failures: [] });
-          void hapticService.trigger('success');
-        } else if (!result.ok) {
-          setSummaryState({
-            signature: targetsSignature,
-            summary: createEmptyLeaderboardSyncRunSummary(),
-            failures: [{ metric: 'ladderScore', reason: result.reason }],
-          });
-        } else {
-          setSummaryState({
-            signature: targetsSignature,
-            summary: createEmptyLeaderboardSyncRunSummary(),
-            failures: [],
-          });
-        }
-        onFinishedRef.current?.();
-      } finally {
-        setBusy(false);
-      }
+    const fullSyncGate = checkFullSyncAllowed(user.uid);
+    if (!fullSyncGate.allowed) {
+      setFullSyncBlock(fullSyncGate);
       return;
     }
 
+    setBusy(true);
+    try {
+      const binding = await fetchUserGuildBinding(user.uid);
+      if (!binding?.guildId || !(overallScore > 0)) {
+        const empty = createEmptyLeaderboardSyncRunSummary();
+        setSummaryState({ signature: targetsSignature, summary: empty, failures: [] });
+        onFinishedRef.current?.();
+        return;
+      }
+      const identity = getLadderUploadIdentity();
+      const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+      const radarScores = sanitizeGuildRadarScores(merged);
+      const result = await syncGuildLadderScore({
+        ladderScore: overallScore,
+        displayName: identity?.displayName,
+        avatarUrl: identity?.avatarUrl,
+        isAnonymous: profile?.isAnonymousInLadder === true,
+        ...(radarScores ? { radarScores } : {}),
+      });
+      if (result.ok && !result.skipped) {
+        recordFullSyncAllowed(user.uid);
+        refreshFullSyncBlock(user.uid);
+        invalidateGuildLadderCache(result.guildId ?? undefined);
+        const tally = createEmptyLeaderboardSyncRunSummary();
+        tally.attempted = 1;
+        tally.updated = 1;
+        setSummaryState({ signature: targetsSignature, summary: tally, failures: [] });
+        void hapticService.trigger('success');
+      } else if (!result.ok) {
+        setSummaryState({
+          signature: targetsSignature,
+          summary: createEmptyLeaderboardSyncRunSummary(),
+          failures: [{ metric: 'ladderScore', reason: result.reason }],
+        });
+      } else {
+        setSummaryState({
+          signature: targetsSignature,
+          summary: createEmptyLeaderboardSyncRunSummary(),
+          failures: [],
+        });
+      }
+      onFinishedRef.current?.();
+    } finally {
+      setBusy(false);
+    }
+  }, [merged, overallScore, refreshFullSyncBlock, targetsSignature]);
+
+  const syncGlobal = useCallback(async () => {
+    setSummaryState(null);
+    const user = getCurrentFirebaseUser();
+    if (!user || user.isAnonymous) return;
     if (targets.length === 0 || gate !== 'ok') return;
 
     const fullSyncGate = checkFullSyncAllowed(user.uid);
@@ -191,12 +211,10 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     }
 
     const snap = readEntitlementSnapshot();
-
     setBusy(true);
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
-      // WHY: Hard gate — sync bars open the identity sheet before this path runs; abort if still empty.
       if (!identity) return;
 
       const batch = await runLeaderboardBatchUpload({
@@ -235,16 +253,18 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     } finally {
       setBusy(false);
     }
-  }, [targets, gate, targetsSignature, merged, overallScore, refreshFullSyncBlock]);
+  }, [targets, gate, targetsSignature, merged, refreshFullSyncBlock]);
 
   return {
-    syncAll,
+    syncGlobal,
+    syncGuildOnly,
     busy,
     summary,
     failures,
     fullSyncBlock,
     gate,
     targetCount: targets.length,
+    hasGuild,
     goJoinArena,
     clearFeedback,
   };

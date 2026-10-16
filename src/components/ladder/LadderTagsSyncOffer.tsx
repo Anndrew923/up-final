@@ -4,7 +4,6 @@ import { useLeaderboardAccess } from '../../hooks/useLeaderboardAccess';
 import { useLeaderboardSyncAll } from '../../hooks/useLeaderboardSyncAll';
 import { useLadderIdentityReady } from '../../hooks/useLadderIdentityReady';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
-import { loadWantsGlobalLadderPublish } from '../../services/ladderPublishPreferenceStorage';
 import LadderIdentitySheet from './LadderIdentitySheet';
 import LadderSyncSummaryStatus from './LadderSyncSummaryStatus';
 
@@ -21,6 +20,7 @@ export interface LadderTagsSyncOfferProps {
 /**
  * Soft Local→Cloud offer after ladder tags are saved locally.
  * WHY: Filtered ranks read shard fields; Save Tags alone never hits Firestore.
+ * Intent: always global shards (tags are public-ladder fields) — Pro + identity gated.
  */
 const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
   onSynced,
@@ -32,7 +32,7 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
   const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const handledSummaryRef = useRef<string | null>(null);
-  const { syncAll, busy, gate, summary, failures, fullSyncBlock, targetCount, clearFeedback } =
+  const { syncGlobal, busy, gate, summary, failures, fullSyncBlock, targetCount, clearFeedback } =
     useLeaderboardSyncAll();
 
   // WHY: Resolve success/failure from summary — never treat "finished running" as synced.
@@ -83,11 +83,6 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
     setHint(null);
     handledSummaryRef.current = null;
     clearFeedback();
-    // Privacy: crew-only sync must not require Pro gate or Arena identity.
-    if (!loadWantsGlobalLadderPublish()) {
-      void syncAll();
-      return;
-    }
     if (gate !== 'ok') {
       setHint(t(`ladder.upload.gate.${gate}`));
       return;
@@ -104,7 +99,7 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
       setIdentitySheetOpen(true);
       return;
     }
-    void syncAll();
+    void syncGlobal();
   };
 
   return (
@@ -143,7 +138,7 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
         onSaved={() => {
           setIdentitySheetOpen(false);
           handledSummaryRef.current = null;
-          void syncAll();
+          void syncGlobal();
         }}
       />
     </div>

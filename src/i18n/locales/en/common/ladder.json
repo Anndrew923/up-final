@@ -129,7 +129,10 @@
     "syncAll": {
       "sectionTitle": "Arena Upload",
       "noTargets": "No scores ready — complete assessments or save to radar first.",
-      "button": "⚡ Sync Ladder",
+      "button": "⚡ Sync Global Ladder",
+      "buttonGlobal": "⚡ Sync Global",
+      "buttonGuild": "🛡️ Sync Club",
+      "busyGuild": "Syncing club…",
       "buttonSetupIdentity": "⚡ Set Identity",
       "identitySheetTitle": "Set arena identity",
       "identitySheetBody": "This is your public ladder persona. Display name is required; avatar can be added later.",

@@ -5,29 +5,22 @@ import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 
-export type WithdrawPublicPresenceDialogMode = 'opt-out' | 'erase-only';
-
 export interface WithdrawPublicPresenceDialogProps {
   open: boolean;
   busy?: boolean;
-  mode?: WithdrawPublicPresenceDialogMode;
   onCancel: () => void;
-  /** Turn off global publish preference only — keep historical public entries. */
-  onPreferOffOnly?: () => void;
-  /** Wipe public ladder footprints (and turn preference off when mode=opt-out). */
+  /** Wipe public ladder footprints (shards + preview). Club roster untouched. */
   onWithdraw: () => void;
 }
 
 /**
- * Settings confirm for privacy opt-out and/or public footprint erase.
- * WHY: Privacy promise needs an explicit wipe path without forcing it on every opt-out.
+ * Settings confirm for erasing global public ladder footprint.
+ * WHY: Intent lives on sync CTAs; Settings only manages historical public residue.
  */
 const WithdrawPublicPresenceDialog: FC<WithdrawPublicPresenceDialogProps> = ({
   open,
   busy = false,
-  mode = 'opt-out',
   onCancel,
-  onPreferOffOnly,
   onWithdraw,
 }) => {
   const { t } = useTranslation('common');
@@ -35,7 +28,6 @@ const WithdrawPublicPresenceDialog: FC<WithdrawPublicPresenceDialogProps> = ({
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const eraseOnly = mode === 'erase-only';
 
   useFocusTrap(dialogRef, open);
   useShellScrollLock(open);
@@ -82,18 +74,14 @@ const WithdrawPublicPresenceDialog: FC<WithdrawPublicPresenceDialogProps> = ({
             {t('settings.withdrawPublic.kicker')}
           </p>
           <h2 id={titleId} className="text-lg font-bold tracking-tight text-zinc-50">
-            {eraseOnly
-              ? t('settings.withdrawPublic.eraseOnlyTitle')
-              : t('settings.withdrawPublic.title')}
+            {t('settings.withdrawPublic.eraseOnlyTitle')}
           </h2>
         </header>
         <p
           id={descriptionId}
           className="relative mt-4 text-center text-sm leading-relaxed text-zinc-300"
         >
-          {eraseOnly
-            ? t('settings.withdrawPublic.eraseOnlyBody')
-            : t('settings.withdrawPublic.body')}
+          {t('settings.withdrawPublic.eraseOnlyBody')}
         </p>
         <div className="relative mt-6 flex flex-col gap-2">
           <button
@@ -104,20 +92,8 @@ const WithdrawPublicPresenceDialog: FC<WithdrawPublicPresenceDialogProps> = ({
           >
             {busy
               ? t('settings.withdrawPublic.withdrawing')
-              : eraseOnly
-                ? t('settings.withdrawPublic.eraseHistoryCta')
-                : t('settings.withdrawPublic.withdrawAndOff')}
+              : t('settings.withdrawPublic.eraseHistoryCta')}
           </button>
-          {!eraseOnly && onPreferOffOnly ? (
-            <button
-              type="button"
-              className="w-full rounded-xl border border-zinc-600 px-3 py-2.5 text-sm font-semibold text-zinc-200 disabled:opacity-40"
-              disabled={busy}
-              onClick={onPreferOffOnly}
-            >
-              {t('settings.withdrawPublic.preferOffOnly')}
-            </button>
-          ) : null}
           <button
             ref={cancelButtonRef}
             type="button"

@@ -7,6 +7,7 @@ import {
   sortGuildMembersByScore,
 } from '../logic/core/guildDoc';
 import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
+import { getMergedScoresSnapshotForRadar } from '../services/mergedLocalScoresSnapshot';
 import {
   createGuild,
   disbandGuild,
@@ -17,6 +18,7 @@ import {
   type GuildCallableFailureReason,
   type GuildCallableResult,
 } from '../services/guildCallableService';
+import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
 import {
   clearGuildCache,
   clearUserGuildBindingCache,
@@ -221,12 +223,14 @@ export function useCrewGuild(): UseCrewGuildResult {
       }
       const identity = identityForCallable();
       const ladderScore = useScoreStore.getState().overallScore;
+      const radarScores = sanitizeGuildRadarScores(getMergedScoresSnapshotForRadar());
       return runMutation(() =>
         createGuild({
           name: nameResult.name,
           tag: tagResult.tag,
           ...identity,
           ladderScore: Number.isFinite(ladderScore) ? ladderScore : 0,
+          ...(radarScores ? { radarScores } : {}),
         })
       );
     },
@@ -237,11 +241,13 @@ export function useCrewGuild(): UseCrewGuildResult {
     async (code: string) => {
       const identity = identityForCallable();
       const ladderScore = useScoreStore.getState().overallScore;
+      const radarScores = sanitizeGuildRadarScores(getMergedScoresSnapshotForRadar());
       return runMutation(() =>
         joinGuild({
           code,
           ...identity,
           ladderScore: Number.isFinite(ladderScore) ? ladderScore : 0,
+          ...(radarScores ? { radarScores } : {}),
         })
       );
     },

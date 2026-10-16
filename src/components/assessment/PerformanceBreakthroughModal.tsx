@@ -5,12 +5,7 @@ import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
-import {
-  resolvePublishBusyCopyKey,
-  resolvePublishCtaCopyKey,
-  resolvePublishHintCopyKey,
-  resolvePublishSuccessBannerKey,
-} from '../../logic/core/ladderPublishPreference';
+import { resolvePublishSuccessBannerKey } from '../../logic/core/membershipSyncSurface';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -92,8 +87,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const isPipelineRunning = pipelineBusy || isArenaSyncing;
   const showDashboardThenArena = onPersistToDashboard != null && arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
-  const publishMode = arenaSync?.publishMode ?? 'global';
-  const wantsGlobalLadder = arenaSync?.wantsGlobalLadder ?? true;
+  const membershipSurface = arenaSync?.membershipSurface ?? 'global-only';
+  const showClubSecondary = membershipSurface === 'dual';
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
@@ -103,9 +98,6 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     arenaSync?.summary,
     arenaSync?.lastCloudOutcome ?? null
   );
-  const secondaryCtaLabelKey = resolvePublishCtaCopyKey(publishMode);
-  const secondaryBusyLabelKey = resolvePublishBusyCopyKey(publishMode);
-  const publishHintKey = resolvePublishHintCopyKey(publishMode);
 
   const handleDashboardSync = useCallback(async () => {
     if (!onSyncToDashboard || isDashboardSyncing || isPipelineRunning) return;
@@ -117,38 +109,50 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     }
   }, [isDashboardSyncing, isPipelineRunning, onSyncToDashboard]);
 
-  const handleDashboardThenArena = useCallback(async () => {
-    if (!onPersistToDashboard || !arenaSync || isDashboardSyncing || isPipelineRunning) return;
+  const runPersistThenCloud = useCallback(
+    async (intent: 'global' | 'guild') => {
+      if (!onPersistToDashboard || !arenaSync || isDashboardSyncing || isPipelineRunning) return;
+      // pending ≈ global-only: allow global; club CTA is hidden until dual.
+      if (intent === 'guild' && membershipSurface !== 'dual') return;
 
-    const mode = arenaSync.publishMode;
-    if (mode === 'pending') return;
+      if (intent === 'guild') {
+        if (!(arenaSync.overallScore > 0)) return;
+      } else {
+        if (arenaSync.targetCount === 0) return;
+        if (tryOpenGateSheet(arenaSync.gate)) return;
+      }
 
-    if (mode === 'guild-only' && !(arenaSync.overallScore > 0)) return;
+      setPipelineBusy(true);
+      setDashboardPersistedInSession(false);
+      arenaSync.clearFeedback();
 
-    // Global path keeps Pro / score gates; guild-only + local-only skip public ladder gate.
-    if (mode === 'global') {
-      if (arenaSync.targetCount === 0) return;
-      if (tryOpenGateSheet(arenaSync.gate)) return;
-    }
+      try {
+        const persisted = await Promise.resolve(onPersistToDashboard());
+        if (!persisted) return;
 
-    setPipelineBusy(true);
-    setDashboardPersistedInSession(false);
-    arenaSync.clearFeedback();
+        setDashboardPersistedInSession(true);
+        await waitForReactSettlement();
 
-    try {
-      const persisted = await Promise.resolve(onPersistToDashboard());
-      if (!persisted) return;
-
-      setDashboardPersistedInSession(true);
-      await waitForReactSettlement();
-
-      const sync = arenaSyncRef.current;
-      if (!sync) return;
-      await sync.syncPage();
-    } finally {
-      setPipelineBusy(false);
-    }
-  }, [arenaSync, isDashboardSyncing, isPipelineRunning, onPersistToDashboard, tryOpenGateSheet]);
+        const sync = arenaSyncRef.current;
+        if (!sync) return;
+        if (intent === 'guild') {
+          await sync.syncPageGuild();
+        } else {
+          await sync.syncPageGlobal();
+        }
+      } finally {
+        setPipelineBusy(false);
+      }
+    },
+    [
+      arenaSync,
+      isDashboardSyncing,
+      isPipelineRunning,
+      membershipSurface,
+      onPersistToDashboard,
+      tryOpenGateSheet,
+    ]
+  );
 
   const toggleSummaryExpanded = useCallback(() => {
     setSummaryExpanded((prev) => !prev);
@@ -306,61 +310,57 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
                 {showDashboardThenArena && arenaSync ? (
                   <div className="mt-2 space-y-2">
-                    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-zinc-800/90 bg-zinc-950/50 px-3 py-2.5">
-                      <input
-                        type="checkbox"
-                        className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500/40"
-                        checked={wantsGlobalLadder}
-                        disabled={actionsBusy}
-                        onChange={(e) => arenaSync.setWantsGlobalLadder(e.target.checked)}
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-xs font-medium text-zinc-200">
-                          {t('assessment.breakthrough.publishGlobalCheckbox')}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] leading-relaxed text-zinc-500">
-                          {t(publishHintKey)}
-                        </span>
-                      </span>
-                    </label>
                     <button
                       type="button"
                       className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
                       disabled={
                         syncDisabled ||
                         actionsBusy ||
-                        publishMode === 'pending' ||
-                        (publishMode === 'global' &&
-                          (arenaSync.targetCount === 0 ||
-                            arenaSync.gate === 'no-score' ||
-                            arenaSync.gate === 'invalid-score')) ||
-                        (publishMode === 'guild-only' && !(arenaSync.overallScore > 0))
+                        arenaSync.targetCount === 0 ||
+                        arenaSync.gate === 'no-score' ||
+                        arenaSync.gate === 'invalid-score'
                       }
-                      onClick={() => void handleDashboardThenArena()}
+                      onClick={() => void runPersistThenCloud('global')}
                     >
-                      {isPipelineRunning ? t(secondaryBusyLabelKey) : t(secondaryCtaLabelKey)}
+                      {isPipelineRunning
+                        ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
+                        : showClubSecondary
+                          ? t('assessment.breakthrough.syncDashboardThenArenaWithClub')
+                          : t('assessment.breakthrough.syncDashboardThenArena')}
                     </button>
+                    {showClubSecondary ? (
+                      <button
+                        type="button"
+                        className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
+                        disabled={
+                          syncDisabled ||
+                          actionsBusy ||
+                          !(arenaSync.overallScore > 0)
+                        }
+                        onClick={() => void runPersistThenCloud('guild')}
+                      >
+                        {isPipelineRunning
+                          ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
+                          : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
+                      </button>
+                    ) : null}
                   </div>
                 ) : null}
 
                 {pipelineBanner !== 'none' ? (
                   <p
                     className={`mt-3 text-sm ${
-                      pipelineBanner === 'full-success' ||
-                      pipelineBanner === 'guild-success' ||
-                      pipelineBanner === 'local-success'
+                      pipelineBanner === 'full-success' || pipelineBanner === 'guild-success'
                         ? 'text-emerald-400/90'
                         : 'text-amber-300/90'
                     }`}
                     role="status"
                   >
                     {pipelineBanner === 'full-success'
-                      ? t(resolvePublishSuccessBannerKey('global'))
+                      ? t(resolvePublishSuccessBannerKey('arena'))
                       : pipelineBanner === 'guild-success'
-                        ? t(resolvePublishSuccessBannerKey('guild-only'))
-                        : pipelineBanner === 'local-success'
-                          ? t(resolvePublishSuccessBannerKey('local-only'))
-                          : t('assessment.breakthrough.dashboardPersistedOnly')}
+                        ? t(resolvePublishSuccessBannerKey('guild'))
+                        : t('assessment.breakthrough.dashboardPersistedOnly')}
                   </p>
                 ) : null}
 

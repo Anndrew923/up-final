@@ -1,9 +1,17 @@
 /**
  * Crew / private guild contracts (Firestore `guilds/{guildId}`).
- * WHY: UI says "Crew"; storage IDs stay `guild*` for stable Callable/rules paths.
+ * WHY: UI says "Club"; storage IDs stay `guild*` for stable Callable/rules paths.
  */
 
+import type { SixAxisMetric } from './scoring';
+
 export type GuildRole = 'coach' | 'member';
+
+/**
+ * Embedded six-axis snapshot for club private ladder radar + axis funnel (no preview doc).
+ * WHY: Partial — absent keys mean “not assessed” (sort last / show —), not coerced 0.
+ */
+export type GuildRadarScores = Partial<Record<SixAxisMetric, number>>;
 
 /** Denormalized row inside `guilds.members` — O(1) private ladder read. */
 export interface GuildMemberSnapshot {
@@ -12,6 +20,8 @@ export interface GuildMemberSnapshot {
   avatarUrl?: string;
   /** Composite ladder score (`ladderScore` shard). */
   ladderScore: number;
+  /** Optional six-axis map for HexRadar + dimension sort (Club C1/C2). */
+  radarScores?: GuildRadarScores;
   updatedAt: string;
 }
 

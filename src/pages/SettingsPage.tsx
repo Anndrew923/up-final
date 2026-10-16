@@ -15,11 +15,6 @@ import { resolveIdentityInitial } from '../logic/core/identity';
 import { useSettingsPage } from '../hooks/useSettingsPage';
 import { callLadderWithdrawPublicPresence } from '../services/ladderCallableService';
 import { clearLeaderboardReadCaches } from '../services/leaderboardService';
-import {
-  LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT,
-  loadWantsGlobalLadderPublish,
-  saveWantsGlobalLadderPublish,
-} from '../services/ladderPublishPreferenceStorage';
 import { useLadderBlockStore } from '../stores/ladderBlockStore';
 
 const RESTORE_TOAST_MS = 3500;
@@ -36,26 +31,10 @@ const SettingsPage: FC = () => {
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const [blockedUsersSheetOpen, setBlockedUsersSheetOpen] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
-  const [withdrawDialogMode, setWithdrawDialogMode] = useState<'opt-out' | 'erase-only'>(
-    'opt-out'
-  );
   const [withdrawBusy, setWithdrawBusy] = useState(false);
   const [withdrawToast, setWithdrawToast] = useState<
     'ok' | 'partial' | 'fail' | 'auth' | null
   >(null);
-  const [wantsGlobalLadder, setWantsGlobalLadder] = useState(() =>
-    loadWantsGlobalLadderPublish()
-  );
-
-  useEffect(() => {
-    const onPrefChanged = () => {
-      setWantsGlobalLadder(loadWantsGlobalLadderPublish());
-    };
-    window.addEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
-    return () => {
-      window.removeEventListener(LADDER_PUBLISH_PREFERENCE_CHANGED_EVENT, onPrefChanged);
-    };
-  }, []);
 
   useEffect(() => {
     if (!withdrawToast) return;
@@ -211,48 +190,23 @@ const SettingsPage: FC = () => {
         />
       </SettingsSectionCard>
 
-      {/* S2 — Ladder & Privacy */}
+      {/* S2 — Ladder & Privacy (footprint erase only — intent lives on sync CTAs) */}
       <SettingsSectionCard title={t('settings.sectionLadderPrivacy')}>
         <SettingsListRow
-          icon={<SettingsGlyph label="GL" />}
-          title={t('settings.publishGlobalLadderTitle')}
-          subtitle={t('settings.publishGlobalLadderHint')}
-          badge={
-            wantsGlobalLadder
-              ? t('settings.publishGlobalLadderOn')
-              : t('settings.publishGlobalLadderOff')
-          }
+          icon={<SettingsGlyph label="ER" />}
+          title={t('settings.withdrawPublic.eraseHistoryTitle')}
+          subtitle={t('settings.withdrawPublic.eraseHistoryHint')}
           showChevron={false}
           disabled={withdrawBusy}
           onClick={() => {
-            if (wantsGlobalLadder) {
-              // Local preference may turn off without wipe; wipe path requires linked auth.
-              setWithdrawDialogMode('opt-out');
-              setWithdrawDialogOpen(true);
+            // Keep row tappable when signed-out so auth toast can surface (disabled would swallow clicks).
+            if (!isLinkedSignedIn) {
+              setWithdrawToast('auth');
               return;
             }
-            setWantsGlobalLadder(true);
-            saveWantsGlobalLadderPublish(true);
+            setWithdrawDialogOpen(true);
           }}
         />
-        {!wantsGlobalLadder ? (
-          <SettingsListRow
-            icon={<SettingsGlyph label="ER" />}
-            title={t('settings.withdrawPublic.eraseHistoryTitle')}
-            subtitle={t('settings.withdrawPublic.eraseHistoryHint')}
-            showChevron={false}
-            disabled={withdrawBusy}
-            onClick={() => {
-              // Keep row tappable when signed-out so auth toast can surface (disabled would swallow clicks).
-              if (!isLinkedSignedIn) {
-                setWithdrawToast('auth');
-                return;
-              }
-              setWithdrawDialogMode('erase-only');
-              setWithdrawDialogOpen(true);
-            }}
-          />
-        ) : null}
         <SettingsListRow
           icon={<SettingsGlyph label="BL" />}
           title={t('settings.blocked_users_title')}
@@ -391,15 +345,8 @@ const SettingsPage: FC = () => {
       <WithdrawPublicPresenceDialog
         open={withdrawDialogOpen}
         busy={withdrawBusy}
-        mode={withdrawDialogMode}
         onCancel={() => {
           if (withdrawBusy) return;
-          setWithdrawDialogOpen(false);
-        }}
-        onPreferOffOnly={() => {
-          if (withdrawBusy) return;
-          setWantsGlobalLadder(false);
-          saveWantsGlobalLadderPublish(false);
           setWithdrawDialogOpen(false);
         }}
         onWithdraw={() => {
@@ -413,13 +360,8 @@ const SettingsPage: FC = () => {
             try {
               const result = await callLadderWithdrawPublicPresence();
               if (!result.ok) {
-                // WHY: Keep preference unchanged on wipe failure so user can retry or choose "off only".
                 setWithdrawToast(result.reason === 'auth-required' ? 'auth' : 'fail');
                 return;
-              }
-              if (withdrawDialogMode === 'opt-out') {
-                setWantsGlobalLadder(false);
-                saveWantsGlobalLadderPublish(false);
               }
               clearLeaderboardReadCaches();
               setWithdrawDialogOpen(false);

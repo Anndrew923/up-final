@@ -18,6 +18,14 @@ vi.mock('../../ProAvatarRing', () => ({
   default: () => <div data-testid="avatar" />,
 }));
 
+vi.mock('../../radar/HexRadarChart', () => ({
+  default: () => <div data-testid="hex-radar" />,
+}));
+
+vi.mock('../../../i18n/resolveSixAxisChartLabel', () => ({
+  resolveSixAxisChartLabel: (_t: unknown, metric: string) => metric,
+}));
+
 describe('CrewPrivateLadder', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -62,6 +70,64 @@ describe('CrewPrivateLadder', () => {
     expect(container.textContent).toContain('Alpha');
     expect(container.textContent).toContain('Beta');
     expect(container.textContent).toContain('crew.ladder.you');
+    expect(container.textContent).toContain('crew.ladder.dimOverall');
+  });
+
+  it('re-ranks by strength chip without network', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <CrewPrivateLadder
+          authUid={null}
+          members={[
+            {
+              uid: 'low',
+              displayName: 'LowStr',
+              ladderScore: 99,
+              radarScores: {
+                strength: 10,
+                explosivePower: 1,
+                cardio: 1,
+                muscleMass: 1,
+                bodyFat: 1,
+                gripStrength: 1,
+              },
+              updatedAt: 't0',
+            },
+            {
+              uid: 'high',
+              displayName: 'HighStr',
+              ladderScore: 40,
+              radarScores: {
+                strength: 90,
+                explosivePower: 1,
+                cardio: 1,
+                muscleMass: 1,
+                bodyFat: 1,
+                gripStrength: 1,
+              },
+              updatedAt: 't0',
+            },
+          ]}
+        />
+      );
+    });
+
+    const strengthChip = Array.from(container.querySelectorAll('[role="tab"]')).find((el) =>
+      el.textContent?.includes('strength')
+    );
+    expect(strengthChip).toBeTruthy();
+    act(() => {
+      strengthChip!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const rows = container.querySelectorAll('li button');
+    expect(rows[0]?.textContent).toContain('HighStr');
+    expect(rows[0]?.textContent).toContain('90.00');
+    expect(rows[1]?.textContent).toContain('LowStr');
   });
 
   it('shows empty copy when no members', () => {

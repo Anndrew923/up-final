@@ -6,6 +6,7 @@
 import { db } from "../shared/admin.js";
 import { GUILDS_COLLECTION } from "../shared/constants.js";
 import { readUserGuildId } from "./guildCore.js";
+import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
 
 /** @deprecated Prefer `readUserGuildId` from guildCore — kept as stable fan-out export. */
 export const readGuildIdFromUserData = readUserGuildId;
@@ -19,6 +20,7 @@ export const readGuildIdFromUserData = readUserGuildId;
  *   displayName?: string;
  *   avatarUrl?: string | null;
  *   clearAvatar?: boolean;
+ *   radarScores?: unknown;
  *   updatedAt: string;
  * }} patch
  * @returns {{
@@ -55,6 +57,10 @@ export function applyMemberLadderScorePatch(guildData, uid, patch) {
   } else if (typeof patch.avatarUrl === "string" && patch.avatarUrl.startsWith("https://")) {
     prev.avatarUrl = patch.avatarUrl;
   }
+  const radar = sanitizeGuildRadarScores(patch.radarScores);
+  if (radar) {
+    prev.radarScores = radar;
+  }
 
   members[idx] = prev;
   // WHY: Same contract as client `sortGuildMembersByScore` — score desc, name, uid.
@@ -81,6 +87,7 @@ export function applyMemberLadderScorePatch(guildData, uid, patch) {
  *   displayName?: string;
  *   avatarUrl?: string | null;
  *   isAnonymous?: boolean;
+ *   radarScores?: unknown;
  * }} input
  * @returns {Promise<{ ok: boolean; reason?: string; guildId?: string }>}
  */
@@ -100,6 +107,7 @@ export async function fanOutLadderScoreToGuild(input) {
     const nowIso = new Date().toISOString();
     const score = Number(input.ladderScore);
     const ladderScore = Number.isFinite(score) ? Math.max(0, score) : 0;
+    const radarScores = sanitizeGuildRadarScores(input.radarScores);
 
     /** @type {{ patched: boolean; skipReason?: string }} */
     const txResult = { patched: false };
@@ -116,6 +124,7 @@ export async function fanOutLadderScoreToGuild(input) {
         displayName: input.displayName,
         avatarUrl: input.avatarUrl,
         clearAvatar: input.isAnonymous === true,
+        radarScores,
         updatedAt: nowIso,
       });
       if (!patched.ok) {

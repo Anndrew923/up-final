@@ -38,9 +38,17 @@
     },
     "ladder": {
       "title": "私有學員天梯",
-      "subtitle": "依總分排序 · 單次讀取",
+      "subtitle": "軸向排序 · 單次讀取",
       "empty": "尚無成員分數。完成評測並上傳後將顯示於此。",
-      "you": "你"
+      "you": "你",
+      "dimensionAria": "依維度排序俱樂部天梯",
+      "dimOverall": "總分",
+      "openDetailAria": "查看 {{name}} 的六軸雷達",
+      "detailKicker": "CLUB",
+      "detailClose": "關閉",
+      "detailOverall": "總分 {{score}}",
+      "detailRadarAria": "{{name}} 的六軸雷達",
+      "detailNoRadar": "尚未同步六軸評測。完成評測並同步至俱樂部後即可顯示雷達。"
     },
     "leave": {
       "cta": "退出俱樂部",

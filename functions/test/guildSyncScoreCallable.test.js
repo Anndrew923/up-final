@@ -76,4 +76,24 @@ describe("normalizeSyncGuildScoreRequest", () => {
     assert.equal(result.ok, true);
     assert.equal(result.displayName, "abcdef12");
   });
+
+  it("sanitizes optional radarScores map", () => {
+    const result = normalizeSyncGuildScoreRequest(
+      {
+        ladderScore: 70,
+        radarScores: {
+          strength: 91.111,
+          explosivePower: 20,
+          cardio: 30,
+          muscleMass: 40,
+          bodyFat: 50,
+          gripStrength: 60,
+        },
+      },
+      "u1"
+    );
+    assert.equal(result.ok, true);
+    assert.equal(result.radarScores.strength, 91.11);
+    assert.equal(result.radarScores.cardio, 30);
+  });
 });

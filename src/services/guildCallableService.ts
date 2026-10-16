@@ -106,6 +106,7 @@ export async function createGuild(input: {
   displayName?: string;
   avatarUrl?: string;
   ladderScore?: number;
+  radarScores?: Record<string, number>;
 }): Promise<GuildCallableResult<{ guildId: string; inviteCode: string; name: string; tag: string }>> {
   const functions = getFirebaseFunctions();
   if (!functions) return functionsUnavailable();
@@ -134,6 +135,7 @@ export async function joinGuild(input: {
   displayName?: string;
   avatarUrl?: string;
   ladderScore?: number;
+  radarScores?: Record<string, number>;
 }): Promise<
   GuildCallableResult<{ guildId: string; name: string; tag: string; memberCount: number }>
 > {
@@ -260,6 +262,8 @@ export async function syncGuildLadderScore(input: {
   displayName?: string;
   avatarUrl?: string;
   isAnonymous?: boolean;
+  /** Embedded six-axis for club radar / axis funnel (never writes public preview). */
+  radarScores?: Record<string, number>;
 }): Promise<
   GuildCallableResult<{
     skipped: boolean;

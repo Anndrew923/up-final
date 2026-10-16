@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePublishMode } from '../ladderPublishPreference';
+import { resolveMembershipSyncSurface } from '../membershipSyncSurface';
 
 /**
- * Phase 2 privacy contract smoke — withdraw is independent of publish-mode resolution.
- * WHY: Opting out must still resolve to guild-only / local-only without requiring public write.
+ * Withdraw is independent of sync CTAs — club surface still resolves without sticky preference.
  */
 describe('ladder withdraw privacy contract', () => {
-  it('keeps crew-only path when global publish preference is off', () => {
-    expect(resolvePublishMode(false, true)).toBe('guild-only');
-    expect(resolvePublishMode(false, false)).toBe('local-only');
+  it('still resolves dual vs global-only from membership alone', () => {
+    expect(resolveMembershipSyncSurface(true)).toBe('dual');
+    expect(resolveMembershipSyncSurface(false)).toBe('global-only');
   });
 });

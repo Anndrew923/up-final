@@ -11,6 +11,7 @@ import {
   GUILD_TAG_MIN_LEN,
 } from '../../types/guild';
 import { GUILD_INVITE_CODE_ALPHABET } from './guildInviteCode';
+import { sanitizeGuildRadarScores } from './guildRadarScores';
 
 export interface UserGuildBinding {
   guildId: string;
@@ -56,6 +57,10 @@ function parseMemberSnapshot(raw: unknown): GuildMemberSnapshot | null {
   };
   if (typeof m.avatarUrl === 'string' && m.avatarUrl.startsWith('https://')) {
     snapshot.avatarUrl = m.avatarUrl;
+  }
+  const radarScores = sanitizeGuildRadarScores(m.radarScores);
+  if (radarScores) {
+    snapshot.radarScores = radarScores;
   }
   return snapshot;
 }
