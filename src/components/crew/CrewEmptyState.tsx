@@ -1,6 +1,7 @@
 import { type FC, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ROUTES } from '../../config/routes';
 import { joinArenaPath } from '../../lib/joinArenaNavigation';
 import type { GuildCallableFailureReason } from '../../services/guildCallableService';
 
@@ -13,6 +14,11 @@ export interface CrewEmptyStateProps {
   onClearError: () => void;
 }
 
+/**
+ * Empty Club HQ — join by invite or create (Pro).
+ * WHY: Single Guild Guard is page-level (`showEmpty` only when unbound) + server `already-in-guild`;
+ * this surface must not carry a dead `hasGuild` prop that is always false while mounted.
+ */
 const CrewEmptyState: FC<CrewEmptyStateProps> = ({
   isPro,
   busy,
@@ -22,10 +28,21 @@ const CrewEmptyState: FC<CrewEmptyStateProps> = ({
   onClearError,
 }) => {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
   const [tag, setTag] = useState('');
+
+  const handleCreateCta = () => {
+    if (busy) return;
+    // WHY: Non-Pro tap opens the shared Join Arena subscribe funnel (return → Club).
+    if (!isPro) {
+      navigate(joinArenaPath('pro-upsell', ROUTES.crew));
+      return;
+    }
+    setShowCreate(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -33,7 +50,6 @@ const CrewEmptyState: FC<CrewEmptyStateProps> = ({
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-300">
           {t('crew.empty.joinTitle')}
         </h2>
-        <p className="mt-1 text-xs text-zinc-500">{t('crew.empty.joinHint')}</p>
         <label className="mt-4 block space-y-1.5">
           <span className="text-xs font-medium text-zinc-400">{t('crew.empty.codeLabel')}</span>
           <input
@@ -67,21 +83,13 @@ const CrewEmptyState: FC<CrewEmptyStateProps> = ({
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-accent-primary">
           {t('crew.empty.createTitle')}
         </h2>
-        <p className="mt-1 text-xs text-zinc-500">{t('crew.empty.createHint')}</p>
 
-        {!isPro ? (
-          <div className="mt-4 space-y-3">
-            <p className="text-sm text-amber-200/90">{t('crew.empty.proRequired')}</p>
-            <Link to={joinArenaPath('ladder')} className="ui-btn ui-btn-primary inline-flex">
-              {t('crew.empty.upgradeCta')}
-            </Link>
-          </div>
-        ) : !showCreate ? (
+        {!showCreate || !isPro ? (
           <button
             type="button"
-            className="ui-btn ui-btn-primary mt-4 w-full"
+            className="ui-btn ui-btn-primary mt-4 w-full disabled:opacity-40"
             disabled={busy}
-            onClick={() => setShowCreate(true)}
+            onClick={handleCreateCta}
           >
             {t('crew.empty.createCta')}
           </button>
@@ -116,7 +124,6 @@ const CrewEmptyState: FC<CrewEmptyStateProps> = ({
                 placeholder={t('crew.empty.tagPlaceholder')}
                 className="w-full rounded-xl border border-zinc-700 bg-black/40 px-3 py-2.5 font-mono text-sm uppercase tracking-wider text-zinc-100 placeholder:text-zinc-600 focus:border-cyan-500/50 focus:outline-none"
               />
-              <span className="block text-[10px] text-zinc-500">{t('crew.empty.tagHint')}</span>
             </label>
             <button
               type="button"

@@ -77,10 +77,10 @@ vi.mock('react-i18next', () => ({
         'tools.codex.panelTitle': 'Vehicle Codex',
         'assessment.referenceInfo.toggleExpand': 'Expand',
         'assessment.referenceInfo.toggleCollapse': 'Collapse',
-        'crew.hq.code': 'CREW HQ',
-        'crew.hq.title': 'Crew HQ',
-        'crew.hq.enter': 'Enter HQ',
-        'crew.hq.openAria': 'Open Crew HQ',
+        'crew.hq.code': 'CLUB',
+        'crew.hq.title': 'Club',
+        'crew.hq.enter': 'Enter Club',
+        'crew.hq.openAria': 'Open Club',
       };
       return map[key] ?? key;
     },
