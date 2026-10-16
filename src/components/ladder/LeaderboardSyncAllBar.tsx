@@ -44,7 +44,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   const genesisSeatSummary = useGenesisSeatSummary();
   const [gateSheetOpen, setGateSheetOpen] = useState(false);
   const [identitySheetOpen, setIdentitySheetOpen] = useState(false);
-  const [tapHint, setTapHint] = useState<'no-targets' | 'cooldown' | 'gate' | null>(null);
+  const [tapHint, setTapHint] = useState<'no-targets' | 'gate' | null>(null);
   const {
     syncGlobal,
     syncGuildOnly,
@@ -52,6 +52,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     summary,
     failures,
     fullSyncBlock,
+    guildSyncBlocked,
     gate,
     targetCount,
     hasGuild,
@@ -62,7 +63,6 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
   });
 
   const fullSyncBlocked = Boolean(fullSyncBlock && !fullSyncBlock.allowed);
-  const disabled = busy;
   const showSyncFeedback = shouldShowLadderSyncFeedback(summary, failures);
   const gateSheetKind = gateSheetKindFromUiGate(uiGate);
   const showReadyCapsule = gate === 'ok' && identity.ready;
@@ -104,10 +104,8 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
 
   const runGlobalSyncOrGates = () => {
     setTapHint(null);
-    if (fullSyncBlocked) {
-      setTapHint('cooldown');
-      return;
-    }
+    // Cooldown UX is the persistent banner + disabled attr — not a tap hint.
+    if (fullSyncBlocked) return;
     if (targetCount === 0) {
       setTapHint('no-targets');
       return;
@@ -130,10 +128,8 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
 
   const runGuildSync = () => {
     setTapHint(null);
-    if (fullSyncBlocked) {
-      setTapHint('cooldown');
-      return;
-    }
+    // Club sync is independent of global full-sync cooldown / daily cap.
+    if (guildSyncBlocked || busy) return;
     clearFeedback();
     void syncGuildOnly();
   };
@@ -176,7 +172,8 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
           {t('ladder.syncAll.noTargets')}
         </p>
       ) : null}
-      {tapHint === 'cooldown' && fullSyncBlockText ? (
+      {/* Show while blocked — disabled button no longer receives clicks for tapHint. */}
+      {fullSyncBlocked && fullSyncBlockText ? (
         <p className="text-sm text-amber-400/90" role="status">
           {fullSyncBlockText}
         </p>
@@ -192,7 +189,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
           <button
             type="button"
             className="ui-btn border-accent-primary/40 text-accent-primary"
-            disabled={disabled}
+            disabled={busy || fullSyncBlocked}
             onClick={runGlobalSyncOrGates}
           >
             {busy
@@ -207,7 +204,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
             <button
               type="button"
               className="ui-btn border-cyan-500/30 bg-transparent text-cyan-200/90 hover:bg-cyan-500/10"
-              disabled={disabled}
+              disabled={busy || guildSyncBlocked}
               onClick={runGuildSync}
             >
               {busy ? t('ladder.syncAll.busy') : t('ladder.syncAll.buttonGuild')}

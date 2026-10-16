@@ -33,6 +33,10 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import { readEntitlementSnapshot } from '../stores/entitlementSelectors';
 import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
+import {
+  GUILD_SYNC_TAP_DEBOUNCE_MS,
+  isGuildSyncTapBlocked,
+} from '../logic/core/guildSyncDebounce';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 import { resolveLeaderboardUploadGate } from './useLeaderboardUpload';
 
@@ -45,6 +49,7 @@ export interface UseLeaderboardSyncAllOptions {
 /**
  * Intent-driven Sync All — `syncGlobal` (Pro shards + fan-out) vs `syncGuildOnly` (club roster).
  * WHY: Button = intent; never a sticky publish preference.
+ * Global full-sync quota/cooldown must never gate club-only sync.
  */
 export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   const navigate = useNavigate();
@@ -52,6 +57,19 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
   useEffect(() => {
     onFinishedRef.current = options?.onFinished;
   }, [options?.onFinished]);
+
+  /** In-memory anti-double-tap for club sync — independent of full-sync storage. */
+  const guildTapAtRef = useRef<number | null>(null);
+  const guildDebounceTimerRef = useRef<number | null>(null);
+  const [guildSyncBlocked, setGuildSyncBlocked] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (guildDebounceTimerRef.current != null) {
+        window.clearTimeout(guildDebounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const merged = useMergedScoresFromLocalStores();
   const overallScore = useMemo(() => calculateSixAxisOverall(merged), [merged]);
@@ -145,11 +163,17 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) return;
 
-    const fullSyncGate = checkFullSyncAllowed(user.uid);
-    if (!fullSyncGate.allowed) {
-      setFullSyncBlock(fullSyncGate);
-      return;
+    const now = Date.now();
+    if (isGuildSyncTapBlocked(guildTapAtRef.current, now)) return;
+    guildTapAtRef.current = now;
+    setGuildSyncBlocked(true);
+    if (guildDebounceTimerRef.current != null) {
+      window.clearTimeout(guildDebounceTimerRef.current);
     }
+    guildDebounceTimerRef.current = window.setTimeout(() => {
+      setGuildSyncBlocked(false);
+      guildDebounceTimerRef.current = null;
+    }, GUILD_SYNC_TAP_DEBOUNCE_MS);
 
     setBusy(true);
     try {
@@ -170,9 +194,8 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
         isAnonymous: profile?.isAnonymousInLadder === true,
         ...(radarScores ? { radarScores } : {}),
       });
+      // WHY: Club sync must never call recordFullSyncAllowed — preserves global 3/day × 90m budget.
       if (result.ok && !result.skipped) {
-        recordFullSyncAllowed(user.uid);
-        refreshFullSyncBlock(user.uid);
         invalidateGuildLadderCache(result.guildId ?? undefined);
         const tally = createEmptyLeaderboardSyncRunSummary();
         tally.attempted = 1;
@@ -196,7 +219,7 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     } finally {
       setBusy(false);
     }
-  }, [merged, overallScore, refreshFullSyncBlock, targetsSignature]);
+  }, [merged, overallScore, targetsSignature]);
 
   const syncGlobal = useCallback(async () => {
     setSummaryState(null);
@@ -262,6 +285,8 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     summary,
     failures,
     fullSyncBlock,
+    /** True during the short club anti-double-tap window (not global cooldown). */
+    guildSyncBlocked,
     gate,
     targetCount: targets.length,
     hasGuild,
