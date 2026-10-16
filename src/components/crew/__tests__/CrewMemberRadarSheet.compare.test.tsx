@@ -94,7 +94,9 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
     expect(hexPropsSpy).toHaveBeenCalled();
     const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
       comparisonPoints?: unknown[];
+      presentation?: string;
     };
+    expect(last.presentation).toBe('quiet');
     expect(Array.isArray(last.comparisonPoints)).toBe(true);
     expect(last.comparisonPoints?.length).toBe(6);
     expect(document.body.textContent).toContain('crew.ladder.compareLegendYou');
@@ -127,8 +129,42 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
 
     const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
       comparisonPoints?: unknown;
+      presentation?: string;
     };
+    expect(last.presentation).toBe('ritual');
     expect(last.comparisonPoints).toBeUndefined();
     expect(document.body.querySelector('[data-testid="crew-radar-compare-legend"]')).toBeNull();
+  });
+
+  it('uses ritual when viewing another member without local compare baseline', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    root = createRoot(host);
+
+    act(() => {
+      root.render(
+        <CrewMemberRadarSheet
+          open
+          guildTag="ARN"
+          rank={3}
+          member={{
+            uid: 'other',
+            displayName: 'Rival',
+            ladderScore: 66,
+            radarScores: memberRadar,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          }}
+          comparisonScores={null}
+          onClose={() => undefined}
+        />
+      );
+    });
+
+    const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
+      presentation?: string;
+      comparisonPoints?: unknown;
+    };
+    expect(last.presentation).toBe('ritual');
+    expect(last.comparisonPoints).toBeUndefined();
   });
 });

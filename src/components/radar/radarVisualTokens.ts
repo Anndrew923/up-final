@@ -69,6 +69,39 @@ export const RADAR_LASER_ALERT_PROFILE = {
   },
 } as const;
 
+/**
+ * Club / PK “combat aesthetic” — dense translucent plates, no scanner/orbit noise.
+ * WHY: Quiet path stays tokenized so ritual Home laser polish is never coupled.
+ */
+export const RADAR_QUIET_PROFILE = {
+  /** Outer hex faintly brighter; inners sit deeper so plates lift forward. */
+  gridOuterOpacity: 0.28,
+  gridInnerOpacity: 0.16,
+  spokeStrokeOpacity: 0.14,
+  gridStrokeWidth: 0.55,
+  depthCenterOpacity: 0.28,
+  primaryStroke: '#22d3ee', // cyan-400
+  primaryStrokeWidth: 2,
+  primaryHighlightStroke: '#a5f3fc', // cyan-200 micro edge
+  primaryHighlightWidth: 0.7,
+  primaryHighlightOpacity: 0.55,
+  primaryFill: 'rgba(6, 182, 212, 0.22)', // cyan-500 @ ~22%
+  comparisonStroke: '#f59e0b', // amber-500 warm gold
+  comparisonStrokeWidth: 1.5,
+  comparisonDash: '5 3',
+  comparisonFill: 'rgba(245, 158, 11, 0.16)',
+  /** Diameter ~6px halo / ~3px core in 200-viewBox units. */
+  vertexHaloRadius: 3,
+  vertexCoreRadius: 1.5,
+  vertexHaloPrimary: 'rgba(34, 211, 238, 0.35)',
+  vertexHaloCompare: 'rgba(245, 158, 11, 0.35)',
+  vertexCore: '#f8fafc', // near-white luminous core
+  labelFillOpacity: 0.78,
+  overflowFillOpacity: 0.1,
+  overflowStrokeOpacity: 0.4,
+  overflowStrokeWidth: 0.9,
+} as const;
+
 export interface RadarPalette {
   auraStops: readonly [string, string, string];
   stroke: string;

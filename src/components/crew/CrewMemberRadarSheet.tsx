@@ -73,15 +73,16 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
     [radarPoints, t]
   );
 
-  const showCompare = scoreMapHasPositiveAxis(comparisonScores);
+  /** PK vs mate — drives quiet combat plates; absent → ritual (self or no local baseline). */
+  const hasComparison = scoreMapHasPositiveAxis(comparisonScores);
 
   const comparisonRadarPoints = useMemo(() => {
-    if (!showCompare || !comparisonScores) return undefined;
+    if (!hasComparison || !comparisonScores) return undefined;
     return buildSixAxisRadarData(comparisonScores).map((point) => ({
       ...point,
       label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
     }));
-  }, [showCompare, comparisonScores, t]);
+  }, [hasComparison, comparisonScores, t]);
 
   const scaleMax = useMemo(
     () =>
@@ -152,13 +153,15 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
               </p>
               <div className="mx-auto aspect-square w-full max-w-[280px]">
                 <HexRadarChart
+                  // WHY: Self / solo = Home ritual polish; PK vs mate = quiet combat plates.
+                  presentation={hasComparison ? 'quiet' : 'ritual'}
                   points={localizedRadarPoints}
                   comparisonPoints={comparisonRadarPoints}
                   scaleMax={scaleMax}
                   aria-label={t('crew.ladder.detailRadarAria', { name: displayName })}
                 />
               </div>
-              {showCompare ? (
+              {hasComparison ? (
                 <ul
                   className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-zinc-400"
                   data-testid="crew-radar-compare-legend"
@@ -166,14 +169,14 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
                 >
                   <li className="inline-flex items-center gap-1.5">
                     <span
-                      className="inline-block h-2.5 w-2.5 rounded-full bg-cyan-400/90 shadow-[0_0_6px_rgba(34,211,238,0.55)]"
+                      className="inline-block h-2 w-2 rounded-full bg-cyan-400/90"
                       aria-hidden
                     />
                     <span>{t('crew.ladder.compareLegendMember', { name: displayName })}</span>
                   </li>
                   <li className="inline-flex items-center gap-1.5">
                     <span
-                      className="inline-block h-2.5 w-2.5 rounded-full border border-dashed border-amber-400 bg-amber-400/20"
+                      className="inline-block h-2 w-2 rounded-full border border-dashed border-amber-400/90 bg-transparent"
                       aria-hidden
                     />
                     <span>{t('crew.ladder.compareLegendYou')}</span>

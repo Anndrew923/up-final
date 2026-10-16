@@ -3,10 +3,18 @@ import { useId, useMemo } from 'react';
 import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 import type { RadarChartPoint } from '../../types/radarDisplay';
-import { getRadarPalette, RADAR_CARD_V2, RADAR_LASER_ALERT_PROFILE } from './radarVisualTokens';
+import {
+  getRadarPalette,
+  RADAR_CARD_V2,
+  RADAR_LASER_ALERT_PROFILE,
+  RADAR_QUIET_PROFILE,
+} from './radarVisualTokens';
 import type { SVGProps } from 'react';
 
 export type HexRadarPoint = RadarChartPoint;
+
+/** `ritual` = Home ceremony; `quiet` = club combat plates (no scanner/orbit, dense translucent PK). */
+export type HexRadarPresentation = 'ritual' | 'quiet';
 
 export interface HexRadarChartProps {
   /** One vertex per core dimension; order matches caller (typically `SIX_AXIS_METRICS`). */
@@ -18,6 +26,10 @@ export interface HexRadarChartProps {
   comparisonPoints?: HexRadarPoint[];
   /** Outer ring corresponds to this numeric max; radar card uses fixed 100. */
   scaleMax: number;
+  /**
+   * Visual density. Default `ritual` preserves Home laser polish; `quiet` strips backdrop noise for PK.
+   */
+  presentation?: HexRadarPresentation;
   /** 0–1 presentation-only scale for Home resonance charge (does not alter source scores). */
   ritualFill?: number;
   /** Skip stroke-draw / breathe entry loop (Home overlay — avoids ghosting with background chart). */
@@ -35,6 +47,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   points,
   comparisonPoints,
   scaleMax,
+  presentation = 'ritual',
   ritualFill = 1,
   suppressEntryAnimation = false,
   gridFadeOpacity = 1,
@@ -44,6 +57,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   type AxisLabelAnchor = NonNullable<SVGProps<SVGTextElement>['textAnchor']>;
   type AxisLabelBaseline = NonNullable<SVGProps<SVGTextElement>['dominantBaseline']>;
 
+  const isQuiet = presentation === 'quiet';
   const auraGradientId = useId();
   const animationId = useId().replace(/:/g, '_');
   const cx = 100;
@@ -54,15 +68,18 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   const denom = Math.max(Math.min(scaleMax, RADAR_DISPLAY_MIN), 1e-6);
   const fill = Math.min(1, Math.max(0, Number(ritualFill) || 0));
   const gridOpacity = Math.min(1, Math.max(0, Number(gridFadeOpacity) || 0));
-  const polygonAnimClass = suppressEntryAnimation
-    ? ''
-    : `radar-draw-${animationId} radar-breathe-${animationId}`;
+  const polygonAnimClass =
+    isQuiet || suppressEntryAnimation
+      ? ''
+      : `radar-draw-${animationId} radar-breathe-${animationId}`;
   const overclockThreshold = 100;
   const polygonDashLength = 520;
   const orbitRingRadius = maxR + 6;
   const coreMetricSet = useMemo(() => new Set<string>(SIX_AXIS_METRICS), []);
 
+  // Ritual-only palette work — quiet combat path never needs scanner / orbit tint.
   const dominantKey = useMemo<SixAxisMetric | null>(() => {
+    if (isQuiet) return null;
     let winner: { key: SixAxisMetric; value: number } | null = null;
     for (const point of points) {
       if (!coreMetricSet.has(point.key)) continue;
@@ -72,36 +89,23 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
       }
     }
     return winner?.key ?? null;
-  }, [coreMetricSet, points]);
+  }, [coreMetricSet, isQuiet, points]);
 
   const dominantPalette = useMemo(() => getRadarPalette(dominantKey), [dominantKey]);
 
-  const scannerSweepPeak = useMemo(() => {
-    const rgb =
+  const ritualGlowRgb = useMemo(() => {
+    if (isQuiet) return '34,211,238';
+    return (
       dominantPalette.glow
         .match(/\d+(\.\d+)?/g)
         ?.slice(0, 3)
-        .join(',') ?? '34,211,238';
-    return `rgba(${rgb},0.28)`;
-  }, [dominantPalette.glow]);
+        .join(',') ?? '34,211,238'
+    );
+  }, [dominantPalette.glow, isQuiet]);
 
-  const auraPoolCore = useMemo(() => {
-    const rgb =
-      dominantPalette.glow
-        .match(/\d+(\.\d+)?/g)
-        ?.slice(0, 3)
-        .join(',') ?? '34,211,238';
-    return `rgba(${rgb},0.5)`;
-  }, [dominantPalette.glow]);
-
-  const calibrationRingStroke = useMemo(() => {
-    const rgb =
-      dominantPalette.glow
-        .match(/\d+(\.\d+)?/g)
-        ?.slice(0, 3)
-        .join(',') ?? '34,211,238';
-    return `rgba(${rgb},0.5)`;
-  }, [dominantPalette.glow]);
+  const scannerSweepPeak = isQuiet ? '' : `rgba(${ritualGlowRgb},0.28)`;
+  const auraPoolCore = isQuiet ? '' : `rgba(${ritualGlowRgb},0.5)`;
+  const calibrationRingStroke = isQuiet ? '' : `rgba(${ritualGlowRgb},0.5)`;
 
   const axisNodes = useMemo(
     () =>
@@ -168,18 +172,25 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
    * Comparison ring locks to primary vertex count (`n`) so axes stay registered with labels.
    * WHY: Divergent lengths would rotate the gold outline off the cyan member polygon.
    */
-  const comparisonPolygon = useMemo(() => {
+  const comparisonNodes = useMemo(() => {
     if (!comparisonPoints || comparisonPoints.length === 0) return null;
     return Array.from({ length: n }, (_, i) => {
       const point = comparisonPoints[i];
       const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
       const raw = Math.max(0, Number(point?.value) || 0);
       const baseRadius = maxR * (Math.min(denom, raw) / denom) * fill;
-      const x = cx + baseRadius * Math.cos(angle);
-      const y = cy + baseRadius * Math.sin(angle);
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(' ');
+      return {
+        key: point?.key ?? `cmp-${i}`,
+        x: cx + baseRadius * Math.cos(angle),
+        y: cy + baseRadius * Math.sin(angle),
+      };
+    });
   }, [comparisonPoints, cx, cy, denom, fill, maxR, n]);
+
+  const comparisonPolygon = useMemo(() => {
+    if (!comparisonNodes) return null;
+    return comparisonNodes.map((node) => `${node.x.toFixed(2)},${node.y.toFixed(2)}`).join(' ');
+  }, [comparisonNodes]);
 
   const overflowPolygon = useMemo(
     () =>
@@ -205,15 +216,21 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   }, [cx, cy, maxR, n]);
 
   return (
-    <div className={`relative aspect-square w-full ${className ?? ''}`}>
-      <div
-        className="pointer-events-none absolute inset-[7%] aspect-square rounded-full motion-safe:transition-opacity motion-safe:duration-500 motion-reduce:transition-none"
-        aria-hidden
-        style={{
-          background: `conic-gradient(from 180deg at 50% 50%, rgba(24,24,27,1) 0%, ${scannerSweepPeak} 50%, rgba(24,24,27,1) 100%)`,
-          opacity: 0.88 * gridOpacity,
-        }}
-      />
+    <div
+      className={`relative aspect-square w-full ${className ?? ''}`}
+      data-radar-presentation={presentation}
+    >
+      {!isQuiet ? (
+        <div
+          data-testid="hex-radar-scanner"
+          className="pointer-events-none absolute inset-[7%] aspect-square rounded-full motion-safe:transition-opacity motion-safe:duration-500 motion-reduce:transition-none"
+          aria-hidden
+          style={{
+            background: `conic-gradient(from 180deg at 50% 50%, rgba(24,24,27,1) 0%, ${scannerSweepPeak} 50%, rgba(24,24,27,1) 100%)`,
+            opacity: 0.88 * gridOpacity,
+          }}
+        />
+      ) : null}
       <svg
         viewBox="0 0 200 200"
         preserveAspectRatio="xMidYMid meet"
@@ -223,19 +240,32 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <radialGradient id={auraGradientId} cx="50%" cy="50%" r="62%">
-            <stop offset="0%" stopColor="rgba(56,189,248,0.1)" />
-            <stop offset="70%" stopColor="rgba(56,189,248,0.22)" />
-            <stop offset="100%" stopColor={RADAR_LASER_ALERT_PROFILE.polygon.edgeStop} />
-          </radialGradient>
-          <radialGradient id={`${auraGradientId}-pool`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={auraPoolCore} />
-            <stop offset="80%" stopColor="rgba(34,211,238,0)" />
-            <stop offset="100%" stopColor="rgba(34,211,238,0)" />
-          </radialGradient>
+          {isQuiet ? (
+            <radialGradient id={`${auraGradientId}-quiet-depth`} cx="50%" cy="50%" r="58%">
+              <stop
+                offset="0%"
+                stopColor={`rgba(9, 9, 11, ${RADAR_QUIET_PROFILE.depthCenterOpacity})`}
+              />
+              <stop offset="100%" stopColor="rgba(9, 9, 11, 0)" />
+            </radialGradient>
+          ) : (
+            <>
+              <radialGradient id={auraGradientId} cx="50%" cy="50%" r="62%">
+                <stop offset="0%" stopColor="rgba(56,189,248,0.1)" />
+                <stop offset="70%" stopColor="rgba(56,189,248,0.22)" />
+                <stop offset="100%" stopColor={RADAR_LASER_ALERT_PROFILE.polygon.edgeStop} />
+              </radialGradient>
+              <radialGradient id={`${auraGradientId}-pool`} cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor={auraPoolCore} />
+                <stop offset="80%" stopColor="rgba(34,211,238,0)" />
+                <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+              </radialGradient>
+            </>
+          )}
         </defs>
-        <style>
-          {`
+        {!isQuiet ? (
+          <style>
+            {`
           @media (prefers-reduced-motion: no-preference) {
             .radar-draw-${animationId} {
               stroke-dasharray: ${polygonDashLength};
@@ -273,30 +303,59 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
             }
           }
         `}
-        </style>
+          </style>
+        ) : null}
         <rect width="200" height="200" className="fill-transparent" />
-        <circle
-          cx={cx}
-          cy={cy}
-          r={RADAR_CARD_V2.geometry.centerAuraRadius}
-          fill={`url(#${auraGradientId}-pool)`}
-        />
-        <circle
-          cx={cx}
-          cy={cy}
-          r={orbitRingRadius}
-          fill="none"
-          stroke={calibrationRingStroke}
-          strokeWidth={0.5}
-          strokeDasharray="4 8"
-          className={suppressEntryAnimation ? '' : `radar-orbit-${animationId}`}
-        />
+        {isQuiet ? (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={maxR * 0.92}
+            fill={`url(#${auraGradientId}-quiet-depth)`}
+            aria-hidden
+          />
+        ) : (
+          <>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={RADAR_CARD_V2.geometry.centerAuraRadius}
+              fill={`url(#${auraGradientId}-pool)`}
+            />
+            <circle
+              cx={cx}
+              cy={cy}
+              r={orbitRingRadius}
+              fill="none"
+              stroke={calibrationRingStroke}
+              strokeWidth={0.5}
+              strokeDasharray="4 8"
+              className={suppressEntryAnimation ? '' : `radar-orbit-${animationId}`}
+            />
+          </>
+        )}
         {rings.map((ring, index) => (
           <polygon
             key={ring.key}
-            className={index === 0 ? 'fill-none stroke-zinc-700' : 'fill-none stroke-zinc-800'}
-            strokeOpacity={index === 0 ? RADAR_CARD_V2.opacity.ringOuterStroke : 0.2}
-            strokeWidth={0.5}
+            className={
+              isQuiet
+                ? index === 0
+                  ? 'fill-none stroke-slate-500'
+                  : 'fill-none stroke-zinc-700'
+                : index === 0
+                  ? 'fill-none stroke-zinc-700'
+                  : 'fill-none stroke-zinc-800'
+            }
+            strokeOpacity={
+              isQuiet
+                ? index === 0
+                  ? RADAR_QUIET_PROFILE.gridOuterOpacity
+                  : RADAR_QUIET_PROFILE.gridInnerOpacity
+                : index === 0
+                  ? RADAR_CARD_V2.opacity.ringOuterStroke
+                  : 0.2
+            }
+            strokeWidth={isQuiet ? RADAR_QUIET_PROFILE.gridStrokeWidth : 0.5}
             points={ring.points}
           />
         ))}
@@ -307,61 +366,143 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
             y1={ln.y1}
             x2={ln.x2}
             y2={ln.y2}
-            className="stroke-zinc-800"
-            strokeOpacity={0.2}
-            strokeWidth={0.5}
+            className={isQuiet ? 'stroke-zinc-700' : 'stroke-zinc-800'}
+            strokeOpacity={isQuiet ? RADAR_QUIET_PROFILE.spokeStrokeOpacity : 0.2}
+            strokeWidth={isQuiet ? RADAR_QUIET_PROFILE.gridStrokeWidth : 0.5}
           />
         ))}
         {hasOverflow ? (
           <polygon
             points={overflowPolygon}
             className="fill-accent-primary stroke-accent-info"
-            fillOpacity={RADAR_CARD_V2.opacity.overflowFill}
-            strokeOpacity={RADAR_CARD_V2.opacity.overflowStroke}
-            strokeWidth={1}
+            fillOpacity={
+              isQuiet
+                ? RADAR_QUIET_PROFILE.overflowFillOpacity
+                : RADAR_CARD_V2.opacity.overflowFill
+            }
+            strokeOpacity={
+              isQuiet
+                ? RADAR_QUIET_PROFILE.overflowStrokeOpacity
+                : RADAR_CARD_V2.opacity.overflowStroke
+            }
+            strokeWidth={isQuiet ? RADAR_QUIET_PROFILE.overflowStrokeWidth : 1}
             strokeLinejoin="round"
-            style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.5))' }}
+            style={
+              isQuiet ? undefined : { filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.5))' }
+            }
           />
         ) : null}
-        <polygon
-          points={dataPolygon}
-          fill={`url(#${auraGradientId})`}
-          stroke={RADAR_LASER_ALERT_PROFILE.polygon.stroke}
-          className={polygonAnimClass}
-          strokeWidth={4}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fillOpacity={RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax}
-          style={{
-            filter:
-              'drop-shadow(0 0 12px rgba(34,211,238,0.9)) drop-shadow(0 0 4px rgba(34,211,238,1))',
-          }}
-        />
-        <polygon
-          points={dataPolygon}
-          fill="none"
-          stroke="#e0faff"
-          className={suppressEntryAnimation ? '' : `radar-draw-${animationId}`}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity={0.95}
-        />
+
+        {isQuiet ? (
+          <>
+            <polygon
+              data-testid="hex-radar-primary"
+              points={dataPolygon}
+              fill={RADAR_QUIET_PROFILE.primaryFill}
+              stroke={RADAR_QUIET_PROFILE.primaryStroke}
+              strokeWidth={RADAR_QUIET_PROFILE.primaryStrokeWidth}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* Micro edge highlight — crisp combat rim without ritual drop-shadow bloom. */}
+            <polygon
+              points={dataPolygon}
+              fill="none"
+              stroke={RADAR_QUIET_PROFILE.primaryHighlightStroke}
+              strokeWidth={RADAR_QUIET_PROFILE.primaryHighlightWidth}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={RADAR_QUIET_PROFILE.primaryHighlightOpacity}
+            />
+          </>
+        ) : (
+          <>
+            <polygon
+              points={dataPolygon}
+              fill={`url(#${auraGradientId})`}
+              stroke={RADAR_LASER_ALERT_PROFILE.polygon.stroke}
+              className={polygonAnimClass}
+              strokeWidth={4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fillOpacity={RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax}
+              style={{
+                filter:
+                  'drop-shadow(0 0 12px rgba(34,211,238,0.9)) drop-shadow(0 0 4px rgba(34,211,238,1))',
+              }}
+            />
+            <polygon
+              points={dataPolygon}
+              fill="none"
+              stroke="#e0faff"
+              className={suppressEntryAnimation ? '' : `radar-draw-${animationId}`}
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.95}
+            />
+          </>
+        )}
+
         {comparisonPolygon ? (
           <polygon
             data-testid="hex-radar-comparison"
             points={comparisonPolygon}
-            fill="rgba(251, 191, 36, 0.12)"
-            stroke="#fbbf24"
-            strokeWidth={2}
-            strokeDasharray="5 4"
+            fill={isQuiet ? RADAR_QUIET_PROFILE.comparisonFill : 'none'}
+            stroke={
+              isQuiet ? RADAR_QUIET_PROFILE.comparisonStroke : '#fbbf24'
+            }
+            strokeWidth={
+              isQuiet ? RADAR_QUIET_PROFILE.comparisonStrokeWidth : 2
+            }
+            strokeDasharray={isQuiet ? RADAR_QUIET_PROFILE.comparisonDash : '5 4'}
             strokeLinecap="round"
             strokeLinejoin="round"
-            fillOpacity={0.35}
             opacity={0.95}
           />
         ) : null}
+
         {axisNodes.map((node) => {
+          if (isQuiet) {
+            return (
+              <g key={`axis-${node.key}`}>
+                <circle
+                  cx={node.xBase}
+                  cy={node.yBase}
+                  r={RADAR_QUIET_PROFILE.vertexHaloRadius}
+                  fill={RADAR_QUIET_PROFILE.vertexHaloPrimary}
+                />
+                <circle
+                  cx={node.xBase}
+                  cy={node.yBase}
+                  r={RADAR_QUIET_PROFILE.vertexCoreRadius}
+                  fill={RADAR_QUIET_PROFILE.vertexCore}
+                />
+                {node.overflowExtra > 0 ? (
+                  <line
+                    x1={node.xOuter}
+                    y1={node.yOuter}
+                    x2={node.xOverflow}
+                    y2={node.yOverflow}
+                    className="stroke-accent-info/50"
+                    strokeWidth={RADAR_QUIET_PROFILE.overflowStrokeWidth}
+                    strokeLinecap="round"
+                  />
+                ) : null}
+                <text
+                  x={node.xLabel}
+                  y={node.yLabel}
+                  textAnchor={node.textAnchor}
+                  dominantBaseline={node.dominantBaseline}
+                  className="fill-zinc-400 text-[7px] tracking-[0.12em]"
+                  fillOpacity={RADAR_QUIET_PROFILE.labelFillOpacity}
+                >
+                  {node.label}
+                </text>
+              </g>
+            );
+          }
+
           const isOverclock = node.raw > overclockThreshold;
           const reactor = isOverclock
             ? {
@@ -428,7 +569,27 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
             </g>
           );
         })}
-        <circle cx={cx} cy={cy} r={2} className="fill-accent-info" />
+
+        {isQuiet && comparisonNodes
+          ? comparisonNodes.map((node) => (
+              <g key={`cmp-dot-${node.key}`}>
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r={RADAR_QUIET_PROFILE.vertexHaloRadius}
+                  fill={RADAR_QUIET_PROFILE.vertexHaloCompare}
+                />
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r={RADAR_QUIET_PROFILE.vertexCoreRadius}
+                  fill={RADAR_QUIET_PROFILE.vertexCore}
+                />
+              </g>
+            ))
+          : null}
+
+        {!isQuiet ? <circle cx={cx} cy={cy} r={2} className="fill-accent-info" /> : null}
       </svg>
     </div>
   );
