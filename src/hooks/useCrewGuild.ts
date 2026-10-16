@@ -6,7 +6,7 @@ import {
   normalizeGuildTagClient,
   sortGuildMembersByScore,
 } from '../logic/core/guildDoc';
-import { getLeaderboardIdentityPayload } from '../services/ladderIdentityService';
+import { resolveGuildCallableIdentity } from '../services/ladderAvatarStorageService';
 import { getMergedScoresSnapshotForRadar } from '../services/mergedLocalScoresSnapshot';
 import {
   createGuild,
@@ -55,14 +55,6 @@ export interface UseCrewGuildResult {
   kick: (targetUid: string) => Promise<GuildCallableResult>;
   rename: (input: { name?: string; tag?: string }) => Promise<GuildCallableResult>;
   disband: () => Promise<GuildCallableResult>;
-}
-
-function identityForCallable(): { displayName?: string; avatarUrl?: string } {
-  const identity = getLeaderboardIdentityPayload();
-  return {
-    displayName: identity.displayName || undefined,
-    avatarUrl: identity.avatarUrl || undefined,
-  };
 }
 
 export function useCrewGuild(): UseCrewGuildResult {
@@ -214,7 +206,7 @@ export function useCrewGuild(): UseCrewGuildResult {
         setActionError(fail.reason);
         return fail;
       }
-      const identity = identityForCallable();
+      const identity = await resolveGuildCallableIdentity();
       const ladderScore = useScoreStore.getState().overallScore;
       const radarScores = sanitizeGuildRadarScores(getMergedScoresSnapshotForRadar());
       return runMutation(() =>
@@ -232,7 +224,7 @@ export function useCrewGuild(): UseCrewGuildResult {
 
   const join = useCallback(
     async (code: string) => {
-      const identity = identityForCallable();
+      const identity = await resolveGuildCallableIdentity();
       const ladderScore = useScoreStore.getState().overallScore;
       const radarScores = sanitizeGuildRadarScores(getMergedScoresSnapshotForRadar());
       return runMutation(() =>

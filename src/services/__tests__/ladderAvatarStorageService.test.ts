@@ -45,8 +45,11 @@ vi.mock('firebase/storage', () => ({
 }));
 
 import {
+  ensureAvatarHttpsUrl,
   ensureLadderAvatarHttpsForProSync,
   ladderAvatarStoragePath,
+  resolveGuildCallableIdentity,
+  resolveHttpsAvatarForGuildWrite,
 } from '../ladderAvatarStorageService';
 
 const proEntitlement: EntitlementState = {
@@ -60,6 +63,13 @@ const proEntitlement: EntitlementState = {
   proPurchaseCooldownUntil: null,
   isGenesisEarlyBird: false,
   genesisSeatNumber: null,
+};
+
+const freeEntitlement: EntitlementState = {
+  ...proEntitlement,
+  isPro: false,
+  subscriptionStatus: 'free',
+  planId: null,
 };
 
 describe('ladderAvatarStorageService', () => {
@@ -76,14 +86,25 @@ describe('ladderAvatarStorageService', () => {
     expect(ladderAvatarStoragePath('abc')).toBe('ladder-avatars/abc/avatar.jpg');
   });
 
-  it('no-ops for non-Pro entitlement', async () => {
-    const result = await ensureLadderAvatarHttpsForProSync({
-      ...proEntitlement,
-      isPro: false,
-      subscriptionStatus: 'free',
-    });
+  it('ensureLadderAvatarHttpsForProSync no-ops for non-Pro entitlement', async () => {
+    const result = await ensureLadderAvatarHttpsForProSync(freeEntitlement);
     expect(result).toEqual({ ok: true, avatarUrl: undefined });
     expect(uploadBytes).not.toHaveBeenCalled();
+  });
+
+  it('ensureAvatarHttpsUrl uploads for Free users (club path)', async () => {
+    loadProfile.mockReturnValue({
+      uid: 'user-1',
+      displayName: 'FreePilot',
+      avatarUrl: 'data:image/jpeg;base64,abcd',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const result = await ensureAvatarHttpsUrl();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.avatarUrl).toMatch(/^https:\/\/firebasestorage\.googleapis\.com/);
+    }
+    expect(uploadBytes).toHaveBeenCalledTimes(1);
   });
 
   it('returns existing https without upload', async () => {
@@ -94,7 +115,7 @@ describe('ladderAvatarStorageService', () => {
       avatarUrl: https,
       updatedAt: '2026-01-01T00:00:00.000Z',
     });
-    const result = await ensureLadderAvatarHttpsForProSync(proEntitlement);
+    const result = await ensureAvatarHttpsUrl();
     expect(result).toEqual({ ok: true, avatarUrl: https });
     expect(uploadBytes).not.toHaveBeenCalled();
   });
@@ -121,6 +142,57 @@ describe('ladderAvatarStorageService', () => {
     );
   });
 
+  it('resolveHttpsAvatarForGuildWrite never returns data URL', async () => {
+    loadProfile.mockReturnValue({
+      uid: 'user-1',
+      displayName: 'Boss',
+      avatarUrl: 'data:image/jpeg;base64,abcd',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const url = await resolveHttpsAvatarForGuildWrite('data:image/jpeg;base64,abcd');
+    expect(url).toMatch(/^https:\/\//);
+    expect(url).not.toMatch(/^data:/);
+  });
+
+  it('resolveGuildCallableIdentity upgrades data URL and keeps displayName', async () => {
+    loadProfile.mockReturnValue({
+      uid: 'user-1',
+      displayName: 'Boss',
+      avatarUrl: 'data:image/jpeg;base64,abcd',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const identity = await resolveGuildCallableIdentity();
+    expect(identity.displayName).toBe('Boss');
+    expect(identity.avatarUrl).toMatch(/^https:\/\//);
+    expect(identity.avatarUrl).not.toMatch(/^data:/);
+  });
+
+  it('ensureAvatarHttpsUrl never returns data URL even without Storage (memory)', async () => {
+    getFirebaseStorage.mockReturnValue(null);
+    getFirestoreDb.mockReturnValue(null);
+    loadProfile.mockReturnValue({
+      uid: 'user-1',
+      displayName: 'Boss',
+      avatarUrl: 'data:image/jpeg;base64,abcd',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const result = await ensureAvatarHttpsUrl();
+    expect(result).toEqual({ ok: true, avatarUrl: undefined });
+  });
+
+  it('resolveHttpsAvatarForGuildWrite soft-fails to undefined when upload fails', async () => {
+    getFirebaseStorage.mockReturnValue(null);
+    getFirestoreDb.mockReturnValue({ configured: true });
+    loadProfile.mockReturnValue({
+      uid: 'user-1',
+      displayName: 'Boss',
+      avatarUrl: 'data:image/jpeg;base64,abcd',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const url = await resolveHttpsAvatarForGuildWrite('data:image/jpeg;base64,abcd');
+    expect(url).toBeUndefined();
+  });
+
   it('coalesces concurrent uploads for the same uid', async () => {
     loadProfile.mockReturnValue({
       uid: 'user-1',
@@ -135,8 +207,8 @@ describe('ladderAvatarStorageService', () => {
           resolveUpload = resolve;
         })
     );
-    const first = ensureLadderAvatarHttpsForProSync(proEntitlement);
-    const second = ensureLadderAvatarHttpsForProSync(proEntitlement);
+    const first = ensureAvatarHttpsUrl();
+    const second = ensureAvatarHttpsUrl();
     resolveUpload!();
     const [a, b] = await Promise.all([first, second]);
     expect(a).toEqual(b);
@@ -152,7 +224,7 @@ describe('ladderAvatarStorageService', () => {
       avatarUrl: 'data:image/jpeg;base64,abcd',
       updatedAt: '2026-01-01T00:00:00.000Z',
     });
-    const result = await ensureLadderAvatarHttpsForProSync(proEntitlement);
+    const result = await ensureAvatarHttpsUrl();
     expect(result).toEqual({
       ok: false,
       reason: 'upload-failed',

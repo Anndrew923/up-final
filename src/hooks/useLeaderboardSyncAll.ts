@@ -16,6 +16,7 @@ import {
   fetchUserGuildBinding,
   invalidateGuildLadderCache,
 } from '../services/guildLadderCacheService';
+import { resolveGuildCallableIdentity } from '../services/ladderAvatarStorageService';
 import { getLadderUploadIdentity } from '../services/ladderIdentityService';
 import {
   checkFullSyncAllowed,
@@ -184,13 +185,13 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
         onFinishedRef.current?.();
         return;
       }
-      const identity = getLadderUploadIdentity();
+      const identity = await resolveGuildCallableIdentity();
       const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
       const radarScores = sanitizeGuildRadarScores(merged);
       const result = await syncGuildLadderScore({
         ladderScore: overallScore,
-        displayName: identity?.displayName,
-        avatarUrl: identity?.avatarUrl,
+        displayName: identity.displayName,
+        avatarUrl: identity.avatarUrl,
         isAnonymous: profile?.isAnonymousInLadder === true,
         ...(radarScores ? { radarScores } : {}),
       });

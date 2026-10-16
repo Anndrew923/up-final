@@ -1,4 +1,4 @@
-/** Ladder avatar stored locally as compressed JPEG/PNG data URL before Pro sync uploads to Storage. */
+/** Ladder avatar stored locally as compressed JPEG/PNG data URL before Storage upload (Pro global or club sync). */
 export function isLadderAvatarDataUrl(value: string): boolean {
   const t = value.trim();
   return (
@@ -14,7 +14,7 @@ export function isLadderAvatarHttpsUrl(value: string): boolean {
 
 /**
  * Decodes a `data:image/*;base64,...` string for Firebase Storage upload.
- * WHY: Callable / Firestore only accept https URLs; sync uploads blob once per data URL.
+ * WHY: Callable / Firestore / guild members only accept https URLs; sync uploads blob once per data URL.
  */
 export function ladderAvatarDataUrlToBlob(dataUrl: string): Blob {
   const comma = dataUrl.indexOf(',');

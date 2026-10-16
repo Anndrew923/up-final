@@ -13,6 +13,7 @@ const mockSyncGuildLadderScore = vi.fn();
 const mockFetchUserGuildBinding = vi.fn();
 const mockGetCurrentFirebaseUser = vi.fn();
 const mockGetLadderUploadIdentity = vi.fn();
+const mockResolveGuildCallableIdentity = vi.fn();
 
 vi.mock('../../services/fullSyncRateLimitService', () => ({
   checkFullSyncAllowed: (...args: unknown[]) => mockCheckFullSyncAllowed(...args),
@@ -34,6 +35,11 @@ vi.mock('../../services/firebaseClient', () => ({
 
 vi.mock('../../services/ladderIdentityService', () => ({
   getLadderUploadIdentity: () => mockGetLadderUploadIdentity(),
+}));
+
+vi.mock('../../services/ladderAvatarStorageService', () => ({
+  resolveGuildCallableIdentity: (...args: unknown[]) =>
+    mockResolveGuildCallableIdentity(...args),
 }));
 
 vi.mock('../../services/hapticService', () => ({
@@ -136,12 +142,39 @@ describe('useLeaderboardSyncAll guild/global rate-limit decouple', () => {
       displayName: 'Pilot',
       avatarUrl: null,
     });
+    mockResolveGuildCallableIdentity.mockResolvedValue({
+      displayName: 'Pilot',
+      avatarUrl: 'https://cdn.example.com/avatar.jpg',
+    });
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
     document.body.innerHTML = '';
+  });
+
+  it('syncGuildOnly upgrades data URL avatar to https before Callable', async () => {
+    mockResolveGuildCallableIdentity.mockResolvedValue({
+      displayName: 'Pilot',
+      avatarUrl: 'https://firebasestorage.googleapis.com/v0/b/test/o/avatar.jpg?v=1',
+    });
+
+    const { getApi, unmount } = mountHook();
+
+    await act(async () => {
+      await getApi().syncGuildOnly();
+    });
+
+    expect(mockResolveGuildCallableIdentity).toHaveBeenCalled();
+    expect(mockSyncGuildLadderScore).toHaveBeenCalledWith(
+      expect.objectContaining({
+        avatarUrl: 'https://firebasestorage.googleapis.com/v0/b/test/o/avatar.jpg?v=1',
+      })
+    );
+    expect(mockSyncGuildLadderScore.mock.calls[0][0].avatarUrl).not.toMatch(/^data:/);
+
+    unmount();
   });
 
   it('syncGuildOnly does not check or record global full-sync quota', async () => {

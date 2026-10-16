@@ -121,7 +121,7 @@ export function resolveLeaderboardAvatarUrlForCloud(
 
 /**
  * Applies remote `profile/baseline` ladder fields without erasing a newer Home identity.
- * Remote https avatar wins when present; otherwise keep local (incl. data URL until Pro ladder sync).
+ * Remote https avatar wins when present; otherwise keep local (incl. data URL until Storage upload).
  */
 export function mergeLadderProfileWithLocal(remoteBaseline: LocalProfile): LocalProfile {
   const local = loadProfile();
