@@ -12,6 +12,7 @@ import {
 import type { GuildMemberSnapshot } from '../../types/guild';
 import type { SixAxisMetric } from '../../types/scoring';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { ladderDivisionTabClass } from '../ladder/ladderDivisionTabClass';
 import CrewMemberRadarSheet from './CrewMemberRadarSheet';
 
 export interface CrewPrivateLadderProps {
@@ -22,7 +23,7 @@ export interface CrewPrivateLadderProps {
 }
 
 /**
- * Private club ladder — overall + axis funnel (client sort) + radar sheet (embedded scores).
+ * Club member ladder — overall + axis funnel (client sort) + radar sheet (embedded scores).
  */
 const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   members,
@@ -52,17 +53,14 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
     <section className="ui-card space-y-4 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
       <div className="flex items-center gap-2 border-b border-white/5 pb-2">
         <div className="h-4 w-1 shrink-0 rounded-full bg-cyan-400" />
-        <div className="min-w-0">
-          <h3 className="truncate text-lg font-bold text-white">{t('crew.ladder.title')}</h3>
-          <span className="mt-0.5 block truncate font-mono text-[10px] uppercase tracking-wider text-cyan-400/80">
-            {t('crew.ladder.subtitle')}
-          </span>
-        </div>
+        <h3 className="min-w-0 truncate text-lg font-bold text-white">
+          {t('crew.ladder.title')}
+        </h3>
       </div>
 
-      {/* C2 — dimension funnel (client-only sort). */}
-      <div
-        className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      {/* C2 — dimension funnel; visual parity with LadderFilterSheet division tabs. */}
+      <nav
+        className="-mx-1 flex snap-x snap-mandatory gap-1 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label={t('crew.ladder.dimensionAria')}
       >
@@ -74,18 +72,14 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
               type="button"
               role="tab"
               aria-selected={active}
-              className={`shrink-0 rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold tracking-wide transition-colors ${
-                active
-                  ? 'bg-cyan-500/20 text-cyan-200 ring-1 ring-cyan-400/50'
-                  : 'bg-zinc-900/60 text-zinc-400 ring-1 ring-zinc-700/80 hover:text-zinc-200'
-              }`}
+              className={`snap-start ${ladderDivisionTabClass(active)}`}
               onClick={() => setDimension(dim)}
             >
               {labelForDimension(dim)}
             </button>
           );
         })}
-      </div>
+      </nav>
 
       {ranked.length === 0 ? (
         <p className="rounded-lg border border-zinc-700/90 bg-zinc-900/40 px-4 py-6 text-center text-sm leading-relaxed text-zinc-400">

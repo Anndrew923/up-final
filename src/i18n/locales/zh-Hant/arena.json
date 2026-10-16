@@ -57,6 +57,8 @@
   "proFeatureCloudSyncBody": "跨裝置日誌與評測數據永久封存",
   "proFeatureDynoIntelTitle": "DYNO INTEL 智慧分析官",
   "proFeatureDynoIntelBody": "AI 智慧遙測與跨軸診斷推演",
+  "proFeatureClubCreatorTitle": "專屬俱樂部 (Club Creator)",
+  "proFeatureClubCreatorBody": "創建個人專屬俱樂部，邀請夥伴切磋六維度雷達私榜",
   "identityTitle": "戰場身分",
   "identityRequired": "請先使用 Google 登入，綁定你的跨裝置戰場身分。",
   "identityRequiredApple": "請先使用 Apple 登入（也可改用 Google），綁定你的跨裝置戰場身分。",

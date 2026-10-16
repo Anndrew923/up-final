@@ -40,7 +40,6 @@ export interface UseCrewGuildResult {
   role: GuildRole | null;
   isCoach: boolean;
   isPro: boolean;
-  fromCache: boolean;
   rankedMembers: GuildMemberSnapshot[];
   authUid: string | null;
   /** True while a Callable mutation is in flight. */
@@ -74,7 +73,6 @@ export function useCrewGuild(): UseCrewGuildResult {
   const [status, setStatus] = useState<CrewLoadStatus>('idle');
   const [guild, setGuild] = useState<GuildDoc | null>(null);
   const [role, setRole] = useState<GuildRole | null>(null);
-  const [fromCache, setFromCache] = useState(false);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [actionError, setActionError] = useState<GuildCallableFailureReason | null>(null);
@@ -95,7 +93,6 @@ export function useCrewGuild(): UseCrewGuildResult {
         setGuild(null);
         setRole(null);
         setStatus('empty');
-        setFromCache(false);
         setRefreshing(false);
         return;
       }
@@ -111,7 +108,6 @@ export function useCrewGuild(): UseCrewGuildResult {
           setGuild(null);
           setRole(null);
           setStatus('empty');
-          setFromCache(false);
           return;
         }
 
@@ -126,17 +122,14 @@ export function useCrewGuild(): UseCrewGuildResult {
             setGuild(null);
             setRole(null);
             setStatus('empty');
-            setFromCache(false);
             return;
           }
           setGuild(null);
           setStatus('error');
-          setFromCache(false);
           return;
         }
 
         setGuild(result.guild);
-        setFromCache(result.fromCache);
         setStatus('ready');
       } finally {
         if (gen === loadGenRef.current) {
@@ -299,7 +292,6 @@ export function useCrewGuild(): UseCrewGuildResult {
     role,
     isCoach: role === 'coach' || (guild != null && authUid != null && guild.coachUid === authUid),
     isPro,
-    fromCache,
     rankedMembers,
     authUid,
     busy,

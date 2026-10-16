@@ -28,7 +28,6 @@ vi.mock('../../hooks/useCrewGuild', () => ({
     role: null,
     isCoach: false,
     isPro: false,
-    fromCache: false,
     rankedMembers: [],
     authUid: null,
     busy: false,
@@ -68,8 +67,8 @@ vi.mock('react-i18next', () => ({
         'tools.sync.status.loading': 'Checking cloud snapshot status…',
         'tools.sync.status.empty': 'No cloud backup yet',
         'tools.sync.footerHint': '※ Restoring will overwrite local data',
-        'tools.kicker': 'Utility Deck',
-        'tools.title': 'Tools & Cloud Sync',
+        'tools.kicker': 'GARAGE',
+        'tools.title': 'Garage Hub',
         'tools.calculators.title': 'Training Calculators',
         'tools.calculators.oneRm.title': '1RM Calculator',
         'tools.calculators.plates.title': 'Plate Calculator',
@@ -186,6 +185,22 @@ describe('ToolsPage cloud sync card', () => {
 
     expect(container.textContent).toContain('No cloud backup yet');
     expect(container.textContent).not.toContain('Upgrade to PRO');
+
+    unmount();
+  });
+
+  it('places club HQ card above training calculators', () => {
+    mockUseVehicleCodexScores.mockReturnValue({});
+    mockUseCloudSyncCard.mockReturnValue(baseCardModel());
+
+    const { container, unmount } = renderPage();
+    const text = container.textContent ?? '';
+    const clubIdx = text.indexOf('Club');
+    const calcIdx = text.indexOf('Training Calculators');
+
+    expect(clubIdx).toBeGreaterThanOrEqual(0);
+    expect(calcIdx).toBeGreaterThanOrEqual(0);
+    expect(clubIdx).toBeLessThan(calcIdx);
 
     unmount();
   });

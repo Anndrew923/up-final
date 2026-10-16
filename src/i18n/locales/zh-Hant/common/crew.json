@@ -3,7 +3,7 @@
     "hq": {
       "title": "俱樂部",
       "code": "CLUB",
-      "subtitleJoined": "{{tag}} · {{name}}",
+      "subtitleJoined": "[{{tag}}]",
       "enter": "進入俱樂部",
       "openAria": "開啟俱樂部"
     },
@@ -12,8 +12,7 @@
       "title": "俱樂部",
       "refresh": "重新整理",
       "refreshing": "更新中…",
-      "loadError": "無法載入俱樂部資料，請稍後再試。",
-      "fromCache": "本機快取"
+      "loadError": "無法載入俱樂部資料，請稍後再試。"
     },
     "empty": {
       "joinTitle": "加入俱樂部",
@@ -37,8 +36,7 @@
       "copyFail": "無法複製，請手動選取"
     },
     "ladder": {
-      "title": "私有學員天梯",
-      "subtitle": "軸向排序 · 單次讀取",
+      "title": "成員排行",
       "empty": "尚無成員分數。完成評測並上傳後將顯示於此。",
       "you": "你",
       "dimensionAria": "依維度排序俱樂部天梯",
@@ -63,7 +61,7 @@
       "openLabel": "管理",
       "title": "俱樂部管理",
       "close": "關閉",
-      "roster": "學員名冊",
+      "roster": "成員名冊",
       "kick": "移除",
       "kicking": "移除中…",
       "kickConfirm": "確定移除 {{name}}？",

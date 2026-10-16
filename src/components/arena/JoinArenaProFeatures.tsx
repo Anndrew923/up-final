@@ -12,7 +12,7 @@ const JoinArenaProFeatures: FC = () => {
 
   return (
     <section aria-label={t('featuresTitle')}>
-      {/* WHY: Ordered list matches 01–03 telemetry channels; list-none keeps custom mono chips. */}
+      {/* WHY: Ordered list matches 01–04 telemetry channels; list-none keeps custom mono chips. */}
       <ol className="list-none space-y-3">
         {JOIN_ARENA_PRO_FEATURES.map((feature) => (
           <li key={feature.variant} className="flex items-center gap-3">

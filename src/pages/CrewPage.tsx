@@ -35,11 +35,6 @@ export default function CrewPage() {
             <h1 className="truncate text-3xl font-bold tracking-tight text-zinc-50">
               {t('crew.page.title')}
             </h1>
-            {crew.fromCache && showJoined ? (
-              <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
-                {t('crew.page.fromCache')}
-              </p>
-            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {showJoined ? (

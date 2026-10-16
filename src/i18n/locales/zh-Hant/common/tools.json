@@ -1,7 +1,7 @@
 {
   "tools": {
-    "kicker": "工具甲板",
-    "title": "工具與雲端同步",
+    "kicker": "GARAGE",
+    "title": "整備基地",
     "syncTitle": "雲端同步",
     "syncBackup": "立即備份至雲端",
     "syncRestore": "從雲端還原",

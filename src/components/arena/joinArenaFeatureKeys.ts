@@ -18,4 +18,10 @@ export const JOIN_ARENA_PRO_FEATURES = [
     titleKey: 'proFeatureDynoIntelTitle',
     bodyKey: 'proFeatureDynoIntelBody',
   },
+  {
+    variant: 'club-creator',
+    index: '04',
+    titleKey: 'proFeatureClubCreatorTitle',
+    bodyKey: 'proFeatureClubCreatorBody',
+  },
 ] as const;

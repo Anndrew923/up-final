@@ -57,6 +57,8 @@
   "proFeatureCloudSyncBody": "Permanent cloud backup for all logs & tests",
   "proFeatureDynoIntelTitle": "DYNO INTEL analyst",
   "proFeatureDynoIntelBody": "AI telemetry & cross-axis diagnostic inference",
+  "proFeatureClubCreatorTitle": "Club Creator",
+  "proFeatureClubCreatorBody": "Create your private club and invite partners to compete on a six-axis radar standings board",
   "identityTitle": "Arena Identity",
   "identityRequired": "Sign in with Google to use the arena on any device.",
   "identityRequiredApple": "Sign in with Apple (or Google) to use the arena on any device.",

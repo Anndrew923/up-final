@@ -73,7 +73,7 @@ describe('CrewPrivateLadder', () => {
     expect(container.textContent).toContain('crew.ladder.dimOverall');
   });
 
-  it('re-ranks by strength chip without network', () => {
+  it('re-ranks by strength tab without network', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);

@@ -1,7 +1,7 @@
 {
   "tools": {
-    "kicker": "Utility Deck",
-    "title": "Tools & Cloud Sync",
+    "kicker": "GARAGE",
+    "title": "Garage Hub",
     "syncTitle": "Cloud Sync",
     "syncBackup": "Backup to Cloud",
     "syncRestore": "Restore from Cloud",

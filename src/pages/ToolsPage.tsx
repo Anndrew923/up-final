@@ -36,6 +36,9 @@ export default function ToolsPage() {
           </h1>
         </header>
 
+        {/* Club first — primary social entry before local tools. */}
+        <CrewHqCard />
+
         <section className="grid gap-4">
           <article className="rounded-2xl border border-zinc-800 bg-bg-card/95 p-6 shadow-panel backdrop-blur">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-zinc-400">
@@ -85,8 +88,6 @@ export default function ToolsPage() {
             </DisclosurePanel>
           </article>
         </section>
-
-        <CrewHqCard />
 
         <CloudSyncCard {...cloudSync} />
       </ShellFlowStack>
