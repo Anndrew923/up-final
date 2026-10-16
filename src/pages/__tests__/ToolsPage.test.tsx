@@ -79,7 +79,7 @@ vi.mock('react-i18next', () => ({
         'assessment.referenceInfo.toggleCollapse': 'Collapse',
         'crew.hq.code': 'CREW HQ',
         'crew.hq.title': 'Crew HQ',
-        'crew.hq.subtitleEmpty': 'Create or join a crew',
+        'crew.hq.enter': 'Enter HQ',
         'crew.hq.openAria': 'Open Crew HQ',
       };
       return map[key] ?? key;

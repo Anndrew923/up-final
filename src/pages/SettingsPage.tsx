@@ -253,11 +253,6 @@ const SettingsPage: FC = () => {
             }}
           />
         ) : null}
-        <div className="border-t border-zinc-800/80 px-4 py-2.5">
-          <p className="text-[11px] leading-relaxed text-zinc-500">
-            {t('settings.anonymousLadderHint')}
-          </p>
-        </div>
         <SettingsListRow
           icon={<SettingsGlyph label="BL" />}
           title={t('settings.blocked_users_title')}

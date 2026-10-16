@@ -17,10 +17,9 @@
     "sectionPreferences": "Preferences",
     "localDataSection": "Local Data",
     "publishGlobalLadderTitle": "Publish to global public ladder",
-    "publishGlobalLadderHint": "When off, assessment sync skips the global ladder by default. If you are in a crew, private roster sync still works. Separate from anonymous nickname on the board.",
+    "publishGlobalLadderHint": "When off, stay off the global board; crew sync if joined.",
     "publishGlobalLadderOn": "On",
     "publishGlobalLadderOff": "Off",
-    "anonymousLadderHint": "Anonymous nickname is set on Home profile (still listed globally; identity only is hidden).",
     "withdrawPublic": {
       "kicker": "PRIVACY",
       "title": "Turn off global public ranking?",

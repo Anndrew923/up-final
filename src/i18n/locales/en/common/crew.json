@@ -3,11 +3,9 @@
     "hq": {
       "title": "Crew HQ",
       "code": "CREW HQ",
-      "subtitleEmpty": "Create or join a crew for a private trainee ladder",
       "subtitleJoined": "{{tag}} · {{name}}",
       "enter": "Enter HQ",
-      "openAria": "Open Crew HQ",
-      "privacyNote": "You can turn off global ladder publish in Settings and still sync the crew board"
+      "openAria": "Open Crew HQ"
     },
     "page": {
       "kicker": "CREW HQ",

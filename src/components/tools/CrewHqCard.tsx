@@ -18,17 +18,16 @@ const CrewHqCard: FC = () => {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/45 to-transparent" />
       <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-cyan-500/10 blur-2xl" />
 
-      <header className="space-y-1.5">
+      <header className="space-y-1">
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyan-400/80">
           {t('crew.hq.code')}
         </p>
         <h2 className="text-lg font-bold tracking-tight text-zinc-50">{t('crew.hq.title')}</h2>
-        <p className="text-sm text-zinc-400">
-          {joined
-            ? t('crew.hq.subtitleJoined', { tag: guild.tag, name: guild.name })
-            : t('crew.hq.subtitleEmpty')}
-        </p>
-        <p className="text-[11px] leading-relaxed text-zinc-500">{t('crew.hq.privacyNote')}</p>
+        {joined ? (
+          <p className="text-sm text-zinc-400">
+            {t('crew.hq.subtitleJoined', { tag: guild.tag, name: guild.name })}
+          </p>
+        ) : null}
       </header>
 
       <div className="mt-5">
@@ -37,7 +36,7 @@ const CrewHqCard: FC = () => {
           aria-label={t('crew.hq.openAria')}
           className="ui-btn ui-btn-primary inline-flex w-full justify-center sm:w-auto"
         >
-          {joined ? t('crew.hq.enter') : t('crew.hq.title')}
+          {t('crew.hq.enter')}
         </Link>
       </div>
     </section>
