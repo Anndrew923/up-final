@@ -10,9 +10,10 @@ import {
   calculateSixAxisOverall,
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
+import { scoreMapHasPositiveAxis } from '../../logic/core/crewFloatingYouBar';
 import { guildMemberHasRadarScores } from '../../logic/core/guildRadarScores';
 import type { GuildMemberSnapshot } from '../../types/guild';
-import type { SixAxisMetric } from '../../types/scoring';
+import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import HexRadarChart from '../radar/HexRadarChart';
 import ProAvatarRing from '../ProAvatarRing';
 import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
@@ -22,17 +23,23 @@ export interface CrewMemberRadarSheetProps {
   member: GuildMemberSnapshot | null;
   rank: number | null;
   guildTag: string;
+  /**
+   * Local “You” six-axis map for dual-layer compare.
+   * Null / omitted when viewing self or local scores unavailable — single-layer chart.
+   */
+  comparisonScores?: ScoreMap | null;
   onClose: () => void;
 }
 
 /**
- * Club member radar detail — data from embedded members[] only (no preview fetch).
+ * Club member radar detail — data from embedded members[] + optional local compare (no preview fetch).
  */
 const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
   open,
   member,
   rank,
   guildTag,
+  comparisonScores = null,
   onClose,
 }) => {
   const { t } = useTranslation('common');
@@ -66,7 +73,24 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
     [radarPoints, t]
   );
 
-  const scaleMax = useMemo(() => radarDisplayScaleMax(radarPoints), [radarPoints]);
+  const showCompare = scoreMapHasPositiveAxis(comparisonScores);
+
+  const comparisonRadarPoints = useMemo(() => {
+    if (!showCompare || !comparisonScores) return undefined;
+    return buildSixAxisRadarData(comparisonScores).map((point) => ({
+      ...point,
+      label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
+    }));
+  }, [showCompare, comparisonScores, t]);
+
+  const scaleMax = useMemo(
+    () =>
+      radarDisplayScaleMax([
+        ...radarPoints,
+        ...(comparisonRadarPoints ?? []),
+      ]),
+    [radarPoints, comparisonRadarPoints]
+  );
 
   const overallFromRadar = useMemo(() => {
     if (!member || !hasRadar) return null;
@@ -129,10 +153,33 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
               <div className="mx-auto aspect-square w-full max-w-[280px]">
                 <HexRadarChart
                   points={localizedRadarPoints}
+                  comparisonPoints={comparisonRadarPoints}
                   scaleMax={scaleMax}
                   aria-label={t('crew.ladder.detailRadarAria', { name: displayName })}
                 />
               </div>
+              {showCompare ? (
+                <ul
+                  className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-zinc-400"
+                  data-testid="crew-radar-compare-legend"
+                  aria-label={t('crew.ladder.compareLegendAria')}
+                >
+                  <li className="inline-flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full bg-cyan-400/90 shadow-[0_0_6px_rgba(34,211,238,0.55)]"
+                      aria-hidden
+                    />
+                    <span>{t('crew.ladder.compareLegendMember', { name: displayName })}</span>
+                  </li>
+                  <li className="inline-flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full border border-dashed border-amber-400 bg-amber-400/20"
+                      aria-hidden
+                    />
+                    <span>{t('crew.ladder.compareLegendYou')}</span>
+                  </li>
+                </ul>
+              ) : null}
             </div>
           ) : (
             <p className="rounded-lg border border-zinc-700/90 bg-zinc-900/40 px-4 py-8 text-center text-sm leading-relaxed text-zinc-400">

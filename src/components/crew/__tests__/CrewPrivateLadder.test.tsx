@@ -1,7 +1,7 @@
 /* @vitest-environment jsdom */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CrewPrivateLadder from '../CrewPrivateLadder';
 
 (
@@ -22,19 +22,57 @@ vi.mock('../../radar/HexRadarChart', () => ({
   default: () => <div data-testid="hex-radar" />,
 }));
 
+vi.mock('../../../hooks/useMergedScoresFromLocalStores', () => ({
+  useMergedScoresFromLocalStores: () => ({
+    strength: 50,
+    explosivePower: 50,
+    cardio: 50,
+    muscleMass: 50,
+    bodyFat: 50,
+    gripStrength: 50,
+  }),
+}));
+
 vi.mock('../../../i18n/resolveSixAxisChartLabel', () => ({
   resolveSixAxisChartLabel: (_t: unknown, metric: string) => metric,
 }));
 
+vi.mock('../../../logic/core/crewFloatingYouBar', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../../logic/core/crewFloatingYouBar')>();
+  return {
+    ...actual,
+    shouldShowCrewFloatingYouBar: () => true,
+  };
+});
+
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  constructor(callback: IntersectionObserverCallback) {
+    // Immediately report not intersecting so sticky bar path stays active under mock.
+    callback(
+      [{ isIntersecting: false } as IntersectionObserverEntry],
+      this as unknown as IntersectionObserver
+    );
+  }
+}
+
 describe('CrewPrivateLadder', () => {
   let container: HTMLDivElement;
   let root: Root;
+
+  beforeEach(() => {
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+  });
 
   afterEach(() => {
     act(() => {
       root.unmount();
     });
     container.remove();
+    vi.unstubAllGlobals();
   });
 
   it('renders ranked rows with #1 highlight copy', () => {
@@ -71,6 +109,7 @@ describe('CrewPrivateLadder', () => {
     expect(container.textContent).toContain('Beta');
     expect(container.textContent).toContain('crew.ladder.you');
     expect(container.textContent).toContain('crew.ladder.dimOverall');
+    expect(document.body.querySelector('[data-testid="crew-floating-you-bar"]')).toBeTruthy();
   });
 
   it('re-ranks by strength tab without network', () => {

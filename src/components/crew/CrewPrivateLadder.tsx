@@ -1,8 +1,26 @@
-import { type FC, useMemo, useState } from 'react';
+import {
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import ProAvatarRing from '../ProAvatarRing';
+import {
+  LADDER_FLOATING_RANK_BAR_PX,
+  LADDER_SCROLL_BOTTOM_INSET_PX,
+} from '../../constants/bottomChrome';
 import { formatCompactRelativeTime } from '../../logic/core/formatCompactRelativeTime';
 import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
+import {
+  CREW_FLOATING_AT_TOP_SCROLL_PX,
+  CREW_FLOATING_FORCE_RANK_THRESHOLD,
+  CREW_LIST_OVERFLOW_VIEWPORT_RATIO,
+  scoreMapHasPositiveAxis,
+  shouldShowCrewFloatingYouBar,
+} from '../../logic/core/crewFloatingYouBar';
 import {
   CLUB_LADDER_DIMENSIONS,
   type ClubLadderDimension,
@@ -10,9 +28,13 @@ import {
   sortGuildMembersByDimension,
 } from '../../logic/core/guildRadarScores';
 import type { GuildMemberSnapshot } from '../../types/guild';
-import type { SixAxisMetric } from '../../types/scoring';
+import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { useMergedScoresFromLocalStores } from '../../hooks/useMergedScoresFromLocalStores';
+import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
+import { sanitizeAvatarUrlForLeaderboard } from '../../services/ladderIdentityService';
 import { ladderDivisionTabClass } from '../ladder/ladderDivisionTabClass';
+import CrewFloatingYouBar from './CrewFloatingYouBar';
 import CrewMemberRadarSheet from './CrewMemberRadarSheet';
 
 export interface CrewPrivateLadderProps {
@@ -24,6 +46,7 @@ export interface CrewPrivateLadderProps {
 
 /**
  * Club member ladder — overall + axis funnel (client sort) + radar sheet (embedded scores).
+ * Sticky “You” bar + compare-with-me radar use only in-memory roster + local ScoreMap (no network).
  */
 const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   members,
@@ -33,6 +56,12 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   const { t } = useTranslation('common');
   const [dimension, setDimension] = useState<ClubLadderDimension>('overall');
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [myRowInViewport, setMyRowInViewport] = useState(false);
+  const [listOverflowsViewport, setListOverflowsViewport] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const myRowRef = useRef<HTMLLIElement | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const localScores = useMergedScoresFromLocalStores();
 
   const labelForDimension = (dim: ClubLadderDimension): string => {
     if (dim === 'overall') return t('crew.ladder.dimOverall');
@@ -44,10 +73,95 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
     [members, dimension]
   );
 
+  const myIndex = useMemo(() => {
+    if (!authUid) return -1;
+    return ranked.findIndex((m) => m.uid === authUid);
+  }, [ranked, authUid]);
+
+  const myMember = myIndex >= 0 ? ranked[myIndex] : null;
+  const myRank = myIndex >= 0 ? myIndex + 1 : null;
+  const myDimScore = myMember ? guildMemberDimensionScore(myMember, dimension) : null;
+  const myScoreLabel =
+    myDimScore == null ? '—' : myDimScore.toFixed(2);
+
   const selectedIndex = selectedUid
     ? ranked.findIndex((m) => m.uid === selectedUid)
     : -1;
   const selectedMember = selectedIndex >= 0 ? ranked[selectedIndex] : null;
+
+  const detailOpen = selectedMember != null;
+
+  const comparisonScores: ScoreMap | null = useMemo(() => {
+    if (!selectedMember || !authUid || selectedMember.uid === authUid) return null;
+    return scoreMapHasPositiveAxis(localScores) ? localScores : null;
+  }, [selectedMember, authUid, localScores]);
+
+  useEffect(() => {
+    // WHY: AppShell scrolls `#layer-shell-scroll`, not `window` — window.scrollY stays 0 on club.
+    const shell = document.getElementById(SHELL_SCROLL_ID);
+    const syncAtTop = () => {
+      const top = shell?.scrollTop ?? window.scrollY;
+      setIsAtTop(top < CREW_FLOATING_AT_TOP_SCROLL_PX);
+    };
+    syncAtTop();
+    const target: HTMLElement | Window = shell ?? window;
+    target.addEventListener('scroll', syncAtTop, { passive: true });
+    return () => target.removeEventListener('scroll', syncAtTop);
+  }, []);
+
+  useEffect(() => {
+    const listEl = listRef.current;
+    if (!listEl) {
+      setListOverflowsViewport(false);
+      return;
+    }
+    const measure = () => {
+      setListOverflowsViewport(
+        listEl.scrollHeight > window.innerHeight * CREW_LIST_OVERFLOW_VIEWPORT_RATIO
+      );
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [ranked.length, dimension]);
+
+  useEffect(() => {
+    if (!authUid || myIndex < 0) {
+      setMyRowInViewport(false);
+      return;
+    }
+    const el = myRowRef.current;
+    if (!el) {
+      setMyRowInViewport(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setMyRowInViewport(entry.isIntersecting);
+      },
+      {
+        root: null,
+        threshold: 0.2,
+        rootMargin: `0px 0px -${LADDER_SCROLL_BOTTOM_INSET_PX}px 0px`,
+      }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [authUid, myIndex, ranked, dimension]);
+
+  const forceAtTop =
+    isAtTop && myRank != null && myRank > CREW_FLOATING_FORCE_RANK_THRESHOLD;
+  const showFloatingYou = shouldShowCrewFloatingYouBar({
+    myRank,
+    myRowInViewport,
+    listOverflowsViewport,
+    forceAtTop,
+    detailOpen,
+  });
+
+  const jumpToMyRow = useCallback(() => {
+    myRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
 
   return (
     <section className="ui-card space-y-4 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
@@ -86,7 +200,15 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
           {t('crew.ladder.empty')}
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul
+          ref={listRef}
+          className="space-y-2"
+          style={
+            showFloatingYou
+              ? { paddingBottom: LADDER_FLOATING_RANK_BAR_PX + 12 }
+              : undefined
+          }
+        >
           {ranked.map((row, index) => {
             const rank = index + 1;
             const isRank1 = rank === 1;
@@ -119,7 +241,11 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
               : 'text-accent-primary';
 
             return (
-              <li key={row.uid} className="list-none">
+              <li
+                key={row.uid}
+                ref={isMe ? myRowRef : undefined}
+                className="list-none"
+              >
                 <button
                   type="button"
                   className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
@@ -173,11 +299,22 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
         </ul>
       )}
 
+      {showFloatingYou && myMember && myRank != null ? (
+        <CrewFloatingYouBar
+          myRank={myRank}
+          myScoreLabel={myScoreLabel}
+          displayName={myMember.displayName || myMember.uid}
+          avatarUrl={sanitizeAvatarUrlForLeaderboard(myMember.avatarUrl)}
+          onJumpToMyRow={jumpToMyRow}
+        />
+      ) : null}
+
       <CrewMemberRadarSheet
         open={selectedMember != null}
         member={selectedMember}
         rank={selectedIndex >= 0 ? selectedIndex + 1 : null}
         guildTag={guildTag}
+        comparisonScores={comparisonScores}
         onClose={() => setSelectedUid(null)}
       />
     </section>

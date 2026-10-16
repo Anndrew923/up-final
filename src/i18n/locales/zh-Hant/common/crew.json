@@ -46,7 +46,14 @@
       "detailClose": "關閉",
       "detailOverall": "總分 {{score}}",
       "detailRadarAria": "{{name}} 的六軸雷達",
-      "detailNoRadar": "尚未同步六軸評測。完成評測並同步至俱樂部後即可顯示雷達。"
+      "detailNoRadar": "尚未同步六軸評測。完成評測並同步至俱樂部後即可顯示雷達。",
+      "floatingYou": {
+        "cta": "跳至你的排名",
+        "subline": "你的排名 · 點擊定位"
+      },
+      "compareLegendAria": "雷達對比圖例",
+      "compareLegendMember": "{{name}}",
+      "compareLegendYou": "你"
     },
     "leave": {
       "cta": "退出俱樂部",

@@ -11,6 +11,11 @@ export type HexRadarPoint = RadarChartPoint;
 export interface HexRadarChartProps {
   /** One vertex per core dimension; order matches caller (typically `SIX_AXIS_METRICS`). */
   points: HexRadarPoint[];
+  /**
+   * Optional second polygon (e.g. “You” vs club mate) — gold dashed outline, no entry animation.
+   * WHY: Club detail compare must stay presentational; caller builds both score maps locally.
+   */
+  comparisonPoints?: HexRadarPoint[];
   /** Outer ring corresponds to this numeric max; radar card uses fixed 100. */
   scaleMax: number;
   /** 0–1 presentation-only scale for Home resonance charge (does not alter source scores). */
@@ -28,6 +33,7 @@ export interface HexRadarChartProps {
  */
 export const HexRadarChart: FC<HexRadarChartProps> = ({
   points,
+  comparisonPoints,
   scaleMax,
   ritualFill = 1,
   suppressEntryAnimation = false,
@@ -157,6 +163,23 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
     () => axisNodes.map((node) => `${node.xBase.toFixed(2)},${node.yBase.toFixed(2)}`).join(' '),
     [axisNodes]
   );
+
+  /**
+   * Comparison ring locks to primary vertex count (`n`) so axes stay registered with labels.
+   * WHY: Divergent lengths would rotate the gold outline off the cyan member polygon.
+   */
+  const comparisonPolygon = useMemo(() => {
+    if (!comparisonPoints || comparisonPoints.length === 0) return null;
+    return Array.from({ length: n }, (_, i) => {
+      const point = comparisonPoints[i];
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+      const raw = Math.max(0, Number(point?.value) || 0);
+      const baseRadius = maxR * (Math.min(denom, raw) / denom) * fill;
+      const x = cx + baseRadius * Math.cos(angle);
+      const y = cy + baseRadius * Math.sin(angle);
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    }).join(' ');
+  }, [comparisonPoints, cx, cy, denom, fill, maxR, n]);
 
   const overflowPolygon = useMemo(
     () =>
@@ -324,6 +347,20 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
           strokeLinejoin="round"
           opacity={0.95}
         />
+        {comparisonPolygon ? (
+          <polygon
+            data-testid="hex-radar-comparison"
+            points={comparisonPolygon}
+            fill="rgba(251, 191, 36, 0.12)"
+            stroke="#fbbf24"
+            strokeWidth={2}
+            strokeDasharray="5 4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fillOpacity={0.35}
+            opacity={0.95}
+          />
+        ) : null}
         {axisNodes.map((node) => {
           const isOverclock = node.raw > overclockThreshold;
           const reactor = isOverclock

@@ -46,7 +46,14 @@
       "detailClose": "Close",
       "detailOverall": "Overall {{score}}",
       "detailRadarAria": "{{name}} six-axis radar",
-      "detailNoRadar": "No six-axis sync yet. Complete assessments and sync to the club to show the radar."
+      "detailNoRadar": "No six-axis sync yet. Complete assessments and sync to the club to show the radar.",
+      "floatingYou": {
+        "cta": "Jump to your rank",
+        "subline": "Your rank · tap to locate"
+      },
+      "compareLegendAria": "Radar comparison legend",
+      "compareLegendMember": "{{name}}",
+      "compareLegendYou": "You"
     },
     "leave": {
       "cta": "Leave Club",
