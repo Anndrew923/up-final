@@ -68,7 +68,7 @@ describe('HexRadarChart comparison layer', () => {
     expect(container.querySelector('[data-testid="hex-radar-comparison"]')).toBeNull();
   });
 
-  it('quiet combat aesthetic: dense fills, no scanner, long-dash gold compare', () => {
+  it('quiet combat aesthetic: solid gold clash line, ice-cyan plate, atmospheric depth without scanner', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -77,6 +77,7 @@ describe('HexRadarChart comparison layer', () => {
       root.render(
         <HexRadarChart
           presentation="quiet"
+          compareMotion="enter"
           points={basePoints}
           comparisonPoints={comparePoints}
           scaleMax={100}
@@ -87,20 +88,31 @@ describe('HexRadarChart comparison layer', () => {
 
     expect(container.querySelector('[data-radar-presentation="quiet"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="hex-radar-scanner"]')).toBeNull();
+    // Flagship depth retained — only the conic scanner is presentation-gated.
+    expect(container.querySelector('[data-testid="hex-radar-atmosphere-pool"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="hex-radar-orbit-ring"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-testid="hex-radar-comparison-layer"]')
+    ).toBeTruthy();
+    expect(
+      container
+        .querySelector('[data-testid="hex-radar-comparison-layer"] [data-compare-motion]')
+        ?.getAttribute('data-compare-motion')
+    ).toBe('enter');
 
     const primary = container.querySelector('[data-testid="hex-radar-primary"]');
     expect(primary?.getAttribute('stroke')).toBe('#22d3ee');
-    expect(primary?.getAttribute('stroke-width')).toBe('2');
-    expect(primary?.getAttribute('fill')).toBe('rgba(6, 182, 212, 0.22)');
+    expect(primary?.getAttribute('stroke-width')).toBe('1.8');
+    expect(primary?.getAttribute('fill')).toBe('rgba(6, 182, 212, 0.12)');
 
     const comparison = container.querySelector('[data-testid="hex-radar-comparison"]');
-    expect(comparison?.getAttribute('fill')).toBe('rgba(245, 158, 11, 0.16)');
+    expect(comparison?.getAttribute('fill')).toBe('rgba(245, 158, 11, 0.06)');
     expect(comparison?.getAttribute('stroke')).toBe('#f59e0b');
-    expect(comparison?.getAttribute('stroke-width')).toBe('1.5');
-    expect(comparison?.getAttribute('stroke-dasharray')).toBe('5 3');
+    expect(comparison?.getAttribute('stroke-width')).toBe('1.8');
+    expect(comparison?.getAttribute('stroke-dasharray')).toBeNull();
   });
 
-  it('ritual presentation keeps scanner backdrop by default', () => {
+  it('ritual presentation keeps scanner backdrop and atmospheric depth', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -111,5 +123,8 @@ describe('HexRadarChart comparison layer', () => {
 
     expect(container.querySelector('[data-radar-presentation="ritual"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="hex-radar-scanner"]')).toBeTruthy();
+    // Shared depth layer must remain — quiet PK must not regress ritual atmosphere.
+    expect(container.querySelector('[data-testid="hex-radar-atmosphere-pool"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="hex-radar-orbit-ring"]')).toBeTruthy();
   });
 });

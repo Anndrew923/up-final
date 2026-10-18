@@ -69,9 +69,20 @@ export const RADAR_LASER_ALERT_PROFILE = {
   },
 } as const;
 
+/** Quiet combat accents — single source so stroke + vertices never drift apart. */
+const RADAR_QUIET_CYAN = '#22d3ee'; // cyan-400
+const RADAR_QUIET_GOLD = '#f59e0b'; // amber-500
+
 /**
- * Club / PK “combat aesthetic” — dense translucent plates, no scanner/orbit noise.
- * WHY: Quiet path stays tokenized so ritual Home laser polish is never coupled.
+ * Shared radial-pool / orbit alpha for ritual + quiet.
+ * WHY: PK toggle must not flash a darker void; atmosphere stays presentation-agnostic.
+ */
+export const RADAR_ATMOSPHERE_GLOW_OPACITY = 0.5;
+
+/**
+ * Club / PK “combat aesthetic” — luminous outline vs translucent target.
+ * WHY: Quiet keeps flagship atmospheric depth (radial pool + orbit); only the scanner is off.
+ * Data tokens stay decoupled so ritual Home laser polish never inherits combat weights.
  */
 export const RADAR_QUIET_PROFILE = {
   /** Outer hex faintly brighter; inners sit deeper so plates lift forward. */
@@ -79,23 +90,30 @@ export const RADAR_QUIET_PROFILE = {
   gridInnerOpacity: 0.16,
   spokeStrokeOpacity: 0.14,
   gridStrokeWidth: 0.55,
-  depthCenterOpacity: 0.28,
-  primaryStroke: '#22d3ee', // cyan-400
-  primaryStrokeWidth: 2,
+  primaryStroke: RADAR_QUIET_CYAN,
+  primaryStrokeWidth: 1.8,
   primaryHighlightStroke: '#a5f3fc', // cyan-200 micro edge
-  primaryHighlightWidth: 0.7,
-  primaryHighlightOpacity: 0.55,
-  primaryFill: 'rgba(6, 182, 212, 0.22)', // cyan-500 @ ~22%
-  comparisonStroke: '#f59e0b', // amber-500 warm gold
-  comparisonStrokeWidth: 1.5,
-  comparisonDash: '5 3',
-  comparisonFill: 'rgba(245, 158, 11, 0.16)',
-  /** Diameter ~6px halo / ~3px core in 200-viewBox units. */
-  vertexHaloRadius: 3,
-  vertexCoreRadius: 1.5,
-  vertexHaloPrimary: 'rgba(34, 211, 238, 0.35)',
-  vertexHaloCompare: 'rgba(245, 158, 11, 0.35)',
-  vertexCore: '#f8fafc', // near-white luminous core
+  primaryHighlightWidth: 0.55,
+  primaryHighlightOpacity: 0.4,
+  /** Ice-cyan plate — translucent enough that gold outline stays crisp on top. */
+  primaryFill: 'rgba(6, 182, 212, 0.12)',
+  comparisonStroke: RADAR_QUIET_GOLD,
+  comparisonStrokeWidth: 1.8,
+  /** Faint high-temp gold wash — readable under cyan without mud. */
+  comparisonFill: 'rgba(245, 158, 11, 0.06)',
+  /** Target vertices: Ø 3.5px cyan micro-dots (viewBox units ≈ px at 200). */
+  primaryVertexRadius: 1.75,
+  primaryVertexFill: RADAR_QUIET_CYAN,
+  primaryVertexWinRadius: 2.35,
+  /** Comparison anchors: Ø 5px gold disc + white metal core. */
+  comparisonVertexOuterRadius: 2.5,
+  comparisonVertexCoreRadius: 1.1,
+  comparisonVertexWinOuterRadius: 3.1,
+  comparisonVertexWinCoreRadius: 1.35,
+  comparisonVertexOuter: RADAR_QUIET_GOLD,
+  comparisonVertexCore: '#f8fafc',
+  vertexWinGlowPrimary: 'drop-shadow(0 0 4px rgba(34,211,238,0.9))',
+  vertexWinGlowCompare: 'drop-shadow(0 0 5px rgba(245,158,11,0.95))',
   labelFillOpacity: 0.78,
   overflowFillOpacity: 0.1,
   overflowStrokeOpacity: 0.4,

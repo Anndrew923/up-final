@@ -1,7 +1,8 @@
 /* @vitest-environment jsdom */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { resolveRadarPkScanMs } from '../../../logic/core/radarPkClashMotion';
 import CrewMemberRadarSheet from '../CrewMemberRadarSheet';
 
 (
@@ -36,6 +37,20 @@ vi.mock('../../../hooks/useAndroidBackDismiss', () => ({
   useAndroidBackDismiss: () => undefined,
 }));
 
+const { viewerBriefState } = vi.hoisted(() => ({
+  viewerBriefState: {
+    initial: 'A',
+    displayName: 'Anndrew',
+    avatarUrl: undefined as string | undefined,
+  },
+}));
+
+vi.mock('../../../hooks/useLocalProfileBrief', () => ({
+  useLocalProfileBrief: () => viewerBriefState,
+}));
+
+
+
 vi.mock('../../../i18n/resolveSixAxisChartLabel', () => ({
   resolveSixAxisChartLabel: (_t: unknown, metric: string) => metric,
 }));
@@ -49,8 +64,23 @@ const memberRadar = {
   gripStrength: 30,
 };
 
-describe('CrewMemberRadarSheet compare-with-me', () => {
+const localCompare = {
+  strength: 55,
+  explosivePower: 55,
+  cardio: 55,
+  muscleMass: 55,
+  bodyFat: 55,
+  gripStrength: 55,
+};
+
+describe('CrewMemberRadarSheet opt-in PK', () => {
   let root: Root;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    viewerBriefState.displayName = 'Anndrew';
+    viewerBriefState.initial = 'A';
+  });
 
   afterEach(() => {
     act(() => {
@@ -58,9 +88,11 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
     });
     document.body.innerHTML = '';
     hexPropsSpy.mockClear();
+    vi.useRealTimers();
   });
 
-  it('passes comparisonPoints when viewing another member with local scores', () => {
+
+  it('defaults to ritual admiration without comparison overlay', () => {
     const host = document.createElement('div');
     document.body.appendChild(host);
     root = createRoot(host);
@@ -71,6 +103,7 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
           open
           guildTag="ARN"
           rank={2}
+          isSelf={false}
           member={{
             uid: 'other',
             displayName: 'Rival',
@@ -78,32 +111,130 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
             radarScores: memberRadar,
             updatedAt: '2026-01-01T00:00:00.000Z',
           }}
-          comparisonScores={{
-            strength: 55,
-            explosivePower: 55,
-            cardio: 55,
-            muscleMass: 55,
-            bodyFat: 55,
-            gripStrength: 55,
-          }}
+          comparisonScores={localCompare}
           onClose={() => undefined}
         />
       );
     });
 
-    expect(hexPropsSpy).toHaveBeenCalled();
     const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
-      comparisonPoints?: unknown[];
       presentation?: string;
+      comparisonPoints?: unknown;
+    };
+    expect(last.presentation).toBe('ritual');
+    expect(last.comparisonPoints).toBeUndefined();
+    expect(document.body.querySelector('[data-testid="radar-pk-toggle"]')).toBeTruthy();
+    expect(document.body.querySelector('[data-testid="crew-radar-compare-legend"]')).toBeNull();
+  });
+
+  it('scans then switches to quiet PK clash after toggle', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    root = createRoot(host);
+
+    act(() => {
+      root.render(
+        <CrewMemberRadarSheet
+          open
+          guildTag="ARN"
+          rank={2}
+          isSelf={false}
+          member={{
+            uid: 'other',
+            displayName: 'Rival',
+            ladderScore: 66,
+            radarScores: memberRadar,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          }}
+          comparisonScores={localCompare}
+          onClose={() => undefined}
+        />
+      );
+    });
+
+    const toggle = document.body.querySelector(
+      '[data-testid="radar-pk-toggle"]'
+    ) as HTMLButtonElement;
+    act(() => {
+      toggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(document.body.querySelector('[data-testid="radar-pk-scan-overlay"]')).toBeTruthy();
+    expect(toggle.getAttribute('data-pk-scanning')).toBe('true');
+
+    act(() => {
+      vi.advanceTimersByTime(resolveRadarPkScanMs(false));
+    });
+
+    const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
+      presentation?: string;
+      comparisonPoints?: unknown[];
     };
     expect(last.presentation).toBe('quiet');
     expect(Array.isArray(last.comparisonPoints)).toBe(true);
     expect(last.comparisonPoints?.length).toBe(6);
-    expect(document.body.textContent).toContain('crew.ladder.compareLegendYou');
-    expect(document.body.querySelector('[data-testid="crew-radar-compare-legend"]')).toBeTruthy();
+    expect(document.body.querySelector('[data-testid="radar-pk-scan-overlay"]')).toBeNull();
+    const legend = document.body.querySelector(
+      '[data-testid="crew-radar-compare-legend"]'
+    );
+    expect(legend).toBeTruthy();
+    expect(legend?.textContent).toContain('Anndrew');
+    expect(legend?.textContent).not.toMatch(/\bYou\b|你/);
+    expect(document.body.querySelector('[data-testid="radar-pk-battle-banner"]')).toBeTruthy();
+    const badge = document.body.querySelector(
+      '[data-testid="radar-pk-battle-badge"]'
+    ) as HTMLElement;
+    expect(badge).toBeTruthy();
+    expect(badge.getAttribute('data-badge-status')).toBeTruthy();
+    expect(badge.querySelector('svg')).toBeTruthy();
+    expect(badge.textContent).not.toMatch(/[🔥⚡💥]/u);
   });
 
-  it('keeps single-layer when comparisonScores omitted (self view)', () => {
+  it('falls back to i18n Me label when viewer has no displayName', () => {
+
+    viewerBriefState.displayName = '   ';
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    root = createRoot(host);
+
+    act(() => {
+      root.render(
+        <CrewMemberRadarSheet
+          open
+          guildTag="ARN"
+          rank={2}
+          isSelf={false}
+          member={{
+            uid: 'other',
+            displayName: 'Rival',
+            ladderScore: 66,
+            radarScores: memberRadar,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          }}
+          comparisonScores={localCompare}
+          onClose={() => undefined}
+        />
+      );
+    });
+
+    const toggle = document.body.querySelector(
+      '[data-testid="radar-pk-toggle"]'
+    ) as HTMLButtonElement;
+    act(() => {
+      toggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    act(() => {
+      vi.advanceTimersByTime(resolveRadarPkScanMs(false));
+    });
+
+    const legend = document.body.querySelector(
+      '[data-testid="crew-radar-compare-legend"]'
+    );
+    expect(legend?.textContent).toContain('crew.ladder.battleBanner.viewerFallback');
+  });
+
+  it('hides PK toggle for self view', () => {
+
     const host = document.createElement('div');
     document.body.appendChild(host);
     root = createRoot(host);
@@ -114,6 +245,7 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
           open
           guildTag="ARN"
           rank={1}
+          isSelf
           member={{
             uid: 'me',
             displayName: 'Me',
@@ -121,40 +253,7 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
             radarScores: memberRadar,
             updatedAt: '2026-01-01T00:00:00.000Z',
           }}
-          comparisonScores={null}
-          onClose={() => undefined}
-        />
-      );
-    });
-
-    const last = hexPropsSpy.mock.calls.at(-1)?.[0] as {
-      comparisonPoints?: unknown;
-      presentation?: string;
-    };
-    expect(last.presentation).toBe('ritual');
-    expect(last.comparisonPoints).toBeUndefined();
-    expect(document.body.querySelector('[data-testid="crew-radar-compare-legend"]')).toBeNull();
-  });
-
-  it('uses ritual when viewing another member without local compare baseline', () => {
-    const host = document.createElement('div');
-    document.body.appendChild(host);
-    root = createRoot(host);
-
-    act(() => {
-      root.render(
-        <CrewMemberRadarSheet
-          open
-          guildTag="ARN"
-          rank={3}
-          member={{
-            uid: 'other',
-            displayName: 'Rival',
-            ladderScore: 66,
-            radarScores: memberRadar,
-            updatedAt: '2026-01-01T00:00:00.000Z',
-          }}
-          comparisonScores={null}
+          comparisonScores={localCompare}
           onClose={() => undefined}
         />
       );
@@ -166,5 +265,6 @@ describe('CrewMemberRadarSheet compare-with-me', () => {
     };
     expect(last.presentation).toBe('ritual');
     expect(last.comparisonPoints).toBeUndefined();
+    expect(document.body.querySelector('[data-testid="radar-pk-toggle"]')).toBeNull();
   });
 });

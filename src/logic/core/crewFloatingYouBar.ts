@@ -35,13 +35,3 @@ export function shouldShowCrewFloatingYouBar(params: {
   if (!params.myRowInViewport) return true;
   return params.forceAtTop && params.listOverflowsViewport;
 }
-
-/** True when any core axis has a usable score for compare-with-me overlay. */
-export function scoreMapHasPositiveAxis(
-  scores: Partial<Record<string, number>> | null | undefined
-): boolean {
-  if (!scores) return false;
-  return Object.values(scores).some(
-    (v) => typeof v === 'number' && Number.isFinite(v) && v > 0
-  );
-}

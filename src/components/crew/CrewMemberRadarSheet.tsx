@@ -3,47 +3,59 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useAndroidBackDismiss } from '../../hooks/useAndroidBackDismiss';
+import { useLocalProfileBrief } from '../../hooks/useLocalProfileBrief';
+import { useRadarPkBattleReport } from '../../hooks/useRadarPkBattleReport';
+import { useRadarPkToggle } from '../../hooks/useRadarPkToggle';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { radarPkBattleBadgeParams } from '../../logic/core/radarPkBattleReport';
 import {
   buildSixAxisRadarData,
   calculateSixAxisOverall,
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
-import { scoreMapHasPositiveAxis } from '../../logic/core/crewFloatingYouBar';
 import { guildMemberHasRadarScores } from '../../logic/core/guildRadarScores';
+import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
+import { scoreMapHasPositiveAxis } from '../../logic/core/scoreMapGuards';
 import type { GuildMemberSnapshot } from '../../types/guild';
 import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import HexRadarChart from '../radar/HexRadarChart';
+import RadarPkBattleBanner from '../radar/RadarPkBattleBanner';
+import RadarPkCompareLegend from '../radar/RadarPkCompareLegend';
+import RadarPkScanOverlay from '../radar/RadarPkScanOverlay';
+import RadarPkToggleCapsule from '../radar/RadarPkToggleCapsule';
 import ProAvatarRing from '../ProAvatarRing';
-import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 
 export interface CrewMemberRadarSheetProps {
   open: boolean;
   member: GuildMemberSnapshot | null;
   rank: number | null;
   guildTag: string;
+  /** True when the inspected member is the signed-in viewer. */
+  isSelf?: boolean;
   /**
-   * Local “You” six-axis map for dual-layer compare.
-   * Null / omitted when viewing self or local scores unavailable — single-layer chart.
+   * Local viewer six-axis map for opt-in PK overlay.
+   * Unused until the viewer enables compare; never triggers network I/O.
    */
   comparisonScores?: ScoreMap | null;
   onClose: () => void;
 }
 
 /**
- * Club member radar detail — data from embedded members[] + optional local compare (no preview fetch).
+ * Club member radar detail — embedded members[] + opt-in local compare (no preview fetch).
  */
 const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
   open,
   member,
   rank,
   guildTag,
+  isSelf = false,
   comparisonScores = null,
   onClose,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
+  const viewerBrief = useLocalProfileBrief();
 
   useShellScrollLock(open);
   useAndroidBackDismiss(open, onClose);
@@ -58,6 +70,7 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
   }, [open, onClose]);
 
   const hasRadar = member ? guildMemberHasRadarScores(member) : false;
+  const canCompare = scoreMapHasPositiveAxis(comparisonScores);
 
   const radarPoints = useMemo(() => {
     if (!member || !hasRadar) return [];
@@ -73,24 +86,38 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
     [radarPoints, t]
   );
 
-  /** PK vs mate — drives quiet combat plates; absent → ritual (self or no local baseline). */
-  const hasComparison = scoreMapHasPositiveAxis(comparisonScores);
-
   const comparisonRadarPoints = useMemo(() => {
-    if (!hasComparison || !comparisonScores) return undefined;
+    if (!canCompare || !comparisonScores) return undefined;
     return buildSixAxisRadarData(comparisonScores).map((point) => ({
       ...point,
       label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
     }));
-  }, [hasComparison, comparisonScores, t]);
+  }, [canCompare, comparisonScores, t]);
+
+  const {
+    showPkToggle,
+    pkPhase,
+    isScanning,
+    clashReady,
+    compareMotion,
+    presentation,
+    activeComparisonPoints,
+    togglePk,
+  } = useRadarPkToggle({
+    open,
+    targetUid: member?.uid,
+    isSelf,
+    canCompare: canCompare && hasRadar,
+    comparisonPoints: comparisonRadarPoints,
+  });
 
   const scaleMax = useMemo(
     () =>
       radarDisplayScaleMax([
         ...radarPoints,
-        ...(comparisonRadarPoints ?? []),
+        ...(activeComparisonPoints ?? []),
       ]),
-    [radarPoints, comparisonRadarPoints]
+    [radarPoints, activeComparisonPoints]
   );
 
   const overallFromRadar = useMemo(() => {
@@ -98,9 +125,18 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
     return calculateSixAxisOverall(member.radarScores ?? {});
   }, [member, hasRadar]);
 
+  const battleReport = useRadarPkBattleReport(
+    clashReady,
+    member?.radarScores,
+    comparisonScores
+  );
+
   if (!open || !member || typeof document === 'undefined') return null;
 
   const displayName = member.displayName || member.uid;
+  // Single viewer label for banner + legend (displayName → i18n「我 / Me」).
+  const viewerLabel =
+    viewerBrief.displayName?.trim() || t('crew.ladder.battleBanner.viewerFallback');
 
   return createPortal(
     <div
@@ -143,45 +179,80 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-3 [-webkit-overflow-scrolling:touch] sm:py-4">
           {hasRadar ? (
             <div className="space-y-3">
-              <p className="text-center font-mono text-xs text-zinc-400">
-                {t('crew.ladder.detailOverall', {
-                  score:
-                    overallFromRadar != null
-                      ? overallFromRadar.toFixed(2)
-                      : member.ladderScore.toFixed(2),
-                })}
-              </p>
-              <div className="mx-auto aspect-square w-full max-w-[280px]">
+              {clashReady && battleReport ? (
+                <RadarPkBattleBanner
+                  exiting={compareMotion === 'exit'}
+                  target={{
+                    displayName,
+                    score: battleReport.targetOverall,
+                    avatarUrl: member.avatarUrl,
+                    initial: ladderIdentityInitial(displayName),
+                  }}
+                  viewer={{
+                    displayName: viewerLabel,
+                    score: battleReport.viewerOverall,
+                    avatarUrl: viewerBrief.avatarUrl,
+                    initial: viewerBrief.initial,
+                  }}
+                  vsLabel={t('crew.ladder.battleBanner.vs')}
+                  badgeLabel={t(
+                    `crew.ladder.battleReport.${battleReport.status}`,
+                    radarPkBattleBadgeParams(battleReport)
+                  )}
+                  badgeStatus={battleReport.status}
+                  ariaLabel={t('crew.ladder.battleBanner.aria', {
+                    target: displayName,
+                    viewer: viewerLabel,
+                  })}
+                />
+              ) : (
+                <p className="text-center font-mono text-xs text-zinc-400">
+                  {t('crew.ladder.detailOverall', {
+                    score:
+                      overallFromRadar != null
+                        ? overallFromRadar.toFixed(2)
+                        : member.ladderScore.toFixed(2),
+                  })}
+                </p>
+              )}
+              <div className="relative mx-auto aspect-square w-full max-w-[280px]">
                 <HexRadarChart
-                  // WHY: Self / solo = Home ritual polish; PK vs mate = quiet combat plates.
-                  presentation={hasComparison ? 'quiet' : 'ritual'}
+                  presentation={presentation}
                   points={localizedRadarPoints}
-                  comparisonPoints={comparisonRadarPoints}
+                  comparisonPoints={activeComparisonPoints}
+                  axisWinners={battleReport?.axisWinners ?? null}
+                  compareMotion={compareMotion}
                   scaleMax={scaleMax}
                   aria-label={t('crew.ladder.detailRadarAria', { name: displayName })}
                 />
+                <RadarPkScanOverlay
+                  open={isScanning}
+                  kickerLabel={t('crew.ladder.pkScan.kicker')}
+                  statusLine={t('crew.ladder.pkScan.status')}
+                  ariaLabel={t('crew.ladder.pkScan.aria')}
+                />
               </div>
-              {hasComparison ? (
-                <ul
-                  className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-zinc-400"
-                  data-testid="crew-radar-compare-legend"
-                  aria-label={t('crew.ladder.compareLegendAria')}
-                >
-                  <li className="inline-flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full bg-cyan-400/90"
-                      aria-hidden
-                    />
-                    <span>{t('crew.ladder.compareLegendMember', { name: displayName })}</span>
-                  </li>
-                  <li className="inline-flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-2 w-2 rounded-full border border-dashed border-amber-400/90 bg-transparent"
-                      aria-hidden
-                    />
-                    <span>{t('crew.ladder.compareLegendYou')}</span>
-                  </li>
-                </ul>
+              {showPkToggle ? (
+                <div className="flex w-full items-center justify-center">
+                  <RadarPkToggleCapsule
+                    active={pkPhase === 'clashed'}
+                    scanning={isScanning}
+                    enableLabel={t('crew.ladder.pkToggle.enable')}
+                    disableLabel={t('crew.ladder.pkToggle.disable')}
+                    scanningLabel={t('crew.ladder.pkToggle.scanning')}
+                    onToggle={togglePk}
+                  />
+                </div>
+              ) : null}
+              {clashReady ? (
+                <div className="flex w-full items-center justify-center">
+                  <RadarPkCompareLegend
+                    testId="crew-radar-compare-legend"
+                    ariaLabel={t('crew.ladder.compareLegendAria')}
+                    memberLabel={t('crew.ladder.compareLegendMember', { name: displayName })}
+                    viewerLabel={viewerLabel}
+                  />
+                </div>
               ) : null}
             </div>
           ) : (

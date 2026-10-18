@@ -70,7 +70,30 @@
       "adminUidCopy": "Copy UID",
       "adminUidCopied": "Copied",
       "driftWarning": "Listed score ({{listed}}) does not match the public six-axis average ({{preview}}). Run Sync to Ladder again to refresh your overall entry.",
-      "shardDriftWarning": "Listed score on this board ({{listed}}) does not match the public profile axis ({{preview}}). Run Sync to Ladder again to align the list and profile."
+      "shardDriftWarning": "Listed score on this board ({{listed}}) does not match the public profile axis ({{preview}}). Run Sync to Ladder again to align the list and profile.",
+      "pkToggle": {
+        "enable": "Clash",
+        "disable": "End Clash",
+        "scanning": "Clashing..."
+      },
+      "pkScan": {
+        "kicker": "DIAGNOSING MODELS",
+        "status": "SCANNING SNAPSHOTS…",
+        "aria": "Extracting power and comparing six-axis radar"
+      },
+      "compareLegendAria": "Radar comparison legend",
+      "compareLegendMember": "{{name}}",
+      "battleBanner": {
+        "vs": "VS",
+        "aria": "{{target}} versus {{viewer}}",
+        "viewerFallback": "Me"
+      },
+      "battleReport": {
+        "dominance": "{{wins}}W {{losses}}L · Dominance ({{delta}})",
+        "lead": "{{wins}}W {{losses}}L · Slight edge ({{delta}})",
+        "even": "{{wins}}W {{losses}}L · Evenly matched",
+        "trailing": "{{wins}}W {{losses}}L · Chasing ({{delta}})"
+      }
     },
     "moderation": {
       "block": "Block",

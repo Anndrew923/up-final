@@ -70,7 +70,30 @@
       "adminUidCopy": "複製 UID",
       "adminUidCopied": "已複製",
       "driftWarning": "榜單登記分（{{listed}}）與目前公開六軸平均（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以更新總戰力。",
-      "shardDriftWarning": "本榜登記分（{{listed}}）與公開檔案此軸分數（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以對齊列表與個人檔。"
+      "shardDriftWarning": "本榜登記分（{{listed}}）與公開檔案此軸分數（{{preview}}）不一致，資料可能尚未同步。請再執行一次「同步至天梯」以對齊列表與個人檔。",
+      "pkToggle": {
+        "enable": "戰力切磋",
+        "disable": "結束切磋",
+        "scanning": "提取戰力中..."
+      },
+      "pkScan": {
+        "kicker": "DIAGNOSING MODELS",
+        "status": "比對六軸幾何模型…",
+        "aria": "正在提取戰力並比對六軸雷達"
+      },
+      "compareLegendAria": "雷達對比圖例",
+      "compareLegendMember": "{{name}}",
+      "battleBanner": {
+        "vs": "VS",
+        "aria": "{{target}} 對決 {{viewer}}",
+        "viewerFallback": "我"
+      },
+      "battleReport": {
+        "dominance": "{{wins}} 勝 {{losses}} 敗 · 戰力壓制 ({{delta}})",
+        "lead": "{{wins}} 勝 {{losses}} 敗 · 略佔上風 ({{delta}})",
+        "even": "{{wins}} 勝 {{losses}} 敗 · 旗鼓相當",
+        "trailing": "{{wins}} 勝 {{losses}} 敗 · 奮力追趕 ({{delta}})"
+      }
     },
     "moderation": {
       "block": "封鎖",

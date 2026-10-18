@@ -1,16 +1,26 @@
 import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAndroidBackDismiss } from '../../hooks/useAndroidBackDismiss';
-import { usePullDownDismiss } from '../../hooks/usePullDownDismiss';
-import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { useCurrentUserIsAdmin } from '../../hooks/useCurrentUserIsAdmin';
+import { useLocalProfileBrief } from '../../hooks/useLocalProfileBrief';
+import { useMergedScoresFromLocalStores } from '../../hooks/useMergedScoresFromLocalStores';
+import { usePullDownDismiss } from '../../hooks/usePullDownDismiss';
+import { useRadarPkBattleReport } from '../../hooks/useRadarPkBattleReport';
+import { useRadarPkToggle } from '../../hooks/useRadarPkToggle';
+import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import LadderReportSheet from './LadderReportSheet';
 import { useLadderBlockStore } from '../../stores/ladderBlockStore';
 import HexRadarChart from '../radar/HexRadarChart';
+import RadarPkBattleBanner from '../radar/RadarPkBattleBanner';
+import RadarPkCompareLegend from '../radar/RadarPkCompareLegend';
+import RadarPkScanOverlay from '../radar/RadarPkScanOverlay';
+import RadarPkToggleCapsule from '../radar/RadarPkToggleCapsule';
 import type { LadderUserPreview } from '../../services/leaderboardPreviewService';
 import { resolveLadderEntryPreviewDrift } from '../../logic/core/ladderScoreCompare';
+import { radarPkBattleBadgeParams } from '../../logic/core/radarPkBattleReport';
+import { scoreMapHasPositiveAxis } from '../../logic/core/scoreMapGuards';
 import {
   buildSixAxisRadarData,
   calculateSixAxisOverall,
@@ -19,6 +29,7 @@ import {
   radarDisplayScaleMax,
 } from '../../logic/core/scoring';
 import type { LeaderboardShardId } from '../../logic/core/ladderShards';
+import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { SIX_AXIS_COUNT, SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
@@ -61,6 +72,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
   const blockUid = useLadderBlockStore((s) => s.block);
   // WHY: Modal stays mounted on LadderPage — only resolve admin when preview is open.
   const { isAdmin } = useCurrentUserIsAdmin({ enabled: open });
+  const localScores = useMergedScoresFromLocalStores();
+  const viewerBrief = useLocalProfileBrief();
   const [reportSheetOpen, setReportSheetOpen] = useState(false);
   const [uidCopied, setUidCopied] = useState(false);
   const copyResetTimerRef = useRef<number | null>(null);
@@ -156,12 +169,61 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
     [radarPoints, t]
   );
 
-  const scaleMax = useMemo(() => radarDisplayScaleMax(radarPoints), [radarPoints]);
+  const isSelf = Boolean(viewerUid && targetUid && viewerUid === targetUid);
+  const canCompareLocal = scoreMapHasPositiveAxis(localScores);
+  // WHY: buildSixAxisRadarData always emits 6 vertices (zeros fill gaps) — gate on real
+  // positive axes like club `guildMemberHasRadarScores`, not point count.
+  const hasTargetRadar =
+    scoreMapHasPositiveAxis(user?.radarScores) && !entryFallback && !user?.isAnonymousInLadder;
+
+  const comparisonRadarPoints = useMemo(() => {
+    if (!canCompareLocal) return undefined;
+    return buildSixAxisRadarData(localScores).map((point) => ({
+      ...point,
+      label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
+    }));
+  }, [canCompareLocal, localScores, t]);
+
+  const {
+    showPkToggle,
+    pkPhase,
+    isScanning,
+    clashReady,
+    compareMotion,
+    presentation,
+    activeComparisonPoints,
+    togglePk,
+  } = useRadarPkToggle({
+    open,
+    targetUid: targetUid ?? user?.uid,
+    isSelf,
+    canCompare: canCompareLocal && hasTargetRadar,
+    comparisonPoints: comparisonRadarPoints,
+  });
+
+  const scaleMax = useMemo(
+    () => radarDisplayScaleMax([...radarPoints, ...(activeComparisonPoints ?? [])]),
+    [radarPoints, activeComparisonPoints]
+  );
 
   const overallScore = useMemo(() => {
     if (!user || user.isAnonymousInLadder) return null;
     return calculateSixAxisOverall(user.radarScores ?? {});
   }, [user]);
+
+  const previewDisplayName =
+    user?.displayName?.trim() || targetUid || t('ladder.userPreview.title', { ns: 'common' });
+
+  const battleReport = useRadarPkBattleReport(
+    clashReady && !user?.isAnonymousInLadder,
+    user?.radarScores,
+    localScores
+  );
+
+  // Single viewer label for banner + legend (displayName → i18n「我 / Me」).
+  const viewerLabel =
+    viewerBrief.displayName?.trim() ||
+    t('ladder.userPreview.battleBanner.viewerFallback', { ns: 'common' });
 
   /**
    * Safety net: list row uses shard `scoreBest`; modal reads `leaderboard_previews.radarScores`
@@ -348,13 +410,88 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                       })}
                     </p>
 
-                    <div className="rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
-                      <HexRadarChart
-                        points={localizedRadarPoints}
-                        scaleMax={scaleMax}
-                        className="mx-auto w-full max-w-[260px]"
-                        aria-label={t('ladder.userPreview.radarAria', { ns: 'common' })}
-                      />
+                    <div className="space-y-3 rounded-md border border-zinc-800 bg-zinc-900/30 p-2">
+                      {clashReady && battleReport ? (
+                        <RadarPkBattleBanner
+                          className="px-1 pt-1"
+                          exiting={compareMotion === 'exit'}
+                          target={{
+                            displayName: previewDisplayName,
+                            score: battleReport.targetOverall,
+                            avatarUrl: user.avatarUrl,
+                            initial: ladderIdentityInitial(previewDisplayName),
+                          }}
+                          viewer={{
+                            displayName: viewerLabel,
+                            score: battleReport.viewerOverall,
+                            avatarUrl: viewerBrief.avatarUrl,
+                            initial: viewerBrief.initial,
+                          }}
+                          vsLabel={t('ladder.userPreview.battleBanner.vs', { ns: 'common' })}
+                          badgeLabel={t(
+                            `ladder.userPreview.battleReport.${battleReport.status}`,
+                            {
+                              ns: 'common',
+                              ...radarPkBattleBadgeParams(battleReport),
+                            }
+                          )}
+                          badgeStatus={battleReport.status}
+                          ariaLabel={t('ladder.userPreview.battleBanner.aria', {
+                            ns: 'common',
+                            target: previewDisplayName,
+                            viewer: viewerLabel,
+                          })}
+                        />
+                      ) : null}
+                      <div className="relative mx-auto w-full max-w-[260px]">
+                        <HexRadarChart
+                          presentation={presentation}
+                          points={localizedRadarPoints}
+                          comparisonPoints={activeComparisonPoints}
+                          axisWinners={battleReport?.axisWinners ?? null}
+                          compareMotion={compareMotion}
+                          scaleMax={scaleMax}
+                          className="w-full"
+                          aria-label={t('ladder.userPreview.radarAria', { ns: 'common' })}
+                        />
+                        <RadarPkScanOverlay
+                          open={isScanning}
+                          kickerLabel={t('ladder.userPreview.pkScan.kicker', { ns: 'common' })}
+                          statusLine={t('ladder.userPreview.pkScan.status', { ns: 'common' })}
+                          ariaLabel={t('ladder.userPreview.pkScan.aria', { ns: 'common' })}
+                        />
+                      </div>
+                      {showPkToggle ? (
+                        <div className="flex w-full items-center justify-center">
+                          <RadarPkToggleCapsule
+                            active={pkPhase === 'clashed'}
+                            scanning={isScanning}
+                            enableLabel={t('ladder.userPreview.pkToggle.enable', { ns: 'common' })}
+                            disableLabel={t('ladder.userPreview.pkToggle.disable', {
+                              ns: 'common',
+                            })}
+                            scanningLabel={t('ladder.userPreview.pkToggle.scanning', {
+                              ns: 'common',
+                            })}
+                            onToggle={togglePk}
+                          />
+                        </div>
+                      ) : null}
+                      {clashReady ? (
+                        <div className="flex w-full items-center justify-center pb-1">
+                          <RadarPkCompareLegend
+                            testId="ladder-radar-compare-legend"
+                            ariaLabel={t('ladder.userPreview.compareLegendAria', {
+                              ns: 'common',
+                            })}
+                            memberLabel={t('ladder.userPreview.compareLegendMember', {
+                              ns: 'common',
+                              name: previewDisplayName,
+                            })}
+                            viewerLabel={viewerLabel}
+                          />
+                        </div>
+                      ) : null}
                     </div>
 
                     {showDriftGuard ? (
@@ -379,7 +516,8 @@ const LadderUserPreviewModal: FC<LadderUserPreviewModalProps> = ({
                       </aside>
                     ) : null}
 
-                    {overallScore != null ? (
+                    {/* PK banner already surfaces both overalls — avoid a second solo readout. */}
+                    {overallScore != null && !clashReady ? (
                       <div className="text-center">
                         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
                           {t('ladder.userPreview.overallAverage', { ns: 'common' })}

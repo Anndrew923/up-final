@@ -53,7 +53,27 @@
       },
       "compareLegendAria": "雷達對比圖例",
       "compareLegendMember": "{{name}}",
-      "compareLegendYou": "你"
+      "pkToggle": {
+        "enable": "戰力切磋",
+        "disable": "結束切磋",
+        "scanning": "提取戰力中..."
+      },
+      "pkScan": {
+        "kicker": "DIAGNOSING MODELS",
+        "status": "比對六軸幾何模型…",
+        "aria": "正在提取戰力並比對六軸雷達"
+      },
+      "battleBanner": {
+        "vs": "VS",
+        "aria": "{{target}} 對決 {{viewer}}",
+        "viewerFallback": "我"
+      },
+      "battleReport": {
+        "dominance": "{{wins}} 勝 {{losses}} 敗 · 戰力壓制 ({{delta}})",
+        "lead": "{{wins}} 勝 {{losses}} 敗 · 略佔上風 ({{delta}})",
+        "even": "{{wins}} 勝 {{losses}} 敗 · 旗鼓相當",
+        "trailing": "{{wins}} 勝 {{losses}} 敗 · 奮力追趕 ({{delta}})"
+      }
     },
     "leave": {
       "cta": "退出俱樂部",

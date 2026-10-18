@@ -53,7 +53,27 @@
       },
       "compareLegendAria": "Radar comparison legend",
       "compareLegendMember": "{{name}}",
-      "compareLegendYou": "You"
+      "pkToggle": {
+        "enable": "Clash",
+        "disable": "End Clash",
+        "scanning": "Clashing..."
+      },
+      "pkScan": {
+        "kicker": "DIAGNOSING MODELS",
+        "status": "SCANNING SNAPSHOTS…",
+        "aria": "Extracting power and comparing six-axis radar"
+      },
+      "battleBanner": {
+        "vs": "VS",
+        "aria": "{{target}} versus {{viewer}}",
+        "viewerFallback": "Me"
+      },
+      "battleReport": {
+        "dominance": "{{wins}}W {{losses}}L · Dominance ({{delta}})",
+        "lead": "{{wins}}W {{losses}}L · Slight edge ({{delta}})",
+        "even": "{{wins}}W {{losses}}L · Evenly matched",
+        "trailing": "{{wins}}W {{losses}}L · Chasing ({{delta}})"
+      }
     },
     "leave": {
       "cta": "Leave Club",

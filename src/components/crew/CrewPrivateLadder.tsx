@@ -18,9 +18,9 @@ import {
   CREW_FLOATING_AT_TOP_SCROLL_PX,
   CREW_FLOATING_FORCE_RANK_THRESHOLD,
   CREW_LIST_OVERFLOW_VIEWPORT_RATIO,
-  scoreMapHasPositiveAxis,
   shouldShowCrewFloatingYouBar,
 } from '../../logic/core/crewFloatingYouBar';
+import { scoreMapHasPositiveAxis } from '../../logic/core/scoreMapGuards';
 import {
   CLUB_LADDER_DIMENSIONS,
   type ClubLadderDimension,
@@ -91,10 +91,14 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
 
   const detailOpen = selectedMember != null;
 
-  const comparisonScores: ScoreMap | null = useMemo(() => {
-    if (!selectedMember || !authUid || selectedMember.uid === authUid) return null;
-    return scoreMapHasPositiveAxis(localScores) ? localScores : null;
-  }, [selectedMember, authUid, localScores]);
+  // Local baseline always available for opt-in PK; sheet hides toggle when isSelf.
+  const comparisonScores: ScoreMap | null = useMemo(
+    () => (scoreMapHasPositiveAxis(localScores) ? localScores : null),
+    [localScores]
+  );
+  const isSelfSelected = Boolean(
+    authUid && selectedMember && selectedMember.uid === authUid
+  );
 
   useEffect(() => {
     // WHY: AppShell scrolls `#layer-shell-scroll`, not `window` — window.scrollY stays 0 on club.
@@ -314,6 +318,7 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
         member={selectedMember}
         rank={selectedIndex >= 0 ? selectedIndex + 1 : null}
         guildTag={guildTag}
+        isSelf={isSelfSelected}
         comparisonScores={comparisonScores}
         onClose={() => setSelectedUid(null)}
       />
