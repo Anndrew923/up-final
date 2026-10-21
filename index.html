@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Dev: zoom allowed. Production build tightens via `applyProductionViewport()` in `main.tsx`. -->
+    <!-- viewport-fit=cover is required so env(safe-area-inset-*) is non-zero on iOS/Android WebView. -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <!-- Default en manifest; `syncDocumentLocale` in i18n swaps href after init / language change. -->
     <link rel="manifest" href="/manifest.en.webmanifest" />

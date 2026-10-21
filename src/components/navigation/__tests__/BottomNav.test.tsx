@@ -60,6 +60,34 @@ function renderWithPath(path: string): { container: HTMLDivElement; unmount: () 
   };
 }
 
+describe('BottomNav chrome shell', () => {
+  it('uses an elastic outer shell with a fixed h-16 row and no short glass overlay', () => {
+    const { container, unmount } = renderWithPath('/');
+    const nav = container.querySelector('nav');
+    expect(nav).not.toBeNull();
+    expect(nav?.className).toContain('fixed');
+    expect(nav?.className).toContain('inset-x-0');
+    expect(nav?.className).toContain('bottom-0');
+    expect(nav?.className).toContain('z-50');
+    expect(nav?.className).toContain('w-full');
+    expect(nav?.className).toContain('bg-slate-950/95');
+    expect(nav?.className).toContain('backdrop-blur-lg');
+    expect(nav?.className).not.toContain('overflow-hidden');
+    expect(nav?.className).not.toMatch(/h-\[calc/);
+    expect(nav?.childElementCount).toBe(1);
+
+    const row = nav?.querySelector(':scope > div');
+    expect(row?.className).toContain('h-16');
+    expect(row?.className).toContain('items-center');
+    expect(row?.className).toContain('w-full');
+    expect(row?.className).toContain('px-2');
+
+    const hexTab = container.querySelector('a[href="/skill-tree"]');
+    expect(hexTab?.className).toContain('-translate-y-4');
+    unmount();
+  });
+});
+
 describe('BottomNav spec badge red dot', () => {
   it('shows dot on History tab and augments aria-label when there is an unseen spec badge', () => {
     hasUnseen = true;

@@ -30,6 +30,11 @@ export default {
         'shell-top-compact': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
         /** @deprecated Use `shell-top-compact` — alias kept for existing class names during migration. */
         'shell-top-ladder': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
+        /**
+         * Overlay/sheet padding that clears BottomNav inner row + safe-area.
+         * WHY: `4rem` is `h-16` / `BOTTOM_NAV_SHELL_PX` (64). Keep in lockstep — do not hardcode 64px at call sites.
+         */
+        'shell-bottom-nav': 'calc(4rem + env(safe-area-inset-bottom, 0px))',
       },
       colors: {
         bg: {

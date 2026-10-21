@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   APP_SHELL_SCROLL_BOTTOM_PX,
+  BOOT_OVERLAY_NARRATIVE_BOTTOM_PX,
+  BOOT_OVERLAY_NAV_AIR_GAP_PX,
+  BOOT_OVERLAY_PROFILE_BOTTOM_PX,
   BOTTOM_CHROME_AIR_GAP_PX,
   BOTTOM_CHROME_STACK_PX,
   BOTTOM_HEX_PROTRUSION_PX,
@@ -18,10 +21,16 @@ import {
   LADDER_FILTER_PILL_BOTTOM_PX,
   LADDER_FLOATING_RANK_BAR_PX,
   LADDER_SCROLL_BOTTOM_INSET_PX,
+  SAFE_AREA_INSET_BOTTOM,
   bottomChromeCalc,
 } from '../bottomChrome';
 
 describe('bottomChrome', () => {
+  it('matches BottomNav inner row h-16 without baking safe-area into shell height', () => {
+    expect(BOTTOM_NAV_SHELL_PX).toBe(64);
+    expect(BOTTOM_HEX_PROTRUSION_PX).toBe(16);
+  });
+
   it('keeps stack math derived from nav shell + air gap', () => {
     expect(BOTTOM_CHROME_STACK_PX).toBe(BOTTOM_NAV_SHELL_PX + BOTTOM_CHROME_AIR_GAP_PX);
   });
@@ -61,9 +70,19 @@ describe('bottomChrome', () => {
   });
 
   it('formats safe-area calc without duplicating env() at call sites', () => {
+    expect(SAFE_AREA_INSET_BOTTOM).toBe('env(safe-area-inset-bottom, 0px)');
     expect(bottomChromeCalc(BOTTOM_CHROME_STACK_PX)).toBe(
-      `calc(${BOTTOM_CHROME_STACK_PX}px + env(safe-area-inset-bottom, 0px))`
+      `calc(${BOTTOM_CHROME_STACK_PX}px + ${SAFE_AREA_INSET_BOTTOM})`
     );
+    expect(bottomChromeCalc(BOTTOM_NAV_SHELL_PX)).toBe(
+      `calc(${BOTTOM_NAV_SHELL_PX}px + ${SAFE_AREA_INSET_BOTTOM})`
+    );
+  });
+
+  it('clears boot overlay cards above the tab row / raised hex', () => {
+    expect(BOOT_OVERLAY_PROFILE_BOTTOM_PX).toBe(BOTTOM_NAV_SHELL_PX + BOOT_OVERLAY_NAV_AIR_GAP_PX);
+    expect(BOOT_OVERLAY_NARRATIVE_BOTTOM_PX).toBe(BOTTOM_HEX_TOP_PX + BOTTOM_CHROME_AIR_GAP_PX);
+    expect(BOOT_OVERLAY_NARRATIVE_BOTTOM_PX).toBeGreaterThan(BOOT_OVERLAY_PROFILE_BOTTOM_PX);
   });
 
   it('clears Join Arena floating CTA for AppShell scroll inset', () => {
@@ -73,8 +92,6 @@ describe('bottomChrome', () => {
       JOIN_ARENA_CTA_BOTTOM_PX + JOIN_ARENA_CTA_BAR_PX + JOIN_ARENA_SCROLL_AIR_GAP_PX
     );
     expect(JOIN_ARENA_SCROLL_BOTTOM_PX).toBeGreaterThan(APP_SHELL_SCROLL_BOTTOM_PX);
-    expect(bottomChromeCalc(JOIN_ARENA_CTA_BOTTOM_PX)).toContain(
-      'env(safe-area-inset-bottom, 0px)'
-    );
+    expect(bottomChromeCalc(JOIN_ARENA_CTA_BOTTOM_PX)).toContain(SAFE_AREA_INSET_BOTTOM);
   });
 });

@@ -48,9 +48,9 @@ export default function GenderSelectSheet({
     open &&
     typeof document !== 'undefined' &&
     createPortal(
-      /* Reserve same bottom inset as AppShell (`layer-shell-scroll` pb) so sheet clears BottomNav + safe area. */
+      /* Overlay padding clears BottomNav inner row + safe-area (`pb-shell-bottom-nav`). */
       <div
-        className={`fixed inset-0 ${Z_INDEX_CLASS.genderSelectSheet} flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
+        className={`fixed inset-0 ${Z_INDEX_CLASS.genderSelectSheet} flex flex-col justify-end pt-4 pb-shell-bottom-nav sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-shell-bottom-nav`}
         role="presentation"
       >
         <button

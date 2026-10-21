@@ -77,7 +77,7 @@ const LadderReportSheet: FC<LadderReportSheetProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[230] flex flex-col justify-end pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]"
+      className="fixed inset-0 z-[230] flex flex-col justify-end pb-shell-bottom-nav sm:items-center sm:justify-center sm:px-4 sm:pb-shell-bottom-nav"
       role="presentation"
     >
       <button

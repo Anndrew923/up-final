@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SAFE_AREA_INSET_BOTTOM } from '../../constants/bottomChrome';
 import { ONBOARDING_ASSESS_TARGET_ID } from '../../constants/onboardingTargets';
 import { NAV_CENTER_TAB_INDEX, NAV_ITEMS } from '../../config/nav.config';
 import { useHistorySpecBadgeNotification } from '../../hooks/useHistorySpecBadgeNotification';
@@ -21,14 +22,17 @@ const NAV_LABEL_INSET = 'px-0.5';
 
 /**
  * Bottom tab bar — paths from `NAV_ITEMS`.
- * Mirrors reference-app-fitness `BottomNavBar.jsx`: `position: fixed; bottom: 0`,
- * `height: calc(78px + env(safe-area-inset-bottom))`, `padding-bottom: env(safe-area-inset-bottom)`.
+ *
+ * Three-layer chrome (WHY): outer shell has no fixed height — `paddingBottom: env(safe-area-inset-bottom)`
+ * paints the opaque bar under the iOS Home Indicator / Android gesture row; inner row is a fixed `h-16`
+ * so tabs sit above that inset. Background lives on `<nav>` (`bg-slate-950/95` + blur) so scrolling
+ * page text cannot bleed through a short glass overlay.
  * Requires `viewport-fit=cover` in `index.html` so insets apply on Android / iOS WebView.
  *
  * Layout: inner row uses `flex-1 min-w-0 basis-0` so five tabs share viewport width on narrow phones.
  * Do NOT set `overflow-hidden` on `<nav>` — center assessment hex uses `-translate-y-4` and must paint above the bar.
  * Floating chrome clearance lives in `constants/bottomChrome.ts`
- * (`BOTTOM_CHROME_STACK_PX` / `LADDER_BRIDGE_BOTTOM_PX`).
+ * (`BOTTOM_NAV_SHELL_PX` / `BOTTOM_CHROME_STACK_PX` / `LADDER_BRIDGE_BOTTOM_PX`).
  */
 export default function BottomNav() {
   const { t } = useTranslation();
@@ -48,18 +52,24 @@ export default function BottomNav() {
   return (
     <nav
       className={[
-        'fixed inset-x-0 bottom-0 z-50 h-[calc(78px+env(safe-area-inset-bottom,0px))] w-full pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] motion-safe:transition-opacity motion-safe:duration-300',
+        'fixed inset-x-0 bottom-0 z-50 w-full border-t border-cyan-500/20 bg-slate-950/95 backdrop-blur-lg motion-safe:transition-opacity motion-safe:duration-300',
         isBlocked ? 'pointer-events-none' : '',
         dimEntireNav ? 'opacity-40 saturate-50' : '',
         isBootPhase3Spotlight ? 'opacity-100 saturate-100' : '',
       ].join(' ')}
+      style={{
+        // WHY: Insets on the padding box so the opaque bar fills the Home Indicator / gesture row.
+        // Left/right live here (not Tailwind arbitrary `env()`) so commas cannot be parsed as variants.
+        paddingBottom: SAFE_AREA_INSET_BOTTOM,
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        // WHY: WKWebView still needs the prefixed property; Tailwind `backdrop-blur-lg` covers Chromium.
+        WebkitBackdropFilter: 'blur(16px)',
+      }}
       aria-label={t('bottomNavAria', { ns: 'common' })}
       aria-hidden={isBlocked}
     >
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] border-t border-cyan-200/20 bg-slate-950/50 shadow-[0_-14px_36px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-[190%]" />
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[66px] bg-gradient-to-t from-cyan-950/10 to-transparent" />
-
-      <div className="relative z-10 flex w-full min-w-0 items-end px-1 sm:px-2">
+      <div className="relative z-10 mx-auto flex h-16 w-full min-w-0 items-center px-2">
         {NAV_ITEMS.map((item, index) => {
           const isCenter = index === NAV_CENTER_TAB_INDEX;
           const itemTitle = t(`${item.labelKey}.title`, { ns: 'common' });

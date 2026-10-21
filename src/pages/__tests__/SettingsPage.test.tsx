@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SettingsPage from '../SettingsPage';
+import { APP_SHELL_SCROLL_BOTTOM_PX } from '../../constants/bottomChrome';
 import { useLadderBlockStore } from '../../stores/ladderBlockStore';
 
 const mockUseSettingsPage = vi.fn();
@@ -269,7 +270,7 @@ describe('SettingsPage restore toast chrome clearance', () => {
     const toast = document.querySelector('[role="status"]');
     expect(toast).not.toBeNull();
     expect(toast?.textContent).toContain('settings.restorePurchasesSuccess');
-    expect((toast as HTMLElement).style.bottom).toContain('142px');
+    expect((toast as HTMLElement).style.bottom).toContain(`${APP_SHELL_SCROLL_BOTTOM_PX}px`);
     expect((toast as HTMLElement).style.bottom).toContain('safe-area-inset-bottom');
 
     unmount();

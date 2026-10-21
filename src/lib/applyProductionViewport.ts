@@ -1,9 +1,10 @@
 /**
- * Dev uses `index.html` viewport (zoom allowed). Production tightens meta for
- * WebView / APK-style layout stability (pinch zoom disabled).
+ * Canonical viewport content — must stay byte-identical to `index.html`.
+ * WHY: `viewport-fit=cover` must be present before first layout so
+ * `env(safe-area-inset-*)` is non-zero on iOS / Android WebView.
  */
-const PROD_VIEWPORT =
-  'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+export const APP_VIEWPORT_CONTENT =
+  'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
 
 export function applyProductionViewport(): void {
   if (!import.meta.env.PROD) return;
@@ -14,5 +15,5 @@ export function applyProductionViewport(): void {
     meta.setAttribute('name', 'viewport');
     document.head.prepend(meta);
   }
-  meta.setAttribute('content', PROD_VIEWPORT);
+  meta.setAttribute('content', APP_VIEWPORT_CONTENT);
 }

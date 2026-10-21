@@ -1,6 +1,11 @@
 import { type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  BOOT_OVERLAY_NARRATIVE_BOTTOM_PX,
+  BOOT_OVERLAY_PROFILE_BOTTOM_PX,
+  bottomChromeCalc,
+} from '../../constants/bottomChrome';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { useBootSequenceRitual } from '../../hooks/useBootSequenceRitual';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
@@ -77,10 +82,13 @@ const BootSequenceOverlay: FC<BootSequenceOverlayProps> = ({ active, onComplete 
 
       <div
         className={`pointer-events-none absolute inset-x-0 flex justify-center px-4 ${
-          isProfileStep
-            ? 'top-[max(5rem,env(safe-area-inset-top,0px))] bottom-[calc(88px+env(safe-area-inset-bottom,0px))]'
-            : 'bottom-[calc(120px+env(safe-area-inset-bottom,0px))]'
+          isProfileStep ? 'top-[max(5rem,env(safe-area-inset-top,0px))]' : ''
         }`}
+        style={{
+          bottom: bottomChromeCalc(
+            isProfileStep ? BOOT_OVERLAY_PROFILE_BOTTOM_PX : BOOT_OVERLAY_NARRATIVE_BOTTOM_PX
+          ),
+        }}
       >
         <div
           className={`pointer-events-auto flex w-full max-w-md flex-col rounded-2xl border border-accent-primary/35 bg-zinc-950/95 shadow-[0_0_48px_rgba(56,189,248,0.12),inset_0_1px_0_rgba(56,189,248,0.2)] backdrop-blur-md ${

@@ -188,7 +188,7 @@ const LadderTagsPromptSheet: FC<LadderTagsPromptSheetProps> = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderTagsPromptSheet} flex flex-col justify-end pt-4 pb-[calc(64px+env(safe-area-inset-bottom,0px))] sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-[calc(64px+env(safe-area-inset-bottom,0px))]`}
+      className={`fixed inset-0 ${Z_INDEX_CLASS.ladderTagsPromptSheet} flex flex-col justify-end pt-4 pb-shell-bottom-nav sm:items-center sm:justify-center sm:px-4 sm:pt-4 sm:pb-shell-bottom-nav`}
       role="presentation"
     >
       <button
