@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-type HomeSection = 'resonance' | 'diagnostics' | 'overallGrade';
+type HomeSection = 'resonance' | 'diagnostics' | 'overallGrade' | 'syncArrival';
 
 export type HomeFormSubsection = 'profile' | 'ladderIdentity';
 

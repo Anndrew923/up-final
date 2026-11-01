@@ -68,8 +68,22 @@ vi.mock('../HomeResonanceOverlay', () => ({
 }));
 
 vi.mock('../../radar/HexRadarChart', () => ({
-  default: ({ points }: { points: Array<{ label: string }> }) => (
-    <div data-testid="radar">{points.map((p) => p.label).join('|')}</div>
+  default: ({
+    points,
+    ritualFill,
+    suppressEntryAnimation,
+  }: {
+    points: Array<{ label: string }>;
+    ritualFill?: number;
+    suppressEntryAnimation?: boolean;
+  }) => (
+    <div
+      data-testid="radar"
+      data-ritual-fill={ritualFill ?? 1}
+      data-suppress={suppressEntryAnimation ? '1' : '0'}
+    >
+      {points.map((p) => p.label).join('|')}
+    </div>
   ),
 }));
 

@@ -8,7 +8,7 @@ import {
 } from '../radarResonanceSession';
 
 /** Mirrors `useHomeResonanceRitual` mount gate — pending is peeked until boot completes. */
-function canAutoStartResonanceWhenBootReady(): boolean {
+function canEmitArrivalPulseWhenBootReady(): boolean {
   if (!localStorageService.loadBootSequenceCompleted()) return false;
   return hasPendingRadarResonance();
 }
@@ -19,20 +19,20 @@ describe('radar resonance boot guard contract', () => {
     vi.restoreAllMocks();
   });
 
-  it('does not auto-start while boot is incomplete and leaves pending intact', () => {
+  it('does not emit an arrival pulse while boot is incomplete and leaves pending intact', () => {
     vi.spyOn(localStorageService, 'loadBootSequenceCompleted').mockReturnValue(false);
     markPendingRadarResonance();
 
-    expect(canAutoStartResonanceWhenBootReady()).toBe(false);
+    expect(canEmitArrivalPulseWhenBootReady()).toBe(false);
     expect(hasPendingRadarResonance()).toBe(true);
     expect(consumePendingRadarResonance()).toBe(true);
   });
 
-  it('allows auto-start peek after boot completes without consuming yet', () => {
+  it('allows arrival-pulse peek after boot completes without consuming yet', () => {
     vi.spyOn(localStorageService, 'loadBootSequenceCompleted').mockReturnValue(true);
     markPendingRadarResonance();
 
-    expect(canAutoStartResonanceWhenBootReady()).toBe(true);
+    expect(canEmitArrivalPulseWhenBootReady()).toBe(true);
     expect(hasPendingRadarResonance()).toBe(true);
     expect(consumePendingRadarResonance()).toBe(true);
     expect(hasPendingRadarResonance()).toBe(false);

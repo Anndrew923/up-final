@@ -1,14 +1,16 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import {
+  claimRadarArrivalDelivery,
   clearPendingRadarResonance,
   consumePendingRadarResonance,
   hasPendingRadarResonance,
   markPendingRadarResonance,
+  settleRadarArrivalDelivery,
 } from '../radarResonanceSession';
 
 describe('radarResonanceSession', () => {
   beforeEach(() => {
-    sessionStorage.clear();
+    clearPendingRadarResonance();
   });
 
   it('peeks pending without consuming', () => {
@@ -29,5 +31,15 @@ describe('radarResonanceSession', () => {
     markPendingRadarResonance();
     clearPendingRadarResonance();
     expect(consumePendingRadarResonance()).toBe(false);
+  });
+
+  it('claim consumes pending then keeps delivery live until settle', () => {
+    markPendingRadarResonance();
+    expect(claimRadarArrivalDelivery()).toBe(true);
+    expect(hasPendingRadarResonance()).toBe(false);
+    expect(claimRadarArrivalDelivery()).toBe(true);
+
+    settleRadarArrivalDelivery();
+    expect(claimRadarArrivalDelivery()).toBe(false);
   });
 });

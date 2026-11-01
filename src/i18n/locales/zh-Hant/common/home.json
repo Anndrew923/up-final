@@ -147,6 +147,9 @@
         "reveal": "賽會認證輸出"
       }
     },
+    "syncArrival": {
+      "toast": "數據已同步 // 主控台已更新"
+    },
     "overallAverage": "整車性能指數",
     "overallGrade": {
       "kicker": "HOMOLOGATION GRADE // 賽會認證評等",

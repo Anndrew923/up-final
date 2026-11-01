@@ -36,4 +36,6 @@ export const Z_INDEX_CLASS = {
   exitConfirmModal: 'z-[360]',
   /** Badge unlock HUD toast — above shell frame, below modals. */
   badgeUnlockToast: 'z-[60]',
+  /** Dyno-sync arrival toast — non-blocking, same band as badge toasts. */
+  consoleSyncArrivalToast: 'z-[60]',
 } as const;

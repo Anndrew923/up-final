@@ -23,6 +23,11 @@ describe('resolveHomeBundleCopy', () => {
     expect(line).not.toContain('home.resonance');
   });
 
+  it('resolves home.syncArrival.toast for zh-Hant', () => {
+    const line = resolveHomeSectionString(i18n.t.bind(i18n), 'syncArrival', 'toast');
+    expect(line).toBe('數據已同步 // 主控台已更新');
+  });
+
   it('resolves home.profile collapsible copy for zh-Hant', () => {
     const t = i18n.t.bind(i18n);
     expect(resolveHomeSubsectionString(t, 'profile', 'toggleCollapse')).toBe('點擊收合');

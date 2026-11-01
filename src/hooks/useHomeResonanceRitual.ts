@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 import { exitIfRunCancelled } from '../lib/ritualRunGuard';
 import { prefersReducedMotion } from '../lib/motionPreference';
-import {
-  consumePendingRadarResonance,
-  hasPendingRadarResonance,
-} from '../services/radarResonanceSession';
-import { ROUTES } from '../config/routes';
-import { useBootSequenceStore } from '../stores/bootSequenceStore';
+import { tweenRadarFill } from '../lib/radarFillTween';
 import { useUiInteractionStore } from '../stores/uiInteractionStore';
 import { resolveOverallGradeTierCopy } from '../i18n/resolveOverallGradeCopy';
 import {
@@ -67,46 +61,6 @@ function waitMs(
   });
 }
 
-function animateRitualFill(
-  setFill: (value: number) => void,
-  durationMs: number,
-  isActive: () => boolean,
-  rafRef: { current: number | null }
-): Promise<void> {
-  if (!isActive()) return Promise.resolve();
-  if (prefersReducedMotion()) {
-    setFill(1);
-    return Promise.resolve();
-  }
-
-  const startedAt = performance.now();
-  return new Promise((resolve) => {
-    const tick = (now: number) => {
-      if (!isActive()) {
-        rafRef.current = null;
-        resolve();
-        return;
-      }
-      const rawT = Math.min(1, (now - startedAt) / durationMs);
-      const eased = 1 - (1 - rawT) ** 3;
-      setFill(eased);
-      if (rawT < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
-      rafRef.current = null;
-      resolve();
-    };
-    rafRef.current = requestAnimationFrame(tick);
-  });
-}
-
-function acknowledgePendingResonanceIfNeeded(shouldConsumeRef: { current: boolean }): void {
-  if (!shouldConsumeRef.current) return;
-  shouldConsumeRef.current = false;
-  consumePendingRadarResonance();
-}
-
 export function useHomeResonanceRitual({
   overallScore,
   radarPoints,
@@ -114,7 +68,6 @@ export function useHomeResonanceRitual({
   genderGroup,
 }: UseHomeResonanceRitualInput): UseHomeResonanceRitualResult {
   const { t } = useTranslation('common');
-  const location = useLocation();
   const { triggerImpact, triggerBootHum, triggerChargeRitual, stopChargeRitual } =
     useDopamineFeedback();
   const {
@@ -141,12 +94,7 @@ export function useHomeResonanceRitual({
   const runIdRef = useRef(0);
   const fillRafRef = useRef<number | null>(null);
   const timeoutIdsRef = useRef<number[]>([]);
-  const phaseRef = useRef<HomeResonancePhase>('idle');
-  const pendingAckRef = useRef(false);
-  const bootCompleted = useBootSequenceStore((s) => s.completed);
   const setBlocking = useUiInteractionStore((s) => s.setHomeResonanceBlocking);
-
-  phaseRef.current = phase;
 
   const invalidateRun = useCallback(() => {
     runIdRef.current += 1;
@@ -186,7 +134,6 @@ export function useHomeResonanceRitual({
     resetTypewriter();
     setInstant(null);
     setBlocking(false);
-    pendingAckRef.current = false;
   }, [
     cancelScoreAnim,
     cancelTypewriter,
@@ -234,7 +181,6 @@ export function useHomeResonanceRitual({
         if (exitIfCancelled()) return;
         setPhase('report');
         stopChargeRitual();
-        acknowledgePendingResonanceIfNeeded(pendingAckRef);
         return;
       }
 
@@ -245,7 +191,7 @@ export function useHomeResonanceRitual({
 
       setPhase('charge');
       triggerChargeRitual(FILL_DURATION_MS);
-      await animateRitualFill(setRitualFill, FILL_DURATION_MS, isActive, fillRafRef);
+      await tweenRadarFill(setRitualFill, FILL_DURATION_MS, isActive, fillRafRef);
       if (exitIfCancelled()) return;
       stopChargeRitual();
 
@@ -265,7 +211,6 @@ export function useHomeResonanceRitual({
       if (exitIfCancelled()) return;
       setPhase('report');
       stopChargeRitual();
-      acknowledgePendingResonanceIfNeeded(pendingAckRef);
     } catch {
       if (runIdRef.current === runId) {
         closeRitual();
@@ -285,17 +230,6 @@ export function useHomeResonanceRitual({
     stopChargeRitual,
     triggerImpact,
   ]);
-
-  const startRitualRef = useRef(startRitual);
-  startRitualRef.current = startRitual;
-
-  useEffect(() => {
-    if (!bootCompleted) return;
-    if (location.pathname !== ROUTES.home) return;
-    if (!hasPendingRadarResonance()) return;
-    pendingAckRef.current = true;
-    void startRitualRef.current();
-  }, [bootCompleted, location.pathname]);
 
   // WHY: Empty deps — tying cleanup to `closeRitual` identity re-ran teardown on every render
   // when upstream hooks return unstable cancel fns, closing the overlay mid-ritual.

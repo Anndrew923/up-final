@@ -6,12 +6,16 @@ import AestheticSpecModal from '../aesthetic/AestheticSpecModal';
 import { ConsoleCtaPlate } from './ConsoleCtaPlate';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
+import HomeSyncArrivalToast from './HomeSyncArrivalToast';
 import ConsoleAxisViewToggle from './ConsoleAxisViewToggle';
 import ConsoleSheenLayer from './ConsoleSheenLayer';
 import { SIX_AXIS_METRICS, type ScoreMetric, type SixAxisMetric } from '../../types/scoring';
 import { useConsoleAxisViewMode } from '../../hooks/useConsoleAxisViewMode';
 import { useCoreSixRadar } from '../../hooks/useCoreSixRadar';
+import { useConsoleArrivalPulse } from '../../hooks/useConsoleArrivalPulse';
+import { useConsoleSyncArrival } from '../../hooks/useConsoleSyncArrival';
 import { useHomeResonanceRitual } from '../../hooks/useHomeResonanceRitual';
+import { resolveHomeSectionString } from '../../i18n/resolveHomeBundleCopy';
 import { formatConsoleAxisHudValue } from '../../logic/core/consoleAxisViewMode';
 import { formatOverallResonanceScore } from '../../logic/core/scoring';
 import { resolveVehicleClass } from '../../logic/core/vehicleResolver';
@@ -95,6 +99,19 @@ export const HomeRadarBoard: FC = () => {
     vehicleClassId,
     genderGroup,
   });
+  const arrivalPulse = useConsoleArrivalPulse();
+  const {
+    radarFill,
+    suppressRadarEntryAnimation,
+    displayScore: arrivalDisplayScore,
+    toastVisible,
+    toastFading,
+  } = useConsoleSyncArrival({
+    overallScore,
+    arrivalPulse,
+    radarInstanceKey: viewMode,
+  });
+  const syncArrivalToast = resolveHomeSectionString(t, 'syncArrival', 'toast');
 
   const ritualFade = `transition-opacity duration-300 motion-reduce:transition-none ${
     ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
@@ -164,6 +181,8 @@ export const HomeRadarBoard: FC = () => {
                   <HexRadarChart
                     points={localizedRadarPoints}
                     scaleMax={scaleMax}
+                    ritualFill={radarFill}
+                    suppressEntryAnimation={suppressRadarEntryAnimation}
                     className="aspect-square w-full shrink-0"
                     aria-label={t('home.radarAria', { ns: 'common' })}
                   />
@@ -189,7 +208,7 @@ export const HomeRadarBoard: FC = () => {
                     {resolveConsoleOverallAverageLabel(t, viewMode)}
                   </p>
                   <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-accent-info drop-shadow-[0_0_18px_rgba(34,211,238,0.35)] sm:text-6xl">
-                    {formatOverallResonanceScore(overallScore)}
+                    {formatOverallResonanceScore(arrivalDisplayScore)}
                   </p>
                 </div>
               </div>
@@ -281,6 +300,11 @@ export const HomeRadarBoard: FC = () => {
         onClose={closeRitual}
       />
       {aestheticOpen ? <AestheticSpecModal onClose={() => setAestheticOpen(false)} /> : null}
+      <HomeSyncArrivalToast
+        open={toastVisible}
+        fading={toastFading}
+        label={syncArrivalToast}
+      />
     </>
   );
 };

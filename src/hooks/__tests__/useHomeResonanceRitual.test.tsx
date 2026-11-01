@@ -4,15 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useHomeResonanceRitual } from '../useHomeResonanceRitual';
 import type { UseHomeResonanceRitualInput } from '../useHomeResonanceRitual';
-import { ROUTES } from '../../config/routes';
-import { useBootSequenceStore } from '../../stores/bootSequenceStore';
 import { useUiInteractionStore } from '../../stores/uiInteractionStore';
-import {
-  markPendingRadarResonance,
-  clearPendingRadarResonance,
-  hasPendingRadarResonance,
-  consumePendingRadarResonance,
-} from '../../services/radarResonanceSession';
 import type { RadarChartPoint } from '../../types/radarDisplay';
 
 (
@@ -28,10 +20,6 @@ const playTypewriterMock = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock('../../lib/motionPreference', () => ({
   prefersReducedMotion: motionMocks.prefersReducedMotion,
-}));
-
-vi.mock('react-router-dom', () => ({
-  useLocation: () => ({ pathname: ROUTES.home }),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -121,8 +109,6 @@ describe('useHomeResonanceRitual', () => {
     motionMocks.prefersReducedMotion.mockReturnValue(true);
     animateToMock.mockImplementation(async () => undefined);
     playTypewriterMock.mockImplementation(async () => undefined);
-    clearPendingRadarResonance();
-    useBootSequenceStore.setState({ completed: true });
     useUiInteractionStore.setState({
       isHomeResonanceBlocking: false,
       isBootSequenceBlocking: false,
@@ -133,7 +119,6 @@ describe('useHomeResonanceRitual', () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    clearPendingRadarResonance();
   });
 
   it('completes reduced-motion ritual to report phase', async () => {
@@ -201,45 +186,6 @@ describe('useHomeResonanceRitual', () => {
     harness.unmount();
 
     expect(useUiInteractionStore.getState().isHomeResonanceBlocking).toBe(false);
-  });
-
-  it('auto-starts when boot is complete and pending resonance flag is set', async () => {
-    markPendingRadarResonance();
-    const harness = renderRitualHook();
-
-    await act(async () => {
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 0);
-      });
-    });
-
-    expect(harness.read().open).toBe(true);
-    expect(harness.read().phase).toBe('report');
-    expect(hasPendingRadarResonance()).toBe(false);
-    harness.unmount();
-  });
-
-  it('defers consuming pending until report and keeps flag if closed early', async () => {
-    markPendingRadarResonance();
-    animateToMock.mockImplementationOnce(() => new Promise<undefined>(() => {}));
-
-    const harness = renderRitualHook();
-
-    await act(async () => {
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 0);
-      });
-    });
-
-    expect(hasPendingRadarResonance()).toBe(true);
-
-    act(() => {
-      harness.read().closeRitual();
-    });
-
-    expect(hasPendingRadarResonance()).toBe(true);
-    expect(consumePendingRadarResonance()).toBe(true);
-    harness.unmount();
   });
 
   it('closeRitual resets open state and shell blocking', async () => {

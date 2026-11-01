@@ -147,6 +147,9 @@
         "reveal": "Spec readout"
       }
     },
+    "syncArrival": {
+      "toast": "DATA SYNCED // CONSOLE UPDATED"
+    },
     "overallAverage": "Overall Vehicle Index",
     "overallGrade": {
       "kicker": "SPEC GRADE",
