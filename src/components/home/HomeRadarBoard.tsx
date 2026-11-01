@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
 import AestheticSpecModal from '../aesthetic/AestheticSpecModal';
-import { CERT_TRIGGER_CLASS } from '../aesthetic/aestheticChrome';
+import { ConsoleCtaPlate } from './ConsoleCtaPlate';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
 import ConsoleAxisViewToggle from './ConsoleAxisViewToggle';
@@ -248,19 +248,15 @@ export const HomeRadarBoard: FC = () => {
                     }}
                   />
                 ) : (
-                  <button
-                    type="button"
-                    data-testid="aesthetic-spec-trigger"
+                  <ConsoleCtaPlate
+                    variant="fitness"
+                    testId="aesthetic-spec-trigger"
                     disabled={isBlocking || ritualOpen}
-                    aria-label={specTriggerCta}
+                    ariaLabel={specTriggerCta}
                     onClick={() => setAestheticOpen(true)}
-                    className={CERT_TRIGGER_CLASS}
                   >
-                    <span>{specTriggerCta}</span>
-                    <span aria-hidden="true" className="shrink-0 text-xs opacity-75">
-                      ↗
-                    </span>
-                  </button>
+                    {specTriggerCta}
+                  </ConsoleCtaPlate>
                 )}
               </div>
             </div>

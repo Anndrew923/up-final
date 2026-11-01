@@ -37,7 +37,3 @@ export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-5rem)]';
 
 export const CERT_STAGE_WRAP_CLASS =
   'flex w-full max-w-[min(24rem,calc((100dvh-5rem)*9/16))] shrink-0 items-center justify-center';
-
-/** Console fitness-mode spec trigger — foil hairline, not cyan/zinc disabled chrome. */
-export const CERT_TRIGGER_CLASS =
-  'inline-flex h-12 w-full min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#c9a227]/50 bg-[#121214] px-3 text-sm font-medium text-[#f3e6c8] transition-colors hover:border-[#c9a227] hover:bg-[#1a1a1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9a227]/70 disabled:pointer-events-none disabled:opacity-40';

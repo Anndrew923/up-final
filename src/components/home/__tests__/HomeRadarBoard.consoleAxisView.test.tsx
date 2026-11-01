@@ -63,10 +63,6 @@ vi.mock('../../ladder/LeaderboardSyncAllBar', () => ({
   default: () => <div data-testid="sync-bar" />,
 }));
 
-vi.mock('../HomeDiagnosticsPanel', () => ({
-  default: () => <div data-testid="diagnostics" />,
-}));
-
 vi.mock('../HomeResonanceOverlay', () => ({
   default: () => null,
 }));
@@ -129,7 +125,11 @@ describe('HomeRadarBoard console axis view', () => {
     const trigger = container!.querySelector('[data-testid="aesthetic-spec-trigger"]');
     expect(trigger).not.toBeNull();
     expect(trigger?.textContent).toContain('調閱生理規格證書');
-    expect(trigger?.textContent).toContain('↗');
+    expect(trigger?.innerHTML).toContain('<svg');
+    expect(trigger?.textContent).not.toContain('↗');
+    expect(trigger?.className).toContain('rounded-xl');
+    expect(trigger?.className).toContain('bg-[linear-gradient(135deg,#0f0d05_0%,#2a240c_25%,#5a4d1a_50%,#2a240c_75%,#0f0d05_100%)]');
+    expect(trigger?.querySelector('[data-testid="console-cta-sweep"]')).not.toBeNull();
     expect(trigger?.getAttribute('aria-label')).toBe('調閱生理規格證書');
     expect(container!.querySelector('[data-testid="diagnostics"]')).toBeNull();
     expect(trigger?.parentElement?.className).toContain('mx-auto');
@@ -245,7 +245,15 @@ describe('HomeRadarBoard console axis view', () => {
     expect(container!.querySelector('.ui-console-rev-up')?.className).toContain('is-revving');
     const sheenHosts = container!.querySelectorAll('.is-surging > .ui-console-sheen-layer');
     expect(sheenHosts.length).toBeGreaterThanOrEqual(3);
-    expect(container!.querySelector('[data-testid="diagnostics"]')).not.toBeNull();
+    const diagnostics = container!.querySelector('[data-testid="diagnostics"]');
+    expect(diagnostics).not.toBeNull();
+    expect(diagnostics?.textContent).toContain('執行全規格診斷');
+    expect(diagnostics?.innerHTML).toContain('<svg');
+    expect(diagnostics?.className).toContain('rounded-xl');
+    expect(diagnostics?.className).toContain(
+      'bg-[linear-gradient(135deg,#140e05_0%,#2e1b07_25%,#5a3d1a_50%,#2e1b07_75%,#140e05_100%)]'
+    );
+    expect(diagnostics?.querySelector('[data-testid="console-cta-sweep"]')).not.toBeNull();
     expect(container!.querySelector('[data-testid="aesthetic-spec-trigger"]')).toBeNull();
   });
 });
