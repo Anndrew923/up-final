@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react';
+import { useState, type FC, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
 export interface ProAvatarRingProps {
@@ -34,6 +34,7 @@ const nonProBorderClasses: Record<NonNullable<ProAvatarRingProps['size']>, strin
  * Avatar with optional Pro gold ring glow.
  * WHY: Outer box stays fixed size so Pro/non-Pro do not shift layout; glow is static
  * (no continuous pulse) and cleared under prefers-reduced-motion.
+ * failedForUrl (not a boolean) auto-recovers when src changes — no syncing useEffect.
  */
 export const ProAvatarRing: FC<ProAvatarRingProps> = ({
   isPro,
@@ -43,6 +44,10 @@ export const ProAvatarRing: FC<ProAvatarRingProps> = ({
   fallback,
   className,
 }) => {
+  const avatarSrc = String(src ?? '').trim();
+  const [failedForUrl, setFailedForUrl] = useState<string | null>(null);
+  const showAvatar = Boolean(avatarSrc) && failedForUrl !== avatarSrc;
+
   return (
     <div
       className={cn(
@@ -60,8 +65,13 @@ export const ProAvatarRing: FC<ProAvatarRingProps> = ({
           !isPro && nonProBorderClasses[size]
         )}
       >
-        {src ? (
-          <img src={src} alt={alt} className="h-full w-full object-cover" />
+        {showAvatar ? (
+          <img
+            src={avatarSrc}
+            alt={alt}
+            className="h-full w-full object-cover"
+            onError={() => setFailedForUrl(avatarSrc)}
+          />
         ) : (
           <span aria-hidden>{fallback}</span>
         )}

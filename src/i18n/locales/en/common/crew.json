@@ -48,8 +48,7 @@
       "detailRadarAria": "{{name}} six-axis radar",
       "detailNoRadar": "No six-axis sync yet. Complete assessments and sync to the club to show the radar.",
       "floatingYou": {
-        "cta": "Jump to your rank",
-        "subline": "Your rank · tap to locate"
+        "cta": "Jump to your rank"
       },
       "compareLegendAria": "Radar comparison legend",
       "compareLegendMember": "{{name}}",

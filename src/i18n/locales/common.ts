@@ -22,6 +22,7 @@ import enOnboarding from './en/common/onboarding.json';
 import enAxisLexicon from './en/common/axisLexicon.json';
 import enDynoIntel from './en/common/dynoIntel.json';
 import enAdmin from './en/common/admin.json';
+import enAesthetic from './en/common/aesthetic.json';
 import zhCore from './zh-Hant/common/core.json';
 import zhHome from './zh-Hant/common/home.json';
 import zhLadder from './zh-Hant/common/ladder.json';
@@ -46,6 +47,7 @@ import zhOnboarding from './zh-Hant/common/onboarding.json';
 import zhAxisLexicon from './zh-Hant/common/axisLexicon.json';
 import zhDynoIntel from './zh-Hant/common/dynoIntel.json';
 import zhAdmin from './zh-Hant/common/admin.json';
+import zhAesthetic from './zh-Hant/common/aesthetic.json';
 
 type CommonLocale = Record<string, unknown>;
 
@@ -97,6 +99,7 @@ export const enCommon = mergeCommonSections([
   { name: 'axisLexicon', content: enAxisLexicon },
   { name: 'dynoIntel', content: enDynoIntel },
   { name: 'admin', content: enAdmin },
+  { name: 'aesthetic', content: enAesthetic },
 ]);
 
 export const zhHantCommon = mergeCommonSections([
@@ -124,4 +127,5 @@ export const zhHantCommon = mergeCommonSections([
   { name: 'axisLexicon', content: zhAxisLexicon },
   { name: 'dynoIntel', content: zhDynoIntel },
   { name: 'admin', content: zhAdmin },
+  { name: 'aesthetic', content: zhAesthetic },
 ]);

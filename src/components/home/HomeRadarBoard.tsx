@@ -2,6 +2,8 @@ import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
+import AestheticSpecModal from '../aesthetic/AestheticSpecModal';
+import { CERT_TRIGGER_CLASS } from '../aesthetic/aestheticChrome';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
 import ConsoleAxisViewToggle from './ConsoleAxisViewToggle';
@@ -44,6 +46,7 @@ export const HomeRadarBoard: FC = () => {
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
     loadPhysicalProfile()
   );
+  const [aestheticOpen, setAestheticOpen] = useState(false);
   const isBlocking = useShellInteractionBlocked();
 
   useEffect(() => {
@@ -96,6 +99,7 @@ export const HomeRadarBoard: FC = () => {
   const ritualFade = `transition-opacity duration-300 motion-reduce:transition-none ${
     ritualOpen ? 'pointer-events-none opacity-0' : 'opacity-100'
   }`;
+  const specTriggerCta = t('aesthetic.labels.triggerCta', { ns: 'common' });
 
   return (
     <>
@@ -235,12 +239,30 @@ export const HomeRadarBoard: FC = () => {
                 </ul>
               </div>
 
-              <HomeDiagnosticsPanel
-                disabled={isBlocking}
-                onStartDiagnostics={() => {
-                  void startRitual();
-                }}
-              />
+              <div className="mx-auto flex min-h-12 w-full max-w-sm">
+                {viewMode === 'telemetry' ? (
+                  <HomeDiagnosticsPanel
+                    disabled={isBlocking || ritualOpen}
+                    onStartDiagnostics={() => {
+                      void startRitual();
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    data-testid="aesthetic-spec-trigger"
+                    disabled={isBlocking || ritualOpen}
+                    aria-label={specTriggerCta}
+                    onClick={() => setAestheticOpen(true)}
+                    className={CERT_TRIGGER_CLASS}
+                  >
+                    <span>{specTriggerCta}</span>
+                    <span aria-hidden="true" className="shrink-0 text-xs opacity-75">
+                      ↗
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* 5. Ladder sync — secondary footer inside the same cabin */}
@@ -262,6 +284,7 @@ export const HomeRadarBoard: FC = () => {
         scaleMax={scaleMax}
         onClose={closeRitual}
       />
+      {aestheticOpen ? <AestheticSpecModal onClose={() => setAestheticOpen(false)} /> : null}
     </>
   );
 };

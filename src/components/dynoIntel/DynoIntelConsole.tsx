@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { isLadderRoutePath, isHomeRoutePath, ROUTES } from '../../config/routes';
+import { isCrewRoutePath, isHomeRoutePath, isLadderRoutePath, ROUTES } from '../../config/routes';
 import { buildDynoIntelContext } from '../../logic/core/buildDynoIntelContext';
 import { enrichDynoIntelContextCardCopy } from '../../logic/core/enrichDynoIntelContextCardCopy';
 import { resolveDynoPaywallWeakestBrief } from '../../logic/core/dynoIntelPaywallBrief';
@@ -368,10 +368,13 @@ const DynoIntelConsole = () => {
     chat.status !== 'loading' &&
     chat.status !== 'typing';
 
-  // WHY: Ladder floating rank / Join Arena own the bottom band —
+  // WHY: Ladder floating rank / Join Arena / Club sticky You bar own the bottom band —
   // hide Dyno Intel chip only (BottomNav + center hex stay). Calculators use in-flow CTAs.
   const hideTrigger =
-    isShellBlocked || HIDDEN_TRIGGER_ROUTES.has(pathname) || isLadderRoutePath(pathname);
+    isShellBlocked ||
+    HIDDEN_TRIGGER_ROUTES.has(pathname) ||
+    isLadderRoutePath(pathname) ||
+    isCrewRoutePath(pathname);
 
   const showCallout = !discovered && isHomeRoutePath(pathname) && !hideTrigger && !sheetOpen;
 

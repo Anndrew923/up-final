@@ -595,5 +595,14 @@
     .is-surging > .ui-console-sheen-layer::before {
       opacity: 0;
     }
+
+    /**
+     * Certificate cascade — skip every one-shot stamp when the OS asks for less motion.
+     * WHY: Resting styles already equal the finished plaque; killing animation is enough.
+     */
+    [data-cert-phase],
+    [data-cert-phase] * {
+      animation: none !important;
+    }
   }
 }

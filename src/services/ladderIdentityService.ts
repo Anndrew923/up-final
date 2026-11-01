@@ -39,6 +39,22 @@ export function sanitizeAvatarUrlForLeaderboard(
   return undefined;
 }
 
+/**
+ * Viewer portrait for club sticky / self row: guild snapshot → local identity → Google photoURL.
+ * WHY: Guild `https://` URLs can 404 while HUD still has a usable local or auth portrait.
+ */
+export function resolveSelfFloatingAvatarUrl(params: {
+  memberAvatarUrl?: string | null;
+  localAvatarUrl?: string | null;
+  authPhotoURL?: string | null;
+}): string | undefined {
+  return (
+    sanitizeAvatarUrlForLeaderboard(params.memberAvatarUrl) ??
+    sanitizeAvatarUrlForLeaderboard(params.localAvatarUrl) ??
+    sanitizeAvatarUrlForLeaderboard(params.authPhotoURL)
+  );
+}
+
 export function loadLadderIdentity(): LadderIdentitySnapshot | null {
   const p = loadProfile();
   if (!p?.displayName?.trim()) return null;

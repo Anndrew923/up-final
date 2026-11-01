@@ -165,6 +165,35 @@ export default {
           '70%': { filter: 'drop-shadow(0 0 3px rgba(34, 211, 238, 0.3))', transform: 'scale(1.0)' },
           '100%': { filter: 'drop-shadow(0 0 0px rgba(34, 211, 238, 0))', transform: 'scale(1.0)' },
         },
+        /** Certificate plaque — opacity/scale/translateY only (no layout tween). */
+        'cert-plate': {
+          '0%': { opacity: '0', transform: 'scale(0.96) translate3d(0, 0.5rem, 0)' },
+          '100%': { opacity: '1', transform: 'scale(1) translate3d(0, 0, 0)' },
+        },
+        /**
+         * Caliper needle — % of the full-width wrapper (= track), not the 6px dot.
+         * `both` holds 0% during stagger delay so the sweep starts from the left rail.
+         */
+        'cert-needle': {
+          '0%': { transform: 'translate3d(0, -50%, 0)' },
+          '100%': { transform: 'translate3d(var(--fill), -50%, 0)' },
+        },
+        'cert-stamp': {
+          '0%': { opacity: '0', transform: 'scale(1.05)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'cert-badge': {
+          '0%': { opacity: '0', transform: 'scale(1.25)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'cert-footer': {
+          '0%': { opacity: '0.4' },
+          '100%': { opacity: '1' },
+        },
+        'cert-veil': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       transitionTimingFunction: {
         'report-ease': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -191,6 +220,12 @@ export default {
         'toast-slide-out': 'toast-slide-out 250ms ease-in forwards',
         'hall-spectrum-enter': 'hall-spectrum-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
         'unseen-glow': 'unseen-glow 2.8s ease-out forwards',
+        'cert-plate': 'cert-plate 300ms ease-out both',
+        'cert-needle': 'cert-needle 450ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'cert-stamp': 'cert-stamp 200ms ease-out 500ms both',
+        'cert-badge': 'cert-badge 180ms cubic-bezier(0.34, 1.56, 0.64, 1) 580ms both',
+        'cert-footer': 'cert-footer 150ms ease-out 700ms both',
+        'cert-veil': 'cert-veil 300ms ease-out both',
       },
     },
   },

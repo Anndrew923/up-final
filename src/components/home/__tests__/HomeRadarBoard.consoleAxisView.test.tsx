@@ -124,6 +124,22 @@ describe('HomeRadarBoard console axis view', () => {
     });
   }
 
+  it('shows the full-width spec certificate CTA only in fitness mode', () => {
+    renderBoard();
+    const trigger = container!.querySelector('[data-testid="aesthetic-spec-trigger"]');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toContain('調閱生理規格證書');
+    expect(trigger?.textContent).toContain('↗');
+    expect(trigger?.getAttribute('aria-label')).toBe('調閱生理規格證書');
+    expect(container!.querySelector('[data-testid="diagnostics"]')).toBeNull();
+    expect(trigger?.parentElement?.className).toContain('mx-auto');
+    expect(trigger?.parentElement?.className).toContain('min-h-12');
+    expect(trigger?.parentElement?.className).toContain('max-w-sm');
+    expect(trigger?.parentElement?.className).not.toContain('grid-cols-2');
+    expect(trigger?.className).not.toContain('cyan');
+    expect(trigger?.className).not.toContain('border-zinc-700');
+  });
+
   it('defaults to fitness lexicon and 2dp HUD values', () => {
     renderBoard();
     expect(container!.textContent).toContain('五項力量');
@@ -173,6 +189,9 @@ describe('HomeRadarBoard console axis view', () => {
       expect(liveToggle?.querySelector('[role="group"]')).not.toBeNull();
       expect(liveToggle?.textContent).toContain('Fitness');
       expect(liveToggle?.textContent).toContain('Telemetry');
+      expect(container!.querySelector('[data-testid="aesthetic-spec-trigger"]')?.textContent).toContain(
+        'View Spec Certificate'
+      );
     } finally {
       // WHY unmount before locale restore: changeLanguage notifies live subscribers and must not race act().
       if (root) {
@@ -226,5 +245,7 @@ describe('HomeRadarBoard console axis view', () => {
     expect(container!.querySelector('.ui-console-rev-up')?.className).toContain('is-revving');
     const sheenHosts = container!.querySelectorAll('.is-surging > .ui-console-sheen-layer');
     expect(sheenHosts.length).toBeGreaterThanOrEqual(3);
+    expect(container!.querySelector('[data-testid="diagnostics"]')).not.toBeNull();
+    expect(container!.querySelector('[data-testid="aesthetic-spec-trigger"]')).toBeNull();
   });
 });

@@ -90,6 +90,10 @@ export const LOCAL_GRIP_INPUTS_CHANGED_EVENT = 'up-final-grip-inputs-changed';
 export const ARM_SIZE_INPUTS_STORAGE_KEY = STORAGE_KEYS.armSizeInputs;
 export const LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT = 'up-final-arm-size-inputs-changed';
 
+export const FFMI_DRAFT_STORAGE_KEY = STORAGE_KEYS.ffmiDraft;
+export const LOCAL_FFMI_DRAFT_CHANGED_EVENT = 'up-final-ffmi-draft-changed';
+export const HISTORY_STORAGE_KEY = STORAGE_KEYS.history;
+
 export const SOMATOTYPE_LAB_INPUTS_STORAGE_KEY = STORAGE_KEYS.somatotypeLabInputs;
 
 function notifyProfileObservers(): void {
@@ -130,6 +134,11 @@ function notifyGripInputsObservers(): void {
 function notifyArmSizeInputsObservers(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(LOCAL_ARM_SIZE_INPUTS_CHANGED_EVENT));
+}
+
+function notifyFfmiDraftObservers(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(LOCAL_FFMI_DRAFT_CHANGED_EVENT));
 }
 
 export interface LocalProfile {
@@ -182,10 +191,17 @@ export interface FfmiDraft {
 
 export function saveFfmiDraft(draft: FfmiDraft): void {
   safeSetItem(STORAGE_KEYS.ffmiDraft, JSON.stringify(draft));
+  notifyFfmiDraftObservers();
 }
 
 export function loadFfmiDraft(): FfmiDraft | null {
   return safeParse<FfmiDraft | null>(safeGetItem(STORAGE_KEYS.ffmiDraft), null);
+}
+
+export function subscribeFfmiDraft(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener(LOCAL_FFMI_DRAFT_CHANGED_EVENT, onChange);
+  return () => window.removeEventListener(LOCAL_FFMI_DRAFT_CHANGED_EVENT, onChange);
 }
 
 export function saveCardioInputs(inputs: CardioInputsPersisted): void {

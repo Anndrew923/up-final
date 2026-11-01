@@ -1,4 +1,6 @@
 /* @vitest-environment jsdom */
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { I18nextProvider } from 'react-i18next';
@@ -6,6 +8,10 @@ import i18n from '../../i18n';
 import ProAvatarRing from '../ProAvatarRing';
 import ProBadge from '../ProBadge';
 import UserProIdentityRow from '../UserProIdentityRow';
+
+(
+  globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe('ProBadge metal variant', () => {
   it('renders arena proBadge copy with metal gradient classes', () => {
@@ -34,6 +40,38 @@ describe('ProAvatarRing', () => {
     expect(pro).toContain('motion-reduce:shadow-none');
     expect(free).toContain('border-accent-info/40');
     expect(free).not.toContain('from-amber-200');
+  });
+
+  it('falls back to initial when the portrait URL errors', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <ProAvatarRing
+          isPro={false}
+          size="sm"
+          src="https://example.com/broken.jpg"
+          fallback="A"
+        />
+      );
+    });
+
+    const img = container.querySelector('img');
+    expect(img).not.toBeNull();
+
+    act(() => {
+      img?.dispatchEvent(new Event('error', { bubbles: true }));
+    });
+
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.textContent).toContain('A');
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
   });
 });
 

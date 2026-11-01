@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SHELL_SCROLL_ID } from '../../../lib/shellScrollLock';
 import CrewPrivateLadder from '../CrewPrivateLadder';
 
 (
@@ -46,11 +47,14 @@ vi.mock('../../../logic/core/crewFloatingYouBar', async (importOriginal) => {
   };
 });
 
+let lastIoOptions: IntersectionObserverInit | undefined;
+
 class MockIntersectionObserver {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
-  constructor(callback: IntersectionObserverCallback) {
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    lastIoOptions = options;
     // Immediately report not intersecting so sticky bar path stays active under mock.
     callback(
       [{ isIntersecting: false } as IntersectionObserverEntry],
@@ -64,7 +68,12 @@ describe('CrewPrivateLadder', () => {
   let root: Root;
 
   beforeEach(() => {
+    lastIoOptions = undefined;
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
   });
 
   afterEach(() => {
@@ -179,5 +188,91 @@ describe('CrewPrivateLadder', () => {
     });
 
     expect(container.textContent).toContain('crew.ladder.empty');
+  });
+
+  it('binds IntersectionObserver root to the shell scroller', () => {
+    const shell = document.createElement('div');
+    shell.id = SHELL_SCROLL_ID;
+    document.body.appendChild(shell);
+
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <CrewPrivateLadder
+          authUid="u2"
+          members={[
+            {
+              uid: 'u1',
+              displayName: 'Alpha',
+              ladderScore: 99,
+              updatedAt: '2026-01-01T00:00:00.000Z',
+            },
+            {
+              uid: 'u2',
+              displayName: 'Beta',
+              ladderScore: 50,
+              updatedAt: '2026-01-02T00:00:00.000Z',
+            },
+          ]}
+        />
+      );
+    });
+
+    expect(lastIoOptions?.root).toBe(shell);
+    shell.remove();
+  });
+
+  it('scrolls the self row into view and applies jump highlight', () => {
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <CrewPrivateLadder
+          authUid="u2"
+          members={[
+            {
+              uid: 'u1',
+              displayName: 'Alpha',
+              ladderScore: 99,
+              updatedAt: '2026-01-01T00:00:00.000Z',
+            },
+            {
+              uid: 'u2',
+              displayName: 'Beta',
+              ladderScore: 50,
+              updatedAt: '2026-01-02T00:00:00.000Z',
+            },
+          ]}
+        />
+      );
+    });
+
+    const bar = document.body.querySelector(
+      '[data-testid="crew-floating-you-bar"]'
+    ) as HTMLButtonElement | null;
+    expect(bar).toBeTruthy();
+
+    act(() => {
+      bar!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'center',
+    });
+
+    const selfBtn = Array.from(container.querySelectorAll('li button')).find((el) =>
+      el.textContent?.includes('Beta')
+    );
+    expect(selfBtn?.className).toContain('ring-2');
+    expect(selfBtn?.className).toContain('ring-cyan-300');
   });
 });

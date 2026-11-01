@@ -6,6 +6,7 @@ import {
   mergeLadderProfileWithLocal,
   normalizeLadderDisplayName,
   resolveLeaderboardAvatarUrlForCloud,
+  resolveSelfFloatingAvatarUrl,
   sanitizeAvatarUrlForLeaderboard,
   saveLadderIdentity,
 } from '../ladderIdentityService';
@@ -40,6 +41,44 @@ describe('sanitizeAvatarUrlForLeaderboard', () => {
   it('rejects oversized strings', () => {
     const huge = `data:image/jpeg;base64,${'x'.repeat(LEADERBOARD_AVATAR_URL_MAX_CHARS)}`;
     expect(sanitizeAvatarUrlForLeaderboard(huge)).toBeUndefined();
+  });
+});
+
+describe('resolveSelfFloatingAvatarUrl', () => {
+  it('prefers guild snapshot, then local identity, then auth photoURL', () => {
+    expect(
+      resolveSelfFloatingAvatarUrl({
+        memberAvatarUrl: 'https://cdn.example.com/guild.jpg',
+        localAvatarUrl: 'https://cdn.example.com/local.jpg',
+        authPhotoURL: 'https://lh3.googleusercontent.com/a',
+      })
+    ).toBe('https://cdn.example.com/guild.jpg');
+
+    expect(
+      resolveSelfFloatingAvatarUrl({
+        memberAvatarUrl: 'http://insecure.example/guild.jpg',
+        localAvatarUrl: 'data:image/jpeg;base64,abcd',
+        authPhotoURL: 'https://lh3.googleusercontent.com/a',
+      })
+    ).toBe('data:image/jpeg;base64,abcd');
+
+    expect(
+      resolveSelfFloatingAvatarUrl({
+        memberAvatarUrl: '  ',
+        localAvatarUrl: undefined,
+        authPhotoURL: 'https://lh3.googleusercontent.com/a',
+      })
+    ).toBe('https://lh3.googleusercontent.com/a');
+  });
+
+  it('returns undefined when every candidate is unusable', () => {
+    expect(
+      resolveSelfFloatingAvatarUrl({
+        memberAvatarUrl: 'http://insecure',
+        localAvatarUrl: '',
+        authPhotoURL: null,
+      })
+    ).toBeUndefined();
   });
 });
 

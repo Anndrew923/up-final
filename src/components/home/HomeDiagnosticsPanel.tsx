@@ -1,9 +1,11 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../../lib/cn';
 import { resolveHomeSectionString } from '../../i18n/resolveHomeBundleCopy';
 
 export interface HomeDiagnosticsPanelProps {
   disabled?: boolean;
+  className?: string;
   onStartDiagnostics: () => void;
 }
 
@@ -32,9 +34,11 @@ function DiagnosticsArrowIcon() {
 /**
  * Track-mode diagnostics CTA — layered frosted glass (blur + grain), neon depth, breathing glow.
  * WHY: Glow animates on a dedicated layer so hover/active border feedback does not fight box-shadow keyframes.
+ * Fill-width of the console CTA rail (`max-w-sm` on the parent), not a dual-column cell.
  */
 const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
   disabled = false,
+  className,
   onStartDiagnostics,
 }) => {
   const { t, i18n } = useTranslation('common');
@@ -45,29 +49,28 @@ const HomeDiagnosticsPanel: FC<HomeDiagnosticsPanelProps> = ({
       : 'whitespace-nowrap text-[11px] font-semibold uppercase leading-none tracking-[0.06em] text-zinc-100';
 
   return (
-    <div className="flex w-full justify-center">
-      <button
-        type="button"
-        disabled={disabled}
-        aria-label={ctaLabel}
-        onClick={onStartDiagnostics}
-        className="ui-btn-diagnostics group flex w-[72%] min-w-[200px] max-w-[280px] min-h-12 items-center justify-between gap-3 rounded-lg border border-[#FF9500] px-4 py-3.5 text-left will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9500]/70 motion-safe:transition-[transform,border-color] motion-safe:duration-150 motion-safe:active:scale-[0.98] motion-safe:active:border-[#FFB84D] motion-safe:hover:border-[#FFAA33] disabled:pointer-events-none disabled:opacity-40"
-      >
-        <span
-          className="ui-btn-diagnostics-glow motion-reduce:animate-none motion-safe:animate-track-mode-glow"
-          aria-hidden
-        />
-        <span className="ui-btn-diagnostics-glass motion-reduce:will-change-auto" aria-hidden />
-        <span className="ui-btn-diagnostics-noise" aria-hidden />
-        <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
-        <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-3">
-          <span className={`${ctaLabelClass} min-w-0 flex-1 overflow-hidden text-ellipsis`}>
-            {ctaLabel}
-          </span>
-          <DiagnosticsArrowIcon />
-        </span>
-      </button>
-    </div>
+    <button
+      type="button"
+      disabled={disabled}
+      aria-label={ctaLabel}
+      onClick={onStartDiagnostics}
+      className={cn(
+        'ui-btn-diagnostics group flex h-12 w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-[#FF9500] px-3 text-left will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9500]/70 motion-safe:transition-[transform,border-color] motion-safe:duration-150 motion-safe:active:scale-[0.98] motion-safe:active:border-[#FFB84D] motion-safe:hover:border-[#FFAA33] disabled:pointer-events-none disabled:opacity-40',
+        className
+      )}
+    >
+      <span
+        className="ui-btn-diagnostics-glow motion-reduce:animate-none motion-safe:animate-track-mode-glow"
+        aria-hidden
+      />
+      <span className="ui-btn-diagnostics-glass motion-reduce:will-change-auto" aria-hidden />
+      <span className="ui-btn-diagnostics-noise" aria-hidden />
+      <span className="ui-btn-diagnostics-inset-glow" aria-hidden />
+      <span className="relative z-10 flex min-w-0 flex-1 items-center justify-between gap-2">
+        <span className={`${ctaLabelClass} min-w-0 flex-1 truncate`}>{ctaLabel}</span>
+        <DiagnosticsArrowIcon />
+      </span>
+    </button>
   );
 };
 

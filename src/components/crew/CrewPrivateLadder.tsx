@@ -7,35 +7,41 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import ProAvatarRing from '../ProAvatarRing';
 import {
   LADDER_FLOATING_RANK_BAR_PX,
   LADDER_SCROLL_BOTTOM_INSET_PX,
 } from '../../constants/bottomChrome';
+import { useLocalProfileBrief } from '../../hooks/useLocalProfileBrief';
+import { useMergedScoresFromLocalStores } from '../../hooks/useMergedScoresFromLocalStores';
+import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
+import { cn } from '../../lib/cn';
+import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 import { formatCompactRelativeTime } from '../../logic/core/formatCompactRelativeTime';
-import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
 import {
   CREW_FLOATING_AT_TOP_SCROLL_PX,
   CREW_FLOATING_FORCE_RANK_THRESHOLD,
   CREW_LIST_OVERFLOW_VIEWPORT_RATIO,
   shouldShowCrewFloatingYouBar,
 } from '../../logic/core/crewFloatingYouBar';
-import { scoreMapHasPositiveAxis } from '../../logic/core/scoreMapGuards';
 import {
   CLUB_LADDER_DIMENSIONS,
   type ClubLadderDimension,
   guildMemberDimensionScore,
   sortGuildMembersByDimension,
 } from '../../logic/core/guildRadarScores';
+import { ladderIdentityInitial } from '../../logic/core/ladderUploadPolicy';
+import { scoreMapHasPositiveAxis } from '../../logic/core/scoreMapGuards';
+import { resolveSelfFloatingAvatarUrl } from '../../services/ladderIdentityService';
+import { useAuthStore } from '../../stores/authStore';
 import type { GuildMemberSnapshot } from '../../types/guild';
 import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
-import { resolveSixAxisChartLabel } from '../../i18n/resolveSixAxisChartLabel';
-import { useMergedScoresFromLocalStores } from '../../hooks/useMergedScoresFromLocalStores';
-import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
-import { sanitizeAvatarUrlForLeaderboard } from '../../services/ladderIdentityService';
+import ProAvatarRing from '../ProAvatarRing';
 import { ladderDivisionTabClass } from '../ladder/ladderDivisionTabClass';
 import CrewFloatingYouBar from './CrewFloatingYouBar';
 import CrewMemberRadarSheet from './CrewMemberRadarSheet';
+
+/** Brief cyan pulse after sticky-bar jump so the user can find their row in a long roster. */
+const CREW_JUMP_HIGHLIGHT_MS = 1200;
 
 export interface CrewPrivateLadderProps {
   members: GuildMemberSnapshot[];
@@ -54,13 +60,18 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   guildTag = '',
 }) => {
   const { t } = useTranslation('common');
+  const { avatarUrl: localAvatarUrl } = useLocalProfileBrief();
+  const authPhotoURL = useAuthStore((s) => s.photoURL);
   const [dimension, setDimension] = useState<ClubLadderDimension>('overall');
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [myRowInViewport, setMyRowInViewport] = useState(false);
   const [listOverflowsViewport, setListOverflowsViewport] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
+  const [jumpHighlight, setJumpHighlight] = useState(false);
   const myRowRef = useRef<HTMLLIElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const jumpHighlightTimerRef = useRef<number | null>(null);
+  const jumpRafRef = useRef<number | null>(null);
   const localScores = useMergedScoresFromLocalStores();
 
   const labelForDimension = (dim: ClubLadderDimension): string => {
@@ -83,6 +94,11 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   const myDimScore = myMember ? guildMemberDimensionScore(myMember, dimension) : null;
   const myScoreLabel =
     myDimScore == null ? '—' : myDimScore.toFixed(2);
+  const floatingAvatarUrl = resolveSelfFloatingAvatarUrl({
+    memberAvatarUrl: myMember?.avatarUrl,
+    localAvatarUrl,
+    authPhotoURL,
+  });
 
   const selectedIndex = selectedUid
     ? ranked.findIndex((m) => m.uid === selectedUid)
@@ -139,12 +155,14 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
       setMyRowInViewport(false);
       return;
     }
+    const shell = document.getElementById(SHELL_SCROLL_ID);
     const observer = new IntersectionObserver(
       ([entry]) => {
         setMyRowInViewport(entry.isIntersecting);
       },
       {
-        root: null,
+        // WHY: AppShell scrolls `#layer-shell-scroll`; viewport root would mis-report rows.
+        root: shell,
         threshold: 0.2,
         rootMargin: `0px 0px -${LADDER_SCROLL_BOTTOM_INSET_PX}px 0px`,
       }
@@ -163,8 +181,35 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
     detailOpen,
   });
 
+  useEffect(() => {
+    return () => {
+      if (jumpHighlightTimerRef.current != null) {
+        window.clearTimeout(jumpHighlightTimerRef.current);
+      }
+      if (jumpRafRef.current != null) {
+        window.cancelAnimationFrame(jumpRafRef.current);
+      }
+    };
+  }, []);
+
   const jumpToMyRow = useCallback(() => {
-    myRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const el = myRowRef.current;
+    if (!el) return;
+    if (jumpRafRef.current != null) {
+      window.cancelAnimationFrame(jumpRafRef.current);
+    }
+    jumpRafRef.current = requestAnimationFrame(() => {
+      jumpRafRef.current = null;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    setJumpHighlight(true);
+    if (jumpHighlightTimerRef.current != null) {
+      window.clearTimeout(jumpHighlightTimerRef.current);
+    }
+    jumpHighlightTimerRef.current = window.setTimeout(() => {
+      setJumpHighlight(false);
+      jumpHighlightTimerRef.current = null;
+    }, CREW_JUMP_HIGHLIGHT_MS);
   }, []);
 
   return (
@@ -231,7 +276,11 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
                   ? 'bg-gradient-to-r from-orange-500/10 to-bg-panel/40 border-l-4 border-l-orange-500 border-y border-r border-y-orange-500/20 border-r-orange-500/20'
                   : 'bg-zinc-900/40 border-l-2 border-l-zinc-700 border-y border-r border-zinc-800/80';
             const meHighlightClass = isMe
-              ? 'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10'
+              ? cn(
+                  'ring-1 ring-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] z-10 motion-safe:transition-shadow motion-safe:duration-300',
+                  jumpHighlight &&
+                    'ring-2 ring-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.45)]'
+                )
               : '';
             const rankClass = isRank1
               ? 'text-amber-400 font-bold drop-shadow-[0_0_10px_rgba(251,191,36,0.8)] text-xs sm:text-sm'
@@ -265,7 +314,7 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
                     <ProAvatarRing
                       isPro={false}
                       size="sm"
-                      src={row.avatarUrl}
+                      src={isMe ? floatingAvatarUrl : row.avatarUrl}
                       alt=""
                       fallback={ladderIdentityInitial(displayName)}
                     />
@@ -308,7 +357,7 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
           myRank={myRank}
           myScoreLabel={myScoreLabel}
           displayName={myMember.displayName || myMember.uid}
-          avatarUrl={sanitizeAvatarUrlForLeaderboard(myMember.avatarUrl)}
+          avatarUrl={floatingAvatarUrl}
           onJumpToMyRow={jumpToMyRow}
         />
       ) : null}
