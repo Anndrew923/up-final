@@ -8,19 +8,29 @@ export const FOIL_HEX = {
   deep: '#7a5c28',
 } as const;
 
-export const FOIL_TITLE_CLASS =
-  'bg-gradient-to-b from-[#f3e6c8] via-[#c9a227] to-[#7a5c28] bg-clip-text text-transparent';
-
 /**
- * Hero grade stamp — clamp + nowrap so 15-char EN titles stay one line inside 9:16.
- * WHY: tracking-[0.18em] at 1.55rem overflowed max-w-[13rem] even after copy shrink.
+ * Hero grade stamp — fluid clamp so CJK reads large while the longest EN
+ * overall title stays one line; wings shrink before the title wraps.
  */
-export const FOIL_HERO_TITLE_CLASS =
-  `min-w-0 flex-1 text-center text-[clamp(1.05rem,4.8vw,1.55rem)] font-bold leading-none tracking-[0.08em] whitespace-nowrap ${FOIL_TITLE_CLASS}`;
+export const FOIL_HERO_STAMP_CLASS =
+  'flex w-full origin-center items-center justify-center gap-2 overflow-hidden px-2 py-2 sm:gap-3';
+
+export const FOIL_HERO_TITLE_CLASS = [
+  "shrink-0 text-center font-['Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif]",
+  "[font-feature-settings:'palt'] antialiased font-bold uppercase whitespace-nowrap",
+  'tracking-[0.2em] pl-[0.2em]',
+  'text-[clamp(1.2rem,4.8vw,1.45rem)] leading-none',
+  'bg-gradient-to-b from-[#fff6d6] via-[#f3e6c8] to-[#c9a227] bg-clip-text text-transparent',
+  'drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]',
+].join(' ');
+
+export const FOIL_HERO_WING_LEFT_CLASS =
+  'h-px w-4 min-w-0 shrink bg-gradient-to-r from-transparent to-[#c9a227]/70 sm:w-6';
+
+export const FOIL_HERO_WING_RIGHT_CLASS =
+  'h-px w-4 min-w-0 shrink bg-gradient-to-l from-transparent to-[#c9a227]/70 sm:w-6';
 
 export const FOIL_RULE_CLASS = 'border-[#c9a227]/20';
-
-export const FOIL_BRACKET_CLASS = 'text-[#c9a227]';
 
 export const FOIL_KICKER_CLASS = 'text-[#c9a227]/80';
 

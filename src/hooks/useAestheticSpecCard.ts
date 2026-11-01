@@ -3,7 +3,6 @@ import { parseFfmiBodyFatPctInput } from '../logic/core/ffmiScoring';
 import { calculateSixAxisOverall } from '../logic/core/scoring';
 import {
   formatAestheticBattleCode,
-  isPresentScore,
   parseAestheticBodyFatPct,
   resolveAestheticBodyFatPct,
   resolveAestheticSpec,
@@ -30,8 +29,6 @@ export interface AestheticSpecCardModel {
   spec: AestheticResolverOutput;
   gender: 'male' | 'female' | null;
   bodyFatPct: number | null;
-  /** Present grip axis score for the caliper needle — resolver only exposes titan/peakKg. */
-  gripScore: number | null;
 }
 
 /**
@@ -87,7 +84,6 @@ export function useAestheticSpecCard(): AestheticSpecCardModel {
       battleCode: formatAestheticBattleCode(displayName, uid),
       gender,
       bodyFatPct,
-      gripScore: isPresentScore(scores.gripStrength) ? scores.gripStrength : null,
       spec: resolveAestheticSpec({
         overallScore,
         scores,

@@ -20,7 +20,7 @@ export function clampMeterFill(score: number | null): number {
 
 /**
  * Caliper readout — hairline + micro ticks, not a HUD capsule.
- * WHY: `contents` lets four rows share one parent grid so an empty badge column collapses.
+ * WHY: `contents` lets the three trinity rows share one parent grid so an empty badge column collapses.
  * Needle rest pose is the final fill; revealing only overlays cert-needle on a full-width rail
  * so `translate3d(var(--fill), …)` is % of the track, not the 6px dot.
  */

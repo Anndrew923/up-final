@@ -4,7 +4,7 @@
  */
 export const CERT_REVEAL_MS = 850;
 
-export const CERT_NEEDLE_STAGGER_MS = [220, 260, 300, 340] as const;
+export const CERT_NEEDLE_STAGGER_MS = [220, 260, 300] as const;
 
 export type CertRevealPhase = 'revealing' | 'done';
 

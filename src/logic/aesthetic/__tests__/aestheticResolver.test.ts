@@ -290,7 +290,7 @@ describe('aesthetic copy isolation', () => {
     expect(zh.labels.bodyFatValue).toContain('{{bf}}');
     expect(en.labels.bodyFatValue).toContain('{{bf}}');
     expect(zh.labels.overflowBadge).toBe('超限');
-    expect(en.labels.overflowBadge).toBe('OVERFLOW');
+    expect(en.labels.overflowBadge).toBe('OVERDRIVE');
     expect(zh.labels.titanBadge).toBe('泰坦認證');
     expect(en.labels.titanBadge).toBe('TITAN VERIFIED');
     expect(zh.labels.unmeasured).toBe('待檢測');
@@ -309,11 +309,14 @@ describe('aesthetic copy isolation', () => {
     expect(zh.labels.visualLineWithNote).toContain('{{note}}');
     expect(en.labels.visualLineWithNote).toContain('{{subtitle}}');
     expect(en.labels.visualLineWithNote).toContain('{{note}}');
-    expect(en.visual.assassin.subtitle).toBe('ULTRA-LEAN SMM');
-    expect(en.force.m['110'].subtitle).toBe('PEAK STRUCTURAL RIGIDITY');
-    expect(en.kinetic.m['100'].subtitle).toBe('PEAK AEROBIC CAPACITY');
-    expect(en.kinetic.m['90'].title).toBe('ELITE CARDIO CORE');
+    expect(en.visual.assassin.subtitle).toBe('LOOKS CAN KILL');
+    expect(en.force.m['110'].subtitle).toBe('WRECKING BALL ENERGY');
+    expect(en.kinetic.m['100'].subtitle).toBe('PAIN IS JUST A WORD');
+    expect(en.kinetic.m['90'].title).toBe('DAVID GOGGINS ENERGY');
+    expect(en.labels.brandHeader).toBe('UP // DOMINANCE:');
     expect(en.labels.brandHeader.length).toBeLessThanOrEqual(16);
+    expect(en.labels.forceMetric).toBe('RIGID BURST');
+    expect(en.labels.kineticMetric).toBe('PEAK STAMINA');
     for (const key of ['visualMetric', 'forceMetric', 'kineticMetric', 'gripMetric'] as const) {
       expect(en.labels[key].length, key).toBeLessThanOrEqual(12);
     }
@@ -321,9 +324,9 @@ describe('aesthetic copy isolation', () => {
       expect(en.overall[id]).toBe(en.overall[id].toUpperCase());
       expect(en.overall[id].length, id).toBeLessThanOrEqual(15);
     }
-    expect(en.labels.visual).toBe('VISUAL AESTHETIC');
-    expect(en.labels.force).toBe('FORCE THICKNESS');
-    expect(en.labels.kinetic).toBe('KINETIC PHYSIQUE');
+    expect(en.labels.visual).toBe('VISUAL TENSION');
+    expect(en.labels.force).toBe('ABSOLUTE RIGIDITY');
+    expect(en.labels.kinetic).toBe('PRIMAL DRIVE');
     for (const line of collectStrings(en)) {
       const stripped = line.replace(/\{\{[^}]+\}\}/g, ' ');
       for (const word of stripped.split(/[^A-Za-z]+/).filter(Boolean)) {

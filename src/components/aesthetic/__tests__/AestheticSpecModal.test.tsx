@@ -17,7 +17,6 @@ const fixture: AestheticSpecCardModel = {
   battleCode: 'UP-Bruce #1234',
   gender: 'male',
   bodyFatPct: 8,
-  gripScore: 90,
   spec: {
     overallTitleId: 'health',
     visual: { id: 'assassin', score: 88.3, unmeasured: false, bodyFatMissing: false },

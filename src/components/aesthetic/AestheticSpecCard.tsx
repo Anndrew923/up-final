@@ -8,8 +8,10 @@ import AestheticCardArmor from './AestheticCardArmor';
 import AestheticMeter, { clampMeterFill, type AestheticMeterProps } from './AestheticMeter';
 import {
   CERT_STAGE_MAX_H_CLASS,
-  FOIL_BRACKET_CLASS,
+  FOIL_HERO_STAMP_CLASS,
   FOIL_HERO_TITLE_CLASS,
+  FOIL_HERO_WING_LEFT_CLASS,
+  FOIL_HERO_WING_RIGHT_CLASS,
   FOIL_KICKER_CLASS,
   FOIL_RULE_CLASS,
 } from './aestheticChrome';
@@ -22,11 +24,6 @@ import {
 
 export interface AestheticSpecCardProps {
   model: AestheticSpecCardModel;
-}
-
-function formatPeakKg(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
 function formatBfPct(value: number): string {
@@ -89,7 +86,7 @@ function overflowMeterProps(
  */
 const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
   const { t } = useTranslation('common');
-  const { spec, overallScore, battleCode, gender, bodyFatPct, gripScore } = model;
+  const { spec, overallScore, battleCode, gender, bodyFatPct } = model;
   const readoutYear = String(new Date().getFullYear());
   const unmeasuredLabel = t('aesthetic.labels.unmeasured');
   const overflowBadge = t('aesthetic.labels.overflowBadge');
@@ -113,13 +110,6 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
     ? t('aesthetic.labels.visualLineWithNote', { subtitle: visualSubtitle, note: visualBfNote })
     : visualSubtitle;
 
-  const gripValue =
-    spec.peakKg != null
-      ? t('aesthetic.labels.gripKgValue', { peakKg: formatPeakKg(spec.peakKg) })
-      : gripScore != null
-        ? formatOverallResonanceScore(gripScore)
-        : unmeasuredLabel;
-
   return (
     <article
       data-testid="aesthetic-spec-card"
@@ -139,22 +129,10 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-4 py-4">
-          <h3
-            className={`flex origin-center items-center justify-center gap-1.5 px-1 py-1 ${CERT_STAMP_REVEAL_CLASS}`}
-          >
-            <span
-              className={`shrink-0 text-[1.85rem] font-extralight leading-none ${FOIL_BRACKET_CLASS}`}
-              aria-hidden
-            >
-              【
-            </span>
+          <h3 className={`${FOIL_HERO_STAMP_CLASS} ${CERT_STAMP_REVEAL_CLASS}`}>
+            <span className={FOIL_HERO_WING_LEFT_CLASS} aria-hidden="true" />
             <span className={FOIL_HERO_TITLE_CLASS}>{overallTitle}</span>
-            <span
-              className={`shrink-0 text-[1.85rem] font-extralight leading-none ${FOIL_BRACKET_CLASS}`}
-              aria-hidden
-            >
-              】
-            </span>
+            <span className={FOIL_HERO_WING_RIGHT_CLASS} aria-hidden="true" />
           </h3>
 
           <div className="space-y-2.5">
@@ -177,7 +155,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
         </div>
 
         <section className={`border-t ${FOIL_RULE_CLASS} pt-3`}>
-          <div className="grid grid-cols-[minmax(4.25rem,auto)_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2">
+          <div className="grid grid-cols-[minmax(4.25rem,auto)_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-5">
             <AestheticMeter
               label={t('aesthetic.labels.visualMetric')}
               {...overflowMeterProps(spec.visual.score, overflowBadge, unmeasuredLabel)}
@@ -192,15 +170,6 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
               label={t('aesthetic.labels.kineticMetric')}
               {...overflowMeterProps(spec.kinetic.score, overflowBadge, unmeasuredLabel)}
               staggerMs={CERT_NEEDLE_STAGGER_MS[2]}
-            />
-            <AestheticMeter
-              label={t('aesthetic.labels.gripMetric')}
-              value={gripValue}
-              fillPct={clampMeterFill(gripScore)}
-              showNeedle={gripScore != null}
-              badge={spec.hasTitanGrip ? t('aesthetic.labels.titanBadge') : null}
-              emphasize={spec.hasTitanGrip}
-              staggerMs={CERT_NEEDLE_STAGGER_MS[3]}
             />
           </div>
         </section>
