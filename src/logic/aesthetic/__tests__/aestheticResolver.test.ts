@@ -19,6 +19,9 @@ import {
 import zhAesthetic from '../../../i18n/locales/zh-Hant/common/aesthetic.json';
 import enAesthetic from '../../../i18n/locales/en/common/aesthetic.json';
 
+/** SpecRow line-clamp-2 budget for EN force/kinetic dual-clause subtitles. */
+const EN_FORCE_KINETIC_SUBTITLE_MAX = 42;
+
 function collectStrings(value: unknown, acc: string[] = []): string[] {
   if (typeof value === 'string') {
     acc.push(value);
@@ -304,10 +307,13 @@ describe('aesthetic copy isolation', () => {
             expect(pack[kind][gender][bandId].title.trim().length, path).toBeGreaterThan(0);
             expect(pack[kind][gender][bandId].title.trim().length, path).toBeLessThanOrEqual(15);
             expect(pack[kind][gender][bandId].subtitle.trim().length, path).toBeGreaterThan(0);
-            // WHY: SpecRow line-clamp-2 + 7rem grid — EN dual-clause subtitles over 42 chars
+            // WHY: SpecRow line-clamp-2 + 7rem grid — EN dual-clause subtitles over the max
             // truncate mid-phrase; gate keeps copy polish from reintroducing overflow.
             if (localeId === 'en') {
-              expect(pack[kind][gender][bandId].subtitle.length, path).toBeLessThanOrEqual(42);
+              expect(
+                pack[kind][gender][bandId].subtitle.trim().length,
+                path
+              ).toBeLessThanOrEqual(EN_FORCE_KINETIC_SUBTITLE_MAX);
             }
           }
         }
