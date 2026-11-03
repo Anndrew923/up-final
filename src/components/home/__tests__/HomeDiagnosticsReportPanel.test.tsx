@@ -73,9 +73,11 @@ describe('HomeDiagnosticsReportPanel', () => {
     expect(document.querySelector('[data-testid="diagnostics-report-index"]')?.textContent).toContain(
       '99.60'
     );
-    expect(document.querySelector('[data-testid="homologation-id"]')?.textContent).toContain(
-      '#GT-9960'
+    expect(document.querySelector('[data-testid="homologation-id"]')?.textContent).toBe(
+      '規格診斷報告 // #GT-9960'
     );
+    expect(document.body.textContent).not.toContain('INDEX // PTS');
+    expect(document.body.textContent).not.toContain('全域性能規格報告');
     expect(document.querySelector('[data-testid="identity-live-spec-bento"]')).not.toBeNull();
 
     for (const metric of SIX_AXIS_METRICS) {
@@ -106,8 +108,13 @@ describe('HomeDiagnosticsReportPanel', () => {
     expect(confirm).not.toBeNull();
     expect(confirm?.className).toContain('[clip-path:polygon(');
     expect(confirm?.className).toContain('inset_0_1px_1px_rgba(255,255,255,0.15)');
-    expect(confirm?.textContent).toContain('CONFIRM & RETURN');
+    expect(confirm?.className).toContain('text-[12px]');
+    expect(confirm?.className).toContain('tracking-wider');
+    expect(confirm?.className).not.toContain('truncate');
+    expect(confirm?.innerHTML).toContain('whitespace-nowrap');
+    expect(confirm?.textContent).toContain('確認校準並返回');
     expect(confirm?.textContent).toContain('READY');
+    expect(confirm?.textContent).not.toContain('◆');
     // Floating cockpit CTA is outside the scroll stream.
     expect(scroll?.contains(confirm)).toBe(false);
     expect(ctaWrap?.contains(confirm)).toBe(true);

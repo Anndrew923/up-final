@@ -86,10 +86,8 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
 }) => {
   const { t, i18n } = useTranslation('common');
   const { entered, motionActive } = useDiagnosticsReportEntrance();
-  const reportTitle = resolveHomeSectionString(t, 'resonance', 'reportTitle');
   const closeLabel = resolveHomeSectionString(t, 'resonance', 'close');
   const ctaReadyLabel = resolveHomeSectionString(t, 'resonance', 'ctaReady');
-  const indexPtsLabel = resolveHomeSectionString(t, 'resonance', 'indexPts');
   const liveSpecKicker = resolveHomeSectionString(t, 'resonance', 'liveSpecKicker');
   const homologationId = Math.round(snapshot.overallScore * 100);
   const homologationLabel = resolveHomeSectionString(t, 'resonance', 'homologationId', {
@@ -149,9 +147,6 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
             >
               {homologationLabel}
             </p>
-            <p className="font-mono text-[10px] uppercase tracking-wider text-accent-primary/90">
-              {reportTitle}
-            </p>
             <h2 className="text-base font-semibold tracking-tight text-zinc-50">
               {snapshot.archetypeTitle}
             </h2>
@@ -193,9 +188,6 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
                 data-testid="diagnostics-report-index"
               >
                 {scoreLabel}
-              </p>
-              <p className="relative z-10 mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
-                {indexPtsLabel}
               </p>
             </div>
           </div>
@@ -255,7 +247,7 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
       >
         <button
           type="button"
-          className={`relative flex h-12 w-full items-center justify-center gap-2.5 border border-orange-500/80 bg-zinc-900 px-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-orange-50 shadow-[0_0_18px_rgba(249,115,22,0.28),inset_0_1px_1px_rgba(255,255,255,0.15)] transition hover:border-orange-400 hover:bg-zinc-900/95 hover:shadow-[0_0_24px_rgba(249,115,22,0.4)] active:translate-y-px active:scale-[0.985] ${CTA_CLIP}`}
+          className={`relative flex h-12 w-full items-center justify-center gap-2 border border-orange-500/80 bg-zinc-900 px-3 font-mono text-[12px] font-semibold tracking-wider text-orange-50 shadow-[0_0_18px_rgba(249,115,22,0.28),inset_0_1px_1px_rgba(255,255,255,0.15)] transition hover:border-orange-400 hover:bg-zinc-900/95 hover:shadow-[0_0_24px_rgba(249,115,22,0.4)] active:translate-y-px active:scale-[0.985] ${CTA_CLIP}`}
           onClick={onClose}
           data-testid="diagnostics-report-confirm"
         >
@@ -266,7 +258,7 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
             {ctaReadyLabel}
           </span>
-          <span className="min-w-0 truncate">{closeLabel}</span>
+          <span className="whitespace-nowrap">{closeLabel}</span>
         </button>
       </div>
     </div>

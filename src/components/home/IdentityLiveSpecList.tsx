@@ -31,7 +31,7 @@ const IdentityLiveSpecList: FC<IdentityLiveSpecListProps> = ({
     <div className="mt-4 text-left" data-testid="identity-live-spec-bento">
       <p
         id={kickerId}
-        className="mb-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-accent-info/90"
+        className="mb-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500"
       >
         {kicker}
       </p>

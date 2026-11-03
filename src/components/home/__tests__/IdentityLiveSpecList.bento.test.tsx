@@ -41,14 +41,18 @@ describe('IdentityLiveSpecList bento', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <IdentityLiveSpecList kicker="六軸規格網格" rows={rows} />
+          <IdentityLiveSpecList kicker="六軸即時規格" rows={rows} />
         </I18nextProvider>
       );
     });
 
-    const grid = document.querySelector('[data-testid="identity-live-spec-bento"] ul');
+    const bento = document.querySelector('[data-testid="identity-live-spec-bento"]');
+    const grid = bento?.querySelector('ul');
+    const kicker = bento?.querySelector('p');
     expect(grid?.className).toContain('grid-cols-2');
     expect(grid?.className).toContain('items-stretch');
+    expect(kicker?.className).toContain('text-zinc-500');
+    expect(kicker?.textContent).toContain('六軸即時規格');
     expect(document.body.textContent).toContain('HP //');
     expect(document.body.textContent).toContain('GRIP //');
     expect(document.body.textContent).toContain('strength-title');
