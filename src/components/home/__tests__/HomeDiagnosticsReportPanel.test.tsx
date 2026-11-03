@@ -4,7 +4,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../i18n';
-import { DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS } from '../../../lib/diagnosticsReportMotion';
+import {
+  DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS,
+  DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS,
+} from '../../../lib/diagnosticsReportMotion';
 import type { HomeResonanceSnapshot } from '../../../types/homeResonance';
 import { SIX_AXIS_METRICS } from '../../../types/scoring';
 import HomeDiagnosticsReportPanel from '../HomeDiagnosticsReportPanel';
@@ -53,7 +56,7 @@ describe('HomeDiagnosticsReportPanel', () => {
     container.remove();
   });
 
-  it('renders mini radar hero, homologation id, bento grid, and chamfered confirm CTA', () => {
+  it('locks bento readout, floats mechanical CTA outside the scroll stream', () => {
     const onClose = vi.fn();
 
     act(() => {
@@ -85,29 +88,30 @@ describe('HomeDiagnosticsReportPanel', () => {
       '[data-testid="diagnostics-report-scroll"]'
     ) as HTMLElement | null;
     expect(scroll).not.toBeNull();
-    expect(scroll?.className).toContain(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS);
+    expect(scroll?.className).toContain(DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS);
+    expect(scroll?.className).toContain('pb-20');
     expect(scroll?.className).toContain('overflow-y-auto');
-    expect(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS).toBe(
-      'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]'
-    );
+
+    const ctaWrap = document.querySelector(
+      '[data-testid="diagnostics-report-cta-wrap"]'
+    ) as HTMLElement | null;
+    expect(ctaWrap).not.toBeNull();
+    expect(ctaWrap?.className).toContain('sticky');
+    expect(ctaWrap?.className).toContain('bottom-0');
+    expect(ctaWrap?.className).toContain('bg-gradient-to-t');
+    expect(ctaWrap?.className).toContain(DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS);
 
     const confirm = document.querySelector(
       '[data-testid="diagnostics-report-confirm"]'
     ) as HTMLButtonElement | null;
     expect(confirm).not.toBeNull();
     expect(confirm?.className).toContain('[clip-path:polygon(');
+    expect(confirm?.className).toContain('inset_0_1px_1px_rgba(255,255,255,0.15)');
     expect(confirm?.textContent).toContain('CONFIRM & RETURN');
-    // CTA lives inside the single scroll stream — not clipped by a sibling sticky footer region.
-    expect(scroll?.contains(confirm)).toBe(true);
-    expect(
-      document.querySelector('[data-testid="diagnostics-report-cta-wrap"]')?.contains(confirm)
-    ).toBe(true);
-
-    const panel = document.querySelector(
-      '[data-testid="home-diagnostics-report-panel"]'
-    ) as HTMLElement | null;
-    expect(panel?.className).toContain('overflow-hidden');
-    expect(panel?.className).toContain('max-h-[min(calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2.5rem),720px)]');
+    expect(confirm?.textContent).toContain('READY');
+    // Floating cockpit CTA is outside the scroll stream.
+    expect(scroll?.contains(confirm)).toBe(false);
+    expect(ctaWrap?.contains(confirm)).toBe(true);
 
     act(() => {
       confirm?.click();

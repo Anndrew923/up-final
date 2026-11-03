@@ -48,8 +48,20 @@ describe('IdentityLiveSpecList bento', () => {
 
     const grid = document.querySelector('[data-testid="identity-live-spec-bento"] ul');
     expect(grid?.className).toContain('grid-cols-2');
+    expect(grid?.className).toContain('items-stretch');
     expect(document.body.textContent).toContain('HP //');
     expect(document.body.textContent).toContain('GRIP //');
     expect(document.body.textContent).toContain('strength-title');
+
+    const cell = document.querySelector(
+      '[data-testid="identity-live-spec-cell-strength"]'
+    ) as HTMLElement | null;
+    expect(cell?.className).toContain('min-h-[82px]');
+    expect(cell?.className).toContain('justify-between');
+    // Title sits in a locked 2.5rem flex row so single/double-line bands share one baseline band.
+    expect(cell?.innerHTML).toContain('min-h-[2.5rem]');
+    expect(cell?.innerHTML).toContain('text-[13px]');
+    expect(cell?.innerHTML).toContain('leading-tight');
+    expect(cell?.textContent).toContain('strength-title');
   });
 });

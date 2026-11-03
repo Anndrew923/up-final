@@ -10,7 +10,8 @@ import {
 } from '../../i18n/resolveOverallGradeCopy';
 import {
   DIAGNOSTICS_PANEL_TRANSITION,
-  DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS,
+  DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS,
+  DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS,
   DIAGNOSTICS_STAGGER_DELAY_MS,
   DIAGNOSTICS_STAGGER_TRANSITION,
   diagnosticsPanelVisible,
@@ -70,10 +71,13 @@ const IndexTickMarks: FC = () => (
 const CORNER_MARK =
   'pointer-events-none absolute font-mono text-[10px] leading-none text-zinc-500/80';
 
+const CTA_CLIP =
+  '[clip-path:polygon(10px_0,100%_0,100%_calc(100%-10px),calc(100%-10px)_100%,0_100%,0_10px)]';
+
 /**
  * Scrollable global spec report with panel + staggered entrance.
  * WHY: rAF-triggered transitions avoid iOS WebView keyframe+backdrop-filter bugs that left opacity stuck at 0.
- * Single scroll stream + safe-area bottom pad keeps the chamfered CTA clear of Home Indicator / nav bar.
+ * Sticky mechanical CTA stays resident; scroll body only carries readout + bento.
  */
 const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
   snapshot,
@@ -84,6 +88,7 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
   const { entered, motionActive } = useDiagnosticsReportEntrance();
   const reportTitle = resolveHomeSectionString(t, 'resonance', 'reportTitle');
   const closeLabel = resolveHomeSectionString(t, 'resonance', 'close');
+  const ctaReadyLabel = resolveHomeSectionString(t, 'resonance', 'ctaReady');
   const indexPtsLabel = resolveHomeSectionString(t, 'resonance', 'indexPts');
   const liveSpecKicker = resolveHomeSectionString(t, 'resonance', 'liveSpecKicker');
   const homologationId = Math.round(snapshot.overallScore * 100);
@@ -127,11 +132,10 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
       </span>
 
       {/*
-        WHY: Single scroll stream (header → bento → CTA) so SE / 375×667 never dual-scrolls
-        or clips the chamfered button under a nested overflow region.
+        WHY: Scroll carries readout only; sticky cockpit CTA stays visible on SE / 390 / 430.
       */}
       <div
-        className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain ${DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS}`}
+        className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain ${DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS}`}
         data-testid="diagnostics-report-scroll"
       >
         <div
@@ -238,21 +242,28 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
             rows={liveSpecRows}
           />
         </div>
+      </div>
 
-        <div
-          className={`border-t border-zinc-800/80 pt-4 ${DIAGNOSTICS_STAGGER_TRANSITION} ${gpu} ${diagnosticsStaggerVisible(entered, 'y')}`}
-          style={{ transitionDelay: entered ? `${DIAGNOSTICS_STAGGER_DELAY_MS.footer}ms` : '0ms' }}
-          data-testid="diagnostics-report-cta-wrap"
+      <div
+        className={`sticky bottom-0 z-20 w-full shrink-0 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent px-0 pt-3 ${DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS} ${DIAGNOSTICS_STAGGER_TRANSITION} ${gpu} ${diagnosticsStaggerVisible(entered, 'y')}`}
+        style={{ transitionDelay: entered ? `${DIAGNOSTICS_STAGGER_DELAY_MS.footer}ms` : '0ms' }}
+        data-testid="diagnostics-report-cta-wrap"
+      >
+        <button
+          type="button"
+          className={`relative flex h-12 w-full items-center justify-center gap-2.5 border border-orange-500/80 bg-zinc-900 px-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-orange-50 shadow-[0_0_18px_rgba(249,115,22,0.28),inset_0_1px_1px_rgba(255,255,255,0.15)] transition hover:border-orange-400 hover:bg-zinc-900/95 hover:shadow-[0_0_24px_rgba(249,115,22,0.4)] active:translate-y-px active:scale-[0.985] ${CTA_CLIP}`}
+          onClick={onClose}
+          data-testid="diagnostics-report-confirm"
         >
-          <button
-            type="button"
-            className="relative h-11 w-full border border-orange-500/70 bg-zinc-900 px-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-orange-100 shadow-[0_0_18px_rgba(249,115,22,0.22)] transition hover:border-orange-400 hover:bg-zinc-900/90 hover:shadow-[0_0_24px_rgba(249,115,22,0.35)] [clip-path:polygon(10px_0,100%_0,100%_calc(100%-10px),calc(100%-10px)_100%,0_100%,0_10px)]"
-            onClick={onClose}
-            data-testid="diagnostics-report-confirm"
+          <span
+            className="inline-flex shrink-0 items-center gap-1.5 text-[10px] tracking-[0.14em] text-orange-300/90"
+            aria-hidden
           >
-            {closeLabel}
-          </button>
-        </div>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+            {ctaReadyLabel}
+          </span>
+          <span className="min-w-0 truncate">{closeLabel}</span>
+        </button>
       </div>
     </div>
   );

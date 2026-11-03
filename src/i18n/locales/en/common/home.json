@@ -140,6 +140,7 @@
       "reportTitle": "GLOBAL SPEC REPORT // DIAGNOSTICS",
       "bootScore": "---",
       "close": "[ CONFIRM & RETURN // CALIBRATED ]",
+      "ctaReady": "[ ◆ READY ]",
       "indexPts": "INDEX // PTS",
       "homologationId": "HOMOLOGATION ID: #GT-{{id}}",
       "liveSpecKicker": "SIX-AXIS SPEC GRID",

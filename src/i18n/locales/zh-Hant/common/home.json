@@ -140,6 +140,7 @@
       "reportTitle": "全域性能規格報告",
       "bootScore": "---",
       "close": "[ CONFIRM & RETURN // 確認校準 ]",
+      "ctaReady": "[ ◆ READY ]",
       "indexPts": "INDEX // PTS",
       "homologationId": "HOMOLOGATION ID: #GT-{{id}}",
       "liveSpecKicker": "六軸規格網格",

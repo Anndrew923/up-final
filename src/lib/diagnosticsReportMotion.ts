@@ -1,9 +1,18 @@
 /**
- * Bottom pad for report scroll stream — Home Indicator / Android nav clearance.
- * WHY: Additive inset + 1.5rem (≥24px) so the chamfered CTA never sits under the system bar.
+ * Scroll pad under report body — clears sticky mechanical CTA without clipping bento.
+ * WHY: Floating footer owns safe-area; scroll only needs a fixed clearance cushion.
  */
-export const DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS =
-  'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]';
+export const DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS = 'pb-20';
+
+/**
+ * Sticky CTA footer bottom pad — Home Indicator / Android nav clearance.
+ * WHY: Additive inset + 1rem so the floating cockpit button never sits under the system bar.
+ */
+export const DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS =
+  'pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]';
+
+/** @deprecated Prefer DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS — kept for one release alias. */
+export const DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS = DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS;
 
 /** Shared motion tokens for the post-ritual diagnostics report panel. */
 export const DIAGNOSTICS_PANEL_TRANSITION =
