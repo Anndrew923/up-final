@@ -83,6 +83,6 @@ export function dynoIntelSheetScrimVisible(visible: boolean): string {
   return visible ? 'opacity-100' : 'opacity-0';
 }
 
-/** Flagship sheet height — keep aligned with `HomeDiagnosticsReportPanel` (72vh cap, 640px max). */
+/** Dyno Intel sheet height — independent of Home diagnostics report plaque sizing. */
 export const DYNO_INTEL_SHEET_PANEL_HEIGHT_CLASS =
   'h-[min(72dvh,640px)] max-h-[min(80dvh,calc(100dvh-env(safe-area-inset-top)-2rem))]';

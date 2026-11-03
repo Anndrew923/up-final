@@ -27,6 +27,21 @@ export interface HomeDiagnosticsReportPanelProps {
   onClose: () => void;
 }
 
+/** Soft tachometer tick geometry — precomputed so INDEX hero avoids per-render trig. */
+const INDEX_TICK_LINES = Array.from({ length: 24 }, (_, i) => {
+  const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+  const outer = 56;
+  const inner = i % 6 === 0 ? 46 : 50;
+  return {
+    key: i,
+    major: i % 6 === 0,
+    x1: 60 + Math.cos(angle) * inner,
+    y1: 60 + Math.sin(angle) * inner,
+    x2: 60 + Math.cos(angle) * outer,
+    y2: 60 + Math.sin(angle) * outer,
+  };
+});
+
 /** Soft tachometer tick marks behind the INDEX readout — presentational only. */
 const IndexTickMarks: FC = () => (
   <svg
@@ -36,27 +51,18 @@ const IndexTickMarks: FC = () => (
   >
     <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="0.6" className="text-cyan-400/40" />
     <circle cx="60" cy="60" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-cyan-400/30" />
-    {Array.from({ length: 24 }, (_, i) => {
-      const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
-      const outer = 56;
-      const inner = i % 6 === 0 ? 46 : 50;
-      const x1 = 60 + Math.cos(angle) * inner;
-      const y1 = 60 + Math.sin(angle) * inner;
-      const x2 = 60 + Math.cos(angle) * outer;
-      const y2 = 60 + Math.sin(angle) * outer;
-      return (
-        <line
-          key={i}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="currentColor"
-          strokeWidth={i % 6 === 0 ? 1.1 : 0.6}
-          className="text-cyan-300/50"
-        />
-      );
-    })}
+    {INDEX_TICK_LINES.map((tick) => (
+      <line
+        key={tick.key}
+        x1={tick.x1}
+        y1={tick.y1}
+        x2={tick.x2}
+        y2={tick.y2}
+        stroke="currentColor"
+        strokeWidth={tick.major ? 1.1 : 0.6}
+        className="text-cyan-300/50"
+      />
+    ))}
   </svg>
 );
 
@@ -145,12 +151,16 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
           data-testid="diagnostics-report-hero"
         >
           <div className="relative size-[120px] shrink-0 overflow-hidden">
+            {/*
+              WHY: Mini plaque hides vertex labels (`[&_text]:hidden`) — at 120px full lexicon
+              labels clip into the INDEX column and fight the homologation readout.
+            */}
             <HexRadarChart
               points={snapshot.radarPoints}
               scaleMax={scaleMax}
               ritualFill={1}
               suppressEntryAnimation
-              className="relative z-10 size-full origin-center scale-[0.92]"
+              className="relative z-10 size-full origin-center scale-[0.92] [&_text]:hidden"
               aria-label={t('home.radarAria')}
             />
           </div>
@@ -213,7 +223,6 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
         </div>
 
         <IdentityLiveSpecList
-          variant="bento"
           kickerId="identity-live-spec-kicker-report"
           kicker={liveSpecKicker}
           rows={liveSpecRows}

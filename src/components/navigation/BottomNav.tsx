@@ -68,6 +68,7 @@ export default function BottomNav() {
       }}
       aria-label={t('bottomNavAria', { ns: 'common' })}
       aria-hidden={isBlocked}
+      inert={isBlocked ? true : undefined}
     >
       <div className="relative z-10 mx-auto flex h-16 w-full min-w-0 items-center px-2">
         {NAV_ITEMS.map((item, index) => {

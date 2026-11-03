@@ -41,7 +41,7 @@ describe('IdentityLiveSpecList bento', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <IdentityLiveSpecList variant="bento" kicker="六軸規格網格" rows={rows} />
+          <IdentityLiveSpecList kicker="六軸規格網格" rows={rows} />
         </I18nextProvider>
       );
     });
