@@ -33,15 +33,21 @@ function formatBfPct(value: number): string {
 /** Badge + gold numerals fire at >= 100; needle still caps at the rightmost tick. */
 const OVERFLOW_SCORE = 100;
 
+/**
+ * WHY: 7rem (not 6.5) — EN `ABSOLUTE RIGIDITY` at 9px / tracking-0.16em needs ~7rem
+ * single-line; narrower columns wrap and break SpecRow vertical rhythm.
+ */
+const SPEC_ROW_GRID_CLASS = 'grid grid-cols-[7rem_1fr] items-baseline gap-x-3';
+
 const SpecRow: FC<{
   kicker: string;
   title: string;
   subtitle: string;
 }> = ({ kicker, title, subtitle }) => {
   return (
-    <div className="grid grid-cols-[6.5rem_1fr] items-baseline gap-x-3">
+    <div className={SPEC_ROW_GRID_CLASS}>
       <span
-        className={`w-full shrink-0 text-left text-[9px] tracking-[0.16em] ${FOIL_KICKER_CLASS}`}
+        className={`w-full shrink-0 text-left text-[9px] leading-tight tracking-[0.16em] ${FOIL_KICKER_CLASS}`}
       >
         {kicker}
       </span>
@@ -53,6 +59,17 @@ const SpecRow: FC<{
     </div>
   );
 };
+
+/** Precomputed star rays — crest is pure decoration; avoid per-render trig. */
+const GUILLOCHE_RAYS = Array.from({ length: 12 }, (_, i) => {
+  const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+  return {
+    key: i,
+    major: i % 3 === 0,
+    x2: 48 + Math.cos(a) * 40,
+    y2: 48 + Math.sin(a) * 40,
+  };
+});
 
 /** Classical guilloche crest — fills the header→stamp vacuum without competing with foil type. */
 const GuillocheCrest: FC = () => (
@@ -72,23 +89,18 @@ const GuillocheCrest: FC = () => (
       <circle cx="48" cy="48" r="32" stroke="currentColor" strokeWidth="0.55" />
       <circle cx="48" cy="48" r="22" stroke="currentColor" strokeWidth="0.5" />
       <circle cx="48" cy="48" r="12" stroke="currentColor" strokeWidth="0.55" />
-      {Array.from({ length: 12 }, (_, i) => {
-        const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-        const x2 = 48 + Math.cos(a) * 40;
-        const y2 = 48 + Math.sin(a) * 40;
-        return (
-          <line
-            key={i}
-            x1="48"
-            y1="48"
-            x2={x2}
-            y2={y2}
-            stroke="currentColor"
-            strokeWidth={i % 3 === 0 ? 0.7 : 0.4}
-            opacity={i % 3 === 0 ? 0.9 : 0.55}
-          />
-        );
-      })}
+      {GUILLOCHE_RAYS.map((ray) => (
+        <line
+          key={ray.key}
+          x1="48"
+          y1="48"
+          x2={ray.x2}
+          y2={ray.y2}
+          stroke="currentColor"
+          strokeWidth={ray.major ? 0.7 : 0.4}
+          opacity={ray.major ? 0.9 : 0.55}
+        />
+      ))}
       <circle cx="48" cy="48" r="3.2" fill="currentColor" opacity="0.55" />
     </svg>
   </div>

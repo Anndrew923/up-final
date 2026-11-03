@@ -76,7 +76,7 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain(FOIL_HERO_WING_LEFT_CLASS);
     expect(html).toContain(FOIL_HERO_WING_RIGHT_CLASS);
     expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
-    expect(html).toContain('grid-cols-[6.5rem_1fr]');
+    expect(html).toContain('grid-cols-[7rem_1fr]');
     expect(html).toContain('自律狠人');
     expect(html).not.toContain('【');
     expect(html).not.toContain('】');
@@ -115,8 +115,8 @@ describe('AestheticSpecCard certificate surface', () => {
       expect(html).toContain('LOCKED IN');
       expect(html).not.toContain('【');
       expect(html).not.toContain('】');
-      // WHY: Fixed 6.5rem kicker column keeps EN label widths from shifting title plumb lines.
-      expect(html).toContain('grid-cols-[6.5rem_1fr]');
+      // WHY: Fixed 7rem kicker column keeps EN label widths from shifting title plumb lines.
+      expect(html).toContain('grid-cols-[7rem_1fr]');
       expect(html).toContain('ABSOLUTE RIGIDITY');
       expect(html).toContain('VISUAL TENSION');
       expect(html).toContain('PRIMAL DRIVE');
