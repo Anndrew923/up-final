@@ -304,6 +304,11 @@ describe('aesthetic copy isolation', () => {
             expect(pack[kind][gender][bandId].title.trim().length, path).toBeGreaterThan(0);
             expect(pack[kind][gender][bandId].title.trim().length, path).toBeLessThanOrEqual(15);
             expect(pack[kind][gender][bandId].subtitle.trim().length, path).toBeGreaterThan(0);
+            // WHY: SpecRow line-clamp-2 + 7rem grid — EN dual-clause subtitles over 42 chars
+            // truncate mid-phrase; gate keeps copy polish from reintroducing overflow.
+            if (localeId === 'en') {
+              expect(pack[kind][gender][bandId].subtitle.length, path).toBeLessThanOrEqual(42);
+            }
           }
         }
       }
@@ -331,8 +336,8 @@ describe('aesthetic copy isolation', () => {
     expect(en.labels.visualLineWithNote).toContain('{{subtitle}}');
     expect(en.labels.visualLineWithNote).toContain('{{note}}');
     expect(en.visual.assassin.subtitle).toBe('LOOKS CAN KILL');
-    expect(en.force.m['110'].subtitle).toBe('UNREAL TRAINING WEIGHT · GYM BROS STARING IN SHOCK');
-    expect(en.kinetic.m['100'].subtitle).toBe('TIRED IS NOT IN VOCABULARY · HOPELESS GAP FOR RIVALS');
+    expect(en.force.m['110'].subtitle).toBe('UNREAL WEIGHT · BROS STARING');
+    expect(en.kinetic.m['100'].subtitle).toBe('NO WORD FOR TIRED · RIVALS GAPPED');
     expect(en.kinetic.m['90'].title).toBe('SCARY STAMINA');
     expect(en.labels.brandHeader).toBe('UP // DOMINANCE:');
     expect(en.labels.brandHeader.length).toBeLessThanOrEqual(16);

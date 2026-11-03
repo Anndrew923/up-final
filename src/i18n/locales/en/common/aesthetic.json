@@ -76,54 +76,54 @@
     },
     "force": {
       "m": {
-        "base": { "title": "CAN'T OPEN JARS", "subtitle": "CAN'T EVEN OPEN BOTTLES · DORMANT BEAST INSIDE" },
-        "50": { "title": "GROCERY BEAST", "subtitle": "ALL GROCERIES IN ONE TRIP · AWAKENING THE FRAME" },
+        "base": { "title": "CAN'T OPEN JARS", "subtitle": "CAN'T OPEN BOTTLES · BEAST DORMANT" },
+        "50": { "title": "GROCERY BEAST", "subtitle": "ONE-TRIP GROCERIES · FRAME AWAKENING" },
         "60": { "title": "SKINNY NO MORE", "subtitle": "OPENS JARS SOLO · FINALLY LOOKING SOLID" },
-        "70": { "title": "SLEEVE BUSTER", "subtitle": "PUMP FELT IN SLEEVES · WALKING WITH ARMOR" },
-        "80": { "title": "BICEP DIPLOMACY", "subtitle": "LET THE GUNS NEGOTIATE · ULTIMATE HUG SECURITY" },
-        "90": { "title": "WALKING WEAPON", "subtitle": "CRUSHING APPLES BAREHANDED · BONES BREAK ON CONTACT" },
-        "100": { "title": "OBJECT CRUSHER", "subtitle": "WATCH YOUR HANDSHAKES · PROPERTY DAMAGE HAZARD" },
-        "110": { "title": "FAKE PLATES???", "subtitle": "UNREAL TRAINING WEIGHT · GYM BROS STARING IN SHOCK" },
-        "120": { "title": "PODIUM OWNER", "subtitle": "THE PODIUM IS YOUR HOME · LET OTHERS WIN SOMETIMES" },
-        "130": { "title": "PHYSICS CRUSHER", "subtitle": "PHYSICS JUST QUIT · EVEN GRAVITY SALUTES YOU" }
+        "70": { "title": "SLEEVE BUSTER", "subtitle": "PUMP IN THE SLEEVES · WALKING ARMOR" },
+        "80": { "title": "BICEP DIPLOMACY", "subtitle": "GUNS NEGOTIATE · HUG SECURITY" },
+        "90": { "title": "WALKING WEAPON", "subtitle": "CRUSHES APPLES SOLO · BONES CRACK ON HIT" },
+        "100": { "title": "OBJECT CRUSHER", "subtitle": "WATCH HANDSHAKES · PROPERTY HAZARD" },
+        "110": { "title": "FAKE PLATES???", "subtitle": "UNREAL WEIGHT · BROS STARING" },
+        "120": { "title": "PODIUM OWNER", "subtitle": "PODIUM IS HOME · LET OTHERS WIN" },
+        "130": { "title": "PHYSICS CRUSHER", "subtitle": "PHYSICS QUIT · GRAVITY SALUTES" }
       },
       "f": {
-        "base": { "title": "DELICATE FLOWER", "subtitle": "NEEDS HELP WITH BOTTLES · AWAKENING HIDDEN CHARM" },
-        "50": { "title": "COSTCO QUEEN", "subtitle": "ONE-HAND MILK BOX CARRY · EFFORTLESSLY INDEPENDENT" },
-        "60": { "title": "BUILT DIFFERENT", "subtitle": "MOVING FURNITURE WITH EASE · CHILL EFFORTLESS CHARM" },
-        "70": { "title": "WATER JUG PRO", "subtitle": "5-GALLON FLIP IN ONE GO · BROS STARING JAW DROPPED" },
-        "80": { "title": "LID DESTROYER", "subtitle": "TIGHT LIDS POP IN SECONDS · BOW DOWN TO SISTER POWER" },
-        "90": { "title": "BROS SALUTE YOU", "subtitle": "CASUAL 225LB DEADLIFT · GYM RATS CLEAR SQUAT RACK" },
-        "100": { "title": "COMMAND RESPECT", "subtitle": "SQUAT WEIGHT SCARING BROS · CALL HER MA'AM" },
-        "110": { "title": "BOYFRIEND CARRY", "subtitle": "ONE-ARM BF CARRY · KNEE-WEAKENING DOMINANCE" },
-        "120": { "title": "MOVES CARS SOLO", "subtitle": "ILLEGAL PARKING BEGONE · UNREAL EFFORTLESS POWER" },
-        "130": { "title": "NEWTON SILENCED", "subtitle": "LAWS OF PHYSICS DELETED · KNEEL BEFORE HER POWER" }
+        "base": { "title": "DELICATE FLOWER", "subtitle": "NEEDS BOTTLE HELP · CHARM AWAKENING" },
+        "50": { "title": "COSTCO QUEEN", "subtitle": "ONE-HAND MILK CARRY · INDEPENDENT" },
+        "60": { "title": "BUILT DIFFERENT", "subtitle": "MOVES FURNITURE EASY · CHILL CHARM" },
+        "70": { "title": "WATER JUG PRO", "subtitle": "5-GALLON FLIP · BROS JAW DROPPED" },
+        "80": { "title": "LID DESTROYER", "subtitle": "LIDS POP FAST · SISTER POWER" },
+        "90": { "title": "BROS SALUTE YOU", "subtitle": "CASUAL 225 DEADLIFT · RACK CLEARED" },
+        "100": { "title": "COMMAND RESPECT", "subtitle": "SQUATS SCARE BROS · CALL HER MA'AM" },
+        "110": { "title": "BOYFRIEND CARRY", "subtitle": "ONE-ARM BF CARRY · WEAK KNEES" },
+        "120": { "title": "MOVES CARS SOLO", "subtitle": "ILLEGAL PARKING BEGONE · RAW POWER" },
+        "130": { "title": "NEWTON SILENCED", "subtitle": "PHYSICS DELETED · KNEEL TO HER" }
       }
     },
     "kinetic": {
       "m": {
-        "base": { "title": "CALLS AN UBER", "subtitle": "LIFE IS MEANT FOR REST · DORMANT STAMINA WAITING" },
+        "base": { "title": "CALLS AN UBER", "subtitle": "LIFE IS FOR REST · STAMINA DORMANT" },
         "50": { "title": "CORNER CRUISER", "subtitle": "FEW EXTRA STEPS · DAILY CARDIO QUOTA MET" },
-        "60": { "title": "BUS CHASER", "subtitle": "SPRINTING FOR BUS NO PROBLEM · EFFORTLESS CHILL ENERGY" },
-        "70": { "title": "ICE-COLD HEART", "subtitle": "HEARTBEAT CALMER THAN A PLAYBOY · CHILL HAIR FLIP" },
-        "80": { "title": "STILL CHILLING", "subtitle": "OTHERS GASPING WHILE YOU ACCELERATE · ZERO STRUGGLE" },
-        "90": { "title": "SCARY STAMINA", "subtitle": "HIIT IS JUST A WARMUP · BOTTOMLESS INTIMIDATING GAS TANK" },
-        "100": { "title": "FATIGUE IMMUNE", "subtitle": "TIRED IS NOT IN VOCABULARY · HOPELESS GAP FOR RIVALS" },
-        "110": { "title": "ZERO COOLDOWN", "subtitle": "ZERO COOLDOWN TIME · READY FOR ROUND TWO IN SECONDS" },
-        "120": { "title": "OUTRUN ZOMBIES", "subtitle": "ZOMBIES CHASE ALL DAY IN VAIN · STAMINA BAR PERMA-FULL" },
-        "130": { "title": "MARATHON STROLL", "subtitle": "MARATHONS ARE DINNER STROLLS · BROKE HUMAN BIOLOGY" }
+        "60": { "title": "BUS CHASER", "subtitle": "BUS SPRINTS EASY · CHILL ENERGY" },
+        "70": { "title": "ICE-COLD HEART", "subtitle": "CALMER THAN A PLAYBOY · HAIR FLIP" },
+        "80": { "title": "STILL CHILLING", "subtitle": "OTHERS GASP · YOU ACCELERATE" },
+        "90": { "title": "SCARY STAMINA", "subtitle": "HIIT IS WARMUP · BOTTOMLESS TANK" },
+        "100": { "title": "FATIGUE IMMUNE", "subtitle": "NO WORD FOR TIRED · RIVALS GAPPED" },
+        "110": { "title": "ZERO COOLDOWN", "subtitle": "ZERO COOLDOWN · ROUND TWO READY" },
+        "120": { "title": "OUTRUN ZOMBIES", "subtitle": "ZOMBIES CHASE IN VAIN · BAR FULL" },
+        "130": { "title": "MARATHON STROLL", "subtitle": "MARATHONS ARE STROLLS · BIOLOGY BROKE" }
       },
       "f": {
-        "base": { "title": "ELEVATOR ONLY", "subtitle": "NEVER STAND IF YOU CAN SIT · RESERVING BASE ENERGY" },
-        "50": { "title": "HOT GIRL WALKER", "subtitle": "ALL DAY SHOPPING NO PROBLEM · JOGGING NOT INCLUDED" },
-        "60": { "title": "PILATES GLOW", "subtitle": "LIGHT FOOTED & RHYTHMIC · EFFORTLESS FAIRY AURA" },
-        "70": { "title": "DEWY GLOW QUEEN", "subtitle": "POST-WORKOUT ROSY CHEEKS · IRRESISTIBLE HEALTHY GLOW" },
-        "80": { "title": "SPIN BIKE FAIRY", "subtitle": "OTHERS COLLAPSING ON BIKE · YOU DAB SWEAT AND GLOW" },
-        "90": { "title": "TRAIL READY", "subtitle": "PEAKS & HALF-MARATHONS ANYTIME · VIBRANT ATHLETIC GRACE" },
-        "100": { "title": "OUTRUNNING BROS", "subtitle": "POKER-FACED THROUGH HIIT · BROS LEFT STRUGGLING BEHIND" },
-        "110": { "title": "INSTANT REBOOT", "subtitle": "TWO DEEP BREATHS RESET · DEEP BOTTOMLESS GAS TANK" },
-        "120": { "title": "TRIATHLON CHILL", "subtitle": "ULTRA MARATHON IS A PICNIC · UNSTOPPABLE WILD FORCE" },
-        "130": { "title": "ENDURANCE QUEEN", "subtitle": "MARATHON MYTH SPECS · TRANSCENDING HUMAN LIMITS FOREVER" }
+        "base": { "title": "ELEVATOR ONLY", "subtitle": "NEVER STAND · RESERVING BASE ENERGY" },
+        "50": { "title": "HOT GIRL WALKER", "subtitle": "ALL-DAY SHOPPING · JOGGING SKIPPED" },
+        "60": { "title": "PILATES GLOW", "subtitle": "LIGHT FOOTED · FAIRY AURA" },
+        "70": { "title": "DEWY GLOW QUEEN", "subtitle": "ROSY POST-WORKOUT · HEALTHY GLOW" },
+        "80": { "title": "SPIN BIKE FAIRY", "subtitle": "OTHERS COLLAPSE · YOU STILL GLOW" },
+        "90": { "title": "TRAIL READY", "subtitle": "PEAKS ANYTIME · ATHLETIC GRACE" },
+        "100": { "title": "OUTRUNNING BROS", "subtitle": "POKER FACE HIIT · BROS GASPING" },
+        "110": { "title": "INSTANT REBOOT", "subtitle": "TWO BREATHS RESET · GAS TANK FULL" },
+        "120": { "title": "TRIATHLON CHILL", "subtitle": "ULTRA IS A PICNIC · WILD FORCE" },
+        "130": { "title": "ENDURANCE QUEEN", "subtitle": "MARATHON MYTH · BEYOND HUMAN LIMITS" }
       }
     },
     "labels": {
