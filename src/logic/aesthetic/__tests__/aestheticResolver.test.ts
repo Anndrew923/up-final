@@ -282,12 +282,13 @@ describe('aesthetic copy isolation', () => {
     expect(Object.keys(en.force.m).sort()).toEqual(decadeKeys);
     expect(Object.keys(en.kinetic.f).sort()).toEqual(decadeKeys);
     for (const id of VISUAL_SPEC_IDS) {
-      // WHY: Spec card HUD budgets zh visual titles at <=15 code units; keep the gate in-repo
-      // so copy polish cannot silently reintroduce overflow without a failing locale test.
+      // WHY: Spec card HUD budgets visual titles at <=15 code units in both locales; keep the
+      // gate in-repo so copy polish cannot silently reintroduce overflow.
       expect(zh.visual[id].title.trim().length, id).toBeGreaterThan(0);
       expect(zh.visual[id].title.trim().length, id).toBeLessThanOrEqual(15);
       expect(zh.visual[id].subtitle.trim().length, id).toBeGreaterThan(0);
       expect(en.visual[id].title.trim().length, id).toBeGreaterThan(0);
+      expect(en.visual[id].title.trim().length, id).toBeLessThanOrEqual(15);
       expect(en.visual[id].subtitle.trim().length, id).toBeGreaterThan(0);
     }
     expect(zh.labels.bodyFatValue).toContain('{{bf}}');
