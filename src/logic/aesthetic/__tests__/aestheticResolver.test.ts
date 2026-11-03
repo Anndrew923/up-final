@@ -292,19 +292,21 @@ describe('aesthetic copy isolation', () => {
       expect(en.visual[id].subtitle.trim().length, id).toBeGreaterThan(0);
     }
     for (const bandId of DECADE_BAND_IDS) {
-      // WHY: Force/kinetic titles share the SpecRow title budget; clamp zh ladder copy.
-      expect(zh.force.m[bandId].title.trim().length, `force.m.${bandId}`).toBeGreaterThan(0);
-      expect(zh.force.m[bandId].title.trim().length, `force.m.${bandId}`).toBeLessThanOrEqual(15);
-      expect(zh.force.f[bandId].title.trim().length, `force.f.${bandId}`).toBeGreaterThan(0);
-      expect(zh.force.f[bandId].title.trim().length, `force.f.${bandId}`).toBeLessThanOrEqual(15);
-      expect(zh.force.m[bandId].subtitle.trim().length, `force.m.${bandId}`).toBeGreaterThan(0);
-      expect(zh.force.f[bandId].subtitle.trim().length, `force.f.${bandId}`).toBeGreaterThan(0);
-      expect(zh.kinetic.m[bandId].title.trim().length, `kinetic.m.${bandId}`).toBeGreaterThan(0);
-      expect(zh.kinetic.m[bandId].title.trim().length, `kinetic.m.${bandId}`).toBeLessThanOrEqual(15);
-      expect(zh.kinetic.f[bandId].title.trim().length, `kinetic.f.${bandId}`).toBeGreaterThan(0);
-      expect(zh.kinetic.f[bandId].title.trim().length, `kinetic.f.${bandId}`).toBeLessThanOrEqual(15);
-      expect(zh.kinetic.m[bandId].subtitle.trim().length, `kinetic.m.${bandId}`).toBeGreaterThan(0);
-      expect(zh.kinetic.f[bandId].subtitle.trim().length, `kinetic.f.${bandId}`).toBeGreaterThan(0);
+      // WHY: Force/kinetic titles share the SpecRow title budget; clamp zh+en ladder copy.
+      for (const locale of [
+        ['zh', zh],
+        ['en', en],
+      ] as const) {
+        const [localeId, pack] = locale;
+        for (const kind of ['force', 'kinetic'] as const) {
+          for (const gender of ['m', 'f'] as const) {
+            const path = `${localeId}.${kind}.${gender}.${bandId}`;
+            expect(pack[kind][gender][bandId].title.trim().length, path).toBeGreaterThan(0);
+            expect(pack[kind][gender][bandId].title.trim().length, path).toBeLessThanOrEqual(15);
+            expect(pack[kind][gender][bandId].subtitle.trim().length, path).toBeGreaterThan(0);
+          }
+        }
+      }
     }
     expect(zh.labels.bodyFatValue).toContain('{{bf}}');
     expect(en.labels.bodyFatValue).toContain('{{bf}}');
@@ -329,9 +331,9 @@ describe('aesthetic copy isolation', () => {
     expect(en.labels.visualLineWithNote).toContain('{{subtitle}}');
     expect(en.labels.visualLineWithNote).toContain('{{note}}');
     expect(en.visual.assassin.subtitle).toBe('LOOKS CAN KILL');
-    expect(en.force.m['110'].subtitle).toBe('WRECKING BALL ENERGY');
-    expect(en.kinetic.m['100'].subtitle).toBe('PAIN IS JUST A WORD');
-    expect(en.kinetic.m['90'].title).toBe('DAVID GOGGINS ENERGY');
+    expect(en.force.m['110'].subtitle).toBe('UNREAL TRAINING WEIGHT · GYM BROS STARING IN SHOCK');
+    expect(en.kinetic.m['100'].subtitle).toBe('TIRED IS NOT IN VOCABULARY · HOPELESS GAP FOR RIVALS');
+    expect(en.kinetic.m['90'].title).toBe('SCARY STAMINA');
     expect(en.labels.brandHeader).toBe('UP // DOMINANCE:');
     expect(en.labels.brandHeader.length).toBeLessThanOrEqual(16);
     expect(en.labels.forceMetric).toBe('RIGID BURST');
