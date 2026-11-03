@@ -77,7 +77,7 @@ const CTA_CLIP =
 /**
  * Scrollable global spec report with panel + staggered entrance.
  * WHY: rAF-triggered transitions avoid iOS WebView keyframe+backdrop-filter bugs that left opacity stuck at 0.
- * Sticky mechanical CTA stays resident; scroll body only carries readout + bento.
+ * Flex-footer mechanical CTA stays resident; scroll body only carries readout + bento.
  */
 const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
   snapshot,
@@ -244,8 +244,12 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
         </div>
       </div>
 
+      {/*
+        WHY: Flex footer (not CSS sticky-in-scroll) — CTA is a shrink-0 sibling of the scroll
+        stream so it stays resident without nested sticky hit-testing quirks on iOS WebView.
+      */}
       <div
-        className={`sticky bottom-0 z-20 w-full shrink-0 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent px-0 pt-3 ${DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS} ${DIAGNOSTICS_STAGGER_TRANSITION} ${gpu} ${diagnosticsStaggerVisible(entered, 'y')}`}
+        className={`z-20 w-full shrink-0 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent px-0 pt-3 ${DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS} ${DIAGNOSTICS_STAGGER_TRANSITION} ${gpu} ${diagnosticsStaggerVisible(entered, 'y')}`}
         style={{ transitionDelay: entered ? `${DIAGNOSTICS_STAGGER_DELAY_MS.footer}ms` : '0ms' }}
         data-testid="diagnostics-report-cta-wrap"
       >

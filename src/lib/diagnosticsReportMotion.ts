@@ -11,9 +11,6 @@ export const DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS = 'pb-20';
 export const DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS =
   'pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]';
 
-/** @deprecated Prefer DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS — kept for one release alias. */
-export const DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS = DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS;
-
 /** Shared motion tokens for the post-ritual diagnostics report panel. */
 export const DIAGNOSTICS_PANEL_TRANSITION =
   'motion-safe:transition-[opacity,transform] motion-safe:duration-[600ms] motion-safe:ease-report-ease motion-reduce:transition-none';

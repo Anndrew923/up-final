@@ -89,15 +89,14 @@ describe('HomeDiagnosticsReportPanel', () => {
     ) as HTMLElement | null;
     expect(scroll).not.toBeNull();
     expect(scroll?.className).toContain(DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS);
-    expect(scroll?.className).toContain('pb-20');
+    expect(DIAGNOSTICS_REPORT_SCROLL_PAD_CLASS).toBe('pb-20');
     expect(scroll?.className).toContain('overflow-y-auto');
 
     const ctaWrap = document.querySelector(
       '[data-testid="diagnostics-report-cta-wrap"]'
     ) as HTMLElement | null;
     expect(ctaWrap).not.toBeNull();
-    expect(ctaWrap?.className).toContain('sticky');
-    expect(ctaWrap?.className).toContain('bottom-0');
+    expect(ctaWrap?.className).toContain('shrink-0');
     expect(ctaWrap?.className).toContain('bg-gradient-to-t');
     expect(ctaWrap?.className).toContain(DIAGNOSTICS_REPORT_CTA_SAFE_BOTTOM_CLASS);
 
