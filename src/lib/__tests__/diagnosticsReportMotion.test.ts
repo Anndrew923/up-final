@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS,
   diagnosticsPanelVisible,
   diagnosticsStaggerVisible,
   diagnosticsWillChange,
 } from '../diagnosticsReportMotion';
 
 describe('diagnosticsReportMotion', () => {
+  it('locks Home Indicator clearance token for report CTA scroll pad', () => {
+    expect(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS).toBe(
+      'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]'
+    );
+  });
+
   it('returns hidden panel classes before entrance', () => {
     expect(diagnosticsPanelVisible(false)).toContain('opacity-0');
     expect(diagnosticsPanelVisible(true)).toContain('opacity-100');

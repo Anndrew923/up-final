@@ -87,7 +87,7 @@ describe('HomeDiagnosticsReportPanel', () => {
     expect(scroll).not.toBeNull();
     expect(scroll?.className).toContain(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS);
     expect(scroll?.className).toContain('overflow-y-auto');
-    expect(scroll?.className).toContain(
+    expect(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS).toBe(
       'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]'
     );
 
@@ -99,12 +99,15 @@ describe('HomeDiagnosticsReportPanel', () => {
     expect(confirm?.textContent).toContain('CONFIRM & RETURN');
     // CTA lives inside the single scroll stream — not clipped by a sibling sticky footer region.
     expect(scroll?.contains(confirm)).toBe(true);
+    expect(
+      document.querySelector('[data-testid="diagnostics-report-cta-wrap"]')?.contains(confirm)
+    ).toBe(true);
 
     const panel = document.querySelector(
       '[data-testid="home-diagnostics-report-panel"]'
     ) as HTMLElement | null;
     expect(panel?.className).toContain('overflow-hidden');
-    expect(panel?.className).toContain('max-h-[min(85vh,720px)]');
+    expect(panel?.className).toContain('max-h-[min(calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2.5rem),720px)]');
 
     act(() => {
       confirm?.click();

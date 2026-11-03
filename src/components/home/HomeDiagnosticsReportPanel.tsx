@@ -110,7 +110,7 @@ const HomeDiagnosticsReportPanel: FC<HomeDiagnosticsReportPanelProps> = ({
 
   return (
     <div
-      className={`relative flex max-h-[min(85vh,720px)] flex-col overflow-hidden ${DIAGNOSTICS_PANEL_TRANSITION} ${gpu} ${diagnosticsPanelVisible(entered)}`}
+      className={`relative flex max-h-[min(calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2.5rem),720px)] flex-col overflow-hidden ${DIAGNOSTICS_PANEL_TRANSITION} ${gpu} ${diagnosticsPanelVisible(entered)}`}
       data-testid="home-diagnostics-report-panel"
     >
       <span className={`${CORNER_MARK} left-0 top-0`} aria-hidden>

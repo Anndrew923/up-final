@@ -79,7 +79,10 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] isolate flex flex-col overflow-y-auto overscroll-y-contain pointer-events-auto px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+      // WHY: Report mode locks outer overflow so only the plaque scroll stream moves (no nested dual-scroll).
+      className={`fixed inset-0 z-[9999] isolate flex flex-col pointer-events-auto px-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] ${
+        isReport ? 'overflow-hidden' : 'overflow-y-auto overscroll-y-contain'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label={isReport ? reportTitle : overlayAria}
