@@ -44,8 +44,10 @@ const SpecRow: FC<{
         {kicker}
       </span>
       <div className="min-w-0">
-        <p className="text-[12px] font-medium leading-tight text-zinc-100">{title}</p>
-        <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">{subtitle}</p>
+        {/* WHY: Fixed 9:16 plate + overflow-hidden — unbounded wrap on long zh subtitles can
+            push meters/footer off-stage. Clamp keeps the three SpecRows inside the flex budget. */}
+        <p className="truncate text-[12px] font-medium leading-tight text-zinc-100">{title}</p>
+        <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-zinc-500">{subtitle}</p>
       </div>
     </div>
   );

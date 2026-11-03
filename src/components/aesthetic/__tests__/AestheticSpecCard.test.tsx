@@ -87,6 +87,9 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).not.toContain('--fill:90%');
     expect(html).toContain('translate3d(var(--fill), -50%, 0)');
     expect(html).toContain('gap-y-5');
+    // WHY: SpecRow must clamp title/subtitle so long zh force/kinetic copy cannot blow the 9:16 plate.
+    expect(html).toContain('truncate text-[12px]');
+    expect(html).toContain('line-clamp-2 text-[10px]');
     expect(html).not.toContain('<button');
     expect(html).not.toContain('ui-btn-primary');
     expect(html).not.toContain('挑戰此身形規格');

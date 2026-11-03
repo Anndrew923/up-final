@@ -291,6 +291,15 @@ describe('aesthetic copy isolation', () => {
       expect(en.visual[id].title.trim().length, id).toBeLessThanOrEqual(15);
       expect(en.visual[id].subtitle.trim().length, id).toBeGreaterThan(0);
     }
+    for (const bandId of DECADE_BAND_IDS) {
+      // WHY: Force titles share the same SpecRow title budget as visual; clamp zh ladder copy.
+      expect(zh.force.m[bandId].title.trim().length, `force.m.${bandId}`).toBeGreaterThan(0);
+      expect(zh.force.m[bandId].title.trim().length, `force.m.${bandId}`).toBeLessThanOrEqual(15);
+      expect(zh.force.f[bandId].title.trim().length, `force.f.${bandId}`).toBeGreaterThan(0);
+      expect(zh.force.f[bandId].title.trim().length, `force.f.${bandId}`).toBeLessThanOrEqual(15);
+      expect(zh.force.m[bandId].subtitle.trim().length, `force.m.${bandId}`).toBeGreaterThan(0);
+      expect(zh.force.f[bandId].subtitle.trim().length, `force.f.${bandId}`).toBeGreaterThan(0);
+    }
     expect(zh.labels.bodyFatValue).toContain('{{bf}}');
     expect(en.labels.bodyFatValue).toContain('{{bf}}');
     expect(zh.labels.overflowBadge).toBe('超限');
