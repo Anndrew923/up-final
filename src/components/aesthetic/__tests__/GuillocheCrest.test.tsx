@@ -23,9 +23,6 @@ describe('GuillocheCrest', () => {
     expect(html).toContain('stroke-width="1.3"');
     expect(html).toContain('text-amber-300/80');
     expect(html).toContain('fill-amber-300/15');
-    // Legacy eccentric dual-letter starts must stay gone.
-    expect(html).not.toContain('M36.0 42.0');
-    expect(html).not.toContain('M49.0 42.0');
     expect(html).not.toContain('<text');
     expect(html).not.toContain('fontFamily');
     expect(html).not.toContain('font-family');

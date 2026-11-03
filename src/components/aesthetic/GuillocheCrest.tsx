@@ -72,7 +72,8 @@ const GuillocheCrest: FC = () => (
         <path d={HEX_DIAMOND_TOP} className="fill-amber-300/40" stroke="currentColor" strokeWidth="0.4" />
         <path d={HEX_DIAMOND_BOTTOM} className="fill-amber-300/40" stroke="currentColor" strokeWidth="0.4" />
       </g>
-      {/* Monolithic spine UP — symmetric about (48, 48) */}
+      {/* Monolithic spine UP — symmetric about (48, 48). Paths are open polylines; stroke
+          carries the mark. fill-* is kept for SVG inheritance if a segment is later closed. */}
       <g
         data-testid="aesthetic-guilloche-monogram"
         className="text-amber-300/80 fill-amber-300/15"
