@@ -16,24 +16,23 @@ const GUILLOCHE_TEETH = Array.from({ length: 60 }, (_, i) => {
 });
 
 /**
- * WHY: Pure vector monogram — system <text> varies by WebView font metrics and reads as UI type,
- * not an engraved seal. 45° chamfers + stencil notches mimic watch-case / nameplate machining.
+ * WHY: One continuous closed ribbon per glyph (no stencil slits, no stem/bowl gaps) —
+ * thick filled stencil reads as blocky UI type at 24px; hairline stroke + micro fill
+ * matches cold-steel seal chrome while keeping ~35% hex breathing room.
  *
- * Coordinate space: viewBox 0–96, optically centered in the hex (~34–62 × 39–57).
+ * Glyph box ≈ y 42–54; U/P gap ≈ 2.4 units. Ribbon thickness ≈ 1.4–1.6 (stroke 1.2 sits on edge).
  */
 const UP_MONOGRAM_U =
-  'M35.2 39.6 L37.6 39.6 L37.6 49.4 L38.8 50.6 L42.4 50.6 L43.6 49.4 L43.6 39.6 L46.0 39.6 ' +
-  'L46.0 50.0 L43.8 52.8 L37.4 52.8 L35.2 50.0 Z ' +
-  // Stencil slit through the U bottom bar (evenodd hole).
-  'M39.0 49.2 L43.0 49.2 L43.0 50.4 L39.0 50.4 Z';
+  'M36.0 42.0 L37.5 42.0 L37.5 50.8 L38.8 52.0 L43.8 52.0 L45.1 50.8 L45.1 42.0 L46.6 42.0 ' +
+  'L46.6 51.4 L44.6 53.8 L38.0 53.8 L36.0 51.4 Z';
 
 const UP_MONOGRAM_P =
-  // Stem with 45° top/bottom chamfers + mid stencil break.
-  'M48.2 39.6 L50.6 39.6 L50.6 43.4 L49.4 44.6 L49.4 46.8 L50.6 48.0 L50.6 52.8 L48.2 52.8 ' +
-  'L48.2 48.6 L49.4 47.4 L49.4 43.8 L48.2 42.6 Z ' +
-  // Bowl with chamfered outer corners; micro gap at stem junction (stencil).
-  'M51.4 39.8 L57.2 39.8 L59.4 42.0 L59.4 46.2 L57.2 48.4 L51.4 48.4 L51.4 46.6 L56.4 46.6 ' +
-  'L57.4 45.6 L57.4 42.6 L56.4 41.6 L51.4 41.6 Z';
+  // Continuous stem+bowl ribbon: enter bowl counter at the join so the eye stays open —
+  // never a floating gap between stem and bowl.
+  'M49.0 42.0 L50.5 42.0 L50.5 43.0 L55.8 43.0 L57.6 44.8 L57.6 47.8 L55.8 49.6 L50.5 49.6 ' +
+  'L50.5 48.4 L55.0 48.4 L55.8 47.6 L55.8 45.0 L55.0 44.2 L50.5 44.2 L50.5 53.8 L49.0 53.8 Z';
+
+const UP_MONOGRAM_PATH_CLASS = 'fill-amber-300/15';
 
 /**
  * WHY: UP hex-shield seal (not radial "radar") — geometric anti-forgery crest that reads as
@@ -47,7 +46,7 @@ const GuillocheCrest: FC = () => (
   >
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.12)_0%,_transparent_70%)]" />
     <svg
-      className="size-24 text-amber-300/35"
+      className="size-24 text-amber-300/60"
       viewBox="0 0 96 96"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -81,19 +80,23 @@ const GuillocheCrest: FC = () => (
         strokeLinejoin="round"
         opacity="0.7"
       />
-      {/* Engraved chamfer UP — fill + hairline stroke for metal-cut depth */}
-      <g data-testid="aesthetic-guilloche-monogram" fillRule="evenodd">
+      {/* Hairline chiseled UP — continuous ribbons, stroke-driven cold steel */}
+      <g data-testid="aesthetic-guilloche-monogram">
         <path
           d={UP_MONOGRAM_U}
-          className="fill-amber-300/40 stroke-amber-300/50"
-          strokeWidth="0.35"
-          strokeLinejoin="miter"
+          className={UP_MONOGRAM_PATH_CLASS}
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
         />
         <path
           d={UP_MONOGRAM_P}
-          className="fill-amber-300/40 stroke-amber-300/50"
-          strokeWidth="0.35"
-          strokeLinejoin="miter"
+          className={UP_MONOGRAM_PATH_CLASS}
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
         />
       </g>
     </svg>
