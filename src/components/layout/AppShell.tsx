@@ -71,6 +71,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         style={{
           paddingBottom: bottomChromeCalc(scrollBottomInsetPx),
         }}
+        // WHY: Ritual / boot overlays portal above shell — inert + aria-hidden stop dual scroll & AT bleed.
+        inert={isShellBlocked ? true : undefined}
+        aria-hidden={isShellBlocked || undefined}
       >
         {children ?? <ShellAnimatedOutlet />}
       </div>
@@ -78,6 +81,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       <div
         id="layer-shell-frame"
         className={`pointer-events-none fixed inset-x-0 top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
+        inert={isShellBlocked ? true : undefined}
+        aria-hidden={isShellBlocked || undefined}
       >
         {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
         <div

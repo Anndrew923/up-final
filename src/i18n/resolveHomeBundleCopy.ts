@@ -59,9 +59,10 @@ function resolveHomeLeafString(
 export function resolveHomeSectionString(
   t: TFunction,
   section: HomeSection,
-  field: string
+  field: string,
+  interpolation?: Record<string, unknown>
 ): string {
-  return resolveHomeLeafString(t, `home.${section}`, field);
+  return resolveHomeLeafString(t, `home.${section}`, field, { interpolation });
 }
 
 /**

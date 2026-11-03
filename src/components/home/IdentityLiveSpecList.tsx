@@ -1,4 +1,9 @@
 import type { FC } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  formatSixAxisDataGridMechAnnotation,
+  resolveSixAxisDataGridLabelParts,
+} from '../../i18n/resolveSixAxisDataGridLabel';
 import type { SixAxisMetric } from '../../types/scoring';
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 
@@ -7,7 +12,7 @@ export interface IdentityLiveSpecRow {
   bandTitle: string;
 }
 
-export type IdentityLiveSpecVariant = 'card' | 'overlay';
+export type IdentityLiveSpecVariant = 'card' | 'overlay' | 'bento';
 
 export interface IdentityLiveSpecListProps {
   kicker: string;
@@ -18,7 +23,7 @@ export interface IdentityLiveSpecListProps {
 }
 
 const VARIANT_STYLES: Record<
-  IdentityLiveSpecVariant,
+  Exclude<IdentityLiveSpecVariant, 'bento'>,
   { root: string; kickerWrap: string; list: string; rowDot: string }
 > = {
   card: {
@@ -36,7 +41,7 @@ const VARIANT_STYLES: Record<
 };
 
 /**
- * Presentational six-axis band readout — identity card or resonance reveal overlay.
+ * Presentational six-axis band readout — identity card, resonance list, or report bento.
  * Row data is pre-resolved via `buildIdentityLiveSpecRows`.
  */
 const IdentityLiveSpecList: FC<IdentityLiveSpecListProps> = ({
@@ -45,6 +50,45 @@ const IdentityLiveSpecList: FC<IdentityLiveSpecListProps> = ({
   variant = 'card',
   kickerId = 'identity-live-spec-kicker',
 }) => {
+  const { t } = useTranslation('common');
+
+  if (variant === 'bento') {
+    return (
+      <div className="mt-4 text-left" data-testid="identity-live-spec-bento">
+        <p
+          id={kickerId}
+          className="mb-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-accent-info/90"
+        >
+          {kicker}
+        </p>
+        <ul
+          aria-labelledby={kickerId}
+          className="grid grid-cols-2 gap-2"
+        >
+          {rows.map((row) => {
+            const parts = resolveSixAxisDataGridLabelParts(t, row.metric);
+            const codeLabel = `${parts.code} // ${parts.mechShort}`;
+            return (
+              <li
+                key={row.metric}
+                className="rounded-lg border border-zinc-800/80 bg-zinc-900/70 p-3"
+                data-testid={`identity-live-spec-cell-${row.metric}`}
+              >
+                <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-cyan-400/90">
+                  {codeLabel}
+                </p>
+                <p className="mt-1.5 text-left text-[12px] font-semibold leading-snug tracking-tight text-zinc-50">
+                  {row.bandTitle}
+                </p>
+                <span className="sr-only">{formatSixAxisDataGridMechAnnotation(parts)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
+
   const styles = VARIANT_STYLES[variant];
 
   return (

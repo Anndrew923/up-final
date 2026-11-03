@@ -139,7 +139,10 @@
       "kicker": "PERFORMANCE SYNC // SPEC READOUT",
       "reportTitle": "GLOBAL SPEC REPORT // DIAGNOSTICS",
       "bootScore": "---",
-      "close": "Return to Console",
+      "close": "[ CONFIRM & RETURN // CALIBRATED ]",
+      "indexPts": "INDEX // PTS",
+      "homologationId": "HOMOLOGATION ID: #GT-{{id}}",
+      "liveSpecKicker": "SIX-AXIS SPEC GRID",
       "phase": {
         "boot": "Chassis power-on…",
         "charge": "Six-axis charge…",

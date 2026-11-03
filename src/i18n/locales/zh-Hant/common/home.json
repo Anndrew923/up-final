@@ -139,7 +139,10 @@
       "kicker": "性能儀表同步 / SPEC READOUT",
       "reportTitle": "全域性能規格報告",
       "bootScore": "---",
-      "close": "返回主控台",
+      "close": "[ CONFIRM & RETURN // 確認校準 ]",
+      "indexPts": "INDEX // PTS",
+      "homologationId": "HOMOLOGATION ID: #GT-{{id}}",
+      "liveSpecKicker": "六軸規格網格",
       "phase": {
         "boot": "底盤通電中…",
         "charge": "六軸充能中…",

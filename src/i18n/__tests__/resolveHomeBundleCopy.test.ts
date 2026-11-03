@@ -17,6 +17,13 @@ describe('resolveHomeBundleCopy', () => {
     expect(title).not.toContain('home.resonance');
   });
 
+  it('interpolates home.resonance.homologationId', () => {
+    const label = resolveHomeSectionString(i18n.t.bind(i18n), 'resonance', 'homologationId', {
+      id: 9960,
+    });
+    expect(label).toBe('HOMOLOGATION ID: #GT-9960');
+  });
+
   it('resolves home.resonance.phase.reveal for zh-Hant', () => {
     const line = resolveHomeResonancePhase(i18n.t.bind(i18n), 'reveal');
     expect(line).toContain('賽會認證');
