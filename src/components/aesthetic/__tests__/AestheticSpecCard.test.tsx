@@ -9,6 +9,7 @@ import { clampMeterFill } from '../AestheticMeter';
 import {
   CERT_STAGE_MAX_H_CLASS,
   FOIL_HERO_STAMP_CLASS,
+  FOIL_HERO_TITLE_CLASS,
   FOIL_HERO_WING_LEFT_CLASS,
   FOIL_HERO_WING_RIGHT_CLASS,
 } from '../aestheticChrome';
@@ -63,6 +64,10 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('aspect-[9/16]');
     expect(html).toContain(CERT_STAGE_MAX_H_CLASS);
     expect(html).toContain(FOIL_HERO_STAMP_CLASS);
+    expect(FOIL_HERO_STAMP_CLASS).toContain('overflow-visible');
+    expect(FOIL_HERO_STAMP_CLASS).not.toContain('overflow-hidden');
+    expect(FOIL_HERO_TITLE_CLASS).toContain('leading-normal');
+    expect(FOIL_HERO_TITLE_CLASS).not.toContain('leading-none');
     expect(html).toContain('tracking-[0.2em]');
     expect(html).toContain('text-[clamp(1.2rem,4.8vw,1.45rem)]');
     expect(html).toContain('from-[#fff6d6]');
@@ -70,6 +75,8 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]');
     expect(html).toContain(FOIL_HERO_WING_LEFT_CLASS);
     expect(html).toContain(FOIL_HERO_WING_RIGHT_CLASS);
+    expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
+    expect(html).toContain('grid-cols-[6.5rem_1fr]');
     expect(html).toContain('自律狠人');
     expect(html).not.toContain('【');
     expect(html).not.toContain('】');
@@ -108,6 +115,11 @@ describe('AestheticSpecCard certificate surface', () => {
       expect(html).toContain('LOCKED IN');
       expect(html).not.toContain('【');
       expect(html).not.toContain('】');
+      // WHY: Fixed 6.5rem kicker column keeps EN label widths from shifting title plumb lines.
+      expect(html).toContain('grid-cols-[6.5rem_1fr]');
+      expect(html).toContain('ABSOLUTE RIGIDITY');
+      expect(html).toContain('VISUAL TENSION');
+      expect(html).toContain('PRIMAL DRIVE');
     } finally {
       await i18n.changeLanguage('zh-Hant');
     }

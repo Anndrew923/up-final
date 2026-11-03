@@ -48,11 +48,12 @@ const CornerGuide: FC<{ corner: Corner }> = ({ corner }) => (
 
 /**
  * Cold-steel certificate plaque — hairline frame + one rivet per corner.
- * WHY: Swiss Master Chronometer plate, not mecha HUD (no hazard stripes / grid / veins).
+ * WHY: Swiss Master Chronometer plate (not mecha HUD). Armor stays z-0 behind content so
+ * stamp/title (relative z-10) never have glyph boxes clipped by vignette paint.
  */
 const AestheticCardArmor: FC = () => {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl" aria-hidden>
       <div className="absolute inset-0 bg-bg-base" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(24,24,27,0.28)_0%,rgba(5,5,5,0.55)_62%,rgba(0,0,0,0.9)_100%)]" />
       <div className="absolute inset-0 opacity-[0.035] mix-blend-soft-light [background-image:radial-gradient(ellipse_at_22%_18%,rgba(243,230,200,0.35)_0,transparent_42%),radial-gradient(ellipse_at_78%_64%,rgba(201,162,39,0.22)_0,transparent_46%),radial-gradient(ellipse_at_48%_92%,rgba(161,161,170,0.18)_0,transparent_40%)]" />

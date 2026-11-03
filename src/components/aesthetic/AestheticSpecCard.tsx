@@ -39,19 +39,60 @@ const SpecRow: FC<{
   subtitle: string;
 }> = ({ kicker, title, subtitle }) => {
   return (
-    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2">
-      <span className={`shrink-0 pt-0.5 text-[9px] tracking-[0.16em] ${FOIL_KICKER_CLASS}`}>
+    <div className="grid grid-cols-[6.5rem_1fr] items-baseline gap-x-3">
+      <span
+        className={`w-full shrink-0 text-left text-[9px] tracking-[0.16em] ${FOIL_KICKER_CLASS}`}
+      >
         {kicker}
       </span>
-      <div className="min-w-0">
-        {/* WHY: Fixed 9:16 plate + overflow-hidden — unbounded wrap on long zh subtitles can
-            push meters/footer off-stage. Clamp keeps the three SpecRows inside the flex budget. */}
+      <div className="min-w-0 text-left">
+        {/* WHY: Fixed 9:16 plate — clamp keeps three SpecRows inside the flex budget. */}
         <p className="truncate text-[12px] font-medium leading-tight text-zinc-100">{title}</p>
         <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-zinc-500">{subtitle}</p>
       </div>
     </div>
   );
 };
+
+/** Classical guilloche crest — fills the header→stamp vacuum without competing with foil type. */
+const GuillocheCrest: FC = () => (
+  <div
+    className="pointer-events-none relative mx-auto flex size-28 select-none items-center justify-center"
+    data-testid="aesthetic-guilloche-crest"
+    aria-hidden
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent" />
+    <svg
+      className="size-24 text-amber-400 opacity-15"
+      viewBox="0 0 96 96"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="0.6" />
+      <circle cx="48" cy="48" r="32" stroke="currentColor" strokeWidth="0.55" />
+      <circle cx="48" cy="48" r="22" stroke="currentColor" strokeWidth="0.5" />
+      <circle cx="48" cy="48" r="12" stroke="currentColor" strokeWidth="0.55" />
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const x2 = 48 + Math.cos(a) * 40;
+        const y2 = 48 + Math.sin(a) * 40;
+        return (
+          <line
+            key={i}
+            x1="48"
+            y1="48"
+            x2={x2}
+            y2={y2}
+            stroke="currentColor"
+            strokeWidth={i % 3 === 0 ? 0.7 : 0.4}
+            opacity={i % 3 === 0 ? 0.9 : 0.55}
+          />
+        );
+      })}
+      <circle cx="48" cy="48" r="3.2" fill="currentColor" opacity="0.55" />
+    </svg>
+  </div>
+);
 
 function bandCopy(
   t: TFunction,
@@ -119,7 +160,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
     >
       <AestheticCardArmor />
 
-      <div className="relative flex h-full flex-col px-5 pb-5 pt-7">
+      <div className="relative z-10 flex h-full flex-col px-5 pb-5 pt-7">
         <header className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b ${FOIL_RULE_CLASS} pb-2`}>
           <p className="flex min-w-0 items-baseline gap-1.5 text-[10px] tracking-[0.14em] text-zinc-400">
             <span className="min-w-0 truncate">{t('aesthetic.labels.brandHeader')}</span>
@@ -130,7 +171,9 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
           <p className="shrink-0 text-[10px] tabular-nums text-zinc-500">{readoutYear}</p>
         </header>
 
-        <div className="flex flex-1 flex-col justify-center gap-4 py-4">
+        <div className="flex flex-1 flex-col justify-center gap-3 py-3 sm:gap-4 sm:py-4">
+          <GuillocheCrest />
+
           <h3 className={`${FOIL_HERO_STAMP_CLASS} ${CERT_STAMP_REVEAL_CLASS}`}>
             <span className={FOIL_HERO_WING_LEFT_CLASS} aria-hidden="true" />
             <span className={FOIL_HERO_TITLE_CLASS}>{overallTitle}</span>

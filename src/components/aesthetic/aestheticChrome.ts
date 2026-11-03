@@ -13,13 +13,13 @@ export const FOIL_HEX = {
  * overall title stays one line; wings shrink before the title wraps.
  */
 export const FOIL_HERO_STAMP_CLASS =
-  'flex w-full origin-center items-center justify-center gap-2 overflow-hidden px-2 py-2 sm:gap-3';
+  'flex w-full origin-center items-center justify-center gap-2 overflow-visible px-2 pt-1.5 pb-0.5 sm:gap-3';
 
 export const FOIL_HERO_TITLE_CLASS = [
   "shrink-0 text-center font-['Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif]",
   "[font-feature-settings:'palt'] antialiased font-bold uppercase whitespace-nowrap",
   'tracking-[0.2em] pl-[0.2em]',
-  'text-[clamp(1.2rem,4.8vw,1.45rem)] leading-none',
+  'text-[clamp(1.2rem,4.8vw,1.45rem)] leading-normal',
   'bg-gradient-to-b from-[#fff6d6] via-[#f3e6c8] to-[#c9a227] bg-clip-text text-transparent',
   'drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]',
 ].join(' ');
