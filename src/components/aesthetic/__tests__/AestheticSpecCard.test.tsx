@@ -76,8 +76,13 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain(FOIL_HERO_WING_LEFT_CLASS);
     expect(html).toContain(FOIL_HERO_WING_RIGHT_CLASS);
     expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
-    // WHY: UP hex seal must stay a brand monogram — reject the old radar-ray / dim crest.
-    expect(html).toContain('>UP</text>');
+    // WHY: UP hex seal must stay a brand monogram — reject the old radar-ray / system-text crest.
+    expect(html).toContain('data-testid="aesthetic-guilloche-monogram"');
+    expect(html).toContain('fill-amber-300/40');
+    expect(html).toContain('stroke-amber-300/50');
+    expect(html).toContain('M35.2 39.6');
+    expect(html).toContain('M48.2 39.6');
+    expect(html).not.toContain('<text');
     expect(html).toContain('text-amber-300/35');
     expect(html).toContain('M48 22 L66 32.5');
     expect(html).not.toContain('opacity-15');

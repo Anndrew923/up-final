@@ -16,6 +16,26 @@ const GUILLOCHE_TEETH = Array.from({ length: 60 }, (_, i) => {
 });
 
 /**
+ * WHY: Pure vector monogram — system <text> varies by WebView font metrics and reads as UI type,
+ * not an engraved seal. 45° chamfers + stencil notches mimic watch-case / nameplate machining.
+ *
+ * Coordinate space: viewBox 0–96, optically centered in the hex (~34–62 × 39–57).
+ */
+const UP_MONOGRAM_U =
+  'M35.2 39.6 L37.6 39.6 L37.6 49.4 L38.8 50.6 L42.4 50.6 L43.6 49.4 L43.6 39.6 L46.0 39.6 ' +
+  'L46.0 50.0 L43.8 52.8 L37.4 52.8 L35.2 50.0 Z ' +
+  // Stencil slit through the U bottom bar (evenodd hole).
+  'M39.0 49.2 L43.0 49.2 L43.0 50.4 L39.0 50.4 Z';
+
+const UP_MONOGRAM_P =
+  // Stem with 45° top/bottom chamfers + mid stencil break.
+  'M48.2 39.6 L50.6 39.6 L50.6 43.4 L49.4 44.6 L49.4 46.8 L50.6 48.0 L50.6 52.8 L48.2 52.8 ' +
+  'L48.2 48.6 L49.4 47.4 L49.4 43.8 L48.2 42.6 Z ' +
+  // Bowl with chamfered outer corners; micro gap at stem junction (stencil).
+  'M51.4 39.8 L57.2 39.8 L59.4 42.0 L59.4 46.2 L57.2 48.4 L51.4 48.4 L51.4 46.6 L56.4 46.6 ' +
+  'L57.4 45.6 L57.4 42.6 L56.4 41.6 L51.4 41.6 Z';
+
+/**
  * WHY: UP hex-shield seal (not radial "radar") — geometric anti-forgery crest that reads as
  * brand monogram while filling the header→stamp vacuum without competing with foil type.
  */
@@ -61,20 +81,21 @@ const GuillocheCrest: FC = () => (
         strokeLinejoin="round"
         opacity="0.7"
       />
-      {/* Cold monospace UP monogram — dominantBaseline keeps it optically centered in the hex. */}
-      <text
-        x="48"
-        y="48"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill="currentColor"
-        fontFamily="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-        fontSize="14"
-        fontWeight="700"
-        letterSpacing="1.5"
-      >
-        UP
-      </text>
+      {/* Engraved chamfer UP — fill + hairline stroke for metal-cut depth */}
+      <g data-testid="aesthetic-guilloche-monogram" fillRule="evenodd">
+        <path
+          d={UP_MONOGRAM_U}
+          className="fill-amber-300/40 stroke-amber-300/50"
+          strokeWidth="0.35"
+          strokeLinejoin="miter"
+        />
+        <path
+          d={UP_MONOGRAM_P}
+          className="fill-amber-300/40 stroke-amber-300/50"
+          strokeWidth="0.35"
+          strokeLinejoin="miter"
+        />
+      </g>
     </svg>
   </div>
 );
