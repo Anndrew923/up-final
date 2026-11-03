@@ -34,6 +34,7 @@ import {
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { RADAR_CARD_V2 } from '../radar/radarVisualTokens';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
+import { hapticService } from '../../services/hapticService';
 import { cn } from '../../lib/cn';
 
 /** Fixed mobile HUD density — 375–430 stays two columns inside the inset panel. */
@@ -272,7 +273,12 @@ export const HomeRadarBoard: FC = () => {
                     testId="aesthetic-spec-trigger"
                     disabled={isBlocking || ritualOpen}
                     ariaLabel={specTriggerCta}
-                    onClick={() => setAestheticOpen(true)}
+                    onClick={() => {
+                      // WHY: Certificate open is a deliberate plate transition — Medium
+                      // milestone (not Light ack / Heavy climax) matches homologation weight.
+                      void hapticService.trigger('milestone');
+                      setAestheticOpen(true);
+                    }}
                   >
                     {specTriggerCta}
                   </ConsoleCtaPlate>

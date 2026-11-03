@@ -67,6 +67,10 @@ vi.mock('../HomeResonanceOverlay', () => ({
   default: () => null,
 }));
 
+vi.mock('../../aesthetic/AestheticSpecModal', () => ({
+  default: () => <div data-testid="aesthetic-spec-modal" />,
+}));
+
 vi.mock('../../radar/HexRadarChart', () => ({
   default: ({
     points,
@@ -103,8 +107,12 @@ describe('HomeRadarBoard console axis view', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     memory.clear();
+    const { hapticService } = await import('../../../services/hapticService');
+    vi.mocked(hapticService.trigger).mockClear();
+    vi.mocked(hapticService.triggerContinuousSoft).mockClear();
+    vi.mocked(hapticService.stopContinuousSoft).mockClear();
   });
 
   afterEach(() => {
@@ -152,6 +160,21 @@ describe('HomeRadarBoard console axis view', () => {
     expect(trigger?.parentElement?.className).not.toContain('grid-cols-2');
     expect(trigger?.className).not.toContain('cyan');
     expect(trigger?.className).not.toContain('border-zinc-700');
+  });
+
+  it('fires a milestone haptic before opening the aesthetic spec certificate', async () => {
+    const { hapticService } = await import('../../../services/hapticService');
+    renderBoard();
+    const trigger = container!.querySelector('[data-testid="aesthetic-spec-trigger"]');
+    expect(trigger).not.toBeNull();
+
+    act(() => {
+      trigger?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(hapticService.trigger).toHaveBeenCalledTimes(1);
+    expect(hapticService.trigger).toHaveBeenCalledWith('milestone');
+    expect(container!.querySelector('[data-testid="aesthetic-spec-modal"]')).not.toBeNull();
   });
 
   it('defaults to fitness lexicon and 2dp HUD values', () => {
