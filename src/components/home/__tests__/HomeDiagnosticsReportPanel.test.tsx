@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../i18n';
+import { DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS } from '../../../lib/diagnosticsReportMotion';
 import type { HomeResonanceSnapshot } from '../../../types/homeResonance';
 import { SIX_AXIS_METRICS } from '../../../types/scoring';
 import HomeDiagnosticsReportPanel from '../HomeDiagnosticsReportPanel';
@@ -80,12 +81,30 @@ describe('HomeDiagnosticsReportPanel', () => {
       ).not.toBeNull();
     }
 
+    const scroll = document.querySelector(
+      '[data-testid="diagnostics-report-scroll"]'
+    ) as HTMLElement | null;
+    expect(scroll).not.toBeNull();
+    expect(scroll?.className).toContain(DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS);
+    expect(scroll?.className).toContain('overflow-y-auto');
+    expect(scroll?.className).toContain(
+      'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]'
+    );
+
     const confirm = document.querySelector(
       '[data-testid="diagnostics-report-confirm"]'
     ) as HTMLButtonElement | null;
     expect(confirm).not.toBeNull();
     expect(confirm?.className).toContain('[clip-path:polygon(');
     expect(confirm?.textContent).toContain('CONFIRM & RETURN');
+    // CTA lives inside the single scroll stream — not clipped by a sibling sticky footer region.
+    expect(scroll?.contains(confirm)).toBe(true);
+
+    const panel = document.querySelector(
+      '[data-testid="home-diagnostics-report-panel"]'
+    ) as HTMLElement | null;
+    expect(panel?.className).toContain('overflow-hidden');
+    expect(panel?.className).toContain('max-h-[min(85vh,720px)]');
 
     act(() => {
       confirm?.click();

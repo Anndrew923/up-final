@@ -106,7 +106,7 @@ const HomeResonanceOverlay: FC<HomeResonanceOverlayProps> = ({
 
         <div className="relative overflow-visible rounded-2xl border border-accent-primary/40 bg-zinc-950 shadow-[0_0_80px_rgba(0,0,0,0.75),0_0_48px_rgb(var(--aura-neon-rgb)/0.22),inset_0_1px_0_rgba(56,189,248,0.25)]">
           {isReport ? (
-            <div className="relative flex flex-col px-5 pb-4 pt-5 sm:px-8 sm:pb-6 sm:pt-8">
+            <div className="relative flex min-h-0 flex-col overflow-visible px-5 pb-0 pt-5 sm:px-8 sm:pt-8">
               <HomeDiagnosticsReportPanel
                 snapshot={snapshot}
                 scaleMax={scaleMax}

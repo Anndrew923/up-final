@@ -1,3 +1,10 @@
+/**
+ * Bottom pad for report scroll stream — Home Indicator / Android nav clearance.
+ * WHY: Additive inset + 1.5rem (≥24px) so the chamfered CTA never sits under the system bar.
+ */
+export const DIAGNOSTICS_REPORT_SAFE_BOTTOM_CLASS =
+  'pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]';
+
 /** Shared motion tokens for the post-ritual diagnostics report panel. */
 export const DIAGNOSTICS_PANEL_TRANSITION =
   'motion-safe:transition-[opacity,transform] motion-safe:duration-[600ms] motion-safe:ease-report-ease motion-reduce:transition-none';
