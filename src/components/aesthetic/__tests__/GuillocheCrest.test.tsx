@@ -3,24 +3,29 @@ import { describe, expect, it } from 'vitest';
 import GuillocheCrest from '../GuillocheCrest';
 
 describe('GuillocheCrest', () => {
-  it('renders hairline continuous UP monogram inside the hex seal rings', () => {
+  it('renders a centered monolithic spine UP monogram inside a calibrated hex shield', () => {
     const html = renderToStaticMarkup(<GuillocheCrest />);
 
     expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
     expect(html).toContain('data-testid="aesthetic-guilloche-monogram"');
-    // Dual rings + hex shield geometry.
+    // Dual rings stay centered on (48, 48).
     expect(html).toContain('r="44"');
     expect(html).toContain('r="40.5"');
-    expect(html).toContain('M48 22 L66 32.5 L66 53.5 L48 64 L30 53.5 L30 32.5 Z');
-    // Cold-steel hairline chrome — no system fonts / stencil slit markers.
-    expect(html).toContain('text-amber-300/60');
+    // Recentered hex + registration diamonds (no legacy top-heavy shield).
+    expect(html).toContain('M48 27 L66 37.5 L66 58.5 L48 69 L30 58.5 L30 37.5 Z');
+    expect(html).toContain('M48 25.2');
+    expect(html).toContain('M48 67.2');
+    expect(html).not.toContain('M48 22 L66 32.5');
+    // Shared spine + mirrored ±10 unit wings — bbox [38,58] mid = 48.
+    expect(html).toContain('M48 38 L48 58');
+    expect(html).toContain('M38 40 L38 54 L42 58 L48 58');
+    expect(html).toContain('M48 38 L54 38 L58 42 L58 46 L54 50 L48 50');
+    expect(html).toContain('stroke-width="1.3"');
+    expect(html).toContain('text-amber-300/80');
     expect(html).toContain('fill-amber-300/15');
-    expect(html).toContain('stroke-width="1.2"');
-    expect(html).toContain('M36.0 42.0');
-    expect(html).toContain('M49.0 42.0');
-    expect(html).not.toContain('M39.2 51.0');
-    expect(html).not.toContain('fill-amber-300/40');
-    expect(html).not.toContain('fill-rule="evenodd"');
+    // Legacy eccentric dual-letter starts must stay gone.
+    expect(html).not.toContain('M36.0 42.0');
+    expect(html).not.toContain('M49.0 42.0');
     expect(html).not.toContain('<text');
     expect(html).not.toContain('fontFamily');
     expect(html).not.toContain('font-family');

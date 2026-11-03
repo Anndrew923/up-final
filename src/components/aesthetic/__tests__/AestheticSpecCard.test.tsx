@@ -79,8 +79,9 @@ describe('AestheticSpecCard certificate surface', () => {
     // WHY: Crest contract stays at testids + chrome; path geometry is locked in GuillocheCrest.test.
     expect(html).toContain('data-testid="aesthetic-guilloche-monogram"');
     expect(html).not.toContain('<text');
-    expect(html).toContain('text-amber-300/60');
-    expect(html).toContain('M48 22 L66 32.5');
+    expect(html).toContain('text-amber-300/80');
+    expect(html).toContain('M48 27 L66 37.5');
+    expect(html).toContain('M48 38 L48 58');
     expect(html).not.toContain('opacity-15');
     expect(html).toContain('grid-cols-[7rem_1fr]');
     expect(html).toContain('gap-x-2');

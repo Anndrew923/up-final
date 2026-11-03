@@ -15,28 +15,25 @@ const GUILLOCHE_TEETH = Array.from({ length: 60 }, (_, i) => {
   };
 });
 
+/** Outer hex — vertices symmetric about (48, 48). */
+const HEX_SHIELD_PATH = 'M48 27 L66 37.5 L66 58.5 L48 69 L30 58.5 L30 37.5 Z';
+
+/** Micro anti-forgery diamonds at hex apex / nadir (vector, not text ◆). */
+const HEX_DIAMOND_TOP = 'M48 25.2 L48.75 27 L48 28.8 L47.25 27 Z';
+const HEX_DIAMOND_BOTTOM = 'M48 67.2 L48.75 69 L48 70.8 L47.25 69 Z';
+
 /**
- * WHY: One continuous closed ribbon per glyph (no stencil slits, no stem/bowl gaps) —
- * thick filled stencil reads as blocky UI type at 24px; hairline stroke + micro fill
- * matches cold-steel seal chrome while keeping ~35% hex breathing room.
- *
- * Glyph box ≈ y 42–54; U/P gap ≈ 2.4 units. Ribbon thickness ≈ 1.4–1.6 (stroke 1.2 sits on edge).
+ * WHY: Shared-spine monolithic UP — dual free-standing letters sit left of optical center
+ * (old U/P bbox mid ≈ 46.8). One vertical axis at x=48 with mirrored ±10 unit wings locks
+ * both math and optical center on (48, 48).
  */
-const UP_MONOGRAM_U =
-  'M36.0 42.0 L37.5 42.0 L37.5 50.8 L38.8 52.0 L43.8 52.0 L45.1 50.8 L45.1 42.0 L46.6 42.0 ' +
-  'L46.6 51.4 L44.6 53.8 L38.0 53.8 L36.0 51.4 Z';
-
-const UP_MONOGRAM_P =
-  // Continuous stem+bowl ribbon: enter bowl counter at the join so the eye stays open —
-  // never a floating gap between stem and bowl.
-  'M49.0 42.0 L50.5 42.0 L50.5 43.0 L55.8 43.0 L57.6 44.8 L57.6 47.8 L55.8 49.6 L50.5 49.6 ' +
-  'L50.5 48.4 L55.0 48.4 L55.8 47.6 L55.8 45.0 L55.0 44.2 L50.5 44.2 L50.5 53.8 L49.0 53.8 Z';
-
-const UP_MONOGRAM_PATH_CLASS = 'fill-amber-300/15';
+const UP_SPINE_PATH = 'M48 38 L48 58';
+const UP_U_WING_PATH = 'M38 40 L38 54 L42 58 L48 58';
+const UP_P_ARC_PATH = 'M48 38 L54 38 L58 42 L58 46 L54 50 L48 50';
 
 /**
- * WHY: UP hex-shield seal (not radial "radar") — geometric anti-forgery crest that reads as
- * brand monogram while filling the header→stamp vacuum without competing with foil type.
+ * WHY: UP hex-shield seal — geometric anti-forgery crest centered on the plate, filling the
+ * header→stamp vacuum without competing with foil type.
  */
 const GuillocheCrest: FC = () => (
   <div
@@ -45,59 +42,48 @@ const GuillocheCrest: FC = () => (
     aria-hidden
   >
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.12)_0%,_transparent_70%)]" />
-    <svg
-      className="size-24 text-amber-300/60"
-      viewBox="0 0 96 96"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg className="size-24" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Dual outer rings + micro tick teeth */}
-      <circle cx="48" cy="48" r="44" stroke="currentColor" strokeWidth="0.7" />
-      <circle cx="48" cy="48" r="40.5" stroke="currentColor" strokeWidth="0.45" />
-      {GUILLOCHE_TEETH.map((tooth) => (
-        <line
-          key={tooth.key}
-          x1={tooth.x1}
-          y1={tooth.y1}
-          x2={tooth.x2}
-          y2={tooth.y2}
-          stroke="currentColor"
-          strokeWidth={tooth.major ? 0.7 : 0.35}
-          opacity={tooth.major ? 0.85 : 0.5}
-        />
-      ))}
-      {/* Hex body-form shield */}
-      <path
-        d="M48 22 L66 32.5 L66 53.5 L48 64 L30 53.5 L30 32.5 Z"
-        stroke="currentColor"
-        strokeWidth="0.85"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M48 28 L61 35.5 L61 50.5 L48 58 L35 50.5 L35 35.5 Z"
-        stroke="currentColor"
-        strokeWidth="0.45"
-        strokeLinejoin="round"
-        opacity="0.7"
-      />
-      {/* Hairline chiseled UP — continuous ribbons, stroke-driven cold steel */}
-      <g data-testid="aesthetic-guilloche-monogram">
+      <g className="text-amber-300/60">
+        <circle cx="48" cy="48" r="44" stroke="currentColor" strokeWidth="0.7" />
+        <circle cx="48" cy="48" r="40.5" stroke="currentColor" strokeWidth="0.45" />
+        {GUILLOCHE_TEETH.map((tooth) => (
+          <line
+            key={tooth.key}
+            x1={tooth.x1}
+            y1={tooth.y1}
+            x2={tooth.x2}
+            y2={tooth.y2}
+            stroke="currentColor"
+            strokeWidth={tooth.major ? 0.7 : 0.35}
+            opacity={tooth.major ? 0.85 : 0.5}
+          />
+        ))}
+      </g>
+      {/* Hex shield + apex/nadir registration diamonds */}
+      <g className="text-amber-300/50">
         <path
-          d={UP_MONOGRAM_U}
-          className={UP_MONOGRAM_PATH_CLASS}
+          d={HEX_SHIELD_PATH}
+          className="fill-amber-300/5"
           stroke="currentColor"
           strokeWidth="1.2"
           strokeLinejoin="round"
-          strokeLinecap="round"
         />
-        <path
-          d={UP_MONOGRAM_P}
-          className={UP_MONOGRAM_PATH_CLASS}
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
+        <path d={HEX_DIAMOND_TOP} className="fill-amber-300/40" stroke="currentColor" strokeWidth="0.4" />
+        <path d={HEX_DIAMOND_BOTTOM} className="fill-amber-300/40" stroke="currentColor" strokeWidth="0.4" />
+      </g>
+      {/* Monolithic spine UP — symmetric about (48, 48) */}
+      <g
+        data-testid="aesthetic-guilloche-monogram"
+        className="text-amber-300/80 fill-amber-300/15"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      >
+        <path d={UP_SPINE_PATH} />
+        <path d={UP_U_WING_PATH} />
+        <path d={UP_P_ARC_PATH} />
       </g>
     </svg>
   </div>
