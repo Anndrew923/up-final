@@ -465,8 +465,9 @@ interface SyncGuildLadderScoreResponse {
 | **npm** | `@capacitor/push-notifications` + `npx cap sync` |
 | **Android** | `POST_NOTIFICATIONS` in `AndroidManifest.xml`；Firebase `google-services.json` 已存在於專案時 FCM 可用 |
 | **iOS** | `App.entitlements` → `aps-environment`；`Info.plist` → `UIBackgroundModes` 含 `remote-notification`；Xcode Signing 開啟 Push Notifications capability；Apple Developer 開 APNs key 並接到 Firebase |
-| **掛載** | `usePushNavigateBridge`（AppShell）+ `useGuildPushRegistration`（Crew joined only） |
-| **登出** | `signOutFirebase` → `pushNotificationService.clearOnSignOut`（先 clear token Callable，再 Auth signOut） |
+| **掛載** | `main.tsx` 早期 `attachListeners`（冷啟動）+ `usePushNavigateBridge`（AppShell navigate + re-attach）+ `useGuildPushRegistration`（Crew joined 才 permission/`register`） |
+| **Deep link** | Client allowlist pathname === `/crew` only；cold-start tap queues pending route until navigate handler mounts |
+| **登出** | `signOutFirebase` → `pushNotificationService.clearOnSignOut`（await in-flight register → clear token Callable → detach → Auth signOut） |
 
 ---
 
