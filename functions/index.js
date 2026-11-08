@@ -36,3 +36,7 @@ export { kickGuildMember } from "./guild/kickMemberCallable.js";
 export { renameGuild } from "./guild/renameGuildCallable.js";
 export { disbandGuild } from "./guild/disbandGuildCallable.js";
 export { syncGuildLadderScore } from "./guild/syncGuildScoreCallable.js";
+export {
+  upsertPushToken,
+  setClubDispatchMute,
+} from "./guild/clubDispatchPrefsCallable.js";

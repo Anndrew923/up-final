@@ -114,6 +114,7 @@ export async function deleteUserCloudData(uid) {
 
   const directRefs = [
     db.collection("dyno_intel_rate_limits").doc(uid),
+    db.collection("club_dispatch_rate_limits").doc(uid),
     db.collection("userSettings").doc(uid),
   ];
   for (const ref of directRefs) {

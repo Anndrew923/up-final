@@ -2,6 +2,9 @@
  * syncGuildLadderScore — crew-only overall score sync (no public leaderboard write).
  * WHY: Privacy Phase 1 — Free members in a guild can update private roster without
  * publishing to leaderboards/{metric}/entries or burning ladder hourly quota / preview.
+ *
+ * Optional Club Progress Dispatch (`broadcast: true`): reads previousScore inside
+ * fan-out TX before overwrite, then FCM multicast after commit (never blocks score write).
  */
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { CALLABLE_OPTS } from "../shared/constants.js";
@@ -12,6 +15,11 @@ import {
 } from "./guildCore.js";
 import { fanOutLadderScoreToGuild } from "./guildScoreFanOut.js";
 import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
+import {
+  normalizeBroadcastMetricType,
+  sanitizeDispatchComment,
+} from "./clubProgressDispatch.js";
+import { runClubProgressBroadcastAfterFanOut } from "./clubProgressBroadcast.js";
 
 /**
  * Pure request normalize for unit tests (no Firestore).
@@ -24,6 +32,9 @@ import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
  *   avatarUrl: string | null;
  *   isAnonymous: boolean;
  *   radarScores?: Record<string, number>;
+ *   broadcast: boolean;
+ *   comment: string;
+ *   broadcastMetricType: string;
  * } | { ok: false; reason: string }}
  */
 export function normalizeSyncGuildScoreRequest(data, uid) {
@@ -39,6 +50,9 @@ export function normalizeSyncGuildScoreRequest(data, uid) {
   const avatarUrl = sanitizeAvatarUrl(data.avatarUrl);
   const isAnonymous = data.isAnonymous === true || data.isAnonymousInLadder === true;
   const radarScores = sanitizeGuildRadarScores(data.radarScores);
+  const broadcast = data.broadcast === true;
+  const comment = sanitizeDispatchComment(data.comment);
+  const broadcastMetricType = normalizeBroadcastMetricType(data.broadcastMetricType);
   return {
     ok: true,
     ladderScore,
@@ -46,6 +60,9 @@ export function normalizeSyncGuildScoreRequest(data, uid) {
     avatarUrl: avatarUrl || null,
     isAnonymous,
     ...(radarScores ? { radarScores } : {}),
+    broadcast,
+    comment,
+    broadcastMetricType,
   };
 }
 
@@ -54,8 +71,9 @@ export function normalizeSyncGuildScoreRequest(data, uid) {
  * WHY: Soft-skip (no-guild) must stay ok:true; hard failures must stay ok:false for client failure UI.
  * @param {{ ok: boolean; reason?: string; guildId?: string }} result
  * @param {number} ladderScore
+ * @param {Record<string, unknown>} [broadcastFields]
  */
-export function mapFanOutToSyncGuildScoreResponse(result, ladderScore) {
+export function mapFanOutToSyncGuildScoreResponse(result, ladderScore, broadcastFields = {}) {
   if (result.ok === false) {
     const reason = result.reason ?? "fan-out-error";
     return {
@@ -64,6 +82,7 @@ export function mapFanOutToSyncGuildScoreResponse(result, ladderScore) {
       reason,
       error: reason,
       guildId: result.guildId ?? null,
+      ...broadcastFields,
     };
   }
   if (result.reason) {
@@ -72,6 +91,7 @@ export function mapFanOutToSyncGuildScoreResponse(result, ladderScore) {
       skipped: true,
       reason: result.reason,
       guildId: result.guildId ?? null,
+      ...broadcastFields,
     };
   }
   return {
@@ -79,7 +99,38 @@ export function mapFanOutToSyncGuildScoreResponse(result, ladderScore) {
     skipped: false,
     guildId: result.guildId ?? null,
     ladderScore,
+    ...broadcastFields,
   };
+}
+
+/**
+ * Resolve broadcast response fields after fan-out.
+ * WHY: Soft/hard score skips must not claim `not-requested` when the client asked to broadcast.
+ * @param {{
+ *   broadcast: boolean;
+ *   fanOutOk: boolean;
+ *   fanOutSoftSkip: boolean;
+ *   guildId?: string | null;
+ *   broadcastBaseline: object | null;
+ *   uid: string;
+ *   normalized: object;
+ * }} input
+ * @param {(args: object) => Promise<Record<string, unknown>>} [broadcastRunner]
+ */
+export async function resolveSyncGuildBroadcastFields(input, broadcastRunner = runClubProgressBroadcastAfterFanOut) {
+  if (input.broadcast !== true) {
+    return { broadcastSkipped: "not-requested" };
+  }
+  // Score did not land — skip FCM without lying about intent.
+  if (!input.fanOutOk || input.fanOutSoftSkip || !input.guildId) {
+    return {};
+  }
+  return broadcastRunner({
+    uid: input.uid,
+    normalized: input.normalized,
+    guildId: input.guildId,
+    broadcastBaseline: input.broadcastBaseline ?? null,
+  });
 }
 
 /**
@@ -100,8 +151,21 @@ export async function runSyncGuildLadderScore(request) {
       avatarUrl: normalized.avatarUrl,
       isAnonymous: normalized.isAnonymous,
       radarScores: normalized.radarScores,
+      captureBroadcastBaseline: normalized.broadcast === true,
+      broadcastMetricType: normalized.broadcastMetricType,
     });
-    return mapFanOutToSyncGuildScoreResponse(result, normalized.ladderScore);
+
+    const broadcastFields = await resolveSyncGuildBroadcastFields({
+      broadcast: normalized.broadcast,
+      fanOutOk: result.ok !== false,
+      fanOutSoftSkip: Boolean(result.reason),
+      guildId: result.guildId ?? null,
+      broadcastBaseline: result.broadcastBaseline ?? null,
+      uid,
+      normalized,
+    });
+
+    return mapFanOutToSyncGuildScoreResponse(result, normalized.ladderScore, broadcastFields);
   } catch (err) {
     rethrowGuildError(err, "[syncGuildLadderScore] unexpected", "sync-guild-score-failed");
   }

@@ -106,6 +106,14 @@ export const GUILD_JOIN_RATE_LIMITS_COLLECTION = "guild_join_rate_limits";
 export const GUILD_MAX_MEMBERS = 30;
 /** Rolling hourly join attempts (success + invalid code). */
 export const GUILD_JOIN_MAX_ATTEMPTS_PER_HOUR = 10;
+/**
+ * Club Progress Dispatch — rolling hourly successful broadcasts per uid.
+ * Keep in sync with `docs/specs/CLUB_PROGRESS_DISPATCH_SPEC.md` §5.5.
+ */
+export const CLUB_DISPATCH_RATE_LIMITS_COLLECTION = "club_dispatch_rate_limits";
+export const CLUB_DISPATCH_MAX_PER_HOUR = 5;
+export const CLUB_DISPATCH_COMMENT_MAX_LEN = 25;
+export const CLUB_DISPATCH_SUBCOLLECTION = "dispatches";
 /** Invite-code mint retries when `guild_invite_codes/{code}` collides. */
 export const GUILD_INVITE_CODE_MAX_MINT_ATTEMPTS = 5;
 export const GUILD_NAME_MIN_LEN = 2;

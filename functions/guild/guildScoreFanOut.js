@@ -2,11 +2,18 @@
  * Fan-out overall ladder score into `guilds/{guildId}.members[]`.
  * WHY: Private crew ladder is an embedded snapshot — must update on ladderScore writes
  * without ever failing the primary global ladder submit (graceful degradation).
+ *
+ * When `captureBroadcastBaseline: true`, reads previousScore / roster identity
+ * BEFORE overwriting members[] so Club Progress Dispatch can compute delta safely.
  */
 import { db } from "../shared/admin.js";
 import { GUILDS_COLLECTION } from "../shared/constants.js";
 import { readUserGuildId } from "./guildCore.js";
 import { sanitizeGuildRadarScores } from "./guildRadarScores.js";
+import {
+  normalizeBroadcastMetricType,
+  resolvePreviousScoreFromMember,
+} from "./clubProgressDispatch.js";
 
 /** @deprecated Prefer `readUserGuildId` from guildCore — kept as stable fan-out export. */
 export const readGuildIdFromUserData = readUserGuildId;
@@ -80,6 +87,45 @@ export function applyMemberLadderScorePatch(guildData, uid, patch) {
 }
 
 /**
+ * Snapshot broadcast baselines from guild doc BEFORE members[] overwrite.
+ * @param {unknown} guildData
+ * @param {string} uid
+ * @param {string} [broadcastMetricType]
+ */
+export function captureGuildBroadcastBaseline(guildData, uid, broadcastMetricType) {
+  if (!guildData || typeof guildData !== "object") {
+    return null;
+  }
+  const members = Array.isArray(guildData.members) ? guildData.members : [];
+  const member = members.find(
+    (m) => m && typeof m === "object" && typeof m.uid === "string" && m.uid === uid
+  );
+  if (!member) return null;
+
+  const metricType = normalizeBroadcastMetricType(broadcastMetricType);
+  const previousScore = resolvePreviousScoreFromMember(member, metricType);
+  const senderDisplayName =
+    typeof member.displayName === "string" && member.displayName.trim()
+      ? member.displayName.trim().slice(0, 32)
+      : uid.slice(0, 8);
+  const memberUids = Array.isArray(guildData.memberUids)
+    ? guildData.memberUids.filter((id) => typeof id === "string" && id)
+    : [];
+  const clubName =
+    typeof guildData.name === "string" && guildData.name.trim()
+      ? guildData.name.trim()
+      : "Club";
+
+  return {
+    previousScore,
+    senderDisplayName,
+    memberUids,
+    clubName,
+    metricType,
+  };
+}
+
+/**
  * Best-effort guild snapshot update. Never throws to callers.
  * @param {{
  *   uid: string;
@@ -88,8 +134,21 @@ export function applyMemberLadderScorePatch(guildData, uid, patch) {
  *   avatarUrl?: string | null;
  *   isAnonymous?: boolean;
  *   radarScores?: unknown;
+ *   captureBroadcastBaseline?: boolean;
+ *   broadcastMetricType?: string;
  * }} input
- * @returns {Promise<{ ok: boolean; reason?: string; guildId?: string }>}
+ * @returns {Promise<{
+ *   ok: boolean;
+ *   reason?: string;
+ *   guildId?: string;
+ *   broadcastBaseline?: {
+ *     previousScore: number;
+ *     senderDisplayName: string;
+ *     memberUids: string[];
+ *     clubName: string;
+ *     metricType: string;
+ *   } | null;
+ * }>}
  */
 export async function fanOutLadderScoreToGuild(input) {
   const uid = typeof input?.uid === "string" ? input.uid : "";
@@ -108,9 +167,10 @@ export async function fanOutLadderScoreToGuild(input) {
     const score = Number(input.ladderScore);
     const ladderScore = Number.isFinite(score) ? Math.max(0, score) : 0;
     const radarScores = sanitizeGuildRadarScores(input.radarScores);
+    const captureBaseline = input.captureBroadcastBaseline === true;
 
-    /** @type {{ patched: boolean; skipReason?: string }} */
-    const txResult = { patched: false };
+    /** @type {{ patched: boolean; skipReason?: string; broadcastBaseline?: object | null }} */
+    const txResult = { patched: false, broadcastBaseline: null };
 
     await db.runTransaction(async (tx) => {
       const guildRef = db.collection(GUILDS_COLLECTION).doc(guildId);
@@ -119,7 +179,18 @@ export async function fanOutLadderScoreToGuild(input) {
         txResult.skipReason = "guild-missing";
         return;
       }
-      const patched = applyMemberLadderScorePatch(guildSnap.data(), uid, {
+      const guildData = guildSnap.data();
+
+      // WHY: Must read previousScore before applyMemberLadderScorePatch overwrites members[].
+      if (captureBaseline) {
+        txResult.broadcastBaseline = captureGuildBroadcastBaseline(
+          guildData,
+          uid,
+          input.broadcastMetricType
+        );
+      }
+
+      const patched = applyMemberLadderScorePatch(guildData, uid, {
         ladderScore,
         displayName: input.displayName,
         avatarUrl: input.avatarUrl,
@@ -145,9 +216,18 @@ export async function fanOutLadderScoreToGuild(input) {
     });
 
     if (!txResult.patched) {
-      return { ok: true, reason: txResult.skipReason ?? "skipped", guildId };
+      return {
+        ok: true,
+        reason: txResult.skipReason ?? "skipped",
+        guildId,
+        broadcastBaseline: null,
+      };
     }
-    return { ok: true, guildId };
+    return {
+      ok: true,
+      guildId,
+      broadcastBaseline: captureBaseline ? txResult.broadcastBaseline ?? null : null,
+    };
   } catch (err) {
     console.warn("[guildScoreFanOut] failed (non-fatal)", {
       uid,

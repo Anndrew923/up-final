@@ -226,6 +226,11 @@ service cloud.firestore {
           || request.auth.uid in resource.data.memberUids
         );
       allow create, update, delete: if false;
+
+      // Club Progress Dispatch events — Admin SDK only (not inherited from parent read).
+      match /dispatches/{dispatchId} {
+        allow read, write: if false;
+      }
     }
 
     // Invite-code lookup — never client-readable (prevents enumeration).
@@ -235,6 +240,11 @@ service cloud.firestore {
 
     // Per-uid join attempt windows — Admin SDK only.
     match /guild_join_rate_limits/{uid} {
+      allow read, write: if false;
+    }
+
+    // Per-uid club dispatch broadcast throttle — Admin SDK only.
+    match /club_dispatch_rate_limits/{uid} {
       allow read, write: if false;
     }
   }

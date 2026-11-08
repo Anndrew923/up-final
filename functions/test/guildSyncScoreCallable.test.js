@@ -6,6 +6,7 @@ import { describe, it } from "node:test";
 import {
   mapFanOutToSyncGuildScoreResponse,
   normalizeSyncGuildScoreRequest,
+  resolveSyncGuildBroadcastFields,
 } from "../guild/syncGuildScoreCallable.js";
 
 describe("mapFanOutToSyncGuildScoreResponse", () => {
@@ -35,6 +36,67 @@ describe("mapFanOutToSyncGuildScoreResponse", () => {
     assert.equal(mapped.skipped, false);
     assert.equal(mapped.guildId, "g1");
     assert.equal(mapped.ladderScore, 88);
+  });
+
+  it("merges broadcastSkipped without blocking score ok", () => {
+    const mapped = mapFanOutToSyncGuildScoreResponse(
+      { ok: true, guildId: "g1" },
+      90,
+      { broadcastSkipped: "non-positive-delta", delta: 0 }
+    );
+    assert.equal(mapped.ok, true);
+    assert.equal(mapped.skipped, false);
+    assert.equal(mapped.broadcastSkipped, "non-positive-delta");
+    assert.equal(mapped.delta, 0);
+  });
+});
+
+describe("resolveSyncGuildBroadcastFields", () => {
+  it("returns not-requested only when broadcast was false", async () => {
+    const fields = await resolveSyncGuildBroadcastFields({
+      broadcast: false,
+      fanOutOk: true,
+      fanOutSoftSkip: false,
+      guildId: "g1",
+      broadcastBaseline: null,
+      uid: "u1",
+      normalized: { broadcast: false },
+    });
+    assert.equal(fields.broadcastSkipped, "not-requested");
+  });
+
+  it("does not claim not-requested when broadcast asked but score soft-skipped", async () => {
+    const fields = await resolveSyncGuildBroadcastFields({
+      broadcast: true,
+      fanOutOk: true,
+      fanOutSoftSkip: true,
+      guildId: "g1",
+      broadcastBaseline: null,
+      uid: "u1",
+      normalized: { broadcast: true },
+    });
+    assert.equal(Object.keys(fields).length, 0);
+  });
+
+  it("invokes runner only when score landed", async () => {
+    let called = false;
+    const fields = await resolveSyncGuildBroadcastFields(
+      {
+        broadcast: true,
+        fanOutOk: true,
+        fanOutSoftSkip: false,
+        guildId: "g1",
+        broadcastBaseline: { previousScore: 1 },
+        uid: "u1",
+        normalized: { broadcast: true, ladderScore: 2 },
+      },
+      async () => {
+        called = true;
+        return { delta: 1, fcmSuccessCount: 1 };
+      }
+    );
+    assert.equal(called, true);
+    assert.equal(fields.delta, 1);
   });
 });
 
