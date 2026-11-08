@@ -30,7 +30,7 @@ async function removeListener(key: ListenerKey): Promise<void> {
   try {
     await handle.remove();
   } catch (error) {
-    console.warn('[push] listener remove failed', key, error);
+    console.warn('[Push] listener remove failed', key, error);
   }
   delete listenerHandles[key];
 }
@@ -47,32 +47,35 @@ async function detachListeners(): Promise<void> {
 async function onRegistration(token: Token): Promise<void> {
   const value = typeof token?.value === 'string' ? token.value.trim() : '';
   if (!value) {
-    console.warn('[push] registration returned empty token');
+    console.warn('[Push] registration returned empty token');
     return;
   }
+  console.info('[Push] Received token, calling upsertPushToken...');
   const platform = resolvePushPlatform(Capacitor.getPlatform());
   const result = await upsertPushToken({
     fcmToken: value,
     fcmPlatform: platform,
   });
   if (!result.ok) {
-    console.warn('[push] upsertPushToken failed', result.reason);
+    console.warn('[Push] upsertPushToken failed', result.reason);
+    return;
   }
+  console.info('[Push] Token upserted successfully');
 }
 
 function onRegistrationError(error: unknown): void {
-  console.warn('[push] registrationError', error);
+  console.error('[Push] Native registration failed:', error);
 }
 
 function onActionPerformed(action: ActionPerformed): void {
   const route = resolvePushNotificationRoute(action.notification?.data);
   if (!route) {
-    console.warn('[push] action missing safe route', action.notification?.data);
+    console.warn('[Push] action missing safe route', action.notification?.data);
     return;
   }
   const ok = navigateFromPushRoute(route);
   if (!ok) {
-    console.warn('[push] navigate rejected empty route', route);
+    console.warn('[Push] navigate rejected empty route', route);
   }
 }
 
@@ -129,7 +132,7 @@ export async function attachPushListeners(): Promise<void> {
   try {
     await ensureListeners();
   } catch (error) {
-    console.warn('[push] attach listeners failed', error);
+    console.warn('[Push] attach listeners failed', error);
   }
 }
 
@@ -138,26 +141,36 @@ export async function attachPushListeners(): Promise<void> {
  * No-op on web / non-native. Never throws to callers.
  */
 export async function registerPushForGuildDispatches(): Promise<boolean> {
+  // WHY: Web Crew visits are common in local QA — stay silent to avoid log noise.
   if (!isCapacitorNativePlatform()) return false;
   if (registerInFlight) return registerInFlight;
 
   registerInFlight = (async () => {
     try {
+      console.info('[Push] Starting registration check...');
       await ensureListeners();
 
       let status: PermissionStatus = await PushNotifications.checkPermissions();
+      console.info('[Push] Current permission status:', status.receive);
+
       if (status.receive === 'prompt' || status.receive === 'prompt-with-rationale') {
+        console.info('[Push] Requesting permissions...');
         status = await PushNotifications.requestPermissions();
+        console.info('[Push] Permission after request:', status.receive);
       }
+
+      // WHY: Already-granted sessions must still call register() to mint/refresh the APNs/FCM token.
       if (status.receive !== 'granted') {
-        console.warn('[push] permission not granted', status.receive);
+        console.warn('[Push] permission not granted — aborting register()', status.receive);
         return false;
       }
 
+      console.info('[Push] Requesting native PushNotifications.register()...');
       await PushNotifications.register();
+      console.info('[Push] PushNotifications.register() invoked');
       return true;
     } catch (error) {
-      console.warn('[push] register failed', error);
+      console.warn('[Push] register failed', error);
       return false;
     } finally {
       registerInFlight = null;
@@ -188,12 +201,12 @@ export async function clearPushOnSignOut(): Promise<void> {
       await upsertPushToken({ clear: true });
     }
   } catch (error) {
-    console.warn('[push] clear token failed', error);
+    console.warn('[Push] clear token failed', error);
   }
   try {
     await detachListeners();
   } catch (error) {
-    console.warn('[push] detach listeners failed', error);
+    console.warn('[Push] detach listeners failed', error);
   }
 }
 

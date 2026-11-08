@@ -174,4 +174,18 @@ describe('pushNotificationService', () => {
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
   });
+
+  it('calls register when permission is already granted without re-prompting', async () => {
+    checkPermissions.mockResolvedValue({ receive: 'granted' });
+    register.mockResolvedValue(undefined);
+
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    const ok = await pushNotificationService.registerForGuildDispatches();
+    expect(ok).toBe(true);
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(register).toHaveBeenCalledTimes(1);
+  });
 });
