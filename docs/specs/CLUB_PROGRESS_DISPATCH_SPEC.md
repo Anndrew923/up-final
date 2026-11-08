@@ -2,10 +2,11 @@
 
 - **產品**：最強肉體（Ultimate Physique）
 - **工作區**：`up-final`
-- **版本時間戳**：2026-11-08（Asia/Taipei）
+- **版本時間戳**：2026-11-08（Asia/Taipei）；**修訂**：2026-11-08 — 鎖死 metric 命名、sync／broadcast 原子時序、users 寫入路徑
 - **狀態**：Phase 1 規格鎖定（尚未實作）
 - **SSOT 層**：本文件為本功能唯一規格來源；實作須對齊現況 `guild*` 路徑與 Callable 模式
 - **相關現況**：`docs/specs/UP_NON_ASSESSMENT_FEATURE_CODEX.md` §1.6（俱樂部）、`PerformanceBreakthroughModal`、`syncGuildLadderScore`
+- **對齊型別**：`ClubLadderDimension` / `SixAxisMetric`（`src/logic/core/guildRadarScores.ts`、`src/types/scoring.ts`）
 
 ---
 
@@ -65,15 +66,15 @@
 在 `PerformanceBreakthroughModal` 同步俱樂部 CTA 區域顯示輕量區塊：
 
 1. Switch／Checkbox：`廣播戰報至俱樂部`（Phase 1 預設勾選；首次可附簡短說明）
-2. 單行輸入：placeholder「說一句垃圾話或心得…（限 25 字）」
-3. 三個一鍵 Tag（點擊覆寫或填入輸入框）：
-   - `#剛性超限`
-   - `#誰敢來戰`
-   - `#今天差點升天`
+2. 單行輸入：placeholder 走 i18n（繁中例：「說一句垃圾話或心得…（限 25 字）」）
+3. 三個一鍵 Tag（點擊覆寫或填入輸入框；**字面值走 i18n，禁止元件硬編碼**）：
+   - `crew.dispatch.tag.overlimit` → 繁中 `#剛性超限`
+   - `crew.dispatch.tag.challenge` → 繁中 `#誰敢來戰`
+   - `crew.dispatch.tag.nearDeath` → 繁中 `#今天差點升天`
 4. 使用者按下「同步俱樂部／發布」：
-   - 既有：`onPersistToDashboard` → `syncPageGuild`（或等價分數同步）
-   - 若廣播勾選：呼叫 `dispatchClubProgress`（或擴充後的 guild sync payload）
-5. 廣播失敗／被略過（`delta <= 0`）**不得**阻擋分數同步成功態
+   - `onPersistToDashboard`（本機）
+   - **單次** Callable：`syncGuildLadderScore`（含可選 `broadcast` + `comment`）——分數 fan-out 與戰報在 **同一 transaction 語意** 內完成（見 §5.1）
+5. 廣播被略過（`delta <= 0` / mute-all / rate-limit）**不得**阻擋分數同步成功態
 
 ### 3.2 接收端偏好
 
@@ -82,6 +83,7 @@
 - Label：`接收隊友戰情報告` / `Team Telemetry Alerts`
 - Switch：ON = `muteClubDispatches === false`；OFF = `true`
 - 預設 ON
+- **寫入路徑**：必須經 Callable 或擴充後的 owner allowlist（見 §4.2）；禁止假設 client 可任意 `updateDoc(users/{uid})`
 
 ### 3.3 推播點擊
 
@@ -98,27 +100,29 @@ Deep Link → App 開 `/crew?focusUid={senderUid}` → `CrewPage` 自動開啟�
 > 命名鎖定 `guilds`（非 `clubs`），與現有 Firestore／Callable 一致。
 
 ```ts
+/** metricType 必須與 ClubLadderDimension 鎖死，禁止自造簡寫（explosive/muscle/grip）。 */
+type ClubDispatchMetric = ClubLadderDimension; // 'overall' | SixAxisMetric
+
 interface ClubDispatch {
   id: string;
   guildId: string;
   senderUid: string;
   senderDisplayName: string; // 具名；禁止匿名遮罩
-  metricType:
-    | 'overall'
-    | 'strength'
-    | 'explosive'
-    | 'cardio'
-    | 'muscle'
-    | 'bodyFat'
-    | 'grip';
+  metricType: ClubDispatchMetric;
+  /**
+   * overall → ladderScore
+   * 其餘 → SixAxisMetric 鍵名：
+   * strength | explosivePower | cardio | muscleMass | bodyFat | gripStrength
+   */
   previousScore: number;
   newScore: number;
   delta: number; // 必須 > 0 才允許建立「已發送」紀錄
   comment: string; // 已 sanitize，長度 0..25
-  createdAt: string; // ISO，對齊 guild 其他欄位慣例；或 Firestore Timestamp（實作鎖定一種）
+  /** 鎖定 ISO 字串，對齊 guilds.members[].updatedAt／guildDoc 慣例（禁止 Timestamp 混用） */
+  createdAt: string;
   /** Phase 1 可選 */
   fcmSentCount?: number;
-  skippedReason?: 'non-positive-delta' | 'no-recipients' | 'muted-all';
+  skippedReason?: 'non-positive-delta' | 'no-recipients' | 'muted-all' | 'rate-limited';
 }
 ```
 
@@ -126,14 +130,20 @@ interface ClubDispatch {
 
 ### 4.2 使用者偏好與 Push Token
 
-`users/{uid}`（Admin SDK 或受控 client patch — 實作時偏好建議 Callable／受規則保護的自有欄位寫入）：
+**現況债警示：** `firestore.rules` 對 `users/{uid}` 的 owner update **僅允許** `termsAcceptedVersion` / `termsAcceptedAt`。  
+因此 Phase 1 **禁止**假設 client 可直接寫 `muteClubDispatches` / `fcmToken*`。
+
+**鎖定寫入策略（二選一，T1/T3 開工前必須擇一實作）：**
+
+1. **首選（對齊 guild）：** Callable `upsertPushToken` / `setClubDispatchMute`（Admin SDK patch）
+2. **次選：** 擴充 `firestore.rules` owner `onlyMutate` allowlist，嚴格限定上述欄位型別
 
 ```ts
 interface UserClubDispatchFields {
   /** false = 接收戰報（預設）；true = 靜音 */
   muteClubDispatches?: boolean;
   /**
-   * Phase 1 簡化：單裝置 token。
+   * Phase 1 簡化：單裝置 token（last-writer-wins）。
    * Phase 2 可升為 users/{uid}/devices/{deviceId}
    */
   fcmToken?: string | null;
@@ -147,75 +157,108 @@ interface UserClubDispatchFields {
 ### 4.3 與既有 Guild 的關係
 
 - 收件名單：`guilds/{guildId}.memberUids`
-- 舊分來源：同文件 `members[]` 中對應 uid 的 `ladderScore` 或 `radarScores[metric]`
+- 舊分來源：同文件 `members[]` 中對應 uid 的 `ladderScore` 或 `radarScores[metric]`（鍵名必須為 `SixAxisMetric`）
+- 缺軸（radar key 不存在）：`previousScore` 視為 `0`（首次上榜可廣播）
 - 單會籍：`users.guildId`
+- **D1 補充：** 即便 sync payload 帶 `isAnonymousInLadder`（僅影響全球／avatar 清除），戰報 `senderDisplayName` 一律取 guild `members[].displayName`，禁止換成「匿名用戶」
 
 ---
 
 ## 5. Callable 契約
 
-### 5.1 名稱
+### 5.1 名稱與原子性（Phase 1 鎖定 — 防時序債）
 
-**首選（解耦）：** `dispatchClubProgress`  
-**允許（Phase 1 折衷）：** 擴充 `syncGuildLadderScore` 增加 `broadcast?: boolean` + `comment?: string`；但仍須遵守本節校驗與 FCM 規則。
+**禁止（Phase 1）：** 先 `syncPageGuild` 再另呼獨立 `dispatchClubProgress`。  
+原因：fan-out 已把 `members[]` 寫成 `newScore` 後，後續讀舊分會得到 `delta ≈ 0`，戰報全數被 D2 靜默略過。
 
-### 5.2 Request
+**Phase 1 鎖定實作：** 擴充既有 `syncGuildLadderScore`：
 
 ```ts
-interface DispatchClubProgressRequest {
-  metricType:
-    | 'overall'
-    | 'strength'
-    | 'explosive'
-    | 'cardio'
-    | 'muscle'
-    | 'bodyFat'
-    | 'grip';
-  newScore: number; // finite, >= 0
-  comment?: string; // 原始輸入；server 再 sanitize
-  /** 可選：client 提示；server 仍必須重算 delta */
-  previousScoreHint?: number;
+// 既有欄位 + 可選廣播
+{
+  ladderScore: number;
+  displayName: string;
+  avatarUrl?: string | null;
+  isAnonymous?: boolean;
+  radarScores?: GuildRadarScores;
+  /** opt-in 戰報；缺省 false */
+  broadcast?: boolean;
+  comment?: string;
+  /**
+   * 用於文案／delta 的主軸。缺省 'overall'（對 ladderScore）。
+   * 若為單軸頁 Breakthrough，傳該頁 SixAxisMetric。
+   */
+  broadcastMetricType?: ClubLadderDimension;
 }
 ```
+
+Server 在 **寫入 members[] 之前** 讀取 previousScore → 算 delta → 寫入新分 → 若 `broadcast === true && delta > 0` 再 FCM／可選寫 `dispatches`。
+
+**Phase 2 可選拆分：** 獨立 `dispatchClubProgress` 僅在能保證「讀舊分與寫新分同 TX」或明確接收 server 權威 previousScore 時才允許。
+
+### 5.2 Request（廣播相關欄位）
+
+```ts
+type ClubDispatchMetric = ClubLadderDimension;
+// 'overall' | 'strength' | 'explosivePower' | 'cardio' | 'muscleMass' | 'bodyFat' | 'gripStrength'
+
+interface SyncGuildLadderScoreBroadcastFields {
+  broadcast?: boolean;
+  comment?: string; // 原始輸入；server 再 sanitize
+  broadcastMetricType?: ClubDispatchMetric; // 缺省 'overall'
+}
+```
+
+`newScore` 權威來源：
+
+- `broadcastMetricType === 'overall'` → `ladderScore`
+- 否則 → `radarScores[broadcastMetricType]`（必須 finite；否則視為 invalid／skip broadcast，**不**擋分數寫入）
 
 ### 5.3 Comment Sanitize（server 強制）
 
 1. `typeof comment !== 'string'` → `''`
 2. `trim()`；合併連續空白為單空白
 3. 移除控制字元與 `<>`（對齊 guild name 防護精神）
-4. 長度 > 25 → **截斷至 25**（或 `invalid-comment` 拒收；Phase 1 建議截斷以免打斷流程）
+4. 長度 > 25 → **截斷至 25**（Phase 1 鎖定截斷，不拒收）
 5. 空字串合法
 
 ### 5.4 Server 演算法（順序鎖定）
 
+在既有 `syncGuildLadderScore` / `fanOutLadderScoreToGuild` 路徑上插入：
+
 1. `requireSignedInUid`
-2. 讀 `users/{uid}` → 取得 `guildId`；無會籍 → `{ ok: true, skipped: true, reason: 'no-guild' }`
-3. 讀 `guilds/{guildId}`；驗證 `uid ∈ memberUids` 且非 disbanded
-4. 解析 `previousScore`：
-   - `metricType === 'overall'` → `members[i].ladderScore`
-   - 否則 → `members[i].radarScores?.[metricType]`；缺省視為 `0`
-5. `delta = newScore - previousScore`
-6. **若 `!(delta > 0)`** → `{ ok: true, skipped: true, reason: 'non-positive-delta' }`（**不發 FCM**）
-7. `senderDisplayName` = guild member snapshot `displayName`（具名；D1）
-8. （可選）寫入 `dispatches/{id}`
-9. 組收件人：`memberUids` 排除 `senderUid`；批次讀各 user：
-   - 跳過 `muteClubDispatches === true`
-   - 跳過無有效 `fcmToken`
-10. `sendEachForMulticast`（或分批 ≤500）
-11. Response：
+2. 讀 `users/{uid}` → 取得 `guildId`；無會籍 → 既有 skip（分數亦不寫）
+3. 開 transaction 讀 `guilds/{guildId}`；驗證成員且非 disbanded
+4. **先**解析 `previousScore`（寫入前）：
+   - `broadcastMetricType === 'overall'`（或缺省）→ `members[i].ladderScore`
+   - 否則 → `members[i].radarScores?.[metric]`；缺軸視為 `0`
+5. 套用既有 member score / radar / identity patch（寫新分）
+6. 若 `broadcast !== true` → 結束（不發 FCM）
+7. `delta = newScore - previousScore`
+8. **若 `!(delta > 0)`** → 分數已寫入；回傳 `broadcastSkipped: 'non-positive-delta'`（**不發 FCM**）
+9. throttle 檢查；達限 → `broadcastSkipped: 'rate-limited'`
+10. `senderDisplayName` = 寫入後（或寫入前）guild member `displayName`（具名；D1）
+11. （可選）寫入 `dispatches/{id}`
+12. 組收件人：`memberUids` 排除 `senderUid`；讀各 user：
+    - 跳過 `muteClubDispatches === true`
+    - 跳過無有效 `fcmToken`
+13. Transaction commit 後 `sendEachForMulticast`（或分批 ≤500）  
+    WHY：FCM 不應拖住 TX；分數一致性優先於推播送達。
+14. Response 擴充：
 
 ```ts
-interface DispatchClubProgressResponse {
+interface SyncGuildLadderScoreResponse {
   ok: boolean;
-  skipped?: boolean;
-  reason?:
-    | 'no-guild'
-    | 'not-member'
-    | 'invalid-guild'
-    | 'invalid-input'
-    | 'non-positive-delta'
-    | 'no-recipients';
+  skipped?: boolean; // 分數路徑 skip（no-guild 等）
+  reason?: string;
   guildId?: string | null;
+  /** 戰報專用；與分數 ok 解耦 */
+  broadcastSkipped?:
+    | 'not-requested'
+    | 'non-positive-delta'
+    | 'no-recipients'
+    | 'rate-limited'
+    | 'invalid-metric-score';
   dispatchId?: string | null;
   delta?: number;
   fcmSuccessCount?: number;
@@ -223,16 +266,17 @@ interface DispatchClubProgressResponse {
 }
 ```
 
-### 5.5 Throttle（Phase 1 建議）
+### 5.5 Throttle（Phase 1 鎖定）
 
-- 每 uid 每小時最多 **5** 次成功廣播（獨立 collection 或 user 欄位 rolling window）
-- 達限：`{ ok: true, skipped: true, reason: 'rate-limited' }`（不阻擋分數同步）
+- 每 uid 每小時最多 **5** 次 **成功發出** 的廣播（獨立 collection 或 user rolling window）
+- 達限：分數仍成功；`broadcastSkipped: 'rate-limited'`
 
 ### 5.6 與分數同步的關係
 
-- **分數同步成功 ≠ 自動廣播**
-- 僅 Breakthrough 勾選後才呼叫 dispatch
-- 全球 ladder `submitShardCore` 的 guild fan-out **禁止**觸發戰報
+- **分數同步成功 ≠ 自動廣播**（必須 `broadcast: true`）
+- 僅 Breakthrough 勾選後 client 才傳 `broadcast: true`
+- 全球 ladder `submitShardCore` 的 guild fan-out **禁止**帶 broadcast／觸發戰報
+- Home「🛡️ 同步俱樂部」預設 **不**帶 broadcast（非 Breakthrough 語境）
 
 ---
 
@@ -325,8 +369,11 @@ interface DispatchClubProgressResponse {
 - [ ] 點推播進入 `/crew?focusUid=` 並開對應規格卡
 - [ ] comment ≤25 且經 sanitize
 - [ ] 無 Firestore trigger
-- [ ] i18n 無硬編碼 UI 字串
-- [ ] 單元測試覆蓋：sanitize、delta guard、recipient filter
+- [ ] i18n 無硬編碼 UI 字串（含 3 個 Tag）
+- [ ] `metricType` / `broadcastMetricType` 使用 `ClubLadderDimension` 真名（非 explosive/muscle/grip 簡寫）
+- [ ] previousScore 於 **members[] 寫入前** 讀取（回歸測試：sync+broadcast 同呼不會因 delta=0 誤 skip）
+- [ ] `fcmToken` / `muteClubDispatches` 寫入不違反現行 `users` rules（Callable 或 allowlist）
+- [ ] 單元測試覆蓋：sanitize、delta guard、recipient filter、atomic previousScore
 
 ---
 
@@ -336,13 +383,13 @@ interface DispatchClubProgressResponse {
 
 | # | Ticket | 內容 | 依賴 |
 |---|---|---|---|
-| **T0** | Spec 落檔 | 建立本文件於 `docs/specs/CLUB_PROGRESS_DISPATCH_SPEC.md` | — |
-| **T1** | Push Plugin 接入 | 加 `@capacitor/push-notifications`；iOS APNs／Android FCM 權限；`pushTokenService` 註冊／refresh／登出清除；寫入 `users.fcmToken*` | T0 |
-| **T2** | 後端 Callable | `dispatchClubProgress`：delta>0、sanitize、mute/self/token 過濾、FCM multicast、throttle；rules deny-all `dispatches`；純函數單測 | T0（可與 T1 平行，但端對端需 T1） |
-| **T3** | 偏好開關 | Crew／設定頁 Switch ↔ `muteClubDispatches`；預設接收 ON；i18n | T0 |
-| **T4** | Breakthrough UI | 勾選＋25 字＋3 Tag；僅 `dual` + guild intent；成功後呼叫 dispatch；略過不擋 sync | T2（契約）、T1（真機推播） |
-| **T5** | Deep Link | `/crew?focusUid=` 解析並開 `CrewMemberRadarSheet`；push `data.route` 導航 | T4 前可先做 |
-| **T6** | 測試與原生驗證 | logic／Callable 單測；iOS+Android 真機：授權→發報→mute→點推播落地 | T1–T5 |
+| **T0** | Spec 落檔 | 本文件（含修訂鎖死項） | — |
+| **T1** | Push Plugin 接入 | `@capacitor/push-notifications`；APNs／FCM；`pushTokenService`；經 Callable／rules allowlist 寫入 `fcmToken*` | T0 |
+| **T2** | 後端同步＋廣播 | 擴充 `syncGuildLadderScore`：TX 內讀舊分→寫新分→可選 FCM；sanitize／throttle／dispatches rules；純函數單測 | T0 |
+| **T3** | 偏好開關 | Crew／設定 Switch ↔ `muteClubDispatches`（Callable 或 allowlist）；預設接收 ON；i18n | T0／T1 寫入策略 |
+| **T4** | Breakthrough UI | 勾選＋25 字＋3 Tag；`dual` + guild intent；`broadcast` 併入 `syncPageGuild` payload；skip 不擋 sync | T2、T1 |
+| **T5** | Deep Link | `/crew?focusUid=` → `CrewMemberRadarSheet`；push `data.route` | 可與 T2 平行 |
+| **T6** | 測試與原生驗證 | 單測 + iOS／Android 真機；對照 §10 | T1–T5 |
 
 ### Ticket 細節 checklist
 
@@ -351,27 +398,32 @@ interface DispatchClubProgressResponse {
 - [ ] 安裝並設定 `@capacitor/push-notifications`
 - [ ] iOS APNs entitlement／Android FCM 設定對齊現有 Firebase 專案
 - [ ] `src/services/pushTokenService.ts`：註冊、refresh、登出清除
-- [ ] 寫入 `users/{uid}.fcmToken` / `fcmTokenUpdatedAt` / `fcmPlatform`
+- [ ] **不得**直接 `updateDoc` 撞上現行 terms-only rules；走 Callable 或先擴 rules allowlist
+- [ ] 寫入 `users/{uid}.fcmToken` / `fcmTokenUpdatedAt` / `fcmPlatform`（單裝置 last-writer-wins）
 
-#### T2 — 後端 Callable
+#### T2 — 後端同步＋廣播
 
-- [ ] `functions/guild/dispatchClubProgressCallable.js`（或等價）
-- [ ] 純函數：sanitize、delta guard、recipient filter（含單測）
-- [ ] FCM Multicast；無 `onCreate` trigger
+- [ ] 擴充 `functions/guild/syncGuildScoreCallable.js` + `guildScoreFanOut.js`（或同目錄純函數模組）
+- [ ] **寫入前**讀 previousScore；`broadcast && delta > 0` 才 FCM
+- [ ] `broadcastMetricType` 驗證屬於 `ClubLadderDimension`
+- [ ] 純函數單測：sanitize、delta guard、recipient filter、atomic previousScore
+- [ ] FCM 在 TX commit 後發送；無 `onCreate` trigger
 - [ ] `firestore.rules`：`guilds/{guildId}/dispatches/{dispatchId}` deny-all
-- [ ] 成功廣播 throttle（建議每 uid 每小時 5 次）
+- [ ] 成功廣播 throttle：每 uid 每小時 5 次
 
 #### T3 — 偏好開關
 
 - [ ] UI Switch：`接收隊友戰情報告` / `Team Telemetry Alerts`
 - [ ] 綁定 `users.muteClubDispatches`（預設 false = 接收 ON）
+- [ ] 寫入策略與 T1 一致（Callable 或 allowlist）
 - [ ] i18n keys：`crew.dispatch.muteLabel` / `muteHint`
 
 #### T4 — Breakthrough UI
 
-- [ ] `PerformanceBreakthroughModal`：廣播勾選（預設勾選）+ 留言 ≤25 + 3 Tag
+- [ ] `PerformanceBreakthroughModal`：廣播勾選（預設勾選）+ 留言 ≤25 + 3 Tag（i18n）
 - [ ] 僅 `membershipSurface === 'dual'` 且 guild intent 顯示
-- [ ] 分數同步成功後才呼叫 `dispatchClubProgress`；skip 不擋成功態
+- [ ] `syncPageGuild` 傳 `broadcast` / `comment` / `broadcastMetricType`（**禁止**另行二次 dispatch call）
+- [ ] Home「同步俱樂部」不傳 `broadcast: true`
 - [ ] i18n：`broadcastToggle` / `commentPlaceholder` / tag keys
 
 #### T5 — Deep Link
@@ -383,23 +435,39 @@ interface DispatchClubProgressResponse {
 
 #### T6 — 測試與原生驗證
 
-- [ ] Unit：sanitize、`delta > 0`、recipient filter
+- [ ] Unit：sanitize、`delta > 0`、recipient filter、寫入前 previousScore
+- [ ] 回歸：先寫分再讀舊分的錯誤順序必須被測試擋下
 - [ ] iOS 真機：授權 → 發報 → mute → 點推播落地
 - [ ] Android 真機：同上
 - [ ] 對照 §10 DoD 全數勾選
 
 ---
 
-## 12. 關鍵檔案索引（實作錨點）
+## 12. 規格自檢 — 已消除的技術債風險
+
+| 風險 | 狀態 | 鎖定方式 |
+|---|---|---|
+| `metricType` 簡寫與 `SixAxisMetric` 不一致 | 已鎖定 | 僅允許 `ClubLadderDimension` 真名 |
+| sync 後再 dispatch → delta 恒為 0 | 已鎖定 | 單次 Callable；寫入前讀舊分 |
+| 雙路徑（獨立 Callable vs 擴充 sync）分叉 | 已鎖定 | Phase 1 只擴充 `syncGuildLadderScore` |
+| client 直寫 `users` 撞 rules | 已標註 | Callable 首選／allowlist 次選 |
+| `createdAt` ISO vs Timestamp 混用 | 已鎖定 | ISO string |
+| Tag／文案硬編碼 | 已鎖定 | 全走 i18n |
+| `rate-limited` 未進 response union | 已補齊 | `broadcastSkipped` |
+| 全球 fan-out／Home sync 誤觸廣播 | 已鎖定 | 僅 Breakthrough 傳 `broadcast: true` |
+
+---
+
+## 13. 關鍵檔案索引（實作錨點）
 
 | 區域 | 路徑 |
 |---|---|
 | Breakthrough UI | `src/components/assessment/PerformanceBreakthroughModal.tsx` |
 | Guild sync hook | `src/hooks/useLeaderboardSyncAssessmentPage.ts` |
 | Guild callables (client) | `src/services/guildCallableService.ts` |
-| Guild types | `src/types/guild.ts` |
+| Guild types / axes | `src/types/guild.ts`, `src/types/scoring.ts`, `src/logic/core/guildRadarScores.ts` |
 | Crew page / sheet | `src/pages/CrewPage.tsx`, `src/components/crew/*` |
 | Sync callable (server) | `functions/guild/syncGuildScoreCallable.js` |
 | Fan-out | `functions/guild/guildScoreFanOut.js` |
 | Functions export | `functions/index.js` |
-| Rules | `firestore.rules` |
+| Rules | `firestore.rules`（注意 `users` owner update 現僅 terms 欄位） |

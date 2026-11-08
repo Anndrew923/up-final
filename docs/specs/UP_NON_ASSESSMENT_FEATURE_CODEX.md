@@ -289,6 +289,8 @@ Sheet 標題：`ladder.filters.filterSheetTitles.*`（選擇性別／年齡區�
 
 Club 維度 enum（`ClubLadderDimension`）：`'overall' | SixAxisMetric`（`strength`／`explosivePower`／`cardio`／`muscleMass`／`bodyFat`／`gripStrength`）。缺軸排序置底、UI 顯示「—」，不coerce 為 0。
 
+**規劃中（尚未上線）：** 俱樂部進步戰報廣播（Club Progress Dispatch）— SSOT 見 `docs/specs/CLUB_PROGRESS_DISPATCH_SPEC.md`（Breakthrough 主動廣播 + `muteClubDispatches` + FCM；非本圖鑑現況功能）。
+
 私榜分數來源：`GuildMemberSnapshot.ladderScore`（總分）與可選 `radarScores?: Partial<Record<SixAxisMetric, number>>`。
 
 ---
