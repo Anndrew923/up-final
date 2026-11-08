@@ -29,11 +29,14 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.syncDashboardThenArenaGuildOnly') return 'Sync Club Only';
       if (key === 'assessment.hallSpectrum.viewEntry') return '名人堂光譜 ➔';
       if (key === 'assessment.hallSpectrum.viewEntryAria') return '開啟名人堂常模光譜';
-      if (key === 'crew.dispatch.broadcastToggle') return 'Broadcast to club';
-      if (key === 'crew.dispatch.broadcastHint') return 'First hint';
+      if (key === 'crew.dispatch.modalKicker') return 'Club Dispatch';
+      if (key === 'crew.dispatch.modalTitle') return 'Announce breakthrough';
+      if (key === 'crew.dispatch.closeAria') return 'Close dispatch';
+      if (key === 'crew.dispatch.broadcastAndSync') return 'Broadcast & sync';
+      if (key === 'crew.dispatch.silentSync') return 'Sync quietly';
+      if (key === 'crew.dispatch.syncing') return 'Syncing…';
       if (key === 'crew.dispatch.commentPlaceholder') return 'Say something…';
       if (key === 'crew.dispatch.commentLabel') return 'Comment';
-      if (key === 'crew.dispatch.panelAria') return 'Dispatch panel';
       if (key === 'crew.dispatch.tagsAria') return 'Tags';
       if (key === 'crew.dispatch.tag.overlimit') return '#剛性超限';
       if (key === 'crew.dispatch.tag.challenge') return '#誰敢來戰';
@@ -65,16 +68,6 @@ vi.mock('../../../hooks/useLadderUploadGateSheet', () => ({
 vi.mock('../../ladder/LadderUploadGateSheetPortal', () => ({
   default: () => null,
 }));
-
-vi.mock('../../../logic/core/clubProgressDispatchUi', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../../../logic/core/clubProgressDispatchUi')>();
-  return {
-    ...actual,
-    readBroadcastHintSeen: () => false,
-    markBroadcastHintSeen: vi.fn(),
-  };
-});
 
 const basePayload: PerformanceBreakthroughPayload = {
   metric: 'strength',
@@ -299,7 +292,7 @@ describe('PerformanceBreakthroughModal summary disclosure', () => {
   });
 });
 
-describe('PerformanceBreakthroughModal club dispatch panel', () => {
+describe('PerformanceBreakthroughModal club dispatch modal', () => {
   let root: Root;
   let host: HTMLDivElement;
 
@@ -325,6 +318,15 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
     lastCloudOutcome: null,
   };
 
+  async function flushPipeline(): Promise<void> {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+    await Promise.resolve();
+  }
+
   beforeEach(() => {
     host = document.createElement('div');
     document.body.appendChild(host);
@@ -340,9 +342,12 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
     });
     host.remove();
     document.body.querySelectorAll('[role="dialog"]').forEach((node) => node.remove());
+    document.body.querySelectorAll('[data-testid="club-dispatch-modal"]').forEach((node) =>
+      node.remove()
+    );
   });
 
-  it('hides dispatch panel when membership is global-only', () => {
+  it('does not open club dispatch modal for global-only membership', () => {
     act(() => {
       root.render(
         <PerformanceBreakthroughModal
@@ -354,10 +359,11 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
         />
       );
     });
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
     expect(document.querySelector('[data-testid="club-progress-dispatch-panel"]')).toBeNull();
   });
 
-  it('shows panel for dual, fills tags, and passes broadcast payload on club sync', async () => {
+  it('opens ClubDispatchModal from club sync and broadcasts with comment', async () => {
     act(() => {
       root.render(
         <PerformanceBreakthroughModal
@@ -370,7 +376,18 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
       );
     });
 
-    expect(document.querySelector('[data-testid="club-progress-dispatch-panel"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
+
+    const guildBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Club Only'
+    );
+    expect(guildBtn).toBeDefined();
+
+    act(() => {
+      guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).not.toBeNull();
 
     const tag = document.querySelector(
       '[data-testid="club-dispatch-tag-overlimit"]'
@@ -386,19 +403,13 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
       document.querySelector('[data-testid="club-dispatch-comment-count"]')?.textContent
     ).toContain('5/25');
 
-    const guildBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Club Only'
-    );
-    expect(guildBtn).toBeDefined();
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
 
     await act(async () => {
-      guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => resolve());
-        });
-      });
-      await Promise.resolve();
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
     });
 
     expect(dualSync.syncPageGuild).toHaveBeenCalled();
@@ -406,6 +417,82 @@ describe('PerformanceBreakthroughModal club dispatch panel', () => {
     expect(arg).toMatchObject({
       broadcast: true,
       comment: '#剛性超限',
+      broadcastMetricType: 'strength',
+    });
+  });
+
+  it('passes broadcast false on silent sync from ClubDispatchModal', async () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const guildBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Club Only'
+    );
+
+    act(() => {
+      guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const silentBtn = document.querySelector(
+      '[data-testid="club-dispatch-silent-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      silentBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    const arg = dualSync.syncPageGuild.mock.calls[0]?.[0];
+    expect(arg).toMatchObject({ broadcast: false });
+    expect(arg?.comment).toBeUndefined();
+  });
+
+  it('opens ClubDispatchModal from global+club and syncs both legs after broadcast', async () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).not.toBeNull();
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGlobal).toHaveBeenCalled();
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGuild.mock.calls[0]?.[0]).toMatchObject({
+      broadcast: true,
       broadcastMetricType: 'strength',
     });
   });

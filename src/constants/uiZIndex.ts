@@ -8,6 +8,11 @@ export const Z_INDEX_CLASS = {
   performanceBreakthroughModal: 'z-[240]',
   toolResultModal: 'z-[240]',
   /**
+   * Club progress dispatch celebration — stacked above breakthrough (`240`), below Hall (`245`).
+   * WHY: Dual-membership sync must declare broadcast intent without burying the score reveal.
+   */
+  clubDispatchModal: 'z-[242]',
+  /**
    * Single-axis hall spectrum drawer — above breakthrough celebration (`240`) so Modal→Hall
    * entry stays visible; still below Dyno clear-history / high-risk sheets (`250`).
    * WHY: Dyno chat stays at `220`; pages must close breakthrough before Dyno handoff so the

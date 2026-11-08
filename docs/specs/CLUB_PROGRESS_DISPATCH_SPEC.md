@@ -420,11 +420,11 @@ interface SyncGuildLadderScoreResponse {
 
 #### T4 — Breakthrough UI
 
-- [ ] `PerformanceBreakthroughModal`：廣播勾選（預設勾選）+ 留言 ≤25 + 3 Tag（i18n）
-- [ ] 僅 `membershipSurface === 'dual'` 且 guild intent 顯示
-- [ ] `syncPageGuild` 傳 `broadcast` / `comment` / `broadcastMetricType`（**禁止**另行二次 dispatch call）
-- [ ] Home「同步俱樂部」不傳 `broadcast: true`
-- [ ] i18n：`broadcastToggle` / `commentPlaceholder` / tag keys
+- [x] `ClubDispatchModal`：獨立宣告彈窗（分數 + 留言 ≤25 + 3 Tag + 廣播／默默同步）
+- [x] 僅 `membershipSurface === 'dual'` 且點俱樂部相關同步時拉起
+- [x] `syncPageGuild` 傳 `broadcast` / `comment` / `broadcastMetricType`（**禁止**另行二次 dispatch call）
+- [x] Home「同步俱樂部」不傳 `broadcast: true`
+- [x] i18n：`broadcastAndSync` / `silentSync` / `commentPlaceholder` / tag keys
 
 #### T5 — Deep Link
 

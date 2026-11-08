@@ -6,9 +6,6 @@ import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
 import {
-  finalizeDispatchComment,
-  markBroadcastHintSeen,
-  readBroadcastHintSeen,
   resolveBroadcastMetricFromBreakthrough,
   shouldShowBreakthroughDispatchPanel,
 } from '../../logic/core/clubProgressDispatchUi';
@@ -22,10 +19,12 @@ import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
 import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import AuraReactiveFrame from './AuraReactiveFrame';
-import ClubProgressDispatchPanel from './ClubProgressDispatchPanel';
+import ClubDispatchModal from './ClubDispatchModal';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 import AssessmentHeroScoreWithNormBadge from './AssessmentHeroScoreWithNormBadge';
 import { HallSpectrumEntryButton } from './AssessmentScoreMeaningPanel';
+
+type ClubSyncIntent = 'global' | 'guild';
 
 export interface PerformanceBreakthroughModalProps {
   open: boolean;
@@ -79,9 +78,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const [pipelineBusy, setPipelineBusy] = useState(false);
   const [dashboardPersistedInSession, setDashboardPersistedInSession] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
-  const [broadcastEnabled, setBroadcastEnabled] = useState(true);
-  const [broadcastComment, setBroadcastComment] = useState('');
-  const [showBroadcastHint, setShowBroadcastHint] = useState(false);
+  const [clubDispatchOpen, setClubDispatchOpen] = useState(false);
+  const [pendingClubIntent, setPendingClubIntent] = useState<ClubSyncIntent | null>(null);
   const {
     gateSheetOpen,
     gateSheetKind,
@@ -90,8 +88,9 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     confirmGateSheet,
     resetGateSheet,
   } = useLadderUploadGateSheet(ROUTES.ladder);
-  // WHY: Mirror SomatotypeReportModal nested-sheet pattern — parent trap yields while Hall is on top.
-  useFocusTrap(dialogRef, open && !spectrumOverlayOpen);
+  // WHY: Yield trap while Hall or club-dispatch sheet is stacked above this celebration.
+  const nestedOverlayOpen = spectrumOverlayOpen || clubDispatchOpen;
+  useFocusTrap(dialogRef, open && !nestedOverlayOpen);
 
   const isDashboardSyncing = syncing || syncPending;
   const isArenaSyncing = arenaSync?.busy ?? false;
@@ -100,7 +99,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const showDashboardSync = onSyncToDashboard != null;
   const membershipSurface = arenaSync?.membershipSurface ?? 'global-only';
   const showClubSecondary = membershipSurface === 'dual';
-  const showDispatchPanel = shouldShowBreakthroughDispatchPanel(membershipSurface);
+  const showDispatchFlow = shouldShowBreakthroughDispatchPanel(membershipSurface);
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
@@ -122,7 +121,10 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   }, [isDashboardSyncing, isPipelineRunning, onSyncToDashboard]);
 
   const runPersistThenCloud = useCallback(
-    async (intent: 'global' | 'guild') => {
+    async (
+      intent: ClubSyncIntent,
+      dispatch?: { broadcast: boolean; comment?: string }
+    ) => {
       if (!onPersistToDashboard || !arenaSync || isDashboardSyncing || isPipelineRunning) return;
       // pending ≈ global-only: allow global; club CTA is hidden until dual.
       if (intent === 'guild' && membershipSurface !== 'dual') return;
@@ -147,24 +149,28 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
         const sync = arenaSyncRef.current;
         if (!sync) return;
+
+        const guildBroadcastOptions =
+          dispatch?.broadcast === true
+            ? {
+                broadcast: true as const,
+                comment: dispatch.comment ?? '',
+                broadcastMetricType: payload
+                  ? resolveBroadcastMetricFromBreakthrough(payload.metric)
+                  : ('overall' as const),
+              }
+            : dispatch
+              ? { broadcast: false as const }
+              : undefined;
+
         if (intent === 'guild') {
-          if (showDispatchPanel && broadcastEnabled) {
-            markBroadcastHintSeen();
-            setShowBroadcastHint(false);
-          }
-          await sync.syncPageGuild(
-            showDispatchPanel && broadcastEnabled
-              ? {
-                  broadcast: true,
-                  comment: finalizeDispatchComment(broadcastComment),
-                  broadcastMetricType: payload
-                    ? resolveBroadcastMetricFromBreakthrough(payload.metric)
-                    : 'overall',
-                }
-              : undefined
-          );
+          await sync.syncPageGuild(guildBroadcastOptions);
         } else {
           await sync.syncPageGlobal();
+          // WHY: Dual "global + club" CTA must still publish club score; broadcast rides this leg.
+          if (membershipSurface === 'dual' && guildBroadcastOptions) {
+            await sync.syncPageGuild(guildBroadcastOptions);
+          }
         }
       } finally {
         setPipelineBusy(false);
@@ -172,16 +178,45 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     },
     [
       arenaSync,
-      broadcastComment,
-      broadcastEnabled,
       isDashboardSyncing,
       isPipelineRunning,
       membershipSurface,
       onPersistToDashboard,
       payload,
-      showDispatchPanel,
       tryOpenGateSheet,
     ]
+  );
+
+  const openClubDispatch = useCallback(
+    (intent: ClubSyncIntent) => {
+      if (!arenaSync || isDashboardSyncing || isPipelineRunning) return;
+      if (intent === 'guild') {
+        if (!(arenaSync.overallScore > 0)) return;
+      } else {
+        if (arenaSync.targetCount === 0) return;
+        if (tryOpenGateSheet(arenaSync.gate)) return;
+      }
+      setPendingClubIntent(intent);
+      setClubDispatchOpen(true);
+    },
+    [arenaSync, isDashboardSyncing, isPipelineRunning, tryOpenGateSheet]
+  );
+
+  const closeClubDispatch = useCallback(() => {
+    if (isPipelineRunning) return;
+    setClubDispatchOpen(false);
+    setPendingClubIntent(null);
+  }, [isPipelineRunning]);
+
+  const confirmClubDispatch = useCallback(
+    async (broadcast: boolean, comment = '') => {
+      const intent = pendingClubIntent;
+      if (!intent) return;
+      setClubDispatchOpen(false);
+      setPendingClubIntent(null);
+      await runPersistThenCloud(intent, { broadcast, comment });
+    },
+    [pendingClubIntent, runPersistThenCloud]
   );
 
   const toggleSummaryExpanded = useCallback(() => {
@@ -192,9 +227,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   useEffect(() => {
     if (!open) return;
     setSummaryExpanded(false);
-    setBroadcastEnabled(true);
-    setBroadcastComment('');
-    setShowBroadcastHint(!readBroadcastHintSeen());
+    setClubDispatchOpen(false);
+    setPendingClubIntent(null);
   }, [open, payload?.metric, payload?.scoreDisplay, payload?.populationClass]);
 
   useEffect(() => {
@@ -204,8 +238,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       setPipelineBusy(false);
       setDashboardPersistedInSession(false);
       setSummaryExpanded(false);
-      setBroadcastEnabled(true);
-      setBroadcastComment('');
+      setClubDispatchOpen(false);
+      setPendingClubIntent(null);
       resetGateSheet();
     }, 0);
     return () => window.clearTimeout(id);
@@ -216,12 +250,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      // WHY: Hall drawer also listens on window Escape — yield while it is the top scrim.
-      if (event.key === 'Escape' && !spectrumOverlayOpen) onClose();
+      // WHY: Nested Hall / dispatch sheets own Escape while stacked above.
+      if (event.key === 'Escape' && !nestedOverlayOpen) onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose, spectrumOverlayOpen]);
+  }, [open, onClose, nestedOverlayOpen]);
 
   if (!open || !payload || typeof document === 'undefined') return null;
 
@@ -355,7 +389,13 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                         arenaSync.gate === 'no-score' ||
                         arenaSync.gate === 'invalid-score'
                       }
-                      onClick={() => void runPersistThenCloud('global')}
+                      onClick={() => {
+                        if (showDispatchFlow) {
+                          openClubDispatch('global');
+                          return;
+                        }
+                        void runPersistThenCloud('global');
+                      }}
                     >
                       {isPipelineRunning
                         ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
@@ -364,32 +404,26 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                           : t('assessment.breakthrough.syncDashboardThenArena')}
                     </button>
                     {showClubSecondary ? (
-                      <>
-                        {showDispatchPanel ? (
-                          <ClubProgressDispatchPanel
-                            enabled={broadcastEnabled}
-                            onEnabledChange={setBroadcastEnabled}
-                            comment={broadcastComment}
-                            onCommentChange={setBroadcastComment}
-                            showHint={showBroadcastHint}
-                            disabled={actionsBusy}
-                          />
-                        ) : null}
-                        <button
-                          type="button"
-                          className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
-                          disabled={
-                            syncDisabled ||
-                            actionsBusy ||
-                            !(arenaSync.overallScore > 0)
+                      <button
+                        type="button"
+                        className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
+                        disabled={
+                          syncDisabled ||
+                          actionsBusy ||
+                          !(arenaSync.overallScore > 0)
+                        }
+                        onClick={() => {
+                          if (showDispatchFlow) {
+                            openClubDispatch('guild');
+                            return;
                           }
-                          onClick={() => void runPersistThenCloud('guild')}
-                        >
-                          {isPipelineRunning
-                            ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
-                            : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
-                        </button>
-                      </>
+                          void runPersistThenCloud('guild');
+                        }}
+                      >
+                        {isPipelineRunning
+                          ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
+                          : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
+                      </button>
                     ) : null}
                   </div>
                 ) : null}
@@ -443,6 +477,21 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
           </div>
         </AuraReactiveFrame>
       </div>
+
+      <ClubDispatchModal
+        open={clubDispatchOpen}
+        scoreDisplay={payload.scoreDisplay}
+        title={payload.title}
+        auraKey={payload.auraKey}
+        busy={isPipelineRunning}
+        onClose={closeClubDispatch}
+        onBroadcast={(comment) => {
+          void confirmClubDispatch(true, comment);
+        }}
+        onSilentSync={() => {
+          void confirmClubDispatch(false);
+        }}
+      />
 
       <LadderUploadGateSheetPortal
         gateSheetKind={gateSheetKind}
