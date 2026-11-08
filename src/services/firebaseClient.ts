@@ -483,6 +483,13 @@ export async function signInAnonymouslyWeb(): Promise<User> {
 
 export async function signOutFirebase(): Promise<void> {
   if (!firebaseAuth) return;
+  // WHY: Clear FCM token while session is still valid for Callable auth.
+  try {
+    const { pushNotificationService } = await import('./pushNotificationService');
+    await pushNotificationService.clearOnSignOut();
+  } catch (error) {
+    console.warn('[auth] push clear on sign-out failed', error);
+  }
   await signOut(firebaseAuth);
   const { clearAdminEntitlementCache } = await import('./adminEntitlementService');
   clearAdminEntitlementCache();

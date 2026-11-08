@@ -8,6 +8,7 @@ import CrewIdentityBanner from '../components/crew/CrewIdentityBanner';
 import CrewPrivateLadder from '../components/crew/CrewPrivateLadder';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { useCrewGuild } from '../hooks/useCrewGuild';
+import { useGuildPushRegistration } from '../hooks/usePushNotificationLifecycle';
 import {
   CREW_FOCUS_UID_QUERY_KEY,
   findGuildMemberByFocusUid,
@@ -37,6 +38,11 @@ export default function CrewPage() {
 
   const showJoined = crew.status === 'ready' && crew.guild != null;
   const showEmpty = crew.status === 'empty' || (crew.status === 'ready' && !crew.guild);
+
+  // WHY: Only prompt/register push when signed-in club members enter Crew HQ (not cold-start guests).
+  useGuildPushRegistration({
+    enabled: showJoined && Boolean(crew.authUid),
+  });
 
   // WHY: Valid focusUid is cleared by ladder after open; invalid / empty-club must not sticky-pollute URL.
   useEffect(() => {

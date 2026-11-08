@@ -18,6 +18,7 @@ import {
 } from '../../config/routes';
 import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
+import { usePushNavigateBridge } from '../../hooks/usePushNotificationLifecycle';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
 import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
@@ -38,6 +39,7 @@ export interface AppShellProps {
  */
 export const AppShell: FC<AppShellProps> = ({ children }) => {
   useSpecBadgeUnlockToast();
+  usePushNavigateBridge();
   const location = useLocation();
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();

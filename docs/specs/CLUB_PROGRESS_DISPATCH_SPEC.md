@@ -395,11 +395,11 @@ interface SyncGuildLadderScoreResponse {
 
 #### T1 — Push Plugin 接入
 
-- [ ] 安裝並設定 `@capacitor/push-notifications`
-- [ ] iOS APNs entitlement／Android FCM 設定對齊現有 Firebase 專案
-- [ ] `src/services/pushTokenService.ts`：註冊、refresh、登出清除
-- [ ] **不得**直接 `updateDoc` 撞上現行 terms-only rules；走 Callable 或先擴 rules allowlist
-- [ ] 寫入 `users/{uid}.fcmToken` / `fcmTokenUpdatedAt` / `fcmPlatform`（單裝置 last-writer-wins）
+- [x] 安裝並設定 `@capacitor/push-notifications`
+- [x] iOS APNs entitlement／Android FCM 設定對齊現有 Firebase 專案（`aps-environment` + `POST_NOTIFICATIONS`；真機 APNs key 仍須在 Apple/Firebase Console 完成）
+- [x] `src/services/pushNotificationService.ts`：註冊、refresh、登出清除（Crew joined 掛載；sign-out clear）
+- [x] **不得**直接 `updateDoc` 撞上現行 terms-only rules；走 Callable `upsertPushToken`
+- [x] 寫入 `users/{uid}.fcmToken` / `fcmTokenUpdatedAt` / `fcmPlatform`（單裝置 last-writer-wins）
 
 #### T2 — 後端同步＋廣播
 
@@ -458,7 +458,19 @@ interface SyncGuildLadderScoreResponse {
 
 ---
 
-## 13. 關鍵檔案索引（實作錨點）
+## 13. 原生推播設定備註（T1）
+
+| 平台 | 必要設定 |
+|---|---|
+| **npm** | `@capacitor/push-notifications` + `npx cap sync` |
+| **Android** | `POST_NOTIFICATIONS` in `AndroidManifest.xml`；Firebase `google-services.json` 已存在於專案時 FCM 可用 |
+| **iOS** | `App.entitlements` → `aps-environment`；`Info.plist` → `UIBackgroundModes` 含 `remote-notification`；Xcode Signing 開啟 Push Notifications capability；Apple Developer 開 APNs key 並接到 Firebase |
+| **掛載** | `usePushNavigateBridge`（AppShell）+ `useGuildPushRegistration`（Crew joined only） |
+| **登出** | `signOutFirebase` → `pushNotificationService.clearOnSignOut`（先 clear token Callable，再 Auth signOut） |
+
+---
+
+## 14. 關鍵檔案索引（實作錨點）
 
 | 區域 | 路徑 |
 |---|---|

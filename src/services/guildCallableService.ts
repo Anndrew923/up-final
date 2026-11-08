@@ -334,6 +334,45 @@ type SetClubDispatchMuteResponse = {
   error?: string;
 };
 
+type UpsertPushTokenResponse = {
+  ok: boolean;
+  cleared?: boolean;
+  fcmPlatform?: string | null;
+  error?: string;
+};
+
+/**
+ * Upsert or clear FCM/APNs token on `users/{uid}` (Admin SDK via Callable).
+ * WHY: Client rules only allow terms fields on users/{uid}.
+ */
+export async function upsertPushToken(input: {
+  fcmToken?: string | null;
+  clear?: boolean;
+  fcmPlatform?: 'ios' | 'android' | 'web' | null;
+  platform?: 'ios' | 'android' | 'web' | null;
+}): Promise<GuildCallableResult<{ cleared: boolean; fcmPlatform: string | null }>> {
+  const functions = getFirebaseFunctions();
+  if (!functions) return functionsUnavailable();
+  try {
+    await prepareGuildCallableSession();
+    const callable = httpsCallable<typeof input, UpsertPushTokenResponse>(
+      functions,
+      'upsertPushToken'
+    );
+    const { data } = await callable(input);
+    if (data.ok === true) {
+      return {
+        ok: true,
+        cleared: data.cleared === true,
+        fcmPlatform: typeof data.fcmPlatform === 'string' ? data.fcmPlatform : null,
+      };
+    }
+    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+  } catch (err) {
+    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+  }
+}
+
 /**
  * Toggle receiving teammate progress dispatches (`users.muteClubDispatches`).
  * WHY: Client cannot patch users/{uid} beyond terms fields — Admin SDK via Callable.

@@ -68,5 +68,9 @@
 	<string>儲存或編輯天梯頭像需要存取您的相簿權限。</string>
 	<key>NSCameraUsageDescription</key>
 	<string>上傳個人天梯頭像需要相機與影像選取權限。</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
