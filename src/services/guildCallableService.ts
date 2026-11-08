@@ -349,7 +349,6 @@ export async function upsertPushToken(input: {
   fcmToken?: string | null;
   clear?: boolean;
   fcmPlatform?: 'ios' | 'android' | 'web' | null;
-  platform?: 'ios' | 'android' | 'web' | null;
 }): Promise<GuildCallableResult<{ cleared: boolean; fcmPlatform: string | null }>> {
   const functions = getFirebaseFunctions();
   if (!functions) return functionsUnavailable();

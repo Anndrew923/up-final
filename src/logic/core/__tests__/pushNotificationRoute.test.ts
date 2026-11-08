@@ -5,17 +5,20 @@ import {
 } from '../pushNotificationRoute';
 
 describe('resolvePushNotificationRoute', () => {
-  it('accepts absolute in-app paths', () => {
+  it('accepts Crew absolute paths with optional query', () => {
     expect(resolvePushNotificationRoute({ route: '/crew?focusUid=u1' })).toBe(
       '/crew?focusUid=u1'
     );
     expect(resolvePushNotificationRoute({ path: '/crew' })).toBe('/crew');
   });
 
-  it('rejects external / scheme URLs', () => {
+  it('rejects external / scheme URLs and non-crew app paths', () => {
     expect(resolvePushNotificationRoute({ route: 'https://evil.example' })).toBeNull();
     expect(resolvePushNotificationRoute({ route: '//evil' })).toBeNull();
     expect(resolvePushNotificationRoute({ route: 'capacitor://app' })).toBeNull();
+    expect(resolvePushNotificationRoute({ route: '/home' })).toBeNull();
+    expect(resolvePushNotificationRoute({ route: '/crewevil' })).toBeNull();
+    expect(resolvePushNotificationRoute({ route: '/crew/extra' })).toBeNull();
     expect(resolvePushNotificationRoute(null)).toBeNull();
   });
 });

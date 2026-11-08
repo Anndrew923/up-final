@@ -7,7 +7,6 @@ import {
   PushNotifications,
   type PermissionStatus,
   type Token,
-  type PushNotificationSchema,
   type ActionPerformed,
 } from '@capacitor/push-notifications';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
@@ -22,6 +21,7 @@ type ListenerKey = 'registration' | 'registrationError' | 'pushNotificationActio
 
 const listenerHandles: Partial<Record<ListenerKey, PluginListenerHandle>> = {};
 let listenersAttached = false;
+let listenersAttachInFlight: Promise<void> | null = null;
 let registerInFlight: Promise<boolean> | null = null;
 
 async function removeListener(key: ListenerKey): Promise<void> {
@@ -65,40 +65,72 @@ function onRegistrationError(error: unknown): void {
 }
 
 function onActionPerformed(action: ActionPerformed): void {
-  const notification = action?.notification as PushNotificationSchema | undefined;
-  const route = resolvePushNotificationRoute(notification?.data);
+  const route = resolvePushNotificationRoute(action.notification?.data);
   if (!route) {
-    console.warn('[push] action missing safe route', notification?.data);
+    console.warn('[push] action missing safe route', action.notification?.data);
     return;
   }
   const ok = navigateFromPushRoute(route);
   if (!ok) {
-    console.warn('[push] navigate handler not registered', route);
+    console.warn('[push] navigate rejected empty route', route);
   }
 }
 
+/**
+ * Attach Capacitor listeners once. Rolls back partial attaches on failure
+ * so a retry never stacks duplicate registration handlers.
+ */
 async function ensureListeners(): Promise<void> {
   if (listenersAttached) return;
+  if (listenersAttachInFlight) {
+    await listenersAttachInFlight;
+    return;
+  }
 
-  listenerHandles.registration = await PushNotifications.addListener(
-    'registration',
-    (token) => {
-      void onRegistration(token);
+  listenersAttachInFlight = (async () => {
+    try {
+      listenerHandles.registration = await PushNotifications.addListener(
+        'registration',
+        (token) => {
+          void onRegistration(token);
+        }
+      );
+      listenerHandles.registrationError = await PushNotifications.addListener(
+        'registrationError',
+        (error) => {
+          onRegistrationError(error);
+        }
+      );
+      listenerHandles.pushNotificationActionPerformed = await PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        (action) => {
+          onActionPerformed(action);
+        }
+      );
+      listenersAttached = true;
+    } catch (error) {
+      await detachListeners();
+      throw error;
+    } finally {
+      listenersAttachInFlight = null;
     }
-  );
-  listenerHandles.registrationError = await PushNotifications.addListener(
-    'registrationError',
-    (error) => {
-      onRegistrationError(error);
-    }
-  );
-  listenerHandles.pushNotificationActionPerformed = await PushNotifications.addListener(
-    'pushNotificationActionPerformed',
-    (action) => {
-      onActionPerformed(action);
-    }
-  );
-  listenersAttached = true;
+  })();
+
+  await listenersAttachInFlight;
+}
+
+/**
+ * Attach push listeners without requesting permission.
+ * WHY: Cold-start notification taps fire before Crew mounts — listeners must be early.
+ * Safe no-op on web. Never throws.
+ */
+export async function attachPushListeners(): Promise<void> {
+  if (!isCapacitorNativePlatform()) return;
+  try {
+    await ensureListeners();
+  } catch (error) {
+    console.warn('[push] attach listeners failed', error);
+  }
 }
 
 /**
@@ -140,6 +172,17 @@ export async function registerPushForGuildDispatches(): Promise<boolean> {
  * Best-effort — never throws.
  */
 export async function clearPushOnSignOut(): Promise<void> {
+  // WHY: Finish in-flight register before clear so we don't upsert a token after delete,
+  // and don't leave register() running against detached listeners.
+  const inFlight = registerInFlight;
+  if (inFlight) {
+    try {
+      await inFlight;
+    } catch {
+      /* register already swallows — keep clear path resilient */
+    }
+  }
+
   try {
     if (isCapacitorNativePlatform()) {
       await upsertPushToken({ clear: true });
@@ -157,10 +200,12 @@ export async function clearPushOnSignOut(): Promise<void> {
 /** Test seam — reset module state between unit tests. */
 export async function __resetPushNotificationServiceForTests(): Promise<void> {
   registerInFlight = null;
+  listenersAttachInFlight = null;
   await detachListeners();
 }
 
 export const pushNotificationService = {
+  attachListeners: attachPushListeners,
   registerForGuildDispatches: registerPushForGuildDispatches,
   clearOnSignOut: clearPushOnSignOut,
 };

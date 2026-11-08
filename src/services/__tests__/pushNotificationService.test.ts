@@ -135,4 +135,43 @@ describe('pushNotificationService', () => {
     expect(ok).toBe(false);
     expect(register).not.toHaveBeenCalled();
   });
+
+  it('skips register when permission is denied', async () => {
+    checkPermissions.mockResolvedValue({ receive: 'denied' });
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    const ok = await pushNotificationService.registerForGuildDispatches();
+    expect(ok).toBe(false);
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('rolls back partial listeners when attach fails mid-way', async () => {
+    const remove = vi.fn(async () => undefined);
+    addListener
+      .mockResolvedValueOnce({ remove })
+      .mockRejectedValueOnce(new Error('attach-failed'));
+
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    const ok = await pushNotificationService.registerForGuildDispatches();
+    expect(ok).toBe(false);
+    expect(remove).toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('attachListeners wires handlers without permission or register', async () => {
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    await pushNotificationService.attachListeners();
+    expect(addListener).toHaveBeenCalled();
+    expect(checkPermissions).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+  });
 });

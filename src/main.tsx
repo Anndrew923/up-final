@@ -5,6 +5,7 @@ import App from './App';
 import ScrollToTop from './components/navigation/ScrollToTop';
 import { applyProductionViewport } from './lib/applyProductionViewport';
 import { logLadderEnvCheckInDev } from './lib/logLadderEnvCheck';
+import { isCapacitorNativePlatform } from './lib/capacitorPlatform';
 import { tryInitFirebaseFromEnv } from './services/firebaseClient';
 import { bootstrapLocaleOnStartup } from './services/localeBootstrap';
 import { soundService } from './services/soundService';
@@ -22,6 +23,13 @@ tryInitFirebaseFromEnv();
 logLadderEnvCheckInDev();
 
 void soundService.bootstrap();
+
+// WHY: Cold-start notification taps can fire before React mounts — attach listeners ASAP on native.
+if (isCapacitorNativePlatform()) {
+  void import('./services/pushNotificationService').then(({ pushNotificationService }) => {
+    void pushNotificationService.attachListeners();
+  });
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
