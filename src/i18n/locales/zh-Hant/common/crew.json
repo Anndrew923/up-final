@@ -74,6 +74,21 @@
         "trailing": "{{wins}} 勝 {{losses}} 敗 · 奮力追趕 ({{delta}})"
       }
     },
+    "dispatch": {
+      "panelAria": "俱樂部戰報廣播",
+      "broadcastToggle": "廣播戰報至俱樂部",
+      "broadcastHint": "微小進步也值得被隊友看見。可隨時取消勾選。",
+      "commentLabel": "戰報留言",
+      "commentPlaceholder": "說一句垃圾話或心得…（限 25 字）",
+      "tagsAria": "一鍵戰報標籤",
+      "tag": {
+        "overlimit": "#剛性超限",
+        "challenge": "#誰敢來戰",
+        "nearDeath": "#今天差點升天"
+      },
+      "muteLabel": "接收隊友戰情報告",
+      "muteHint": "關閉後不會收到隊友發布的進步推播。"
+    },
     "leave": {
       "cta": "退出俱樂部",
       "confirmTitle": "確定退出俱樂部？",

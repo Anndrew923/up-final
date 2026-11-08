@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CoachManageDrawer from '../components/crew/CoachManageDrawer';
+import CrewDispatchMuteSwitch from '../components/crew/CrewDispatchMuteSwitch';
 import CrewEmptyState from '../components/crew/CrewEmptyState';
 import CrewIdentityBanner from '../components/crew/CrewIdentityBanner';
 import CrewPrivateLadder from '../components/crew/CrewPrivateLadder';
@@ -105,6 +106,8 @@ export default function CrewPage() {
               authUid={crew.authUid}
               guildTag={crew.guild.tag}
             />
+
+            <CrewDispatchMuteSwitch disabled={crew.busy} />
 
             {!crew.isCoach ? (
               <section className="rounded-2xl border border-zinc-800 bg-bg-card/80 p-4">

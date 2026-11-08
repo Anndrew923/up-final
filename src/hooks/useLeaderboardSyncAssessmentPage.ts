@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AssessmentLadderUploadBundle } from '../logic/core/assessmentLadderSupplemental';
 import { mergeMergedScoresForAssessmentUpload } from '../logic/core/assessmentLadderSupplemental';
+import type { ClubLadderDimension } from '../logic/core/guildRadarScores';
 import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
 import { resolveMembershipSyncSurface } from '../logic/core/membershipSyncSurface';
 import {
@@ -192,61 +193,76 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
   gateRef.current = gate;
   overallScoreRef.current = overallScore;
 
-  const syncPageGuild = useCallback(async () => {
-    const activeMerged = mergedForUploadRef.current;
-    const activeSignature = targetsSignatureRef.current;
-    const activeOverall = overallScoreRef.current;
+  const syncPageGuild = useCallback(
+    async (options?: {
+      broadcast?: boolean;
+      comment?: string;
+      broadcastMetricType?: ClubLadderDimension;
+    }) => {
+      const activeMerged = mergedForUploadRef.current;
+      const activeSignature = targetsSignatureRef.current;
+      const activeOverall = overallScoreRef.current;
 
-    setSummaryState(null);
-    setLastCloudOutcome(null);
+      setSummaryState(null);
+      setLastCloudOutcome(null);
 
-    if (!Number.isFinite(activeOverall) || activeOverall <= 0) return;
+      if (!Number.isFinite(activeOverall) || activeOverall <= 0) return;
 
-    const user = getCurrentFirebaseUser();
-    if (!user || user.isAnonymous) return;
+      const user = getCurrentFirebaseUser();
+      if (!user || user.isAnonymous) return;
 
-    setBusy(true);
-    try {
-      const identity = await resolveGuildCallableIdentity();
-      const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
-      const radarScores = sanitizeGuildRadarScores(activeMerged);
-      const result = await syncGuildLadderScore({
-        ladderScore: activeOverall,
-        displayName: identity.displayName,
-        avatarUrl: identity.avatarUrl,
-        isAnonymous: profile?.isAnonymousInLadder === true,
-        ...(radarScores ? { radarScores } : {}),
-      });
-      if (!result.ok) {
+      setBusy(true);
+      try {
+        const identity = await resolveGuildCallableIdentity();
+        const profile = buildLeaderboardProfileProjection(loadPhysicalProfile());
+        const radarScores = sanitizeGuildRadarScores(activeMerged);
+        // WHY: broadcastSkipped must never flip score sync into failure UI (T4 / D2).
+        const result = await syncGuildLadderScore({
+          ladderScore: activeOverall,
+          displayName: identity.displayName,
+          avatarUrl: identity.avatarUrl,
+          isAnonymous: profile?.isAnonymousInLadder === true,
+          ...(radarScores ? { radarScores } : {}),
+          ...(options?.broadcast === true
+            ? {
+                broadcast: true,
+                comment: options.comment ?? '',
+                broadcastMetricType: options.broadcastMetricType ?? 'overall',
+              }
+            : {}),
+        });
+        if (!result.ok) {
+          setSummaryState({
+            signature: activeSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [{ metric: 'ladderScore', reason: result.reason }],
+          });
+          setLastCloudOutcome(null);
+          return;
+        }
+        if (result.skipped) {
+          setLastCloudOutcome(null);
+          onFinishedRef.current?.();
+          return;
+        }
+        invalidateGuildLadderCache(result.guildId ?? undefined);
+        const tally = createEmptyLeaderboardSyncRunSummary();
+        tally.attempted = 1;
+        tally.updated = 1;
         setSummaryState({
           signature: activeSignature,
-          summary: createEmptyLeaderboardSyncRunSummary(),
-          failures: [{ metric: 'ladderScore', reason: result.reason }],
+          summary: tally,
+          failures: [],
         });
-        setLastCloudOutcome(null);
-        return;
-      }
-      if (result.skipped) {
-        setLastCloudOutcome(null);
+        setLastCloudOutcome('guild');
+        void hapticService.trigger('success');
         onFinishedRef.current?.();
-        return;
+      } finally {
+        setBusy(false);
       }
-      invalidateGuildLadderCache(result.guildId ?? undefined);
-      const tally = createEmptyLeaderboardSyncRunSummary();
-      tally.attempted = 1;
-      tally.updated = 1;
-      setSummaryState({
-        signature: activeSignature,
-        summary: tally,
-        failures: [],
-      });
-      setLastCloudOutcome('guild');
-      void hapticService.trigger('success');
-      onFinishedRef.current?.();
-    } finally {
-      setBusy(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const syncPageGlobal = useCallback(async () => {
     const activeTargets = targetsRef.current;

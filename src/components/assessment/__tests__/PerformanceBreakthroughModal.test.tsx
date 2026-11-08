@@ -25,8 +25,19 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.kicker') return 'Axis Breakthrough';
       if (key === 'assessment.breakthrough.confirmDismiss') return 'CONFIRM';
       if (key === 'assessment.breakthrough.syncBtn') return 'Sync';
+      if (key === 'assessment.breakthrough.syncDashboardThenArenaWithClub') return 'Sync Arena+Club';
+      if (key === 'assessment.breakthrough.syncDashboardThenArenaGuildOnly') return 'Sync Club Only';
       if (key === 'assessment.hallSpectrum.viewEntry') return '名人堂光譜 ➔';
       if (key === 'assessment.hallSpectrum.viewEntryAria') return '開啟名人堂常模光譜';
+      if (key === 'crew.dispatch.broadcastToggle') return 'Broadcast to club';
+      if (key === 'crew.dispatch.broadcastHint') return 'First hint';
+      if (key === 'crew.dispatch.commentPlaceholder') return 'Say something…';
+      if (key === 'crew.dispatch.commentLabel') return 'Comment';
+      if (key === 'crew.dispatch.panelAria') return 'Dispatch panel';
+      if (key === 'crew.dispatch.tagsAria') return 'Tags';
+      if (key === 'crew.dispatch.tag.overlimit') return '#剛性超限';
+      if (key === 'crew.dispatch.tag.challenge') return '#誰敢來戰';
+      if (key === 'crew.dispatch.tag.nearDeath') return '#今天差點升天';
       return key;
     },
   }),
@@ -54,6 +65,16 @@ vi.mock('../../../hooks/useLadderUploadGateSheet', () => ({
 vi.mock('../../ladder/LadderUploadGateSheetPortal', () => ({
   default: () => null,
 }));
+
+vi.mock('../../../logic/core/clubProgressDispatchUi', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../../logic/core/clubProgressDispatchUi')>();
+  return {
+    ...actual,
+    readBroadcastHintSeen: () => false,
+    markBroadcastHintSeen: vi.fn(),
+  };
+});
 
 const basePayload: PerformanceBreakthroughPayload = {
   metric: 'strength',
@@ -275,5 +296,117 @@ describe('PerformanceBreakthroughModal summary disclosure', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('PerformanceBreakthroughModal club dispatch panel', () => {
+  let root: Root;
+  let host: HTMLDivElement;
+
+  const dualSync = {
+    syncPageGlobal: vi.fn(async () => undefined),
+    syncPageGuild: vi.fn(
+      async (_options?: {
+        broadcast?: boolean;
+        comment?: string;
+        broadcastMetricType?: string;
+      }) => undefined
+    ),
+    busy: false,
+    summary: null,
+    failures: [],
+    gate: 'ok' as const,
+    targetCount: 1,
+    overallScore: 88,
+    goJoinArena: vi.fn(),
+    clearFeedback: vi.fn(),
+    hasGuild: true,
+    membershipSurface: 'dual' as const,
+    lastCloudOutcome: null,
+  };
+
+  beforeEach(() => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = createRoot(host);
+    dualSync.syncPageGuild.mockClear();
+    dualSync.syncPageGlobal.mockClear();
+    dualSync.clearFeedback.mockClear();
+  });
+
+  afterEach(() => {
+    act(() => {
+      root.unmount();
+    });
+    host.remove();
+    document.body.querySelectorAll('[role="dialog"]').forEach((node) => node.remove());
+  });
+
+  it('hides dispatch panel when membership is global-only', () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={{ ...dualSync, membershipSurface: 'global-only', hasGuild: false }}
+        />
+      );
+    });
+    expect(document.querySelector('[data-testid="club-progress-dispatch-panel"]')).toBeNull();
+  });
+
+  it('shows panel for dual, fills tags, and passes broadcast payload on club sync', async () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    expect(document.querySelector('[data-testid="club-progress-dispatch-panel"]')).not.toBeNull();
+
+    const tag = document.querySelector(
+      '[data-testid="club-dispatch-tag-overlimit"]'
+    ) as HTMLButtonElement;
+    act(() => {
+      tag.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    const input = document.querySelector(
+      '[data-testid="club-dispatch-comment"]'
+    ) as HTMLInputElement;
+    expect(input.value).toBe('#剛性超限');
+    expect(
+      document.querySelector('[data-testid="club-dispatch-comment-count"]')?.textContent
+    ).toContain('5/25');
+
+    const guildBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Club Only'
+    );
+    expect(guildBtn).toBeDefined();
+
+    await act(async () => {
+      guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => resolve());
+        });
+      });
+      await Promise.resolve();
+    });
+
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    const arg = dualSync.syncPageGuild.mock.calls[0]?.[0];
+    expect(arg).toMatchObject({
+      broadcast: true,
+      comment: '#剛性超限',
+      broadcastMetricType: 'strength',
+    });
   });
 });

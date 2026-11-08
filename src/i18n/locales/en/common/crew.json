@@ -74,6 +74,21 @@
         "trailing": "{{wins}}W {{losses}}L · Chasing ({{delta}})"
       }
     },
+    "dispatch": {
+      "panelAria": "Club progress dispatch",
+      "broadcastToggle": "Broadcast progress to club",
+      "broadcastHint": "Small gains deserve squad eyes. Uncheck anytime.",
+      "commentLabel": "Dispatch comment",
+      "commentPlaceholder": "Trash talk or a note… (25 chars max)",
+      "tagsAria": "Quick dispatch tags",
+      "tag": {
+        "overlimit": "#Overlimit",
+        "challenge": "#WhoDares",
+        "nearDeath": "#NearDeathPR"
+      },
+      "muteLabel": "Receive teammate progress alerts",
+      "muteHint": "Turn off to stop push alerts when teammates publish gains."
+    },
     "leave": {
       "cta": "Leave Club",
       "confirmTitle": "Leave this club?",

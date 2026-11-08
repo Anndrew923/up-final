@@ -251,11 +251,35 @@ type SyncGuildScoreResponse = {
   guildId?: string | null;
   ladderScore?: number;
   error?: string;
+  broadcastSkipped?: string;
+  delta?: number;
+  dispatchId?: string | null;
+  fcmSuccessCount?: number;
+  fcmFailureCount?: number;
+};
+
+export type SyncGuildLadderScoreBroadcastInput = {
+  /** Opt-in club progress dispatch (Breakthrough only). */
+  broadcast?: boolean;
+  comment?: string;
+  /**
+   * Must match server `ClubLadderDimension`
+   * (`overall` | SixAxisMetric). Defaults to overall server-side.
+   */
+  broadcastMetricType?:
+    | 'overall'
+    | 'strength'
+    | 'explosivePower'
+    | 'cardio'
+    | 'muscleMass'
+    | 'bodyFat'
+    | 'gripStrength';
 };
 
 /**
  * Privacy Phase 1 — update crew private ladder overall score only.
  * Free members allowed; never writes public leaderboard shards.
+ * Optional `broadcast` fields never block score sync success.
  */
 export async function syncGuildLadderScore(input: {
   ladderScore: number;
@@ -264,12 +288,14 @@ export async function syncGuildLadderScore(input: {
   isAnonymous?: boolean;
   /** Embedded six-axis for club radar / axis funnel (never writes public preview). */
   radarScores?: Record<string, number>;
-}): Promise<
+} & SyncGuildLadderScoreBroadcastInput): Promise<
   GuildCallableResult<{
     skipped: boolean;
     guildId: string | null;
     ladderScore?: number;
     skipReason?: string;
+    broadcastSkipped?: string;
+    delta?: number;
   }>
 > {
   const functions = getFirebaseFunctions();
@@ -288,12 +314,47 @@ export async function syncGuildLadderScore(input: {
         guildId: data.guildId ?? null,
         ladderScore: data.ladderScore,
         skipReason: typeof data.reason === 'string' ? data.reason : undefined,
+        broadcastSkipped:
+          typeof data.broadcastSkipped === 'string' ? data.broadcastSkipped : undefined,
+        delta: typeof data.delta === 'number' ? data.delta : undefined,
       };
     }
     return {
       ok: false,
       reason: mapGuildCallableError(data.error ?? data.reason ?? 'failed'),
     };
+  } catch (err) {
+    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+  }
+}
+
+type SetClubDispatchMuteResponse = {
+  ok: boolean;
+  muteClubDispatches?: boolean;
+  error?: string;
+};
+
+/**
+ * Toggle receiving teammate progress dispatches (`users.muteClubDispatches`).
+ * WHY: Client cannot patch users/{uid} beyond terms fields — Admin SDK via Callable.
+ */
+export async function setClubDispatchMute(input: {
+  mute?: boolean;
+  muteClubDispatches?: boolean;
+}): Promise<GuildCallableResult<{ muteClubDispatches: boolean }>> {
+  const functions = getFirebaseFunctions();
+  if (!functions) return functionsUnavailable();
+  try {
+    await prepareGuildCallableSession();
+    const callable = httpsCallable<typeof input, SetClubDispatchMuteResponse>(
+      functions,
+      'setClubDispatchMute'
+    );
+    const { data } = await callable(input);
+    if (data.ok === true && typeof data.muteClubDispatches === 'boolean') {
+      return { ok: true, muteClubDispatches: data.muteClubDispatches };
+    }
+    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
   } catch (err) {
     return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
   }

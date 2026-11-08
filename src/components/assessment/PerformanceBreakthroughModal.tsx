@@ -5,6 +5,13 @@ import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
 import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
+import {
+  finalizeDispatchComment,
+  markBroadcastHintSeen,
+  readBroadcastHintSeen,
+  resolveBroadcastMetricFromBreakthrough,
+  shouldShowBreakthroughDispatchPanel,
+} from '../../logic/core/clubProgressDispatchUi';
 import { resolvePublishSuccessBannerKey } from '../../logic/core/membershipSyncSurface';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { waitForReactSettlement } from '../../lib/reactSettlement';
@@ -15,6 +22,7 @@ import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
 import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import AuraReactiveFrame from './AuraReactiveFrame';
+import ClubProgressDispatchPanel from './ClubProgressDispatchPanel';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 import AssessmentHeroScoreWithNormBadge from './AssessmentHeroScoreWithNormBadge';
 import { HallSpectrumEntryButton } from './AssessmentScoreMeaningPanel';
@@ -71,6 +79,9 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const [pipelineBusy, setPipelineBusy] = useState(false);
   const [dashboardPersistedInSession, setDashboardPersistedInSession] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [broadcastEnabled, setBroadcastEnabled] = useState(true);
+  const [broadcastComment, setBroadcastComment] = useState('');
+  const [showBroadcastHint, setShowBroadcastHint] = useState(false);
   const {
     gateSheetOpen,
     gateSheetKind,
@@ -89,6 +100,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const showDashboardSync = onSyncToDashboard != null;
   const membershipSurface = arenaSync?.membershipSurface ?? 'global-only';
   const showClubSecondary = membershipSurface === 'dual';
+  const showDispatchPanel = shouldShowBreakthroughDispatchPanel(membershipSurface);
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
@@ -136,7 +148,21 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         const sync = arenaSyncRef.current;
         if (!sync) return;
         if (intent === 'guild') {
-          await sync.syncPageGuild();
+          if (showDispatchPanel && broadcastEnabled) {
+            markBroadcastHintSeen();
+            setShowBroadcastHint(false);
+          }
+          await sync.syncPageGuild(
+            showDispatchPanel && broadcastEnabled
+              ? {
+                  broadcast: true,
+                  comment: finalizeDispatchComment(broadcastComment),
+                  broadcastMetricType: payload
+                    ? resolveBroadcastMetricFromBreakthrough(payload.metric)
+                    : 'overall',
+                }
+              : undefined
+          );
         } else {
           await sync.syncPageGlobal();
         }
@@ -146,10 +172,14 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     },
     [
       arenaSync,
+      broadcastComment,
+      broadcastEnabled,
       isDashboardSyncing,
       isPipelineRunning,
       membershipSurface,
       onPersistToDashboard,
+      payload,
+      showDispatchPanel,
       tryOpenGateSheet,
     ]
   );
@@ -162,6 +192,9 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   useEffect(() => {
     if (!open) return;
     setSummaryExpanded(false);
+    setBroadcastEnabled(true);
+    setBroadcastComment('');
+    setShowBroadcastHint(!readBroadcastHintSeen());
   }, [open, payload?.metric, payload?.scoreDisplay, payload?.populationClass]);
 
   useEffect(() => {
@@ -171,6 +204,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       setPipelineBusy(false);
       setDashboardPersistedInSession(false);
       setSummaryExpanded(false);
+      setBroadcastEnabled(true);
+      setBroadcastComment('');
       resetGateSheet();
     }, 0);
     return () => window.clearTimeout(id);
@@ -329,20 +364,32 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                           : t('assessment.breakthrough.syncDashboardThenArena')}
                     </button>
                     {showClubSecondary ? (
-                      <button
-                        type="button"
-                        className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
-                        disabled={
-                          syncDisabled ||
-                          actionsBusy ||
-                          !(arenaSync.overallScore > 0)
-                        }
-                        onClick={() => void runPersistThenCloud('guild')}
-                      >
-                        {isPipelineRunning
-                          ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
-                          : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
-                      </button>
+                      <>
+                        {showDispatchPanel ? (
+                          <ClubProgressDispatchPanel
+                            enabled={broadcastEnabled}
+                            onEnabledChange={setBroadcastEnabled}
+                            comment={broadcastComment}
+                            onCommentChange={setBroadcastComment}
+                            showHint={showBroadcastHint}
+                            disabled={actionsBusy}
+                          />
+                        ) : null}
+                        <button
+                          type="button"
+                          className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
+                          disabled={
+                            syncDisabled ||
+                            actionsBusy ||
+                            !(arenaSync.overallScore > 0)
+                          }
+                          onClick={() => void runPersistThenCloud('guild')}
+                        >
+                          {isPipelineRunning
+                            ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
+                            : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
+                        </button>
+                      </>
                     ) : null}
                   </div>
                 ) : null}
