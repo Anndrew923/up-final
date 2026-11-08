@@ -7,6 +7,12 @@ describe('mapGuildCallableError', () => {
     expect(mapGuildCallableError('permission-denied pro-required')).toBe('pro-required');
   });
 
+  it('maps bare unauthenticated to app-check when the user is already signed in', () => {
+    expect(
+      mapGuildCallableError('functions/unauthenticated', { hasSignedInUser: true })
+    ).toBe('app-check');
+  });
+
   it('maps single-guild and capacity errors', () => {
     expect(mapGuildCallableError('failed-precondition already-in-guild')).toBe('already-in-guild');
     expect(mapGuildCallableError('resource-exhausted guild-full')).toBe('guild-full');
@@ -34,4 +40,9 @@ describe('mapGuildCallableError', () => {
     expect(mapGuildCallableError('App Check token is invalid')).toBe('app-check');
     expect(mapGuildCallableError('functions/resource-exhausted')).toBe('rate-limited');
   });
+
+  it('maps apns-to-fcm cloud conversion failures to unavailable', () => {
+    expect(mapGuildCallableError('failed-precondition apns-to-fcm-failed')).toBe('unavailable');
+  });
 });
+

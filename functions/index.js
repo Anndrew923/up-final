@@ -40,3 +40,4 @@ export {
   upsertPushToken,
   setClubDispatchMute,
 } from "./guild/clubDispatchPrefsCallable.js";
+export { adminSendTestClubDispatchPush } from "./guild/adminTestClubPushHttp.js";

@@ -4,7 +4,19 @@
 import { httpsCallable } from 'firebase/functions';
 import { normalizeInviteCode } from '../logic/core/guildInviteCode';
 import { ensureFreshAppCheckToken } from './firebaseAppCheck';
-import { ensureFreshFirebaseIdToken, getFirebaseFunctions } from './firebaseClient';
+import {
+  ensureFreshFirebaseIdToken,
+  getCurrentFirebaseUser,
+  getFirebaseFunctions,
+} from './firebaseClient';
+
+export type MapGuildCallableErrorContext = {
+  /**
+   * True when JS Auth still has a non-anonymous user.
+   * WHY: enforceAppCheck often returns bare `unauthenticated` — must not show "sign in".
+   */
+  hasSignedInUser?: boolean;
+};
 
 export type GuildCallableFailureReason =
   | 'auth-required'
@@ -59,12 +71,23 @@ async function prepareGuildCallableSession(): Promise<void> {
  * Map Firebase Callable code+message into UI reasons.
  * Exported for unit tests — keep in sync with functions/guild/* HttpsError messages.
  */
-export function mapGuildCallableError(raw: string): GuildCallableFailureReason {
+export function mapGuildCallableError(
+  raw: string,
+  context: MapGuildCallableErrorContext = {}
+): GuildCallableFailureReason {
   const text = raw.toLowerCase();
   if (text.includes('app check') || text.includes('appcheck') || text.includes('attestation')) {
     return 'app-check';
   }
-  if (text.includes('unauthenticated')) return 'auth-required';
+  // WHY: Cloud APNs→FCM (IID batchImport) failed — not a missing Auth session.
+  if (text.includes('apns-to-fcm')) {
+    return 'unavailable';
+  }
+  if (text.includes('unauthenticated')) {
+    // Align with promo/ladder: signed-in + 401 ≈ App Check, not missing session.
+    if (context.hasSignedInUser) return 'app-check';
+    return 'auth-required';
+  }
   if (text.includes('pro-required')) return 'pro-required';
   if (text.includes('already-in-guild')) return 'already-in-guild';
   if (text.includes('not-in-guild')) return 'not-in-guild';
@@ -91,6 +114,16 @@ function callableErrorRaw(err: unknown): string {
   const code = 'code' in err ? String((err as { code?: string }).code ?? '') : '';
   const message = 'message' in err ? String((err as { message?: string }).message ?? '') : '';
   return `${code} ${message}`.trim();
+}
+
+function resolveSignedInUserContext(): MapGuildCallableErrorContext {
+  const user = getCurrentFirebaseUser();
+  return { hasSignedInUser: Boolean(user && !user.isAnonymous) };
+}
+
+/** Shared mapper so every guild Callable inherits signed-in + bare-401 → app-check. */
+function mapGuildCallableFailure(raw: string): GuildCallableFailureReason {
+  return mapGuildCallableError(raw, resolveSignedInUserContext());
 }
 
 function functionsUnavailable(): GuildCallableResult<never> {
@@ -123,9 +156,9 @@ export async function createGuild(input: {
         tag: data.tag,
       };
     }
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -161,9 +194,9 @@ export async function joinGuild(input: {
         memberCount: data.memberCount,
       };
     }
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -179,9 +212,9 @@ export async function leaveGuild(): Promise<GuildCallableResult> {
     );
     const { data } = await callable({});
     if (data.ok === true) return { ok: true };
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -197,9 +230,9 @@ export async function kickGuildMember(targetUid: string): Promise<GuildCallableR
     );
     const { data } = await callable({ targetUid });
     if (data.ok === true) return { ok: true };
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -220,9 +253,9 @@ export async function renameGuild(input: {
     if (data.ok === true && data.name && data.tag) {
       return { ok: true, name: data.name, tag: data.tag };
     }
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -238,9 +271,9 @@ export async function disbandGuild(): Promise<GuildCallableResult> {
     );
     const { data } = await callable({});
     if (data.ok === true) return { ok: true };
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -296,10 +329,13 @@ export async function syncGuildLadderScore(input: {
     skipReason?: string;
     broadcastSkipped?: string;
     delta?: number;
+    fcmSuccessCount?: number;
+    fcmFailureCount?: number;
   }>
 > {
   const functions = getFirebaseFunctions();
   if (!functions) return functionsUnavailable();
+  const authContext = resolveSignedInUserContext();
   try {
     await prepareGuildCallableSession();
     const callable = httpsCallable<typeof input, SyncGuildScoreResponse>(
@@ -308,6 +344,10 @@ export async function syncGuildLadderScore(input: {
     );
     const { data } = await callable(input);
     if (data.ok === true) {
+      // WHY: DEV-only — production sync traffic must not spam device logs.
+      if (import.meta.env.DEV) {
+        console.info('[ClubDispatch] syncGuildLadderScore success:', data);
+      }
       return {
         ok: true,
         skipped: data.skipped === true,
@@ -317,14 +357,25 @@ export async function syncGuildLadderScore(input: {
         broadcastSkipped:
           typeof data.broadcastSkipped === 'string' ? data.broadcastSkipped : undefined,
         delta: typeof data.delta === 'number' ? data.delta : undefined,
+        fcmSuccessCount:
+          typeof data.fcmSuccessCount === 'number' ? data.fcmSuccessCount : undefined,
+        fcmFailureCount:
+          typeof data.fcmFailureCount === 'number' ? data.fcmFailureCount : undefined,
       };
     }
     return {
       ok: false,
-      reason: mapGuildCallableError(data.error ?? data.reason ?? 'failed'),
+      reason: mapGuildCallableError(data.error ?? data.reason ?? 'failed', authContext),
     };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    if (import.meta.env.DEV) {
+      console.error('[ClubDispatch] syncGuildLadderScore error raw:', err);
+    }
+    const reason = mapGuildCallableError(callableErrorRaw(err), authContext);
+    if (import.meta.env.DEV && reason === 'app-check' && authContext.hasSignedInUser) {
+      console.warn('[ClubDispatch] Detected App Check failure on authenticated user');
+    }
+    return { ok: false, reason };
   }
 }
 
@@ -366,9 +417,9 @@ export async function upsertPushToken(input: {
         fcmPlatform: typeof data.fcmPlatform === 'string' ? data.fcmPlatform : null,
       };
     }
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }
 
@@ -392,8 +443,8 @@ export async function setClubDispatchMute(input: {
     if (data.ok === true && typeof data.muteClubDispatches === 'boolean') {
       return { ok: true, muteClubDispatches: data.muteClubDispatches };
     }
-    return { ok: false, reason: mapGuildCallableError(data.error ?? 'failed') };
+    return { ok: false, reason: mapGuildCallableFailure(data.error ?? 'failed') };
   } catch (err) {
-    return { ok: false, reason: mapGuildCallableError(callableErrorRaw(err)) };
+    return { ok: false, reason: mapGuildCallableFailure(callableErrorRaw(err)) };
   }
 }

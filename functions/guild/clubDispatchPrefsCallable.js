@@ -7,6 +7,11 @@ import { CALLABLE_OPTS } from "../shared/constants.js";
 import { db, FieldValue } from "../shared/admin.js";
 import { requireSignedInUid, rethrowGuildError } from "./guildAuth.js";
 import { isValidFcmToken } from "./clubProgressDispatch.js";
+import {
+  IOS_BUNDLE_ID,
+  isApnsDeviceToken,
+  resolvePushCredentialToFcm,
+} from "./apnsToFcmToken.js";
 
 const FCM_PLATFORMS = new Set(["ios", "android", "web"]);
 
@@ -88,11 +93,51 @@ export async function runUpsertPushToken(request) {
     patch.fcmToken = FieldValue.delete();
     patch.fcmTokenUpdatedAt = nowIso;
     patch.fcmPlatform = FieldValue.delete();
+    patch.apnsToken = FieldValue.delete();
   } else {
-    patch.fcmToken = normalized.fcmToken;
+    let fcmToken = normalized.fcmToken;
+    /** @type {string | null} */
+    let apnsToken = null;
+
+    // WHY: Capacitor iOS registers APNs hex; FCM Admin needs registration tokens.
+    if (
+      normalized.fcmPlatform === "ios" &&
+      isApnsDeviceToken(normalized.fcmToken)
+    ) {
+      try {
+        const resolved = await resolvePushCredentialToFcm({
+          token: normalized.fcmToken,
+          platform: "ios",
+          application: IOS_BUNDLE_ID,
+        });
+        fcmToken = resolved.fcmToken;
+        apnsToken = resolved.apnsToken;
+        console.info("[upsertPushToken] APNs→FCM converted", {
+          uid,
+          sandbox: resolved.sandbox,
+          apnsSuffix: apnsToken ? apnsToken.slice(-8) : null,
+          fcmSuffix: fcmToken.length > 12 ? fcmToken.slice(-12) : null,
+        });
+      } catch (err) {
+        console.error("[upsertPushToken] APNs→FCM failed", {
+          uid,
+          message: err?.message ?? String(err),
+        });
+        throw new HttpsError(
+          "failed-precondition",
+          "apns-to-fcm-failed",
+          { message: err?.message ?? String(err) }
+        );
+      }
+    }
+
+    patch.fcmToken = fcmToken;
     patch.fcmTokenUpdatedAt = nowIso;
     if (normalized.fcmPlatform) {
       patch.fcmPlatform = normalized.fcmPlatform;
+    }
+    if (apnsToken) {
+      patch.apnsToken = apnsToken;
     }
   }
 
