@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import CoachManageDrawer from '../components/crew/CoachManageDrawer';
 import CrewDispatchMuteSwitch from '../components/crew/CrewDispatchMuteSwitch';
 import CrewEmptyState from '../components/crew/CrewEmptyState';
@@ -7,16 +8,34 @@ import CrewIdentityBanner from '../components/crew/CrewIdentityBanner';
 import CrewPrivateLadder from '../components/crew/CrewPrivateLadder';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { useCrewGuild } from '../hooks/useCrewGuild';
+import {
+  CREW_FOCUS_UID_QUERY_KEY,
+  parseCrewFocusUid,
+} from '../logic/core/crewFocusUid';
 
 /**
  * Crew HQ — independent `/crew` route (HUD back → Garage).
  * Not compact shell: title clears fixed HUD avatar/back row.
+ * Deep link: `/crew?focusUid=` auto-opens member radar sheet when on roster.
  */
 export default function CrewPage() {
   const { t } = useTranslation('common');
   const crew = useCrewGuild();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [manageOpen, setManageOpen] = useState(false);
   const [leaveConfirm, setLeaveConfirm] = useState(false);
+
+  const focusUid = useMemo(
+    () => parseCrewFocusUid(searchParams.get(CREW_FOCUS_UID_QUERY_KEY)),
+    [searchParams]
+  );
+
+  const clearFocusUidQuery = useCallback(() => {
+    if (!searchParams.has(CREW_FOCUS_UID_QUERY_KEY)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete(CREW_FOCUS_UID_QUERY_KEY);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const showJoined = crew.status === 'ready' && crew.guild != null;
   const showEmpty = crew.status === 'empty' || (crew.status === 'ready' && !crew.guild);
@@ -105,6 +124,8 @@ export default function CrewPage() {
               members={crew.rankedMembers}
               authUid={crew.authUid}
               guildTag={crew.guild.tag}
+              focusUid={focusUid}
+              onFocusUidConsumed={clearFocusUidQuery}
             />
 
             <CrewDispatchMuteSwitch disabled={crew.busy} />

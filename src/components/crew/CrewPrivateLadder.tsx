@@ -23,6 +23,7 @@ import {
   CREW_LIST_OVERFLOW_VIEWPORT_RATIO,
   shouldShowCrewFloatingYouBar,
 } from '../../logic/core/crewFloatingYouBar';
+import { findGuildMemberByFocusUid } from '../../logic/core/crewFocusUid';
 import {
   CLUB_LADDER_DIMENSIONS,
   type ClubLadderDimension,
@@ -48,6 +49,13 @@ export interface CrewPrivateLadderProps {
   authUid: string | null;
   /** Club tag for detail sheet eyebrow (e.g. ARN). */
   guildTag?: string;
+  /**
+   * Deep-link target (`/crew?focusUid=`). Opens radar sheet once when member is on roster.
+   * Invalid / missing → no-op (never throw).
+   */
+  focusUid?: string | null;
+  /** Fired after a valid focusUid successfully opens the sheet (parent may clear query). */
+  onFocusUidConsumed?: (uid: string) => void;
 }
 
 /**
@@ -58,6 +66,8 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   members,
   authUid,
   guildTag = '',
+  focusUid = null,
+  onFocusUidConsumed,
 }) => {
   const { t } = useTranslation('common');
   const { avatarUrl: localAvatarUrl } = useLocalProfileBrief();
@@ -72,7 +82,24 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   const listRef = useRef<HTMLUListElement | null>(null);
   const jumpHighlightTimerRef = useRef<number | null>(null);
   const jumpRafRef = useRef<number | null>(null);
+  const consumedFocusUidRef = useRef<string | null>(null);
+  const onFocusUidConsumedRef = useRef(onFocusUidConsumed);
+  onFocusUidConsumedRef.current = onFocusUidConsumed;
   const localScores = useMergedScoresFromLocalStores();
+
+  // WHY: Consume each focusUid once — closing the sheet must not re-open from the same query.
+  useEffect(() => {
+    if (!focusUid) {
+      consumedFocusUidRef.current = null;
+      return;
+    }
+    if (consumedFocusUidRef.current === focusUid) return;
+    const member = findGuildMemberByFocusUid(members, focusUid);
+    if (!member) return;
+    consumedFocusUidRef.current = focusUid;
+    setSelectedUid(member.uid);
+    onFocusUidConsumedRef.current?.(member.uid);
+  }, [focusUid, members]);
 
   const labelForDimension = (dim: ClubLadderDimension): string => {
     if (dim === 'overall') return t('crew.ladder.dimOverall');

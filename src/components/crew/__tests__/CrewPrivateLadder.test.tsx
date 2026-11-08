@@ -34,6 +34,18 @@ vi.mock('../../../hooks/useMergedScoresFromLocalStores', () => ({
   }),
 }));
 
+vi.mock('../../../hooks/useShellScrollLock', () => ({
+  useShellScrollLock: () => undefined,
+}));
+
+vi.mock('../../../hooks/useAndroidBackDismiss', () => ({
+  useAndroidBackDismiss: () => undefined,
+}));
+
+vi.mock('../../../hooks/useLocalProfileBrief', () => ({
+  useLocalProfileBrief: () => ({ displayName: 'Me', avatarUrl: null }),
+}));
+
 vi.mock('../../../i18n/resolveSixAxisChartLabel', () => ({
   resolveSixAxisChartLabel: (_t: unknown, metric: string) => metric,
 }));
@@ -274,5 +286,86 @@ describe('CrewPrivateLadder', () => {
     );
     expect(selfBtn?.className).toContain('ring-2');
     expect(selfBtn?.className).toContain('ring-cyan-300');
+  });
+
+  it('opens radar sheet for valid focusUid and notifies consumer', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    const onFocusUidConsumed = vi.fn();
+
+    act(() => {
+      root.render(
+        <CrewPrivateLadder
+          authUid="u1"
+          focusUid="u2"
+          onFocusUidConsumed={onFocusUidConsumed}
+          members={[
+            {
+              uid: 'u1',
+              displayName: 'Alpha',
+              ladderScore: 99,
+              radarScores: {
+                strength: 10,
+                explosivePower: 10,
+                cardio: 10,
+                muscleMass: 10,
+                bodyFat: 10,
+                gripStrength: 10,
+              },
+              updatedAt: 't0',
+            },
+            {
+              uid: 'u2',
+              displayName: 'Beta',
+              ladderScore: 50,
+              radarScores: {
+                strength: 20,
+                explosivePower: 20,
+                cardio: 20,
+                muscleMass: 20,
+                bodyFat: 20,
+                gripStrength: 20,
+              },
+              updatedAt: 't0',
+            },
+          ]}
+        />
+      );
+    });
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog?.textContent).toContain('Beta');
+    expect(onFocusUidConsumed).toHaveBeenCalledWith('u2');
+  });
+
+  it('ignores unknown focusUid without opening sheet', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    const onFocusUidConsumed = vi.fn();
+
+    act(() => {
+      root.render(
+        <CrewPrivateLadder
+          authUid="u1"
+          focusUid="unknown"
+          onFocusUidConsumed={onFocusUidConsumed}
+          members={[
+            {
+              uid: 'u1',
+              displayName: 'Alpha',
+              ladderScore: 99,
+              updatedAt: 't0',
+            },
+          ]}
+        />
+      );
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    expect(onFocusUidConsumed).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Alpha');
   });
 });
