@@ -88,6 +88,7 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   const localScores = useMergedScoresFromLocalStores();
 
   // WHY: Consume each focusUid once — closing the sheet must not re-open from the same query.
+  // Missing member: leave consumed unset so a later roster hydrate can still open (join/refresh).
   useEffect(() => {
     if (!focusUid) {
       consumedFocusUidRef.current = null;

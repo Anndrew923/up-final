@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import CoachManageDrawer from '../components/crew/CoachManageDrawer';
@@ -10,6 +10,7 @@ import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { useCrewGuild } from '../hooks/useCrewGuild';
 import {
   CREW_FOCUS_UID_QUERY_KEY,
+  findGuildMemberByFocusUid,
   parseCrewFocusUid,
 } from '../logic/core/crewFocusUid';
 
@@ -25,10 +26,7 @@ export default function CrewPage() {
   const [manageOpen, setManageOpen] = useState(false);
   const [leaveConfirm, setLeaveConfirm] = useState(false);
 
-  const focusUid = useMemo(
-    () => parseCrewFocusUid(searchParams.get(CREW_FOCUS_UID_QUERY_KEY)),
-    [searchParams]
-  );
+  const focusUid = parseCrewFocusUid(searchParams.get(CREW_FOCUS_UID_QUERY_KEY));
 
   const clearFocusUidQuery = useCallback(() => {
     if (!searchParams.has(CREW_FOCUS_UID_QUERY_KEY)) return;
@@ -39,6 +37,18 @@ export default function CrewPage() {
 
   const showJoined = crew.status === 'ready' && crew.guild != null;
   const showEmpty = crew.status === 'empty' || (crew.status === 'ready' && !crew.guild);
+
+  // WHY: Valid focusUid is cleared by ladder after open; invalid / empty-club must not sticky-pollute URL.
+  useEffect(() => {
+    if (!focusUid) return;
+    if (showEmpty) {
+      clearFocusUidQuery();
+      return;
+    }
+    if (!showJoined) return;
+    if (findGuildMemberByFocusUid(crew.rankedMembers, focusUid)) return;
+    clearFocusUidQuery();
+  }, [focusUid, showEmpty, showJoined, crew.rankedMembers, clearFocusUidQuery]);
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">

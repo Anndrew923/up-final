@@ -234,7 +234,7 @@ describe('CrewPage focusUid deep link', () => {
     expect(document.querySelector('[data-testid="location-search"]')?.textContent).toBe('');
   });
 
-  it('keeps ladder visible and does not open sheet for unknown focusUid', () => {
+  it('keeps ladder visible, does not open sheet, and clears unknown focusUid query', () => {
     const rendered = renderCrew('/crew?focusUid=unknown');
     root = rendered.root;
     host = rendered.host;
@@ -242,9 +242,10 @@ describe('CrewPage focusUid deep link', () => {
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(host.textContent).toContain('Alpha');
     expect(host.textContent).toContain('Beta');
+    expect(document.querySelector('[data-testid="location-search"]')?.textContent).toBe('');
   });
 
-  it('harmlessly ignores focusUid when not in a club', () => {
+  it('harmlessly ignores focusUid when not in a club and clears sticky query', () => {
     crewState.mode = 'empty';
     const rendered = renderCrew('/crew?focusUid=u2');
     root = rendered.root;
@@ -252,5 +253,6 @@ describe('CrewPage focusUid deep link', () => {
 
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(document.querySelector('[data-testid="crew-empty"]')).toBeTruthy();
+    expect(document.querySelector('[data-testid="location-search"]')?.textContent).toBe('');
   });
 });
