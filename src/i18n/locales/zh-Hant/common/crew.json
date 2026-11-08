@@ -75,7 +75,6 @@
       }
     },
     "dispatch": {
-      "panelAria": "俱樂部戰報廣播",
       "modalKicker": "俱樂部戰報",
       "modalTitle": "宣告這次突破",
       "closeAria": "關閉戰報宣告",
@@ -83,8 +82,6 @@
       "broadcastAndSync": "廣播戰報並同步",
       "silentSync": "僅默默同步",
       "syncing": "同步中…",
-      "broadcastToggle": "廣播戰報至俱樂部",
-      "broadcastHint": "微小進步也值得被隊友看見。可隨時取消勾選。",
       "commentLabel": "戰報留言",
       "commentPlaceholder": "說一句垃圾話或心得…（限 25 字）",
       "tagsAria": "一鍵戰報標籤",

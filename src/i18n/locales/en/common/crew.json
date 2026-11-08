@@ -75,7 +75,6 @@
       }
     },
     "dispatch": {
-      "panelAria": "Club progress dispatch",
       "modalKicker": "Club Dispatch",
       "modalTitle": "Announce this breakthrough",
       "closeAria": "Close club dispatch",
@@ -83,8 +82,6 @@
       "broadcastAndSync": "Broadcast & sync",
       "silentSync": "Sync quietly",
       "syncing": "Syncing…",
-      "broadcastToggle": "Broadcast progress to club",
-      "broadcastHint": "Small gains deserve squad eyes. Uncheck anytime.",
       "commentLabel": "Dispatch comment",
       "commentPlaceholder": "Trash talk or a note… (25 chars max)",
       "tagsAria": "Quick dispatch tags",

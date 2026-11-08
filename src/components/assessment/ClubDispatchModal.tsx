@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type FC } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Z_INDEX_CLASS } from '../../constants/uiZIndex';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import {
   CLUB_DISPATCH_COMMENT_MAX_LEN,
   CLUB_DISPATCH_TAG_KEYS,
@@ -9,14 +10,16 @@ import {
   finalizeDispatchComment,
   type ClubDispatchTagKey,
 } from '../../logic/core/clubProgressDispatchUi';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
-import AuraReactiveFrame from './AuraReactiveFrame';
 import type { PerformanceAuraKey } from '../../logic/core/performanceAura';
+import AuraReactiveFrame from './AuraReactiveFrame';
 
 export interface ClubDispatchModalProps {
   open: boolean;
   scoreDisplay: string;
-  /** Optional signed delta label (e.g. "+1.20"). Hidden when empty. */
+  /**
+   * Optional signed delta label (e.g. "+1.20").
+   * WHY: Guild previousScore lives server-side; wire when client has a trusted delta.
+   */
   deltaDisplay?: string | null;
   title?: string | null;
   auraKey?: PerformanceAuraKey;
@@ -46,28 +49,45 @@ const ClubDispatchModal: FC<ClubDispatchModalProps> = ({
   const commentId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useFocusTrap(dialogRef, open);
 
   useEffect(() => {
     if (!open) return;
     setComment('');
+    setSubmitting(false);
   }, [open, scoreDisplay]);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose();
+      if (event.key === 'Escape' && !busy && !submitting) onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, busy, onClose]);
+  }, [open, busy, submitting, onClose]);
 
   if (!open || typeof document === 'undefined') return null;
 
+  const actionsLocked = busy || submitting;
+
   const applyTag = (key: ClubDispatchTagKey) => {
+    if (actionsLocked) return;
     const tag = t(`crew.dispatch.tag.${key}`);
     setComment(clampDispatchComment(tag));
+  };
+
+  const handleBroadcast = () => {
+    if (actionsLocked) return;
+    setSubmitting(true);
+    onBroadcast(finalizeDispatchComment(comment));
+  };
+
+  const handleSilent = () => {
+    if (actionsLocked) return;
+    setSubmitting(true);
+    onSilentSync();
   };
 
   const deltaText = typeof deltaDisplay === 'string' ? deltaDisplay.trim() : '';
@@ -82,7 +102,7 @@ const ClubDispatchModal: FC<ClubDispatchModalProps> = ({
         type="button"
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         aria-label={t('crew.dispatch.closeAria')}
-        disabled={busy}
+        disabled={actionsLocked}
         onClick={onClose}
       />
       <div
@@ -128,7 +148,7 @@ const ClubDispatchModal: FC<ClubDispatchModalProps> = ({
                 inputMode="text"
                 autoComplete="off"
                 maxLength={CLUB_DISPATCH_COMMENT_MAX_LEN}
-                disabled={busy}
+                disabled={actionsLocked}
                 data-testid="club-dispatch-comment"
                 placeholder={t('crew.dispatch.commentPlaceholder')}
                 value={comment}
@@ -151,7 +171,7 @@ const ClubDispatchModal: FC<ClubDispatchModalProps> = ({
                   <button
                     key={key}
                     type="button"
-                    disabled={busy}
+                    disabled={actionsLocked}
                     data-testid={`club-dispatch-tag-${key}`}
                     className="rounded-full border border-zinc-700/80 bg-zinc-900/80 px-2.5 py-1 text-[11px] font-medium text-zinc-300 transition hover:border-cyan-500/40 hover:text-cyan-100 disabled:opacity-40"
                     onClick={() => applyTag(key)}
@@ -166,20 +186,20 @@ const ClubDispatchModal: FC<ClubDispatchModalProps> = ({
               <button
                 type="button"
                 data-testid="club-dispatch-broadcast-sync"
-                disabled={busy}
+                disabled={actionsLocked}
                 className="w-full rounded-xl bg-cyan-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-cyan-400 disabled:pointer-events-none disabled:opacity-40"
-                onClick={() => onBroadcast(finalizeDispatchComment(comment))}
+                onClick={handleBroadcast}
               >
-                {busy ? t('crew.dispatch.syncing') : t('crew.dispatch.broadcastAndSync')}
+                {actionsLocked ? t('crew.dispatch.syncing') : t('crew.dispatch.broadcastAndSync')}
               </button>
               <button
                 type="button"
                 data-testid="club-dispatch-silent-sync"
-                disabled={busy}
+                disabled={actionsLocked}
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
-                onClick={onSilentSync}
+                onClick={handleSilent}
               >
-                {busy ? t('crew.dispatch.syncing') : t('crew.dispatch.silentSync')}
+                {actionsLocked ? t('crew.dispatch.syncing') : t('crew.dispatch.silentSync')}
               </button>
             </div>
           </div>

@@ -306,7 +306,7 @@ interface SyncGuildLadderScoreResponse {
 
 ### 6.4 i18n Keys（建議）
 
-- `crew.dispatch.broadcastToggle`
+- `crew.dispatch.broadcastAndSync` / `silentSync`
 - `crew.dispatch.commentPlaceholder`
 - `crew.dispatch.tag.overlimit` / `challenge` / `nearDeath`
 - `crew.dispatch.muteLabel`

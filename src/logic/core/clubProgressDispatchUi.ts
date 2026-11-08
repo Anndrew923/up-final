@@ -1,5 +1,5 @@
 /**
- * Club Progress Dispatch — client UI helpers (comment clamp, metric map, panel gate).
+ * Club Progress Dispatch — client UI helpers (comment clamp, metric map, dual gate).
  * WHY: Keep Breakthrough / Crew presentational; pure functions stay unit-testable.
  */
 import type { ClubLadderDimension } from './guildRadarScores';
@@ -15,9 +15,6 @@ export const CLUB_DISPATCH_TAG_KEYS = [
 ] as const;
 
 export type ClubDispatchTagKey = (typeof CLUB_DISPATCH_TAG_KEYS)[number];
-
-/** localStorage flag — first-run hint under Breakthrough broadcast toggle. */
-export const CLUB_DISPATCH_BROADCAST_HINT_SEEN_KEY = 'up.clubDispatch.broadcastHintSeen';
 
 /** localStorage mirror of mute — UI hydration until a prefs-read Callable exists. */
 export const CLUB_DISPATCH_MUTE_LOCAL_KEY = 'up.clubDispatch.muteClubDispatches';
@@ -63,29 +60,13 @@ export function resolveBroadcastMetricFromBreakthrough(
 }
 
 /**
- * Show dispatch panel only for dual membership (club CTA surface).
+ * Offer ClubDispatchModal only for dual membership (club CTA surface).
  * Positive-delta gate remains server-side (D2).
  */
-export function shouldShowBreakthroughDispatchPanel(
+export function shouldOfferClubDispatchFlow(
   membershipSurface: 'pending' | 'dual' | 'global-only'
 ): boolean {
   return membershipSurface === 'dual';
-}
-
-export function readBroadcastHintSeen(storage: Pick<Storage, 'getItem'> = localStorage): boolean {
-  try {
-    return storage.getItem(CLUB_DISPATCH_BROADCAST_HINT_SEEN_KEY) === '1';
-  } catch {
-    return true;
-  }
-}
-
-export function markBroadcastHintSeen(storage: Pick<Storage, 'setItem'> = localStorage): void {
-  try {
-    storage.setItem(CLUB_DISPATCH_BROADCAST_HINT_SEEN_KEY, '1');
-  } catch {
-    // ignore quota / private mode
-  }
 }
 
 /** Default receive ON → mute false when unset. */

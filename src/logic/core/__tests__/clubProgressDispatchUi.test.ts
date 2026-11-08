@@ -4,7 +4,7 @@ import {
   clampDispatchComment,
   finalizeDispatchComment,
   resolveBroadcastMetricFromBreakthrough,
-  shouldShowBreakthroughDispatchPanel,
+  shouldOfferClubDispatchFlow,
 } from '../clubProgressDispatchUi';
 
 describe('clampDispatchComment (live)', () => {
@@ -37,10 +37,10 @@ describe('resolveBroadcastMetricFromBreakthrough', () => {
   });
 });
 
-describe('shouldShowBreakthroughDispatchPanel', () => {
-  it('only shows for dual membership', () => {
-    expect(shouldShowBreakthroughDispatchPanel('dual')).toBe(true);
-    expect(shouldShowBreakthroughDispatchPanel('global-only')).toBe(false);
-    expect(shouldShowBreakthroughDispatchPanel('pending')).toBe(false);
+describe('shouldOfferClubDispatchFlow', () => {
+  it('only offers for dual membership', () => {
+    expect(shouldOfferClubDispatchFlow('dual')).toBe(true);
+    expect(shouldOfferClubDispatchFlow('global-only')).toBe(false);
+    expect(shouldOfferClubDispatchFlow('pending')).toBe(false);
   });
 });

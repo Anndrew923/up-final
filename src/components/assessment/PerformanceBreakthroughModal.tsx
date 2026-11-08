@@ -7,7 +7,7 @@ import type { PerformanceBreakthroughPayload } from '../../logic/core/performanc
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
 import {
   resolveBroadcastMetricFromBreakthrough,
-  shouldShowBreakthroughDispatchPanel,
+  shouldOfferClubDispatchFlow,
 } from '../../logic/core/clubProgressDispatchUi';
 import { resolvePublishSuccessBannerKey } from '../../logic/core/membershipSyncSurface';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
@@ -98,8 +98,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const showDashboardThenArena = onPersistToDashboard != null && arenaSync != null;
   const showDashboardSync = onSyncToDashboard != null;
   const membershipSurface = arenaSync?.membershipSurface ?? 'global-only';
-  const showClubSecondary = membershipSurface === 'dual';
-  const showDispatchFlow = shouldShowBreakthroughDispatchPanel(membershipSurface);
+  // WHY: Dual membership owns both the club CTA and the ClubDispatchModal celebration beat.
+  const isDualMembership = shouldOfferClubDispatchFlow(membershipSurface);
   const showArenaFeedback = shouldShowLadderSyncFeedback(
     arenaSync?.summary ?? null,
     arenaSync?.failures ?? []
@@ -211,12 +211,13 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const confirmClubDispatch = useCallback(
     async (broadcast: boolean, comment = '') => {
       const intent = pendingClubIntent;
-      if (!intent) return;
+      if (!intent || isPipelineRunning) return;
+      // WHY: Close celebration first so nested Escape/focus returns to breakthrough during sync.
       setClubDispatchOpen(false);
       setPendingClubIntent(null);
       await runPersistThenCloud(intent, { broadcast, comment });
     },
-    [pendingClubIntent, runPersistThenCloud]
+    [isPipelineRunning, pendingClubIntent, runPersistThenCloud]
   );
 
   const toggleSummaryExpanded = useCallback(() => {
@@ -279,7 +280,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         type="button"
         className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         aria-label={t('assessment.breakthrough.closeAria')}
-        onClick={onClose}
+        // WHY: Nested Hall / ClubDispatch own dismiss; backdrop must not nuke pending sync intent.
+        disabled={nestedOverlayOpen}
+        onClick={() => {
+          if (nestedOverlayOpen) return;
+          onClose();
+        }}
       />
       <div
         ref={dialogRef}
@@ -390,7 +396,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                         arenaSync.gate === 'invalid-score'
                       }
                       onClick={() => {
-                        if (showDispatchFlow) {
+                        if (isDualMembership) {
                           openClubDispatch('global');
                           return;
                         }
@@ -399,11 +405,11 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                     >
                       {isPipelineRunning
                         ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
-                        : showClubSecondary
+                        : isDualMembership
                           ? t('assessment.breakthrough.syncDashboardThenArenaWithClub')
                           : t('assessment.breakthrough.syncDashboardThenArena')}
                     </button>
-                    {showClubSecondary ? (
+                    {isDualMembership ? (
                       <button
                         type="button"
                         className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
@@ -413,11 +419,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                           !(arenaSync.overallScore > 0)
                         }
                         onClick={() => {
-                          if (showDispatchFlow) {
-                            openClubDispatch('guild');
-                            return;
-                          }
-                          void runPersistThenCloud('guild');
+                          openClubDispatch('guild');
                         }}
                       >
                         {isPipelineRunning
@@ -457,7 +459,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 <button
                   type="button"
                   className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
-                  disabled={actionsBusy}
+                  disabled={actionsBusy || nestedOverlayOpen}
                   onClick={onClose}
                 >
                   {t('assessment.breakthrough.confirmDismiss')}
@@ -468,6 +470,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 <button
                   type="button"
                   className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
+                  disabled={nestedOverlayOpen}
                   onClick={onClose}
                 >
                   {t('assessment.breakthrough.confirmDismiss')}
