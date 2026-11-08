@@ -16,6 +16,24 @@ import {
 } from "./clubProgressDispatch.js";
 
 const FCM_MULTICAST_MAX = 500;
+/** Cap per-token failure lines so a bad token blast cannot flood Cloud Logging. */
+const FCM_TOKEN_FAILURE_LOG_MAX = 20;
+
+/**
+ * Structured skip log — surfaces broadcastSkipped in Cloud Logging without client Network.
+ * @param {string} guildId
+ * @param {string} publisherUid
+ * @param {string} reason
+ * @param {Record<string, unknown>} [extra]
+ */
+function logClubDispatchSkipped(guildId, publisherUid, reason, extra) {
+  console.info(
+    `[ClubDispatch] Skipped for guild ${guildId}, user ${publisherUid}: reason=${reason}`
+  );
+  if (extra && Object.keys(extra).length > 0) {
+    console.info("[ClubDispatch] Skip detail", extra);
+  }
+}
 
 /**
  * Load mute / fcmToken prefs for candidate recipients (Admin SDK).
@@ -85,6 +103,7 @@ export async function consumeClubDispatchRateSlot(uid) {
 export async function sendClubDispatchMulticast(tokens, payload) {
   let fcmSuccessCount = 0;
   let fcmFailureCount = 0;
+  let tokenFailuresLogged = 0;
 
   for (let i = 0; i < tokens.length; i += FCM_MULTICAST_MAX) {
     const chunk = tokens.slice(i, i + FCM_MULTICAST_MAX);
@@ -94,15 +113,47 @@ export async function sendClubDispatchMulticast(tokens, payload) {
         notification: payload.notification,
         data: payload.data,
       });
-      fcmSuccessCount += response.successCount ?? 0;
-      fcmFailureCount += response.failureCount ?? 0;
+      const successCount = response.successCount ?? 0;
+      const failureCount = response.failureCount ?? 0;
+      fcmSuccessCount += successCount;
+      fcmFailureCount += failureCount;
+
+      // WHY: Per-token errors (InvalidRegistration / NotRegistered) are otherwise invisible in Cloud Logging.
+      const responses = Array.isArray(response.responses) ? response.responses : [];
+      for (let idx = 0; idx < responses.length; idx += 1) {
+        const resp = responses[idx];
+        if (!resp || resp.success) continue;
+        if (tokenFailuresLogged >= FCM_TOKEN_FAILURE_LOG_MAX) continue;
+        tokenFailuresLogged += 1;
+        const err = resp.error;
+        console.warn("[ClubDispatch] Multicast token failed", {
+          code: err?.code ?? null,
+          message: err?.message ?? String(err ?? "unknown"),
+          tokenSuffix:
+            typeof chunk[idx] === "string" && chunk[idx].length > 8
+              ? chunk[idx].slice(-8)
+              : null,
+        });
+      }
     } catch (err) {
-      console.warn("[clubProgressBroadcast] FCM multicast chunk failed (non-fatal)", {
+      console.warn("[ClubDispatch] FCM multicast chunk failed (non-fatal)", {
         message: err?.message ?? String(err),
         chunkSize: chunk.length,
       });
       fcmFailureCount += chunk.length;
     }
+  }
+
+  // WHY: One totals line after all chunks — avoids ambiguous per-chunk "finished" noise.
+  console.info(
+    `[ClubDispatch] Multicast finished: success=${fcmSuccessCount}, failure=${fcmFailureCount}`
+  );
+  if (fcmFailureCount > tokenFailuresLogged) {
+    console.info("[ClubDispatch] Multicast token failure logs truncated", {
+      logged: tokenFailuresLogged,
+      failureTotal: fcmFailureCount,
+      cap: FCM_TOKEN_FAILURE_LOG_MAX,
+    });
   }
 
   return { fcmSuccessCount, fcmFailureCount };
@@ -135,11 +186,13 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
   const { uid, normalized, guildId, broadcastBaseline } = input;
 
   if (normalized.broadcast !== true) {
+    // WHY: Silent sync is the common path; avoid Cloud Logging spam (caller may also short-circuit).
     return { broadcastSkipped: "not-requested" };
   }
 
   if (!broadcastBaseline) {
     // Unreachable when fan-out patched successfully (member must exist); defensive only.
+    logClubDispatchSkipped(guildId, uid, "invalid-metric-score");
     return { broadcastSkipped: "invalid-metric-score" };
   }
 
@@ -152,6 +205,11 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
   });
 
   if (!intent.proceed) {
+    const reason = intent.broadcastSkipped || "unknown";
+    logClubDispatchSkipped(guildId, uid, reason, {
+      delta: intent.delta ?? null,
+      metricType: intent.metricType ?? null,
+    });
     return {
       broadcastSkipped: intent.broadcastSkipped,
       ...(intent.delta != null ? { delta: intent.delta } : {}),
@@ -159,8 +217,14 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
   }
 
   const prefs = await loadDispatchRecipientPrefs(broadcastBaseline.memberUids);
-  const { tokens } = filterDispatchRecipients(broadcastBaseline.memberUids, uid, prefs);
+  const filtered = filterDispatchRecipients(broadcastBaseline.memberUids, uid, prefs);
+  const { tokens } = filtered;
   if (tokens.length === 0) {
+    logClubDispatchSkipped(guildId, uid, "no-recipients", {
+      memberCount: broadcastBaseline.memberUids?.length ?? 0,
+      skippedMute: filtered.skippedMute,
+      skippedNoToken: filtered.skippedNoToken,
+    });
     return {
       broadcastSkipped: "no-recipients",
       delta: intent.delta,
@@ -171,6 +235,7 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
 
   const rate = await consumeClubDispatchRateSlot(uid);
   if (!rate.allowed) {
+    logClubDispatchSkipped(guildId, uid, "rate-limited", { delta: intent.delta });
     return {
       broadcastSkipped: "rate-limited",
       delta: intent.delta,
@@ -208,7 +273,7 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
       fcmSentCount: 0,
     });
   } catch (err) {
-    console.warn("[clubProgressBroadcast] dispatch doc write failed (non-fatal)", {
+    console.warn("[ClubDispatch] dispatch doc write failed (non-fatal)", {
       uid,
       guildId,
       message: err?.message ?? String(err),
@@ -224,6 +289,15 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
     senderUid: uid,
     guildId,
     dispatchId,
+  });
+
+  console.info("[ClubDispatch] Sending multicast", {
+    guildId,
+    publisherUid: uid,
+    dispatchId,
+    tokenCount: tokens.length,
+    metricType: intent.metricType,
+    delta: intent.delta,
   });
 
   const { fcmSuccessCount, fcmFailureCount } = await sendClubDispatchMulticast(tokens, payload);

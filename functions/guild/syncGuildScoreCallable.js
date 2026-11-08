@@ -119,10 +119,19 @@ export function mapFanOutToSyncGuildScoreResponse(result, ladderScore, broadcast
  */
 export async function resolveSyncGuildBroadcastFields(input, broadcastRunner = runClubProgressBroadcastAfterFanOut) {
   if (input.broadcast !== true) {
+    // WHY: Default club sync omits broadcast — return field for clients, do not info-log (hot path).
     return { broadcastSkipped: "not-requested" };
   }
   // Score did not land — skip FCM without lying about intent.
   if (!input.fanOutOk || input.fanOutSoftSkip || !input.guildId) {
+    // WHY: Client asked to broadcast but score soft/hard-skipped — this IS diagnostic signal.
+    console.info(
+      `[ClubDispatch] Skipped for guild ${input.guildId ?? "n/a"}, user ${input.uid}: reason=score-not-landed`
+    );
+    console.info("[ClubDispatch] Skip detail", {
+      fanOutOk: input.fanOutOk,
+      fanOutSoftSkip: input.fanOutSoftSkip,
+    });
     return {};
   }
   return broadcastRunner({
