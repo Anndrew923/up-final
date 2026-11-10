@@ -68,10 +68,10 @@ describe('HistoryLogCard', () => {
     const grid = container.querySelector('[data-testid="history-card-axis-grid"]');
     expect(grid?.className).toContain('grid-cols-3');
     expect(grid?.children.length).toBe(SIX_AXIS_METRICS.length);
-    expect(grid?.textContent).toContain('力量');
-    expect(grid?.textContent).toContain('爆發');
-    expect(grid?.textContent).toContain('心肺');
-    expect(grid?.textContent).toContain('肌量');
+    expect(grid?.textContent).toContain('最大肌力');
+    expect(grid?.textContent).toContain('爆發力');
+    expect(grid?.textContent).toContain('心肺耐力');
+    expect(grid?.textContent).toContain('骨骼肌量');
     expect(grid?.textContent).toContain('FFMI');
     expect(grid?.textContent).toContain('握力');
     expect(grid?.textContent).toContain('81.30');
