@@ -59,14 +59,16 @@ describe('useGuildPushRegistration', () => {
       root.render(<Probe enabled />);
     });
 
-    expect(registerForGuildDispatches).toHaveBeenCalledTimes(1);
-
     await act(async () => {
+      vi.advanceTimersByTime(0);
       await Promise.resolve();
     });
 
+    expect(registerForGuildDispatches).toHaveBeenCalledTimes(1);
+
     await act(async () => {
       vi.advanceTimersByTime(1500);
+      await Promise.resolve();
     });
 
     // Successful first attempt cancels 400ms / 1200ms retries.
@@ -90,6 +92,7 @@ describe('useGuildPushRegistration', () => {
     });
 
     await act(async () => {
+      vi.advanceTimersByTime(0);
       await Promise.resolve();
     });
 

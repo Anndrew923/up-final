@@ -53,6 +53,11 @@ const config: CapacitorConfig = {
       // WHY: apple.com loads native capability; UI surfaces Apple only via isNativeAppleSignInAvailable().
       providers: ['google.com', 'apple.com'],
     },
+    // WHY: Capacitor NotificationRouter → PushNotificationsHandler.willPresent reads this.
+    // Empty/missing options suppress foreground banners (iOS shows nothing while app is active).
+    PushNotifications: {
+      presentationOptions: ['banner', 'list', 'sound', 'badge'],
+    },
   },
 };
 

@@ -6,6 +6,7 @@ import {
   GUILD_LADDER_TTL_MS,
   invalidateGuildLadderCache,
   lookupGuildCache,
+  peekCrewGuildBootstrap,
   setGuildCache,
   setUserGuildBindingCache,
   fetchUserGuildBinding,
@@ -93,4 +94,17 @@ describe('guildLadderCacheService', () => {
       window.removeEventListener('up-final-guild-ladder-cache-invalidated', handler);
     }
   });
+
+  it('peekCrewGuildBootstrap returns binding+guild without network', () => {
+    clearUserGuildBindingCache();
+    clearGuildCache();
+    setUserGuildBindingCache('u1', { guildId: 'g1', guildRole: 'member' });
+    setGuildCache(sampleGuild('g1'));
+    const boot = peekCrewGuildBootstrap('u1');
+    expect(boot.binding).toEqual({ guildId: 'g1', guildRole: 'member' });
+    expect(boot.guild?.id).toBe('g1');
+    expect(boot.bindingFresh).toBe(true);
+    expect(boot.guildFresh).toBe(true);
+  });
+
 });

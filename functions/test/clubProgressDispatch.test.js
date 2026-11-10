@@ -177,6 +177,9 @@ describe("buildClubDispatchNotification", () => {
     assert.equal(n.data.route, "/crew?focusUid=u1");
     assert.equal(n.data.type, "club_progress_dispatch");
     assert.equal(n.data.dispatchId, "d1");
+    assert.equal(n.apns.payload.aps.alert.title, "【戰隊快報 // ARN】");
+    assert.equal(n.apns.payload.aps.sound, "default");
+    assert.equal(n.apns.payload.aps.badge, 1);
   });
 
   it("omits quote clause when comment empty", () => {
@@ -191,6 +194,7 @@ describe("buildClubDispatchNotification", () => {
     });
     assert.equal(n.notification.body.includes("「"), false);
     assert.match(n.notification.body, /今天要去改造一下自己嗎？/);
+    assert.ok(n.apns.payload.aps.alert.body.includes("Bruce"));
   });
 });
 

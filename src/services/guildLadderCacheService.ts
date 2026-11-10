@@ -38,11 +38,113 @@ const DISK_PREFIX = 'up:guild-cache:v1:';
 
 /** Session binding cache — Garage + Crew remounts must not re-getDoc users/{uid} every time. */
 const BINDING_TTL_MS = GUILD_LADDER_TTL_MS;
-let bindingMemory: {
+const BINDING_DISK_PREFIX = 'up:guild-binding:v1:';
+
+type BindingCacheEntry = {
   uid: string;
   binding: UserGuildBinding | null;
   cachedAtMs: number;
-} | null = null;
+};
+
+let bindingMemory: BindingCacheEntry | null = null;
+
+function bindingDiskKey(uid: string): string {
+  return `${BINDING_DISK_PREFIX}${uid}`;
+}
+
+function readBindingDisk(uid: string): BindingCacheEntry | null {
+  try {
+    const raw = localStorage.getItem(bindingDiskKey(uid));
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const row = parsed as {
+      uid?: unknown;
+      binding?: unknown;
+      cachedAtMs?: unknown;
+    };
+    if (row.uid !== uid || typeof row.cachedAtMs !== 'number') return null;
+    if (row.binding === null) {
+      return { uid, binding: null, cachedAtMs: row.cachedAtMs };
+    }
+    // Reuse guildDoc parser so disk shape stays aligned with users/{uid} binding fields.
+    const binding = parseUserGuildBinding(row.binding);
+    if (!binding) return null;
+    return { uid, binding, cachedAtMs: row.cachedAtMs };
+  } catch {
+    return null;
+  }
+}
+
+function writeBindingDisk(entry: BindingCacheEntry): void {
+  try {
+    localStorage.setItem(bindingDiskKey(entry.uid), JSON.stringify(entry));
+  } catch {
+    // Quota / private mode — memory cache still works.
+  }
+}
+
+function clearBindingDisk(uid?: string): void {
+  try {
+    if (uid) {
+      localStorage.removeItem(bindingDiskKey(uid));
+      return;
+    }
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(BINDING_DISK_PREFIX)) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Sync cache peek for push-wake / Crew remount — no network.
+ * Prefers fresh TTL hits; still returns stale guild/binding so UI can paint instantly.
+ */
+export function peekCrewGuildBootstrap(
+  uid: string,
+  nowMs: number = Date.now()
+): {
+  binding: UserGuildBinding | null;
+  guild: GuildDoc | null;
+  bindingFresh: boolean;
+  guildFresh: boolean;
+} {
+  if (!uid) {
+    return { binding: null, guild: null, bindingFresh: false, guildFresh: false };
+  }
+
+  let entry: BindingCacheEntry | null = null;
+  if (bindingMemory?.uid === uid) {
+    entry = bindingMemory;
+  } else {
+    entry = readBindingDisk(uid);
+    if (entry) bindingMemory = entry;
+  }
+
+  if (!entry?.binding) {
+    return {
+      binding: entry?.binding ?? null,
+      guild: null,
+      bindingFresh: Boolean(
+        entry && nowMs - entry.cachedAtMs <= BINDING_TTL_MS
+      ),
+      guildFresh: false,
+    };
+  }
+
+  const guildHit = lookupGuildCache(entry.binding.guildId, nowMs);
+  return {
+    binding: entry.binding,
+    guild: guildHit?.data.guild ?? null,
+    bindingFresh: nowMs - entry.cachedAtMs <= BINDING_TTL_MS,
+    guildFresh: guildHit?.freshness === 'fresh',
+  };
+}
 
 function diskKey(guildId: string): string {
   return `${DISK_PREFIX}${guildId}`;
@@ -148,9 +250,10 @@ export function invalidateGuildLadderCache(guildId?: string): void {
 
 /** Invalidate after create / join / leave / kick / disband so Garage card stays truthful. */
 export function clearUserGuildBindingCache(uid?: string): void {
-  if (!bindingMemory) return;
-  if (uid && bindingMemory.uid !== uid) return;
-  bindingMemory = null;
+  if (bindingMemory && (!uid || bindingMemory.uid === uid)) {
+    bindingMemory = null;
+  }
+  clearBindingDisk(uid);
 }
 
 export function setUserGuildBindingCache(
@@ -158,7 +261,9 @@ export function setUserGuildBindingCache(
   binding: UserGuildBinding | null,
   nowMs: number = Date.now()
 ): void {
-  bindingMemory = { uid, binding, cachedAtMs: nowMs };
+  const entry: BindingCacheEntry = { uid, binding, cachedAtMs: nowMs };
+  bindingMemory = entry;
+  writeBindingDisk(entry);
 }
 
 /**
@@ -215,19 +320,26 @@ export async function fetchUserGuildBinding(
 ): Promise<UserGuildBinding | null> {
   if (!uid) return null;
   const nowMs = Date.now();
-  if (
-    !options?.forceRefresh &&
-    bindingMemory &&
-    bindingMemory.uid === uid &&
-    nowMs - bindingMemory.cachedAtMs <= BINDING_TTL_MS
-  ) {
-    return bindingMemory.binding;
+  if (!options?.forceRefresh) {
+    if (
+      bindingMemory &&
+      bindingMemory.uid === uid &&
+      nowMs - bindingMemory.cachedAtMs <= BINDING_TTL_MS
+    ) {
+      return bindingMemory.binding;
+    }
+    const disk = readBindingDisk(uid);
+    if (disk && nowMs - disk.cachedAtMs <= BINDING_TTL_MS) {
+      bindingMemory = disk;
+      return disk.binding;
+    }
   }
 
   const db = getFirestoreDb();
   if (!db) {
     if (bindingMemory?.uid === uid) return bindingMemory.binding;
-    return null;
+    const disk = readBindingDisk(uid);
+    return disk?.binding ?? null;
   }
   try {
     const snap = await getDoc(doc(db, USER_CLOUD_COLLECTION, uid));
@@ -240,6 +352,7 @@ export async function fetchUserGuildBinding(
     return binding;
   } catch {
     if (bindingMemory?.uid === uid) return bindingMemory.binding;
-    return null;
+    const disk = readBindingDisk(uid);
+    return disk?.binding ?? null;
   }
 }

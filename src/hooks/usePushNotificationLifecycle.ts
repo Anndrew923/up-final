@@ -59,6 +59,7 @@ export function useGuildPushRegistration(options: {
     const attempt = (reason: string) => {
       if (cancelled || succeeded) return;
       console.info('[Push] useGuildPushRegistration attempt:', reason);
+      // Fire-and-forget — never awaited by Crew render / guild fetch.
       void pushNotificationService.registerForGuildDispatches().then((ok) => {
         if (cancelled) return;
         if (!ok) return;
@@ -68,17 +69,24 @@ export function useGuildPushRegistration(options: {
       });
     };
 
-    for (const delayMs of GUILD_PUSH_RETRY_MS) {
-      if (delayMs === 0) {
-        attempt('immediate');
-        continue;
-      }
-      timers.push(
-        window.setTimeout(() => {
-          attempt(`retry@${delayMs}ms`);
-        }, delayMs)
-      );
-    }
+    // WHY: Push-wake → /crew must prioritize guild cache paint + getDoc over APNs register().
+    // Yield one macrotask before the retry loop so first paint is not contended.
+    timers.push(
+      window.setTimeout(() => {
+        if (cancelled || succeeded) return;
+        for (const delayMs of GUILD_PUSH_RETRY_MS) {
+          if (delayMs === 0) {
+            attempt('immediate');
+            continue;
+          }
+          timers.push(
+            window.setTimeout(() => {
+              attempt(`retry@${delayMs}ms`);
+            }, delayMs)
+          );
+        }
+      }, 0)
+    );
 
     return () => {
       cancelled = true;

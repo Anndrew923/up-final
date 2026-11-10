@@ -25,6 +25,7 @@ import {
   fetchGuildDoc,
   fetchUserGuildBinding,
   GUILD_LADDER_CACHE_INVALIDATED_EVENT,
+  peekCrewGuildBootstrap,
 } from '../services/guildLadderCacheService';
 import type { GuildDoc, GuildMemberSnapshot, GuildRole } from '../types/guild';
 import { useAuthStore } from '../stores/authStore';
@@ -33,6 +34,9 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 import { useScoreStore } from '../stores/scoreStore';
 
 export type CrewLoadStatus = 'idle' | 'loading' | 'ready' | 'error' | 'empty';
+
+/** Cold/push wake: avoid infinite skeleton when Auth/App Check/Firestore stalls. */
+export const CREW_LOAD_TIMEOUT_MS = 2500;
 
 export interface UseCrewGuildResult {
   status: CrewLoadStatus;
@@ -89,24 +93,42 @@ export function useCrewGuild(): UseCrewGuildResult {
         return;
       }
 
+      // WHY: Push-wake remounts Crew with empty React state — paint disk/memory cache
+      // before the binding→guild network waterfall so users never sit on a blank skeleton.
+      let paintedFromCache = false;
+      if (!force) {
+        const boot = peekCrewGuildBootstrap(authUid);
+        if (boot.binding && boot.guild) {
+          setRole(boot.binding.guildRole);
+          setGuild(boot.guild);
+          setStatus('ready');
+          paintedFromCache = true;
+        }
+      }
+
+      if (!paintedFromCache) {
+        setStatus((prev) => (prev === 'ready' ? prev : 'loading'));
+      }
       setRefreshing(true);
-      setStatus((prev) => (prev === 'ready' ? prev : 'loading'));
 
-      try {
-        const binding = await fetchUserGuildBinding(authUid, { forceRefresh: force });
+      const applyNetworkResult = (input: {
+        binding: Awaited<ReturnType<typeof fetchUserGuildBinding>>;
+        result: Awaited<ReturnType<typeof fetchGuildDoc>> | null;
+      }) => {
         if (gen !== loadGenRef.current) return;
-
+        const { binding, result } = input;
         if (!binding) {
           setGuild(null);
           setRole(null);
           setStatus('empty');
           return;
         }
-
         setRole(binding.guildRole);
-        const result = await fetchGuildDoc(binding.guildId, { forceRefresh: force });
-        if (gen !== loadGenRef.current) return;
-
+        if (!result) {
+          setGuild(null);
+          setStatus('error');
+          return;
+        }
         if (!result.ok) {
           // WHY: Stale binding after kick/disband must surface as empty HQ, not a permanent load error.
           if (result.reason === 'not-found' || result.reason === 'disbanded') {
@@ -116,14 +138,56 @@ export function useCrewGuild(): UseCrewGuildResult {
             setStatus('empty');
             return;
           }
-          setGuild(null);
-          setStatus('error');
+          // Keep cache paint if network soft-fails after timeout path already showed ready.
+          if (!paintedFromCache) {
+            setGuild(null);
+            setStatus('error');
+          }
+          return;
+        }
+        setGuild(result.guild);
+        setStatus('ready');
+      };
+
+      const work = (async () => {
+        const binding = await fetchUserGuildBinding(authUid, { forceRefresh: force });
+        if (!binding) return { binding: null, result: null };
+        const result = await fetchGuildDoc(binding.guildId, { forceRefresh: force });
+        return { binding, result };
+      })();
+
+      let timeoutId: number | undefined;
+      try {
+        const raced = await Promise.race([
+          work.then((payload) => {
+            if (timeoutId != null) window.clearTimeout(timeoutId);
+            return { tag: 'done' as const, payload };
+          }),
+          new Promise<{ tag: 'timeout' }>((resolve) => {
+            timeoutId = window.setTimeout(
+              () => resolve({ tag: 'timeout' }),
+              CREW_LOAD_TIMEOUT_MS
+            );
+          }),
+        ]);
+
+        if (gen !== loadGenRef.current) return;
+
+        if (raced.tag === 'timeout') {
+          // Cache already painted → keep roster visible; otherwise show retry.
+          // refreshing is cleared below; late work still applies when it settles.
+          if (!paintedFromCache) {
+            setStatus('error');
+          }
+          void work.then((payload) => {
+            applyNetworkResult(payload);
+          });
           return;
         }
 
-        setGuild(result.guild);
-        setStatus('ready');
+        applyNetworkResult(raced.payload);
       } finally {
+        if (timeoutId != null) window.clearTimeout(timeoutId);
         if (gen === loadGenRef.current) {
           setRefreshing(false);
         }

@@ -8,6 +8,7 @@ import {
   isApnsDeviceToken,
   resolvePushCredentialToFcm,
 } from "./apnsToFcmToken.js";
+import { buildClubDispatchApnsPayload } from "./clubProgressDispatch.js";
 
 const TEST_NOTIFICATION = {
   title: "【戰隊快報 // 測試廣播】",
@@ -78,14 +79,7 @@ export async function runAdminTestClubDispatchPush(targetUid) {
       route: "/crew",
       source: "admin-smoke",
     },
-    apns: {
-      payload: {
-        aps: {
-          sound: "default",
-          badge: 1,
-        },
-      },
-    },
+    apns: buildClubDispatchApnsPayload(TEST_NOTIFICATION),
   });
 
   const nowIso = new Date().toISOString();

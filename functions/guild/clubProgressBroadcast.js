@@ -9,6 +9,7 @@ import {
 } from "../shared/constants.js";
 import { db, messaging } from "../shared/admin.js";
 import {
+  buildClubDispatchApnsPayload,
   buildClubDispatchNotification,
   consumeClubDispatchAttempt,
   filterDispatchRecipients,
@@ -98,7 +99,11 @@ export async function consumeClubDispatchRateSlot(uid) {
 
 /**
  * @param {string[]} tokens
- * @param {{ notification: { title: string; body: string }; data: Record<string, string> }} payload
+ * @param {{
+ *   notification: { title: string; body: string };
+ *   data: Record<string, string>;
+ *   apns?: { payload: { aps: Record<string, unknown> } };
+ * }} payload
  */
 export async function sendClubDispatchMulticast(tokens, payload) {
   let fcmSuccessCount = 0;
@@ -112,6 +117,12 @@ export async function sendClubDispatchMulticast(tokens, payload) {
         tokens: chunk,
         notification: payload.notification,
         data: payload.data,
+        // Prefer builder-supplied apns; fall back via shared helper (never badge-only).
+        apns:
+          payload.apns ??
+          (payload.notification
+            ? buildClubDispatchApnsPayload(payload.notification)
+            : undefined),
       });
       const successCount = response.successCount ?? 0;
       const failureCount = response.failureCount ?? 0;

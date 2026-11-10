@@ -2,6 +2,7 @@
  * Capacitor Push Notifications lifecycle — permission, token upsert, action routing, sign-out clear.
  * WHY: Club Progress Dispatch FCM requires a registered device token; only native shells apply.
  */
+import { App } from '@capacitor/app';
 import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import {
   PushNotifications,
@@ -23,6 +24,8 @@ const listenerHandles: Partial<Record<ListenerKey, PluginListenerHandle>> = {};
 let listenersAttached = false;
 let listenersAttachInFlight: Promise<void> | null = null;
 let registerInFlight: Promise<boolean> | null = null;
+let appStateHandle: PluginListenerHandle | null = null;
+let foregroundCleanupAttached = false;
 
 async function removeListener(key: ListenerKey): Promise<void> {
   const handle = listenerHandles[key];
@@ -123,6 +126,52 @@ async function ensureListeners(): Promise<void> {
 }
 
 /**
+ * Clear Notification Center entries and icon badge (Capacitor iOS also zeros badge natively).
+ * Best-effort — never throws.
+ */
+export async function clearDeliveredNotificationsAndBadge(): Promise<void> {
+  if (!isCapacitorNativePlatform()) return;
+  try {
+    await PushNotifications.removeAllDeliveredNotifications();
+  } catch (error) {
+    console.warn('[Push] clear delivered notifications failed', error);
+  }
+}
+
+/**
+ * When the app becomes active, clear delivered pushes + badge so the home-screen red dot resets.
+ * Idempotent; safe to call from cold-start attach. Never throws.
+ */
+async function attachPushForegroundCleanup(): Promise<void> {
+  if (!isCapacitorNativePlatform() || foregroundCleanupAttached) return;
+  foregroundCleanupAttached = true;
+  try {
+    // Cold start / first attach — user is already looking at the app.
+    void clearDeliveredNotificationsAndBadge();
+    appStateHandle = await App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        void clearDeliveredNotificationsAndBadge();
+      }
+    });
+  } catch (error) {
+    foregroundCleanupAttached = false;
+    console.warn('[Push] attach foreground cleanup failed', error);
+  }
+}
+
+async function detachForegroundCleanup(): Promise<void> {
+  if (appStateHandle) {
+    try {
+      await appStateHandle.remove();
+    } catch (error) {
+      console.warn('[Push] appState listener remove failed', error);
+    }
+    appStateHandle = null;
+  }
+  foregroundCleanupAttached = false;
+}
+
+/**
  * Attach push listeners without requesting permission.
  * WHY: Cold-start notification taps fire before Crew mounts — listeners must be early.
  * Safe no-op on web. Never throws.
@@ -131,6 +180,7 @@ export async function attachPushListeners(): Promise<void> {
   if (!isCapacitorNativePlatform()) return;
   try {
     await ensureListeners();
+    await attachPushForegroundCleanup();
   } catch (error) {
     console.warn('[Push] attach listeners failed', error);
   }
@@ -208,6 +258,7 @@ export async function clearPushOnSignOut(): Promise<void> {
   } catch (error) {
     console.warn('[Push] detach listeners failed', error);
   }
+  // WHY: Keep appState→badge clear across sign-out — it is shell UX, not auth-scoped.
 }
 
 /** Test seam — reset module state between unit tests. */
@@ -215,10 +266,12 @@ export async function __resetPushNotificationServiceForTests(): Promise<void> {
   registerInFlight = null;
   listenersAttachInFlight = null;
   await detachListeners();
+  await detachForegroundCleanup();
 }
 
 export const pushNotificationService = {
   attachListeners: attachPushListeners,
   registerForGuildDispatches: registerPushForGuildDispatches,
   clearOnSignOut: clearPushOnSignOut,
+  clearDeliveredNotificationsAndBadge,
 };

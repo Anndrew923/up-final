@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const checkPermissions = vi.fn();
 const requestPermissions = vi.fn();
 const register = vi.fn();
+const removeAllDeliveredNotifications = vi.fn();
 const addListener = vi.fn<(event: string, cb: (payload: unknown) => void) => Promise<{ remove: () => Promise<void> }>>();
+const appAddListener = vi.fn();
 const upsertPushToken = vi.fn();
 const isNative = vi.fn(() => true);
 const getPlatform = vi.fn(() => 'ios');
@@ -21,11 +23,18 @@ vi.mock('../../lib/capacitorPlatform', () => ({
   isCapacitorNativePlatform: () => isNative(),
 }));
 
+vi.mock('@capacitor/app', () => ({
+  App: {
+    addListener: (event: string, cb: (payload: unknown) => void) => appAddListener(event, cb),
+  },
+}));
+
 vi.mock('@capacitor/push-notifications', () => ({
   PushNotifications: {
     checkPermissions: () => checkPermissions(),
     requestPermissions: () => requestPermissions(),
     register: () => register(),
+    removeAllDeliveredNotifications: () => removeAllDeliveredNotifications(),
     addListener: (event: string, cb: (payload: unknown) => void) => addListener(event, cb),
   },
 }));
@@ -44,15 +53,21 @@ describe('pushNotificationService', () => {
     checkPermissions.mockReset();
     requestPermissions.mockReset();
     register.mockReset();
+    removeAllDeliveredNotifications.mockReset();
     addListener.mockReset();
+    appAddListener.mockReset();
     upsertPushToken.mockReset();
     navigateFromPushRoute.mockReset();
     isNative.mockReturnValue(true);
     getPlatform.mockReturnValue('ios');
     navigateFromPushRoute.mockReturnValue(true);
     upsertPushToken.mockResolvedValue({ ok: true, cleared: false, fcmPlatform: 'ios' });
+    removeAllDeliveredNotifications.mockResolvedValue(undefined);
 
     addListener.mockImplementation(async (_event: string, _cb: unknown) => ({
+      remove: vi.fn(async () => undefined),
+    }));
+    appAddListener.mockImplementation(async (_event: string, _cb: unknown) => ({
       remove: vi.fn(async () => undefined),
     }));
   });
@@ -173,6 +188,31 @@ describe('pushNotificationService', () => {
     expect(addListener).toHaveBeenCalled();
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
+    expect(removeAllDeliveredNotifications).toHaveBeenCalled();
+    expect(appAddListener).toHaveBeenCalledWith('appStateChange', expect.any(Function));
+  });
+
+  it('clears delivered notifications when app becomes active', async () => {
+    const appStateHandlers: Array<(state: { isActive: boolean }) => void> = [];
+    appAddListener.mockImplementation(async (_event: string, cb: (payload: unknown) => void) => {
+      appStateHandlers.push(cb as (state: { isActive: boolean }) => void);
+      return { remove: vi.fn(async () => undefined) };
+    });
+
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    await pushNotificationService.attachListeners();
+    removeAllDeliveredNotifications.mockClear();
+
+    expect(appStateHandlers.length).toBeGreaterThan(0);
+    appStateHandlers[0]({ isActive: true });
+    expect(removeAllDeliveredNotifications).toHaveBeenCalledTimes(1);
+
+    removeAllDeliveredNotifications.mockClear();
+    appStateHandlers[0]({ isActive: false });
+    expect(removeAllDeliveredNotifications).not.toHaveBeenCalled();
   });
 
   it('calls register when permission is already granted without re-prompting', async () => {

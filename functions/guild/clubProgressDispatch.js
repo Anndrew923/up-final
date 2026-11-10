@@ -213,9 +213,32 @@ export function buildClubDispatchNotification(input) {
     data.dispatchId = input.dispatchId;
   }
 
+  const notification = { title, body };
   return {
-    notification: { title, body },
+    notification,
     data,
+    // WHY: Explicit aps.alert prevents iOS from treating the message as badge-only silent push
+    // when FCM's top-level notification mapping is incomplete on some APNs paths.
+    apns: buildClubDispatchApnsPayload(notification),
+  };
+}
+
+/**
+ * @param {{ title: string; body: string }} notification
+ * @returns {{ payload: { aps: Record<string, unknown> } }}
+ */
+export function buildClubDispatchApnsPayload(notification) {
+  const title =
+    typeof notification?.title === "string" ? notification.title : "";
+  const body = typeof notification?.body === "string" ? notification.body : "";
+  return {
+    payload: {
+      aps: {
+        alert: { title, body },
+        sound: "default",
+        badge: 1,
+      },
+    },
   };
 }
 
