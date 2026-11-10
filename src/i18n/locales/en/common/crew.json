@@ -86,9 +86,9 @@
       "commentPlaceholder": "Trash talk or a note… (25 chars max)",
       "tagsAria": "Quick dispatch tags",
       "tag": {
-        "overlimit": "#Overlimit",
-        "challenge": "#WhoDares",
-        "nearDeath": "#NearDeathPR"
+        "overlimit": "#BeastMode",
+        "challenge": "#RearViewMirror",
+        "nearDeath": "#JustAWarmup"
       },
       "muteLabel": "Receive teammate progress alerts",
       "muteHint": "Turn off to stop push alerts when teammates publish gains."

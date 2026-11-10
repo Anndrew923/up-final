@@ -38,9 +38,9 @@ vi.mock('react-i18next', () => ({
       if (key === 'crew.dispatch.commentPlaceholder') return 'Say something…';
       if (key === 'crew.dispatch.commentLabel') return 'Comment';
       if (key === 'crew.dispatch.tagsAria') return 'Tags';
-      if (key === 'crew.dispatch.tag.overlimit') return '#剛性超限';
-      if (key === 'crew.dispatch.tag.challenge') return '#誰敢來戰';
-      if (key === 'crew.dispatch.tag.nearDeath') return '#今天差點升天';
+      if (key === 'crew.dispatch.tag.overlimit') return '#今天不當人了';
+      if (key === 'crew.dispatch.tag.challenge') return '#後照鏡看不到人';
+      if (key === 'crew.dispatch.tag.nearDeath') return '#這重量算暖身';
       return key;
     },
   }),
@@ -398,10 +398,10 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     const input = document.querySelector(
       '[data-testid="club-dispatch-comment"]'
     ) as HTMLInputElement;
-    expect(input.value).toBe('#剛性超限');
+    expect(input.value).toBe('#今天不當人了');
     expect(
       document.querySelector('[data-testid="club-dispatch-comment-count"]')?.textContent
-    ).toContain('5/25');
+    ).toContain('7/25');
 
     const broadcastBtn = document.querySelector(
       '[data-testid="club-dispatch-broadcast-sync"]'
@@ -416,7 +416,7 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     const arg = dualSync.syncPageGuild.mock.calls[0]?.[0];
     expect(arg).toMatchObject({
       broadcast: true,
-      comment: '#剛性超限',
+      comment: '#今天不當人了',
       broadcastMetricType: 'strength',
     });
   });

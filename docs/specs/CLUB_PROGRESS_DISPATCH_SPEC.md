@@ -68,9 +68,9 @@
 1. Switch／Checkbox：`廣播戰報至俱樂部`（Phase 1 預設勾選；首次可附簡短說明）
 2. 單行輸入：placeholder 走 i18n（繁中例：「說一句垃圾話或心得…（限 25 字）」）
 3. 三個一鍵 Tag（點擊覆寫或填入輸入框；**字面值走 i18n，禁止元件硬編碼**）：
-   - `crew.dispatch.tag.overlimit` → 繁中 `#剛性超限`
-   - `crew.dispatch.tag.challenge` → 繁中 `#誰敢來戰`
-   - `crew.dispatch.tag.nearDeath` → 繁中 `#今天差點升天`
+   - `crew.dispatch.tag.overlimit` → 繁中 `#今天不當人了` / en `#BeastMode`
+   - `crew.dispatch.tag.challenge` → 繁中 `#後照鏡看不到人` / en `#RearViewMirror`
+   - `crew.dispatch.tag.nearDeath` → 繁中 `#這重量算暖身` / en `#JustAWarmup`
 4. 使用者按下「同步俱樂部／發布」：
    - `onPersistToDashboard`（本機）
    - **單次** Callable：`syncGuildLadderScore`（含可選 `broadcast` + `comment`）——分數 fan-out 與戰報在 **同一 transaction 語意** 內完成（見 §5.1）
