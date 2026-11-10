@@ -2,20 +2,20 @@
   "axisLexicon": {
     "input": {
       "short": {
-        "strength": "Strength",
-        "explosivePower": "Explosive",
-        "cardio": "Cardio",
-        "muscleMass": "Muscle Mass",
+        "strength": "Max Strength",
+        "explosivePower": "Explosive Power",
+        "cardio": "Cardio Endurance",
+        "muscleMass": "Skeletal Muscle",
         "bodyFat": "FFMI",
-        "gripStrength": "Grip Str."
+        "gripStrength": "Grip"
       },
       "grid": {
         "strength": "Max Strength",
         "explosivePower": "Explosive Power",
         "cardio": "Cardio Endurance",
-        "muscleMass": "Muscle Mass",
+        "muscleMass": "Skeletal Muscle",
         "bodyFat": "FFMI",
-        "gripStrength": "Grip Test"
+        "gripStrength": "Grip"
       }
     },
     "output": {
@@ -52,10 +52,10 @@
         "gripStrength": "Traction // GRIP"
       },
       "chart": {
-        "strength": "Strength",
-        "explosivePower": "Explosive",
-        "cardio": "Cardio",
-        "muscleMass": "Muscle",
+        "strength": "Max Strength",
+        "explosivePower": "Explosive Power",
+        "cardio": "Cardio Endurance",
+        "muscleMass": "Skeletal Muscle",
         "bodyFat": "FFMI",
         "gripStrength": "Grip"
       }

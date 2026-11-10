@@ -271,10 +271,10 @@
         "gripStrength": "Traction"
       },
       "axisChart": {
-        "strength": "Strength",
-        "explosivePower": "Explosive",
-        "cardio": "Cardio",
-        "muscleMass": "Muscle",
+        "strength": "Max Strength",
+        "explosivePower": "Explosive Power",
+        "cardio": "Cardio Endurance",
+        "muscleMass": "Skeletal Muscle",
         "bodyFat": "FFMI",
         "gripStrength": "Grip"
       }

@@ -110,7 +110,12 @@ const LadderTagsSyncOffer: FC<LadderTagsSyncOfferProps> = ({
         </p>
       ) : null}
       {showFeedback && summary ? (
-        <LadderSyncSummaryStatus summary={summary} failures={failures} variant="syncAll" />
+        <LadderSyncSummaryStatus
+          summary={summary}
+          failures={failures}
+          variant="syncAll"
+          onAutoDismiss={clearFeedback}
+        />
       ) : null}
       <div className="flex flex-col gap-2">
         <button

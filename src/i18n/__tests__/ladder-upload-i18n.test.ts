@@ -6,23 +6,22 @@ describe('ladder upload i18n', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  it('resolves sync summary and unchanged copy (not raw keys)', () => {
-    const summary = i18n.t('ladder.syncAll.summary', {
+  it('resolves sync HUD copy and unchanged copy (not raw keys)', () => {
+    const hudSuccess = i18n.t('ladder.syncAll.hudSuccessWithScore', {
       ns: 'common',
-      attempted: 20,
-      updated: 1,
-      unchanged: 19,
-      avatarPatched: 0,
-      identityPatched: 2,
-      rateLimited: 0,
-      proRequired: 0,
-      invalidInput: 0,
-      internal: 0,
-      errors: 0,
+      score: '90.28',
     });
-    expect(summary).not.toBe('ladder.syncAll.summary');
-    expect(summary).toContain('20');
-    expect(summary).toContain('暱稱同步');
+    expect(hudSuccess).not.toBe('ladder.syncAll.hudSuccessWithScore');
+    expect(hudSuccess).toContain('90.28');
+    expect(hudSuccess).toContain('天梯數據同步完成');
+
+    const hudReady = i18n.t('ladder.syncAll.hudReady', { ns: 'common' });
+    expect(hudReady).not.toBe('ladder.syncAll.hudReady');
+    expect(hudReady).toContain('數據已就緒');
+
+    const hudError = i18n.t('ladder.syncAll.hudError', { ns: 'common' });
+    expect(hudError).not.toBe('ladder.syncAll.hudError');
+    expect(hudError).toContain('網路');
 
     const unchanged = i18n.t('ladder.upload.resultUnchanged', { ns: 'common' });
     expect(unchanged).not.toBe('ladder.upload.resultUnchanged');

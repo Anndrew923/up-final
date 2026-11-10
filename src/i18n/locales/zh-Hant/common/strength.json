@@ -21,7 +21,7 @@
     "capWeightNotice": "「{{lift}}」輸入 {{input}} {{unit}} 已超過本動作模型上限 {{max}} {{unit}}；分數與儲存重量改以上限計算（比照菁英／無裝備或強人賽世界級量級之產品防呆，非正式比賽認證）。",
     "branchLine": "{{weight}} {{unit}} × {{reps}} 次 · 估計 1RM {{oneRm}} {{unit}} · 單項分 {{score}}",
     "averageRawLabel": "已完成項目之平均",
-    "radarAria": "五項力量分佈雷達圖",
+    "radarAria": "最大肌力分佈雷達圖",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
     "liftNextMilestoneHint": "距離下一階尚需 {{points}} 分",
     "liftNextMilestoneHintWithRaw": "距離下一階尚需 {{points}} 分（約需 +{{delta}} {{unit}}）",

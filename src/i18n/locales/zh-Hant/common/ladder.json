@@ -164,6 +164,10 @@
       "identityChipEditAria": "編輯天梯身份：{{name}}",
       "busy": "同步中…",
       "summary": "已處理 {{attempted}} 個分片：寫入 {{updated}}、分數未變 {{unchanged}}、頭像更新 {{avatarPatched}}、暱稱同步 {{identityPatched}}、限流 {{rateLimited}}、需 Pro {{proRequired}}、輸入無效 {{invalidInput}}、系統錯誤 {{internal}}（錯誤合計 {{errors}}）。",
+      "hudSuccessWithScore": "✓ 天梯數據同步完成｜綜合戰力 {{score}} 已更新上榜",
+      "hudSuccess": "✓ 天梯數據同步完成｜戰力已更新上榜",
+      "hudReady": "✓ 數據已就緒｜天梯紀錄維持最新狀態",
+      "hudError": "⚠ 數據同步受限，請檢查網路連線",
       "failuresTitle": "失敗分片（{{count}}）",
       "failureMetric": {
         "avatar": "大頭照",
@@ -196,7 +200,7 @@
         "desc": "綜合天梯分"
       },
       "stats_sbdTotal": {
-        "label": "力量",
+        "label": "最大肌力",
         "desc": "三項／五項／單項 — 選細項"
       },
       "stats_bodyFat": {
@@ -204,7 +208,7 @@
         "desc": "FFMI 榜（依天梯分排序）"
       },
       "stats_cooper": {
-        "label": "心肺",
+        "label": "心肺耐力",
         "desc": "Cooper／5 公里"
       },
       "stats_vertical": {
@@ -212,7 +216,7 @@
         "desc": "綜合榜與垂直跳、立定跳遠、短跑細項（皆依天梯分）"
       },
       "stats_ffmi": {
-        "label": "肌肉量",
+        "label": "骨骼肌量",
         "desc": "SMM 分數／kg／占比"
       },
       "armSize": {

@@ -39,11 +39,11 @@
     },
     "muscle": {
       "kicker": "Body Composition",
-      "title": "Muscle"
+      "title": "Skeletal Muscle"
     },
     "explosive": {
       "kicker": "Power",
-      "title": "Power"
+      "title": "Explosive Power"
     },
     "strength": {
       "kicker": "Strength",

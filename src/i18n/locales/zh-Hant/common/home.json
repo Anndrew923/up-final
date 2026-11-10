@@ -271,10 +271,10 @@
         "gripStrength": "抓地"
       },
       "axisChart": {
-        "strength": "力量",
+        "strength": "最大肌力",
         "explosivePower": "爆發力",
-        "cardio": "心肺",
-        "muscleMass": "肌肉量",
+        "cardio": "心肺耐力",
+        "muscleMass": "骨骼肌量",
         "bodyFat": "FFMI",
         "gripStrength": "握力"
       }

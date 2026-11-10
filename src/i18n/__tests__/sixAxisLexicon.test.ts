@@ -95,10 +95,11 @@ describe('six-axis lexicon dual-track mapping', () => {
     }
   );
 
-  it('zh-Hant output.chart uses fitness-first compact vertices without polluting output.full', () => {
+  it('zh-Hant output.chart uses sports-physiology labels without polluting output.full', () => {
     expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).toBe('FFMI');
-    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).toBe('肌肉量');
-    expect(readLexicon(zhHantCommon, 'output', 'chart', 'strength')).toBe('力量');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'muscleMass')).toBe('骨骼肌量');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'strength')).toBe('最大肌力');
+    expect(readLexicon(zhHantCommon, 'output', 'chart', 'cardio')).toBe('心肺耐力');
     expect(readLexicon(zhHantCommon, 'output', 'full', 'bodyFat')).toBe('引擎排量');
     expect(readLexicon(zhHantCommon, 'output', 'full', 'muscleMass')).toBe('車體外觀');
     expect(readLexicon(zhHantCommon, 'output', 'chart', 'bodyFat')).not.toBe(
@@ -109,7 +110,7 @@ describe('six-axis lexicon dual-track mapping', () => {
     );
   });
 
-  it('en output.chart uses fitness-first compact vertices (not mechanical codes)', () => {
+  it('en output.chart uses sports-physiology labels (not mechanical codes)', () => {
     for (const metric of SIX_AXIS_METRICS) {
       const chart = readLexicon(enCommon, 'output', 'chart', metric);
       const code = (enCommon.axisLexicon as { output: { code: Record<SixAxisMetric, string> } })
@@ -117,7 +118,8 @@ describe('six-axis lexicon dual-track mapping', () => {
       expect(chart).not.toBe(code);
       expect(chart.length).toBeGreaterThan(0);
     }
-    expect(readLexicon(enCommon, 'output', 'chart', 'strength')).toBe('Strength');
+    expect(readLexicon(enCommon, 'output', 'chart', 'strength')).toBe('Max Strength');
+    expect(readLexicon(enCommon, 'output', 'chart', 'muscleMass')).toBe('Skeletal Muscle');
     expect(readLexicon(enCommon, 'output', 'chart', 'bodyFat')).toBe('FFMI');
   });
 
@@ -134,7 +136,7 @@ describe('six-axis lexicon dual-track mapping', () => {
   );
 
   it('i18n.t resolves home.radar.axisChart at runtime (no raw key leak)', () => {
-    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).toBe('力量');
+    expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).toBe('最大肌力');
     expect(i18n.t('home.radar.axisChart.bodyFat', { ns: 'common' })).toBe('FFMI');
     expect(i18n.t('home.radar.axisChart.strength', { ns: 'common' })).not.toContain('axisChart');
   });
@@ -146,14 +148,15 @@ describe('six-axis lexicon dual-track mapping', () => {
     expect(systems.explosivePower).not.toMatch(/馬力/);
   });
 
-  it('ladder shard tabs keep gym-science scan labels (not mechanical output track)', () => {
+  it('ladder shard tabs keep sports-physiology scan labels (not mechanical output track)', () => {
     const divisions = (zhHantCommon.ladder as { divisions: Record<string, { label: string }> })
       .divisions;
-    expect(divisions.stats_sbdTotal.label).toMatch(/力量/);
-    expect(divisions.stats_cooper.label).toMatch(/心肺/);
-    expect(divisions.stats_vertical.label).toMatch(/爆發/);
-    expect(divisions.stats_grip.label).toMatch(/握力/);
-    expect(divisions.stats_bodyFat.label).toMatch(/FFMI/);
+    expect(divisions.stats_sbdTotal.label).toBe('最大肌力');
+    expect(divisions.stats_cooper.label).toBe('心肺耐力');
+    expect(divisions.stats_vertical.label).toBe('爆發力');
+    expect(divisions.stats_grip.label).toBe('握力');
+    expect(divisions.stats_bodyFat.label).toBe('FFMI');
+    expect(divisions.stats_ffmi.label).toBe('骨骼肌量');
   });
 
   it.each(SIX_AXIS_METRICS)(

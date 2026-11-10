@@ -8,21 +8,21 @@ import {
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 
 const ZH_VISIBLE_EXPECTED: Record<SixAxisMetric, string> = {
-  strength: '五項力量 · // HP 馬力',
+  strength: '最大肌力 · // HP 馬力',
   explosivePower: '爆發力 · // TRQ 扭矩',
   cardio: '心肺耐力 · // STINT 續航',
-  muscleMass: '肌肉總量 · // CHSS 外觀',
+  muscleMass: '骨骼肌量 · // CHSS 外觀',
   bodyFat: 'FFMI · // P2W 排量',
-  gripStrength: '握力評測 · // GRIP 抓地',
+  gripStrength: '握力 · // GRIP 抓地',
 };
 
 const EN_VISIBLE_EXPECTED: Record<SixAxisMetric, string> = {
   strength: 'Max Strength · // HP Horsepower',
   explosivePower: 'Explosive Power · // TRQ Torque',
   cardio: 'Cardio Endurance · // STINT Stint',
-  muscleMass: 'Muscle Mass · // CHSS Build',
+  muscleMass: 'Skeletal Muscle · // CHSS Build',
   bodyFat: 'FFMI · // P2W Density',
-  gripStrength: 'Grip Test · // GRIP Traction',
+  gripStrength: 'Grip · // GRIP Traction',
 };
 
 describe('resolveSixAxisDataGridLabelParts (zh-Hant)', () => {

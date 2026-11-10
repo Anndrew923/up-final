@@ -164,6 +164,10 @@
       "identityChipEditAria": "Edit arena identity: {{name}}",
       "busy": "Syncing…",
       "summary": "Processed {{attempted}} shards: {{updated}} written, {{unchanged}} unchanged, {{avatarPatched}} portrait updated, {{identityPatched}} identity synced, {{rateLimited}} rate limited, {{proRequired}} Pro blocked, {{invalidInput}} invalid, {{internal}} system errors ({{errors}} total errors).",
+      "hudSuccessWithScore": "✓ Ladder sync complete｜Composite power {{score}} is live",
+      "hudSuccess": "✓ Ladder sync complete｜Power ranking updated",
+      "hudReady": "✓ Data ready｜Ladder record already current",
+      "hudError": "⚠ Sync limited — check your connection",
       "failuresTitle": "Failed shards ({{count}})",
       "failureMetric": {
         "avatar": "Avatar",
@@ -196,7 +200,7 @@
         "desc": "Composite ladder score"
       },
       "stats_sbdTotal": {
-        "label": "Strength",
+        "label": "Max Strength",
         "desc": "SBD + accessories — pick sub-ranking"
       },
       "stats_bodyFat": {
@@ -204,7 +208,7 @@
         "desc": "FFMI ladder (ranked by ladder score)"
       },
       "stats_cooper": {
-        "label": "Cardio",
+        "label": "Cardio Endurance",
         "desc": "Cooper vs 5 km score"
       },
       "stats_vertical": {
@@ -212,7 +216,7 @@
         "desc": "Composite plus vertical, SLJ, and sprint sub-rankings"
       },
       "stats_ffmi": {
-        "label": "Muscle Mass",
+        "label": "Skeletal Muscle",
         "desc": "SMM score, kg, or ratio"
       },
       "armSize": {

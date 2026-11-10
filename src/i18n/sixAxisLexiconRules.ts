@@ -2,7 +2,8 @@ import { SIX_AXIS_METRICS, type SixAxisMetric } from '../types/scoring';
 
 /**
  * Design intent (WHY): Guardrails for dual-track lexicon —
- * `input.*` / `output.chart` stay fitness-science; `output.full` / `mechShort` / `code` stay mechanical.
+ * `input.*` / `output.chart` stay sports-physiology SSOT (aligned with club dispatch labels);
+ * `output.full` / `mechShort` / `code` stay mechanical.
  */
 export interface SixAxisLexiconMappingRule {
   zhInputMustMatch: RegExp;
@@ -15,32 +16,32 @@ export interface SixAxisLexiconMappingRule {
 
 export const SIX_AXIS_LEXICON_MAPPING_RULES: Record<SixAxisMetric, SixAxisLexiconMappingRule> = {
   strength: {
-    zhInputMustMatch: /力量/,
-    zhInputMustNotMatch: /馬力/,
+    zhInputMustMatch: /最大肌力/,
+    zhInputMustNotMatch: /馬力|五項力量/,
     zhOutputMustMatch: /馬力/,
-    enInputMustMatch: /Strength/i,
+    enInputMustMatch: /Max Strength/i,
     enOutputMustMatch: /Horsepower/i,
   },
   explosivePower: {
-    zhInputMustMatch: /爆發/,
+    zhInputMustMatch: /爆發力/,
     zhInputMustNotMatch: /扭矩|馬力/,
     zhOutputMustMatch: /扭矩/,
     zhOutputMustNotMatch: /馬力/,
-    enInputMustMatch: /Explosive/i,
+    enInputMustMatch: /Explosive Power/i,
     enOutputMustMatch: /Torque/i,
   },
   cardio: {
-    zhInputMustMatch: /心肺/,
+    zhInputMustMatch: /心肺耐力/,
     zhInputMustNotMatch: /續航/,
     zhOutputMustMatch: /續航/,
-    enInputMustMatch: /Cardio/i,
+    enInputMustMatch: /Cardio Endurance/i,
     enOutputMustMatch: /Stint/i,
   },
   muscleMass: {
-    zhInputMustMatch: /肌肉總量|肌肉/,
-    zhInputMustNotMatch: /外觀|車體|圍度/,
+    zhInputMustMatch: /骨骼肌量/,
+    zhInputMustNotMatch: /外觀|車體|圍度|肌肉總量/,
     zhOutputMustMatch: /車體外觀/,
-    enInputMustMatch: /Muscle Mass/i,
+    enInputMustMatch: /Skeletal Muscle/i,
     enOutputMustMatch: /Build/i,
   },
   bodyFat: {
@@ -51,10 +52,10 @@ export const SIX_AXIS_LEXICON_MAPPING_RULES: Record<SixAxisMetric, SixAxisLexico
     enOutputMustMatch: /Density/i,
   },
   gripStrength: {
-    zhInputMustMatch: /握力/,
-    zhInputMustNotMatch: /抓地/,
+    zhInputMustMatch: /^握力$/,
+    zhInputMustNotMatch: /抓地|評測/,
     zhOutputMustMatch: /抓地/,
-    enInputMustMatch: /Grip Str/i,
+    enInputMustMatch: /^Grip$/i,
     enOutputMustMatch: /Traction/i,
   },
 };

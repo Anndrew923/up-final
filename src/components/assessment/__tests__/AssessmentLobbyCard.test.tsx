@@ -188,8 +188,8 @@ describe('AssessmentLobbyCard', () => {
   });
 
   it('renders a pure single-line title without subtitle tier', () => {
-    const { container, unmount } = renderCard({ title: '五項力量', glanceLabel: '未測' });
-    expect(container.querySelector('h2')?.textContent).toBe('五項力量');
+    const { container, unmount } = renderCard({ title: '最大肌力', glanceLabel: '未測' });
+    expect(container.querySelector('h2')?.textContent).toBe('最大肌力');
     expect(container.querySelector('p')).toBeNull();
     expect(container.textContent).not.toContain('整車馬力');
     unmount();

@@ -39,7 +39,7 @@
     },
     "muscle": {
       "kicker": "身體組成",
-      "title": "肌肉總量"
+      "title": "骨骼肌量"
     },
     "explosive": {
       "kicker": "爆發",
@@ -47,11 +47,11 @@
     },
     "strength": {
       "kicker": "力量",
-      "title": "五項力量"
+      "title": "最大肌力"
     },
     "grip": {
       "kicker": "握力",
-      "title": "握力評測"
+      "title": "握力"
     },
     "armSize": {
       "kicker": "圍度",

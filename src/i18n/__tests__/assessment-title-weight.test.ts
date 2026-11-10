@@ -17,10 +17,10 @@ describe('English assessment title weight', () => {
     expect(armSize.armSize.title).toBe('Arm Size Test');
   });
 
-  it('uses ultra-compact EN lobby titles so dual-column cards do not truncate at ~360px', () => {
+  it('uses physiology-aligned EN lobby titles (SSOT with club dispatch labels)', () => {
     expect(assessment.assessment.grip.title).toBe('Grip');
-    expect(assessment.assessment.explosive.title).toBe('Power');
-    expect(assessment.assessment.muscle.title).toBe('Muscle');
+    expect(assessment.assessment.explosive.title).toBe('Explosive Power');
+    expect(assessment.assessment.muscle.title).toBe('Skeletal Muscle');
     expect(assessment.assessment.armSize.title).toBe('Arm');
     expect(tools.tools.somatotypeLab.entry.title).toBe('Somatochart');
   });

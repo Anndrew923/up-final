@@ -56,6 +56,7 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
     gate,
     targetCount,
     hasGuild,
+    overallScore,
     goJoinArena,
     clearFeedback,
   } = useLeaderboardSyncAll({
@@ -244,7 +245,12 @@ const LeaderboardSyncAllBar: FC<LeaderboardSyncAllBarProps> = ({
       ) : null}
 
       {showSyncFeedback && summary ? (
-        <LadderSyncSummaryStatus summary={summary} failures={failures} />
+        <LadderSyncSummaryStatus
+          summary={summary}
+          failures={failures}
+          currentLadderScore={overallScore > 0 ? overallScore : null}
+          onAutoDismiss={clearFeedback}
+        />
       ) : null}
     </div>
   );

@@ -10,8 +10,10 @@ describe('resolveSixAxisChartLabel', () => {
   it('returns fitness-first compact chart labels without raw key fallback', () => {
     const t = i18n.getFixedT('zh-Hant', 'common');
     expect(resolveSixAxisChartLabel(t, 'bodyFat')).toBe('FFMI');
-    expect(resolveSixAxisChartLabel(t, 'strength')).toBe('力量');
+    expect(resolveSixAxisChartLabel(t, 'strength')).toBe('最大肌力');
     expect(resolveSixAxisChartLabel(t, 'explosivePower')).toBe('爆發力');
+    expect(resolveSixAxisChartLabel(t, 'cardio')).toBe('心肺耐力');
+    expect(resolveSixAxisChartLabel(t, 'muscleMass')).toBe('骨骼肌量');
     expect(resolveSixAxisChartLabel(t, 'strength')).not.toContain('axisChart');
   });
 });

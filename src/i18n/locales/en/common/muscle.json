@@ -1,7 +1,7 @@
 {
   "muscle": {
     "kicker": "Body Composition",
-    "title": "Muscle Mass Assessment",
+    "title": "Skeletal Muscle Assessment",
     "subtitle": "Enter SMM. Save to exterior axis.",
     "smmLabel": "Skeletal Muscle Mass (SMM, kg)",
     "smmPlaceholder": "e.g. 32.5",

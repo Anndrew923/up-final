@@ -1,7 +1,7 @@
 {
   "muscle": {
     "kicker": "身體組成",
-    "title": "肌肉量評測",
+    "title": "骨骼肌量評測",
     "subtitle": "填入骨骼肌量，寫入外觀軸。",
     "smmLabel": "骨骼肌量（SMM，kg）",
     "smmPlaceholder": "例如 32.5",

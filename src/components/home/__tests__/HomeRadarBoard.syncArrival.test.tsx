@@ -39,10 +39,10 @@ vi.mock('../../../lib/motionPreference', () => ({
 vi.mock('../../../hooks/useCoreSixRadar', () => ({
   useCoreSixRadar: () => ({
     radarPoints: [
-      { key: 'strength', value: 71.4, label: '力量' },
+      { key: 'strength', value: 71.4, label: '最大肌力' },
       { key: 'explosivePower', value: 80, label: '爆發力' },
-      { key: 'cardio', value: 90, label: '心肺' },
-      { key: 'muscleMass', value: 70, label: '肌肉量' },
+      { key: 'cardio', value: 90, label: '心肺耐力' },
+      { key: 'muscleMass', value: 70, label: '骨骼肌量' },
       { key: 'bodyFat', value: 85, label: 'FFMI' },
       { key: 'gripStrength', value: 91, label: '握力' },
     ],

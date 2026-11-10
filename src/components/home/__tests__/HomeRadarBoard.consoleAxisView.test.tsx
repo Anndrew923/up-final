@@ -29,10 +29,10 @@ vi.stubGlobal('localStorage', {
 vi.mock('../../../hooks/useCoreSixRadar', () => ({
   useCoreSixRadar: () => ({
     radarPoints: [
-      { key: 'strength', value: 71.4, label: '力量' },
+      { key: 'strength', value: 71.4, label: '最大肌力' },
       { key: 'explosivePower', value: 80, label: '爆發力' },
-      { key: 'cardio', value: 90, label: '心肺' },
-      { key: 'muscleMass', value: 70, label: '肌肉量' },
+      { key: 'cardio', value: 90, label: '心肺耐力' },
+      { key: 'muscleMass', value: 70, label: '骨骼肌量' },
       { key: 'bodyFat', value: 85, label: 'FFMI' },
       { key: 'gripStrength', value: 91, label: '握力' },
     ],
@@ -179,12 +179,12 @@ describe('HomeRadarBoard console axis view', () => {
 
   it('defaults to fitness lexicon and 2dp HUD values', () => {
     renderBoard();
-    expect(container!.textContent).toContain('五項力量');
+    expect(container!.textContent).toContain('最大肌力');
     expect(container!.textContent).toContain('綜合戰力指數');
     expect(container!.textContent).not.toContain('整車性能指數');
     expect(container!.textContent).not.toContain('整車馬力 // HP');
     expect(container!.textContent).toContain('71.40');
-    expect(container!.querySelector('[data-testid="radar"]')?.textContent).toContain('力量');
+    expect(container!.querySelector('[data-testid="radar"]')?.textContent).toContain('最大肌力');
     expect(container!.querySelector('[data-testid="radar"]')?.textContent).not.toContain('馬力');
     expect(container!.querySelector('[data-console-mode="fitness"]')).not.toBeNull();
     expect(container!.querySelector('.ui-console-radar-aura')).not.toBeNull();

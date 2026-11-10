@@ -103,8 +103,8 @@ describe('useAssessmentLobbyCards', () => {
     try {
       const byKey = Object.fromEntries(harness.getCurrent().map((c) => [c.key, c.title]));
       expect(byKey.grip).toBe('Grip');
-      expect(byKey.explosive).toBe('Power');
-      expect(byKey.muscle).toBe('Muscle');
+      expect(byKey.explosive).toBe('Explosive Power');
+      expect(byKey.muscle).toBe('Skeletal Muscle');
       expect(byKey.armSize).toBe('Arm');
     } finally {
       harness.unmount();

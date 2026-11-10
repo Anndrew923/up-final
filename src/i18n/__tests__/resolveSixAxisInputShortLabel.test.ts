@@ -16,8 +16,9 @@ describe('resolveSixAxisInputShortLabel', () => {
 
   it('returns fitness-science labels without raw key fallback', () => {
     const t = i18n.getFixedT('zh-Hant', 'common');
-    expect(resolveSixAxisInputShortLabel(t, 'strength')).toBe('力量');
+    expect(resolveSixAxisInputShortLabel(t, 'strength')).toBe('最大肌力');
     expect(resolveSixAxisInputShortLabel(t, 'bodyFat')).toBe('FFMI');
+    expect(resolveSixAxisInputShortLabel(t, 'muscleMass')).toBe('骨骼肌量');
     expect(resolveSixAxisInputShortLabel(t, 'strength')).not.toContain('input.short');
   });
 

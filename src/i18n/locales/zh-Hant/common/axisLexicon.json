@@ -2,20 +2,20 @@
   "axisLexicon": {
     "input": {
       "short": {
-        "strength": "力量",
-        "explosivePower": "爆發",
-        "cardio": "心肺",
-        "muscleMass": "肌肉總量",
+        "strength": "最大肌力",
+        "explosivePower": "爆發力",
+        "cardio": "心肺耐力",
+        "muscleMass": "骨骼肌量",
         "bodyFat": "FFMI",
         "gripStrength": "握力"
       },
       "grid": {
-        "strength": "五項力量",
+        "strength": "最大肌力",
         "explosivePower": "爆發力",
         "cardio": "心肺耐力",
-        "muscleMass": "肌肉總量",
+        "muscleMass": "骨骼肌量",
         "bodyFat": "FFMI",
-        "gripStrength": "握力評測"
+        "gripStrength": "握力"
       }
     },
     "output": {
@@ -52,10 +52,10 @@
         "gripStrength": "機械抓地力 // GRIP"
       },
       "chart": {
-        "strength": "力量",
+        "strength": "最大肌力",
         "explosivePower": "爆發力",
-        "cardio": "心肺",
-        "muscleMass": "肌肉量",
+        "cardio": "心肺耐力",
+        "muscleMass": "骨骼肌量",
         "bodyFat": "FFMI",
         "gripStrength": "握力"
       }

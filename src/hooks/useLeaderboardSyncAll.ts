@@ -291,6 +291,8 @@ export function useLeaderboardSyncAll(options?: UseLeaderboardSyncAllOptions) {
     gate,
     targetCount: targets.length,
     hasGuild,
+    /** Live composite for sync HUD success copy. */
+    overallScore,
     goJoinArena,
     clearFeedback,
   };

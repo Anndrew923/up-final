@@ -453,6 +453,10 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                     summary={arenaSync.summary}
                     failures={arenaSync.failures}
                     variant="assessment"
+                    currentLadderScore={
+                      arenaSync.overallScore > 0 ? arenaSync.overallScore : null
+                    }
+                    onAutoDismiss={arenaSync.clearFeedback}
                   />
                 ) : null}
 
