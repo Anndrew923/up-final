@@ -20,6 +20,32 @@ export const FCM_STALE_REGISTRATION_ERROR_CODES = Object.freeze([
 export const CLUB_DISPATCH_METRICS = Object.freeze(["overall", ...SIX_AXIS_METRICS]);
 
 /**
+ * Phase 1 zh-Hant physiology labels for Club Dispatch push bodies.
+ * WHY: Keep copy free of vehicle metaphors; Functions SSOT (do not pull client i18n).
+ */
+export const CLUB_DISPATCH_METRIC_LABELS_ZH = Object.freeze({
+  strength: "最大肌力",
+  explosivePower: "爆發力",
+  cardio: "心肺耐力",
+  muscleMass: "骨骼肌量",
+  bodyFat: "FFMI",
+  gripStrength: "握力",
+});
+
+/**
+ * @param {unknown} metricType
+ * @returns {string | null}
+ */
+export function resolveClubDispatchMetricLabelZh(metricType) {
+  if (typeof metricType !== "string") return null;
+  const key = metricType.trim();
+  if (!Object.prototype.hasOwnProperty.call(CLUB_DISPATCH_METRIC_LABELS_ZH, key)) {
+    return null;
+  }
+  return CLUB_DISPATCH_METRIC_LABELS_ZH[/** @type {keyof typeof CLUB_DISPATCH_METRIC_LABELS_ZH} */ (key)];
+}
+
+/**
  * @param {unknown} raw
  * @returns {'overall' | string}
  */
@@ -268,12 +294,117 @@ export function formatDispatchScore(n) {
 }
 
 /**
+ * Append overall delta suffix only for positive overall growth.
+ * WHY: Non-positive overall Δ (rebalance / flat ladder) should not imply a false total climb.
+ * @param {number} overallDelta
+ * @returns {string}
+ */
+export function formatOverallDeltaSuffix(overallDelta) {
+  const delta = Number(overallDelta);
+  if (!Number.isFinite(delta) || !(delta > 0)) return "";
+  return ` (+${formatDispatchScore(delta)})`;
+}
+
+/**
+ * Build dual-line zh-Hant push body (data line + optional comment line).
+ * @param {{
+ *   userName: string;
+ *   metricType?: string | null;
+ *   axisScore?: number | null;
+ *   overallScore: number;
+ *   overallDelta: number;
+ *   comment?: string | null;
+ * }} input
+ * @returns {string}
+ */
+export function buildClubDispatchBody(input) {
+  const userName =
+    typeof input.userName === "string" && input.userName.trim()
+      ? input.userName.trim()
+      : "Athlete";
+  const overallLabel = formatDispatchScore(input.overallScore);
+  const deltaSuffix = formatOverallDeltaSuffix(input.overallDelta);
+  const metricType = normalizeBroadcastMetricType(input.metricType);
+  const metricLabel = resolveClubDispatchMetricLabelZh(metricType);
+  const axisRaw = Number(input.axisScore);
+  const hasAxis =
+    metricType !== "overall" &&
+    metricLabel != null &&
+    Number.isFinite(axisRaw) &&
+    axisRaw >= 0;
+
+  const dataLine = hasAxis
+    ? `${userName} 突破【${metricLabel}】${formatDispatchScore(axisRaw)}！總戰力升至 ${overallLabel}${deltaSuffix}`
+    : `${userName} 總戰力升至 ${overallLabel}${deltaSuffix}`;
+
+  const comment =
+    typeof input.comment === "string" ? input.comment.trim() : "";
+  if (!comment) return dataLine;
+  return `${dataLine}\n💬「${comment}」`;
+}
+
+/**
+ * Resolve push score fields without mislabeling axis legacy scores as overall.
+ * WHY: Older smoke helpers passed `newScore`/`delta` only — never invent overall from an axis score.
+ * @param {{
+ *   metricType?: string | null;
+ *   axisScore?: number | null;
+ *   overallScore?: number;
+ *   overallDelta?: number;
+ *   newScore?: number;
+ *   delta?: number;
+ * }} input
+ * @returns {{
+ *   metricType: string;
+ *   axisScore: number | null;
+ *   overallScore: number;
+ *   overallDelta: number;
+ * }}
+ */
+export function resolveClubDispatchNotificationScores(input) {
+  const metricType = normalizeBroadcastMetricType(input?.metricType);
+  const isAxisMetric = resolveClubDispatchMetricLabelZh(metricType) != null;
+  const hasOverall = Number.isFinite(Number(input?.overallScore));
+  const hasAxis = Number.isFinite(Number(input?.axisScore));
+  const hasLegacyScore = Number.isFinite(Number(input?.newScore));
+  const hasOverallDelta = Number.isFinite(Number(input?.overallDelta));
+  const hasLegacyDelta = Number.isFinite(Number(input?.delta));
+
+  /** @type {number | null} */
+  let axisScore = hasAxis ? Number(input.axisScore) : null;
+  if (axisScore == null && isAxisMetric && hasLegacyScore && !hasOverall) {
+    axisScore = Number(input.newScore);
+  }
+
+  let overallScore = 0;
+  if (hasOverall) {
+    overallScore = Number(input.overallScore);
+  } else if (!isAxisMetric && hasLegacyScore) {
+    overallScore = Number(input.newScore);
+  }
+
+  let overallDelta = 0;
+  if (hasOverallDelta) {
+    overallDelta = Number(input.overallDelta);
+  } else if (!isAxisMetric && hasLegacyDelta) {
+    overallDelta = Number(input.delta);
+  }
+
+  return { metricType, axisScore, overallScore, overallDelta };
+}
+
+/**
  * Build zh-Hant notification copy + data payload (Phase 1 locale lock).
+ * Prefer overallScore/axisScore/overallDelta; newScore/delta are overall-only legacy fallbacks.
  * @param {{
  *   clubName: string;
  *   userName: string;
- *   newScore: number;
- *   delta: number;
+ *   metricType?: string | null;
+ *   axisScore?: number | null;
+ *   overallScore?: number;
+ *   overallDelta?: number;
+ *   newScore?: number;
+ *   delta?: number;
  *   comment: string;
  *   senderUid: string;
  *   guildId: string;
@@ -289,15 +420,18 @@ export function buildClubDispatchNotification(input) {
     typeof input.userName === "string" && input.userName.trim()
       ? input.userName.trim()
       : "Athlete";
-  const scoreLabel = formatDispatchScore(input.newScore);
-  const deltaLabel = formatDispatchScore(input.delta);
-  const comment = typeof input.comment === "string" ? input.comment : "";
+
+  const scores = resolveClubDispatchNotificationScores(input);
 
   const title = `【戰隊快報 // ${clubName}】`;
-  const body =
-    comment.length > 0
-      ? `${userName} 戰鬥力推進至 ${scoreLabel}（+${deltaLabel}）！「${comment}」今天要去改造一下自己嗎？`
-      : `${userName} 戰鬥力推進至 ${scoreLabel}（+${deltaLabel}）！今天要去改造一下自己嗎？`;
+  const body = buildClubDispatchBody({
+    userName,
+    metricType: scores.metricType,
+    axisScore: scores.axisScore,
+    overallScore: scores.overallScore,
+    overallDelta: scores.overallDelta,
+    comment: input.comment,
+  });
 
   /** @type {Record<string, string>} */
   const data = {

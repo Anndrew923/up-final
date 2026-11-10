@@ -11,11 +11,19 @@ import {
 import {
   buildClubDispatchAndroidPayload,
   buildClubDispatchApnsPayload,
+  buildClubDispatchBody,
 } from "./clubProgressDispatch.js";
 
+// WHY: Smoke copy follows production dual-line physiology template (not the legacy CTA sentence).
 const TEST_NOTIFICATION = {
   title: "【戰隊快報 // 測試廣播】",
-  body: "隊友打破了個人極限！推播端對端驗收中。",
+  body: buildClubDispatchBody({
+    userName: "隊友",
+    metricType: "overall",
+    overallScore: 80,
+    overallDelta: 1,
+    comment: "推播端對端驗收中",
+  }),
 };
 
 /**

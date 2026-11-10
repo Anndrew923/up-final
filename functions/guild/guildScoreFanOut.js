@@ -104,6 +104,13 @@ export function captureGuildBroadcastBaseline(guildData, uid, broadcastMetricTyp
 
   const metricType = normalizeBroadcastMetricType(broadcastMetricType);
   const previousScore = resolvePreviousScoreFromMember(member, metricType);
+  // WHY: Push body shows overall ladder climb separately from axis breakthrough score.
+  const previousLadderRaw = Number(
+    /** @type {{ ladderScore?: unknown }} */ (member).ladderScore
+  );
+  const previousLadderScore = Number.isFinite(previousLadderRaw)
+    ? Math.max(0, previousLadderRaw)
+    : 0;
   const senderDisplayName =
     typeof member.displayName === "string" && member.displayName.trim()
       ? member.displayName.trim().slice(0, 32)
@@ -118,6 +125,7 @@ export function captureGuildBroadcastBaseline(guildData, uid, broadcastMetricTyp
 
   return {
     previousScore,
+    previousLadderScore,
     senderDisplayName,
     memberUids,
     clubName,
@@ -143,6 +151,7 @@ export function captureGuildBroadcastBaseline(guildData, uid, broadcastMetricTyp
  *   guildId?: string;
  *   broadcastBaseline?: {
  *     previousScore: number;
+ *     previousLadderScore: number;
  *     senderDisplayName: string;
  *     memberUids: string[];
  *     clubName: string;

@@ -5,15 +5,20 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   buildClubDispatchAndroidPayload,
+  buildClubDispatchBody,
   buildClubDispatchNotification,
+  CLUB_DISPATCH_METRIC_LABELS_ZH,
   consumeClubDispatchAttempt,
   evaluateBroadcastDeltaGate,
   filterDispatchRecipients,
   formatDispatchScore,
+  formatOverallDeltaSuffix,
   isStaleFcmRegistrationErrorCode,
   normalizeBroadcastMetricType,
   resolveBroadcastIntent,
   resolveBroadcastNewScore,
+  resolveClubDispatchMetricLabelZh,
+  resolveClubDispatchNotificationScores,
   resolvePreviousScoreFromMember,
   sanitizeDispatchComment,
   selectStaleFcmClearTargets,
@@ -28,6 +33,7 @@ import { normalizeSyncGuildScoreRequest } from "../guild/syncGuildScoreCallable.
 import {
   CLUB_DISPATCH_ANDROID_CHANNEL_ID,
   CLUB_DISPATCH_MAX_PER_HOUR,
+  SIX_AXIS_METRICS,
 } from "../shared/constants.js";
 
 describe("sanitizeDispatchComment", () => {
@@ -74,9 +80,25 @@ describe("resolvePreviousScoreFromMember + capture baseline", () => {
       "overall"
     );
     assert.equal(baseline.previousScore, 80);
+    assert.equal(baseline.previousLadderScore, 80);
     assert.equal(baseline.senderDisplayName, "Alpha");
     assert.deepEqual(baseline.memberUids, ["m1", "m2"]);
     assert.equal(baseline.clubName, "Iron Crew");
+  });
+
+  it("captures previousLadderScore separately from axis previousScore", () => {
+    const baseline = captureGuildBroadcastBaseline(
+      {
+        name: "Iron Crew",
+        memberUids: ["m1"],
+        members: [member],
+      },
+      "m1",
+      "strength"
+    );
+    assert.equal(baseline.previousScore, 70);
+    assert.equal(baseline.previousLadderScore, 80);
+    assert.equal(baseline.metricType, "strength");
   });
 });
 
@@ -235,25 +257,154 @@ describe("shouldClearStoredFcmToken / selectStaleFcmClearTargets", () => {
   });
 });
 
+describe("club dispatch metric labels + body", () => {
+  it("locks physiology labels for every SIX_AXIS_METRICS key", () => {
+    assert.equal(CLUB_DISPATCH_METRIC_LABELS_ZH.muscleMass, "骨骼肌量");
+    assert.equal(resolveClubDispatchMetricLabelZh("gripStrength"), "握力");
+    assert.equal(resolveClubDispatchMetricLabelZh("overall"), null);
+    for (const metric of SIX_AXIS_METRICS) {
+      assert.notEqual(
+        resolveClubDispatchMetricLabelZh(metric),
+        null,
+        `missing label for ${metric}`
+      );
+    }
+    assert.equal(formatOverallDeltaSuffix(0.19), " (+0.19)");
+    assert.equal(formatOverallDeltaSuffix(0), "");
+    assert.equal(formatOverallDeltaSuffix(-0.2), "");
+  });
+
+  it("builds axis breakthrough dual-line body with comment", () => {
+    const body = buildClubDispatchBody({
+      userName: "TfldVIDz",
+      metricType: "muscleMass",
+      axisScore: 84.7,
+      overallScore: 90.28,
+      overallDelta: 0.19,
+      comment: "細狗們膜拜吧",
+    });
+    assert.equal(
+      body,
+      "TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)\n💬「細狗們膜拜吧」"
+    );
+  });
+
+  it("omits comment line and overall delta suffix when absent / non-positive", () => {
+    const flat = buildClubDispatchBody({
+      userName: "Bruce",
+      metricType: "strength",
+      axisScore: 81.2,
+      overallScore: 88,
+      overallDelta: 0,
+      comment: "",
+    });
+    assert.equal(flat, "Bruce 突破【最大肌力】81.2！總戰力升至 88");
+    assert.equal(flat.includes("\n"), false);
+    assert.equal(flat.includes("💬"), false);
+
+    const declined = buildClubDispatchBody({
+      userName: "Bruce",
+      metricType: "gripStrength",
+      axisScore: 70,
+      overallScore: 85,
+      overallDelta: -0.4,
+      comment: "",
+    });
+    assert.equal(declined, "Bruce 突破【握力】70！總戰力升至 85");
+  });
+
+  it("degrades unknown / overall metric and negative axis scores", () => {
+    assert.equal(
+      buildClubDispatchBody({
+        userName: "Bruce",
+        metricType: "overall",
+        axisScore: 99,
+        overallScore: 90.28,
+        overallDelta: 1.5,
+        comment: null,
+      }),
+      "Bruce 總戰力升至 90.28 (+1.5)"
+    );
+    assert.equal(
+      buildClubDispatchBody({
+        userName: "Bruce",
+        metricType: "explosive",
+        axisScore: 40,
+        overallScore: 80,
+        overallDelta: 1,
+        comment: "",
+      }),
+      "Bruce 總戰力升至 80 (+1)"
+    );
+    assert.equal(
+      buildClubDispatchBody({
+        userName: "Bruce",
+        metricType: "strength",
+        axisScore: Number.NaN,
+        overallScore: 80,
+        overallDelta: 1,
+        comment: "",
+      }),
+      "Bruce 總戰力升至 80 (+1)"
+    );
+  });
+
+  it("keeps legacy newScore/delta as overall-only (never mislabels axis)", () => {
+    assert.deepEqual(
+      resolveClubDispatchNotificationScores({
+        metricType: "overall",
+        newScore: 81.2,
+        delta: 0.2,
+      }),
+      { metricType: "overall", axisScore: null, overallScore: 81.2, overallDelta: 0.2 }
+    );
+    assert.deepEqual(
+      resolveClubDispatchNotificationScores({
+        metricType: "strength",
+        newScore: 81.2,
+        delta: 5,
+      }),
+      { metricType: "strength", axisScore: 81.2, overallScore: 0, overallDelta: 0 }
+    );
+    const body = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "strength",
+      newScore: 81.2,
+      delta: 5,
+      comment: "",
+      senderUid: "u1",
+      guildId: "g1",
+    }).notification.body;
+    assert.equal(body, "Bruce 突破【最大肌力】81.2！總戰力升至 0");
+    assert.equal(body.includes("(+5)"), false);
+  });
+});
+
 describe("buildClubDispatchNotification", () => {
-  it("builds zh body with comment and deep link data", () => {
+  it("builds zh dual-line body with comment and deep link data", () => {
     const n = buildClubDispatchNotification({
       clubName: "ARN",
       userName: "Bruce",
-      newScore: 81.2,
-      delta: 0.2,
+      metricType: "muscleMass",
+      axisScore: 84.7,
+      overallScore: 90.28,
+      overallDelta: 0.19,
       comment: "破80了",
       senderUid: "u1",
       guildId: "g1",
       dispatchId: "d1",
     });
     assert.equal(n.notification.title, "【戰隊快報 // ARN】");
-    assert.match(n.notification.body, /Bruce 戰鬥力推進至 81\.2（\+0\.2）/);
-    assert.match(n.notification.body, /「破80了」/);
+    assert.equal(
+      n.notification.body,
+      "Bruce 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)\n💬「破80了」"
+    );
     assert.equal(n.data.route, "/crew?focusUid=u1");
     assert.equal(n.data.type, "club_progress_dispatch");
     assert.equal(n.data.dispatchId, "d1");
     assert.equal(n.apns.payload.aps.alert.title, "【戰隊快報 // ARN】");
+    assert.equal(n.apns.payload.aps.alert.body, n.notification.body);
     assert.equal(n.apns.payload.aps.sound, "default");
     assert.equal(n.apns.payload.aps.badge, 1);
     assert.equal(n.android.priority, "high");
@@ -269,19 +420,36 @@ describe("buildClubDispatchNotification", () => {
     assert.equal(android.priority, "high");
   });
 
-  it("omits quote clause when comment empty", () => {
+  it("omits comment line when comment empty (single data line)", () => {
     const n = buildClubDispatchNotification({
       clubName: "ARN",
       userName: "Bruce",
-      newScore: 80,
-      delta: 1,
+      metricType: "strength",
+      axisScore: 80,
+      overallScore: 85,
+      overallDelta: 1,
       comment: "",
       senderUid: "u1",
       guildId: "g1",
     });
+    assert.equal(n.notification.body, "Bruce 突破【最大肌力】80！總戰力升至 85 (+1)");
     assert.equal(n.notification.body.includes("「"), false);
-    assert.match(n.notification.body, /今天要去改造一下自己嗎？/);
-    assert.ok(n.apns.payload.aps.alert.body.includes("Bruce"));
+    assert.equal(n.notification.body.includes("今天要去改造"), false);
+    assert.equal(n.notification.body.includes("\n"), false);
+  });
+
+  it("degrades overall metric notifications without axis clause", () => {
+    const n = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 2,
+      comment: "",
+      senderUid: "u1",
+      guildId: "g1",
+    });
+    assert.equal(n.notification.body, "Bruce 總戰力升至 90 (+2)");
   });
 });
 

@@ -287,22 +287,33 @@ interface SyncGuildLadderScoreResponse {
 | 欄位 | 值 |
 |---|---|
 | title (zh-Hant) | `【戰隊快報 // {clubName}】` |
-| title (en) | `[Squad Dispatch // {clubName}]` |
-| body (zh-Hant) | `{userName} 戰鬥力推進至 {newScore}（+{delta}）！「{userComment}」今天要去改造一下自己嗎？` |
-| body (en) | `{userName} powered up to {newScore} (+{delta})! "{userComment}" Time to upgrade yourself?` |
+| title (en) | `[Squad Dispatch // {clubName}]`（Phase 2） |
+| body (zh-Hant) — 六軸突破 | `{userName} 突破【{metricLabel}】{axisScore}！總戰力升至 {overallScore}` + 可選 `(+{overallDelta})`（見 §6.2）+ 可選第二行 `\n💬「{userComment}」` |
+| body (zh-Hant) — overall 降級 | `{userName} 總戰力升至 {overallScore}` + 可選 `(+{overallDelta})` + 可選第二行 |
 | data.route | `/crew?focusUid={senderUid}` |
 | data.guildId | `{guildId}` |
 | data.dispatchId | `{dispatchId}`（若有） |
 | data.type | `club_progress_dispatch` |
 
-### 6.2 Comment 空字串
+**metricLabel SSOT（`CLUB_DISPATCH_METRIC_LABELS_ZH`）**：`strength→最大肌力`、`explosivePower→爆發力`、`cardio→心肺耐力`、`muscleMass→骨骼肌量`、`bodyFat→FFMI`、`gripStrength→握力`。
 
-- zh：省略「「{userComment}」」，改為：`{userName} 戰鬥力推進至 {newScore}（+{delta}）！今天要去改造一下自己嗎？`
-- en：省略引號句，改為：`{userName} powered up to {newScore} (+{delta})! Time to upgrade yourself?`
+**範例（有留言）**：
+```text
+TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)
+💬「細狗們膜拜吧」
+```
+
+### 6.2 Comment 空字串 / 總分增量
+
+- 無留言：不換行、不輸出 `💬` 行。
+- `overallDelta <= 0`：省略 `(+…)` 括號（避免暗示總戰力上升）。
+- 不再附加「今天要去改造一下自己嗎？」結尾問句。
 
 ### 6.3 數值格式
 
-- `newScore` / `delta`：與該軸顯示精度一致（建議最多 2 位小數；去掉多餘尾 0）
+- `axisScore` / `overallScore` / `overallDelta`：最多 2 位小數；去掉多餘尾 0
+- `overallDelta` = `ladderScore - previousLadderScore`（baseline 在 members[] 覆寫前抓取）
+- `dispatches/{id}.delta` = **gate delta**（軸或 overall，供 D2）；與推播 `overallDelta` 分離。文件另存 `overallScore` / `overallDelta` / `previousLadderScore` 供歷史重播文案。
 
 ### 6.4 i18n Keys（建議）
 

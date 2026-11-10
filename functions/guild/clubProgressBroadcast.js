@@ -266,6 +266,7 @@ export async function sendClubDispatchMulticast(recipients, payload) {
  *   guildId: string;
  *   broadcastBaseline: {
  *     previousScore: number;
+ *     previousLadderScore: number;
  *     senderDisplayName: string;
  *     memberUids: string[];
  *     clubName: string;
@@ -341,6 +342,22 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
     broadcastBaseline.senderDisplayName ||
     uid.slice(0, 8);
 
+  const overallScoreRaw = Number(normalized.ladderScore);
+  const overallScore = Number.isFinite(overallScoreRaw) ? overallScoreRaw : 0;
+  // WHY: Missing previousLadderScore must not invent (+ladder) from a 0 fallback —
+  // treat absent baseline as unknown overall Δ (omit suffix via overallDelta=0).
+  const hasPreviousLadder =
+    broadcastBaseline.previousLadderScore != null &&
+    Number.isFinite(Number(broadcastBaseline.previousLadderScore));
+  const previousLadderScore = hasPreviousLadder
+    ? Math.max(0, Number(broadcastBaseline.previousLadderScore))
+    : 0;
+  const overallDelta = hasPreviousLadder
+    ? Math.round((overallScore - previousLadderScore) * 100) / 100
+    : 0;
+  const metricType = intent.metricType;
+  const axisScore = metricType !== "overall" ? intent.newScore : null;
+
   const dispatchRef = db
     .collection(GUILDS_COLLECTION)
     .doc(guildId)
@@ -355,10 +372,15 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
       guildId,
       senderUid: uid,
       senderDisplayName,
-      metricType: intent.metricType,
+      metricType,
+      // Gate metrics (axis or overall depending on broadcastMetricType).
       previousScore: intent.previousScore,
       newScore: intent.newScore,
       delta: intent.delta,
+      // Ladder copy fields — distinct from gate delta so history UI can rebuild push body.
+      overallScore,
+      overallDelta,
+      previousLadderScore: hasPreviousLadder ? previousLadderScore : null,
       comment: normalized.comment,
       createdAt: nowIso,
       fcmSentCount: 0,
@@ -374,8 +396,10 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
   const payload = buildClubDispatchNotification({
     clubName: broadcastBaseline.clubName,
     userName: senderDisplayName,
-    newScore: intent.newScore,
-    delta: intent.delta,
+    metricType,
+    axisScore,
+    overallScore,
+    overallDelta,
     comment: normalized.comment,
     senderUid: uid,
     guildId,
@@ -387,8 +411,9 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
     publisherUid: uid,
     dispatchId,
     tokenCount: recipients.length,
-    metricType: intent.metricType,
+    metricType,
     delta: intent.delta,
+    overallDelta,
   });
 
   const { fcmSuccessCount, fcmFailureCount, staleTokensCleared } =
