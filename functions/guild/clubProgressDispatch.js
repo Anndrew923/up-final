@@ -3,11 +3,18 @@
  * WHY: Keep TX / Callable wiring thin; unit-test D2 positive-delta + mute filters without Firestore.
  */
 import {
+  CLUB_DISPATCH_ANDROID_CHANNEL_ID,
   CLUB_DISPATCH_COMMENT_MAX_LEN,
   CLUB_DISPATCH_MAX_PER_HOUR,
   ONE_HOUR_MS,
   SIX_AXIS_METRICS,
 } from "../shared/constants.js";
+
+/** FCM Admin codes that mean the stored device token must be cleared. */
+export const FCM_STALE_REGISTRATION_ERROR_CODES = Object.freeze([
+  "messaging/registration-token-not-registered",
+  "messaging/invalid-registration-token",
+]);
 
 /** @type {readonly string[]} */
 export const CLUB_DISPATCH_METRICS = Object.freeze(["overall", ...SIX_AXIS_METRICS]);
@@ -124,14 +131,23 @@ export function isValidFcmToken(raw) {
 }
 
 /**
- * Filter memberUids → FCM tokens (exclude self / mute / missing token).
+ * Filter memberUids → FCM recipients (exclude self / mute / missing token).
+ * WHY: Multicast responses are index-aligned with tokens — keep `{ uid, token }` so
+ * NotRegistered / InvalidRegistration can clear the owning user doc safely.
  * @param {string[]} memberUids
  * @param {string} senderUid
  * @param {Map<string, { muteClubDispatches?: boolean; fcmToken?: unknown }> | Record<string, { muteClubDispatches?: boolean; fcmToken?: unknown }>} userPrefsByUid
- * @returns {{ tokens: string[]; skippedMute: number; skippedNoToken: number }}
+ * @returns {{
+ *   recipients: Array<{ uid: string; token: string }>;
+ *   tokens: string[];
+ *   skippedMute: number;
+ *   skippedNoToken: number;
+ * }}
  */
 export function filterDispatchRecipients(memberUids, senderUid, userPrefsByUid) {
-  const tokens = [];
+  /** @type {Array<{ uid: string; token: string }>} */
+  const recipients = [];
+  const seenTokens = new Set();
   let skippedMute = 0;
   let skippedNoToken = 0;
   const list = Array.isArray(memberUids) ? memberUids : [];
@@ -153,10 +169,91 @@ export function filterDispatchRecipients(memberUids, senderUid, userPrefsByUid) 
       skippedNoToken += 1;
       continue;
     }
-    tokens.push(/** @type {string} */ (token).trim());
+    const trimmed = /** @type {string} */ (token).trim();
+    // WHY: FCM multicast rejects duplicate tokens in one request; first owner wins for cleanup map.
+    if (seenTokens.has(trimmed)) continue;
+    seenTokens.add(trimmed);
+    recipients.push({ uid, token: trimmed });
   }
 
-  return { tokens: [...new Set(tokens)], skippedMute, skippedNoToken };
+  return {
+    recipients,
+    tokens: recipients.map((entry) => entry.token),
+    skippedMute,
+    skippedNoToken,
+  };
+}
+
+/**
+ * @param {unknown} code
+ * @returns {boolean}
+ */
+export function isStaleFcmRegistrationErrorCode(code) {
+  return (
+    typeof code === "string" && FCM_STALE_REGISTRATION_ERROR_CODES.includes(code)
+  );
+}
+
+/**
+ * Compare-and-clear gate — true only when stored token still equals the failed send token.
+ * @param {unknown} storedToken
+ * @param {unknown} failedToken
+ * @returns {boolean}
+ */
+export function shouldClearStoredFcmToken(storedToken, failedToken) {
+  if (typeof storedToken !== "string" || typeof failedToken !== "string") {
+    return false;
+  }
+  const current = storedToken.trim();
+  const failed = failedToken.trim();
+  return Boolean(current) && Boolean(failed) && current === failed;
+}
+
+/**
+ * Pick multicast failures that warrant a Firestore token clear (index-aligned).
+ * WHY: Keep Admin I/O thin and unit-test truncation / error-code filtering without FCM mocks.
+ * @param {Array<{ uid: string; token: string }>} chunk
+ * @param {Array<{ success?: boolean; error?: { code?: string } | null } | null | undefined>} responses
+ * @param {{ alreadyCleared?: number; clearMax?: number }} [opts]
+ * @returns {{
+ *   targets: Array<{ uid: string; token: string; code: string }>;
+ *   truncated: boolean;
+ * }}
+ */
+export function selectStaleFcmClearTargets(chunk, responses, opts = {}) {
+  const clearMax =
+    typeof opts.clearMax === "number" && opts.clearMax >= 0 ? opts.clearMax : 50;
+  const alreadyCleared =
+    typeof opts.alreadyCleared === "number" && opts.alreadyCleared > 0
+      ? Math.floor(opts.alreadyCleared)
+      : 0;
+  /** @type {Array<{ uid: string; token: string; code: string }>} */
+  const targets = [];
+  let truncated = false;
+  const list = Array.isArray(responses) ? responses : [];
+  const recipients = Array.isArray(chunk) ? chunk : [];
+
+  for (let idx = 0; idx < list.length; idx += 1) {
+    const resp = list[idx];
+    if (!resp || resp.success) continue;
+    const code = resp.error?.code;
+    if (!isStaleFcmRegistrationErrorCode(code)) continue;
+    const recipient = recipients[idx];
+    if (!recipient?.uid || typeof recipient.token !== "string" || !recipient.token) {
+      continue;
+    }
+    if (alreadyCleared + targets.length >= clearMax) {
+      truncated = true;
+      continue;
+    }
+    targets.push({
+      uid: recipient.uid,
+      token: recipient.token,
+      code: /** @type {string} */ (code),
+    });
+  }
+
+  return { targets, truncated };
 }
 
 /**
@@ -220,6 +317,32 @@ export function buildClubDispatchNotification(input) {
     // WHY: Explicit aps.alert prevents iOS from treating the message as badge-only silent push
     // when FCM's top-level notification mapping is incomplete on some APNs paths.
     apns: buildClubDispatchApnsPayload(notification),
+    // WHY: Bind Android 8+ channel so FCM does not fall back to the SDK default (no heads-up).
+    android: buildClubDispatchAndroidPayload(),
+  };
+}
+
+/**
+ * Android FCM block — high priority + club_dispatches channel for heads-up banners.
+ * @returns {{
+ *   priority: 'high';
+ *   notification: {
+ *     channelId: string;
+ *     priority: 'high';
+ *     defaultSound: true;
+ *     defaultVibrateTimings: true;
+ *   };
+ * }}
+ */
+export function buildClubDispatchAndroidPayload() {
+  return {
+    priority: "high",
+    notification: {
+      channelId: CLUB_DISPATCH_ANDROID_CHANNEL_ID,
+      priority: "high",
+      defaultSound: true,
+      defaultVibrateTimings: true,
+    },
   };
 }
 

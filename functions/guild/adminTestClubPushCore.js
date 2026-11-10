@@ -8,7 +8,10 @@ import {
   isApnsDeviceToken,
   resolvePushCredentialToFcm,
 } from "./apnsToFcmToken.js";
-import { buildClubDispatchApnsPayload } from "./clubProgressDispatch.js";
+import {
+  buildClubDispatchAndroidPayload,
+  buildClubDispatchApnsPayload,
+} from "./clubProgressDispatch.js";
 
 const TEST_NOTIFICATION = {
   title: "【戰隊快報 // 測試廣播】",
@@ -80,6 +83,8 @@ export async function runAdminTestClubDispatchPush(targetUid) {
       source: "admin-smoke",
     },
     apns: buildClubDispatchApnsPayload(TEST_NOTIFICATION),
+    // WHY: Same channel binding as production multicast — smoke must exercise heads-up path.
+    android: buildClubDispatchAndroidPayload(),
   });
 
   const nowIso = new Date().toISOString();

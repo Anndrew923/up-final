@@ -7,18 +7,22 @@ import {
   CLUB_DISPATCH_SUBCOLLECTION,
   GUILDS_COLLECTION,
 } from "../shared/constants.js";
-import { db, messaging } from "../shared/admin.js";
+import { db, FieldValue, messaging } from "../shared/admin.js";
 import {
   buildClubDispatchApnsPayload,
   buildClubDispatchNotification,
   consumeClubDispatchAttempt,
   filterDispatchRecipients,
   resolveBroadcastIntent,
+  selectStaleFcmClearTargets,
+  shouldClearStoredFcmToken,
 } from "./clubProgressDispatch.js";
 
 const FCM_MULTICAST_MAX = 500;
 /** Cap per-token failure lines so a bad token blast cannot flood Cloud Logging. */
 const FCM_TOKEN_FAILURE_LOG_MAX = 20;
+/** Cap stale-token clears per send so a mass uninstall wave cannot burn the TX budget. */
+const FCM_STALE_TOKEN_CLEAR_MAX = 50;
 
 /**
  * Structured skip log — surfaces broadcastSkipped in Cloud Logging without client Network.
@@ -98,25 +102,74 @@ export async function consumeClubDispatchRateSlot(uid) {
 }
 
 /**
- * @param {string[]} tokens
+ * Clear stale push credentials only when Firestore still holds the failed token.
+ * WHY: Avoid wiping a freshly rotated token that landed between send and cleanup.
+ * Contract: FieldValue.delete() — same shape as sign-out `upsertPushToken({ clear: true })`.
+ * @param {string} uid
+ * @param {string} failedToken
+ * @returns {Promise<boolean>} true when a clear write was applied
+ */
+export async function clearStaleFcmTokenIfUnchanged(uid, failedToken) {
+  if (typeof uid !== "string" || !uid) return false;
+  if (typeof failedToken !== "string" || !failedToken) return false;
+  const ref = db.collection("users").doc(uid);
+  let cleared = false;
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return;
+      const data = snap.data() || {};
+      if (!shouldClearStoredFcmToken(data.fcmToken, failedToken)) return;
+      const nowIso = new Date().toISOString();
+      tx.update(ref, {
+        // WHY: delete > null — keep hygiene identical to explicit sign-out clear.
+        fcmToken: FieldValue.delete(),
+        fcmPlatform: FieldValue.delete(),
+        apnsToken: FieldValue.delete(),
+        fcmTokenUpdatedAt: nowIso,
+        updatedAt: nowIso,
+      });
+      cleared = true;
+    });
+  } catch (err) {
+    console.warn("[ClubDispatch] Stale token clear failed (non-fatal)", {
+      uid,
+      message: err?.message ?? String(err),
+      tokenSuffix: failedToken.length > 8 ? failedToken.slice(-8) : null,
+    });
+    return false;
+  }
+  return cleared;
+}
+
+/**
+ * @param {Array<{ uid: string; token: string }>} recipients
  * @param {{
  *   notification: { title: string; body: string };
  *   data: Record<string, string>;
  *   apns?: { payload: { aps: Record<string, unknown> } };
+ *   android?: {
+ *     priority?: string;
+ *     notification?: Record<string, unknown>;
+ *   };
  * }} payload
  */
-export async function sendClubDispatchMulticast(tokens, payload) {
+export async function sendClubDispatchMulticast(recipients, payload) {
+  const list = Array.isArray(recipients) ? recipients : [];
   let fcmSuccessCount = 0;
   let fcmFailureCount = 0;
   let tokenFailuresLogged = 0;
+  let staleTokensCleared = 0;
 
-  for (let i = 0; i < tokens.length; i += FCM_MULTICAST_MAX) {
-    const chunk = tokens.slice(i, i + FCM_MULTICAST_MAX);
+  for (let i = 0; i < list.length; i += FCM_MULTICAST_MAX) {
+    const chunk = list.slice(i, i + FCM_MULTICAST_MAX);
+    const tokens = chunk.map((entry) => entry.token);
     try {
       const response = await messaging.sendEachForMulticast({
-        tokens: chunk,
+        tokens,
         notification: payload.notification,
         data: payload.data,
+        android: payload.android,
         // Prefer builder-supplied apns; fall back via shared helper (never badge-only).
         apns:
           payload.apns ??
@@ -137,14 +190,41 @@ export async function sendClubDispatchMulticast(tokens, payload) {
         if (tokenFailuresLogged >= FCM_TOKEN_FAILURE_LOG_MAX) continue;
         tokenFailuresLogged += 1;
         const err = resp.error;
+        const recipient = chunk[idx];
+        const failedToken =
+          typeof recipient?.token === "string" ? recipient.token : "";
         console.warn("[ClubDispatch] Multicast token failed", {
           code: err?.code ?? null,
           message: err?.message ?? String(err ?? "unknown"),
-          tokenSuffix:
-            typeof chunk[idx] === "string" && chunk[idx].length > 8
-              ? chunk[idx].slice(-8)
-              : null,
+          uid: recipient?.uid ?? null,
+          tokenSuffix: failedToken.length > 8 ? failedToken.slice(-8) : null,
         });
+      }
+
+      const { targets, truncated } = selectStaleFcmClearTargets(chunk, responses, {
+        alreadyCleared: staleTokensCleared,
+        clearMax: FCM_STALE_TOKEN_CLEAR_MAX,
+      });
+      if (truncated) {
+        console.info("[ClubDispatch] Stale token clear truncated", {
+          clearedSoFar: staleTokensCleared,
+          acceptedThisChunk: targets.length,
+          cap: FCM_STALE_TOKEN_CLEAR_MAX,
+        });
+      }
+      for (const target of targets) {
+        const cleared = await clearStaleFcmTokenIfUnchanged(
+          target.uid,
+          target.token
+        );
+        if (cleared) {
+          staleTokensCleared += 1;
+          console.info("[ClubDispatch] Cleared stale fcmToken", {
+            uid: target.uid,
+            code: target.code,
+            tokenSuffix: target.token.slice(-8),
+          });
+        }
       }
     } catch (err) {
       console.warn("[ClubDispatch] FCM multicast chunk failed (non-fatal)", {
@@ -157,7 +237,7 @@ export async function sendClubDispatchMulticast(tokens, payload) {
 
   // WHY: One totals line after all chunks — avoids ambiguous per-chunk "finished" noise.
   console.info(
-    `[ClubDispatch] Multicast finished: success=${fcmSuccessCount}, failure=${fcmFailureCount}`
+    `[ClubDispatch] Multicast finished: success=${fcmSuccessCount}, failure=${fcmFailureCount}, staleCleared=${staleTokensCleared}`
   );
   if (fcmFailureCount > tokenFailuresLogged) {
     console.info("[ClubDispatch] Multicast token failure logs truncated", {
@@ -167,7 +247,7 @@ export async function sendClubDispatchMulticast(tokens, payload) {
     });
   }
 
-  return { fcmSuccessCount, fcmFailureCount };
+  return { fcmSuccessCount, fcmFailureCount, staleTokensCleared };
 }
 
 /**
@@ -229,8 +309,8 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
 
   const prefs = await loadDispatchRecipientPrefs(broadcastBaseline.memberUids);
   const filtered = filterDispatchRecipients(broadcastBaseline.memberUids, uid, prefs);
-  const { tokens } = filtered;
-  if (tokens.length === 0) {
+  const { recipients } = filtered;
+  if (recipients.length === 0) {
     logClubDispatchSkipped(guildId, uid, "no-recipients", {
       memberCount: broadcastBaseline.memberUids?.length ?? 0,
       skippedMute: filtered.skippedMute,
@@ -306,12 +386,13 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
     guildId,
     publisherUid: uid,
     dispatchId,
-    tokenCount: tokens.length,
+    tokenCount: recipients.length,
     metricType: intent.metricType,
     delta: intent.delta,
   });
 
-  const { fcmSuccessCount, fcmFailureCount } = await sendClubDispatchMulticast(tokens, payload);
+  const { fcmSuccessCount, fcmFailureCount, staleTokensCleared } =
+    await sendClubDispatchMulticast(recipients, payload);
 
   try {
     await dispatchRef.set({ fcmSentCount: fcmSuccessCount }, { merge: true });
@@ -324,5 +405,6 @@ export async function runClubProgressBroadcastAfterFanOut(input) {
     dispatchId,
     fcmSuccessCount,
     fcmFailureCount,
+    staleTokensCleared,
   };
 }

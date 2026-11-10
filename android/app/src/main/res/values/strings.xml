@@ -9,4 +9,7 @@
     <string name="title_activity_main">UP</string>
     <string name="package_name">com.ultimatephysique.app</string>
     <string name="custom_url_scheme">com.ultimatephysique.app</string>
+    <!-- Club Progress Dispatch — Android 8+ NotificationChannel (system Settings label). -->
+    <string name="club_dispatches_channel_name">Club Dispatch Alerts</string>
+    <string name="club_dispatches_channel_description">Teammate breakthrough battle reports</string>
 </resources>

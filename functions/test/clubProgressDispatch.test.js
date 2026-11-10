@@ -4,16 +4,20 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildClubDispatchAndroidPayload,
   buildClubDispatchNotification,
   consumeClubDispatchAttempt,
   evaluateBroadcastDeltaGate,
   filterDispatchRecipients,
   formatDispatchScore,
+  isStaleFcmRegistrationErrorCode,
   normalizeBroadcastMetricType,
   resolveBroadcastIntent,
   resolveBroadcastNewScore,
   resolvePreviousScoreFromMember,
   sanitizeDispatchComment,
+  selectStaleFcmClearTargets,
+  shouldClearStoredFcmToken,
 } from "../guild/clubProgressDispatch.js";
 import { captureGuildBroadcastBaseline } from "../guild/guildScoreFanOut.js";
 import {
@@ -21,7 +25,10 @@ import {
   normalizeUpsertPushTokenRequest,
 } from "../guild/clubDispatchPrefsCallable.js";
 import { normalizeSyncGuildScoreRequest } from "../guild/syncGuildScoreCallable.js";
-import { CLUB_DISPATCH_MAX_PER_HOUR } from "../shared/constants.js";
+import {
+  CLUB_DISPATCH_ANDROID_CHANNEL_ID,
+  CLUB_DISPATCH_MAX_PER_HOUR,
+} from "../shared/constants.js";
 
 describe("sanitizeDispatchComment", () => {
   it("trims, collapses whitespace, strips <> and control chars", () => {
@@ -140,7 +147,7 @@ describe("evaluateBroadcastDeltaGate / resolveBroadcastIntent", () => {
 });
 
 describe("filterDispatchRecipients", () => {
-  it("excludes self, mute, and missing tokens", () => {
+  it("excludes self, mute, and missing tokens while keeping uid↔token map", () => {
     const prefs = {
       sender: { fcmToken: "token-sender-xxxxxxxx" },
       mutee: { muteClubDispatches: true, fcmToken: "token-mute-xxxxxxxxxx" },
@@ -148,14 +155,83 @@ describe("filterDispatchRecipients", () => {
       mate: { muteClubDispatches: false, fcmToken: "token-mate-xxxxxxxxxxx" },
       mate2: { fcmToken: "token-mate2-xxxxxxxxxx" },
     };
-    const { tokens, skippedMute, skippedNoToken } = filterDispatchRecipients(
+    const { recipients, tokens, skippedMute, skippedNoToken } = filterDispatchRecipients(
       ["sender", "mutee", "notoken", "mate", "mate2"],
       "sender",
       prefs
     );
     assert.deepEqual(tokens.sort(), ["token-mate-xxxxxxxxxxx", "token-mate2-xxxxxxxxxx"].sort());
+    assert.deepEqual(
+      recipients.sort((a, b) => a.uid.localeCompare(b.uid)),
+      [
+        { uid: "mate", token: "token-mate-xxxxxxxxxxx" },
+        { uid: "mate2", token: "token-mate2-xxxxxxxxxx" },
+      ]
+    );
     assert.equal(skippedMute, 1);
     assert.equal(skippedNoToken, 1);
+  });
+
+  it("dedupes identical tokens across members (first uid wins)", () => {
+    const prefs = {
+      a: { fcmToken: "shared-token-xxxxxxxxxx" },
+      b: { fcmToken: "shared-token-xxxxxxxxxx" },
+    };
+    const { recipients, tokens } = filterDispatchRecipients(["a", "b"], "sender", prefs);
+    assert.deepEqual(tokens, ["shared-token-xxxxxxxxxx"]);
+    assert.deepEqual(recipients, [{ uid: "a", token: "shared-token-xxxxxxxxxx" }]);
+  });
+});
+
+describe("isStaleFcmRegistrationErrorCode", () => {
+  it("matches NotRegistered / InvalidRegistration Admin codes only", () => {
+    assert.equal(
+      isStaleFcmRegistrationErrorCode("messaging/registration-token-not-registered"),
+      true
+    );
+    assert.equal(
+      isStaleFcmRegistrationErrorCode("messaging/invalid-registration-token"),
+      true
+    );
+    assert.equal(isStaleFcmRegistrationErrorCode("messaging/internal-error"), false);
+    assert.equal(isStaleFcmRegistrationErrorCode(null), false);
+  });
+});
+
+describe("shouldClearStoredFcmToken / selectStaleFcmClearTargets", () => {
+  it("compare-and-clear only when stored token still matches failed token", () => {
+    assert.equal(shouldClearStoredFcmToken("abc", "abc"), true);
+    assert.equal(shouldClearStoredFcmToken("  abc  ", "abc"), true);
+    assert.equal(shouldClearStoredFcmToken("new-token", "abc"), false);
+    assert.equal(shouldClearStoredFcmToken(null, "abc"), false);
+    assert.equal(shouldClearStoredFcmToken("", "abc"), false);
+  });
+
+  it("selects index-aligned stale failures and respects clearMax", () => {
+    const chunk = [
+      { uid: "u1", token: "token-one-xxxxxxxxxx" },
+      { uid: "u2", token: "token-two-xxxxxxxxxx" },
+      { uid: "u3", token: "token-three-xxxxxxxx" },
+    ];
+    const responses = [
+      { success: false, error: { code: "messaging/registration-token-not-registered" } },
+      { success: false, error: { code: "messaging/internal-error" } },
+      { success: false, error: { code: "messaging/invalid-registration-token" } },
+    ];
+    const selected = selectStaleFcmClearTargets(chunk, responses, { clearMax: 10 });
+    assert.deepEqual(selected.targets, [
+      { uid: "u1", token: "token-one-xxxxxxxxxx", code: "messaging/registration-token-not-registered" },
+      { uid: "u3", token: "token-three-xxxxxxxx", code: "messaging/invalid-registration-token" },
+    ]);
+    assert.equal(selected.truncated, false);
+
+    const capped = selectStaleFcmClearTargets(chunk, responses, {
+      alreadyCleared: 49,
+      clearMax: 50,
+    });
+    assert.equal(capped.targets.length, 1);
+    assert.equal(capped.targets[0].uid, "u1");
+    assert.equal(capped.truncated, true);
   });
 });
 
@@ -180,6 +256,17 @@ describe("buildClubDispatchNotification", () => {
     assert.equal(n.apns.payload.aps.alert.title, "【戰隊快報 // ARN】");
     assert.equal(n.apns.payload.aps.sound, "default");
     assert.equal(n.apns.payload.aps.badge, 1);
+    assert.equal(n.android.priority, "high");
+    assert.equal(n.android.notification.channelId, CLUB_DISPATCH_ANDROID_CHANNEL_ID);
+    assert.equal(n.android.notification.priority, "high");
+    assert.equal(n.android.notification.defaultSound, true);
+    assert.equal(n.android.notification.defaultVibrateTimings, true);
+  });
+
+  it("exposes a reusable Android channel payload builder", () => {
+    const android = buildClubDispatchAndroidPayload();
+    assert.equal(android.notification.channelId, "club_dispatches");
+    assert.equal(android.priority, "high");
   });
 
   it("omits quote clause when comment empty", () => {

@@ -3,4 +3,6 @@
     <!-- WHY: zh-HK launcher — same short brand as zh-TW / generic zh -->
     <string name="app_name">最強肉體</string>
     <string name="title_activity_main">最強肉體</string>
+    <string name="club_dispatches_channel_name">戰隊戰報通知</string>
+    <string name="club_dispatches_channel_description">隊友突破戰報推播</string>
 </resources>

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const checkPermissions = vi.fn();
 const requestPermissions = vi.fn();
 const register = vi.fn();
+const createChannel = vi.fn();
 const removeAllDeliveredNotifications = vi.fn();
 const addListener = vi.fn<(event: string, cb: (payload: unknown) => void) => Promise<{ remove: () => Promise<void> }>>();
 const appAddListener = vi.fn();
@@ -34,6 +35,7 @@ vi.mock('@capacitor/push-notifications', () => ({
     checkPermissions: () => checkPermissions(),
     requestPermissions: () => requestPermissions(),
     register: () => register(),
+    createChannel: (channel: unknown) => createChannel(channel),
     removeAllDeliveredNotifications: () => removeAllDeliveredNotifications(),
     addListener: (event: string, cb: (payload: unknown) => void) => addListener(event, cb),
   },
@@ -53,6 +55,7 @@ describe('pushNotificationService', () => {
     checkPermissions.mockReset();
     requestPermissions.mockReset();
     register.mockReset();
+    createChannel.mockReset();
     removeAllDeliveredNotifications.mockReset();
     addListener.mockReset();
     appAddListener.mockReset();
@@ -63,6 +66,7 @@ describe('pushNotificationService', () => {
     navigateFromPushRoute.mockReturnValue(true);
     upsertPushToken.mockResolvedValue({ ok: true, cleared: false, fcmPlatform: 'ios' });
     removeAllDeliveredNotifications.mockResolvedValue(undefined);
+    createChannel.mockResolvedValue(undefined);
 
     addListener.mockImplementation(async (_event: string, _cb: unknown) => ({
       remove: vi.fn(async () => undefined),
@@ -188,8 +192,44 @@ describe('pushNotificationService', () => {
     expect(addListener).toHaveBeenCalled();
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
+    expect(createChannel).not.toHaveBeenCalled();
     expect(removeAllDeliveredNotifications).toHaveBeenCalled();
     expect(appAddListener).toHaveBeenCalledWith('appStateChange', expect.any(Function));
+  });
+
+  it('creates HIGH club_dispatches channel on Android attach', async () => {
+    getPlatform.mockReturnValue('android');
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    await pushNotificationService.attachListeners();
+    expect(createChannel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'club_dispatches',
+        importance: 5,
+        vibration: true,
+      })
+    );
+    const channelArg = createChannel.mock.calls[0]?.[0] as { name?: string };
+    expect(typeof channelArg?.name).toBe('string');
+    expect(channelArg.name?.length).toBeGreaterThan(0);
+  });
+
+  it('retries createChannel after a failed ensure (androidChannelEnsured stays false)', async () => {
+    getPlatform.mockReturnValue('android');
+    createChannel.mockRejectedValueOnce(new Error('channel-failed'));
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    await pushNotificationService.attachListeners();
+    expect(createChannel).toHaveBeenCalledTimes(1);
+
+    createChannel.mockClear();
+    createChannel.mockResolvedValue(undefined);
+    await pushNotificationService.ensureClubDispatchAndroidChannel();
+    expect(createChannel).toHaveBeenCalledTimes(1);
   });
 
   it('clears delivered notifications when app becomes active', async () => {

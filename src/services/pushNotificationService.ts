@@ -11,6 +11,7 @@ import {
   type ActionPerformed,
 } from '@capacitor/push-notifications';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { buildClubDispatchAndroidChannel } from '../logic/core/pushNotificationChannel';
 import {
   resolvePushNotificationRoute,
   resolvePushPlatform,
@@ -26,6 +27,7 @@ let listenersAttachInFlight: Promise<void> | null = null;
 let registerInFlight: Promise<boolean> | null = null;
 let appStateHandle: PluginListenerHandle | null = null;
 let foregroundCleanupAttached = false;
+let androidChannelEnsured = false;
 
 async function removeListener(key: ListenerKey): Promise<void> {
   const handle = listenerHandles[key];
@@ -68,6 +70,29 @@ async function onRegistration(token: Token): Promise<void> {
 
 function onRegistrationError(error: unknown): void {
   console.error('[Push] Native registration failed:', error);
+}
+
+/**
+ * Ensure Android 8+ HIGH-importance channel exists before any FCM delivery.
+ * Idempotent; no-op on iOS/web. Never throws.
+ */
+export async function ensureClubDispatchAndroidChannel(): Promise<void> {
+  if (!isCapacitorNativePlatform()) return;
+  if (Capacitor.getPlatform() !== 'android') return;
+  if (androidChannelEnsured) return;
+  try {
+    const channel = buildClubDispatchAndroidChannel();
+    await PushNotifications.createChannel({
+      id: channel.id,
+      name: channel.name,
+      importance: channel.importance,
+      vibration: channel.vibration,
+    });
+    androidChannelEnsured = true;
+    console.info('[Push] Android channel ready', channel.id);
+  } catch (error) {
+    console.warn('[Push] createChannel failed', error);
+  }
 }
 
 function onActionPerformed(action: ActionPerformed): void {
@@ -179,6 +204,7 @@ async function detachForegroundCleanup(): Promise<void> {
 export async function attachPushListeners(): Promise<void> {
   if (!isCapacitorNativePlatform()) return;
   try {
+    await ensureClubDispatchAndroidChannel();
     await ensureListeners();
     await attachPushForegroundCleanup();
   } catch (error) {
@@ -198,6 +224,7 @@ export async function registerPushForGuildDispatches(): Promise<boolean> {
   registerInFlight = (async () => {
     try {
       console.info('[Push] Starting registration check...');
+      await ensureClubDispatchAndroidChannel();
       await ensureListeners();
 
       let status: PermissionStatus = await PushNotifications.checkPermissions();
@@ -265,6 +292,7 @@ export async function clearPushOnSignOut(): Promise<void> {
 export async function __resetPushNotificationServiceForTests(): Promise<void> {
   registerInFlight = null;
   listenersAttachInFlight = null;
+  androidChannelEnsured = false;
   await detachListeners();
   await detachForegroundCleanup();
 }
@@ -274,4 +302,5 @@ export const pushNotificationService = {
   registerForGuildDispatches: registerPushForGuildDispatches,
   clearOnSignOut: clearPushOnSignOut,
   clearDeliveredNotificationsAndBadge,
+  ensureClubDispatchAndroidChannel,
 };

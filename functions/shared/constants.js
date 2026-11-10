@@ -114,6 +114,11 @@ export const CLUB_DISPATCH_RATE_LIMITS_COLLECTION = "club_dispatch_rate_limits";
 export const CLUB_DISPATCH_MAX_PER_HOUR = 5;
 export const CLUB_DISPATCH_COMMENT_MAX_LEN = 25;
 export const CLUB_DISPATCH_SUBCOLLECTION = "dispatches";
+/**
+ * Android 8+ NotificationChannel id for Club Progress Dispatch heads-up banners.
+ * Keep in sync with client `CLUB_DISPATCH_ANDROID_CHANNEL.id` + Manifest meta-data.
+ */
+export const CLUB_DISPATCH_ANDROID_CHANNEL_ID = "club_dispatches";
 /** Invite-code mint retries when `guild_invite_codes/{code}` collides. */
 export const GUILD_INVITE_CODE_MAX_MINT_ATTEMPTS = 5;
 export const GUILD_NAME_MIN_LEN = 2;

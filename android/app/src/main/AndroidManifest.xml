@@ -33,6 +33,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!--
+          Club Progress Dispatch: FCM fallback channel when payload omits channelId.
+          Must match PushNotifications.createChannel({ id: club_dispatches }) + Cloud Functions android.notification.channelId.
+        -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="club_dispatches" />
     </application>
 
     <!-- Permissions -->
