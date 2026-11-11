@@ -27,6 +27,18 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.syncBtn') return 'Sync';
       if (key === 'assessment.breakthrough.syncDashboardThenArenaWithClub') return 'Sync Arena+Club';
       if (key === 'assessment.breakthrough.syncDashboardThenArenaGuildOnly') return 'Sync Club Only';
+      if (key === 'assessment.breakthrough.dashboardAndArenaGuildSuccess') {
+        return '✓ 主控台、全球天梯與俱樂部已全數同步';
+      }
+      if (key === 'assessment.breakthrough.dashboardAndGuildSuccess') {
+        return '本機主控台已更新，俱樂部私榜已同步（未公開全球）。';
+      }
+      if (key === 'assessment.breakthrough.dashboardAndArenaSuccess') {
+        return '本機主控台與天梯已同步完成。';
+      }
+      if (key === 'assessment.breakthrough.dashboardPersistedOnly') {
+        return '本機主控台已更新。天梯上傳未完成或已略過，請見下方說明。';
+      }
       if (key === 'assessment.hallSpectrum.viewEntry') return '名人堂光譜 ➔';
       if (key === 'assessment.hallSpectrum.viewEntryAria') return '開啟名人堂常模光譜';
       if (key === 'crew.dispatch.modalKicker') return 'Club Dispatch';
@@ -296,18 +308,32 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
   let root: Root;
   let host: HTMLDivElement;
 
+  const emptySummary = {
+    attempted: 0,
+    updated: 0,
+    unchanged: 0,
+    avatarPatched: 0,
+    identityPatched: 0,
+    errors: 0,
+    invalidInput: 0,
+    internal: 0,
+    rateLimited: 0,
+    proRequired: 0,
+  };
+
   const dualSync = {
-    syncPageGlobal: vi.fn(async () => undefined),
+    syncPageGlobal: vi.fn(async (): Promise<{ ok: boolean }> => ({ ok: true })),
     syncPageGuild: vi.fn(
       async (_options?: {
         broadcast?: boolean;
         comment?: string;
         broadcastMetricType?: string;
-      }) => undefined
+        afterArena?: boolean;
+      }): Promise<{ ok: boolean }> => ({ ok: true })
     ),
     busy: false,
-    summary: null,
-    failures: [],
+    summary: null as typeof emptySummary | null,
+    failures: [] as { metric: string; reason: string }[],
     gate: 'ok' as const,
     targetCount: 1,
     overallScore: 88,
@@ -315,7 +341,12 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     clearFeedback: vi.fn(),
     hasGuild: true,
     membershipSurface: 'dual' as const,
-    lastCloudOutcome: null,
+    lastCloudOutcome: null as
+      | 'arena'
+      | 'guild'
+      | 'arena+guild'
+      | 'dashboard-only'
+      | null,
   };
 
   async function flushPipeline(): Promise<void> {
@@ -494,6 +525,97 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     expect(dualSync.syncPageGuild.mock.calls[0]?.[0]).toMatchObject({
       broadcast: true,
       broadcastMetricType: 'strength',
+      afterArena: true,
     });
   });
+
+  it('skips guild leg when global sync returns ok:false', async () => {
+    dualSync.syncPageGlobal.mockResolvedValueOnce({ ok: false });
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGlobal).toHaveBeenCalled();
+    expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
+  });
+
+  it('shows arena+guild banner without guild-only not-public copy', async () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    // Simulate hook composite outcome after both legs; session persist flag stays true.
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={{
+            ...dualSync,
+            lastCloudOutcome: 'arena+guild',
+            summary: { ...emptySummary, attempted: 2, updated: 2 },
+          }}
+        />
+      );
+    });
+
+    const statusText = Array.from(document.querySelectorAll('[role="status"]'))
+      .map((el) => el.textContent ?? '')
+      .join('\n');
+    expect(statusText).toContain('全數同步');
+    expect(statusText).not.toContain('未公開全球');
+  });
 });
+
+

@@ -4,6 +4,11 @@ import type { AssessmentLadderUploadBundle } from '../logic/core/assessmentLadde
 import { mergeMergedScoresForAssessmentUpload } from '../logic/core/assessmentLadderSupplemental';
 import type { ClubLadderDimension } from '../logic/core/guildRadarScores';
 import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
+import type { BreakthroughCloudOutcome } from '../logic/core/breakthroughArenaPipeline';
+import {
+  didArenaBatchLegSucceed,
+  resolveCloudOutcomeAfterGuildSuccess,
+} from '../logic/core/breakthroughArenaPipeline';
 import { resolveMembershipSyncSurface } from '../logic/core/membershipSyncSurface';
 import {
   buildLeaderboardSyncTargets,
@@ -60,7 +65,11 @@ export type AssessmentLadderSyncController = Pick<
   | 'lastCloudOutcome'
 >;
 
-export type AssessmentSyncCloudOutcome = 'arena' | 'guild' | null;
+/** Alias SSOT cloud outcome for assessment sync controller consumers. */
+export type AssessmentSyncCloudOutcome = BreakthroughCloudOutcome;
+
+/** Explicit leg result — callers must not treat early-return / hard-fail as success. */
+export type AssessmentSyncLegResult = { ok: boolean };
 
 export interface UseLeaderboardSyncAssessmentPageOptions {
   scope: AssessmentLadderSyncScope;
@@ -198,18 +207,32 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       broadcast?: boolean;
       comment?: string;
       broadcastMetricType?: ClubLadderDimension;
-    }) => {
+      /**
+       * Dual pipeline second leg — keep arena batch tally and promote outcome to arena+guild.
+       * WHY: Clearing summary/outcome here historically made global+club look like club-only.
+       */
+      afterArena?: boolean;
+    }): Promise<AssessmentSyncLegResult> => {
       const activeMerged = mergedForUploadRef.current;
       const activeSignature = targetsSignatureRef.current;
       const activeOverall = overallScoreRef.current;
+      const afterArena = options?.afterArena === true;
 
-      setSummaryState(null);
-      setLastCloudOutcome(null);
+      if (!afterArena) {
+        setSummaryState(null);
+        setLastCloudOutcome(null);
+      }
 
-      if (!Number.isFinite(activeOverall) || activeOverall <= 0) return;
+      if (!Number.isFinite(activeOverall) || activeOverall <= 0) {
+        if (!afterArena) setLastCloudOutcome('dashboard-only');
+        return { ok: false };
+      }
 
       const user = getCurrentFirebaseUser();
-      if (!user || user.isAnonymous) return;
+      if (!user || user.isAnonymous) {
+        if (!afterArena) setLastCloudOutcome('dashboard-only');
+        return { ok: false };
+      }
 
       setBusy(true);
       try {
@@ -232,31 +255,60 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
             : {}),
         });
         if (!result.ok) {
-          setSummaryState({
-            signature: activeSignature,
-            summary: createEmptyLeaderboardSyncRunSummary(),
-            failures: [{ metric: 'ladderScore', reason: result.reason }],
-          });
-          setLastCloudOutcome(null);
-          return;
+          if (!afterArena) {
+            setSummaryState({
+              signature: activeSignature,
+              summary: createEmptyLeaderboardSyncRunSummary(),
+              failures: [{ metric: 'ladderScore', reason: result.reason }],
+            });
+            setLastCloudOutcome('dashboard-only');
+          } else {
+            // Keep arena tally/outcome; append guild failure without claiming dual success.
+            setSummaryState((prev) => {
+              if (!prev || prev.signature !== activeSignature) {
+                return {
+                  signature: activeSignature,
+                  summary: createEmptyLeaderboardSyncRunSummary(),
+                  failures: [{ metric: 'ladderScore', reason: result.reason }],
+                };
+              }
+              return {
+                ...prev,
+                failures: [
+                  ...prev.failures,
+                  { metric: 'ladderScore', reason: result.reason },
+                ],
+              };
+            });
+          }
+          return { ok: false };
         }
         if (result.skipped) {
-          setLastCloudOutcome(null);
+          if (!afterArena) setLastCloudOutcome('dashboard-only');
           onFinishedRef.current?.();
-          return;
+          return { ok: false };
         }
         invalidateGuildLadderCache(result.guildId ?? undefined);
-        const tally = createEmptyLeaderboardSyncRunSummary();
-        tally.attempted = 1;
-        tally.updated = 1;
-        setSummaryState({
-          signature: activeSignature,
-          summary: tally,
-          failures: [],
-        });
-        setLastCloudOutcome('guild');
-        void hapticService.trigger('success');
+        if (afterArena) {
+          // Preserve global shard HUD; only promote the composite outcome.
+          setLastCloudOutcome(resolveCloudOutcomeAfterGuildSuccess(true));
+        } else {
+          const tally = createEmptyLeaderboardSyncRunSummary();
+          tally.attempted = 1;
+          tally.updated = 1;
+          setSummaryState({
+            signature: activeSignature,
+            summary: tally,
+            failures: [],
+          });
+          setLastCloudOutcome(resolveCloudOutcomeAfterGuildSuccess(false));
+        }
+        // WHY: Dual second leg — arena already fired success haptic; avoid double buzz.
+        if (!afterArena) {
+          void hapticService.trigger('success');
+        }
         onFinishedRef.current?.();
+        return { ok: true };
       } finally {
         setBusy(false);
       }
@@ -264,7 +316,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     []
   );
 
-  const syncPageGlobal = useCallback(async () => {
+  const syncPageGlobal = useCallback(async (): Promise<AssessmentSyncLegResult> => {
     const activeTargets = targetsRef.current;
     const activeMerged = mergedForUploadRef.current;
     const activeSignature = targetsSignatureRef.current;
@@ -273,17 +325,27 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     setSummaryState(null);
     setLastCloudOutcome(null);
 
-    if (activeTargets.length === 0 || activeGate !== 'ok') return;
+    if (activeTargets.length === 0 || activeGate !== 'ok') {
+      // WHY: Explicit non-success so dual pipelines must not continue into guild as if arena ran.
+      setLastCloudOutcome('dashboard-only');
+      return { ok: false };
+    }
 
     const user = getCurrentFirebaseUser();
-    if (!user || user.isAnonymous) return;
+    if (!user || user.isAnonymous) {
+      setLastCloudOutcome('dashboard-only');
+      return { ok: false };
+    }
 
     const snap = readEntitlementSnapshot();
     setBusy(true);
     try {
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
-      if (!identity) return;
+      if (!identity) {
+        setLastCloudOutcome('dashboard-only');
+        return { ok: false };
+      }
 
       const batch = await runLeaderboardBatchUpload({
         targets: activeTargets,
@@ -301,6 +363,21 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         summary: batch.summary,
         failures: batch.failures,
       });
+      const arenaOk = didArenaBatchLegSucceed(batch.summary, batch.failures);
+      if (!arenaOk) {
+        // WHY: Hard shard failure must not unlock dual guild follow-up or claim arena success.
+        setLastCloudOutcome('dashboard-only');
+        if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
+          hapticService.fireLeaderboardUploadResult({
+            ok: false,
+            reason: 'avatar-upload-failed',
+            updated: false,
+          });
+        }
+        void queueStructuredProfileAfterRadarSubmit(batch);
+        onFinishedRef.current?.();
+        return { ok: false };
+      }
       setLastCloudOutcome('arena');
       if (
         batch.summary.updated > 0 ||
@@ -308,15 +385,10 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         (batch.summary.identityPatched ?? 0) > 0
       ) {
         void hapticService.trigger('success');
-      } else if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
-        hapticService.fireLeaderboardUploadResult({
-          ok: false,
-          reason: 'avatar-upload-failed',
-          updated: false,
-        });
       }
       void queueStructuredProfileAfterRadarSubmit(batch);
       onFinishedRef.current?.();
+      return { ok: true };
     } finally {
       setBusy(false);
     }

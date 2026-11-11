@@ -9,7 +9,7 @@ import {
   resolveBroadcastMetricFromBreakthrough,
   shouldOfferClubDispatchFlow,
 } from '../../logic/core/clubProgressDispatchUi';
-import { resolvePublishSuccessBannerKey } from '../../logic/core/membershipSyncSurface';
+import { resolveBreakthroughPipelineCopyKey } from '../../logic/core/membershipSyncSurface';
 import { shouldShowLadderSyncFeedback } from '../../logic/core/ladderSyncFeedback';
 import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -166,10 +166,15 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         if (intent === 'guild') {
           await sync.syncPageGuild(guildBroadcastOptions);
         } else {
-          await sync.syncPageGlobal();
-          // WHY: Dual "global + club" CTA must still publish club score; broadcast rides this leg.
+          const globalResult = await sync.syncPageGlobal();
+          // WHY: Dual "global + club" must not run guild after a failed/aborted arena leg
+          // (would look like club-only success and erase the "global incomplete" signal).
           if (membershipSurface === 'dual' && guildBroadcastOptions) {
-            await sync.syncPageGuild(guildBroadcastOptions);
+            if (!globalResult.ok) return;
+            await sync.syncPageGuild({
+              ...guildBroadcastOptions,
+              afterArena: true,
+            });
           }
         }
       } finally {
@@ -433,17 +438,18 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                 {pipelineBanner !== 'none' ? (
                   <p
                     className={`mt-3 text-sm ${
-                      pipelineBanner === 'full-success' || pipelineBanner === 'guild-success'
+                      pipelineBanner === 'full-success' ||
+                      pipelineBanner === 'guild-success' ||
+                      pipelineBanner === 'arena-guild-success'
                         ? 'text-emerald-400/90'
                         : 'text-amber-300/90'
                     }`}
                     role="status"
                   >
-                    {pipelineBanner === 'full-success'
-                      ? t(resolvePublishSuccessBannerKey('arena'))
-                      : pipelineBanner === 'guild-success'
-                        ? t(resolvePublishSuccessBannerKey('guild'))
-                        : t('assessment.breakthrough.dashboardPersistedOnly')}
+                    {t(
+                      resolveBreakthroughPipelineCopyKey(pipelineBanner) ??
+                        'assessment.breakthrough.dashboardPersistedOnly'
+                    )}
                   </p>
                 ) : null}
 
