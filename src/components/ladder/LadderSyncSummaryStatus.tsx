@@ -40,6 +40,7 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
 
   const avatarBlocked = summary.attempted === 0 && hasAvatarUploadSyncFailure(failures);
   const avatarSoftFail = summary.attempted > 0 && hasAvatarUploadSyncFailure(failures);
+  const identityRequired = failures.some((f) => f.reason === 'identity-required');
   const identityOnlySuccess =
     summary.updated === 0 &&
     (summary.identityPatched ?? 0) > 0 &&
@@ -68,9 +69,12 @@ const LadderSyncSummaryStatus: FC<LadderSyncSummaryStatusProps> = ({
   let statusText: string | null = null;
   let tone = 'text-zinc-400';
 
-  // Priority: avatar preflight → identity/portrait-only soft wins → batch HUD →
+  // Priority: identity gate → avatar preflight → identity/portrait-only soft wins → batch HUD →
   // avatar soft-fail only when score path did not already succeed (don't mask a live write).
-  if (avatarBlocked) {
+  if (identityRequired) {
+    statusText = t('ladder.syncAll.failureReason.identity-required');
+    tone = 'text-amber-400/90';
+  } else if (avatarBlocked) {
     statusText = t('ladder.upload.resultAvatarUploadFailed');
     tone = 'text-amber-400/90';
   } else if (avatarOnlySuccess) {

@@ -38,6 +38,12 @@ describe('ladder upload i18n', () => {
 
     const appCheckReason = i18n.t('ladder.syncAll.failureReason.app-check', { ns: 'common' });
     expect(appCheckReason).not.toBe('ladder.syncAll.failureReason.app-check');
+
+    const identityReason = i18n.t('ladder.syncAll.failureReason.identity-required', {
+      ns: 'common',
+    });
+    expect(identityReason).not.toBe('ladder.syncAll.failureReason.identity-required');
+    expect(identityReason.length).toBeGreaterThan(4);
     expect(appCheckReason).toContain('App Check');
 
     const cooldown = i18n.t('ladder.syncAll.fullSyncCooldown', {

@@ -183,7 +183,8 @@
         "avatar-upload-failed": "大頭照上傳失敗（已略過頭像，分數仍會同步）",
         "app-check": "安全驗證失敗（App Check / Play Integrity）。請確認以 Play 內部測試安裝，且 Firebase 已登記 Play App Signing 指紋。",
         "unauthenticated": "尚未登入或登入已失效",
-        "permission-denied": "權限不足，無法寫入天梯"
+        "permission-denied": "權限不足，無法寫入天梯",
+        "identity-required": "請先設定天梯顯示名稱，再同步全球天梯"
       },
       "fullSyncCooldown": "全量同步冷卻中，請於 {{resetTime}} 後再試。",
       "fullSyncDailyCap": "今日全量同步已達 3 次上限。可改用各評測頁單分片上傳，或於 {{resetTime}} 後再試。",

@@ -326,13 +326,18 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     setLastCloudOutcome(null);
 
     if (activeTargets.length === 0 || activeGate !== 'ok') {
-      // WHY: Explicit non-success so dual pipelines must not continue into guild as if arena ran.
+      // WHY: Arena leg failed — dual modal may still run guild; outcome must not claim arena success.
       setLastCloudOutcome('dashboard-only');
       return { ok: false };
     }
 
     const user = getCurrentFirebaseUser();
     if (!user || user.isAnonymous) {
+      setSummaryState({
+        signature: activeSignature,
+        summary: createEmptyLeaderboardSyncRunSummary(),
+        failures: [{ metric: 'ladderScore', reason: 'anonymous' }],
+      });
       setLastCloudOutcome('dashboard-only');
       return { ok: false };
     }
@@ -343,6 +348,13 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
       const identity = getLadderUploadIdentity();
       if (!identity) {
+        // WHY: Modal should open LadderIdentitySheet first; this is the hard safety net
+        // so HUD never looks like a silent no-op when display name is missing.
+        setSummaryState({
+          signature: activeSignature,
+          summary: createEmptyLeaderboardSyncRunSummary(),
+          failures: [{ metric: 'ladderScore', reason: 'identity-required' }],
+        });
         setLastCloudOutcome('dashboard-only');
         return { ok: false };
       }
@@ -365,7 +377,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       });
       const arenaOk = didArenaBatchLegSucceed(batch.summary, batch.failures);
       if (!arenaOk) {
-        // WHY: Hard shard failure must not unlock dual guild follow-up or claim arena success.
+        // WHY: Hard shard failure → arena outcome stays incomplete; dual guild may still run separately.
         setLastCloudOutcome('dashboard-only');
         if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
           hapticService.fireLeaderboardUploadResult({

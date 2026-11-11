@@ -183,7 +183,8 @@
         "avatar-upload-failed": "Avatar upload failed (scores still sync without a new portrait)",
         "app-check": "Security check failed (App Check / Play Integrity). Use a Play Internal Testing install and ensure the Play App Signing certificate is registered in Firebase.",
         "unauthenticated": "Sign-in required or session expired",
-        "permission-denied": "Permission denied for ladder writes"
+        "permission-denied": "Permission denied for ladder writes",
+        "identity-required": "Set a ladder display name before syncing to the global ladder"
       },
       "fullSyncCooldown": "Full sync is on cooldown. Try again after {{resetTime}}.",
       "fullSyncDailyCap": "Daily full sync limit reached (3 per day). Use per-page uploads, or try again after {{resetTime}}.",

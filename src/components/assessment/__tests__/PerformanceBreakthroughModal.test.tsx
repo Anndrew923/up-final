@@ -77,7 +77,24 @@ vi.mock('../../../hooks/useLadderUploadGateSheet', () => ({
   }),
 }));
 
+const ensureIdentityReadyMock = vi.fn(() => true);
+const closeIdentitySheetMock = vi.fn();
+
+vi.mock('../../../hooks/useLadderIdentityUploadGate', () => ({
+  useLadderIdentityUploadGate: () => ({
+    identity: { ready: true, displayName: 'ArenaBoss', initial: 'A' },
+    identitySheetOpen: false,
+    openIdentitySheet: vi.fn(),
+    closeIdentitySheet: closeIdentitySheetMock,
+    ensureIdentityReady: ensureIdentityReadyMock,
+  }),
+}));
+
 vi.mock('../../ladder/LadderUploadGateSheetPortal', () => ({
+  default: () => null,
+}));
+
+vi.mock('../../ladder/LadderIdentitySheet', () => ({
   default: () => null,
 }));
 
@@ -365,6 +382,9 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     dualSync.syncPageGuild.mockClear();
     dualSync.syncPageGlobal.mockClear();
     dualSync.clearFeedback.mockClear();
+    ensureIdentityReadyMock.mockReset();
+    ensureIdentityReadyMock.mockReturnValue(true);
+    closeIdentitySheetMock.mockClear();
   });
 
   afterEach(() => {
@@ -529,7 +549,35 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     });
   });
 
-  it('skips guild leg when global sync returns ok:false', async () => {
+  it('opens identity gate before club dispatch when display name missing', () => {
+    ensureIdentityReadyMock.mockReturnValueOnce(false);
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(ensureIdentityReadyMock).toHaveBeenCalled();
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
+    expect(dualSync.syncPageGlobal).not.toHaveBeenCalled();
+    expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
+  });
+
+  it('still runs guild leg when global sync returns ok:false (dual decouple)', async () => {
     dualSync.syncPageGlobal.mockResolvedValueOnce({ ok: false });
 
     act(() => {
@@ -561,7 +609,11 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     });
 
     expect(dualSync.syncPageGlobal).toHaveBeenCalled();
-    expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGuild.mock.calls[0]?.[0]).toMatchObject({
+      broadcast: true,
+      afterArena: false,
+    });
   });
 
   it('shows arena+guild banner without guild-only not-public copy', async () => {

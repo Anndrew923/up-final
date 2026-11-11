@@ -15,7 +15,9 @@ import { waitForReactSettlement } from '../../lib/reactSettlement';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import type { AssessmentLadderSyncController } from '../../hooks/useLeaderboardSyncAssessmentPage';
+import { useLadderIdentityUploadGate } from '../../hooks/useLadderIdentityUploadGate';
 import { useLadderUploadGateSheet } from '../../hooks/useLadderUploadGateSheet';
+import LadderIdentitySheet from '../ladder/LadderIdentitySheet';
 import LadderUploadGateSheetPortal from '../ladder/LadderUploadGateSheetPortal';
 import LadderSyncSummaryStatus from '../ladder/LadderSyncSummaryStatus';
 import AuraReactiveFrame from './AuraReactiveFrame';
@@ -81,6 +83,11 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const [clubDispatchOpen, setClubDispatchOpen] = useState(false);
   const [pendingClubIntent, setPendingClubIntent] = useState<ClubSyncIntent | null>(null);
   const {
+    identitySheetOpen,
+    closeIdentitySheet,
+    ensureIdentityReady,
+  } = useLadderIdentityUploadGate();
+  const {
     gateSheetOpen,
     gateSheetKind,
     tryOpenGateSheet,
@@ -88,8 +95,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     confirmGateSheet,
     resetGateSheet,
   } = useLadderUploadGateSheet(ROUTES.ladder);
-  // WHY: Yield trap while Hall or club-dispatch sheet is stacked above this celebration.
-  const nestedOverlayOpen = spectrumOverlayOpen || clubDispatchOpen;
+  // WHY: Yield trap while Hall / club-dispatch / identity sheet is stacked above this celebration.
+  const nestedOverlayOpen = spectrumOverlayOpen || clubDispatchOpen || identitySheetOpen;
   useFocusTrap(dialogRef, open && !nestedOverlayOpen);
 
   const isDashboardSyncing = syncing || syncPending;
@@ -134,6 +141,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       } else {
         if (arenaSync.targetCount === 0) return;
         if (tryOpenGateSheet(arenaSync.gate)) return;
+        // WHY: Shared gate with sync bars — never silent-fail global without identity UX.
+        if (!ensureIdentityReady()) return;
       }
 
       setPipelineBusy(true);
@@ -167,13 +176,12 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
           await sync.syncPageGuild(guildBroadcastOptions);
         } else {
           const globalResult = await sync.syncPageGlobal();
-          // WHY: Dual "global + club" must not run guild after a failed/aborted arena leg
-          // (would look like club-only success and erase the "global incomplete" signal).
+          // WHY: Dual club score + optional broadcast must never be aborted by an arena leg failure
+          // (missing identity / Pro gate / shard hard-fail). afterArena only when arena actually OK.
           if (membershipSurface === 'dual' && guildBroadcastOptions) {
-            if (!globalResult.ok) return;
             await sync.syncPageGuild({
               ...guildBroadcastOptions,
-              afterArena: true,
+              afterArena: globalResult.ok === true,
             });
           }
         }
@@ -183,6 +191,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     },
     [
       arenaSync,
+      ensureIdentityReady,
       isDashboardSyncing,
       isPipelineRunning,
       membershipSurface,
@@ -200,11 +209,19 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       } else {
         if (arenaSync.targetCount === 0) return;
         if (tryOpenGateSheet(arenaSync.gate)) return;
+        // WHY: Ask for display name before celebration sheet — avoids mid-pipeline identity dead-end.
+        if (!ensureIdentityReady()) return;
       }
       setPendingClubIntent(intent);
       setClubDispatchOpen(true);
     },
-    [arenaSync, isDashboardSyncing, isPipelineRunning, tryOpenGateSheet]
+    [
+      arenaSync,
+      ensureIdentityReady,
+      isDashboardSyncing,
+      isPipelineRunning,
+      tryOpenGateSheet,
+    ]
   );
 
   const closeClubDispatch = useCallback(() => {
@@ -235,7 +252,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     setSummaryExpanded(false);
     setClubDispatchOpen(false);
     setPendingClubIntent(null);
-  }, [open, payload?.metric, payload?.scoreDisplay, payload?.populationClass]);
+    closeIdentitySheet();
+  }, [closeIdentitySheet, open, payload?.metric, payload?.scoreDisplay, payload?.populationClass]);
 
   useEffect(() => {
     if (open) return;
@@ -246,17 +264,18 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       setSummaryExpanded(false);
       setClubDispatchOpen(false);
       setPendingClubIntent(null);
+      closeIdentitySheet();
       resetGateSheet();
     }, 0);
     return () => window.clearTimeout(id);
-  }, [open, resetGateSheet]);
+  }, [closeIdentitySheet, open, resetGateSheet]);
 
   useShellScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      // WHY: Nested Hall / dispatch sheets own Escape while stacked above.
+      // WHY: Nested Hall / dispatch / identity sheets own Escape while stacked above.
       if (event.key === 'Escape' && !nestedOverlayOpen) onClose();
     };
     window.addEventListener('keydown', onKeyDown);
@@ -505,6 +524,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
           void confirmClubDispatch(false);
         }}
       />
+
+      <LadderIdentitySheet open={identitySheetOpen} onClose={closeIdentitySheet} />
 
       <LadderUploadGateSheetPortal
         gateSheetKind={gateSheetKind}
