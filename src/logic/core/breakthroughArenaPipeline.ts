@@ -12,7 +12,7 @@ export type BreakthroughArenaPipelineBanner =
 
 /**
  * Cloud leg outcome after breakthrough persist-then-sync.
- * WHY: Dual "arena then guild" must retain a composite signal — guild must not erase arena.
+ * WHY: Dual runs club-first (broadcast baseline) then arena — composite must survive both legs.
  */
 export type BreakthroughCloudOutcome =
   | 'arena'
@@ -22,8 +22,8 @@ export type BreakthroughCloudOutcome =
   | null;
 
 /**
- * Whether the global batch leg may continue into dual guild follow-up.
- * WHY: Shard hard-fail (failures, zero writes/patches) must not be treated as arena success.
+ * Whether the global batch leg counts as a successful arena reconcile.
+ * WHY: Shard hard-fail (failures, zero writes/patches) must not claim arena success.
  * All-unchanged / soft identity patches still count as a completed reconcile.
  */
 export function didArenaBatchLegSucceed(
@@ -38,13 +38,18 @@ export function didArenaBatchLegSucceed(
 }
 
 /**
- * Guild leg success → cloud outcome.
- * WHY: Centralize dual promotion so hooks cannot silently demote arena+guild back to guild.
+ * Combine dual-pipeline leg results into a single cloud outcome.
+ * WHY: Club-first then arena — never demote a successful club publish when arena fails,
+ * and never claim arena+guild unless both legs landed.
  */
-export function resolveCloudOutcomeAfterGuildSuccess(
-  afterArena: boolean
-): Extract<BreakthroughCloudOutcome, 'guild' | 'arena+guild'> {
-  return afterArena ? 'arena+guild' : 'guild';
+export function resolveDualPipelineCloudOutcome(
+  guildOk: boolean,
+  arenaOk: boolean
+): Exclude<BreakthroughCloudOutcome, null> {
+  if (guildOk && arenaOk) return 'arena+guild';
+  if (guildOk) return 'guild';
+  if (arenaOk) return 'arena';
+  return 'dashboard-only';
 }
 
 /**

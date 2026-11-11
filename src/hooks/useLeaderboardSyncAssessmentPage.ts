@@ -7,7 +7,7 @@ import { sanitizeGuildRadarScores } from '../logic/core/guildRadarScores';
 import type { BreakthroughCloudOutcome } from '../logic/core/breakthroughArenaPipeline';
 import {
   didArenaBatchLegSucceed,
-  resolveCloudOutcomeAfterGuildSuccess,
+  resolveDualPipelineCloudOutcome,
 } from '../logic/core/breakthroughArenaPipeline';
 import { resolveMembershipSyncSurface } from '../logic/core/membershipSyncSurface';
 import {
@@ -208,29 +208,26 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       comment?: string;
       broadcastMetricType?: ClubLadderDimension;
       /**
-       * Dual pipeline second leg — keep arena batch tally and promote outcome to arena+guild.
-       * WHY: Clearing summary/outcome here historically made global+club look like club-only.
+       * Dual club-first leg — defer onFinished until arena leg completes (single refresh).
        */
-      afterArena?: boolean;
+      skipFinished?: boolean;
     }): Promise<AssessmentSyncLegResult> => {
       const activeMerged = mergedForUploadRef.current;
       const activeSignature = targetsSignatureRef.current;
       const activeOverall = overallScoreRef.current;
-      const afterArena = options?.afterArena === true;
+      const skipFinished = options?.skipFinished === true;
 
-      if (!afterArena) {
-        setSummaryState(null);
-        setLastCloudOutcome(null);
-      }
+      setSummaryState(null);
+      setLastCloudOutcome(null);
 
       if (!Number.isFinite(activeOverall) || activeOverall <= 0) {
-        if (!afterArena) setLastCloudOutcome('dashboard-only');
+        setLastCloudOutcome('dashboard-only');
         return { ok: false };
       }
 
       const user = getCurrentFirebaseUser();
       if (!user || user.isAnonymous) {
-        if (!afterArena) setLastCloudOutcome('dashboard-only');
+        setLastCloudOutcome('dashboard-only');
         return { ok: false };
       }
 
@@ -255,59 +252,31 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
             : {}),
         });
         if (!result.ok) {
-          if (!afterArena) {
-            setSummaryState({
-              signature: activeSignature,
-              summary: createEmptyLeaderboardSyncRunSummary(),
-              failures: [{ metric: 'ladderScore', reason: result.reason }],
-            });
-            setLastCloudOutcome('dashboard-only');
-          } else {
-            // Keep arena tally/outcome; append guild failure without claiming dual success.
-            setSummaryState((prev) => {
-              if (!prev || prev.signature !== activeSignature) {
-                return {
-                  signature: activeSignature,
-                  summary: createEmptyLeaderboardSyncRunSummary(),
-                  failures: [{ metric: 'ladderScore', reason: result.reason }],
-                };
-              }
-              return {
-                ...prev,
-                failures: [
-                  ...prev.failures,
-                  { metric: 'ladderScore', reason: result.reason },
-                ],
-              };
-            });
-          }
+          setSummaryState({
+            signature: activeSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [{ metric: 'ladderScore', reason: result.reason }],
+          });
+          setLastCloudOutcome('dashboard-only');
           return { ok: false };
         }
         if (result.skipped) {
-          if (!afterArena) setLastCloudOutcome('dashboard-only');
-          onFinishedRef.current?.();
+          setLastCloudOutcome('dashboard-only');
+          if (!skipFinished) onFinishedRef.current?.();
           return { ok: false };
         }
         invalidateGuildLadderCache(result.guildId ?? undefined);
-        if (afterArena) {
-          // Preserve global shard HUD; only promote the composite outcome.
-          setLastCloudOutcome(resolveCloudOutcomeAfterGuildSuccess(true));
-        } else {
-          const tally = createEmptyLeaderboardSyncRunSummary();
-          tally.attempted = 1;
-          tally.updated = 1;
-          setSummaryState({
-            signature: activeSignature,
-            summary: tally,
-            failures: [],
-          });
-          setLastCloudOutcome(resolveCloudOutcomeAfterGuildSuccess(false));
-        }
-        // WHY: Dual second leg — arena already fired success haptic; avoid double buzz.
-        if (!afterArena) {
-          void hapticService.trigger('success');
-        }
-        onFinishedRef.current?.();
+        const tally = createEmptyLeaderboardSyncRunSummary();
+        tally.attempted = 1;
+        tally.updated = 1;
+        setSummaryState({
+          signature: activeSignature,
+          summary: tally,
+          failures: [],
+        });
+        setLastCloudOutcome('guild');
+        void hapticService.trigger('success');
+        if (!skipFinished) onFinishedRef.current?.();
         return { ok: true };
       } finally {
         setBusy(false);
@@ -316,95 +285,128 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
     []
   );
 
-  const syncPageGlobal = useCallback(async (): Promise<AssessmentSyncLegResult> => {
-    const activeTargets = targetsRef.current;
-    const activeMerged = mergedForUploadRef.current;
-    const activeSignature = targetsSignatureRef.current;
-    const activeGate = gateRef.current;
+  const syncPageGlobal = useCallback(
+    async (options?: {
+      /**
+       * Dual pipeline: club leg already succeeded (broadcast baseline captured).
+       * WHY: Must not wipe guild success when arena fails; promote to arena+guild when both OK.
+       */
+      afterGuild?: boolean;
+    }): Promise<AssessmentSyncLegResult> => {
+      const activeTargets = targetsRef.current;
+      const activeMerged = mergedForUploadRef.current;
+      const activeSignature = targetsSignatureRef.current;
+      const activeGate = gateRef.current;
+      const afterGuild = options?.afterGuild === true;
 
-    setSummaryState(null);
-    setLastCloudOutcome(null);
-
-    if (activeTargets.length === 0 || activeGate !== 'ok') {
-      // WHY: Arena leg failed — dual modal may still run guild; outcome must not claim arena success.
-      setLastCloudOutcome('dashboard-only');
-      return { ok: false };
-    }
-
-    const user = getCurrentFirebaseUser();
-    if (!user || user.isAnonymous) {
-      setSummaryState({
-        signature: activeSignature,
-        summary: createEmptyLeaderboardSyncRunSummary(),
-        failures: [{ metric: 'ladderScore', reason: 'anonymous' }],
-      });
-      setLastCloudOutcome('dashboard-only');
-      return { ok: false };
-    }
-
-    const snap = readEntitlementSnapshot();
-    setBusy(true);
-    try {
-      const ladderProfile = buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
-      const identity = getLadderUploadIdentity();
-      if (!identity) {
-        // WHY: Modal should open LadderIdentitySheet first; this is the hard safety net
-        // so HUD never looks like a silent no-op when display name is missing.
-        setSummaryState({
-          signature: activeSignature,
-          summary: createEmptyLeaderboardSyncRunSummary(),
-          failures: [{ metric: 'ladderScore', reason: 'identity-required' }],
+      const appendFailureKeepingGuildSummary = (reason: string) => {
+        setSummaryState((prev) => {
+          const failure = { metric: 'ladderScore', reason };
+          if (afterGuild && prev && prev.signature === activeSignature) {
+            return { ...prev, failures: [...prev.failures, failure] };
+          }
+          return {
+            signature: activeSignature,
+            summary: createEmptyLeaderboardSyncRunSummary(),
+            failures: [failure],
+          };
         });
-        setLastCloudOutcome('dashboard-only');
+      };
+
+      if (!afterGuild) {
+        setSummaryState(null);
+        setLastCloudOutcome(null);
+      }
+
+      if (activeTargets.length === 0 || activeGate !== 'ok') {
+        setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
         return { ok: false };
       }
 
-      const batch = await runLeaderboardBatchUpload({
-        targets: activeTargets,
-        uid: user.uid,
-        displayName: identity.displayName,
-        entitlement: snap,
-        previewSnapshot: {
-          mergedScores: activeMerged,
-          profile: ladderProfile,
-          avatarUrl: identity.avatarUrl,
-        },
-      });
-      setSummaryState({
-        signature: activeSignature,
-        summary: batch.summary,
-        failures: batch.failures,
-      });
-      const arenaOk = didArenaBatchLegSucceed(batch.summary, batch.failures);
-      if (!arenaOk) {
-        // WHY: Hard shard failure → arena outcome stays incomplete; dual guild may still run separately.
-        setLastCloudOutcome('dashboard-only');
-        if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
-          hapticService.fireLeaderboardUploadResult({
-            ok: false,
-            reason: 'avatar-upload-failed',
-            updated: false,
+      const user = getCurrentFirebaseUser();
+      if (!user || user.isAnonymous) {
+        appendFailureKeepingGuildSummary('anonymous');
+        setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+        return { ok: false };
+      }
+
+      const snap = readEntitlementSnapshot();
+      setBusy(true);
+      try {
+        const ladderProfile =
+          buildLeaderboardProfileProjection(loadPhysicalProfile()) ?? undefined;
+        const identity = getLadderUploadIdentity();
+        if (!identity) {
+          // WHY: Modal should open LadderIdentitySheet first; this is the hard safety net
+          // so HUD never looks like a silent no-op when display name is missing.
+          appendFailureKeepingGuildSummary('identity-required');
+          setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+          return { ok: false };
+        }
+
+        const batch = await runLeaderboardBatchUpload({
+          targets: activeTargets,
+          uid: user.uid,
+          displayName: identity.displayName,
+          entitlement: snap,
+          previewSnapshot: {
+            mergedScores: activeMerged,
+            profile: ladderProfile,
+            avatarUrl: identity.avatarUrl,
+          },
+        });
+        const arenaOk = didArenaBatchLegSucceed(batch.summary, batch.failures);
+        if (!arenaOk) {
+          // WHY: Keep club tally when dual arena fails — HUD must not look like club never ran.
+          setSummaryState((prev) => {
+            if (afterGuild && prev && prev.signature === activeSignature) {
+              return {
+                ...prev,
+                failures: [...prev.failures, ...batch.failures],
+              };
+            }
+            return {
+              signature: activeSignature,
+              summary: batch.summary,
+              failures: batch.failures,
+            };
           });
+          setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+          if (batch.failures.some((f) => f.reason === 'avatar-upload-failed')) {
+            hapticService.fireLeaderboardUploadResult({
+              ok: false,
+              reason: 'avatar-upload-failed',
+              updated: false,
+            });
+          }
+          void queueStructuredProfileAfterRadarSubmit(batch);
+          onFinishedRef.current?.();
+          return { ok: false };
+        }
+        setSummaryState({
+          signature: activeSignature,
+          summary: batch.summary,
+          failures: batch.failures,
+        });
+        setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, true));
+        // WHY: Dual club-first already buzzed — avoid double haptic on arena follow-up.
+        if (
+          !afterGuild &&
+          (batch.summary.updated > 0 ||
+            (batch.summary.avatarPatched ?? 0) > 0 ||
+            (batch.summary.identityPatched ?? 0) > 0)
+        ) {
+          void hapticService.trigger('success');
         }
         void queueStructuredProfileAfterRadarSubmit(batch);
         onFinishedRef.current?.();
-        return { ok: false };
+        return { ok: true };
+      } finally {
+        setBusy(false);
       }
-      setLastCloudOutcome('arena');
-      if (
-        batch.summary.updated > 0 ||
-        (batch.summary.avatarPatched ?? 0) > 0 ||
-        (batch.summary.identityPatched ?? 0) > 0
-      ) {
-        void hapticService.trigger('success');
-      }
-      void queueStructuredProfileAfterRadarSubmit(batch);
-      onFinishedRef.current?.();
-      return { ok: true };
-    } finally {
-      setBusy(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     syncPageGlobal,

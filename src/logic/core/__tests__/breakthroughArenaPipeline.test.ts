@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   didArenaBatchLegSucceed,
   resolveBreakthroughArenaPipelineBanner,
-  resolveCloudOutcomeAfterGuildSuccess,
+  resolveDualPipelineCloudOutcome,
 } from '../breakthroughArenaPipeline';
 import { createEmptyLeaderboardSyncRunSummary } from '../leaderboardSyncTargets';
 
@@ -76,12 +76,20 @@ describe('didArenaBatchLegSucceed', () => {
   });
 });
 
-describe('resolveCloudOutcomeAfterGuildSuccess', () => {
-  it('promotes dual follow-up to arena+guild', () => {
-    expect(resolveCloudOutcomeAfterGuildSuccess(true)).toBe('arena+guild');
+describe('resolveDualPipelineCloudOutcome', () => {
+  it('returns arena+guild when both legs succeed', () => {
+    expect(resolveDualPipelineCloudOutcome(true, true)).toBe('arena+guild');
   });
 
-  it('keeps guild-only when not after arena', () => {
-    expect(resolveCloudOutcomeAfterGuildSuccess(false)).toBe('guild');
+  it('returns guild when only club leg succeeds', () => {
+    expect(resolveDualPipelineCloudOutcome(true, false)).toBe('guild');
+  });
+
+  it('returns arena when only global leg succeeds', () => {
+    expect(resolveDualPipelineCloudOutcome(false, true)).toBe('arena');
+  });
+
+  it('returns dashboard-only when both legs fail', () => {
+    expect(resolveDualPipelineCloudOutcome(false, false)).toBe('dashboard-only');
   });
 });

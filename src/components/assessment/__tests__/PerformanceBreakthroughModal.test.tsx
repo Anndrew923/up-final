@@ -339,13 +339,17 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
   };
 
   const dualSync = {
-    syncPageGlobal: vi.fn(async (): Promise<{ ok: boolean }> => ({ ok: true })),
+    syncPageGlobal: vi.fn(
+      async (_options?: { afterGuild?: boolean }): Promise<{ ok: boolean }> => ({
+        ok: true,
+      })
+    ),
     syncPageGuild: vi.fn(
       async (_options?: {
         broadcast?: boolean;
         comment?: string;
         broadcastMetricType?: string;
-        afterArena?: boolean;
+        skipFinished?: boolean;
       }): Promise<{ ok: boolean }> => ({ ok: true })
     ),
     busy: false,
@@ -540,13 +544,19 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       await flushPipeline();
     });
 
-    expect(dualSync.syncPageGlobal).toHaveBeenCalled();
     expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGlobal).toHaveBeenCalled();
+    // WHY: Club-first then arena — prevents global fan-out from zeroing broadcast delta.
+    expect(dualSync.syncPageGuild.mock.invocationCallOrder[0]).toBeLessThan(
+      dualSync.syncPageGlobal.mock.invocationCallOrder[0]!
+    );
     expect(dualSync.syncPageGuild.mock.calls[0]?.[0]).toMatchObject({
       broadcast: true,
+      comment: '',
       broadcastMetricType: 'strength',
-      afterArena: true,
+      skipFinished: true,
     });
+    expect(dualSync.syncPageGlobal.mock.calls[0]?.[0]).toMatchObject({ afterGuild: true });
   });
 
   it('opens identity gate before club dispatch when display name missing', () => {
@@ -577,7 +587,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
   });
 
-  it('still runs guild leg when global sync returns ok:false (dual decouple)', async () => {
+  it('still runs global after guild when dual; passes afterGuild from guild result', async () => {
+    dualSync.syncPageGuild.mockResolvedValueOnce({ ok: true });
     dualSync.syncPageGlobal.mockResolvedValueOnce({ ok: false });
 
     act(() => {
@@ -608,12 +619,50 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       await flushPipeline();
     });
 
-    expect(dualSync.syncPageGlobal).toHaveBeenCalled();
-    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGuild.mock.invocationCallOrder[0]).toBeLessThan(
+      dualSync.syncPageGlobal.mock.invocationCallOrder[0]!
+    );
     expect(dualSync.syncPageGuild.mock.calls[0]?.[0]).toMatchObject({
       broadcast: true,
-      afterArena: false,
+      broadcastMetricType: 'strength',
+      skipFinished: true,
     });
+    expect(dualSync.syncPageGlobal.mock.calls[0]?.[0]).toEqual({ afterGuild: true });
+  });
+
+  it('runs arena without afterGuild when club leg fails first', async () => {
+    dualSync.syncPageGuild.mockResolvedValueOnce({ ok: false });
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGlobal).toHaveBeenCalledWith(undefined);
   });
 
   it('shows arena+guild banner without guild-only not-public copy', async () => {

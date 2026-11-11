@@ -174,16 +174,18 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
         if (intent === 'guild') {
           await sync.syncPageGuild(guildBroadcastOptions);
+        } else if (membershipSurface === 'dual' && guildBroadcastOptions) {
+          // WHY: Club-first captures true previousScore for D2 broadcast before global
+          // ladderScore fan-out overwrites guilds.members[] (otherwise δ≈0 skips FCM).
+          const guildResult = await sync.syncPageGuild({
+            ...guildBroadcastOptions,
+            skipFinished: true,
+          });
+          await sync.syncPageGlobal(
+            guildResult.ok ? { afterGuild: true } : undefined
+          );
         } else {
-          const globalResult = await sync.syncPageGlobal();
-          // WHY: Dual club score + optional broadcast must never be aborted by an arena leg failure
-          // (missing identity / Pro gate / shard hard-fail). afterArena only when arena actually OK.
-          if (membershipSurface === 'dual' && guildBroadcastOptions) {
-            await sync.syncPageGuild({
-              ...guildBroadcastOptions,
-              afterArena: globalResult.ok === true,
-            });
-          }
+          await sync.syncPageGlobal();
         }
       } finally {
         setPipelineBusy(false);
