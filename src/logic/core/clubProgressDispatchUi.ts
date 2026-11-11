@@ -69,6 +69,17 @@ export function shouldOfferClubDispatchFlow(
   return membershipSurface === 'dual';
 }
 
+/**
+ * Dual club-first floor — club score OR arena targets is enough to open the pipeline.
+ * WHY: Pro / identity belong to the arena leg only; blocking both here recreates the Dual dead-end.
+ */
+export function hasBreakthroughDualSyncFloor(
+  overallScore: number,
+  targetCount: number
+): boolean {
+  return overallScore > 0 || targetCount > 0;
+}
+
 /** Default receive ON → mute false when unset. */
 export function readLocalMuteClubDispatches(
   storage: Pick<Storage, 'getItem'> = localStorage

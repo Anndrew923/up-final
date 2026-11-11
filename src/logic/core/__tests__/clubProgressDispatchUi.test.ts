@@ -3,6 +3,7 @@ import {
   CLUB_DISPATCH_COMMENT_MAX_LEN,
   clampDispatchComment,
   finalizeDispatchComment,
+  hasBreakthroughDualSyncFloor,
   resolveBroadcastMetricFromBreakthrough,
   shouldOfferClubDispatchFlow,
 } from '../clubProgressDispatchUi';
@@ -42,5 +43,18 @@ describe('shouldOfferClubDispatchFlow', () => {
     expect(shouldOfferClubDispatchFlow('dual')).toBe(true);
     expect(shouldOfferClubDispatchFlow('global-only')).toBe(false);
     expect(shouldOfferClubDispatchFlow('pending')).toBe(false);
+  });
+});
+
+describe('hasBreakthroughDualSyncFloor', () => {
+  it('passes when club score or arena targets exist', () => {
+    expect(hasBreakthroughDualSyncFloor(88, 0)).toBe(true);
+    expect(hasBreakthroughDualSyncFloor(0, 1)).toBe(true);
+    expect(hasBreakthroughDualSyncFloor(88, 2)).toBe(true);
+  });
+
+  it('rejects empty dual floor', () => {
+    expect(hasBreakthroughDualSyncFloor(0, 0)).toBe(false);
+    expect(hasBreakthroughDualSyncFloor(-1, 0)).toBe(false);
   });
 });

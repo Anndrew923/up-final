@@ -559,8 +559,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     expect(dualSync.syncPageGlobal.mock.calls[0]?.[0]).toMatchObject({ afterGuild: true });
   });
 
-  it('opens identity gate before club dispatch when display name missing', () => {
-    ensureIdentityReadyMock.mockReturnValueOnce(false);
+  it('opens club dispatch for dual even when ladder identity is not ready', () => {
+    ensureIdentityReadyMock.mockReturnValue(false);
 
     act(() => {
       root.render(
@@ -581,10 +581,88 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(ensureIdentityReadyMock).toHaveBeenCalled();
-    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
+    // WHY: Entry must not hard-block Dual — identity gates belong to the arena leg only.
+    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).not.toBeNull();
     expect(dualSync.syncPageGlobal).not.toHaveBeenCalled();
     expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
+  });
+
+  it('dual identity miss still runs club broadcast first; prompts identity before arena', async () => {
+    ensureIdentityReadyMock.mockReturnValue(false);
+    dualSync.syncPageGuild.mockResolvedValueOnce({ ok: true });
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGuild).toHaveBeenCalledWith(
+      expect.objectContaining({
+        broadcast: true,
+        broadcastMetricType: 'strength',
+        skipFinished: true,
+      })
+    );
+    expect(ensureIdentityReadyMock).toHaveBeenCalled();
+    expect(dualSync.syncPageGlobal).toHaveBeenCalledWith({ afterGuild: true });
+  });
+
+  it('dual treats undefined guildResult as not-ok for afterGuild (no TypeError)', async () => {
+    dualSync.syncPageGuild.mockResolvedValueOnce(undefined as unknown as { ok: boolean });
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
+      (el) => el.textContent === 'Sync Arena+Club'
+    );
+    act(() => {
+      arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const broadcastBtn = document.querySelector(
+      '[data-testid="club-dispatch-broadcast-sync"]'
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      broadcastBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await flushPipeline();
+    });
+
+    expect(dualSync.syncPageGuild).toHaveBeenCalled();
+    expect(dualSync.syncPageGlobal).toHaveBeenCalledWith(undefined);
   });
 
   it('still runs global after guild when dual; passes afterGuild from guild result', async () => {

@@ -6,6 +6,7 @@ import { ROUTES } from '../../config/routes';
 import type { PerformanceBreakthroughPayload } from '../../logic/core/performanceBreakthrough';
 import { resolveBreakthroughArenaPipelineBanner } from '../../logic/core/breakthroughArenaPipeline';
 import {
+  hasBreakthroughDualSyncFloor,
   resolveBroadcastMetricFromBreakthrough,
   shouldOfferClubDispatchFlow,
 } from '../../logic/core/clubProgressDispatchUi';
@@ -95,8 +96,9 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     confirmGateSheet,
     resetGateSheet,
   } = useLadderUploadGateSheet(ROUTES.ladder);
-  // WHY: Yield trap while Hall / club-dispatch / identity sheet is stacked above this celebration.
-  const nestedOverlayOpen = spectrumOverlayOpen || clubDispatchOpen || identitySheetOpen;
+  // WHY: Yield trap while Hall / club-dispatch / identity / Pro gate is stacked above celebration.
+  const nestedOverlayOpen =
+    spectrumOverlayOpen || clubDispatchOpen || identitySheetOpen || gateSheetOpen;
   useFocusTrap(dialogRef, open && !nestedOverlayOpen);
 
   const isDashboardSyncing = syncing || syncPending;
@@ -138,10 +140,16 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
       if (intent === 'guild') {
         if (!(arenaSync.overallScore > 0)) return;
+      } else if (membershipSurface === 'dual') {
+        if (
+          !hasBreakthroughDualSyncFloor(arenaSync.overallScore, arenaSync.targetCount)
+        ) {
+          return;
+        }
       } else {
         if (arenaSync.targetCount === 0) return;
         if (tryOpenGateSheet(arenaSync.gate)) return;
-        // WHY: Shared gate with sync bars — never silent-fail global without identity UX.
+        // WHY: Shared gate with sync bars — never silent-fail global-only without identity UX.
         if (!ensureIdentityReady()) return;
       }
 
@@ -181,12 +189,20 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
             ...guildBroadcastOptions,
             skipFinished: true,
           });
+          // Soft arena UX: open Pro/identity sheets when needed. Always continue into
+          // syncPageGlobal so afterGuild can preserve club HUD + fire deferred onFinished.
+          const gateBlocked = tryOpenGateSheet(sync.gate);
+          if (!gateBlocked) {
+            ensureIdentityReady();
+          }
           await sync.syncPageGlobal(
-            guildResult.ok ? { afterGuild: true } : undefined
+            guildResult?.ok === true ? { afterGuild: true } : undefined
           );
         } else {
           await sync.syncPageGlobal();
         }
+      } catch (err) {
+        console.error('[Breakthrough Pipeline Fatal]', err);
       } finally {
         setPipelineBusy(false);
       }
@@ -208,10 +224,15 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       if (!arenaSync || isDashboardSyncing || isPipelineRunning) return;
       if (intent === 'guild') {
         if (!(arenaSync.overallScore > 0)) return;
+      } else if (membershipSurface === 'dual') {
+        if (
+          !hasBreakthroughDualSyncFloor(arenaSync.overallScore, arenaSync.targetCount)
+        ) {
+          return;
+        }
       } else {
         if (arenaSync.targetCount === 0) return;
         if (tryOpenGateSheet(arenaSync.gate)) return;
-        // WHY: Ask for display name before celebration sheet — avoids mid-pipeline identity dead-end.
         if (!ensureIdentityReady()) return;
       }
       setPendingClubIntent(intent);
@@ -222,6 +243,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       ensureIdentityReady,
       isDashboardSyncing,
       isPipelineRunning,
+      membershipSurface,
       tryOpenGateSheet,
     ]
   );

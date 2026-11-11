@@ -278,6 +278,17 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
         void hapticService.trigger('success');
         if (!skipFinished) onFinishedRef.current?.();
         return { ok: true };
+      } catch (err) {
+        // WHY: Dual club-first awaits a typed { ok } — never let a throw skip the arena leg /
+        // deferred onFinished path in the modal.
+        console.error('[syncPageGuild Fatal]', err);
+        setSummaryState({
+          signature: activeSignature,
+          summary: createEmptyLeaderboardSyncRunSummary(),
+          failures: [{ metric: 'ladderScore', reason: 'internal' }],
+        });
+        setLastCloudOutcome('dashboard-only');
+        return { ok: false };
       } finally {
         setBusy(false);
       }
@@ -320,6 +331,8 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
 
       if (activeTargets.length === 0 || activeGate !== 'ok') {
         setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+        // WHY: Dual club-first used skipFinished — arena abandon must still refresh the page.
+        if (afterGuild) onFinishedRef.current?.();
         return { ok: false };
       }
 
@@ -327,6 +340,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
       if (!user || user.isAnonymous) {
         appendFailureKeepingGuildSummary('anonymous');
         setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+        if (afterGuild) onFinishedRef.current?.();
         return { ok: false };
       }
 
@@ -341,6 +355,7 @@ export function useLeaderboardSyncAssessmentPage(options: UseLeaderboardSyncAsse
           // so HUD never looks like a silent no-op when display name is missing.
           appendFailureKeepingGuildSummary('identity-required');
           setLastCloudOutcome(resolveDualPipelineCloudOutcome(afterGuild, false));
+          if (afterGuild) onFinishedRef.current?.();
           return { ok: false };
         }
 
