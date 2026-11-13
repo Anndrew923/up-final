@@ -493,6 +493,13 @@ export async function signOutFirebase(): Promise<void> {
   await signOut(firebaseAuth);
   const { clearAdminEntitlementCache } = await import('./adminEntitlementService');
   clearAdminEntitlementCache();
+  // WHY: Drop list + my-entry TTL so the next account never paints another user's ladder cache.
+  try {
+    const { clearLeaderboardReadCaches } = await import('./leaderboardService');
+    clearLeaderboardReadCaches();
+  } catch (error) {
+    console.warn('[auth] leaderboard cache clear on sign-out failed', error);
+  }
   if (isCapacitorNativePlatform()) {
     const { signOutNative } = await import('./firebaseNativeAuth');
     await signOutNative();

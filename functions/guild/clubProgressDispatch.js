@@ -20,8 +20,14 @@ export const FCM_STALE_REGISTRATION_ERROR_CODES = Object.freeze([
 export const CLUB_DISPATCH_METRICS = Object.freeze(["overall", ...SIX_AXIS_METRICS]);
 
 /**
- * Phase 1 zh-Hant physiology labels for Club Dispatch push bodies.
- * WHY: Keep copy free of vehicle metaphors; Functions SSOT (do not pull client i18n).
+ * Defensive FCM data.comment cap (production sanitize is already ≤25).
+ * WHY: Keep data payload far under FCM 4KB while allowing safe forward-compat.
+ */
+export const CLUB_DISPATCH_FCM_COMMENT_DATA_MAX = 300;
+
+/**
+ * Physiology labels for Club Dispatch push bodies (Functions SSOT — do not pull client i18n).
+ * WHY: Keep copy free of vehicle metaphors; zh + en share the same metric keys.
  */
 export const CLUB_DISPATCH_METRIC_LABELS_ZH = Object.freeze({
   strength: "最大肌力",
@@ -32,17 +38,90 @@ export const CLUB_DISPATCH_METRIC_LABELS_ZH = Object.freeze({
   gripStrength: "握力",
 });
 
+/** Keep parity with client `home.radar.axisChart` / physiology chart SSOT. */
+export const CLUB_DISPATCH_METRIC_LABELS_EN = Object.freeze({
+  strength: "Max Strength",
+  explosivePower: "Explosive Power",
+  cardio: "Cardio Endurance",
+  muscleMass: "Skeletal Muscle",
+  bodyFat: "FFMI",
+  gripStrength: "Grip",
+});
+
+/**
+ * Push title/body templates.
+ * WHY: Android lock-screen title ≈15 CJK chars — nickname-first title + comment in body line 1.
+ * @type {Readonly<Record<'zh-Hant' | 'en', {
+ *   titleFallback: (clubName: string) => string;
+ *   titleWithComment: (userName: string, clubName: string) => string;
+ *   bodyAxis: (comment: string, metricLabel: string, axisScore: string, overallScore: string, deltaSuffix: string) => string;
+ *   bodyAxisNoComment: (userName: string, metricLabel: string, axisScore: string, overallScore: string, deltaSuffix: string) => string;
+ *   bodyOverall: (comment: string, overallScore: string, deltaSuffix: string) => string;
+ *   bodyOverallNoComment: (userName: string, overallScore: string, deltaSuffix: string) => string;
+ * }>>}
+ */
+export const CLUB_DISPATCH_COPY = Object.freeze({
+  "zh-Hant": Object.freeze({
+    titleFallback: (clubName) => `【戰隊快報 // ${clubName}】`,
+    // WHY: Nickname first so lock-screen ~15 CJK truncates clubName, not the speaker.
+    titleWithComment: (userName, clubName) => `${userName} · ${clubName}`,
+    bodyAxis: (comment, metricLabel, axisScore, overallScore, deltaSuffix) =>
+      `「${comment}」\n${metricLabel} ${axisScore} ➔ 總戰力 ${overallScore}${deltaSuffix}`,
+    bodyAxisNoComment: (userName, metricLabel, axisScore, overallScore, deltaSuffix) =>
+      `${userName} 突破【${metricLabel}】${axisScore} ➔ 總戰力 ${overallScore}${deltaSuffix}`,
+    bodyOverall: (comment, overallScore, deltaSuffix) =>
+      `「${comment}」\n總戰力 ➔ ${overallScore}${deltaSuffix}`,
+    bodyOverallNoComment: (userName, overallScore, deltaSuffix) =>
+      `${userName} 總戰力 ➔ ${overallScore}${deltaSuffix}`,
+  }),
+  en: Object.freeze({
+    titleFallback: (clubName) => `[Squad Dispatch // ${clubName}]`,
+    titleWithComment: (userName, clubName) => `${userName} · ${clubName}`,
+    bodyAxis: (comment, metricLabel, axisScore, overallScore, deltaSuffix) =>
+      `"${comment}"\n${metricLabel} ${axisScore} ➔ Total ${overallScore}${deltaSuffix}`,
+    bodyAxisNoComment: (userName, metricLabel, axisScore, overallScore, deltaSuffix) =>
+      `${userName} hit [${metricLabel}] ${axisScore} ➔ Total ${overallScore}${deltaSuffix}`,
+    bodyOverall: (comment, overallScore, deltaSuffix) =>
+      `"${comment}"\nTotal Power ➔ ${overallScore}${deltaSuffix}`,
+    bodyOverallNoComment: (userName, overallScore, deltaSuffix) =>
+      `${userName} Total Power ➔ ${overallScore}${deltaSuffix}`,
+  }),
+});
+
+/**
+ * Normalize push locale. Default zh-Hant; any en* tag → en.
+ * @param {unknown} raw
+ * @returns {'zh-Hant' | 'en'}
+ */
+export function resolveClubDispatchLocale(raw) {
+  if (typeof raw !== "string") return "zh-Hant";
+  const tag = raw.trim().toLowerCase().replace(/_/g, "-");
+  if (tag === "en" || tag.startsWith("en-")) return "en";
+  return "zh-Hant";
+}
+
+/**
+ * @param {unknown} metricType
+ * @param {'zh-Hant' | 'en'} [locale]
+ * @returns {string | null}
+ */
+export function resolveClubDispatchMetricLabel(metricType, locale = "zh-Hant") {
+  if (typeof metricType !== "string") return null;
+  const key = metricType.trim();
+  const table =
+    resolveClubDispatchLocale(locale) === "en"
+      ? CLUB_DISPATCH_METRIC_LABELS_EN
+      : CLUB_DISPATCH_METRIC_LABELS_ZH;
+  if (!Object.prototype.hasOwnProperty.call(table, key)) return null;
+  return table[/** @type {keyof typeof table} */ (key)];
+}
+
 /**
  * @param {unknown} metricType
  * @returns {string | null}
  */
 export function resolveClubDispatchMetricLabelZh(metricType) {
-  if (typeof metricType !== "string") return null;
-  const key = metricType.trim();
-  if (!Object.prototype.hasOwnProperty.call(CLUB_DISPATCH_METRIC_LABELS_ZH, key)) {
-    return null;
-  }
-  return CLUB_DISPATCH_METRIC_LABELS_ZH[/** @type {keyof typeof CLUB_DISPATCH_METRIC_LABELS_ZH} */ (key)];
+  return resolveClubDispatchMetricLabel(metricType, "zh-Hant");
 }
 
 /**
@@ -66,10 +145,30 @@ export function sanitizeDispatchComment(comment, maxLen = CLUB_DISPATCH_COMMENT_
   const collapsed = comment
     .trim()
     .replace(/\s+/g, " ")
-    // WHY: Match guild name XSS / control-char shield — push body must stay safe.
+    // WHY: Match guild name XSS / control-char shield — push title/body must stay safe.
     .replace(/[<>\u0000-\u001F\u007F]/g, "");
   if (collapsed.length <= maxLen) return collapsed;
   return collapsed.slice(0, maxLen);
+}
+
+/**
+ * @param {unknown} raw
+ * @param {string} fallback
+ * @returns {string}
+ */
+function normalizeDispatchDisplayName(raw, fallback) {
+  return typeof raw === "string" && raw.trim() ? raw.trim() : fallback;
+}
+
+/**
+ * Axis metric key check — locale-agnostic (label tables share the same keys).
+ * @param {unknown} metricType
+ * @returns {boolean}
+ */
+export function isClubDispatchAxisMetric(metricType) {
+  if (typeof metricType !== "string") return false;
+  const key = metricType.trim();
+  return Object.prototype.hasOwnProperty.call(CLUB_DISPATCH_METRIC_LABELS_ZH, key);
 }
 
 /**
@@ -306,26 +405,37 @@ export function formatOverallDeltaSuffix(overallDelta) {
 }
 
 /**
- * Build dual-line zh-Hant push body (data line + optional comment line).
  * @param {{
- *   userName: string;
+ *   userName?: string | null;
  *   metricType?: string | null;
  *   axisScore?: number | null;
  *   overallScore: number;
  *   overallDelta: number;
  *   comment?: string | null;
+ *   locale?: string | null;
  * }} input
- * @returns {string}
+ * @returns {{
+ *   userName: string;
+ *   comment: string;
+ *   hasComment: boolean;
+ *   hasAxis: boolean;
+ *   metricLabel: string | null;
+ *   axisScoreLabel: string;
+ *   overallLabel: string;
+ *   deltaSuffix: string;
+ *   copy: (typeof CLUB_DISPATCH_COPY)['zh-Hant'];
+ * }}
  */
-export function buildClubDispatchBody(input) {
-  const userName =
-    typeof input.userName === "string" && input.userName.trim()
-      ? input.userName.trim()
-      : "Athlete";
+function resolveClubDispatchCopyContext(input) {
+  const locale = resolveClubDispatchLocale(input?.locale);
+  const copy = CLUB_DISPATCH_COPY[locale];
+  const userName = normalizeDispatchDisplayName(input?.userName, "Athlete");
+  const comment =
+    typeof input?.comment === "string" ? input.comment.trim() : "";
   const overallLabel = formatDispatchScore(input.overallScore);
   const deltaSuffix = formatOverallDeltaSuffix(input.overallDelta);
   const metricType = normalizeBroadcastMetricType(input.metricType);
-  const metricLabel = resolveClubDispatchMetricLabelZh(metricType);
+  const metricLabel = resolveClubDispatchMetricLabel(metricType, locale);
   const axisRaw = Number(input.axisScore);
   const hasAxis =
     metricType !== "overall" &&
@@ -333,14 +443,85 @@ export function buildClubDispatchBody(input) {
     Number.isFinite(axisRaw) &&
     axisRaw >= 0;
 
-  const dataLine = hasAxis
-    ? `${userName} 突破【${metricLabel}】${formatDispatchScore(axisRaw)}！總戰力升至 ${overallLabel}${deltaSuffix}`
-    : `${userName} 總戰力升至 ${overallLabel}${deltaSuffix}`;
+  return {
+    userName,
+    comment,
+    hasComment: comment.length > 0,
+    hasAxis,
+    metricLabel,
+    axisScoreLabel: formatDispatchScore(axisRaw),
+    overallLabel,
+    deltaSuffix,
+    copy,
+  };
+}
 
+/**
+ * Title: sender · club when comment exists (comment itself goes in body line 1).
+ * @param {{
+ *   clubName: string;
+ *   userName?: string | null;
+ *   comment?: string | null;
+ *   locale?: string | null;
+ * }} input
+ * @returns {string}
+ */
+export function buildClubDispatchTitle(input) {
+  const locale = resolveClubDispatchLocale(input?.locale);
+  const copy = CLUB_DISPATCH_COPY[locale];
+  const clubName = normalizeDispatchDisplayName(input?.clubName, "Club");
+  const userName = normalizeDispatchDisplayName(input?.userName, "Athlete");
   const comment =
-    typeof input.comment === "string" ? input.comment.trim() : "";
-  if (!comment) return dataLine;
-  return `${dataLine}\n💬「${comment}」`;
+    typeof input?.comment === "string" ? input.comment.trim() : "";
+  if (comment.length > 0) {
+    return copy.titleWithComment(userName, clubName);
+  }
+  return copy.titleFallback(clubName);
+}
+
+/**
+ * Body: with comment → quoted line + score line; without → nickname + score (single line).
+ * @param {{
+ *   userName?: string | null;
+ *   metricType?: string | null;
+ *   axisScore?: number | null;
+ *   overallScore: number;
+ *   overallDelta: number;
+ *   comment?: string | null;
+ *   locale?: string | null;
+ * }} input
+ * @returns {string}
+ */
+export function buildClubDispatchBody(input) {
+  const {
+    copy,
+    userName,
+    comment,
+    hasComment,
+    hasAxis,
+    metricLabel,
+    axisScoreLabel,
+    overallLabel,
+    deltaSuffix,
+  } = resolveClubDispatchCopyContext(input);
+
+  if (hasAxis) {
+    // hasAxis already implies metricLabel is a non-null string.
+    const label = /** @type {string} */ (metricLabel);
+    return hasComment
+      ? copy.bodyAxis(comment, label, axisScoreLabel, overallLabel, deltaSuffix)
+      : copy.bodyAxisNoComment(
+          userName,
+          label,
+          axisScoreLabel,
+          overallLabel,
+          deltaSuffix
+        );
+  }
+
+  return hasComment
+    ? copy.bodyOverall(comment, overallLabel, deltaSuffix)
+    : copy.bodyOverallNoComment(userName, overallLabel, deltaSuffix);
 }
 
 /**
@@ -363,7 +544,7 @@ export function buildClubDispatchBody(input) {
  */
 export function resolveClubDispatchNotificationScores(input) {
   const metricType = normalizeBroadcastMetricType(input?.metricType);
-  const isAxisMetric = resolveClubDispatchMetricLabelZh(metricType) != null;
+  const isAxisMetric = isClubDispatchAxisMetric(metricType);
   const hasOverall = Number.isFinite(Number(input?.overallScore));
   const hasAxis = Number.isFinite(Number(input?.axisScore));
   const hasLegacyScore = Number.isFinite(Number(input?.newScore));
@@ -394,7 +575,7 @@ export function resolveClubDispatchNotificationScores(input) {
 }
 
 /**
- * Build zh-Hant notification copy + data payload (Phase 1 locale lock).
+ * Build notification copy + data payload (zh-Hant default; pass locale: 'en' for English).
  * Prefer overallScore/axisScore/overallDelta; newScore/delta are overall-only legacy fallbacks.
  * @param {{
  *   clubName: string;
@@ -409,28 +590,34 @@ export function resolveClubDispatchNotificationScores(input) {
  *   senderUid: string;
  *   guildId: string;
  *   dispatchId?: string | null;
+ *   locale?: string | null;
  * }} input
  */
 export function buildClubDispatchNotification(input) {
-  const clubName =
-    typeof input.clubName === "string" && input.clubName.trim()
-      ? input.clubName.trim()
-      : "Club";
-  const userName =
-    typeof input.userName === "string" && input.userName.trim()
-      ? input.userName.trim()
-      : "Athlete";
+  const clubName = normalizeDispatchDisplayName(input.clubName, "Club");
+  const userName = normalizeDispatchDisplayName(input.userName, "Athlete");
+  // WHY: Locale is opt-in until broadcast wires users.locale; default zh-Hant keeps multicast stable.
+  const locale = resolveClubDispatchLocale(input.locale);
+  // WHY: Defense-in-depth — Callable already sanitizes, but admin/smoke/legacy callers must not
+  // leak control chars or overlong text into title/body/data.
+  const comment = sanitizeDispatchComment(input.comment);
 
   const scores = resolveClubDispatchNotificationScores(input);
 
-  const title = `【戰隊快報 // ${clubName}】`;
+  const title = buildClubDispatchTitle({
+    clubName,
+    userName,
+    comment,
+    locale,
+  });
   const body = buildClubDispatchBody({
     userName,
     metricType: scores.metricType,
     axisScore: scores.axisScore,
     overallScore: scores.overallScore,
     overallDelta: scores.overallDelta,
-    comment: input.comment,
+    comment,
+    locale,
   });
 
   /** @type {Record<string, string>} */
@@ -439,7 +626,18 @@ export function buildClubDispatchNotification(input) {
     route: `/crew?focusUid=${encodeURIComponent(input.senderUid)}`,
     guildId: input.guildId,
     focusUid: input.senderUid,
+    metricType: scores.metricType,
+    overallScore: formatDispatchScore(scores.overallScore),
+    overallDelta: formatDispatchScore(scores.overallDelta),
   };
+  if (scores.axisScore != null && Number.isFinite(scores.axisScore)) {
+    data.axisScore = formatDispatchScore(scores.axisScore);
+  }
+  // WHY: Deliver comment via FCM data for 0 Firestore reads on tap — never fetch dispatch docs.
+  // Belt-and-suspenders cap keeps data payload bounded even if sanitize max drifts.
+  if (comment.length > 0) {
+    data.comment = comment.slice(0, CLUB_DISPATCH_FCM_COMMENT_DATA_MAX);
+  }
   if (input.dispatchId) {
     data.dispatchId = input.dispatchId;
   }

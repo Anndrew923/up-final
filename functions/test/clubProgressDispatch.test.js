@@ -7,16 +7,21 @@ import {
   buildClubDispatchAndroidPayload,
   buildClubDispatchBody,
   buildClubDispatchNotification,
+  buildClubDispatchTitle,
+  CLUB_DISPATCH_METRIC_LABELS_EN,
   CLUB_DISPATCH_METRIC_LABELS_ZH,
   consumeClubDispatchAttempt,
   evaluateBroadcastDeltaGate,
   filterDispatchRecipients,
   formatDispatchScore,
   formatOverallDeltaSuffix,
+  isClubDispatchAxisMetric,
   isStaleFcmRegistrationErrorCode,
   normalizeBroadcastMetricType,
   resolveBroadcastIntent,
   resolveBroadcastNewScore,
+  resolveClubDispatchLocale,
+  resolveClubDispatchMetricLabel,
   resolveClubDispatchMetricLabelZh,
   resolveClubDispatchNotificationScores,
   resolvePreviousScoreFromMember,
@@ -32,6 +37,7 @@ import {
 import { normalizeSyncGuildScoreRequest } from "../guild/syncGuildScoreCallable.js";
 import {
   CLUB_DISPATCH_ANDROID_CHANNEL_ID,
+  CLUB_DISPATCH_COMMENT_MAX_LEN,
   CLUB_DISPATCH_MAX_PER_HOUR,
   SIX_AXIS_METRICS,
 } from "../shared/constants.js";
@@ -258,15 +264,30 @@ describe("shouldClearStoredFcmToken / selectStaleFcmClearTargets", () => {
 });
 
 describe("club dispatch metric labels + body", () => {
-  it("locks physiology labels for every SIX_AXIS_METRICS key", () => {
+  it("locks physiology labels for every SIX_AXIS_METRICS key (zh + en chart SSOT)", () => {
     assert.equal(CLUB_DISPATCH_METRIC_LABELS_ZH.muscleMass, "骨骼肌量");
+    assert.equal(CLUB_DISPATCH_METRIC_LABELS_EN.muscleMass, "Skeletal Muscle");
+    assert.equal(CLUB_DISPATCH_METRIC_LABELS_EN.explosivePower, "Explosive Power");
+    assert.equal(CLUB_DISPATCH_METRIC_LABELS_EN.cardio, "Cardio Endurance");
     assert.equal(resolveClubDispatchMetricLabelZh("gripStrength"), "握力");
+    assert.equal(resolveClubDispatchMetricLabel("gripStrength", "en"), "Grip");
     assert.equal(resolveClubDispatchMetricLabelZh("overall"), null);
+    assert.equal(isClubDispatchAxisMetric("strength"), true);
+    assert.equal(isClubDispatchAxisMetric("overall"), false);
+    assert.equal(resolveClubDispatchLocale("en-US"), "en");
+    assert.equal(resolveClubDispatchLocale("zh-TW"), "zh-Hant");
+    assert.equal(resolveClubDispatchLocale(null), "zh-Hant");
     for (const metric of SIX_AXIS_METRICS) {
+      assert.equal(isClubDispatchAxisMetric(metric), true, `axis gate for ${metric}`);
       assert.notEqual(
         resolveClubDispatchMetricLabelZh(metric),
         null,
-        `missing label for ${metric}`
+        `missing zh label for ${metric}`
+      );
+      assert.notEqual(
+        resolveClubDispatchMetricLabel(metric, "en"),
+        null,
+        `missing en label for ${metric}`
       );
     }
     assert.equal(formatOverallDeltaSuffix(0.19), " (+0.19)");
@@ -274,22 +295,41 @@ describe("club dispatch metric labels + body", () => {
     assert.equal(formatOverallDeltaSuffix(-0.2), "");
   });
 
-  it("builds axis breakthrough dual-line body with comment", () => {
-    const body = buildClubDispatchBody({
-      userName: "TfldVIDz",
-      metricType: "muscleMass",
-      axisScore: 84.7,
-      overallScore: 90.28,
-      overallDelta: 0.19,
-      comment: "細狗們膜拜吧",
+  it("keeps user-first title (nickname · club) and quoted comment on body line 1 (axis)", () => {
+    const title = buildClubDispatchTitle({
+      clubName: "粗男教",
+      userName: "秦始皇",
+      comment: "肌肌長大了",
     });
+    const body = buildClubDispatchBody({
+      userName: "秦始皇",
+      metricType: "muscleMass",
+      axisScore: 73.74,
+      overallScore: 79.26,
+      overallDelta: 0.49,
+      comment: "肌肌長大了",
+    });
+    assert.equal(title, "秦始皇 · 粗男教");
+    assert.equal(body, "「肌肌長大了」\n骨骼肌量 73.74 ➔ 總戰力 79.26 (+0.49)");
+    assert.equal(body.includes("秦始皇"), false);
+    assert.equal(body.includes("💬"), false);
+    assert.equal(body.startsWith("「肌肌長大了」\n"), true);
+  });
+
+  it("builds overall body with quoted comment line when present", () => {
     assert.equal(
-      body,
-      "TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)\n💬「細狗們膜拜吧」"
+      buildClubDispatchBody({
+        userName: "Bruce",
+        metricType: "overall",
+        overallScore: 90.28,
+        overallDelta: 0.19,
+        comment: "細狗們膜拜吧",
+      }),
+      "「細狗們膜拜吧」\n總戰力 ➔ 90.28 (+0.19)"
     );
   });
 
-  it("omits comment line and overall delta suffix when absent / non-positive", () => {
+  it("keeps nickname in body and omits delta suffix when comment absent / non-positive", () => {
     const flat = buildClubDispatchBody({
       userName: "Bruce",
       metricType: "strength",
@@ -298,7 +338,7 @@ describe("club dispatch metric labels + body", () => {
       overallDelta: 0,
       comment: "",
     });
-    assert.equal(flat, "Bruce 突破【最大肌力】81.2！總戰力升至 88");
+    assert.equal(flat, "Bruce 突破【最大肌力】81.2 ➔ 總戰力 88");
     assert.equal(flat.includes("\n"), false);
     assert.equal(flat.includes("💬"), false);
 
@@ -310,7 +350,7 @@ describe("club dispatch metric labels + body", () => {
       overallDelta: -0.4,
       comment: "",
     });
-    assert.equal(declined, "Bruce 突破【握力】70！總戰力升至 85");
+    assert.equal(declined, "Bruce 突破【握力】70 ➔ 總戰力 85");
   });
 
   it("degrades unknown / overall metric and negative axis scores", () => {
@@ -323,7 +363,7 @@ describe("club dispatch metric labels + body", () => {
         overallDelta: 1.5,
         comment: null,
       }),
-      "Bruce 總戰力升至 90.28 (+1.5)"
+      "Bruce 總戰力 ➔ 90.28 (+1.5)"
     );
     assert.equal(
       buildClubDispatchBody({
@@ -334,7 +374,7 @@ describe("club dispatch metric labels + body", () => {
         overallDelta: 1,
         comment: "",
       }),
-      "Bruce 總戰力升至 80 (+1)"
+      "Bruce 總戰力 ➔ 80 (+1)"
     );
     assert.equal(
       buildClubDispatchBody({
@@ -345,7 +385,7 @@ describe("club dispatch metric labels + body", () => {
         overallDelta: 1,
         comment: "",
       }),
-      "Bruce 總戰力升至 80 (+1)"
+      "Bruce 總戰力 ➔ 80 (+1)"
     );
   });
 
@@ -376,13 +416,13 @@ describe("club dispatch metric labels + body", () => {
       senderUid: "u1",
       guildId: "g1",
     }).notification.body;
-    assert.equal(body, "Bruce 突破【最大肌力】81.2！總戰力升至 0");
+    assert.equal(body, "Bruce 突破【最大肌力】81.2 ➔ 總戰力 0");
     assert.equal(body.includes("(+5)"), false);
   });
 });
 
 describe("buildClubDispatchNotification", () => {
-  it("builds zh dual-line body with comment and deep link data", () => {
+  it("puts user-first title (nickname · club) and quoted comment on body line 1 + deep link data", () => {
     const n = buildClubDispatchNotification({
       clubName: "ARN",
       userName: "Bruce",
@@ -395,15 +435,20 @@ describe("buildClubDispatchNotification", () => {
       guildId: "g1",
       dispatchId: "d1",
     });
-    assert.equal(n.notification.title, "【戰隊快報 // ARN】");
-    assert.equal(
-      n.notification.body,
-      "Bruce 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)\n💬「破80了」"
-    );
+    assert.equal(n.notification.title, "Bruce · ARN");
+    assert.equal(n.notification.body, "「破80了」\n骨骼肌量 84.7 ➔ 總戰力 90.28 (+0.19)");
+    assert.equal(n.notification.body.includes("Bruce"), false);
+    assert.equal(n.notification.body.includes("💬"), false);
+    assert.equal(n.notification.body.startsWith("「破80了」\n"), true);
     assert.equal(n.data.route, "/crew?focusUid=u1");
     assert.equal(n.data.type, "club_progress_dispatch");
     assert.equal(n.data.dispatchId, "d1");
-    assert.equal(n.apns.payload.aps.alert.title, "【戰隊快報 // ARN】");
+    assert.equal(n.data.comment, "破80了");
+    assert.equal(n.data.metricType, "muscleMass");
+    assert.equal(n.data.axisScore, "84.7");
+    assert.equal(n.data.overallScore, "90.28");
+    assert.equal(n.data.overallDelta, "0.19");
+    assert.equal(n.apns.payload.aps.alert.title, "Bruce · ARN");
     assert.equal(n.apns.payload.aps.alert.body, n.notification.body);
     assert.equal(n.apns.payload.aps.sound, "default");
     assert.equal(n.apns.payload.aps.badge, 1);
@@ -414,13 +459,29 @@ describe("buildClubDispatchNotification", () => {
     assert.equal(n.android.notification.defaultVibrateTimings, true);
   });
 
+  it("keeps overall+comment as quoted body line without nickname", () => {
+    const n = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 2,
+      comment: "衝了",
+      senderUid: "u1",
+      guildId: "g1",
+    });
+    assert.equal(n.notification.title, "Bruce · ARN");
+    assert.equal(n.notification.body, "「衝了」\n總戰力 ➔ 90 (+2)");
+    assert.equal(n.notification.body.includes("Bruce"), false);
+  });
+
   it("exposes a reusable Android channel payload builder", () => {
     const android = buildClubDispatchAndroidPayload();
     assert.equal(android.notification.channelId, "club_dispatches");
     assert.equal(android.priority, "high");
   });
 
-  it("omits comment line when comment empty (single data line)", () => {
+  it("uses squad-dispatch title fallback when comment empty", () => {
     const n = buildClubDispatchNotification({
       clubName: "ARN",
       userName: "Bruce",
@@ -432,10 +493,35 @@ describe("buildClubDispatchNotification", () => {
       senderUid: "u1",
       guildId: "g1",
     });
-    assert.equal(n.notification.body, "Bruce 突破【最大肌力】80！總戰力升至 85 (+1)");
+    assert.equal(n.notification.title, "【戰隊快報 // ARN】");
+    assert.equal(n.notification.body, "Bruce 突破【最大肌力】80 ➔ 總戰力 85 (+1)");
     assert.equal(n.notification.body.includes("「"), false);
     assert.equal(n.notification.body.includes("今天要去改造"), false);
     assert.equal(n.notification.body.includes("\n"), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(n.data, "comment"), false);
+    assert.equal(n.data.metricType, "strength");
+    assert.equal(n.data.axisScore, "80");
+    assert.equal(n.data.overallScore, "85");
+    assert.equal(n.data.overallDelta, "1");
+  });
+
+  it("omits axisScore in data for overall metric and keeps all data values as strings", () => {
+    const n = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 2,
+      comment: "衝了",
+      senderUid: "u1",
+      guildId: "g1",
+    });
+    assert.equal(n.data.comment, "衝了");
+    assert.equal(n.data.metricType, "overall");
+    assert.equal(Object.prototype.hasOwnProperty.call(n.data, "axisScore"), false);
+    for (const [key, value] of Object.entries(n.data)) {
+      assert.equal(typeof value, "string", `data.${key} must be string`);
+    }
   });
 
   it("degrades overall metric notifications without axis clause", () => {
@@ -449,7 +535,97 @@ describe("buildClubDispatchNotification", () => {
       senderUid: "u1",
       guildId: "g1",
     });
-    assert.equal(n.notification.body, "Bruce 總戰力升至 90 (+2)");
+    assert.equal(n.notification.title, "【戰隊快報 // ARN】");
+    assert.equal(n.notification.body, "Bruce 總戰力 ➔ 90 (+2)");
+  });
+
+  it("sanitizes comment inside notification builder (defense-in-depth)", () => {
+    const dirty = `  hi<script>\u0001${"x".repeat(40)}  `;
+    const n = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 1,
+      comment: dirty,
+      senderUid: "u1",
+      guildId: "g1",
+    });
+    const clean = sanitizeDispatchComment(dirty);
+    assert.equal(clean.length > 0, true);
+    assert.equal(clean.length <= CLUB_DISPATCH_COMMENT_MAX_LEN, true);
+    assert.equal(n.notification.title, "Bruce · ARN");
+    assert.equal(n.notification.body, `「${clean}」\n總戰力 ➔ 90 (+1)`);
+    assert.equal(n.data.comment, clean);
+    assert.equal(n.notification.body.includes("<"), false);
+    assert.equal(n.notification.body.includes("\u0001"), false);
+  });
+
+  it("builds English title/body for locale en (with and without comment)", () => {
+    const withComment = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "muscleMass",
+      axisScore: 84.7,
+      overallScore: 90.28,
+      overallDelta: 0.19,
+      comment: "PR time",
+      senderUid: "u1",
+      guildId: "g1",
+      locale: "en",
+    });
+    assert.equal(withComment.notification.title, "Bruce · ARN");
+    assert.equal(
+      withComment.notification.body,
+      '"PR time"\nSkeletal Muscle 84.7 ➔ Total 90.28 (+0.19)'
+    );
+    assert.equal(withComment.notification.body.includes("Bruce"), false);
+
+    const overallComment = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 2,
+      comment: "go",
+      senderUid: "u1",
+      guildId: "g1",
+      locale: "en-US",
+    });
+    assert.equal(overallComment.notification.title, "Bruce · ARN");
+    assert.equal(overallComment.notification.body, '"go"\nTotal Power ➔ 90 (+2)');
+
+    const noComment = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "strength",
+      axisScore: 80,
+      overallScore: 85,
+      overallDelta: 1,
+      comment: "",
+      senderUid: "u1",
+      guildId: "g1",
+      locale: "en",
+    });
+    assert.equal(noComment.notification.title, "[Squad Dispatch // ARN]");
+    assert.equal(
+      noComment.notification.body,
+      "Bruce hit [Max Strength] 80 ➔ Total 85 (+1)"
+    );
+
+    const overallNoComment = buildClubDispatchNotification({
+      clubName: "ARN",
+      userName: "Bruce",
+      metricType: "overall",
+      overallScore: 90,
+      overallDelta: 2,
+      comment: "   ",
+      senderUid: "u1",
+      guildId: "g1",
+      locale: "en",
+    });
+    assert.equal(overallNoComment.notification.title, "[Squad Dispatch // ARN]");
+    assert.equal(overallNoComment.notification.body, "Bruce Total Power ➔ 90 (+2)");
   });
 });
 

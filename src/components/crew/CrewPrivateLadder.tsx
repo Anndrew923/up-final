@@ -2,6 +2,7 @@ import {
   type FC,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -38,6 +39,7 @@ import type { GuildMemberSnapshot } from '../../types/guild';
 import type { ScoreMap, SixAxisMetric } from '../../types/scoring';
 import ProAvatarRing from '../ProAvatarRing';
 import { ladderDivisionTabClass } from '../ladder/ladderDivisionTabClass';
+import CrewDispatchMuteSwitch from './CrewDispatchMuteSwitch';
 import CrewFloatingYouBar from './CrewFloatingYouBar';
 import CrewMemberRadarSheet from './CrewMemberRadarSheet';
 
@@ -56,6 +58,14 @@ export interface CrewPrivateLadderProps {
   focusUid?: string | null;
   /** Fired after a valid focusUid successfully opens the sheet (parent may clear query). */
   onFocusUidConsumed?: (uid: string) => void;
+  /**
+   * Push-tap comment bubble text (from in-memory FCM stash). List taps pass null.
+   */
+  dispatchComment?: string | null;
+  /** Clear comment + stash when sheet closes or user opens another member from the list. */
+  onClearDispatchComment?: () => void;
+  /** Disable dispatch mute toggle while guild mutations are in flight. */
+  muteDisabled?: boolean;
 }
 
 /**
@@ -68,6 +78,9 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   guildTag = '',
   focusUid = null,
   onFocusUidConsumed,
+  dispatchComment = null,
+  onClearDispatchComment,
+  muteDisabled = false,
 }) => {
   const { t } = useTranslation('common');
   const { avatarUrl: localAvatarUrl } = useLocalProfileBrief();
@@ -85,7 +98,14 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
   const consumedFocusUidRef = useRef<string | null>(null);
   const onFocusUidConsumedRef = useRef(onFocusUidConsumed);
   onFocusUidConsumedRef.current = onFocusUidConsumed;
+  const onClearDispatchCommentRef = useRef(onClearDispatchComment);
+  onClearDispatchCommentRef.current = onClearDispatchComment;
   const localScores = useMergedScoresFromLocalStores();
+
+  const closeMemberSheet = useCallback(() => {
+    setSelectedUid(null);
+    onClearDispatchCommentRef.current?.();
+  }, []);
 
   // WHY: Consume each focusUid once — closing the sheet must not re-open from the same query.
   // Missing member: leave consumed unset so a later roster hydrate can still open (join/refresh).
@@ -240,18 +260,20 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
     }, CREW_JUMP_HIGHLIGHT_MS);
   }, []);
 
-  return (
-    <section className="ui-card space-y-4 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl">
-      <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-        <div className="h-4 w-1 shrink-0 rounded-full bg-cyan-400" />
-        <h3 className="min-w-0 truncate text-lg font-bold text-white">
-          {t('crew.ladder.title')}
-        </h3>
-      </div>
+  const ladderHeadingId = useId();
 
-      {/* C2 — dimension funnel; visual parity with LadderFilterSheet division tabs. */}
+  return (
+    <section
+      className="ui-card space-y-3 border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950/80 shadow-2xl"
+      aria-labelledby={ladderHeadingId}
+      data-testid="crew-private-ladder"
+    >
+      {/* WHY: Visual heading removed for viewport budget; keep SR landmark via sr-only title. */}
+      <h2 id={ladderHeadingId} className="sr-only" data-testid="crew-private-ladder-heading">
+        {t('crew.ladder.title')}
+      </h2>
       <nav
-        className="-mx-1 flex snap-x snap-mandatory gap-1 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
+        className="-mx-1 flex snap-x snap-mandatory gap-1 overflow-x-auto px-1 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label={t('crew.ladder.dimensionAria')}
       >
@@ -271,6 +293,9 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
           );
         })}
       </nav>
+
+      {/* WHY: First-screen mute toggle — above #1 so long rosters never bury receive prefs. */}
+      <CrewDispatchMuteSwitch disabled={muteDisabled} />
 
       {ranked.length === 0 ? (
         <p className="rounded-lg border border-zinc-700/90 bg-zinc-900/40 px-4 py-6 text-center text-sm leading-relaxed text-zinc-400">
@@ -330,7 +355,11 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
                 <button
                   type="button"
                   className={`group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-md px-3 py-3 text-left text-sm sm:gap-4 sm:px-4 ${rowTierClass} ${meHighlightClass}`}
-                  onClick={() => setSelectedUid(row.uid)}
+                  onClick={() => {
+                    // WHY: List taps must never resurrect a push-tap comment bubble.
+                    onClearDispatchCommentRef.current?.();
+                    setSelectedUid(row.uid);
+                  }}
                   aria-label={t('crew.ladder.openDetailAria', { name: displayName })}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -397,7 +426,8 @@ const CrewPrivateLadder: FC<CrewPrivateLadderProps> = ({
         guildTag={guildTag}
         isSelf={isSelfSelected}
         comparisonScores={comparisonScores}
-        onClose={() => setSelectedUid(null)}
+        dispatchComment={dispatchComment}
+        onClose={closeMemberSheet}
       />
     </section>
   );

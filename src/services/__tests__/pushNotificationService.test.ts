@@ -126,6 +126,50 @@ describe('pushNotificationService', () => {
     expect(navigateFromPushRoute).toHaveBeenCalledWith('/crew?focusUid=u2');
   });
 
+  it('stashes dispatch comment from FCM data before navigating (0 Firestore reads)', async () => {
+    checkPermissions.mockResolvedValue({ receive: 'granted' });
+    register.mockResolvedValue(undefined);
+    const listeners: Record<string, (payload: unknown) => void> = {};
+    addListener.mockImplementation(async (event: string, cb: (payload: unknown) => void) => {
+      listeners[event] = cb;
+      return { remove: vi.fn(async () => undefined) };
+    });
+
+    const { __resetClubDispatchTapCacheForTests, peekClubDispatchTapCache } = await import(
+      '../../logic/core/clubDispatchTapCache'
+    );
+    __resetClubDispatchTapCacheForTests();
+
+    const { pushNotificationService, __resetPushNotificationServiceForTests } = await import(
+      '../pushNotificationService'
+    );
+    await __resetPushNotificationServiceForTests();
+    await pushNotificationService.registerForGuildDispatches();
+
+    listeners.pushNotificationActionPerformed?.({
+      actionId: 'tap',
+      notification: {
+        data: {
+          type: 'club_progress_dispatch',
+          route: '/crew?focusUid=u2',
+          guildId: 'g1',
+          focusUid: 'u2',
+          dispatchId: 'd1',
+          comment: '肌肌長大了',
+          metricType: 'muscleMass',
+          axisScore: '73.74',
+          overallScore: '79.26',
+          overallDelta: '0.49',
+        },
+      },
+    });
+
+    expect(peekClubDispatchTapCache()?.comment).toBe('肌肌長大了');
+    expect(peekClubDispatchTapCache()?.focusUid).toBe('u2');
+    expect(navigateFromPushRoute).toHaveBeenCalledWith('/crew?focusUid=u2');
+    expect(navigateFromPushRoute.mock.calls[0]?.[0]).not.toContain('肌肌');
+  });
+
   it('clears token and detaches listeners on sign-out', async () => {
     checkPermissions.mockResolvedValue({ receive: 'granted' });
     register.mockResolvedValue(undefined);

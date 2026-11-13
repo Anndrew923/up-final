@@ -59,6 +59,38 @@ describe('CrewDispatchMuteSwitch', () => {
       root.render(<CrewDispatchMuteSwitch />);
     });
 
+    const shell = document.querySelector(
+      '[data-testid="crew-dispatch-mute-switch"]'
+    ) as HTMLElement;
+    expect(shell).toBeTruthy();
+    // Compact toolbar: one visible label row; hint stays in sr-only / title only.
+    expect(shell.querySelectorAll('p')).toHaveLength(1);
+    expect(shell.querySelector('.sr-only')?.textContent).toBe('crew.dispatch.muteHint');
+
+    const toggle = document.querySelector(
+      '[data-testid="crew-dispatch-mute-toggle"]'
+    ) as HTMLButtonElement;
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
+    expect(toggle.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(toggle.getAttribute('aria-describedby')).toBeTruthy();
+    expect(toggle.getAttribute('aria-label')).toBeNull();
+
+    await act(async () => {
+      toggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(mockSetClubDispatchMute).toHaveBeenCalledWith({ mute: true });
+    expect(toggle.getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('rolls back optimistic state when setClubDispatchMute fails', async () => {
+    mockSetClubDispatchMute.mockResolvedValueOnce({ ok: false, reason: 'failed' });
+
+    act(() => {
+      root.render(<CrewDispatchMuteSwitch />);
+    });
+
     const toggle = document.querySelector(
       '[data-testid="crew-dispatch-mute-toggle"]'
     ) as HTMLButtonElement;
@@ -69,7 +101,25 @@ describe('CrewDispatchMuteSwitch', () => {
       await Promise.resolve();
     });
 
-    expect(mockSetClubDispatchMute).toHaveBeenCalledWith({ mute: true });
-    expect(toggle.getAttribute('aria-checked')).toBe('false');
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
+    expect(document.querySelector('[role="alert"]')).toBeTruthy();
+  });
+
+  it('ignores clicks while disabled', async () => {
+    act(() => {
+      root.render(<CrewDispatchMuteSwitch disabled />);
+    });
+
+    const toggle = document.querySelector(
+      '[data-testid="crew-dispatch-mute-toggle"]'
+    ) as HTMLButtonElement;
+    expect(toggle.disabled).toBe(true);
+
+    await act(async () => {
+      toggle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(mockSetClubDispatchMute).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Shared admin smoke: resolve stored push credential → FCM → send 【戰隊快報】 → persist.
+ * Shared admin smoke: resolve stored push credential → FCM → send club-dispatch copy → persist.
  * Used by private HTTP invoker; keeps script thin (cloud-only).
  */
 import { db, messaging } from "../shared/admin.js";
@@ -11,20 +11,22 @@ import {
 import {
   buildClubDispatchAndroidPayload,
   buildClubDispatchApnsPayload,
-  buildClubDispatchBody,
+  buildClubDispatchNotification,
 } from "./clubProgressDispatch.js";
 
-// WHY: Smoke copy follows production dual-line physiology template (not the legacy CTA sentence).
-const TEST_NOTIFICATION = {
-  title: "【戰隊快報 // 測試廣播】",
-  body: buildClubDispatchBody({
-    userName: "隊友",
-    metricType: "overall",
-    overallScore: 80,
-    overallDelta: 1,
-    comment: "推播端對端驗收中",
-  }),
-};
+// WHY: Smoke must reuse production title/body builder so copy regressions surface in admin QA.
+const TEST_PAYLOAD = buildClubDispatchNotification({
+  clubName: "測試廣播",
+  userName: "隊友",
+  metricType: "overall",
+  overallScore: 80,
+  overallDelta: 1,
+  comment: "推播端對端驗收中",
+  senderUid: "admin-smoke",
+  guildId: "admin-smoke",
+});
+
+const TEST_NOTIFICATION = TEST_PAYLOAD.notification;
 
 /**
  * Prefer a usable FCM registration token; else fall back to APNs hex for conversion.

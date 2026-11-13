@@ -25,6 +25,7 @@ import RadarPkCompareLegend from '../radar/RadarPkCompareLegend';
 import RadarPkScanOverlay from '../radar/RadarPkScanOverlay';
 import RadarPkToggleCapsule from '../radar/RadarPkToggleCapsule';
 import ProAvatarRing from '../ProAvatarRing';
+import CrewDispatchCommentBubble from './CrewDispatchCommentBubble';
 
 export interface CrewMemberRadarSheetProps {
   open: boolean;
@@ -38,6 +39,11 @@ export interface CrewMemberRadarSheetProps {
    * Unused until the viewer enables compare; never triggers network I/O.
    */
   comparisonScores?: ScoreMap | null;
+  /**
+   * Push-tap dispatch comment (from FCM data stash). Null/empty → no bubble.
+   * WHY: 0 Firestore reads — never fetch the guild dispatches collection.
+   */
+  dispatchComment?: string | null;
   onClose: () => void;
 }
 
@@ -51,6 +57,7 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
   guildTag,
   isSelf = false,
   comparisonScores = null,
+  dispatchComment = null,
   onClose,
 }) => {
   const { t } = useTranslation('common');
@@ -177,6 +184,11 @@ const CrewMemberRadarSheet: FC<CrewMemberRadarSheetProps> = ({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-3 [-webkit-overflow-scrolling:touch] sm:py-4">
+          {dispatchComment?.trim() ? (
+            <div className="mb-3">
+              <CrewDispatchCommentBubble comment={dispatchComment} />
+            </div>
+          ) : null}
           {hasRadar ? (
             <div className="space-y-3">
               {clashReady && battleReport ? (

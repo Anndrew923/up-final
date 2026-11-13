@@ -282,30 +282,48 @@ interface SyncGuildLadderScoreResponse {
 
 ## 6. 推播文案模板
 
-### 6.1 Payload
+### 6.1 Payload（人類留言優先 · 鎖屏安全）
 
-| 欄位 | 值 |
+Android 鎖屏 title ≈15 中文字：有 `comment` 時 **title 暱稱置前**（`{userName} · {clubName}`）；**body 第 1 行完整留言、第 2 行分數**（無 `💬`）。
+
+| 情境 | 語系 | title | body |
+|---|---|---|---|
+| 有留言 · 單軸 | zh-Hant | `{userName} · {clubName}` | `「{comment}」\n{metricLabel} {axisScore} ➔ 總戰力 {overallScore}` + 可選 delta |
+| 有留言 · overall | zh-Hant | 同上 | `「{comment}」\n總戰力 ➔ {overallScore}` + 可選 delta |
+| 有留言 · 單軸 | en | `{userName} · {clubName}` | `"{comment}"\n{metricLabel} {axisScore} ➔ Total {overallScore}` + 可選 delta |
+| 有留言 · overall | en | 同上 | `"{comment}"\nTotal Power ➔ {overallScore}` + 可選 delta |
+| 無留言 · 單軸 | zh-Hant | `【戰隊快報 // {clubName}】` | `{userName} 突破【{metricLabel}】{axisScore} ➔ 總戰力 {overallScore}` + 可選 delta |
+| 無留言 · overall | zh-Hant | 同上 | `{userName} 總戰力 ➔ {overallScore}` + 可選 delta |
+| 無留言 · 單軸 | en | `[Squad Dispatch // {clubName}]` | `{userName} hit [{metricLabel}] {axisScore} ➔ Total {overallScore}` + 可選 delta |
+| 無留言 · overall | en | 同上 | `{userName} Total Power ➔ {overallScore}` + 可選 delta |
+
+| data 欄位 | 值 |
 |---|---|
-| title (zh-Hant) | `【戰隊快報 // {clubName}】` |
-| title (en) | `[Squad Dispatch // {clubName}]`（Phase 2） |
-| body (zh-Hant) — 六軸突破 | `{userName} 突破【{metricLabel}】{axisScore}！總戰力升至 {overallScore}` + 可選 `(+{overallDelta})`（見 §6.2）+ 可選第二行 `\n💬「{userComment}」` |
-| body (zh-Hant) — overall 降級 | `{userName} 總戰力升至 {overallScore}` + 可選 `(+{overallDelta})` + 可選第二行 |
 | data.route | `/crew?focusUid={senderUid}` |
 | data.guildId | `{guildId}` |
 | data.dispatchId | `{dispatchId}`（若有） |
 | data.type | `club_progress_dispatch` |
+| data.comment | 有留言時才寫入（trim，≤300；生產 sanitize ≤25）；**禁止**塞入 URL query |
+| data.metricType / overallScore / overallDelta | 字串摘要；單軸另附 `axisScore` |
 
-**metricLabel SSOT（`CLUB_DISPATCH_METRIC_LABELS_ZH`）**：`strength→最大肌力`、`explosivePower→爆發力`、`cardio→心肺耐力`、`muscleMass→骨骼肌量`、`bodyFat→FFMI`、`gripStrength→握力`。
+**metricLabel SSOT**
 
-**範例（有留言）**：
+- `CLUB_DISPATCH_METRIC_LABELS_ZH`：`strength→最大肌力`、`explosivePower→爆發力`、`cardio→心肺耐力`、`muscleMass→骨骼肌量`、`bodyFat→FFMI`、`gripStrength→握力`
+- `CLUB_DISPATCH_METRIC_LABELS_EN`（對齊 client `home.radar.axisChart`）：`strength→Max Strength`、`explosivePower→Explosive Power`、`cardio→Cardio Endurance`、`muscleMass→Skeletal Muscle`、`bodyFat→FFMI`、`gripStrength→Grip`
+
+**範例（有留言 · zh-Hant）**：
 ```text
-TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)
-💬「細狗們膜拜吧」
+title: 秦始皇 · 粗男教
+body:  「肌肌長大了」
+       骨骼肌量 73.74 ➔ 總戰力 79.26 (+0.49)
 ```
 
 ### 6.2 Comment 空字串 / 總分增量
 
-- 無留言：不換行、不輸出 `💬` 行。
+- 無留言：title 走戰隊快報 fallback；body 含暱稱；不輸出 `💬`、不換行。
+- 有留言：title 為 `{userName} · {clubName}`（暱稱置前，避免長戰隊名擠掉發話者）；body 第 1 行完整引號留言、第 2 行分數；body **不含**暱稱。
+- 超長戰隊名仍可能讓 title 尾端被鎖屏截斷；暱稱與留言優先保留。
+- `buildClubDispatchNotification` 必須對 `comment` 再跑 `sanitizeDispatchComment`（Callable 已消毒；builder 防旁路）。
 - `overallDelta <= 0`：省略 `(+…)` 括號（避免暗示總戰力上升）。
 - 不再附加「今天要去改造一下自己嗎？」結尾問句。
 
@@ -320,10 +338,11 @@ TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)
 - `crew.dispatch.broadcastAndSync` / `silentSync`
 - `crew.dispatch.commentPlaceholder`
 - `crew.dispatch.tag.overlimit` / `challenge` / `nearDeath`
-- `crew.dispatch.muteLabel`
-- `crew.dispatch.muteHint`
+- `crew.dispatch.muteLabel`（單行工具列標籤）
+- `crew.dispatch.muteHint`（title／輔助說明，不佔垂直版面）
+- `crew.dispatch.commentBubble.kicker`
 
-推播 title/body 由 **Functions 依使用者 locale（若有）或預設 zh-Hant** 組裝；Phase 1 可固定雙語選一（建議先 zh-Hant，locale 欄位 Phase 2）。
+推播 title/body 由 **Functions** `CLUB_DISPATCH_COPY` + `resolveClubDispatchLocale` 組裝（預設 `zh-Hant`；`en` / `en-*` → English）。`buildClubDispatchNotification` 可選 `locale`；broadcast 呼叫端未傳時維持 zh-Hant（無破壞性變更）。
 
 ---
 
@@ -334,9 +353,11 @@ TfldVIDz 突破【骨骼肌量】84.7！總戰力升至 90.28 (+0.19)
 | Path | `/crew?focusUid={uid}` |
 | 常數 | 沿用 `ROUTES.crew`；query key 鎖定 `focusUid` |
 | 行為 | `CrewPage` mount／search 變更時若 `focusUid` 落在當前 `members[]`，開啟 `CrewMemberRadarSheet` |
-| 無效 uid | 忽略 query，正常顯示私榜 |
-| 未入會 | 既有 empty state；不開 sheet |
-| 原生冷啟動 | Capacitor App `appUrlOpen` / push notification action → 導向同一 route |
+| 留言氣泡 | 推播點擊時將 `data.comment` 寫入記憶體 stash（`clubDispatchTapCache`）；roster hydrate 後 consume 一次並顯示於 sheet 標題下方。**0 Firestore reads**（禁止 `getDoc` / `onSnapshot` `dispatches`） |
+| 無留言 / 列表點開 | 不渲染氣泡；關 sheet 或無效 focus 時清除 stash |
+| 無效 uid | 忽略 query，清除 stash，正常顯示私榜 |
+| 未入會 | 既有 empty state；不開 sheet；清除 stash |
+| 原生冷啟動 | Capacitor push action → stash + 導向同一 route |
 
 ---
 

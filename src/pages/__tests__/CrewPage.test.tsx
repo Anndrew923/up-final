@@ -57,6 +57,8 @@ const guild: GuildDoc = {
 
 const crewState = vi.hoisted(() => ({
   mode: 'joined' as 'joined' | 'empty',
+  isCoach: false,
+  refresh: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -80,7 +82,7 @@ vi.mock('../../hooks/useCrewGuild', () => ({
         refreshing: false,
         actionError: null,
         clearActionError: vi.fn(),
-        refresh: vi.fn(),
+        refresh: crewState.refresh,
         create: vi.fn(),
         join: vi.fn(),
         leave: vi.fn(),
@@ -92,8 +94,8 @@ vi.mock('../../hooks/useCrewGuild', () => ({
     return {
       status: 'ready',
       guild,
-      role: 'member',
-      isCoach: false,
+      role: crewState.isCoach ? 'coach' : 'member',
+      isCoach: crewState.isCoach,
       isPro: true,
       rankedMembers: members,
       authUid: 'u1',
@@ -101,7 +103,7 @@ vi.mock('../../hooks/useCrewGuild', () => ({
       refreshing: false,
       actionError: null,
       clearActionError: vi.fn(),
-      refresh: vi.fn(),
+      refresh: crewState.refresh,
       create: vi.fn(),
       join: vi.fn(),
       leave: vi.fn(),
@@ -113,11 +115,11 @@ vi.mock('../../hooks/useCrewGuild', () => ({
 }));
 
 vi.mock('../../components/crew/CrewDispatchMuteSwitch', () => ({
-  default: () => <div data-testid="mute-switch" />,
+  default: () => <div data-testid="crew-dispatch-mute-switch" />,
 }));
 
 vi.mock('../../components/crew/CrewIdentityBanner', () => ({
-  default: () => <div data-testid="identity-banner" />,
+  default: () => <div data-testid="crew-identity-banner">[ARN] Iron</div>,
 }));
 
 vi.mock('../../components/crew/CrewEmptyState', () => ({
@@ -203,6 +205,8 @@ describe('CrewPage focusUid deep link', () => {
 
   beforeEach(() => {
     crewState.mode = 'joined';
+    crewState.isCoach = false;
+    crewState.refresh.mockReset();
     vi.stubGlobal('IntersectionObserver', class {
       observe = vi.fn();
       unobserve = vi.fn();
@@ -254,5 +258,54 @@ describe('CrewPage focusUid deep link', () => {
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(document.querySelector('[data-testid="crew-empty"]')).toBeTruthy();
     expect(document.querySelector('[data-testid="location-search"]')?.textContent).toBe('');
+  });
+
+  it('places dispatch mute toolbar above the member roster', () => {
+    const rendered = renderCrew('/crew');
+    root = rendered.root;
+    host = rendered.host;
+
+    const mute = host.querySelector('[data-testid="crew-dispatch-mute-switch"]');
+    const firstRow = Array.from(host.querySelectorAll('li button')).find((el) =>
+      el.textContent?.includes('Alpha')
+    );
+    expect(mute).toBeTruthy();
+    expect(firstRow).toBeTruthy();
+    expect(
+      mute!.compareDocumentPosition(firstRow!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('joined header uses club identity + icon refresh (no generic CLUB title)', async () => {
+    const rendered = renderCrew('/crew');
+    root = rendered.root;
+    host = rendered.host;
+
+    expect(host.querySelector('[data-testid="crew-identity-banner"]')).toBeTruthy();
+    expect(host.textContent).toContain('[ARN] Iron');
+    expect(host.textContent).not.toContain('crew.page.title');
+    expect(host.textContent).not.toContain('crew.page.kicker');
+
+    const refresh = host.querySelector('[data-testid="crew-refresh"]') as HTMLButtonElement;
+    expect(refresh).toBeTruthy();
+    expect(refresh.getAttribute('aria-label')).toBe('crew.page.refresh');
+    expect(host.querySelector('[data-testid="crew-manage"]')).toBeNull();
+
+    await act(async () => {
+      refresh.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(crewState.refresh).toHaveBeenCalledWith(true);
+  });
+
+  it('shows manage icon for coaches', () => {
+    crewState.isCoach = true;
+    const rendered = renderCrew('/crew');
+    root = rendered.root;
+    host = rendered.host;
+
+    const manage = host.querySelector('[data-testid="crew-manage"]');
+    expect(manage).toBeTruthy();
+    expect(manage?.getAttribute('aria-label')).toBe('crew.manage.openAria');
   });
 });

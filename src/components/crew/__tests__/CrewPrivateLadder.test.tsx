@@ -15,6 +15,10 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('../CrewDispatchMuteSwitch', () => ({
+  default: () => <div data-testid="crew-dispatch-mute-switch" />,
+}));
+
 vi.mock('../../ProAvatarRing', () => ({
   default: () => <div data-testid="avatar" />,
 }));
@@ -123,7 +127,16 @@ describe('CrewPrivateLadder', () => {
       );
     });
 
-    expect(container.textContent).toContain('crew.ladder.title');
+    const ladderHeading = container.querySelector(
+      '[data-testid="crew-private-ladder-heading"]'
+    );
+    expect(ladderHeading?.textContent).toBe('crew.ladder.title');
+    expect(ladderHeading?.classList.contains('sr-only')).toBe(true);
+    expect(
+      container
+        .querySelector('[data-testid="crew-private-ladder"]')
+        ?.getAttribute('aria-labelledby')
+    ).toBe(ladderHeading?.id);
     expect(container.textContent).toContain('✦ #1');
     expect(container.textContent).toContain('#2');
     expect(container.textContent).toContain('Alpha');
@@ -131,6 +144,15 @@ describe('CrewPrivateLadder', () => {
     expect(container.textContent).toContain('crew.ladder.you');
     expect(container.textContent).toContain('crew.ladder.dimOverall');
     expect(document.body.querySelector('[data-testid="crew-floating-you-bar"]')).toBeTruthy();
+
+    const mute = container.querySelector('[data-testid="crew-dispatch-mute-switch"]');
+    const firstRow = container.querySelector('li button');
+    expect(mute).toBeTruthy();
+    expect(firstRow).toBeTruthy();
+    // WHY: Mute toolbar must sit above #1 so receive prefs stay first-screen.
+    expect(
+      mute!.compareDocumentPosition(firstRow!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
   });
 
   it('re-ranks by strength tab without network', () => {

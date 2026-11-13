@@ -7,9 +7,27 @@ export interface CrewIdentityBannerProps {
   guild: GuildDoc;
 }
 
+function ClipboardGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 5h6a2 2 0 0 1 2 2v1H7V7a2 2 0 0 1 2-2z" />
+      <path d="M7 8h10v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8z" />
+    </svg>
+  );
+}
+
 /**
- * Compact club identity strip — name/count left, invite capsule right.
- * WHY: First viewport must expose the member ladder; card height is budgeted tightly.
+ * Compact club identity for the Crew page header — title + single meta row (no card chrome).
+ * WHY: First viewport budget belongs to the roster; identity must not own a second stacked block.
  */
 const CrewIdentityBanner: FC<CrewIdentityBannerProps> = ({ guild }) => {
   const { t } = useTranslation('common');
@@ -46,57 +64,57 @@ const CrewIdentityBanner: FC<CrewIdentityBannerProps> = ({ guild }) => {
     }
   };
 
-  // Compact capsule keeps short labels; fail detail stays in aria / title.
-  const capsuleLabel =
-    copyState === 'ok' ? t('crew.banner.copied') : t('crew.banner.copy');
-  const failDetail = copyState === 'fail' ? t('crew.banner.copyFail') : null;
+  const copyStatusLabel =
+    copyState === 'ok'
+      ? t('crew.banner.copied')
+      : copyState === 'fail'
+        ? t('crew.banner.copyFail')
+        : t('crew.banner.copy');
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 via-bg-card to-bg-panel px-3.5 py-3 shadow-panel">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <span className="inline-flex rounded-md border border-cyan-400/40 bg-cyan-400/10 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-widest text-cyan-300">
-            [{guild.tag}]
-          </span>
-          <h2 className="mt-1 truncate text-lg font-bold leading-tight text-zinc-50">
-            {guild.name}
-          </h2>
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-zinc-500">
-            {t('crew.banner.members', {
-              count: guild.memberCount,
-              max: guild.maxMembers,
-            })}
-          </p>
-        </div>
+    <div className="min-w-0" data-testid="crew-identity-banner">
+      <h1 className="truncate text-xl font-bold tracking-tight text-zinc-50 sm:text-2xl">
+        <span className="font-mono text-cyan-300">[{guild.tag}]</span>{' '}
+        <span>{guild.name}</span>
+      </h1>
+      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-400">
+        <span className="font-mono tabular-nums tracking-wide">
+          {t('crew.banner.members', {
+            count: guild.memberCount,
+            max: guild.maxMembers,
+          })}
+        </span>
+        <span className="text-zinc-600" aria-hidden>
+          ·
+        </span>
         <button
           type="button"
-          className={`inline-flex max-w-[48%] shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-left transition ${
+          data-testid="crew-invite-copy"
+          className={`inline-flex min-w-0 max-w-full items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tracking-wider transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
             copyState === 'fail'
-              ? 'border-rose-500/40 bg-rose-500/10'
-              : 'border-cyan-500/35 bg-cyan-500/10 hover:border-cyan-400/55 hover:bg-cyan-500/15'
+              ? 'text-rose-300 hover:text-rose-200'
+              : copyState === 'ok'
+                ? 'text-emerald-300'
+                : 'text-cyan-200/90 hover:text-cyan-100'
           }`}
-          aria-label={
-            failDetail
-              ? `${t('crew.banner.inviteLabel')}: ${displayCode}. ${failDetail}`
-              : `${t('crew.banner.inviteLabel')}: ${displayCode}. ${capsuleLabel}`
-          }
-          title={failDetail ?? undefined}
+          aria-label={`${t('crew.banner.inviteLabel')}: ${displayCode}. ${copyStatusLabel}`}
+          title={copyStatusLabel}
           onClick={() => void handleCopy()}
         >
-          <span className="min-w-0 truncate font-mono text-[11px] font-semibold tracking-wider text-cyan-200">
-            {displayCode}
-          </span>
-          <span
-            className={`shrink-0 text-[10px] font-semibold ${
-              copyState === 'fail' ? 'text-rose-200' : 'text-zinc-300'
-            }`}
-          >
-            {capsuleLabel}
-          </span>
+          <span className="truncate">{displayCode}</span>
+          <ClipboardGlyph className="h-3.5 w-3.5 shrink-0" />
+          {copyState === 'ok' || copyState === 'fail' ? (
+            <span
+              className="shrink-0 text-[10px] font-semibold normal-case tracking-normal"
+              role="status"
+              aria-live="polite"
+            >
+              {copyState === 'ok' ? t('crew.banner.copied') : t('crew.banner.copyFail')}
+            </span>
+          ) : null}
         </button>
       </div>
-    </section>
+    </div>
   );
 };
 

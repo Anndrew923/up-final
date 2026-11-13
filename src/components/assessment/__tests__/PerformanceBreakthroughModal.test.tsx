@@ -24,7 +24,8 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.closeAria') return 'Close';
       if (key === 'assessment.breakthrough.kicker') return 'Axis Breakthrough';
       if (key === 'assessment.breakthrough.confirmDismiss') return 'CONFIRM';
-      if (key === 'assessment.breakthrough.syncBtn') return 'Sync';
+      if (key === 'assessment.breakthrough.syncBtn') return 'Sync Dashboard';
+      if (key === 'assessment.breakthrough.syncDashboardThenArena') return 'Sync global ladder';
       if (key === 'assessment.breakthrough.syncDashboardThenArenaWithClub') return 'Sync Arena+Club';
       if (key === 'assessment.breakthrough.syncDashboardThenArenaGuildOnly') return 'Sync Club Only';
       if (key === 'assessment.breakthrough.dashboardAndArenaGuildSuccess') {
@@ -402,21 +403,53 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     );
   });
 
-  it('does not open club dispatch modal for global-only membership', () => {
-    act(() => {
-      root.render(
-        <PerformanceBreakthroughModal
-          open
-          payload={basePayload}
-          onClose={vi.fn()}
-          onPersistToDashboard={() => true}
-          arenaSync={{ ...dualSync, membershipSurface: 'global-only', hasGuild: false }}
-        />
-      );
-    });
-    expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
-    expect(document.querySelector('[data-testid="club-progress-dispatch-panel"]')).toBeNull();
-  });
+  it.each(['global-only', 'pending'] as const)(
+    '%s: hides club CTA, shows dashboard+arena, syncs global without ClubDispatch',
+    async (membershipSurface) => {
+      // WHY: Non-dual surfaces must never show club-only CTA or open ClubDispatch on arena tap.
+      // onSyncToDashboard is required so the dashboard CTA renders alongside the arena CTA.
+      const findBtn = (label: string) =>
+        Array.from(document.querySelectorAll('button')).find((el) => el.textContent === label);
+      const persistToDashboard = vi.fn(() => true);
+
+      act(() => {
+        root.render(
+          <PerformanceBreakthroughModal
+            open
+            payload={basePayload}
+            onClose={vi.fn()}
+            onSyncToDashboard={vi.fn()}
+            onPersistToDashboard={persistToDashboard}
+            arenaSync={{
+              ...dualSync,
+              membershipSurface,
+              hasGuild: false,
+            }}
+          />
+        );
+      });
+
+      expect(findBtn('Sync Club Only')).toBeUndefined();
+      expect(findBtn('Sync Arena+Club')).toBeUndefined();
+      expect(findBtn('Sync Dashboard')).toBeDefined();
+      expect(findBtn('Sync global ladder')).toBeDefined();
+      expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
+
+      const arenaBtn = findBtn('Sync global ladder');
+      expect(arenaBtn).toBeDefined();
+
+      await act(async () => {
+        arenaBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await flushPipeline();
+      });
+
+      expect(persistToDashboard).toHaveBeenCalledTimes(1);
+      expect(dualSync.syncPageGlobal).toHaveBeenCalledTimes(1);
+      expect(dualSync.syncPageGlobal).toHaveBeenCalledWith();
+      expect(dualSync.syncPageGuild).not.toHaveBeenCalled();
+      expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
+    }
+  );
 
   it('opens ClubDispatchModal from club sync and broadcasts with comment', async () => {
     act(() => {

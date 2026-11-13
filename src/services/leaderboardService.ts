@@ -73,6 +73,29 @@ import {
   setCachedLeaderboard,
   type LeaderboardEntry,
 } from './leaderboardCacheService';
+import {
+  invalidateMyLeaderboardEntryCache,
+  LEADERBOARD_MY_ENTRY_TTL_MS,
+  lookupMyLeaderboardEntryCache,
+  seedMyLeaderboardEntryFromRows,
+  setMyLeaderboardEntryCache,
+} from './myLeaderboardEntryCache';
+
+export {
+  invalidateMyLeaderboardEntryCache,
+  LEADERBOARD_MY_ENTRY_TTL_MS,
+} from './myLeaderboardEntryCache';
+
+function seedMyEntryFromLeaderboardRows(
+  metric: LeaderboardShardId,
+  items: readonly LeaderboardEntry[]
+): void {
+  seedMyLeaderboardEntryFromRows({
+    metric,
+    uid: getCurrentFirebaseUser()?.uid,
+    items,
+  });
+}
 
 /**
  * WHY: Filter-mode ranks/jumps need a client-side slice; cap keeps Firestore reads bounded.
@@ -112,10 +135,14 @@ function clearPageEndCursors(metric?: string): void {
   });
 }
 
-/** Clears memory + disk list/catalog cache and in-memory page cursors. */
+/**
+ * Clears memory + disk list/catalog cache, page cursors, and my-entry TTL slots.
+ * WHY: Score/identity writes must drop both board pages and the remount my-entry cache together.
+ */
 export function clearLeaderboardReadCaches(metric?: string): void {
   clearLeaderboardCache(metric);
   clearPageEndCursors(metric);
+  invalidateMyLeaderboardEntryCache(metric ? { metric } : undefined);
 }
 
 /** Re-export for callers that only import from `leaderboardService`. */
@@ -184,6 +211,7 @@ export interface GetMyLeaderboardEntryResult {
   ok: boolean;
   reason?: LeaderboardReadFailureReason;
   item?: LeaderboardEntry | null;
+  fromCache?: boolean;
 }
 
 export interface GetRankByScoreBestResult {
@@ -583,6 +611,7 @@ async function listLeaderboardMemory(params: {
     pageSize,
     items,
   });
+  seedMyEntryFromLeaderboardRows(params.metric, items);
   return { ok: true, items, fromCache: false };
 }
 
@@ -605,6 +634,7 @@ export async function listLeaderboard(params: {
     swrMaxAgeMs: LEADERBOARD_LIST_SWR_MAX_AGE_MS,
   });
   if (cached?.freshness === 'fresh') {
+    seedMyEntryFromLeaderboardRows(params.metric, cached.data.items);
     return { ok: true, items: cached.data.items, fromCache: true };
   }
   if (cached?.freshness === 'stale') {
@@ -614,6 +644,7 @@ export async function listLeaderboard(params: {
       page: params.page,
       pageSize,
     });
+    seedMyEntryFromLeaderboardRows(params.metric, cached.data.items);
     return { ok: true, items: cached.data.items, fromCache: true, stale: true };
   }
 
@@ -637,6 +668,7 @@ export async function listLeaderboard(params: {
         pageSize,
         items: fetched.items,
       });
+      seedMyEntryFromLeaderboardRows(params.metric, fetched.items);
       return { ok: true, items: fetched.items, fromCache: false };
     } catch (err) {
       logLeaderboardFirestoreError('listLeaderboard', err);
@@ -722,6 +754,15 @@ export async function getMyLeaderboardEntry(params: {
     return { ok: true, item: null };
   }
 
+  const cached = lookupMyLeaderboardEntryCache({
+    uid: params.uid,
+    metric: params.metric,
+    ttlMs: LEADERBOARD_MY_ENTRY_TTL_MS,
+  });
+  if (cached) {
+    return { ok: true, item: cached.item, fromCache: true };
+  }
+
   const db = getFirestoreDb();
   if (db) {
     try {
@@ -734,10 +775,13 @@ export async function getMyLeaderboardEntry(params: {
         params.uid
       );
       const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        return { ok: true, item: null };
-      }
-      return { ok: true, item: mapFirestoreDoc(snap) };
+      const item = snap.exists() ? mapFirestoreDoc(snap) : null;
+      setMyLeaderboardEntryCache({
+        uid: params.uid,
+        metric: params.metric,
+        item,
+      });
+      return { ok: true, item, fromCache: false };
     } catch (err) {
       logLeaderboardFirestoreError('getMyLeaderboardEntry', err);
       return { ok: false, reason: resolveLeaderboardFirestoreErrorReason(err) };
@@ -745,7 +789,13 @@ export async function getMyLeaderboardEntry(params: {
   }
 
   const store = getMetricStore(params.metric);
-  return { ok: true, item: store.get(params.uid) ?? null };
+  const item = store.get(params.uid) ?? null;
+  setMyLeaderboardEntryCache({
+    uid: params.uid,
+    metric: params.metric,
+    item,
+  });
+  return { ok: true, item, fromCache: false };
 }
 
 export async function getRankByScoreBest(params: {

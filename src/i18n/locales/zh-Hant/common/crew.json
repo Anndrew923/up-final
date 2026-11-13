@@ -90,8 +90,11 @@
         "challenge": "#後照鏡看不到人",
         "nearDeath": "#這重量算暖身"
       },
-      "muteLabel": "接收隊友戰情報告",
-      "muteHint": "關閉後不會收到隊友發布的進步推播。"
+      "muteLabel": "接收隊友戰報推播",
+      "muteHint": "關閉後不會收到隊友發布的進步推播。",
+      "commentBubble": {
+        "kicker": "戰報留言"
+      }
     },
     "leave": {
       "cta": "退出俱樂部",

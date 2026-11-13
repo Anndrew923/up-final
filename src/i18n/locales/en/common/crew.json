@@ -90,8 +90,11 @@
         "challenge": "#RearViewMirror",
         "nearDeath": "#JustAWarmup"
       },
-      "muteLabel": "Receive teammate progress alerts",
-      "muteHint": "Turn off to stop push alerts when teammates publish gains."
+      "muteLabel": "Receive teammate dispatch pushes",
+      "muteHint": "Turn off to stop push alerts when teammates publish gains.",
+      "commentBubble": {
+        "kicker": "Dispatch Note"
+      }
     },
     "leave": {
       "cta": "Leave Club",

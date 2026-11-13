@@ -11,11 +11,13 @@ import {
   type ActionPerformed,
 } from '@capacitor/push-notifications';
 import { isCapacitorNativePlatform } from '../lib/capacitorPlatform';
+import { stashClubDispatchPushTap } from '../logic/core/clubDispatchTapCache';
 import { buildClubDispatchAndroidChannel } from '../logic/core/pushNotificationChannel';
 import {
   resolvePushNotificationRoute,
   resolvePushPlatform,
 } from '../logic/core/pushNotificationRoute';
+import { parseClubDispatchPushData } from '../logic/core/parseClubDispatchPushData';
 import { upsertPushToken } from './guildCallableService';
 import { navigateFromPushRoute } from './pushNavigationBridge';
 
@@ -96,10 +98,16 @@ export async function ensureClubDispatchAndroidChannel(): Promise<void> {
 }
 
 function onActionPerformed(action: ActionPerformed): void {
-  const route = resolvePushNotificationRoute(action.notification?.data);
+  const data = action.notification?.data;
+  const route = resolvePushNotificationRoute(data);
   if (!route) {
-    console.warn('[Push] action missing safe route', action.notification?.data);
+    console.warn('[Push] action missing safe route', data);
     return;
+  }
+  // WHY: Stash comment before navigate — Crew may hydrate roster after cold-start (0 Firestore reads).
+  const parsed = parseClubDispatchPushData(data);
+  if (parsed) {
+    stashClubDispatchPushTap(parsed);
   }
   const ok = navigateFromPushRoute(route);
   if (!ok) {
