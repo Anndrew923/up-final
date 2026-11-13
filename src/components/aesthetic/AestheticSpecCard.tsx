@@ -1,9 +1,11 @@
 import { type FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import { formatOverallResonanceScore } from '../../logic/core/scoring';
 import type { AestheticSpecCardModel } from '../../hooks/useAestheticSpecCard';
-import type { DecadeBandId } from '../../logic/aesthetic/aestheticTypes';
+import {
+  resolveAestheticBandCopy,
+  resolveAestheticVisualLine,
+} from '../../logic/aesthetic/aestheticSpecCopy';
 import AestheticCardArmor from './AestheticCardArmor';
 import AestheticMeter, { clampMeterFill, type AestheticMeterProps } from './AestheticMeter';
 import GuillocheCrest from './GuillocheCrest';
@@ -25,10 +27,6 @@ import {
 
 export interface AestheticSpecCardProps {
   model: AestheticSpecCardModel;
-}
-
-function formatBfPct(value: number): string {
-  return (Math.round(value * 10) / 10).toFixed(1);
 }
 
 /** Badge + gold numerals fire at >= 100; needle still caps at the rightmost tick. */
@@ -59,21 +57,6 @@ const SpecRow: FC<{
       </div>
     </div>
   );
-};
-
-function bandCopy(
-  t: TFunction,
-  kind: 'force' | 'kinetic',
-  gender: 'male' | 'female' | null,
-  id: DecadeBandId | null
-): { title: string; subtitle: string } {
-  const unmeasured = t('aesthetic.labels.unmeasured');
-  if (!gender || id == null) return { title: unmeasured, subtitle: unmeasured };
-  const sexKey = gender === 'female' ? 'f' : 'm';
-  return {
-    title: t(`aesthetic.${kind}.${sexKey}.${id}.title`),
-    subtitle: t(`aesthetic.${kind}.${sexKey}.${id}.subtitle`),
-  };
 }
 
 function overflowMeterProps(
@@ -108,17 +91,14 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
   const visualSubtitle = spec.visual.id
     ? t(`aesthetic.visual.${spec.visual.id}.subtitle`)
     : unmeasuredLabel;
-  const forceCopy = bandCopy(t, 'force', gender, spec.force.id);
-  const kineticCopy = bandCopy(t, 'kinetic', gender, spec.kinetic.id);
-
-  const visualBfNote = spec.visual.unmeasured
-    ? null
-    : spec.visual.bodyFatMissing || bodyFatPct == null
-      ? t('aesthetic.labels.bodyFatMissing')
-      : t('aesthetic.labels.bodyFatValue', { bf: formatBfPct(bodyFatPct) });
-  const visualLine = visualBfNote
-    ? t('aesthetic.labels.visualLineWithNote', { subtitle: visualSubtitle, note: visualBfNote })
-    : visualSubtitle;
+  const forceCopy = resolveAestheticBandCopy(t, 'force', gender, spec.force.id);
+  const kineticCopy = resolveAestheticBandCopy(t, 'kinetic', gender, spec.kinetic.id);
+  const visualLine = resolveAestheticVisualLine(t, {
+    visualSubtitle,
+    unmeasured: spec.visual.unmeasured,
+    bodyFatMissing: spec.visual.bodyFatMissing,
+    bodyFatPct,
+  });
 
   return (
     <article

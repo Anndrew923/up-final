@@ -148,6 +148,22 @@
       "triggerCtaShort": "規格證書",
       "closeModal": "關閉名片",
       "closeAria": "關閉生理規格證書"
+    },
+    "share": {
+      "shareReport": "分享戰報",
+      "sharing": "分享中…",
+      "shareTitle": "最強肉體戰報",
+      "cameraBg": "自拍背景",
+      "photosBg": "選圖背景",
+      "restoreCarbon": "恢復預設底圖",
+      "previewAlt": "練後自拍戰報預覽",
+      "errors": {
+        "captureUnavailable": "無法開啟相機或相簿，請確認權限後再試。",
+        "captureFailed": "圖片無法解碼，請改選其他照片。",
+        "composeFailed": "戰報合成失敗，請稍後再試。",
+        "shareUnavailable": "此裝置無法分享檔案，請改用下載或稍後再試。",
+        "shareFailed": "分享未完成，請稍後再試。"
+      }
     }
   }
 }

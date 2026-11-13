@@ -27,12 +27,27 @@ const fixture: AestheticSpecCardModel = {
   },
 };
 
+const composeTelemetryCard = vi.fn();
+const shareTelemetryCardPng = vi.fn();
+const captureSelfieImage = vi.fn();
+
 vi.mock('../../../lib/motionPreference', () => ({
   prefersReducedMotion: () => false,
 }));
 
 vi.mock('../../../hooks/useAestheticSpecCard', () => ({
   useAestheticSpecCard: () => fixture,
+}));
+
+vi.mock('../../../hooks/useMergedScoresFromLocalStores', () => ({
+  useMergedScoresFromLocalStores: () => ({
+    strength: 70,
+    explosivePower: 65,
+    cardio: 60,
+    muscleMass: 68,
+    bodyFat: 72,
+    gripStrength: 55,
+  }),
 }));
 
 vi.mock('../../../hooks/useFocusTrap', () => ({
@@ -43,9 +58,23 @@ vi.mock('../../../hooks/useShellScrollLock', () => ({
   useShellScrollLock: () => undefined,
 }));
 
+vi.mock('../../../lib/telemetryCardComposer', () => ({
+  composeTelemetryCard: (...args: unknown[]) => composeTelemetryCard(...args),
+}));
+
+vi.mock('../../../services/telemetryCardShareService', () => ({
+  shareTelemetryCardPng: (...args: unknown[]) => shareTelemetryCardPng(...args),
+}));
+
+vi.mock('../../../services/selfieCaptureService', () => ({
+  captureSelfieImage: (...args: unknown[]) => captureSelfieImage(...args),
+}));
+
 describe('AestheticSpecModal certificate shell', () => {
   let container: HTMLDivElement;
   let root: Root;
+  const createObjectURL = vi.fn(() => 'blob:aesthetic-preview');
+  const revokeObjectURL = vi.fn();
 
   beforeAll(async () => {
     await i18n.changeLanguage('zh-Hant');
@@ -55,6 +84,18 @@ describe('AestheticSpecModal certificate shell', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
+    composeTelemetryCard.mockReset();
+    shareTelemetryCardPng.mockReset();
+    captureSelfieImage.mockReset();
+    createObjectURL.mockClear();
+    revokeObjectURL.mockClear();
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL,
+      revokeObjectURL,
+    });
+    composeTelemetryCard.mockResolvedValue(new Blob(['png'], { type: 'image/png' }));
+    shareTelemetryCardPng.mockResolvedValue({ ok: true });
   });
 
   afterEach(() => {
@@ -62,6 +103,7 @@ describe('AestheticSpecModal certificate shell', () => {
       root.unmount();
     });
     container.remove();
+    vi.unstubAllGlobals();
   });
 
   it('keeps close outside the plaque and never scrolls the 9:16 stage', () => {
@@ -78,6 +120,10 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(card).not.toBeNull();
     expect(card?.querySelector('button')).toBeNull();
 
+    expect(document.querySelector('[data-testid="aesthetic-share-report"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="aesthetic-selfie-camera"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="aesthetic-selfie-photos"]')).not.toBeNull();
+
     const close = Array.from(document.querySelectorAll('button')).find(
       (btn) => btn.textContent === '關閉名片'
     );
@@ -88,7 +134,7 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(wrap?.className).toBe(CERT_STAGE_WRAP_CLASS);
     expect(wrap?.className).not.toContain('overflow-y');
     expect(document.body.innerHTML).toContain('h-dvh');
-    expect(document.body.innerHTML).not.toContain('ui-modal-safe-footer');
+    expect(document.body.innerHTML).toContain('ui-modal-safe-footer');
 
     act(() => {
       close?.click();
@@ -151,5 +197,133 @@ describe('AestheticSpecModal certificate shell', () => {
     });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
-});
 
+  it('shares a carbon telemetry plate from the default mode', async () => {
+    const onClose = vi.fn();
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={onClose} />
+        </I18nextProvider>
+      );
+    });
+
+    const shareBtn = document.querySelector<HTMLButtonElement>(
+      '[data-testid="aesthetic-share-report"]'
+    );
+    await act(async () => {
+      shareBtn?.click();
+    });
+
+    expect(composeTelemetryCard).toHaveBeenCalledTimes(1);
+    expect(composeTelemetryCard.mock.calls[0]?.[0]).toMatchObject({
+      mode: 'carbon',
+      battleCode: 'UP-Bruce #1234',
+      overallScore: 69.06,
+    });
+    expect(shareTelemetryCardPng).toHaveBeenCalledTimes(1);
+    expect(shareTelemetryCardPng.mock.calls[0]?.[0]?.blob).toBeInstanceOf(Blob);
+  });
+
+  it('switches to selfie preview and closes the ImageBitmap on unmount', async () => {
+    const close = vi.fn();
+    const bitmap = {
+      width: 1080,
+      height: 1920,
+      close,
+    } as unknown as ImageBitmap;
+    captureSelfieImage.mockResolvedValue({ ok: true, bitmap });
+    composeTelemetryCard.mockResolvedValue(new Blob(['selfie-png'], { type: 'image/png' }));
+
+    const onClose = vi.fn();
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={onClose} />
+        </I18nextProvider>
+      );
+    });
+
+    const photosBtn = document.querySelector<HTMLButtonElement>(
+      '[data-testid="aesthetic-selfie-photos"]'
+    );
+    await act(async () => {
+      photosBtn?.click();
+    });
+
+    expect(captureSelfieImage).toHaveBeenCalledWith({ source: 'photos' });
+    expect(composeTelemetryCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'selfie',
+        background: bitmap,
+      })
+    );
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(document.querySelector('[data-testid="aesthetic-spec-card"]')).toBeNull();
+    const preview = document.querySelector<HTMLImageElement>(
+      '[data-testid="aesthetic-telemetry-preview"]'
+    );
+    expect(preview?.getAttribute('src')).toBe('blob:aesthetic-preview');
+    expect(document.querySelector('[data-testid="aesthetic-restore-carbon"]')).not.toBeNull();
+    expect(document.querySelector('[data-telemetry-mode="selfie"]')).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:aesthetic-preview');
+  });
+
+  it('restores the carbon plaque and releases selfie resources', async () => {
+    const close = vi.fn();
+    const bitmap = {
+      width: 1080,
+      height: 1920,
+      close,
+    } as unknown as ImageBitmap;
+    captureSelfieImage.mockResolvedValue({ ok: true, bitmap });
+    composeTelemetryCard.mockResolvedValue(new Blob(['selfie-png'], { type: 'image/png' }));
+
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-selfie-camera"]')?.click();
+    });
+    expect(document.querySelector('[data-testid="aesthetic-telemetry-preview"]')).not.toBeNull();
+
+    act(() => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-restore-carbon"]')?.click();
+    });
+
+    expect(document.querySelector('[data-testid="aesthetic-spec-card"]')).not.toBeNull();
+    expect(document.querySelector('[data-testid="aesthetic-telemetry-preview"]')).toBeNull();
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:aesthetic-preview');
+  });
+
+  it('stays silent when selfie capture is cancelled', async () => {
+    captureSelfieImage.mockResolvedValue({ ok: false, reason: 'cancelled' });
+
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-selfie-photos"]')?.click();
+    });
+
+    expect(document.querySelector('[data-testid="aesthetic-telemetry-error"]')).toBeNull();
+    expect(document.querySelector('[data-testid="aesthetic-spec-card"]')).not.toBeNull();
+    expect(composeTelemetryCard).not.toHaveBeenCalled();
+  });
+});

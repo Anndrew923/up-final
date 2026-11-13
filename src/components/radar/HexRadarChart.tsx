@@ -1,7 +1,10 @@
-import { useId, useMemo, type FC, type SVGProps } from 'react';
+import { useId, useMemo, type FC } from 'react';
+import {
+  computeSixAxisRadarVertices,
+  formatRadarPolygonAttr,
+} from '../../logic/core/radarGeometry';
 import type { RadarPkAxisWinner } from '../../logic/core/radarPkBattleReport';
 import type { RadarPkCompareMotion } from '../../logic/core/radarPkClashMotion';
-import { RADAR_DISPLAY_MIN, radarOverflowExtraRadius } from '../../logic/core/scoring';
 import type { RadarChartPoint } from '../../types/radarDisplay';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 import { buildRadarPkCompareStyleSheet } from './radarPkClashStyles';
@@ -68,9 +71,6 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   className,
   'aria-label': ariaLabel,
 }) => {
-  type AxisLabelAnchor = NonNullable<SVGProps<SVGTextElement>['textAnchor']>;
-  type AxisLabelBaseline = NonNullable<SVGProps<SVGTextElement>['dominantBaseline']>;
-
   const isQuiet = presentation === 'quiet';
   const auraGradientId = useId();
   const animationId = useId().replace(/:/g, '_');
@@ -79,7 +79,6 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   const maxR = RADAR_CARD_V2.geometry.outerRadius;
   const labelR = RADAR_CARD_V2.geometry.labelRadius;
   const n = Math.max(points.length, 1);
-  const denom = Math.max(Math.min(scaleMax, RADAR_DISPLAY_MIN), 1e-6);
   const fill = Math.min(1, Math.max(0, Number(ritualFill) || 0));
   const gridOpacity = Math.min(1, Math.max(0, Number(gridFadeOpacity) || 0));
   const polygonAnimClass =
@@ -123,65 +122,42 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
   const calibrationRingStroke = `rgba(${ritualGlowRgb},${RADAR_ATMOSPHERE_GLOW_OPACITY})`;
   const scannerSweepPeak = `rgba(${ritualGlowRgb},0.28)`;
 
-  const axisNodes = useMemo(
+  // WHY: Shared pure geometry keeps SVG Home and the offline PNG card on identical spokes.
+  const radarGeometry = useMemo(
     () =>
-      points.map((point, i) => {
-        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-        const ux = Math.cos(angle);
-        const uy = Math.sin(angle);
-        const raw = Math.max(0, Number(point.value) || 0);
-        const baseRadius = maxR * (Math.min(denom, raw) / denom) * fill;
-        const overflowExtra = radarOverflowExtraRadius(raw) * fill;
-        const xBase = cx + baseRadius * ux;
-        const yBase = cy + baseRadius * uy;
-        const xOuter = cx + maxR * ux;
-        const yOuter = cy + maxR * uy;
-        const xOverflow = cx + (maxR + overflowExtra) * ux;
-        const yOverflow = cy + (maxR + overflowExtra) * uy;
-        const xLabel = cx + labelR * ux;
-        const yLabel = cy + labelR * uy;
-        return {
-          key: point.key,
-          label: point.label,
-          raw,
-          overflowExtra,
-          xBase,
-          yBase,
-          xOuter,
-          yOuter,
-          xOverflow,
-          yOverflow,
-          xLabel,
-          yLabel,
-          textAnchor: (ux > 0.35 ? 'start' : ux < -0.35 ? 'end' : 'middle') as AxisLabelAnchor,
-          dominantBaseline: (uy > 0.45
-            ? 'hanging'
-            : uy < -0.45
-              ? 'auto'
-              : 'middle') as AxisLabelBaseline,
-        };
+      computeSixAxisRadarVertices({
+        points,
+        cx,
+        cy,
+        outerRadius: maxR,
+        labelRadius: labelR,
+        scaleMax,
+        fill,
       }),
-    [cx, cy, denom, fill, labelR, maxR, n, points]
+    [points, cx, cy, maxR, labelR, scaleMax, fill]
+  );
+  const axisNodes = radarGeometry.vertices;
+  const hasOverflow = radarGeometry.hasOverflow;
+  const maxOverflow = radarGeometry.maxOverflowExtra;
+
+  // Rings / spokes derive from the same hexagon — no second trig pass that can drift.
+  const rings = useMemo(
+    () =>
+      [1, 0.66, 0.33].map((scale) => ({
+        key: String(scale),
+        points: formatRadarPolygonAttr(
+          radarGeometry.hexagon.map((point) => ({
+            x: cx + (point.x - cx) * scale,
+            y: cy + (point.y - cy) * scale,
+          }))
+        ),
+      })),
+    [radarGeometry.hexagon, cx, cy]
   );
 
-  const rings = useMemo(() => {
-    const poly = (radius: number) =>
-      Array.from({ length: n }, (_, i) => {
-        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-        const x = cx + radius * Math.cos(angle);
-        const y = cy + radius * Math.sin(angle);
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      }).join(' ');
-
-    return [1, 0.66, 0.33].map((m) => ({
-      key: String(m),
-      points: poly(maxR * m),
-    }));
-  }, [maxR, n]);
-
   const dataPolygon = useMemo(
-    () => axisNodes.map((node) => `${node.xBase.toFixed(2)},${node.yBase.toFixed(2)}`).join(' '),
-    [axisNodes]
+    () => formatRadarPolygonAttr(radarGeometry.scorePolygon),
+    [radarGeometry.scorePolygon]
   );
 
   /**
@@ -190,46 +166,51 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
    */
   const comparisonNodes = useMemo(() => {
     if (!comparisonPoints || comparisonPoints.length === 0) return null;
-    return Array.from({ length: n }, (_, i) => {
+    // Pad / truncate to primary length via the same spoke math — missing slots score as 0.
+    const aligned = Array.from({ length: n }, (_, i) => {
       const point = comparisonPoints[i];
-      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-      const raw = Math.max(0, Number(point?.value) || 0);
-      const baseRadius = maxR * (Math.min(denom, raw) / denom) * fill;
       return {
         key: point?.key ?? `cmp-${i}`,
-        x: cx + baseRadius * Math.cos(angle),
-        y: cy + baseRadius * Math.sin(angle),
+        label: point?.label ?? '',
+        value: Math.max(0, Number(point?.value) || 0),
       };
     });
-  }, [comparisonPoints, cx, cy, denom, fill, maxR, n]);
+    return computeSixAxisRadarVertices({
+      points: aligned,
+      cx,
+      cy,
+      outerRadius: maxR,
+      labelRadius: labelR,
+      scaleMax,
+      fill,
+    }).vertices.map((vertex) => ({
+      key: vertex.key,
+      x: vertex.xBase,
+      y: vertex.yBase,
+    }));
+  }, [comparisonPoints, cx, cy, fill, labelR, maxR, n, scaleMax]);
 
   const comparisonPolygon = useMemo(() => {
     if (!comparisonNodes) return null;
-    return comparisonNodes.map((node) => `${node.x.toFixed(2)},${node.y.toFixed(2)}`).join(' ');
+    return formatRadarPolygonAttr(comparisonNodes);
   }, [comparisonNodes]);
 
   const overflowPolygon = useMemo(
+    () => formatRadarPolygonAttr(radarGeometry.overflowPolygon),
+    [radarGeometry.overflowPolygon]
+  );
+
+  const spokeLines = useMemo(
     () =>
-      axisNodes
-        .map((node) => `${node.xOverflow.toFixed(2)},${node.yOverflow.toFixed(2)}`)
-        .join(' '),
-    [axisNodes]
+      radarGeometry.hexagon.map((point, index) => ({
+        x1: cx,
+        y1: cy,
+        x2: point.x,
+        y2: point.y,
+        key: index,
+      })),
+    [radarGeometry.hexagon, cx, cy]
   );
-
-  const hasOverflow = useMemo(() => axisNodes.some((node) => node.overflowExtra > 0), [axisNodes]);
-  const maxOverflow = useMemo(
-    () => axisNodes.reduce((max, node) => Math.max(max, node.overflowExtra), 0),
-    [axisNodes]
-  );
-
-  const spokeLines = useMemo(() => {
-    return Array.from({ length: n }, (_, i) => {
-      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-      const x = cx + maxR * Math.cos(angle);
-      const y = cy + maxR * Math.sin(angle);
-      return { x1: cx, y1: cy, x2: x, y2: y, key: i };
-    });
-  }, [cx, cy, maxR, n]);
 
   return (
     <div

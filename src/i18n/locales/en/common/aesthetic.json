@@ -148,6 +148,22 @@
       "triggerCtaShort": "Certificate",
       "closeModal": "Close Certificate",
       "closeAria": "Close spec certificate"
+    },
+    "share": {
+      "shareReport": "Share Report",
+      "sharing": "Sharing…",
+      "shareTitle": "Ultimate Physique Report",
+      "cameraBg": "Selfie Background",
+      "photosBg": "Choose Photo",
+      "restoreCarbon": "Restore Default Plate",
+      "previewAlt": "Post-workout selfie report preview",
+      "errors": {
+        "captureUnavailable": "Camera or photo library is unavailable. Check permissions and try again.",
+        "captureFailed": "That image could not be decoded. Try another photo.",
+        "composeFailed": "Could not compose the report. Please try again.",
+        "shareUnavailable": "This device cannot share files. Try download instead.",
+        "shareFailed": "Share did not complete. Please try again."
+      }
     }
   }
 }

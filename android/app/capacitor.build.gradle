@@ -16,8 +16,10 @@ dependencies {
     implementation project(':capacitor-browser')
     implementation project(':capacitor-camera')
     implementation project(':capacitor-device')
+    implementation project(':capacitor-filesystem')
     implementation project(':capacitor-haptics')
     implementation project(':capacitor-push-notifications')
+    implementation project(':capacitor-share')
     implementation project(':revenuecat-purchases-capacitor')
 
 }

@@ -40,10 +40,14 @@ export const FOIL_PLATE_CLASS =
   'inline-flex shrink-0 items-center justify-center border border-[#c9a227]/65 bg-gradient-to-b from-[#f3e6c8]/20 to-[#7a5c28]/35 px-1 py-px text-[7px] tracking-[0.12em] text-[#f3e6c8]';
 
 /**
- * 9:16 certificate stage — 5rem reserves the close row + gap under the plaque.
+ * 9:16 certificate stage — 10rem reserves share / selfie / close rows under the plaque.
  * WHY: Width and height share one dvh budget so the stamp cannot clip on short phones.
  */
-export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-5rem)]';
+export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-10rem)]';
 
 export const CERT_STAGE_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-5rem)*9/16))] shrink-0 items-center justify-center';
+  'flex w-full max-w-[min(24rem,calc((100dvh-10rem)*9/16))] shrink-0 items-center justify-center';
+
+/** Same width budget as the 9:16 stage so action chips stay aligned under the plaque. */
+export const CERT_FOOTER_WRAP_CLASS =
+  'flex w-full max-w-[min(24rem,calc((100dvh-10rem)*9/16))] shrink-0 flex-col items-center gap-2 px-4';
