@@ -1,7 +1,8 @@
 /**
- * Carbon weave + selfie plate backgrounds for the offline telemetry card.
- * WHY: Isolates expensive fill loops from HUD paint so the composer stays under
- * the 500-line split threshold without mixing layout and weave concerns.
+ * Selfie plate background for the offline telemetry card.
+ * WHY: Isolates cover-crop + eye-care scrim from HUD/certificate paint.
+ * Carbon (no-selfie) plates are painted by telemetryCardCertificate — the old
+ * weave grid is intentionally gone so Share Card matches the DOM plaque.
  */
 import {
   readBackgroundSize,
@@ -13,66 +14,25 @@ import type { TelemetryDrawContext } from './telemetryCardTypes';
 export const TELEMETRY_CARD_WIDTH = 1080;
 export const TELEMETRY_CARD_HEIGHT = 1920;
 
-const CARBON_BASE = '#07080c';
-/** Scrim is clear at mid-frame and opaque at the bottom edge, over the score dock. */
-const SCRIM_START_RATIO = 0.5;
+/**
+ * Scrim starts lower so more of the selfie stays bright; dock text relies on its
+ * own laser glow + ink shadow instead of a near-black veil.
+ */
+export const TELEMETRY_SELFIE_SCRIM_START_RATIO = 0.58;
 
-function paintCarbon(ctx: TelemetryDrawContext): void {
-  ctx.save();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = CARBON_BASE;
-  ctx.fillRect(0, 0, TELEMETRY_CARD_WIDTH, TELEMETRY_CARD_HEIGHT);
-
-  // Twill: two shallow diagonals. Deterministic — no noise image, no network.
-  ctx.globalAlpha = 0.22;
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let offset = -TELEMETRY_CARD_HEIGHT; offset < TELEMETRY_CARD_WIDTH; offset += 16) {
-    ctx.moveTo(offset, 0);
-    ctx.lineTo(offset + TELEMETRY_CARD_HEIGHT, TELEMETRY_CARD_HEIGHT);
-  }
-  ctx.stroke();
-
-  ctx.globalAlpha = 0.14;
-  ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-  ctx.beginPath();
-  for (let offset = 0; offset < TELEMETRY_CARD_WIDTH + TELEMETRY_CARD_HEIGHT; offset += 16) {
-    ctx.moveTo(offset, 0);
-    ctx.lineTo(offset - TELEMETRY_CARD_HEIGHT, TELEMETRY_CARD_HEIGHT);
-  }
-  ctx.stroke();
-
-  // Telemetry grid sits above the weave so the plate still reads as an instrument, not a photo filter.
-  ctx.globalAlpha = 0.16;
-  ctx.strokeStyle = 'rgba(120, 168, 184, 0.45)';
-  ctx.beginPath();
-  for (let x = 0; x <= TELEMETRY_CARD_WIDTH; x += 54) {
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, TELEMETRY_CARD_HEIGHT);
-  }
-  for (let y = 0; y <= TELEMETRY_CARD_HEIGHT; y += 54) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(TELEMETRY_CARD_WIDTH, y);
-  }
-  ctx.stroke();
-
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = 'rgba(196, 204, 214, 0.72)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(28, 28, TELEMETRY_CARD_WIDTH - 56, TELEMETRY_CARD_HEIGHT - 56);
-  ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(40, 40, TELEMETRY_CARD_WIDTH - 80, TELEMETRY_CARD_HEIGHT - 80);
-  ctx.restore();
-}
+/** Mid / floor stops for the navy eye-care veil (shared with unit assertions). */
+export const TELEMETRY_SELFIE_SCRIM_STOPS = {
+  midOffset: 0.45,
+  mid: 'rgba(2,6,14,0.28)',
+  floor: 'rgba(2,6,14,0.64)',
+} as const;
 
 function paintEyeCareScrim(ctx: TelemetryDrawContext): void {
-  const y0 = TELEMETRY_CARD_HEIGHT * SCRIM_START_RATIO;
+  const y0 = TELEMETRY_CARD_HEIGHT * TELEMETRY_SELFIE_SCRIM_START_RATIO;
   const gradient = ctx.createLinearGradient(0, y0, 0, TELEMETRY_CARD_HEIGHT);
-  gradient.addColorStop(0, 'rgba(0,0,0,0)');
-  gradient.addColorStop(0.45, 'rgba(0,0,0,0.72)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0.94)');
+  gradient.addColorStop(0, 'rgba(2,6,14,0)');
+  gradient.addColorStop(TELEMETRY_SELFIE_SCRIM_STOPS.midOffset, TELEMETRY_SELFIE_SCRIM_STOPS.mid);
+  gradient.addColorStop(1, TELEMETRY_SELFIE_SCRIM_STOPS.floor);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, y0, TELEMETRY_CARD_WIDTH, TELEMETRY_CARD_HEIGHT - y0);
 }
@@ -102,17 +62,18 @@ function paintSelfie(ctx: TelemetryDrawContext, background: TelemetryBackgroundS
   return true;
 }
 
-export function paintTelemetryBackground(
+/**
+ * Attempt selfie cover + eye-care scrim. Returns false so the composer can
+ * fall back to the black-gold certificate plate.
+ */
+export function tryPaintSelfieBackground(
   ctx: TelemetryDrawContext,
-  mode: 'carbon' | 'selfie',
   background?: TelemetryBackgroundSource | null
-): void {
-  if (mode === 'selfie' && background) {
-    try {
-      if (paintSelfie(ctx, background)) return;
-    } catch {
-      // A decode or draw failure must still leave a finished plate.
-    }
+): boolean {
+  if (!background) return false;
+  try {
+    return paintSelfie(ctx, background);
+  } catch {
+    return false;
   }
-  paintCarbon(ctx);
 }

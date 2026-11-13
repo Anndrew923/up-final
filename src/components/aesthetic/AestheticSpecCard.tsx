@@ -107,7 +107,11 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
     >
       <AestheticCardArmor />
 
-      <div className="relative z-10 flex h-full flex-col px-5 pb-5 pt-7">
+      {/*
+        WHY: pb-9 + compact crest/stamp reclaim height so battleCode sits above the
+        inner foil frame with a visible black gutter (never on the gold rule).
+      */}
+      <div className="relative z-10 flex h-full flex-col px-5 pb-9 pt-7">
         <header className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b ${FOIL_RULE_CLASS} pb-2`}>
           <p className="flex min-w-0 items-baseline gap-1.5 text-[10px] tracking-[0.14em] text-zinc-400">
             <span className="min-w-0 truncate">{t('aesthetic.labels.brandHeader')}</span>
@@ -118,7 +122,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
           <p className="shrink-0 text-[10px] tabular-nums text-zinc-500">{readoutYear}</p>
         </header>
 
-        <div className="flex flex-1 flex-col justify-center gap-3 py-3 sm:gap-4 sm:py-4">
+        <div className="flex flex-1 flex-col justify-center gap-1.5 py-1 sm:gap-2 sm:py-1.5">
           <GuillocheCrest />
 
           <h3 className={`${FOIL_HERO_STAMP_CLASS} ${CERT_STAMP_REVEAL_CLASS}`}>
@@ -127,7 +131,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
             <span className={FOIL_HERO_WING_RIGHT_CLASS} aria-hidden="true" />
           </h3>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <SpecRow
               kicker={t('aesthetic.labels.visual')}
               title={visualTitle}
@@ -146,8 +150,8 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
           </div>
         </div>
 
-        <section className={`border-t ${FOIL_RULE_CLASS} pt-3`}>
-          <div className="grid grid-cols-[minmax(4.25rem,auto)_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-5">
+        <section className={`border-t ${FOIL_RULE_CLASS} pt-2.5`}>
+          <div className="grid grid-cols-[minmax(4.25rem,auto)_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-3">
             <AestheticMeter
               label={t('aesthetic.labels.visualMetric')}
               {...overflowMeterProps(spec.visual.score, overflowBadge, unmeasuredLabel)}
@@ -166,7 +170,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model }) => {
           </div>
         </section>
 
-        <footer className={`mt-4 space-y-1.5 border-t ${FOIL_RULE_CLASS} pt-4`}>
+        <footer className={`mt-2 space-y-1 border-t ${FOIL_RULE_CLASS} pt-2`}>
           <p className="text-center font-mono text-[9px] tracking-[0.16em] text-[#c9a227]/70">
             <span className="sr-only">{t('aesthetic.labels.battleCode')}</span>
             {battleCode}

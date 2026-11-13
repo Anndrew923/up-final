@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Bundled TC serif — SIL OFL (see public/fonts/NotoSerifTC-OFL.txt). */
+@font-face {
+  font-family: 'UPSerifTC';
+  src: url('/fonts/NotoSerifTC-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     color-scheme: dark;

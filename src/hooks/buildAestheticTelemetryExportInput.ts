@@ -7,11 +7,33 @@ import {
   resolveAestheticBandCopy,
   resolveAestheticVisualLine,
 } from '../logic/aesthetic/aestheticSpecCopy';
-import { buildSixAxisRadarData } from '../logic/core/scoring';
+import { buildSixAxisRadarData, formatOverallResonanceScore } from '../logic/core/scoring';
 import { resolveSixAxisChartLabel } from '../i18n/resolveSixAxisChartLabel';
-import type { TelemetryCardInput, TelemetrySpecLine } from '../lib/telemetryCardComposer';
+import type {
+  TelemetryCardInput,
+  TelemetryMeterLine,
+  TelemetrySpecLine,
+} from '../lib/telemetryCardComposer';
 import type { ScoreMap, SixAxisMetric } from '../types/scoring';
 import type { AestheticSpecCardModel } from './useAestheticSpecCard';
+
+const OVERFLOW_SCORE = 100;
+
+function meterLine(
+  t: TFunction,
+  labelKey: string,
+  score: number | null
+): TelemetryMeterLine {
+  const unmeasuredLabel = t('aesthetic.labels.unmeasured');
+  const overflowBadge = t('aesthetic.labels.overflowBadge');
+  const overflow = score != null && score >= OVERFLOW_SCORE;
+  return {
+    label: t(labelKey),
+    value: score != null ? formatOverallResonanceScore(score) : unmeasuredLabel,
+    fillPct: score == null ? 0 : Math.min(100, Math.max(0, score)),
+    badge: overflow ? overflowBadge : null,
+  };
+}
 
 export function buildAestheticTelemetryExportInput(
   t: TFunction,
@@ -21,6 +43,7 @@ export function buildAestheticTelemetryExportInput(
 ): TelemetryCardInput {
   const unmeasuredLabel = t('aesthetic.labels.unmeasured');
   const { spec, overallScore, battleCode, gender, bodyFatPct } = model;
+  const year = new Date().getFullYear();
 
   const overallTitle = t(`aesthetic.overall.${spec.overallTitleId}`);
   const visualTitle = spec.visual.id
@@ -56,6 +79,12 @@ export function buildAestheticTelemetryExportInput(
     },
   ];
 
+  const meters: TelemetryMeterLine[] = [
+    meterLine(t, 'aesthetic.labels.visualMetric', spec.visual.score),
+    meterLine(t, 'aesthetic.labels.forceMetric', spec.force.score),
+    meterLine(t, 'aesthetic.labels.kineticMetric', spec.kinetic.score),
+  ];
+
   const axes = buildSixAxisRadarData(scores).map((point) => ({
     key: point.key,
     label: resolveSixAxisChartLabel(t, point.key as SixAxisMetric),
@@ -68,6 +97,9 @@ export function buildAestheticTelemetryExportInput(
     title: overallTitle,
     overallScore,
     specs,
+    meters,
+    year,
+    verifiedStamp: t('aesthetic.labels.verifiedStamp', { year }),
     axes,
     background: extras.background,
     brandHeader: extras.brandHeader ?? t('aesthetic.labels.brandHeader'),

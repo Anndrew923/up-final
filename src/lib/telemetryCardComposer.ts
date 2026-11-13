@@ -2,25 +2,38 @@
  * Offline 9:16 telemetry card orchestrator.
  *
  * WHY: Share plates must rasterize on-device. This module never fetches,
- * never touches Firestore, and degrades a bad selfie to the carbon plate
+ * never touches Firestore, and degrades a bad selfie to the carbon certificate
  * so a missing photo cannot reject the export.
  */
-import {
-  computeSixAxisRadarVertices,
-  type RadarGeometryPoint,
-  type RadarPoint2D,
-} from '../logic/core/radarGeometry';
+import type { RadarGeometryPoint } from '../logic/core/radarGeometry';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import {
-  paintTelemetryBackground,
+  tryPaintSelfieBackground,
   TELEMETRY_CARD_HEIGHT,
   TELEMETRY_CARD_WIDTH,
 } from './telemetryCardBackground';
+import {
+  paintCertificatePlate,
+  type TelemetryMeterLine,
+} from './telemetryCardCertificate';
 import type { TelemetryBackgroundSource } from './telemetryCardCover';
+import {
+  ensureTelemetrySerifFontsReady,
+  TELEMETRY_SERIF_FONT_STACK,
+} from './telemetryCardFonts';
+import {
+  paintHolographicRadar,
+  TELEMETRY_RADAR_LABEL_MAX_RIGHT_X,
+} from './telemetryCardRadarPaint';
+import {
+  paintBrandWatermark,
+  paintCornerReticles,
+} from './telemetryCardSelfieChrome';
 import {
   TelemetryComposeError,
   type TelemetryCanvasSurface,
   type TelemetryDrawContext,
+  type TelemetryGradient,
 } from './telemetryCardTypes';
 
 export {
@@ -39,32 +52,118 @@ export {
   type TelemetryDrawContext,
   type TelemetryGradient,
 } from './telemetryCardTypes';
+export type { TelemetryMeterLine } from './telemetryCardCertificate';
+export {
+  TELEMETRY_BRAND_WATERMARK,
+  TELEMETRY_CORNER_RETICLE,
+} from './telemetryCardSelfieChrome';
+export {
+  TELEMETRY_RADAR_LABEL_MAX_RIGHT_X,
+  TELEMETRY_RADAR_LASER,
+  TELEMETRY_RADAR_LAYOUT,
+  TELEMETRY_RADAR_OVERFLOW_NODE,
+  TELEMETRY_RADAR_RIGHT_LABEL_GAP,
+  TELEMETRY_RADAR_TACTICAL_RING_RADIUS,
+  resolveSelfieRadarLabelPaint,
+} from './telemetryCardRadarPaint';
+export { TELEMETRY_SELFIE_CHROME } from './telemetryCardSelfieChrome';
+export {
+  TELEMETRY_SELFIE_SCRIM_START_RATIO,
+  TELEMETRY_SELFIE_SCRIM_STOPS,
+} from './telemetryCardBackground';
 
-export const TELEMETRY_CARD_BRAND = 'ULTIMATE PHYSIQUE // TELEMETRY';
+export const TELEMETRY_CARD_BRAND = 'ULTIMATE PHYSIQUE // DOMINANCE';
 
-/** Docked radar sits in the lower half, inside the selfie scrim. */
-export const TELEMETRY_RADAR_LAYOUT = {
-  cx: 310,
-  cy: 1460,
-  outerRadius: 168,
-  labelRadius: 230,
-} as const;
-
-/** Right-column HUD dock — single source so paint + future UI preview stay aligned. */
+/**
+ * Right-column HUD dock — brand → score → champagne title → specs.
+ * WHY: Vertical rhythm is intentionally open (1220–1694) so the dock breathes into
+ * unused lower plate space without colliding with corner reticles near ~1884.
+ */
 export const TELEMETRY_HUD_LAYOUT = {
-  clip: { x: 560, y: 1000, w: 480, h: 840 },
-  textX: 580,
-  brandY: 1080,
-  battleCodeY: 1160,
-  titleY: 1248,
-  scoreY: 1388,
-  specStartY: 1540,
-  specRowGap: 96,
+  clip: { x: 585, y: 1040, w: 435, h: 800 },
+  textX: 585,
+  brandY: 1220,
+  scoreY: 1315,
+  titleY: 1395,
+  specStartY: 1488,
+  specRowGap: 88,
+  /** Baseline delta from each spec kicker to its title. */
+  specTitleDy: 30,
+  textMaxWidth: 435,
 } as const;
+
+/** Bottom edge of the third right-column spec title — dual-column vertical lock. */
+export const TELEMETRY_HUD_RIGHT_BOTTOM_Y =
+  TELEMETRY_HUD_LAYOUT.specStartY +
+  2 * TELEMETRY_HUD_LAYOUT.specRowGap +
+  TELEMETRY_HUD_LAYOUT.specTitleDy;
+
+/**
+ * Horizontal hairline between the score/title block and the three spec rows.
+ * WHY: Midpoint + clip inset keep the rule glued to title/spec anchors if rhythm shifts.
+ */
+export const TELEMETRY_HUD_SPEC_RULE = {
+  x0: TELEMETRY_HUD_LAYOUT.textX,
+  x1: TELEMETRY_HUD_LAYOUT.clip.x + TELEMETRY_HUD_LAYOUT.clip.w - 40,
+  y: Math.round(
+    (TELEMETRY_HUD_LAYOUT.titleY + TELEMETRY_HUD_LAYOUT.specStartY) / 2
+  ),
+  stroke: 'rgba(255, 255, 255, 0.16)',
+} as const;
+
+/**
+ * Corridor divider between radar labels and the right HUD — paints before clip.
+ * WHY: y0/y1 derive from HUD anchors so a layout tweak cannot leave a floating mid-line.
+ */
+export const TELEMETRY_HUD_COLUMN_DIVIDER = {
+  x: 556,
+  y0: TELEMETRY_HUD_LAYOUT.brandY,
+  y1: TELEMETRY_HUD_RIGHT_BOTTOM_Y,
+  stroke: 'rgba(165, 243, 252, 0.22)',
+} as const;
+
+/** Radar cy vs right-column vertical midpoint — center symmetry contract. */
+export const TELEMETRY_HUD_COLUMN_MID_Y =
+  (TELEMETRY_HUD_LAYOUT.brandY + TELEMETRY_HUD_RIGHT_BOTTOM_Y) / 2;
+
+/** Geometry contract: hard label wall (≤530) vs right-column textX. */
+export const TELEMETRY_RADAR_HUD_CLEARANCE_PX =
+  TELEMETRY_HUD_LAYOUT.textX - TELEMETRY_RADAR_LABEL_MAX_RIGHT_X;
 
 const HUD_FONT_FAMILY = '"PingFang TC", "Noto Sans TC", "Helvetica Neue", sans-serif';
-const OVERFLOW_STROKE = '#e0fbff';
-const RING_SCALES = [1, 0.66, 0.33] as const;
+const HUD_TITLE_FONT_FAMILY = TELEMETRY_SERIF_FONT_STACK;
+/** High-contrast silver labels for bright gym-mirror selfies. */
+export const TELEMETRY_HUD_MUTED_FILL = 'rgba(244, 244, 245, 0.94)';
+/** Spec meter titles — pure white against the lighter scrim. */
+export const TELEMETRY_HUD_SPEC_TITLE_FILL = '#FFFFFF';
+/** Champagne foil title — cold cyan score/radar vs warm gold stamp. */
+export const TELEMETRY_HUD_TITLE_FOIL = '#FFE58F';
+/** Ice-cyan overall score fill for the laser HUD pass. */
+export const TELEMETRY_HUD_SCORE_FILL = '#A5F3FC';
+/** Deep ink shadow keeps small HUD labels readable on bright photos. */
+export const TELEMETRY_HUD_TEXT_SHADOW = {
+  color: 'rgba(0,0,0,0.85)',
+  blur: 8,
+  offsetY: 2,
+} as const;
+/** Laser glow for the oversized overall score. */
+export const TELEMETRY_HUD_SCORE_GLOW = {
+  color: '#00E5FF',
+  blur: 20,
+  offsetY: 0,
+} as const;
+/** Warm micro-glow for the champagne title. */
+export const TELEMETRY_HUD_TITLE_GLOW = {
+  color: 'rgba(251, 191, 36, 0.65)',
+  blur: 12,
+  offsetY: 0,
+} as const;
+
+type HudShadowPreset = {
+  color: string;
+  blur: number;
+  offsetY: number;
+};
 
 export type TelemetryCardMode = 'carbon' | 'selfie';
 
@@ -81,6 +180,9 @@ export interface TelemetryCardInput {
   overallScore: number;
   specs: readonly TelemetrySpecLine[];
   axes: readonly RadarGeometryPoint[];
+  meters?: readonly TelemetryMeterLine[];
+  year?: number;
+  verifiedStamp?: string;
   background?: TelemetryBackgroundSource | null;
   /**
    * Stamp on the PNG plate. Default is the English brand mark so social share
@@ -93,6 +195,18 @@ export interface TelemetryComposeDeps {
   createSurface?: () => TelemetryCanvasSurface;
 }
 
+function clearTextShadow(ctx: TelemetryDrawContext): void {
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+}
+
+function applyHudShadow(ctx: TelemetryDrawContext, shadow: HudShadowPreset): void {
+  ctx.shadowColor = shadow.color;
+  ctx.shadowBlur = shadow.blur;
+  ctx.shadowOffsetY = shadow.offsetY;
+}
+
 function paintLabel(
   ctx: TelemetryDrawContext,
   text: string,
@@ -101,162 +215,89 @@ function paintLabel(
   font: string,
   fill: string,
   align: CanvasTextAlign,
-  baseline: CanvasTextBaseline
+  baseline: CanvasTextBaseline,
+  options?: { maxWidth?: number; shadow?: HudShadowPreset }
 ): void {
   if (!text) return;
+  const shadow = options?.shadow;
   ctx.fillStyle = fill;
   ctx.textAlign = align;
   ctx.textBaseline = baseline;
+  if (shadow) applyHudShadow(ctx, shadow);
   try {
     ctx.font = font;
-    ctx.fillText(text, x, y);
+    ctx.fillText(text, x, y, options?.maxWidth);
   } catch {
     try {
       ctx.font = '24px sans-serif';
-      ctx.fillText(text, x, y);
+      ctx.fillText(text, x, y, options?.maxWidth);
     } catch {
       // Skip this run. The rest of the plate still encodes.
     }
   }
+  if (shadow) clearTextShadow(ctx);
 }
 
-function scalePolygon(
-  points: readonly RadarPoint2D[],
-  cx: number,
-  cy: number,
-  scale: number
-): RadarPoint2D[] {
-  return points.map((point) => ({
-    x: cx + (point.x - cx) * scale,
-    y: cy + (point.y - cy) * scale,
-  }));
-}
-
-function tracePolygon(ctx: TelemetryDrawContext, points: readonly RadarPoint2D[]): void {
-  const first = points[0];
-  if (!first) return;
-  ctx.beginPath();
-  ctx.moveTo(first.x, first.y);
-  for (let index = 1; index < points.length; index += 1) {
-    const point = points[index];
-    if (point) ctx.lineTo(point.x, point.y);
-  }
-  ctx.closePath();
-}
-
-function paintRadar(ctx: TelemetryDrawContext, axes: readonly RadarGeometryPoint[]): void {
-  if (axes.length === 0) return;
-  const layout = TELEMETRY_RADAR_LAYOUT;
-  const geometry = computeSixAxisRadarVertices({
-    points: axes,
-    cx: layout.cx,
-    cy: layout.cy,
-    outerRadius: layout.outerRadius,
-    labelRadius: layout.labelRadius,
-  });
-
+function strokeSegment(
+  ctx: TelemetryDrawContext,
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  stroke: string | TelemetryGradient
+): void {
   ctx.save();
-  ctx.lineJoin = 'round';
-  ctx.globalAlpha = 1;
-
-  for (const scale of RING_SCALES) {
-    tracePolygon(ctx, scalePolygon(geometry.hexagon, layout.cx, layout.cy, scale));
-    ctx.strokeStyle = 'rgba(148, 184, 198, 0.45)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  for (const vertex of geometry.hexagon) {
-    ctx.moveTo(layout.cx, layout.cy);
-    ctx.lineTo(vertex.x, vertex.y);
-  }
-  ctx.strokeStyle = 'rgba(148, 184, 198, 0.35)';
-  ctx.lineWidth = 1.25;
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
   ctx.stroke();
-
-  tracePolygon(ctx, geometry.scorePolygon);
-  ctx.fillStyle = 'rgba(34, 211, 238, 0.28)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(34, 211, 238, 0.95)';
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  if (geometry.hasOverflow) {
-    tracePolygon(ctx, geometry.overflowPolygon);
-    ctx.strokeStyle = OVERFLOW_STROKE;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    for (const vertex of geometry.vertices) {
-      if (!vertex.overflowing) continue;
-      ctx.beginPath();
-      ctx.moveTo(vertex.xOuter, vertex.yOuter);
-      ctx.lineTo(vertex.xOverflow, vertex.yOverflow);
-      ctx.strokeStyle = OVERFLOW_STROKE;
-      ctx.lineWidth = vertex.overflowExtra === geometry.maxOverflowExtra ? 4 : 2.5;
-      ctx.stroke();
-    }
-  }
-
-  for (const vertex of geometry.vertices) {
-    ctx.beginPath();
-    ctx.arc(vertex.xBase, vertex.yBase, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#22d3ee';
-    ctx.fill();
-    paintLabel(
-      ctx,
-      vertex.label,
-      vertex.xLabel,
-      vertex.yLabel,
-      `20px ${HUD_FONT_FAMILY}`,
-      'rgba(228, 232, 236, 0.92)',
-      vertex.textAnchor === 'start' ? 'left' : vertex.textAnchor === 'end' ? 'right' : 'center',
-      'middle'
-    );
-  }
   ctx.restore();
 }
 
+function paintColumnDivider(ctx: TelemetryDrawContext): void {
+  const divider = TELEMETRY_HUD_COLUMN_DIVIDER;
+  const gradient = ctx.createLinearGradient(divider.x, divider.y0, divider.x, divider.y1);
+  gradient.addColorStop(0, 'rgba(165, 243, 252, 0)');
+  gradient.addColorStop(0.5, divider.stroke);
+  gradient.addColorStop(1, 'rgba(165, 243, 252, 0)');
+  strokeSegment(ctx, divider.x, divider.y0, divider.x, divider.y1, gradient);
+}
+
+function paintSpecRule(ctx: TelemetryDrawContext): void {
+  const rule = TELEMETRY_HUD_SPEC_RULE;
+  strokeSegment(ctx, rule.x0, rule.y, rule.x1, rule.y, rule.stroke);
+}
+
 function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
-  paintRadar(ctx, input.axes);
+  const year = input.year ?? new Date().getFullYear();
+  // WHY: Watermark + reticles must paint before the right-column clip or they vanish.
+  paintBrandWatermark(ctx, year);
+  paintCornerReticles(ctx);
+  paintHolographicRadar(ctx, input.axes);
+  paintColumnDivider(ctx);
 
   const hud = TELEMETRY_HUD_LAYOUT;
   const brand = input.brandHeader?.trim() || TELEMETRY_CARD_BRAND;
+  const maxW = hud.textMaxWidth;
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(hud.clip.x, hud.clip.y, hud.clip.w, hud.clip.h);
   ctx.clip();
 
+  const inkShadow = { maxWidth: maxW, shadow: TELEMETRY_HUD_TEXT_SHADOW } as const;
   paintLabel(
     ctx,
     brand,
     hud.textX,
     hud.brandY,
     `22px ${HUD_FONT_FAMILY}`,
-    'rgba(186, 204, 214, 0.92)',
+    TELEMETRY_HUD_MUTED_FILL,
     'left',
-    'middle'
-  );
-  paintLabel(
-    ctx,
-    input.battleCode,
-    hud.textX,
-    hud.battleCodeY,
-    `26px ${HUD_FONT_FAMILY}`,
-    'rgba(244, 244, 245, 0.96)',
-    'left',
-    'middle'
-  );
-  paintLabel(
-    ctx,
-    input.title,
-    hud.textX,
-    hud.titleY,
-    `48px ${HUD_FONT_FAMILY}`,
-    '#f4f4f5',
-    'left',
-    'middle'
+    'middle',
+    inkShadow
   );
   paintLabel(
     ctx,
@@ -264,10 +305,23 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     hud.textX,
     hud.scoreY,
     `92px ${HUD_FONT_FAMILY}`,
-    '#67e8f9',
+    TELEMETRY_HUD_SCORE_FILL,
     'left',
-    'middle'
+    'middle',
+    { maxWidth: maxW, shadow: TELEMETRY_HUD_SCORE_GLOW }
   );
+  paintLabel(
+    ctx,
+    input.title,
+    hud.textX,
+    hud.titleY,
+    `700 44px ${HUD_TITLE_FONT_FAMILY}`,
+    TELEMETRY_HUD_TITLE_FOIL,
+    'left',
+    'middle',
+    { maxWidth: maxW, shadow: TELEMETRY_HUD_TITLE_GLOW }
+  );
+  paintSpecRule(ctx);
 
   input.specs.slice(0, 3).forEach((spec, index) => {
     const y = hud.specStartY + index * hud.specRowGap;
@@ -277,32 +331,22 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
       hud.textX,
       y,
       `16px ${HUD_FONT_FAMILY}`,
-      'rgba(148, 184, 198, 0.9)',
+      TELEMETRY_HUD_MUTED_FILL,
       'left',
-      'middle'
+      'middle',
+      inkShadow
     );
     paintLabel(
       ctx,
       spec.title,
       hud.textX,
-      y + 32,
-      `26px ${HUD_FONT_FAMILY}`,
-      '#f4f4f5',
+      y + hud.specTitleDy,
+      `24px ${HUD_FONT_FAMILY}`,
+      TELEMETRY_HUD_SPEC_TITLE_FILL,
       'left',
-      'middle'
+      'middle',
+      inkShadow
     );
-    if (spec.subtitle) {
-      paintLabel(
-        ctx,
-        spec.subtitle,
-        hud.textX,
-        y + 60,
-        `16px ${HUD_FONT_FAMILY}`,
-        'rgba(212, 212, 216, 0.8)',
-        'left',
-        'middle'
-      );
-    }
   });
   ctx.restore();
 }
@@ -347,21 +391,46 @@ function surfaceToPngBlob(surface: TelemetryCanvasSurface): Promise<Blob> {
   });
 }
 
+function toCertificateInput(input: TelemetryCardInput) {
+  const year = input.year ?? new Date().getFullYear();
+  return {
+    brandHeader: input.brandHeader?.trim() || TELEMETRY_CARD_BRAND,
+    overallScore: input.overallScore,
+    title: input.title,
+    battleCode: input.battleCode,
+    year,
+    verifiedStamp:
+      input.verifiedStamp ?? `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${year}`,
+    specs: input.specs,
+    meters: input.meters ?? [],
+  };
+}
+
 /**
  * Rasterize a local telemetry card to a PNG blob.
- * Selfie mode cover-crops `background` and lays a bottom-weighted black scrim under the HUD.
- * Any background failure paints the carbon plate instead of rejecting.
+ * Selfie mode cover-crops `background` and lays a lowered navy eye-care scrim under the HUD.
+ * Any background failure paints the black-gold certificate instead of rejecting.
  */
 export async function composeTelemetryCard(
   input: TelemetryCardInput,
   deps?: TelemetryComposeDeps
 ): Promise<Blob> {
+  await ensureTelemetrySerifFontsReady();
+
   const surface = (deps?.createSurface ?? createDomSurface)();
   surface.width = TELEMETRY_CARD_WIDTH;
   surface.height = TELEMETRY_CARD_HEIGHT;
   const ctx = surface.getContext('2d');
   if (!ctx) throw new TelemetryComposeError('no-context');
-  paintTelemetryBackground(ctx, input.mode, input.background);
-  paintHud(ctx, input);
+
+  const usedSelfie =
+    input.mode === 'selfie' ? tryPaintSelfieBackground(ctx, input.background) : false;
+
+  if (usedSelfie) {
+    paintHud(ctx, input);
+  } else {
+    paintCertificatePlate(ctx, toCertificateInput(input));
+  }
+
   return surfaceToPngBlob(surface);
 }

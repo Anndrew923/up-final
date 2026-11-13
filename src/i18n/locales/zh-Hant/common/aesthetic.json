@@ -127,7 +127,7 @@
       }
     },
     "labels": {
-      "brandHeader": "最強肉體 // 生理統治力：",
+      "brandHeader": "最強肉體 // 生理統治力",
       "visual": "視覺張力",
       "force": "絕對剛性",
       "kinetic": "深層動能",
@@ -146,16 +146,16 @@
       "battleCode": "戰場登錄號",
       "triggerCta": "調閱生理規格證書",
       "triggerCtaShort": "規格證書",
-      "closeModal": "關閉名片",
+      "closeModal": "關閉",
       "closeAria": "關閉生理規格證書"
     },
     "share": {
-      "shareReport": "分享戰報",
+      "shareReport": "分享名片",
       "sharing": "分享中…",
       "shareTitle": "最強肉體戰報",
-      "cameraBg": "自拍背景",
-      "photosBg": "選圖背景",
-      "restoreCarbon": "恢復預設底圖",
+      "cameraBg": "拍照",
+      "photosBg": "相簿",
+      "restoreCarbon": "預設",
       "previewAlt": "練後自拍戰報預覽",
       "errors": {
         "captureUnavailable": "無法開啟相機或相簿，請確認權限後再試。",

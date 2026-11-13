@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../i18n';
 import type { AestheticSpecCardModel } from '../../../hooks/useAestheticSpecCard';
 import AestheticSpecModal from '../AestheticSpecModal';
-import { CERT_STAGE_WRAP_CLASS } from '../aestheticChrome';
+import { CERT_FOOTER_WRAP_CLASS, CERT_STAGE_WRAP_CLASS } from '../aestheticChrome';
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -124,17 +124,55 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(document.querySelector('[data-testid="aesthetic-selfie-camera"]')).not.toBeNull();
     expect(document.querySelector('[data-testid="aesthetic-selfie-photos"]')).not.toBeNull();
 
-    const close = Array.from(document.querySelectorAll('button')).find(
-      (btn) => btn.textContent === '關閉名片'
+    const close = document.querySelector<HTMLButtonElement>(
+      '[data-testid="aesthetic-close-modal"]'
     );
-    expect(close).toBeDefined();
+    expect(close).not.toBeNull();
+    expect(close?.textContent?.trim()).toBe('關閉');
+    expect(close?.className).toContain('text-zinc-400');
+    expect(close?.className).not.toContain('ui-btn');
     expect(card?.contains(close ?? null)).toBe(false);
+
+    const share = document.querySelector('[data-testid="aesthetic-share-report"]');
+    expect(share?.textContent?.trim()).toBe('分享名片');
+    expect(share?.className).toContain('w-full');
+    expect(share?.className).toContain('h-9');
+    expect(share?.className).toContain('border-amber-400/60');
+    expect(share?.className).toContain('bg-amber-500/15');
+
+    const toolRow = document.querySelector('[data-testid="aesthetic-tool-row"]');
+    expect(toolRow?.className).toContain('grid');
+    expect(toolRow?.className).toContain('grid-cols-2');
+    expect(toolRow?.className).toContain('gap-2');
+    expect(toolRow?.className).not.toContain('flex-wrap');
+    expect(share?.parentElement?.className).toContain('gap-1.5');
+    expect(CERT_STAGE_WRAP_CLASS).toContain('10.5rem');
+
+    expect(
+      document.querySelector('[data-testid="aesthetic-selfie-camera"]')?.textContent
+    ).toContain('拍照');
+    expect(
+      document.querySelector('[data-testid="aesthetic-selfie-photos"]')?.textContent
+    ).toContain('相簿');
+    expect(
+      document.querySelector('[data-testid="aesthetic-selfie-camera"]')?.querySelector('svg')
+    ).not.toBeNull();
+    expect(
+      document.querySelector('[data-testid="aesthetic-selfie-photos"]')?.querySelector('svg')
+    ).not.toBeNull();
+
+    expect(close?.className).toContain('h-7');
 
     const wrap = card?.parentElement;
     expect(wrap?.className).toBe(CERT_STAGE_WRAP_CLASS);
     expect(wrap?.className).not.toContain('overflow-y');
     expect(document.body.innerHTML).toContain('h-dvh');
     expect(document.body.innerHTML).toContain('ui-modal-safe-footer');
+    expect(document.body.innerHTML).toContain('pb-0');
+    expect(CERT_FOOTER_WRAP_CLASS).not.toContain('px-4');
+    expect(document.querySelector('.ui-modal-safe-footer')?.className).toBe(
+      `ui-modal-safe-footer ${CERT_FOOTER_WRAP_CLASS}`
+    );
 
     act(() => {
       close?.click();
@@ -189,8 +227,8 @@ describe('AestheticSpecModal certificate shell', () => {
       'revealing'
     );
 
-    const close = Array.from(document.querySelectorAll('button')).find(
-      (btn) => btn.textContent === '關閉名片'
+    const close = document.querySelector<HTMLButtonElement>(
+      '[data-testid="aesthetic-close-modal"]'
     );
     act(() => {
       close?.click();
@@ -264,7 +302,12 @@ describe('AestheticSpecModal certificate shell', () => {
       '[data-testid="aesthetic-telemetry-preview"]'
     );
     expect(preview?.getAttribute('src')).toBe('blob:aesthetic-preview');
-    expect(document.querySelector('[data-testid="aesthetic-restore-carbon"]')).not.toBeNull();
+    const restore = document.querySelector('[data-testid="aesthetic-restore-carbon"]');
+    expect(restore).not.toBeNull();
+    expect(restore?.textContent?.trim()).toBe('預設');
+    expect(document.querySelector('[data-testid="aesthetic-tool-row"]')?.className).toContain(
+      'grid-cols-3'
+    );
     expect(document.querySelector('[data-telemetry-mode="selfie"]')).not.toBeNull();
 
     act(() => {

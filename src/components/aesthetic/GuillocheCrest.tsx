@@ -1,4 +1,5 @@
 import { type FC } from 'react';
+import { GUILLOCHE_UP_SVG_PATHS } from '../../lib/guillocheMonogramPaths';
 
 /** Tick teeth along the outer seal ring — anti-counterfeit texture without radar spokes. */
 const GUILLOCHE_TEETH = Array.from({ length: 60 }, (_, i) => {
@@ -23,26 +24,18 @@ const HEX_DIAMOND_TOP = 'M48 25.2 L48.75 27 L48 28.8 L47.25 27 Z';
 const HEX_DIAMOND_BOTTOM = 'M48 67.2 L48.75 69 L48 70.8 L47.25 69 Z';
 
 /**
- * WHY: Shared-spine monolithic UP — dual free-standing letters sit left of optical center
- * (old U/P bbox mid ≈ 46.8). One vertical axis at x=48 with mirrored ±10 unit wings locks
- * both math and optical center on (48, 48).
- */
-const UP_SPINE_PATH = 'M48 38 L48 58';
-const UP_U_WING_PATH = 'M38 40 L38 54 L42 58 L48 58';
-const UP_P_ARC_PATH = 'M48 38 L54 38 L58 42 L58 46 L54 50 L48 50';
-
-/**
  * WHY: UP hex-shield seal — geometric anti-forgery crest centered on the plate, filling the
- * header→stamp vacuum without competing with foil type.
+ * header→stamp vacuum without competing with foil type. Monogram paths live in
+ * guillocheMonogramPaths so Canvas certificates cannot drift from this SVG.
  */
 const GuillocheCrest: FC = () => (
   <div
-    className="pointer-events-none relative mx-auto flex size-28 select-none items-center justify-center"
+    className="pointer-events-none relative mx-auto flex size-24 select-none items-center justify-center"
     data-testid="aesthetic-guilloche-crest"
     aria-hidden
   >
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.12)_0%,_transparent_70%)]" />
-    <svg className="size-24" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className="size-20" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Dual outer rings + micro tick teeth */}
       <g className="text-amber-300/60">
         <circle cx="48" cy="48" r="44" stroke="currentColor" strokeWidth="0.7" />
@@ -82,9 +75,9 @@ const GuillocheCrest: FC = () => (
         strokeLinejoin="round"
         strokeLinecap="round"
       >
-        <path d={UP_SPINE_PATH} />
-        <path d={UP_U_WING_PATH} />
-        <path d={UP_P_ARC_PATH} />
+        {GUILLOCHE_UP_SVG_PATHS.map((d) => (
+          <path key={d} d={d} />
+        ))}
       </g>
     </svg>
   </div>

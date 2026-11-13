@@ -127,7 +127,7 @@
       }
     },
     "labels": {
-      "brandHeader": "UP // DOMINANCE:",
+      "brandHeader": "ULTIMATE PHYSIQUE // DOMINANCE",
       "visual": "VISUAL TENSION",
       "force": "ABSOLUTE RIGIDITY",
       "kinetic": "PRIMAL DRIVE",
@@ -146,16 +146,16 @@
       "battleCode": "COMBAT ID",
       "triggerCta": "View Spec Certificate",
       "triggerCtaShort": "Certificate",
-      "closeModal": "Close Certificate",
+      "closeModal": "Close",
       "closeAria": "Close spec certificate"
     },
     "share": {
-      "shareReport": "Share Report",
+      "shareReport": "Share Card",
       "sharing": "Sharing…",
       "shareTitle": "Ultimate Physique Report",
-      "cameraBg": "Selfie Background",
-      "photosBg": "Choose Photo",
-      "restoreCarbon": "Restore Default Plate",
+      "cameraBg": "Camera",
+      "photosBg": "Album",
+      "restoreCarbon": "Default",
       "previewAlt": "Post-workout selfie report preview",
       "errors": {
         "captureUnavailable": "Camera or photo library is unavailable. Check permissions and try again.",

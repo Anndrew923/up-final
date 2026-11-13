@@ -13,10 +13,10 @@ export const FOIL_HEX = {
  * overall title stays one line; wings shrink before the title wraps.
  */
 export const FOIL_HERO_STAMP_CLASS =
-  'flex w-full origin-center items-center justify-center gap-2 overflow-visible px-2 pt-1.5 pb-0.5 sm:gap-3';
+  'flex w-full origin-center items-center justify-center gap-2 overflow-visible px-2 pt-1 pb-0 sm:gap-3';
 
 export const FOIL_HERO_TITLE_CLASS = [
-  "shrink-0 text-center font-['Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif]",
+  "shrink-0 text-center font-['UPSerifTC','Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif]",
   "[font-feature-settings:'palt'] antialiased font-bold uppercase whitespace-nowrap",
   'tracking-[0.2em] pl-[0.2em]',
   'text-[clamp(1.2rem,4.8vw,1.45rem)] leading-normal',
@@ -40,14 +40,19 @@ export const FOIL_PLATE_CLASS =
   'inline-flex shrink-0 items-center justify-center border border-[#c9a227]/65 bg-gradient-to-b from-[#f3e6c8]/20 to-[#7a5c28]/35 px-1 py-px text-[7px] tracking-[0.12em] text-[#f3e6c8]';
 
 /**
- * 9:16 certificate stage — 10rem reserves share / selfie / close rows under the plaque.
+ * 9:16 certificate stage — 10.5rem reserves the compact three-layer share / tools / close
+ * stack (h-9 + h-9 + h-7 + gap-1.5 + ui-modal-safe-footer pt/pb) under the plaque.
  * WHY: Width and height share one dvh budget so the stamp cannot clip on short phones.
+ * Class strings stay literal for Tailwind JIT (no template interpolation).
  */
-export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-10rem)]';
+export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-10.5rem)]';
 
 export const CERT_STAGE_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-10rem)*9/16))] shrink-0 items-center justify-center';
+  'flex w-full max-w-[min(24rem,calc((100dvh-10.5rem)*9/16))] shrink-0 items-center justify-center';
 
-/** Same width budget as the 9:16 stage so action chips stay aligned under the plaque. */
+/**
+ * Same max-width as the 9:16 stage — no extra px so full-bleed Share aligns with the plaque.
+ * Horizontal inset comes only from `ui-modal-safe-shell`.
+ */
 export const CERT_FOOTER_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-10rem)*9/16))] shrink-0 flex-col items-center gap-2 px-4';
+  'flex w-full max-w-[min(24rem,calc((100dvh-10.5rem)*9/16))] shrink-0 flex-col items-center gap-2';

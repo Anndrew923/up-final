@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { GUILLOCHE_UP_SVG_PATHS } from '../../../lib/guillocheMonogramPaths';
 import GuillocheCrest from '../GuillocheCrest';
 
 describe('GuillocheCrest', () => {
@@ -17,9 +18,14 @@ describe('GuillocheCrest', () => {
     expect(html).toContain('M48 67.2');
     expect(html).not.toContain('M48 22 L66 32.5');
     // Shared spine + mirrored ±10 unit wings — bbox [38,58] mid = 48.
-    expect(html).toContain('M48 38 L48 58');
-    expect(html).toContain('M38 40 L38 54 L42 58 L48 58');
-    expect(html).toContain('M48 38 L54 38 L58 42 L58 46 L54 50 L48 50');
+    expect(GUILLOCHE_UP_SVG_PATHS).toEqual([
+      'M48 38 L48 58',
+      'M38 40 L38 54 L42 58 L48 58',
+      'M48 38 L54 38 L58 42 L58 46 L54 50 L48 50',
+    ]);
+    for (const d of GUILLOCHE_UP_SVG_PATHS) {
+      expect(html).toContain(d);
+    }
     expect(html).toContain('stroke-width="1.3"');
     expect(html).toContain('text-amber-300/80');
     expect(html).toContain('fill-amber-300/15');

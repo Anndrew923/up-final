@@ -39,6 +39,10 @@ describe('buildAestheticTelemetryExportInput', () => {
     expect(input.overallScore).toBe(80);
     expect(input.title).toBe('aesthetic.overall.peakMortal');
     expect(input.specs).toHaveLength(3);
+    expect(input.meters).toHaveLength(3);
+    expect(input.meters?.[0]?.label).toBe('aesthetic.labels.visualMetric');
+    expect(input.year).toBeTypeOf('number');
+    expect(input.verifiedStamp).toBe('aesthetic.labels.verifiedStamp');
     expect(input.axes).toHaveLength(6);
     expect(input.axes[0]?.key).toBe('strength');
   });

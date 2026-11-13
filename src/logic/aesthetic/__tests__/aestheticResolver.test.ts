@@ -345,8 +345,9 @@ describe('aesthetic copy isolation', () => {
     expect(en.force.m['110'].subtitle).toBe('UNREAL WEIGHT · BROS STARING');
     expect(en.kinetic.m['100'].subtitle).toBe('NO WORD FOR TIRED · RIVALS GAPPED');
     expect(en.kinetic.m['90'].title).toBe('SCARY STAMINA');
-    expect(en.labels.brandHeader).toBe('UP // DOMINANCE:');
-    expect(en.labels.brandHeader.length).toBeLessThanOrEqual(16);
+    expect(en.labels.brandHeader).toBe('ULTIMATE PHYSIQUE // DOMINANCE');
+    expect(en.labels.brandHeader.endsWith(':')).toBe(false);
+    expect(en.labels.brandHeader.endsWith('：')).toBe(false);
     expect(en.labels.forceMetric).toBe('RIGID BURST');
     expect(en.labels.kineticMetric).toBe('PEAK STAMINA');
     for (const key of ['visualMetric', 'forceMetric', 'kineticMetric', 'gripMetric'] as const) {

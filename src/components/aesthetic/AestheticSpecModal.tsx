@@ -20,7 +20,52 @@ export interface AestheticSpecModalProps {
 }
 
 const ACTION_BTN_CLASS =
-  'ui-btn border border-zinc-500/40 bg-zinc-950/50 px-3 py-1.5 text-xs text-zinc-300 hover:text-white disabled:pointer-events-none disabled:opacity-40';
+  'ui-btn inline-flex h-9 w-full items-center justify-center gap-1.5 border border-zinc-500/40 bg-zinc-950/50 px-3 text-xs text-zinc-300 hover:text-white disabled:pointer-events-none disabled:opacity-40';
+
+/** Dark-gold primary — full-bleed under the plaque so Share is the first read. */
+const SHARE_BTN_CLASS =
+  'ui-btn inline-flex h-9 w-full items-center justify-center gap-1.5 border border-amber-400/60 bg-amber-500/15 px-3 text-xs font-medium text-amber-200 hover:border-amber-300/80 hover:bg-amber-500/25 hover:text-amber-100 disabled:pointer-events-none disabled:opacity-40';
+
+/**
+ * WHY: Do not use `.ui-btn` here — its border/bg bleed would fight the quiet text-only
+ * dismiss affordance and compete with Share / capture chips.
+ */
+const CLOSE_BTN_CLASS =
+  'h-7 px-3 text-xs text-zinc-400 transition hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-40';
+
+const IconCamera: FC = () => (
+  <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M4.5 8.25h2.1l1.05-1.8h6.7l1.05 1.8h2.1A1.75 1.75 0 0 1 19.25 10v7.25A1.75 1.75 0 0 1 17.5 19H6.5A1.75 1.75 0 0 1 4.75 17.25V10A1.75 1.75 0 0 1 6.5 8.25Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <circle cx="12" cy="13.25" r="2.75" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
+
+const IconAlbum: FC = () => (
+  <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect
+      x="3.75"
+      y="5.75"
+      width="16.5"
+      height="12.5"
+      rx="1.75"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="m7.5 14.5 2.4-2.4a1 1 0 0 1 1.35 0L14 14.85l1.15-1.15a1 1 0 0 1 1.35 0L18 15.2"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="9" cy="9.25" r="1.1" fill="currentColor" />
+  </svg>
+);
 
 const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
   const { t } = useTranslation('common');
@@ -76,7 +121,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
 
   return createPortal(
     <div
-      className={`group fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex h-dvh flex-col items-center justify-center overflow-hidden ui-modal-safe-shell`}
+      className={`group fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex h-dvh flex-col items-center justify-center overflow-hidden ui-modal-safe-shell pb-0`}
       data-cert-phase={phase}
       data-telemetry-mode={mode}
       role="presentation"
@@ -126,11 +171,16 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
             </p>
           ) : null}
 
-          <div className="flex w-full flex-wrap items-center justify-center gap-2">
+          {/*
+            WHY: Shell uses pb-0 so only `.ui-modal-safe-footer` owns bottom inset —
+            avoids double safe-area that would blow the 10.5rem stage reserve.
+            Three equal-width layers — no flex-wrap so carbon/selfie chips stay symmetric.
+          */}
+          <div className="flex w-full flex-col gap-1.5">
             <button
               type="button"
               data-testid="aesthetic-share-report"
-              className={ACTION_BTN_CLASS}
+              className={SHARE_BTN_CLASS}
               disabled={busy}
               onClick={() => {
                 void shareReport();
@@ -138,42 +188,56 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
             >
               {busy ? t('aesthetic.share.sharing') : t('aesthetic.share.shareReport')}
             </button>
-            <button
-              type="button"
-              data-testid="aesthetic-selfie-camera"
-              className={ACTION_BTN_CLASS}
-              disabled={busy}
-              onClick={() => {
-                void captureBackground('camera');
-              }}
+            <div
+              data-testid="aesthetic-tool-row"
+              className={`grid w-full gap-2 ${mode === 'selfie' ? 'grid-cols-3' : 'grid-cols-2'}`}
             >
-              {t('aesthetic.share.cameraBg')}
-            </button>
-            <button
-              type="button"
-              data-testid="aesthetic-selfie-photos"
-              className={ACTION_BTN_CLASS}
-              disabled={busy}
-              onClick={() => {
-                void captureBackground('photos');
-              }}
-            >
-              {t('aesthetic.share.photosBg')}
-            </button>
-            {mode === 'selfie' ? (
               <button
                 type="button"
-                data-testid="aesthetic-restore-carbon"
+                data-testid="aesthetic-selfie-camera"
                 className={ACTION_BTN_CLASS}
                 disabled={busy}
-                onClick={resetToCarbon}
+                onClick={() => {
+                  void captureBackground('camera');
+                }}
               >
-                {t('aesthetic.share.restoreCarbon')}
+                <IconCamera />
+                {t('aesthetic.share.cameraBg')}
               </button>
-            ) : null}
-            <button type="button" className={ACTION_BTN_CLASS} onClick={onCloseClick}>
-              {t('aesthetic.labels.closeModal')}
-            </button>
+              <button
+                type="button"
+                data-testid="aesthetic-selfie-photos"
+                className={ACTION_BTN_CLASS}
+                disabled={busy}
+                onClick={() => {
+                  void captureBackground('photos');
+                }}
+              >
+                <IconAlbum />
+                {t('aesthetic.share.photosBg')}
+              </button>
+              {mode === 'selfie' ? (
+                <button
+                  type="button"
+                  data-testid="aesthetic-restore-carbon"
+                  className={ACTION_BTN_CLASS}
+                  disabled={busy}
+                  onClick={resetToCarbon}
+                >
+                  {t('aesthetic.share.restoreCarbon')}
+                </button>
+              ) : null}
+            </div>
+            <div className="flex w-full items-center justify-center">
+              <button
+                type="button"
+                data-testid="aesthetic-close-modal"
+                className={CLOSE_BTN_CLASS}
+                onClick={onCloseClick}
+              >
+                {t('aesthetic.labels.closeModal')}
+              </button>
+            </div>
           </div>
         </div>
       </div>

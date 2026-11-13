@@ -71,6 +71,7 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('tracking-[0.2em]');
     expect(html).toContain('text-[clamp(1.2rem,4.8vw,1.45rem)]');
     expect(html).toContain('from-[#fff6d6]');
+    expect(html).toContain('UPSerifTC');
     expect(html).toContain('Songti_TC');
     expect(html).toContain('drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)]');
     expect(html).toContain(FOIL_HERO_WING_LEFT_CLASS);
@@ -101,7 +102,15 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('--fill:72%');
     expect(html).not.toContain('--fill:90%');
     expect(html).toContain('translate3d(var(--fill), -50%, 0)');
-    expect(html).toContain('gap-y-5');
+    expect(html).toContain('gap-y-3');
+    expect(html).toContain('pb-9');
+    expect(html).toContain('gap-1.5 py-1');
+    expect(html).toContain('mt-2 space-y-1');
+    expect(html).toContain('pt-2');
+    expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
+    expect(html).toContain('mx-auto flex size-24 select-none');
+    expect(FOIL_HERO_STAMP_CLASS).toContain('pt-1');
+    expect(FOIL_HERO_STAMP_CLASS).toContain('pb-0');
     // WHY: SpecRow must clamp title/subtitle so long zh force/kinetic copy cannot blow the 9:16 plate.
     expect(html).toContain('truncate text-[12px]');
     expect(html).toContain('line-clamp-2 text-[9.5px]');
