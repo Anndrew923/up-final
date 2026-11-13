@@ -483,9 +483,18 @@ describe('composeTelemetryCard', () => {
     ).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === '72.40')).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === 'PEAK MORTAL')).toBe(true);
-    expect(calls.some((call) => call.type === 'fillText' && call.text === 'UP')).toBe(true);
+    // WHY: Selfie brand seal is Guilloche vector strokes — never fillText("UP").
+    expect(calls.some((call) => call.type === 'fillText' && call.text === 'UP')).toBe(false);
     expect(calls.some((call) => call.type === 'fillText' && call.text === '2026')).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === 'UP-ALPHA')).toBe(false);
+    expect(
+      calls.some(
+        (call) =>
+          call.type === 'createRadialGradient' &&
+          call.x0 === TELEMETRY_BRAND_WATERMARK.cx &&
+          call.y0 === TELEMETRY_BRAND_WATERMARK.cy
+      )
+    ).toBe(true);
     expect(
       calls.some(
         (call) =>
@@ -537,8 +546,10 @@ describe('composeTelemetryCard', () => {
     expect(TELEMETRY_SELFIE_CHROME.stroke).toBe('rgba(243, 208, 120, 0.78)');
     expect(TELEMETRY_RADAR_LASER.neon).toBe('#00E5FF');
     expect(TELEMETRY_RADAR_LASER.coreStroke).toBe('#CFFAFE');
-    expect(TELEMETRY_BRAND_WATERMARK.cx).toBe(960);
-    expect(TELEMETRY_BRAND_WATERMARK.cy).toBe(110);
+    expect(TELEMETRY_BRAND_WATERMARK.cx).toBe(942);
+    expect(TELEMETRY_BRAND_WATERMARK.cy).toBe(122);
+    expect(TELEMETRY_BRAND_WATERMARK.outerRadius).toBe(54);
+    expect(TELEMETRY_BRAND_WATERMARK.yearDy).toBe(70);
     expect(TELEMETRY_CORNER_RETICLE.arm).toBe(36);
     expect(TELEMETRY_RADAR_LAYOUT.cx).toBe(248);
     expect(TELEMETRY_HUD_LAYOUT.textX).toBe(585);

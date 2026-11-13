@@ -3,18 +3,22 @@
  * WHY: Brand seal + corner reticles must survive bright gym-mirror backgrounds
  * without competing with the radar/text dock geometry contracts.
  */
+import { paintGuillocheSeal } from './guillocheSealPaint';
 import {
   TELEMETRY_CARD_HEIGHT,
   TELEMETRY_CARD_WIDTH,
 } from './telemetryCardBackground';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
-/** Top-right brand seal — outside the right-column clip so bright selfies still read UP. */
+/**
+ * Top-right Guilloche seal — scaled crest shared with the carbon certificate.
+ * yearDy clears the outer ring so "2026" sits under the seal without collision.
+ */
 export const TELEMETRY_BRAND_WATERMARK = {
-  cx: 960,
-  cy: 110,
-  hexRadius: 42,
-  yearDy: 58,
+  cx: 942,
+  cy: 122,
+  outerRadius: 54,
+  yearDy: 70,
 } as const;
 
 /** Corner reticle arms — tactical viewfinder chrome inset from the plate edge. */
@@ -27,9 +31,7 @@ export const TELEMETRY_CORNER_RETICLE = {
 export const TELEMETRY_SELFIE_CHROME = {
   stroke: 'rgba(243, 208, 120, 0.78)',
   glow: 'rgba(251, 191, 36, 0.45)',
-  markFill: 'rgba(255, 229, 143, 0.95)',
   yearFill: 'rgba(244, 244, 245, 0.88)',
-  hexFill: 'rgba(201, 162, 39, 0.18)',
 } as const;
 
 const FONT = '"PingFang TC", "Noto Sans TC", "Helvetica Neue", sans-serif';
@@ -88,31 +90,26 @@ export function paintCornerReticles(ctx: TelemetryDrawContext): void {
 }
 
 export function paintBrandWatermark(ctx: TelemetryDrawContext, year: number): void {
-  const { cx, cy, hexRadius, yearDy } = TELEMETRY_BRAND_WATERMARK;
+  const { cx, cy, outerRadius, yearDy } = TELEMETRY_BRAND_WATERMARK;
   const chrome = TELEMETRY_SELFIE_CHROME;
+
+  // WHY: Bright gym walls wash out gold strokes — dark radial bed keeps the seal legible.
+  paintGuillocheSeal(ctx, {
+    cx,
+    cy,
+    outerRadius,
+    backdrop: {
+      core: 'rgba(8, 10, 15, 0.55)',
+      mid: 'rgba(8, 10, 15, 0.22)',
+      edge: 'rgba(8, 10, 15, 0)',
+    },
+  });
+
   ctx.save();
-  ctx.shadowColor = chrome.glow;
-  ctx.shadowBlur = 14;
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = 8;
   ctx.shadowOffsetY = 2;
-
-  const hex: Array<[number, number]> = [];
-  for (let i = 0; i < 6; i += 1) {
-    const a = (Math.PI / 180) * (60 * i - 90);
-    hex.push([cx + Math.cos(a) * hexRadius, cy + Math.sin(a) * hexRadius]);
-  }
-  ctx.beginPath();
-  ctx.moveTo(hex[0]![0], hex[0]![1]);
-  for (let i = 1; i < hex.length; i += 1) ctx.lineTo(hex[i]![0], hex[i]![1]);
-  ctx.closePath();
-  ctx.fillStyle = chrome.hexFill;
-  ctx.fill();
-  ctx.strokeStyle = chrome.stroke;
-  ctx.lineWidth = 2.25;
-  ctx.stroke();
-
-  paintChromeLabel(ctx, 'UP', cx, cy + 4, `bold 28px ${FONT}`, chrome.markFill);
   paintChromeLabel(ctx, String(year), cx, cy + yearDy, `18px ${FONT}`, chrome.yearFill);
-
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;

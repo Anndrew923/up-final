@@ -3,10 +3,11 @@
  * WHY: Keeps telemetryCardCertificate under the 500-line split while matching
  * AestheticSpecCard / GuillocheCrest DOM optics on the offline PNG plate.
  */
+import { GUILLOCHE_UP_POLYLINES } from './guillocheMonogramPaths';
 import {
-  GUILLOCHE_MONOGRAM_CENTER,
-  GUILLOCHE_UP_POLYLINES,
-} from './guillocheMonogramPaths';
+  GUILLOCHE_SEAL_REF_OUTER_RADIUS,
+  paintGuillocheSeal,
+} from './guillocheSealPaint';
 import {
   TELEMETRY_CARD_WIDTH,
 } from './telemetryCardBackground';
@@ -35,9 +36,6 @@ const SANS_FONT = TELEMETRY_SANS_FONT_STACK;
 /** Re-export polyline SSOT for certificate unit assertions. */
 export const TELEMETRY_CERT_GUILLOCHE_UP_PATHS = GUILLOCHE_UP_POLYLINES;
 
-/** SVG hex circumradius ≈ 21 → canvas hexR 72. */
-export const TELEMETRY_CERT_GUILLOCHE_SVG_SCALE = 72 / 21;
-
 export const TELEMETRY_CERT_CREST_CENTER = {
   x: TELEMETRY_CARD_WIDTH / 2,
   y: 420,
@@ -60,89 +58,22 @@ function measureWidth(
   }
 }
 
-function strokeGuillochePolyline(
-  ctx: TelemetryDrawContext,
-  points: ReadonlyArray<readonly [number, number]>,
-  cx: number,
-  cy: number,
-  scale: number
-): void {
-  const first = points[0];
-  if (!first) return;
-  ctx.beginPath();
-  const origin = GUILLOCHE_MONOGRAM_CENTER;
-  ctx.moveTo(cx + (first[0] - origin) * scale, cy + (first[1] - origin) * scale);
-  for (let i = 1; i < points.length; i += 1) {
-    const point = points[i];
-    if (!point) continue;
-    ctx.lineTo(cx + (point[0] - origin) * scale, cy + (point[1] - origin) * scale);
-  }
-  ctx.stroke();
-}
-
 export function paintCertificateCrest(
   ctx: TelemetryDrawContext,
   cx: number,
   cy: number
 ): void {
-  ctx.save();
-
-  const glow = ctx.createRadialGradient(cx, cy, 8, cx, cy, 130);
-  glow.addColorStop(0, 'rgba(245, 158, 11, 0.16)');
-  glow.addColorStop(0.55, 'rgba(201, 162, 39, 0.08)');
-  glow.addColorStop(1, 'rgba(245, 158, 11, 0)');
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 130, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = 'rgba(251,191,36,0.62)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 118, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.lineWidth = 1.25;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 108, 0, Math.PI * 2);
-  ctx.stroke();
-
-  for (let i = 0; i < 60; i += 1) {
-    const a = (i / 60) * Math.PI * 2 - Math.PI / 2;
-    const major = i % 5 === 0;
-    const inner = major ? 100 : 104;
-    const outer = 116;
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
-    ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
-    ctx.strokeStyle = major ? 'rgba(251,191,36,0.75)' : 'rgba(251,191,36,0.4)';
-    ctx.lineWidth = major ? 2 : 1;
-    ctx.stroke();
-  }
-
-  const hexR = 72;
-  const hex: Array<[number, number]> = [];
-  for (let i = 0; i < 6; i += 1) {
-    const a = (Math.PI / 180) * (60 * i - 90);
-    hex.push([cx + Math.cos(a) * hexR, cy + Math.sin(a) * hexR]);
-  }
-  ctx.beginPath();
-  ctx.moveTo(hex[0]![0], hex[0]![1]);
-  for (let i = 1; i < hex.length; i += 1) ctx.lineTo(hex[i]![0], hex[i]![1]);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(251,191,36,0.06)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(251,191,36,0.55)';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  ctx.strokeStyle = 'rgba(252, 211, 77, 0.88)';
-  ctx.lineWidth = Math.max(2.8, 1.3 * (TELEMETRY_CERT_GUILLOCHE_SVG_SCALE / 2.2));
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  for (const path of TELEMETRY_CERT_GUILLOCHE_UP_PATHS) {
-    strokeGuillochePolyline(ctx, path, cx, cy, TELEMETRY_CERT_GUILLOCHE_SVG_SCALE);
-  }
-  ctx.restore();
+  paintGuillocheSeal(ctx, {
+    cx,
+    cy,
+    outerRadius: GUILLOCHE_SEAL_REF_OUTER_RADIUS,
+    backdrop: {
+      core: 'rgba(245, 158, 11, 0.16)',
+      mid: 'rgba(201, 162, 39, 0.08)',
+      edge: 'rgba(245, 158, 11, 0)',
+      radius: 130,
+    },
+  });
 }
 
 function paintTitleWing(
