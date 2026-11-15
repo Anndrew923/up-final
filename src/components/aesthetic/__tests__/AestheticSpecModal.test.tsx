@@ -10,7 +10,11 @@ import {
   writeAestheticTelemetryAspectSession,
 } from '../../../lib/aestheticTelemetryAspectSession';
 import AestheticSpecModal from '../AestheticSpecModal';
-import { CERT_FOOTER_WRAP_CLASS, CERT_STAGE_WRAP_CLASS } from '../aestheticChrome';
+import {
+  CERT_ASPECT_PILL_WRAP_CLASS,
+  CERT_FOOTER_WRAP_CLASS,
+  CERT_STAGE_WRAP_CLASS,
+} from '../aestheticChrome';
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -170,7 +174,12 @@ describe('AestheticSpecModal certificate shell', () => {
       false
     );
     expect(share?.parentElement?.className).toContain('gap-2.5');
-    expect(CERT_STAGE_WRAP_CLASS).toContain('13.5rem');
+    // Flex column stage — no rem-subtracted max-h that clips Home Indicator chrome.
+    expect(CERT_STAGE_WRAP_CLASS).toContain('flex-1');
+    expect(CERT_STAGE_WRAP_CLASS).toContain('min-h-0');
+    expect(CERT_STAGE_WRAP_CLASS).not.toContain('13.5rem');
+    expect(CERT_ASPECT_PILL_WRAP_CLASS).toContain('safe-area-inset-top');
+    expect(CERT_FOOTER_WRAP_CLASS).toContain('shrink-0');
     expect(
       document.querySelector('[data-testid="aesthetic-spec-card"]')?.getAttribute('data-aspect')
     ).toBe('9:16');
@@ -193,13 +202,21 @@ describe('AestheticSpecModal certificate shell', () => {
     const wrap = card?.parentElement;
     expect(wrap?.className).toBe(CERT_STAGE_WRAP_CLASS);
     expect(wrap?.className).not.toContain('overflow-y');
+    expect(dialog?.className).toContain('flex-1');
     expect(document.body.innerHTML).toContain('h-dvh');
     expect(document.body.innerHTML).toContain('ui-modal-safe-footer');
-    expect(document.body.innerHTML).toContain('pb-0');
+    // Root owns horizontal px only — vertical safe-area is pill (top) + footer (bottom).
+    expect(document.body.innerHTML).toContain('px-4');
+    expect(document.body.innerHTML).not.toContain('ui-modal-safe-shell');
+    expect(CERT_STAGE_WRAP_CLASS).toContain('overflow-hidden');
     expect(CERT_FOOTER_WRAP_CLASS).not.toContain('px-4');
     expect(document.querySelector('.ui-modal-safe-footer')?.className).toBe(
       `ui-modal-safe-footer ${CERT_FOOTER_WRAP_CLASS}`
     );
+    // Quiet close row lives inside the safe footer — never clipped by Home Indicator.
+    expect(
+      document.querySelector('.ui-modal-safe-footer')?.contains(close ?? null)
+    ).toBe(true);
 
     act(() => {
       close?.click();

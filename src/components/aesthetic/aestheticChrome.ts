@@ -40,27 +40,25 @@ export const FOIL_PLATE_CLASS =
   'inline-flex shrink-0 items-center justify-center border border-[#c9a227]/65 bg-gradient-to-b from-[#f3e6c8]/20 to-[#7a5c28]/35 px-1 py-px text-[7px] tracking-[0.12em] text-[#f3e6c8]';
 
 /**
- * Certificate stage height budget — 13.5rem reserves chrome outside the plaque:
- * top format pill (h-9 + mb-2.5 ≈ 2.875rem) +
- * bottom stack (share h-9 + tools h-8 + quiet close h-7 + gap-2.5×2 ≈ 7.25rem) +
- * ui-modal-safe-footer (pt-4 + pb-2rem ≈ 3rem).
- * WHY: Under-reserve clips pill/footer on short phones; over-reserve only shrinks the stamp.
+ * Plate/preview viewport inside the flex-1 stage.
+ * WHY: Height follows the stage (`h-full`) so ResizeObserver always has a real box —
+ * absolute plate children cannot collapse an `h-auto` article to 0×0. Stage wrap
+ * `overflow-hidden` is the hard fence so a wide aspect never paints over 預設/關閉.
  * Class strings stay literal for Tailwind JIT (no template interpolation).
  */
-export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-13.5rem)]';
+export const CERT_STAGE_FIT_CLASS = 'h-full max-h-full w-auto max-w-full';
 
 export const CERT_STAGE_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 items-center justify-center';
-
+  'flex min-h-0 w-full max-w-[min(24rem,100%)] flex-1 items-center justify-center overflow-hidden';
 /**
- * Floating format pill above the plaque — compact capsule, same width budget as the stage.
+ * Format pill — owns top safe-area. Modal shell must NOT also apply top inset.
  */
 export const CERT_ASPECT_PILL_WRAP_CLASS =
-  'mb-2.5 flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 justify-center px-8';
+  'mb-2.5 flex w-full max-w-[min(24rem,100%)] shrink-0 justify-center px-8 pt-[max(0.75rem,env(safe-area-inset-top,0px))]';
 
 /**
- * Same max-width as the stage — no extra px so full-bleed Share aligns with the plaque.
- * Horizontal inset comes only from `ui-modal-safe-shell`.
+ * Same max-width as the stage — full-bleed Share aligns with the plaque.
+ * Horizontal inset: modal `px-4`. Bottom inset: `.ui-modal-safe-footer` only.
  */
 export const CERT_FOOTER_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 flex-col items-center gap-2.5';
+  'flex w-full max-w-[min(24rem,100%)] shrink-0 flex-col items-center gap-2.5';

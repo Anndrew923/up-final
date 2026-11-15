@@ -10,7 +10,7 @@ import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import {
   CERT_ASPECT_PILL_WRAP_CLASS,
   CERT_FOOTER_WRAP_CLASS,
-  CERT_STAGE_MAX_H_CLASS,
+  CERT_STAGE_FIT_CLASS,
   CERT_STAGE_WRAP_CLASS,
 } from './aestheticChrome';
 import { CERT_VEIL_REVEAL_CLASS } from '../../lib/certRevealMotion';
@@ -127,7 +127,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
 
   return createPortal(
     <div
-      className={`group fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex h-dvh flex-col items-center justify-center overflow-hidden ui-modal-safe-shell pb-0`}
+      className={`group fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex h-dvh flex-col overflow-hidden px-4`}
       data-cert-phase={phase}
       data-telemetry-mode={mode}
       role="presentation"
@@ -138,13 +138,17 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
         aria-label={t('aesthetic.labels.closeAria')}
         onClick={onBackdropClick}
       />
+      {/*
+        WHY: Column flex fills 100dvh — pill/footer stay shrink-0 above the Home Indicator;
+        the stage flex-1 absorbs leftover height so rem-subtracted max-h cannot clip 關閉.
+      */}
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-busy={phase === 'revealing' || busy}
-        className="relative z-10 flex min-h-0 w-full flex-col items-center"
+        className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-center"
         onClick={onDialogClick}
       >
         <h2 id={titleId} className="sr-only">
@@ -153,7 +157,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
 
         {/*
           WHY: Format pill sits above the plaque as a canvas toolbar — keeps the bottom
-          action stack to Share + capture only (Plan A).
+          action stack to Share + capture only (Plan A). Owns top safe-area (shell pt-0).
         */}
         <div className={CERT_ASPECT_PILL_WRAP_CLASS} onClick={stopRowClick}>
           <div
@@ -207,7 +211,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
               alt={t('aesthetic.share.previewAlt')}
               className={`${
                 aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-[9/16]'
-              } w-full origin-center ${CERT_STAGE_MAX_H_CLASS} rounded-2xl border border-[#c9a227]/30 object-contain shadow-[0_16px_40px_rgba(0,0,0,0.55)]`}
+              } ${CERT_STAGE_FIT_CLASS} origin-center rounded-2xl border border-[#c9a227]/30 object-contain shadow-[0_16px_40px_rgba(0,0,0,0.55)]`}
             />
           ) : (
             <AestheticSpecCard model={model} aspectRatio={aspectRatio} />
@@ -229,9 +233,8 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
           ) : null}
 
           {/*
-            WHY: Shell uses pb-0 so only `.ui-modal-safe-footer` owns bottom inset —
-            avoids double safe-area that would blow the stage reserve.
-            Two action rows only: Share (primary) + camera/album (sources).
+            WHY: Modal root uses px-4 only — `.ui-modal-safe-footer` alone owns Home Indicator
+            inset so 預設/關閉 stay fully tappable above the bar on XR-class phones.
           */}
           <div className="flex w-full flex-col gap-2.5">
             <button

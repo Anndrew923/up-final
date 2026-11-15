@@ -14,7 +14,7 @@ import AestheticKpiStrip from './AestheticKpiStrip';
 import AestheticMeter, { clampMeterFill, type AestheticMeterProps } from './AestheticMeter';
 import GuillocheCrest from './GuillocheCrest';
 import {
-  CERT_STAGE_MAX_H_CLASS,
+  CERT_STAGE_FIT_CLASS,
   FOIL_HERO_STAMP_CLASS,
   FOIL_HERO_TITLE_CLASS,
   FOIL_HERO_WING_LEFT_CLASS,
@@ -142,7 +142,7 @@ const AestheticSpecCard: FC<AestheticSpecCardProps> = ({ model, aspectRatio = '9
       ref={viewportRef}
       data-testid="aesthetic-spec-card"
       data-aspect={aspectRatio}
-      className={`relative ${aspectClass} w-full origin-center ${CERT_STAGE_MAX_H_CLASS} overflow-hidden rounded-2xl border border-[#c9a227]/30 bg-bg-base text-zinc-100 shadow-[0_16px_40px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(201,162,39,0.16)] ${CERT_PLATE_REVEAL_CLASS}`}
+      className={`relative ${aspectClass} origin-center ${CERT_STAGE_FIT_CLASS} overflow-hidden rounded-2xl border border-[#c9a227]/30 bg-bg-base text-zinc-100 shadow-[0_16px_40px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(201,162,39,0.16)] ${CERT_PLATE_REVEAL_CLASS}`}
     >
       {/*
         WHY: Plate is always the canvas logical size; scale fits the viewport so

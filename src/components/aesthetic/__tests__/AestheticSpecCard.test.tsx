@@ -7,7 +7,7 @@ import type { AestheticResolverOutput } from '../../../logic/aesthetic/aesthetic
 import AestheticSpecCard from '../AestheticSpecCard';
 import { clampMeterFill } from '../AestheticMeter';
 import {
-  CERT_STAGE_MAX_H_CLASS,
+  CERT_STAGE_FIT_CLASS,
   FOIL_HERO_STAMP_CLASS,
   FOIL_HERO_TITLE_CLASS,
   FOIL_HERO_WING_LEFT_CLASS,
@@ -70,7 +70,7 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('data-plate-width="1080"');
     expect(html).toContain('data-plate-height="1920"');
     expect(html).not.toContain('data-testid="aesthetic-kpi-strip"');
-    expect(html).toContain(CERT_STAGE_MAX_H_CLASS);
+    expect(html).toContain(CERT_STAGE_FIT_CLASS);
     expect(html).toContain(FOIL_HERO_STAMP_CLASS);
     expect(FOIL_HERO_STAMP_CLASS).toContain('overflow-visible');
     expect(FOIL_HERO_STAMP_CLASS).not.toContain('overflow-hidden');
