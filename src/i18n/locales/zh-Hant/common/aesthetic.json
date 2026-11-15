@@ -157,6 +157,9 @@
       "photosBg": "相簿",
       "restoreCarbon": "預設",
       "previewAlt": "練後自拍戰報預覽",
+      "aspectAria": "戰報分享比例",
+      "aspectStory": "9:16 限動",
+      "aspectFeed": "4:5 貼文",
       "errors": {
         "captureUnavailable": "無法開啟相機或相簿，請確認權限後再試。",
         "captureFailed": "圖片無法解碼，請改選其他照片。",

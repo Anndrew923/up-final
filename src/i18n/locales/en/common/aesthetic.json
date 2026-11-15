@@ -157,6 +157,9 @@
       "photosBg": "Album",
       "restoreCarbon": "Default",
       "previewAlt": "Post-workout selfie report preview",
+      "aspectAria": "Report share aspect ratio",
+      "aspectStory": "9:16 Story",
+      "aspectFeed": "4:5 Feed",
       "errors": {
         "captureUnavailable": "Camera or photo library is unavailable. Check permissions and try again.",
         "captureFailed": "That image could not be decoded. Try another photo.",

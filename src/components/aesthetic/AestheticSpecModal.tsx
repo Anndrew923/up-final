@@ -8,6 +8,7 @@ import { useAestheticTelemetryShare } from '../../hooks/useAestheticTelemetrySha
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
 import {
+  CERT_ASPECT_PILL_WRAP_CLASS,
   CERT_FOOTER_WRAP_CLASS,
   CERT_STAGE_MAX_H_CLASS,
   CERT_STAGE_WRAP_CLASS,
@@ -20,7 +21,7 @@ export interface AestheticSpecModalProps {
 }
 
 const ACTION_BTN_CLASS =
-  'ui-btn inline-flex h-9 w-full items-center justify-center gap-1.5 border border-zinc-500/40 bg-zinc-950/50 px-3 text-xs text-zinc-300 hover:text-white disabled:pointer-events-none disabled:opacity-40';
+  'ui-btn inline-flex h-8 w-full items-center justify-center gap-1.5 border border-zinc-500/40 bg-zinc-950/50 px-3 text-xs text-zinc-300 hover:text-white disabled:pointer-events-none disabled:opacity-40';
 
 /** Dark-gold primary — full-bleed under the plaque so Share is the first read. */
 const SHARE_BTN_CLASS =
@@ -32,6 +33,9 @@ const SHARE_BTN_CLASS =
  */
 const CLOSE_BTN_CLASS =
   'h-7 px-3 text-xs text-zinc-400 transition hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-40';
+
+const ASPECT_TAB_BASE =
+  'h-7 flex-1 rounded-full px-2 text-[11px] transition disabled:pointer-events-none disabled:opacity-40';
 
 const IconCamera: FC = () => (
   <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -75,11 +79,13 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
   const { phase, skip } = useAestheticCertReveal();
   const {
     mode,
+    aspectRatio,
     previewUrl,
     busy,
     errorMessage,
     captureBackground,
     resetToCarbon,
+    selectAspectRatio,
     shareReport,
   } = useAestheticTelemetryShare(model);
   useFocusTrap(dialogRef, true);
@@ -144,16 +150,67 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
         <h2 id={titleId} className="sr-only">
           {t('aesthetic.labels.triggerCta')}
         </h2>
+
+        {/*
+          WHY: Format pill sits above the plaque as a canvas toolbar — keeps the bottom
+          action stack to Share + capture only (Plan A).
+        */}
+        <div className={CERT_ASPECT_PILL_WRAP_CLASS} onClick={stopRowClick}>
+          <div
+            data-testid="aesthetic-aspect-toggle"
+            className="inline-flex h-9 w-full max-w-[16.5rem] items-center gap-0.5 rounded-full border border-zinc-600/70 bg-zinc-950/70 p-0.5 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm"
+            role="tablist"
+            aria-label={t('aesthetic.share.aspectAria')}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={aspectRatio === '9:16'}
+              data-testid="aesthetic-aspect-story"
+              className={`${ASPECT_TAB_BASE} ${
+                aspectRatio === '9:16'
+                  ? 'bg-zinc-800 text-amber-100 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+              disabled={busy}
+              onClick={() => {
+                void selectAspectRatio('9:16');
+              }}
+            >
+              {t('aesthetic.share.aspectStory')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={aspectRatio === '4:5'}
+              data-testid="aesthetic-aspect-feed"
+              className={`${ASPECT_TAB_BASE} ${
+                aspectRatio === '4:5'
+                  ? 'bg-zinc-800 text-amber-100 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+              disabled={busy}
+              onClick={() => {
+                void selectAspectRatio('4:5');
+              }}
+            >
+              {t('aesthetic.share.aspectFeed')}
+            </button>
+          </div>
+        </div>
+
         <div className={CERT_STAGE_WRAP_CLASS}>
           {showSelfiePreview ? (
             <img
               data-testid="aesthetic-telemetry-preview"
               src={previewUrl ?? undefined}
               alt={t('aesthetic.share.previewAlt')}
-              className={`aspect-[9/16] w-full origin-center ${CERT_STAGE_MAX_H_CLASS} rounded-2xl border border-[#c9a227]/30 object-contain shadow-[0_16px_40px_rgba(0,0,0,0.55)]`}
+              className={`${
+                aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-[9/16]'
+              } w-full origin-center ${CERT_STAGE_MAX_H_CLASS} rounded-2xl border border-[#c9a227]/30 object-contain shadow-[0_16px_40px_rgba(0,0,0,0.55)]`}
             />
           ) : (
-            <AestheticSpecCard model={model} />
+            <AestheticSpecCard model={model} aspectRatio={aspectRatio} />
           )}
         </div>
 
@@ -173,10 +230,10 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
 
           {/*
             WHY: Shell uses pb-0 so only `.ui-modal-safe-footer` owns bottom inset —
-            avoids double safe-area that would blow the 10.5rem stage reserve.
-            Three equal-width layers — no flex-wrap so carbon/selfie chips stay symmetric.
+            avoids double safe-area that would blow the stage reserve.
+            Two action rows only: Share (primary) + camera/album (sources).
           */}
-          <div className="flex w-full flex-col gap-1.5">
+          <div className="flex w-full flex-col gap-2.5">
             <button
               type="button"
               data-testid="aesthetic-share-report"
@@ -190,7 +247,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
             </button>
             <div
               data-testid="aesthetic-tool-row"
-              className={`grid w-full gap-2 ${mode === 'selfie' ? 'grid-cols-3' : 'grid-cols-2'}`}
+              className="grid w-full grid-cols-2 gap-2"
             >
               <button
                 type="button"
@@ -216,19 +273,19 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
                 <IconAlbum />
                 {t('aesthetic.share.photosBg')}
               </button>
+            </div>
+            <div className="flex w-full items-center justify-center gap-3">
               {mode === 'selfie' ? (
                 <button
                   type="button"
                   data-testid="aesthetic-restore-carbon"
-                  className={ACTION_BTN_CLASS}
+                  className={CLOSE_BTN_CLASS}
                   disabled={busy}
                   onClick={resetToCarbon}
                 >
                   {t('aesthetic.share.restoreCarbon')}
                 </button>
               ) : null}
-            </div>
-            <div className="flex w-full items-center justify-center">
               <button
                 type="button"
                 data-testid="aesthetic-close-modal"

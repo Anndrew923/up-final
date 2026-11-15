@@ -1,37 +1,45 @@
 /**
- * Offline carbon plate — raster black-gold physiological certificate (1080×1920 logical).
+ * Offline carbon plate — raster black-gold physiological certificate.
  * WHY: Share Card without a selfie must match the DOM AestheticSpecCard, not the
- * dark telemetry weave + radar HUD used under selfie scrims. Physical export is 3×.
+ * dark telemetry weave + radar HUD used under selfie scrims. Layout is aspect-aware.
  */
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import {
   TELEMETRY_CARD_HEIGHT,
   TELEMETRY_CARD_WIDTH,
 } from './telemetryCardBackground';
+import type { TelemetryCardAspectRatio } from './telemetryCardTypes';
 import {
   paintCertificateCrest,
   paintCertificateFoilTitle,
   paintCertificateTrackedStamp,
-  TELEMETRY_CERT_CREST_CENTER,
+  TELEMETRY_CERT_SECONDARY_FILL,
+  TELEMETRY_CERT_SECONDARY_WEIGHT,
+  TELEMETRY_CERT_STAMP_FONT_PX,
   TELEMETRY_CERT_STAMP_TRACKING_PX,
-  TELEMETRY_CERT_TITLE_Y,
+  TELEMETRY_CERT_SUBTITLE_FONT_PX,
 } from './telemetryCardCertificateChrome';
 import {
   paintCertificateFrame,
   paintCertificateLabel,
   paintCertificateMeterRow,
+  paintCertificateMeterStrip,
   TELEMETRY_CERT_FRAME_INSET,
   withMicroEdgeShadow,
   type TelemetryMeterLine,
 } from './telemetryCardCertificateFrame';
 import { TELEMETRY_SANS_FONT_STACK } from './telemetryCardFonts';
+import { resolveCarbonLayout } from './telemetryCardLayout';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
 export type { TelemetryMeterLine } from './telemetryCardCertificateFrame';
 export {
   TELEMETRY_CERT_FRAME_INSET,
+  TELEMETRY_CERT_KPI_STRIP_GAP,
+  TELEMETRY_CERT_KPI_STRIP_OFFSETS,
   TELEMETRY_CERT_RIVET_CENTERS,
   TELEMETRY_CERT_RIVET_RADIUS,
+  paintCertificateMeterStrip,
 } from './telemetryCardCertificateFrame';
 
 const FONT = TELEMETRY_SANS_FONT_STACK;
@@ -39,10 +47,9 @@ const FONT = TELEMETRY_SANS_FONT_STACK;
 export const TELEMETRY_CERT_INNER_FRAME_INSET = TELEMETRY_CERT_FRAME_INSET + 10;
 /** Stamp baseline must stay this many px above the inner foil bottom edge. */
 export const TELEMETRY_CERT_STAMP_CLEARANCE_PX = 24;
+/** 9:16 stamp ceiling — kept for legacy unit assertions. */
 export const TELEMETRY_CERT_STAMP_MAX_Y =
   TELEMETRY_CARD_HEIGHT - TELEMETRY_CERT_INNER_FRAME_INSET - TELEMETRY_CERT_STAMP_CLEARANCE_PX;
-const BATTLE_CODE_ABOVE_STAMP_PX = 48;
-const FOOTER_RULE_ABOVE_BATTLE_PX = 40;
 const CONTENT_LEFT = 96;
 const CONTENT_RIGHT = TELEMETRY_CARD_WIDTH - 96;
 const CONTENT_WIDTH = CONTENT_RIGHT - CONTENT_LEFT;
@@ -56,6 +63,7 @@ export interface TelemetryCertificatePaintInput {
   verifiedStamp: string;
   specs: readonly { kicker: string; title: string; subtitle?: string }[];
   meters: readonly TelemetryMeterLine[];
+  aspectRatio?: TelemetryCardAspectRatio;
 }
 
 function wrapLines(
@@ -121,13 +129,14 @@ function paintRule(ctx: TelemetryDrawContext, y: number): void {
  * Paint the full black-gold certificate plate.
  * WHY: Spec block height varies with wrapped subtitles — meter/footer Y is derived
  * from content so long copy cannot collide with calipers, and a fixed bottom band
- * keeps the last meter clear of the foil frame.
+ * keeps the last meter clear of the foil frame. 4:5 uses a compressed layout profile.
  */
 export function paintCertificatePlate(
   ctx: TelemetryDrawContext,
   input: TelemetryCertificatePaintInput
 ): void {
-  paintCertificateFrame(ctx);
+  const layout = resolveCarbonLayout(input.aspectRatio ?? '9:16');
+  paintCertificateFrame(ctx, layout.plateWidth, layout.plateHeight);
 
   const brand = input.brandHeader.trim();
   const brandFont = `26px ${FONT}`;
@@ -145,7 +154,7 @@ export function paintCertificatePlate(
     ctx,
     brand,
     CONTENT_LEFT,
-    120,
+    layout.headerY,
     brandFont,
     'rgba(161,161,170,0.95)',
     'left',
@@ -156,7 +165,7 @@ export function paintCertificatePlate(
     ctx,
     scoreText,
     CONTENT_LEFT + brandWidth + 20,
-    120,
+    layout.headerY,
     scoreFont,
     '#f4f4f5',
     'left',
@@ -166,23 +175,29 @@ export function paintCertificatePlate(
     ctx,
     yearText,
     CONTENT_RIGHT,
-    120,
+    layout.headerY,
     yearFont,
     'rgba(113,113,122,0.95)',
     'right',
     'middle'
   );
 
-  paintRule(ctx, 158);
-  paintCertificateCrest(ctx, TELEMETRY_CERT_CREST_CENTER.x, TELEMETRY_CERT_CREST_CENTER.y);
+  paintRule(ctx, layout.headerRuleY);
+  paintCertificateCrest(
+    ctx,
+    layout.crestCx,
+    layout.crestCy,
+    layout.crestOuterRadius,
+    layout.crestGlowRadius
+  );
   paintCertificateFoilTitle(
     ctx,
     input.title,
     TELEMETRY_CARD_WIDTH / 2,
-    TELEMETRY_CERT_TITLE_Y
+    layout.titleY
   );
 
-  let specY = 720;
+  let specY = layout.specStartY;
   for (const spec of input.specs.slice(0, 3)) {
     paintCertificateLabel(
       ctx,
@@ -207,50 +222,66 @@ export function paintCertificatePlate(
       CONTENT_WIDTH - 250
     );
     if (spec.subtitle) {
-      const subFont = `22px ${FONT}`;
+      const subFont = `${TELEMETRY_CERT_SECONDARY_WEIGHT} ${TELEMETRY_CERT_SUBTITLE_FONT_PX}px ${FONT}`;
       const lines = wrapLines(ctx, spec.subtitle, subFont, CONTENT_WIDTH - 250, 2);
       lines.forEach((line, index) => {
         paintCertificateLabel(
           ctx,
           line,
           CONTENT_LEFT + 250,
-          specY + 36 + index * 28,
+          specY + layout.specSubtitleFirstDy + index * layout.specSubtitleLineGap,
           subFont,
-          'rgba(113,113,122,0.95)',
+          TELEMETRY_CERT_SECONDARY_FILL,
           'left',
           'middle',
           CONTENT_WIDTH - 250
         );
       });
-      specY += 36 + lines.length * 28 + 36;
+      specY +=
+        layout.specSubtitleFirstDy +
+        lines.length * layout.specSubtitleLineGap +
+        layout.specAfterSubtitlePad;
     } else {
-      specY += 72;
+      specY += layout.specEmptyGap;
     }
   }
 
-  const meterGap = 90;
+  const aspect = input.aspectRatio ?? '9:16';
+  const useKpiStrip = aspect === '4:5';
+  const meterGap = layout.meterGap;
   const meterCount = Math.min(3, input.meters.length);
-  const metersBlock = meterCount > 0 ? meterCount * meterGap : 0;
-  // WHY: Named caps — long wrapped specs must never push stamp onto the inner foil.
-  const stampMaxY = TELEMETRY_CERT_STAMP_MAX_Y;
-  const battleCodeMaxY = stampMaxY - BATTLE_CODE_ABOVE_STAMP_PX;
-  const footerRuleMaxY = battleCodeMaxY - FOOTER_RULE_ABOVE_BATTLE_PX;
-  const footerBand = TELEMETRY_CARD_HEIGHT - footerRuleMaxY + 36;
+  const metersBlock = useKpiStrip
+    ? meterCount > 0
+      ? layout.meterStripHeight
+      : 0
+    : meterCount > 0
+      ? meterCount * meterGap
+      : 0;
+  const stampMaxY = layout.stampMaxY;
+  const battleCodeMaxY = stampMaxY - layout.battleCodeAboveStamp;
+  const footerRuleMaxY = battleCodeMaxY - layout.footerRuleAboveBattle;
+  const footerBand = layout.plateHeight - footerRuleMaxY + 36;
 
-  // Anchor meters above the locked footer so long specs cannot push text onto the foil.
   const meterStartY = Math.min(
-    Math.max(specY + 64, 1180),
-    TELEMETRY_CARD_HEIGHT - footerBand - metersBlock
+    Math.max(specY + layout.meterAfterSpecGap, layout.meterMinY),
+    layout.plateHeight - footerBand - metersBlock
   );
-  paintRule(ctx, meterStartY - 48);
+  paintRule(ctx, meterStartY - layout.meterRuleAbove);
 
-  input.meters.slice(0, 3).forEach((meter, index) => {
-    paintCertificateMeterRow(ctx, meter, meterStartY + index * meterGap);
-  });
+  if (useKpiStrip) {
+    paintCertificateMeterStrip(ctx, input.meters.slice(0, 3), meterStartY);
+  } else {
+    input.meters.slice(0, 3).forEach((meter, index) => {
+      paintCertificateMeterRow(ctx, meter, meterStartY + index * meterGap);
+    });
+  }
 
   const footerRuleY = Math.min(meterStartY + metersBlock + 36, footerRuleMaxY);
-  const battleCodeY = Math.min(footerRuleY + BATTLE_CODE_ABOVE_STAMP_PX, battleCodeMaxY);
-  const stampY = Math.min(battleCodeY + BATTLE_CODE_ABOVE_STAMP_PX, stampMaxY);
+  const battleCodeY = Math.min(
+    footerRuleY + layout.battleCodeAboveStamp,
+    battleCodeMaxY
+  );
+  const stampY = Math.min(battleCodeY + layout.battleCodeAboveStamp, stampMaxY);
   paintRule(ctx, footerRuleY);
 
   paintCertificateLabel(
@@ -269,8 +300,8 @@ export function paintCertificatePlate(
     input.verifiedStamp,
     TELEMETRY_CARD_WIDTH / 2,
     stampY,
-    `18px ${FONT}`,
-    'rgba(113,113,122,0.9)',
+    `${TELEMETRY_CERT_SECONDARY_WEIGHT} ${TELEMETRY_CERT_STAMP_FONT_PX}px ${FONT}`,
+    TELEMETRY_CERT_SECONDARY_FILL,
     TELEMETRY_CERT_STAMP_TRACKING_PX
   );
 }

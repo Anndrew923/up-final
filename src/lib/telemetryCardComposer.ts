@@ -1,5 +1,5 @@
 /**
- * Offline 9:16 telemetry card orchestrator.
+ * Offline telemetry card orchestrator (9:16 story / 4:5 feed).
  *
  * WHY: Share plates must rasterize on-device. This module never fetches,
  * never touches Firestore, and degrades a bad selfie to the carbon certificate
@@ -8,6 +8,7 @@
 import type { RadarGeometryPoint } from '../logic/core/radarGeometry';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import {
+  resolveTelemetryCardSize,
   tryPaintSelfieBackground,
   TELEMETRY_CARD_EXPORT_SCALE,
   TELEMETRY_CARD_HEIGHT,
@@ -25,6 +26,11 @@ import {
   TELEMETRY_SERIF_FONT_STACK,
 } from './telemetryCardFonts';
 import {
+  TELEMETRY_FEED_WALL_HARD_SHADOW,
+  resolveSelfieLayout,
+  type TelemetrySelfieLayout,
+} from './telemetryCardLayout';
+import {
   paintHolographicRadar,
   TELEMETRY_RADAR_LABEL_MAX_RIGHT_X,
 } from './telemetryCardRadarPaint';
@@ -33,8 +39,10 @@ import {
   paintCornerReticles,
 } from './telemetryCardSelfieChrome';
 import {
+  clearCanvasShadow,
   TelemetryComposeError,
   type TelemetryCanvasSurface,
+  type TelemetryCardAspectRatio,
   type TelemetryDrawContext,
   type TelemetryGradient,
 } from './telemetryCardTypes';
@@ -45,17 +53,26 @@ export {
   type TelemetryBackgroundSource,
 } from './telemetryCardCover';
 export {
+  resolveTelemetryCardSize,
   TELEMETRY_CARD_EXPORT_SCALE,
   TELEMETRY_CARD_HEIGHT,
   TELEMETRY_CARD_PIXEL_HEIGHT,
   TELEMETRY_CARD_PIXEL_WIDTH,
   TELEMETRY_CARD_WIDTH,
+  TELEMETRY_CERT_FRAME_INSET,
   TELEMETRY_CERT_METAL,
   TELEMETRY_CERT_NIGHT,
 } from './telemetryCardBackground';
 export {
+  resolveCarbonLayout,
+  resolveSelfieLayout,
+  TELEMETRY_FEED_WALL_HARD_SHADOW,
+} from './telemetryCardLayout';
+export {
+  clearCanvasShadow,
   TelemetryComposeError,
   type TelemetryCanvasSurface,
+  type TelemetryCardAspectRatio,
   type TelemetryComposeErrorCode,
   type TelemetryDrawContext,
   type TelemetryGradient,
@@ -83,22 +100,11 @@ export {
 export const TELEMETRY_CARD_BRAND = 'ULTIMATE PHYSIQUE // DOMINANCE';
 
 /**
- * Right-column HUD dock — brand → score → champagne title → specs.
+ * Right-column HUD dock (9:16) — brand → score → champagne title → specs.
  * WHY: Vertical rhythm is intentionally open (1220–1694) so the dock breathes into
  * unused lower plate space without colliding with corner reticles near ~1884.
  */
-export const TELEMETRY_HUD_LAYOUT = {
-  clip: { x: 585, y: 1040, w: 435, h: 800 },
-  textX: 585,
-  brandY: 1220,
-  scoreY: 1315,
-  titleY: 1395,
-  specStartY: 1488,
-  specRowGap: 88,
-  /** Baseline delta from each spec kicker to its title. */
-  specTitleDy: 30,
-  textMaxWidth: 435,
-} as const;
+export const TELEMETRY_HUD_LAYOUT = resolveSelfieLayout('9:16').hud;
 
 /** Bottom edge of the third right-column spec title — dual-column vertical lock. */
 export const TELEMETRY_HUD_RIGHT_BOTTOM_Y =
@@ -192,6 +198,8 @@ export interface TelemetryCardInput {
   year?: number;
   verifiedStamp?: string;
   background?: TelemetryBackgroundSource | null;
+  /** Story 9:16 (default) or feed-post 4:5 — drives plate height + layout profile. */
+  aspectRatio?: TelemetryCardAspectRatio;
   /**
    * Stamp on the PNG plate. Default is the English brand mark so social share
    * stays language-stable until the UI slice wires an i18n override.
@@ -201,13 +209,6 @@ export interface TelemetryCardInput {
 
 export interface TelemetryComposeDeps {
   createSurface?: () => TelemetryCanvasSurface;
-}
-
-function clearTextShadow(ctx: TelemetryDrawContext): void {
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
 }
 
 function applyHudShadow(ctx: TelemetryDrawContext, shadow: HudShadowPreset): void {
@@ -230,6 +231,8 @@ function paintLabel(
 ): void {
   if (!text) return;
   const shadow = options?.shadow;
+  // WHY: Always zero residual blur first — export scale turns leftover shadow into glyph fog.
+  clearCanvasShadow(ctx);
   ctx.fillStyle = fill;
   ctx.textAlign = align;
   ctx.textBaseline = baseline;
@@ -245,7 +248,7 @@ function paintLabel(
       // Skip this run. The rest of the plate still encodes.
     }
   }
-  if (shadow) clearTextShadow(ctx);
+  clearCanvasShadow(ctx);
 }
 
 function strokeSegment(
@@ -266,38 +269,69 @@ function strokeSegment(
   ctx.restore();
 }
 
-function paintColumnDivider(ctx: TelemetryDrawContext): void {
-  const divider = TELEMETRY_HUD_COLUMN_DIVIDER;
-  const gradient = ctx.createLinearGradient(divider.x, divider.y0, divider.x, divider.y1);
+function paintColumnDivider(ctx: TelemetryDrawContext, layout: TelemetrySelfieLayout): void {
+  const hud = layout.hud;
+  const x = TELEMETRY_HUD_COLUMN_DIVIDER.x;
+  const y0 = hud.brandY;
+  const y1 = hud.specStartY + 2 * hud.specRowGap + hud.specTitleDy;
+  const gradient = ctx.createLinearGradient(x, y0, x, y1);
   gradient.addColorStop(0, 'rgba(165, 243, 252, 0)');
-  gradient.addColorStop(0.5, divider.stroke);
+  gradient.addColorStop(0.5, TELEMETRY_HUD_COLUMN_DIVIDER.stroke);
   gradient.addColorStop(1, 'rgba(165, 243, 252, 0)');
-  strokeSegment(ctx, divider.x, divider.y0, divider.x, divider.y1, gradient);
+  strokeSegment(ctx, x, y0, x, y1, gradient);
 }
 
-function paintSpecRule(ctx: TelemetryDrawContext): void {
-  const rule = TELEMETRY_HUD_SPEC_RULE;
-  strokeSegment(ctx, rule.x0, rule.y, rule.x1, rule.y, rule.stroke);
+function paintSpecRule(ctx: TelemetryDrawContext, layout: TelemetrySelfieLayout): void {
+  const hud = layout.hud;
+  const y = Math.round((hud.titleY + hud.specStartY) / 2);
+  strokeSegment(
+    ctx,
+    hud.textX,
+    y,
+    hud.clip.x + hud.clip.w - 40,
+    y,
+    TELEMETRY_HUD_SPEC_RULE.stroke
+  );
+}
+
+function resolveHudTextShadow(
+  layout: TelemetrySelfieLayout,
+  holographic: HudShadowPreset
+): HudShadowPreset {
+  if (!layout.useFeedWallHardShadow) return holographic;
+  return TELEMETRY_FEED_WALL_HARD_SHADOW;
 }
 
 function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
   const year = input.year ?? new Date().getFullYear();
+  const layout = resolveSelfieLayout(input.aspectRatio ?? '9:16');
   // WHY: Watermark + reticles must paint before the right-column clip or they vanish.
-  paintBrandWatermark(ctx, year);
-  paintCornerReticles(ctx);
-  paintHolographicRadar(ctx, input.axes);
-  paintColumnDivider(ctx);
+  paintBrandWatermark(ctx, year, layout);
+  paintCornerReticles(ctx, layout);
+  paintHolographicRadar(ctx, input.axes, layout.radar);
+  paintColumnDivider(ctx, layout);
 
-  const hud = TELEMETRY_HUD_LAYOUT;
+  const hud = layout.hud;
   const brand = input.brandHeader?.trim() || TELEMETRY_CARD_BRAND;
   const maxW = hud.textMaxWidth;
+  const inkShadow = {
+    maxWidth: maxW,
+    shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_TEXT_SHADOW),
+  } as const;
+  const scoreShadow = {
+    maxWidth: maxW,
+    shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_SCORE_GLOW),
+  } as const;
+  const titleShadow = {
+    maxWidth: maxW,
+    shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_TITLE_GLOW),
+  } as const;
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(hud.clip.x, hud.clip.y, hud.clip.w, hud.clip.h);
   ctx.clip();
 
-  const inkShadow = { maxWidth: maxW, shadow: TELEMETRY_HUD_TEXT_SHADOW } as const;
   paintLabel(
     ctx,
     brand,
@@ -318,7 +352,7 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     TELEMETRY_HUD_SCORE_FILL,
     'left',
     'middle',
-    { maxWidth: maxW, shadow: TELEMETRY_HUD_SCORE_GLOW }
+    scoreShadow
   );
   paintLabel(
     ctx,
@@ -329,9 +363,9 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     TELEMETRY_HUD_TITLE_FOIL,
     'left',
     'middle',
-    { maxWidth: maxW, shadow: TELEMETRY_HUD_TITLE_GLOW }
+    titleShadow
   );
-  paintSpecRule(ctx);
+  paintSpecRule(ctx, layout);
 
   input.specs.slice(0, 3).forEach((spec, index) => {
     const y = hud.specStartY + index * hud.specRowGap;
@@ -413,6 +447,7 @@ function toCertificateInput(input: TelemetryCardInput) {
       input.verifiedStamp ?? `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${year}`,
     specs: input.specs,
     meters: input.meters ?? [],
+    aspectRatio: input.aspectRatio ?? '9:16',
   };
 }
 
@@ -420,6 +455,7 @@ function toCertificateInput(input: TelemetryCardInput) {
  * Rasterize a local telemetry card to a PNG blob.
  * Selfie mode cover-crops `background` and lays a lowered navy eye-care scrim under the HUD.
  * Any background failure paints the black-gold certificate instead of rejecting.
+ * aspectRatio defaults to 9:16; 4:5 reflows layout for IG/FB feed without cropping content.
  */
 export async function composeTelemetryCard(
   input: TelemetryCardInput,
@@ -427,19 +463,22 @@ export async function composeTelemetryCard(
 ): Promise<Blob> {
   await ensureTelemetrySerifFontsReady();
 
+  const plate = resolveTelemetryCardSize(input.aspectRatio ?? '9:16');
   const surface = (deps?.createSurface ?? createDomSurface)();
-  // WHY: Physical pixels are 3× so Retina/social shares stay sharp; painters stay in 1080×1920.
-  surface.width = TELEMETRY_CARD_PIXEL_WIDTH;
-  surface.height = TELEMETRY_CARD_PIXEL_HEIGHT;
+  // WHY: 2× physical pixels — Retina sharp without 3× social-thumbnail mush.
+  surface.width = plate.pixelWidth;
+  surface.height = plate.pixelHeight;
   const ctx = surface.getContext('2d');
   if (!ctx) throw new TelemetryComposeError('no-context');
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.scale(TELEMETRY_CARD_EXPORT_SCALE, TELEMETRY_CARD_EXPORT_SCALE);
+  ctx.scale(plate.exportScale, plate.exportScale);
 
   const usedSelfie =
-    input.mode === 'selfie' ? tryPaintSelfieBackground(ctx, input.background) : false;
+    input.mode === 'selfie'
+      ? tryPaintSelfieBackground(ctx, input.background, plate.width, plate.height)
+      : false;
 
   if (usedSelfie) {
     paintHud(ctx, input);

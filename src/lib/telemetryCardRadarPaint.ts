@@ -14,12 +14,20 @@ import type { TelemetryDrawContext } from './telemetryCardTypes';
  * Selfie HUD radar — left-biased so long EN axis labels stay left of the corridor.
  * WHY: Centered labels at labelRadius spilled "Explosive Power" into the right HUD.
  */
+/** 9:16 selfie radar dock — SSOT for unit assertions; runtime may override via layout. */
 export const TELEMETRY_RADAR_LAYOUT = {
   cx: 248,
   cy: 1460,
   outerRadius: 140,
   labelRadius: 180,
 } as const;
+
+export type TelemetryRadarLayout = {
+  cx: number;
+  cy: number;
+  outerRadius: number;
+  labelRadius: number;
+};
 
 /** Tactical dashed ring — outside hex, inside label orbit (outerRadius+12 < labelRadius). */
 export const TELEMETRY_RADAR_TACTICAL_RING_RADIUS =
@@ -182,10 +190,11 @@ function paintTacticalRing(ctx: TelemetryDrawContext, cx: number, cy: number, ra
 
 export function paintHolographicRadar(
   ctx: TelemetryDrawContext,
-  axes: readonly RadarGeometryPoint[]
+  axes: readonly RadarGeometryPoint[],
+  radarLayout: TelemetryRadarLayout = TELEMETRY_RADAR_LAYOUT
 ): void {
   if (axes.length === 0) return;
-  const layout = TELEMETRY_RADAR_LAYOUT;
+  const layout = radarLayout;
   const laser = TELEMETRY_RADAR_LASER;
   const geometry = computeSixAxisRadarVertices({
     points: axes,
@@ -199,7 +208,7 @@ export function paintHolographicRadar(
   ctx.lineJoin = 'round';
   ctx.globalAlpha = 1;
 
-  paintTacticalRing(ctx, layout.cx, layout.cy, TELEMETRY_RADAR_TACTICAL_RING_RADIUS);
+  paintTacticalRing(ctx, layout.cx, layout.cy, layout.outerRadius + 12);
 
   for (const scale of RING_SCALES) {
     tracePolygon(ctx, scalePolygon(geometry.hexagon, layout.cx, layout.cy, scale));

@@ -4,6 +4,9 @@
  */
 import type { TelemetryBackgroundSource } from './telemetryCardCover';
 
+/** Story (9:16) vs feed post (4:5) — lives here to avoid types ↔ background import cycles. */
+export type TelemetryCardAspectRatio = '9:16' | '4:5';
+
 export interface TelemetryGradient {
   addColorStop(offset: number, color: string): void;
 }
@@ -89,4 +92,12 @@ export class TelemetryComposeError extends Error {
     this.name = 'TelemetryComposeError';
     this.code = code;
   }
+}
+
+/** Zero residual canvas shadow — required before fillText under export scale. */
+export function clearCanvasShadow(ctx: TelemetryDrawContext): void {
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
 }

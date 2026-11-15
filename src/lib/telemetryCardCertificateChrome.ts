@@ -15,7 +15,11 @@ import {
   TELEMETRY_SANS_FONT_STACK,
   TELEMETRY_SERIF_FONT_STACK,
 } from './telemetryCardFonts';
-import type { TelemetryDrawContext, TelemetryGradient } from './telemetryCardTypes';
+import {
+  clearCanvasShadow,
+  type TelemetryDrawContext,
+  type TelemetryGradient,
+} from './telemetryCardTypes';
 
 const FOIL = {
   light: '#f3e6c8',
@@ -28,6 +32,15 @@ export const TELEMETRY_CERT_TITLE_FOIL = {
   deep: '#B88A36',
   wingNear: 'rgba(230, 194, 107, 0.75)',
 } as const;
+
+/**
+ * Secondary body copy (spec subtitles + verified stamp).
+ * WHY: Silver mid-tone + 600 weight survives social JPEG chroma crush better than zinc-500.
+ */
+export const TELEMETRY_CERT_SECONDARY_FILL = '#B8C0CC';
+export const TELEMETRY_CERT_SUBTITLE_FONT_PX = 25;
+export const TELEMETRY_CERT_STAMP_FONT_PX = 21;
+export const TELEMETRY_CERT_SECONDARY_WEIGHT = 600;
 
 const CONTENT_WIDTH = TELEMETRY_CARD_WIDTH - 96 * 2;
 const SERIF_FONT = TELEMETRY_SERIF_FONT_STACK;
@@ -61,17 +74,19 @@ function measureWidth(
 export function paintCertificateCrest(
   ctx: TelemetryDrawContext,
   cx: number,
-  cy: number
+  cy: number,
+  outerRadius = GUILLOCHE_SEAL_REF_OUTER_RADIUS,
+  glowRadius = 130
 ): void {
   paintGuillocheSeal(ctx, {
     cx,
     cy,
-    outerRadius: GUILLOCHE_SEAL_REF_OUTER_RADIUS,
+    outerRadius,
     backdrop: {
       core: 'rgba(245, 158, 11, 0.16)',
       mid: 'rgba(201, 162, 39, 0.08)',
       edge: 'rgba(245, 158, 11, 0)',
-      radius: 130,
+      radius: glowRadius,
     },
   });
 }
@@ -119,10 +134,8 @@ export function paintCertificateFoilTitle(
   ctx.fillStyle = foil;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.85)';
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 2;
+  // WHY: Foil title must stay crisp after export scale — ink shadow becomes a fog halo.
+  clearCanvasShadow(ctx);
   try {
     ctx.font = font;
     ctx.fillText(title, cx, y, CONTENT_WIDTH);
@@ -134,10 +147,6 @@ export function paintCertificateFoilTitle(
       /* plate still encodes */
     }
   }
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
   ctx.restore();
 }
 
@@ -152,13 +161,14 @@ export function paintCertificateTrackedStamp(
 ): void {
   if (!text) return;
   ctx.save();
+  clearCanvasShadow(ctx);
   ctx.fillStyle = fill;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   try {
     ctx.font = font;
   } catch {
-    ctx.font = '18px sans-serif';
+    ctx.font = `${TELEMETRY_CERT_SECONDARY_WEIGHT} ${TELEMETRY_CERT_STAMP_FONT_PX}px sans-serif`;
   }
   if (typeof ctx.letterSpacing === 'string') {
     ctx.letterSpacing = `${trackingPx}px`;

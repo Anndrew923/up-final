@@ -5,6 +5,10 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../i18n';
 import type { AestheticSpecCardModel } from '../../../hooks/useAestheticSpecCard';
+import {
+  AESTHETIC_TELEMETRY_ASPECT_SESSION_KEY,
+  writeAestheticTelemetryAspectSession,
+} from '../../../lib/aestheticTelemetryAspectSession';
 import AestheticSpecModal from '../AestheticSpecModal';
 import { CERT_FOOTER_WRAP_CLASS, CERT_STAGE_WRAP_CLASS } from '../aestheticChrome';
 
@@ -89,6 +93,7 @@ describe('AestheticSpecModal certificate shell', () => {
     captureSelfieImage.mockReset();
     createObjectURL.mockClear();
     revokeObjectURL.mockClear();
+    sessionStorage.removeItem(AESTHETIC_TELEMETRY_ASPECT_SESSION_KEY);
     vi.stubGlobal('URL', {
       ...URL,
       createObjectURL,
@@ -140,13 +145,35 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(share?.className).toContain('border-amber-400/60');
     expect(share?.className).toContain('bg-amber-500/15');
 
+    // Plan A: format pill above the plaque; bottom stack is Share + capture only.
+    const aspectToggle = document.querySelector('[data-testid="aesthetic-aspect-toggle"]');
+    expect(aspectToggle).not.toBeNull();
+    expect(aspectToggle?.getAttribute('role')).toBe('tablist');
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-story"]')?.textContent?.trim()
+    ).toBe('9:16 限動');
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.textContent?.trim()
+    ).toBe('4:5 貼文');
+    const dialog = document.querySelector('[role="dialog"]');
+    const stageWrap = document.querySelector(`[class="${CERT_STAGE_WRAP_CLASS}"]`);
+    expect(dialog?.contains(aspectToggle)).toBe(true);
+    expect(stageWrap?.previousElementSibling?.contains(aspectToggle ?? null)).toBe(true);
+    expect(document.querySelector('.ui-modal-safe-footer')?.contains(aspectToggle)).toBe(false);
+
     const toolRow = document.querySelector('[data-testid="aesthetic-tool-row"]');
     expect(toolRow?.className).toContain('grid');
     expect(toolRow?.className).toContain('grid-cols-2');
     expect(toolRow?.className).toContain('gap-2');
     expect(toolRow?.className).not.toContain('flex-wrap');
-    expect(share?.parentElement?.className).toContain('gap-1.5');
-    expect(CERT_STAGE_WRAP_CLASS).toContain('10.5rem');
+    expect(toolRow?.contains(document.querySelector('[data-testid="aesthetic-aspect-toggle"]'))).toBe(
+      false
+    );
+    expect(share?.parentElement?.className).toContain('gap-2.5');
+    expect(CERT_STAGE_WRAP_CLASS).toContain('13.5rem');
+    expect(
+      document.querySelector('[data-testid="aesthetic-spec-card"]')?.getAttribute('data-aspect')
+    ).toBe('9:16');
 
     expect(
       document.querySelector('[data-testid="aesthetic-selfie-camera"]')?.textContent
@@ -258,9 +285,142 @@ describe('AestheticSpecModal certificate shell', () => {
       mode: 'carbon',
       battleCode: 'UP-Bruce #1234',
       overallScore: 69.06,
+      aspectRatio: '9:16',
     });
     expect(shareTelemetryCardPng).toHaveBeenCalledTimes(1);
     expect(shareTelemetryCardPng.mock.calls[0]?.[0]?.blob).toBeInstanceOf(Blob);
+  });
+
+  it('switches the carbon stage to 4:5 and shares the feed aspect', async () => {
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+
+    const feedTab = document.querySelector<HTMLButtonElement>(
+      '[data-testid="aesthetic-aspect-feed"]'
+    );
+    await act(async () => {
+      feedTab?.click();
+    });
+
+    expect(
+      document.querySelector('[data-testid="aesthetic-spec-card"]')?.getAttribute('data-aspect')
+    ).toBe('4:5');
+    expect(feedTab?.getAttribute('aria-selected')).toBe('true');
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-story"]')?.getAttribute('aria-selected')
+    ).toBe('false');
+    expect(sessionStorage.getItem(AESTHETIC_TELEMETRY_ASPECT_SESSION_KEY)).toBe('4:5');
+
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-share-report"]')?.click();
+    });
+
+    expect(composeTelemetryCard).toHaveBeenCalledTimes(1);
+    expect(composeTelemetryCard.mock.calls[0]?.[0]).toMatchObject({
+      mode: 'carbon',
+      aspectRatio: '4:5',
+    });
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.getAttribute('aria-selected')
+    ).toBe('true');
+  });
+
+  it('rolls back the aspect pill when selfie recompose fails', async () => {
+    const bitmap = {
+      width: 1080,
+      height: 1920,
+      close: vi.fn(),
+    } as unknown as ImageBitmap;
+    captureSelfieImage.mockResolvedValue({ ok: true, bitmap });
+    composeTelemetryCard.mockResolvedValue(new Blob(['selfie'], { type: 'image/png' }));
+
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-selfie-photos"]')?.click();
+    });
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-story"]')?.getAttribute('aria-selected')
+    ).toBe('true');
+
+    composeTelemetryCard.mockRejectedValueOnce(new Error('compose-boom'));
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-aspect-feed"]')?.click();
+    });
+
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-story"]')?.getAttribute('aria-selected')
+    ).toBe('true');
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.getAttribute('aria-selected')
+    ).toBe('false');
+    expect(sessionStorage.getItem(AESTHETIC_TELEMETRY_ASPECT_SESSION_KEY)).toBe('9:16');
+    expect(document.querySelector('[data-testid="aesthetic-telemetry-error"]')).not.toBeNull();
+  });
+
+  it('keeps selfie 4:5 after share and restores aspect from session on remount', async () => {
+    const bitmap = {
+      width: 1080,
+      height: 1350,
+      close: vi.fn(),
+    } as unknown as ImageBitmap;
+    captureSelfieImage.mockResolvedValue({ ok: true, bitmap });
+    composeTelemetryCard.mockResolvedValue(new Blob(['selfie-4x5'], { type: 'image/png' }));
+
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-aspect-feed"]')?.click();
+    });
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-selfie-photos"]')?.click();
+    });
+
+    composeTelemetryCard.mockClear();
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-share-report"]')?.click();
+    });
+
+    // Cache hit — share must not recompose, and pill stays on 4:5.
+    expect(composeTelemetryCard).not.toHaveBeenCalled();
+    expect(shareTelemetryCardPng).toHaveBeenCalledTimes(1);
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.getAttribute('aria-selected')
+    ).toBe('true');
+    expect(document.querySelector('[data-telemetry-mode="selfie"]')).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+    root = createRoot(container);
+    writeAestheticTelemetryAspectSession('4:5');
+    act(() => {
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <AestheticSpecModal onClose={vi.fn()} />
+        </I18nextProvider>
+      );
+    });
+    expect(
+      document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.getAttribute('aria-selected')
+    ).toBe('true');
   });
 
   it('switches to selfie preview and closes the ImageBitmap on unmount', async () => {
@@ -305,10 +465,30 @@ describe('AestheticSpecModal certificate shell', () => {
     const restore = document.querySelector('[data-testid="aesthetic-restore-carbon"]');
     expect(restore).not.toBeNull();
     expect(restore?.textContent?.trim()).toBe('預設');
+    // Plan A: capture stays 2-col; restore sits with quiet close, not in the tool row.
     expect(document.querySelector('[data-testid="aesthetic-tool-row"]')?.className).toContain(
-      'grid-cols-3'
+      'grid-cols-2'
     );
+    expect(
+      document.querySelector('[data-testid="aesthetic-tool-row"]')?.contains(restore)
+    ).toBe(false);
     expect(document.querySelector('[data-telemetry-mode="selfie"]')).not.toBeNull();
+
+    composeTelemetryCard.mockClear();
+    createObjectURL.mockClear();
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="aesthetic-aspect-feed"]')?.click();
+    });
+    expect(composeTelemetryCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'selfie',
+        aspectRatio: '4:5',
+        background: bitmap,
+      })
+    );
+    expect(
+      document.querySelector('[data-testid="aesthetic-telemetry-preview"]')?.className
+    ).toContain('aspect-[4/5]');
 
     act(() => {
       root.unmount();

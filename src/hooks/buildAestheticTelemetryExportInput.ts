@@ -39,7 +39,7 @@ export function buildAestheticTelemetryExportInput(
   t: TFunction,
   model: AestheticSpecCardModel,
   scores: ScoreMap,
-  extras: Pick<TelemetryCardInput, 'mode' | 'background' | 'brandHeader'>
+  extras: Pick<TelemetryCardInput, 'mode' | 'background' | 'brandHeader' | 'aspectRatio'>
 ): TelemetryCardInput {
   const unmeasuredLabel = t('aesthetic.labels.unmeasured');
   const { spec, overallScore, battleCode, gender, bodyFatPct } = model;
@@ -103,5 +103,6 @@ export function buildAestheticTelemetryExportInput(
     axes,
     background: extras.background,
     brandHeader: extras.brandHeader ?? t('aesthetic.labels.brandHeader'),
+    aspectRatio: extras.aspectRatio ?? '9:16',
   };
 }

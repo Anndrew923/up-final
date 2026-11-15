@@ -37,10 +37,13 @@ function model(over: Partial<AestheticSpecCardModel> = {}): AestheticSpecCardMod
   };
 }
 
-function renderCard(cardModel: AestheticSpecCardModel): string {
+function renderCard(
+  cardModel: AestheticSpecCardModel,
+  aspectRatio?: '9:16' | '4:5'
+): string {
   return renderToStaticMarkup(
     <I18nextProvider i18n={i18n}>
-      <AestheticSpecCard model={cardModel} />
+      <AestheticSpecCard model={cardModel} aspectRatio={aspectRatio} />
     </I18nextProvider>
   );
 }
@@ -62,6 +65,11 @@ describe('AestheticSpecCard certificate surface', () => {
   it('renders three trinity calipers without mecha leftovers', () => {
     const html = renderCard(model());
     expect(html).toContain('aspect-[9/16]');
+    expect(html).toContain('data-aspect="9:16"');
+    expect(html).toContain('data-testid="aesthetic-spec-plate"');
+    expect(html).toContain('data-plate-width="1080"');
+    expect(html).toContain('data-plate-height="1920"');
+    expect(html).not.toContain('data-testid="aesthetic-kpi-strip"');
     expect(html).toContain(CERT_STAGE_MAX_H_CLASS);
     expect(html).toContain(FOIL_HERO_STAMP_CLASS);
     expect(FOIL_HERO_STAMP_CLASS).toContain('overflow-visible');
@@ -105,7 +113,7 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).toContain('gap-y-3');
     expect(html).toContain('pb-9');
     expect(html).toContain('gap-1.5 py-1');
-    expect(html).toContain('mt-2 space-y-1');
+    expect(html).toContain('mt-2 shrink-0 space-y-1');
     expect(html).toContain('pt-2');
     expect(html).toContain('data-testid="aesthetic-guilloche-crest"');
     expect(html).toContain('mx-auto flex size-24 select-none');
@@ -123,6 +131,19 @@ describe('AestheticSpecCard certificate surface', () => {
     expect(html).not.toContain('repeating-linear-gradient(-45deg');
     expect(html).not.toContain('拿掉感覺');
     expect(html).not.toMatch(/id="[^"]*:/);
+  });
+
+  it('uses a 1080×1350 logical plate and 3-column KPI strip on 4:5', () => {
+    const html = renderCard(model(), '4:5');
+    expect(html).toContain('aspect-[4/5]');
+    expect(html).toContain('data-aspect="4:5"');
+    expect(html).toContain('data-plate-width="1080"');
+    expect(html).toContain('data-plate-height="1350"');
+    expect(html).toContain('data-testid="aesthetic-kpi-strip"');
+    expect(html.split('data-testid="aesthetic-kpi-column"').length - 1).toBe(3);
+    expect(html).not.toContain('aspect-[9/16]');
+    expect(html).not.toContain('contents');
+    expect(html).toContain('UP-Bruce #1234');
   });
 
   it('prints the English overall title without CJK brackets', async () => {

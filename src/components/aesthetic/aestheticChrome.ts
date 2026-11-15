@@ -40,19 +40,27 @@ export const FOIL_PLATE_CLASS =
   'inline-flex shrink-0 items-center justify-center border border-[#c9a227]/65 bg-gradient-to-b from-[#f3e6c8]/20 to-[#7a5c28]/35 px-1 py-px text-[7px] tracking-[0.12em] text-[#f3e6c8]';
 
 /**
- * 9:16 certificate stage — 10.5rem reserves the compact three-layer share / tools / close
- * stack (h-9 + h-9 + h-7 + gap-1.5 + ui-modal-safe-footer pt/pb) under the plaque.
- * WHY: Width and height share one dvh budget so the stamp cannot clip on short phones.
+ * Certificate stage height budget — 13.5rem reserves chrome outside the plaque:
+ * top format pill (h-9 + mb-2.5 ≈ 2.875rem) +
+ * bottom stack (share h-9 + tools h-8 + quiet close h-7 + gap-2.5×2 ≈ 7.25rem) +
+ * ui-modal-safe-footer (pt-4 + pb-2rem ≈ 3rem).
+ * WHY: Under-reserve clips pill/footer on short phones; over-reserve only shrinks the stamp.
  * Class strings stay literal for Tailwind JIT (no template interpolation).
  */
-export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-10.5rem)]';
+export const CERT_STAGE_MAX_H_CLASS = 'max-h-[calc(100dvh-13.5rem)]';
 
 export const CERT_STAGE_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-10.5rem)*9/16))] shrink-0 items-center justify-center';
+  'flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 items-center justify-center';
 
 /**
- * Same max-width as the 9:16 stage — no extra px so full-bleed Share aligns with the plaque.
+ * Floating format pill above the plaque — compact capsule, same width budget as the stage.
+ */
+export const CERT_ASPECT_PILL_WRAP_CLASS =
+  'mb-2.5 flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 justify-center px-8';
+
+/**
+ * Same max-width as the stage — no extra px so full-bleed Share aligns with the plaque.
  * Horizontal inset comes only from `ui-modal-safe-shell`.
  */
 export const CERT_FOOTER_WRAP_CLASS =
-  'flex w-full max-w-[min(24rem,calc((100dvh-10.5rem)*9/16))] shrink-0 flex-col items-center gap-2';
+  'flex w-full max-w-[min(24rem,calc((100dvh-13.5rem)*9/16))] shrink-0 flex-col items-center gap-2.5';

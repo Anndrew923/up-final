@@ -4,28 +4,21 @@
  * without competing with the radar/text dock geometry contracts.
  */
 import { paintGuillocheSeal } from './guillocheSealPaint';
+import type { TelemetrySelfieLayout } from './telemetryCardLayout';
 import {
-  TELEMETRY_CARD_HEIGHT,
-  TELEMETRY_CARD_WIDTH,
-} from './telemetryCardBackground';
+  resolveSelfieLayout,
+  TELEMETRY_FEED_WALL_HARD_SHADOW,
+} from './telemetryCardLayout';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
 /**
- * Top-right Guilloche seal — scaled crest shared with the carbon certificate.
+ * Top-right Guilloche seal — 9:16 defaults (SSOT for unit assertions).
  * yearDy clears the outer ring so "2026" sits under the seal without collision.
  */
-export const TELEMETRY_BRAND_WATERMARK = {
-  cx: 942,
-  cy: 122,
-  outerRadius: 54,
-  yearDy: 70,
-} as const;
+export const TELEMETRY_BRAND_WATERMARK = resolveSelfieLayout('9:16').watermark;
 
-/** Corner reticle arms — tactical viewfinder chrome inset from the plate edge. */
-export const TELEMETRY_CORNER_RETICLE = {
-  inset: 36,
-  arm: 36,
-} as const;
+/** Corner reticle arms — 9:16 defaults. */
+export const TELEMETRY_CORNER_RETICLE = resolveSelfieLayout('9:16').reticle;
 
 /** Shared champagne chrome stroke / glow at laser-pass opacity. */
 export const TELEMETRY_SELFIE_CHROME = {
@@ -61,14 +54,22 @@ function paintChromeLabel(
   }
 }
 
-export function paintCornerReticles(ctx: TelemetryDrawContext): void {
-  const { inset, arm } = TELEMETRY_CORNER_RETICLE;
+export function paintCornerReticles(
+  ctx: TelemetryDrawContext,
+  layout: TelemetrySelfieLayout = resolveSelfieLayout('9:16')
+): void {
+  const { inset, arm } = layout.reticle;
   const chrome = TELEMETRY_SELFIE_CHROME;
   const corners: Array<{ x: number; y: number; sx: number; sy: number }> = [
     { x: inset, y: inset, sx: 1, sy: 1 },
-    { x: TELEMETRY_CARD_WIDTH - inset, y: inset, sx: -1, sy: 1 },
-    { x: inset, y: TELEMETRY_CARD_HEIGHT - inset, sx: 1, sy: -1 },
-    { x: TELEMETRY_CARD_WIDTH - inset, y: TELEMETRY_CARD_HEIGHT - inset, sx: -1, sy: -1 },
+    { x: layout.plateWidth - inset, y: inset, sx: -1, sy: 1 },
+    { x: inset, y: layout.plateHeight - inset, sx: 1, sy: -1 },
+    {
+      x: layout.plateWidth - inset,
+      y: layout.plateHeight - inset,
+      sx: -1,
+      sy: -1,
+    },
   ];
   ctx.save();
   ctx.shadowColor = chrome.glow;
@@ -92,8 +93,12 @@ export function paintCornerReticles(ctx: TelemetryDrawContext): void {
   ctx.restore();
 }
 
-export function paintBrandWatermark(ctx: TelemetryDrawContext, year: number): void {
-  const { cx, cy, outerRadius, yearDy } = TELEMETRY_BRAND_WATERMARK;
+export function paintBrandWatermark(
+  ctx: TelemetryDrawContext,
+  year: number,
+  layout: TelemetrySelfieLayout = resolveSelfieLayout('9:16')
+): void {
+  const { cx, cy, outerRadius, yearDy } = layout.watermark;
   const chrome = TELEMETRY_SELFIE_CHROME;
 
   // WHY: Bright gym walls wash out gold strokes — dark radial bed keeps the seal legible.
@@ -109,10 +114,17 @@ export function paintBrandWatermark(ctx: TelemetryDrawContext, year: number): vo
   });
 
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.85)';
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 2;
+  if (layout.useFeedWallHardShadow) {
+    ctx.shadowColor = TELEMETRY_FEED_WALL_HARD_SHADOW.color;
+    ctx.shadowBlur = TELEMETRY_FEED_WALL_HARD_SHADOW.blur;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = TELEMETRY_FEED_WALL_HARD_SHADOW.offsetY;
+  } else {
+    ctx.shadowColor = 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2;
+  }
   paintChromeLabel(ctx, String(year), cx, cy + yearDy, `18px ${FONT}`, chrome.yearFill);
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;

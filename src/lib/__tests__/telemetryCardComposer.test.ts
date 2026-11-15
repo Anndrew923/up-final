@@ -10,6 +10,9 @@ import {
 import {
   TELEMETRY_CERT_CREST_CENTER,
   TELEMETRY_CERT_GUILLOCHE_UP_PATHS,
+  TELEMETRY_CERT_SECONDARY_FILL,
+  TELEMETRY_CERT_STAMP_FONT_PX,
+  TELEMETRY_CERT_SUBTITLE_FONT_PX,
   TELEMETRY_CERT_TITLE_FOIL,
   TELEMETRY_CERT_TITLE_Y,
 } from '../telemetryCardCertificateChrome';
@@ -24,6 +27,10 @@ import {
   TELEMETRY_CARD_WIDTH,
   TELEMETRY_CERT_METAL,
   TELEMETRY_CERT_NIGHT,
+  TELEMETRY_FEED_WALL_HARD_SHADOW,
+  resolveCarbonLayout,
+  resolveSelfieLayout,
+  resolveTelemetryCardSize,
   TELEMETRY_CORNER_RETICLE,
   TELEMETRY_HUD_LAYOUT,
   TELEMETRY_HUD_MUTED_FILL,
@@ -84,6 +91,9 @@ type DrawCall =
   | {
       type: 'fillText';
       text: string;
+      x?: number;
+      y?: number;
+      font?: string;
       fillStyle: string;
       shadowBlur: number;
       shadowColor: string;
@@ -155,10 +165,13 @@ function createRecordingSurface(options?: {
     strokeRect(x, y, w, h) {
       calls.push({ type: 'strokeRect', x, y, w, h });
     },
-    fillText(text) {
+    fillText(text, x, y) {
       calls.push({
         type: 'fillText',
         text,
+        x,
+        y,
+        font: ctx.font,
         fillStyle: typeof fillStyle === 'string' ? fillStyle : 'gradient',
         shadowBlur: ctx.shadowBlur,
         shadowColor: ctx.shadowColor,
@@ -346,20 +359,20 @@ describe('carbon certificate footer clearance', () => {
 });
 
 describe('composeTelemetryCard', () => {
-  it('paints the black-gold carbon certificate at 3× 3240×5760', async () => {
+  it('paints the black-gold carbon certificate at 2× 2160×3840', async () => {
     const { surface, calls, blob } = createRecordingSurface();
     const result = await composeTelemetryCard(baseInput({ mode: 'carbon' }), {
       createSurface: () => surface,
     });
 
-    expect(TELEMETRY_CARD_EXPORT_SCALE).toBe(3);
+    expect(TELEMETRY_CARD_EXPORT_SCALE).toBe(2);
     expect(TELEMETRY_CARD_WIDTH).toBe(1080);
     expect(TELEMETRY_CARD_HEIGHT).toBe(1920);
-    expect(TELEMETRY_CARD_PIXEL_WIDTH).toBe(3240);
-    expect(TELEMETRY_CARD_PIXEL_HEIGHT).toBe(5760);
+    expect(TELEMETRY_CARD_PIXEL_WIDTH).toBe(2160);
+    expect(TELEMETRY_CARD_PIXEL_HEIGHT).toBe(3840);
     expect(surface.width).toBe(TELEMETRY_CARD_PIXEL_WIDTH);
     expect(surface.height).toBe(TELEMETRY_CARD_PIXEL_HEIGHT);
-    expect(calls.some((call) => call.type === 'scale' && call.x === 3 && call.y === 3)).toBe(true);
+    expect(calls.some((call) => call.type === 'scale' && call.x === 2 && call.y === 2)).toBe(true);
     const ctx = surface.getContext('2d');
     expect(ctx?.imageSmoothingEnabled).toBe(true);
     expect(ctx?.imageSmoothingQuality).toBe('high');
@@ -407,6 +420,34 @@ describe('composeTelemetryCard', () => {
     expect(calls.some((call) => call.type === 'fillText' && call.text === TELEMETRY_CARD_BRAND)).toBe(
       true
     );
+    // WHY: Carbon glyph paths must paint with zero blur — scaled shadowHalo fogs social JPEG.
+    const brandPaint = calls.find(
+      (call) => call.type === 'fillText' && call.text === TELEMETRY_CARD_BRAND
+    );
+    expect(brandPaint).toMatchObject({ type: 'fillText', shadowBlur: 0 });
+    const titlePaint = calls.find((call) => call.type === 'fillText' && call.text === 'PEAK MORTAL');
+    expect(titlePaint).toMatchObject({ type: 'fillText', shadowBlur: 0 });
+    const stampPaint = calls.find(
+      (call) =>
+        call.type === 'fillText' &&
+        call.text === 'VERIFIED PHYSIOLOGICAL SPECIFICATION // 2026'
+    );
+    expect(stampPaint).toMatchObject({
+      type: 'fillText',
+      shadowBlur: 0,
+      fillStyle: TELEMETRY_CERT_SECONDARY_FILL,
+    });
+    expect(TELEMETRY_CERT_SUBTITLE_FONT_PX).toBe(25);
+    expect(TELEMETRY_CERT_STAMP_FONT_PX).toBe(21);
+    expect(
+      calls.some(
+        (call) =>
+          call.type === 'fillText' &&
+          call.text === 'BF 12%' &&
+          call.fillStyle === TELEMETRY_CERT_SECONDARY_FILL &&
+          call.shadowBlur === 0
+      )
+    ).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === '72.40')).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === '2026')).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === 'PEAK MORTAL')).toBe(true);
@@ -681,5 +722,98 @@ describe('composeTelemetryCard', () => {
     expect(calls.some((call) => call.type === 'fillText' && call.text === TELEMETRY_CARD_BRAND)).toBe(
       false
     );
+  });
+
+  it('exports 4:5 carbon at 2160×2700 with KPI strip meters and breathing crest', async () => {
+    const plate = resolveTelemetryCardSize('4:5');
+    const layout = resolveCarbonLayout('4:5');
+    expect(plate).toMatchObject({
+      width: 1080,
+      height: 1350,
+      pixelWidth: 2160,
+      pixelHeight: 2700,
+      exportScale: 2,
+    });
+    expect(layout.meterStripHeight).toBe(132);
+    expect(layout.crestCy + layout.crestOuterRadius).toBeLessThan(layout.titleY);
+    expect(layout.stampMaxY).toBeLessThan(layout.plateHeight);
+    expect(layout.headerY).toBeGreaterThan(layout.innerFrameInset);
+    expect(layout.meterMinY + layout.meterStripHeight).toBeLessThan(layout.stampMaxY);
+
+    const { surface, calls } = createRecordingSurface();
+    await composeTelemetryCard(baseInput({ mode: 'carbon', aspectRatio: '4:5' }), {
+      createSurface: () => surface,
+    });
+
+    expect(surface.width).toBe(2160);
+    expect(surface.height).toBe(2700);
+    expect(
+      calls.some(
+        (call) =>
+          call.type === 'createRadialGradient' &&
+          call.x0 === layout.crestCx &&
+          call.y0 === layout.crestCy &&
+          call.r1 === layout.crestGlowRadius
+      )
+    ).toBe(true);
+    expect(calls.some((call) => call.type === 'fillText' && call.text === 'PEAK MORTAL')).toBe(true);
+    expect(
+      calls.some(
+        (call) =>
+          call.type === 'fillText' &&
+          call.text === 'VERIFIED PHYSIOLOGICAL SPECIFICATION // 2026'
+      )
+    ).toBe(true);
+    expect(calls.some((call) => call.type === 'fillText' && call.text === 'UP')).toBe(false);
+
+    // KPI strip paints large centered values (36px) — not the stacked 26px row numerals.
+    const stripValue = calls.find(
+      (call): call is Extract<DrawCall, { type: 'fillText' }> =>
+        call.type === 'fillText' && call.text === '88.30' && Boolean(call.font?.includes('36px'))
+    );
+    expect(stripValue).toBeTruthy();
+    expect(stripValue?.y ?? 0).toBeGreaterThanOrEqual(layout.meterMinY);
+    expect(stripValue?.y ?? 0).toBeLessThan(layout.meterMinY + layout.meterStripHeight);
+  });
+
+  it('exports 4:5 selfie with feed-wall hard text shadow and dock inside 1350', async () => {
+    const layout = resolveSelfieLayout('4:5');
+    expect(layout.useFeedWallHardShadow).toBe(true);
+    expect(layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy).toBeLessThan(
+      layout.plateHeight
+    );
+    expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThan(layout.plateHeight);
+    expect(TELEMETRY_FEED_WALL_HARD_SHADOW).toMatchObject({
+      color: 'rgba(0, 0, 0, 0.92)',
+      blur: 2,
+      offsetY: 2,
+    });
+
+    const { surface, calls } = createRecordingSurface();
+    await composeTelemetryCard(
+      baseInput({
+        mode: 'selfie',
+        aspectRatio: '4:5',
+        background: { width: 1200, height: 1500 },
+      }),
+      { createSurface: () => surface }
+    );
+
+    expect(surface.width).toBe(2160);
+    expect(surface.height).toBe(2700);
+    const draw = calls.find((call) => call.type === 'drawImage');
+    expect(draw).toMatchObject({
+      type: 'drawImage',
+      dx: 0,
+      dy: 0,
+      dw: 1080,
+      dh: 1350,
+    });
+    const scorePaint = calls.find((call) => call.type === 'fillText' && call.text === '72.40');
+    expect(scorePaint).toMatchObject({
+      type: 'fillText',
+      shadowBlur: TELEMETRY_FEED_WALL_HARD_SHADOW.blur,
+      shadowColor: TELEMETRY_FEED_WALL_HARD_SHADOW.color,
+    });
   });
 });

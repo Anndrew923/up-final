@@ -6,14 +6,16 @@ import {
   paintCarbonNightPlate,
   TELEMETRY_CARD_HEIGHT,
   TELEMETRY_CARD_WIDTH,
+  TELEMETRY_CERT_FRAME_INSET,
   TELEMETRY_CERT_METAL,
 } from './telemetryCardBackground';
 import { TELEMETRY_CERT_FOIL } from './telemetryCardCertificateChrome';
 import { TELEMETRY_SANS_FONT_STACK } from './telemetryCardFonts';
-import type { TelemetryDrawContext } from './telemetryCardTypes';
+import { resolveRivetCenters } from './telemetryCardLayout';
+import { clearCanvasShadow, type TelemetryDrawContext } from './telemetryCardTypes';
 
-/** Outer foil inset — SSOT for frame stroke, rivets, and stamp clearance math. */
-export const TELEMETRY_CERT_FRAME_INSET = 48;
+/** Re-export plate inset SSOT for certificate stamp clearance math + tests. */
+export { TELEMETRY_CERT_FRAME_INSET };
 
 /** Meter row contract shared by plate layout + export input builders. */
 export interface TelemetryMeterLine {
@@ -28,36 +30,25 @@ const METAL = TELEMETRY_CERT_METAL;
 const FONT = TELEMETRY_SANS_FONT_STACK;
 const CONTENT_LEFT = 96;
 const CONTENT_RIGHT = TELEMETRY_CARD_WIDTH - 96;
+const CONTENT_WIDTH = CONTENT_RIGHT - CONTENT_LEFT;
 
 /** Hex rivet radius in logical plate pixels (matches prior circular rivet footprint). */
 export const TELEMETRY_CERT_RIVET_RADIUS = 7;
 
-/** Corner rivet centers — SSOT for craft paint + unit assertions. */
-export const TELEMETRY_CERT_RIVET_CENTERS: ReadonlyArray<readonly [number, number]> = [
-  [TELEMETRY_CERT_FRAME_INSET + 18, TELEMETRY_CERT_FRAME_INSET + 18],
-  [TELEMETRY_CARD_WIDTH - TELEMETRY_CERT_FRAME_INSET - 18, TELEMETRY_CERT_FRAME_INSET + 18],
-  [TELEMETRY_CERT_FRAME_INSET + 18, TELEMETRY_CARD_HEIGHT - TELEMETRY_CERT_FRAME_INSET - 18],
-  [
-    TELEMETRY_CARD_WIDTH - TELEMETRY_CERT_FRAME_INSET - 18,
-    TELEMETRY_CARD_HEIGHT - TELEMETRY_CERT_FRAME_INSET - 18,
-  ],
-];
-
-function clearMicroShadow(ctx: TelemetryDrawContext): void {
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-}
+/** Corner rivet centers for the default 9:16 plate — SSOT for unit assertions. */
+export const TELEMETRY_CERT_RIVET_CENTERS = resolveRivetCenters(
+  TELEMETRY_CARD_WIDTH,
+  TELEMETRY_CARD_HEIGHT
+);
 
 export function withMicroEdgeShadow(ctx: TelemetryDrawContext, paint: () => void): void {
-  // WHY: Sub-pixel hairlines read soft on phone screens; a 0.5 blur micro-shadow locks edges.
+  // WHY: Metal hairlines (rails / rules) only — never wrap fillText; scaled blur fogs glyph edges.
   ctx.shadowColor = 'rgba(0,0,0,0.38)';
   ctx.shadowBlur = 0.5;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0.5;
   paint();
-  clearMicroShadow(ctx);
+  clearCanvasShadow(ctx);
 }
 
 export function paintCertificateLabel(
@@ -72,22 +63,22 @@ export function paintCertificateLabel(
   maxWidth?: number
 ): void {
   if (!text) return;
+  // WHY: Any shadowBlur under ctx.scale(N) blooms into a soft halo on social JPEG re-encodes.
+  clearCanvasShadow(ctx);
   ctx.fillStyle = fill;
   ctx.textAlign = align;
   ctx.textBaseline = baseline;
-  withMicroEdgeShadow(ctx, () => {
+  try {
+    ctx.font = font;
+    ctx.fillText(text, x, y, maxWidth);
+  } catch {
     try {
-      ctx.font = font;
+      ctx.font = '28px sans-serif';
       ctx.fillText(text, x, y, maxWidth);
     } catch {
-      try {
-        ctx.font = '28px sans-serif';
-        ctx.fillText(text, x, y, maxWidth);
-      } catch {
-        /* plate still encodes without this run */
-      }
+      /* plate still encodes without this run */
     }
-  });
+  }
 }
 
 function paintHexRivet(ctx: TelemetryDrawContext, cx: number, cy: number): void {
@@ -114,7 +105,7 @@ function paintHexRivet(ctx: TelemetryDrawContext, cx: number, cy: number): void 
   ctx.closePath();
   ctx.fillStyle = fill;
   ctx.fill();
-  clearMicroShadow(ctx);
+  clearCanvasShadow(ctx);
   ctx.strokeStyle = 'rgba(120,113,108,0.9)';
   ctx.lineWidth = 0.55;
   ctx.stroke();
@@ -126,13 +117,17 @@ function paintHexRivet(ctx: TelemetryDrawContext, cx: number, cy: number): void 
   ctx.restore();
 }
 
-export function paintCertificateFrame(ctx: TelemetryDrawContext): void {
+export function paintCertificateFrame(
+  ctx: TelemetryDrawContext,
+  plateWidth = TELEMETRY_CARD_WIDTH,
+  plateHeight = TELEMETRY_CARD_HEIGHT
+): void {
   const inset = TELEMETRY_CERT_FRAME_INSET;
   ctx.save();
-  paintCarbonNightPlate(ctx);
+  paintCarbonNightPlate(ctx, plateWidth, plateHeight);
 
-  const outerW = TELEMETRY_CARD_WIDTH - inset * 2;
-  const outerH = TELEMETRY_CARD_HEIGHT - inset * 2;
+  const outerW = plateWidth - inset * 2;
+  const outerH = plateHeight - inset * 2;
   const outerMetal = ctx.createLinearGradient(inset, inset, inset + outerW, inset + outerH);
   outerMetal.addColorStop(0, METAL.mirror);
   outerMetal.addColorStop(0.45, METAL.forged);
@@ -146,8 +141,8 @@ export function paintCertificateFrame(ctx: TelemetryDrawContext): void {
   ctx.strokeRect(inset, inset, outerW, outerH);
 
   const innerInset = inset + 10;
-  const innerW = TELEMETRY_CARD_WIDTH - innerInset * 2;
-  const innerH = TELEMETRY_CARD_HEIGHT - innerInset * 2;
+  const innerW = plateWidth - innerInset * 2;
+  const innerH = plateHeight - innerInset * 2;
   const innerMetal = ctx.createLinearGradient(
     innerInset + innerW,
     innerInset + innerH,
@@ -163,8 +158,8 @@ export function paintCertificateFrame(ctx: TelemetryDrawContext): void {
   ctx.shadowBlur = 0.5;
   ctx.strokeRect(innerInset, innerInset, innerW, innerH);
 
-  clearMicroShadow(ctx);
-  for (const [x, y] of TELEMETRY_CERT_RIVET_CENTERS) {
+  clearCanvasShadow(ctx);
+  for (const [x, y] of resolveRivetCenters(plateWidth, plateHeight)) {
     paintHexRivet(ctx, x, y);
   }
   ctx.restore();
@@ -239,7 +234,7 @@ export function paintCertificateMeterRow(
   ctx.arc(needleX, y, gemR, 0, Math.PI * 2);
   ctx.fillStyle = gem;
   ctx.fill();
-  clearMicroShadow(ctx);
+  clearCanvasShadow(ctx);
   // Micro star glint — reads as a bearing jewel at 3× export.
   ctx.strokeStyle = 'rgba(255,253,242,0.88)';
   ctx.lineWidth = 0.65;
@@ -264,7 +259,7 @@ export function paintCertificateMeterRow(
     ctx.shadowColor = 'rgba(0,0,0,0.35)';
     ctx.shadowBlur = 0.5;
     ctx.strokeRect(badgeX - bw, y - bh / 2, bw, bh);
-    clearMicroShadow(ctx);
+    clearCanvasShadow(ctx);
     ctx.fillStyle = 'rgba(243,230,200,0.08)';
     ctx.fillRect(badgeX - bw, y - bh / 2, bw, bh);
     ctx.restore();
@@ -279,4 +274,121 @@ export function paintCertificateMeterRow(
       'middle'
     );
   }
+}
+
+/** Column gap between 4:5 KPI strip cells (logical px). */
+export const TELEMETRY_CERT_KPI_STRIP_GAP = 28;
+
+/** Vertical offsets from strip band top → label / value / bar / badge baselines. */
+export const TELEMETRY_CERT_KPI_STRIP_OFFSETS = {
+  label: 18,
+  value: 52,
+  bar: 82,
+  badge: 112,
+} as const;
+
+/**
+ * 4:5 feed KPI strip — three equal columns (label, large value, gold bar, optional 超限).
+ * WHY: Stacked calipers ate the 1350 plate; a strip frees crest/title breathing room.
+ */
+export function paintCertificateMeterStrip(
+  ctx: TelemetryDrawContext,
+  meters: readonly TelemetryMeterLine[],
+  bandTopY: number
+): void {
+  const count = Math.min(3, meters.length);
+  if (count === 0) return;
+
+  const gap = TELEMETRY_CERT_KPI_STRIP_GAP;
+  const colW = (CONTENT_WIDTH - gap * (count - 1)) / count;
+
+  meters.slice(0, count).forEach((meter, index) => {
+    const x0 = CONTENT_LEFT + index * (colW + gap);
+    const cx = x0 + colW / 2;
+    const labelY = bandTopY + TELEMETRY_CERT_KPI_STRIP_OFFSETS.label;
+    const valueY = bandTopY + TELEMETRY_CERT_KPI_STRIP_OFFSETS.value;
+    const barY = bandTopY + TELEMETRY_CERT_KPI_STRIP_OFFSETS.bar;
+    const badgeY = bandTopY + TELEMETRY_CERT_KPI_STRIP_OFFSETS.badge;
+
+    paintCertificateLabel(
+      ctx,
+      meter.label,
+      cx,
+      labelY,
+      `18px ${FONT}`,
+      'rgba(161,161,170,0.95)',
+      'center',
+      'middle',
+      colW
+    );
+    paintCertificateLabel(
+      ctx,
+      meter.value,
+      cx,
+      valueY,
+      `bold 36px ${FONT}`,
+      meter.badge ? FOIL.light : '#f4f4f5',
+      'center',
+      'middle',
+      colW
+    );
+
+    const barInset = 10;
+    const barX = x0 + barInset;
+    const barW = colW - barInset * 2;
+    const fill = Math.min(100, Math.max(0, meter.fillPct));
+
+    ctx.save();
+    withMicroEdgeShadow(ctx, () => {
+      ctx.strokeStyle = 'rgba(212,175,55,0.35)';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(barX, barY);
+      ctx.lineTo(barX + barW, barY);
+      ctx.stroke();
+    });
+    if (fill > 0) {
+      const fillW = Math.max(6, (barW * fill) / 100);
+      const barMetal = ctx.createLinearGradient(barX, barY, barX + fillW, barY);
+      barMetal.addColorStop(0, METAL.deep);
+      barMetal.addColorStop(0.55, METAL.forged);
+      barMetal.addColorStop(1, METAL.mirror);
+      ctx.strokeStyle = barMetal;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(barX, barY);
+      ctx.lineTo(barX + fillW, barY);
+      ctx.stroke();
+    }
+    clearCanvasShadow(ctx);
+    ctx.restore();
+
+    if (meter.badge) {
+      const bw = Math.min(72, colW - 8);
+      const bh = 24;
+      ctx.save();
+      const badgeMetal = ctx.createLinearGradient(cx - bw / 2, badgeY, cx + bw / 2, badgeY);
+      badgeMetal.addColorStop(0, METAL.deep);
+      badgeMetal.addColorStop(0.5, METAL.forged);
+      badgeMetal.addColorStop(1, METAL.mirror);
+      ctx.strokeStyle = badgeMetal;
+      ctx.lineWidth = 1.1;
+      ctx.strokeRect(cx - bw / 2, badgeY - bh / 2, bw, bh);
+      ctx.fillStyle = 'rgba(243,230,200,0.08)';
+      ctx.fillRect(cx - bw / 2, badgeY - bh / 2, bw, bh);
+      ctx.restore();
+      paintCertificateLabel(
+        ctx,
+        meter.badge,
+        cx,
+        badgeY,
+        `bold 14px ${FONT}`,
+        FOIL.light,
+        'center',
+        'middle'
+      );
+    }
+  });
 }
