@@ -11,7 +11,6 @@ import {
   bottomChromeCalc,
 } from '../../constants/bottomChrome';
 import {
-  ROUTES,
   isCompactShellRoutePath,
   isHomeRoutePath,
   isJoinArenaRoutePath,
@@ -34,6 +33,13 @@ export interface AppShellProps {
 }
 
 /**
+ * Home in-flow top clearance — mirrors `spacing.shell-top` (safe-area + 3.5rem).
+ * WHY exported for tests so the spacer token cannot drift from AppShell markup.
+ */
+export const HOME_SHELL_TOP_SPACER_CLASS =
+  'pointer-events-none h-shell-top shrink-0';
+
+/**
  * Phase 1 shell — three-layer layout contract (see `docs/PHASE0_SHELL_SPEC.md`).
  * HUD in `layer-shell-frame`; bottom nav is a **sibling** `fixed bottom-0` bar (aligned with
  * reference-app-fitness `BottomNavBar.jsx` APK behavior — avoids WebView clipping / inset bugs).
@@ -45,8 +51,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const isShellBlocked = useShellInteractionBlocked();
   const { shouldShow, completeBoot } = useBootSequence();
   useNavSensoryFeedback();
-  const bootActive = shouldShow && location.pathname === ROUTES.home;
   const isHomeRoute = isHomeRoutePath(location.pathname);
+  const bootActive = shouldShow && isHomeRoute;
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
   // WHY: Ladder bridge / Join Arena floating CTA sit above BottomNav — each route owns a taller scroll inset.
   // Calculators use in-flow CTAs and the default Dyno-visible AppShell inset.
@@ -55,6 +61,13 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     : isJoinArenaRoutePath(location.pathname)
       ? JOIN_ARENA_SCROLL_BOTTOM_PX
       : APP_SHELL_SCROLL_BOTTOM_PX;
+  // WHY Home pt-0 + in-flow spacer: iOS WKWebView treats overflow padding-top as a non-scrolling
+  // clip dead-zone (~status-bar left ear). Spacer scrolls with content so radar can pass the top.
+  const scrollTopPadClass = isHomeRoute
+    ? 'pt-0'
+    : isCompactShellRoute
+      ? 'pt-shell-top-compact'
+      : 'pt-shell-top';
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">
@@ -66,12 +79,11 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       {/*
         Single scroll outlet — block flow only (no flex-col) to avoid nested flex + overflow-hidden traps.
-        Top inset: `pt-shell-top` (default; Home included) or `pt-shell-top-compact` on ladder / tools tab.
-        WHY: Home keeps full shell-top so HomeRadarBoard clears the HUD; Join Arena likewise for back/kicker.
+        Top inset: Home `pt-0` + in-flow spacer; ladder/tools `pt-shell-top-compact`; else `pt-shell-top`.
       */}
       <div
         id={SHELL_SCROLL_ID}
-        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] ${isCompactShellRoute ? 'pt-shell-top-compact' : 'pt-shell-top'} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] ${scrollTopPadClass} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
         style={{
           paddingBottom: bottomChromeCalc(scrollBottomInsetPx),
         }}
@@ -79,6 +91,13 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         inert={isShellBlocked ? true : undefined}
         aria-hidden={isShellBlocked || undefined}
       >
+        {isHomeRoute ? (
+          <div
+            data-testid="home-shell-top-spacer"
+            className={HOME_SHELL_TOP_SPACER_CLASS}
+            aria-hidden
+          />
+        ) : null}
         {children ?? <ShellAnimatedOutlet />}
       </div>
 
@@ -90,7 +109,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         id="layer-shell-frame"
         data-shell-hud-anchor={isHomeRoute ? 'home-right' : 'full-width'}
         className={`pointer-events-none fixed top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${
-          isHomeRoute ? 'right-0' : 'inset-x-0'
+          isHomeRoute ? 'right-0 w-fit' : 'inset-x-0'
         } ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
         inert={isShellBlocked ? true : undefined}
         aria-hidden={isShellBlocked || undefined}

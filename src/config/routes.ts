@@ -53,9 +53,9 @@ export function isJoinArenaRoutePath(pathname: string): boolean {
 }
 
 /**
- * Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (ladder / tools tab).
- * WHY: Home stays on full `shell-top` so `HomeRadarBoard` clears the fixed HUD — compact inset
- * tucked the gold-rim board under PRO and read as a fixed top-left stepped clip on iOS.
+ * Routes that use `spacing.shell-top-compact` as `#layer-shell-scroll` padding (ladder / tools tab).
+ * WHY: Home is excluded — it uses an in-flow `h-shell-top` spacer (see AppShell) so WKWebView
+ * overflow padding cannot form a non-scrolling top clip dead-zone over `HomeRadarBoard`.
  */
 export function isCompactShellRoutePath(pathname: string): boolean {
   return isLadderRoutePath(pathname) || isToolsTabRoutePath(pathname);

@@ -9,10 +9,10 @@ import HomeRadarBoard from '../components/home/HomeRadarBoard';
  */
 export default function HomePage() {
   return (
-    // WHY ui-shell-compact: gutters only. AppShell gives Home full `pt-shell-top` so the radar
-    // clears the fixed HUD (compact scroll inset caused the iOS stepped clip under PRO).
+    // WHY ui-shell-compact: gutters only. AppShell injects an in-flow `h-shell-top` spacer above
+    // this page (not overflow padding) so HomeRadarBoard clears the HUD without iOS clip dead-zones.
     <main className="ui-shell-compact max-w-4xl space-y-4 pb-6 md:pb-8">
-      {/* Tighter section rhythm — radar board owns the first viewport under full shell-top. */}
+      {/* Tighter section rhythm — radar board owns the first viewport under the shell-top spacer. */}
       <section>
         <HomeRadarBoard />
       </section>

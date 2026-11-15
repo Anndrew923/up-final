@@ -103,7 +103,7 @@ describe('isOneRmCalculatorRoutePath', () => {
 });
 
 describe('isCompactShellRoutePath', () => {
-  it('includes ladder and tools tab only; Home stays on full shell-top', () => {
+  it('includes ladder and tools tab only; Home uses in-flow shell-top spacer instead', () => {
     expect(isCompactShellRoutePath(ROUTES.home)).toBe(false);
     expect(isCompactShellRoutePath(`${ROUTES.home}/nested`)).toBe(false);
     expect(isCompactShellRoutePath(ROUTES.ladder)).toBe(true);

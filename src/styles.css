@@ -40,7 +40,7 @@
 
 @layer components {
   /**
-   * Primary page gutter — paired with `pt-shell-top` on `#layer-shell-scroll`.
+   * Primary page gutter — paired with AppShell top clearance (`pt-shell-top` or Home spacer).
    *
    * Design intent (WHY): Symmetric `py-8` doubled the HUD reserve and felt loose on phone.
    * Tight top (`pt-2` ≈ 8px) keeps hero content near the HUD without a double-stack black hole;
@@ -52,7 +52,7 @@
 
   /**
    * Horizontal gutters only (`padding-top: 0`) — vertical HUD clearance lives on AppShell
-   * (`pt-shell-top` or `pt-shell-top-compact`). Home uses this class with full `shell-top`.
+   * (`pt-shell-top` / `pt-shell-top-compact`, or Home in-flow `h-shell-top` spacer).
    */
   .ui-shell-compact {
     @apply mx-auto w-full max-w-6xl px-5 pb-8 md:px-8;
