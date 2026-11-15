@@ -13,6 +13,7 @@ import {
 import {
   ROUTES,
   isCompactShellRoutePath,
+  isHomeRoutePath,
   isJoinArenaRoutePath,
   isLadderRoutePath,
 } from '../../config/routes';
@@ -45,6 +46,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const { shouldShow, completeBoot } = useBootSequence();
   useNavSensoryFeedback();
   const bootActive = shouldShow && location.pathname === ROUTES.home;
+  const isHomeRoute = isHomeRoutePath(location.pathname);
   const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
   // WHY: Ladder bridge / Join Arena floating CTA sit above BottomNav — each route owns a taller scroll inset.
   // Calculators use in-flow CTAs and the default Dyno-visible AppShell inset.
@@ -64,8 +66,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       {/*
         Single scroll outlet — block flow only (no flex-col) to avoid nested flex + overflow-hidden traps.
-        Top inset: `pt-shell-top` (default) or `pt-shell-top-compact` on home / ladder / tools tab.
-        WHY: Join Arena keeps full shell-top so HUD back clears the page kicker.
+        Top inset: `pt-shell-top` (default; Home included) or `pt-shell-top-compact` on ladder / tools tab.
+        WHY: Home keeps full shell-top so HomeRadarBoard clears the HUD; Join Arena likewise for back/kicker.
       */}
       <div
         id={SHELL_SCROLL_ID}
@@ -80,9 +82,16 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         {children ?? <ShellAnimatedOutlet />}
       </div>
 
+      {/*
+        WHY Home right-rail only: Full-width `inset-x-0` fixed HUD over HomeRadarBoard caused iOS
+        WKWebView compositor clipping (stepped black under PRO). Non-Home keeps full-width for HudBack.
+      */}
       <div
         id="layer-shell-frame"
-        className={`pointer-events-none fixed inset-x-0 top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
+        data-shell-hud-anchor={isHomeRoute ? 'home-right' : 'full-width'}
+        className={`pointer-events-none fixed top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${
+          isHomeRoute ? 'right-0' : 'inset-x-0'
+        } ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
         inert={isShellBlocked ? true : undefined}
         aria-hidden={isShellBlocked || undefined}
       >
@@ -90,7 +99,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         <div
           className={`shell-hud-slot flex min-h-14 shrink-0 items-center gap-3 px-4 pt-[env(safe-area-inset-top,0px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >
-          <HudBackControl />
+          {/* WHY skip on Home: back already self-hides on tabs; omit mount so right-rail stays profile-only. */}
+          {isHomeRoute ? null : <HudBackControl />}
           <HudProfileControls />
         </div>
       </div>

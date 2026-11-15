@@ -50,7 +50,10 @@
     @apply mx-auto w-full max-w-6xl px-5 pt-2 pb-8 md:px-8 md:pt-3;
   }
 
-  /** Compact-shell pages — horizontal gutters only; vertical inset is `shell-top-compact` on AppShell. */
+  /**
+   * Horizontal gutters only (`padding-top: 0`) — vertical HUD clearance lives on AppShell
+   * (`pt-shell-top` or `pt-shell-top-compact`). Home uses this class with full `shell-top`.
+   */
   .ui-shell-compact {
     @apply mx-auto w-full max-w-6xl px-5 pb-8 md:px-8;
     padding-top: 0;

@@ -29,6 +29,8 @@ export default function HudProfileControls() {
   const isPro = useEntitlementStore((s) => s.isPro);
 
   return (
+    // WHY ml-auto: full-width HUD rows push this cluster to the trailing edge; Home right-rail
+    // shrink-wraps so ml-auto is a no-op and stays harmless.
     <div
       className={`ml-auto flex items-center gap-2 motion-safe:transition-opacity motion-safe:duration-300 ${isBlocked ? 'pointer-events-none opacity-40 saturate-50' : ''}`}
       aria-hidden={isBlocked}

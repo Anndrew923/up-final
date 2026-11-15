@@ -52,13 +52,13 @@ export function isJoinArenaRoutePath(pathname: string): boolean {
   return pathname === ROUTES.joinArena || pathname.startsWith(`${ROUTES.joinArena}/`);
 }
 
-/** Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (home / ladder / tools tab). */
+/**
+ * Routes that use `spacing.shell-top-compact` on `#layer-shell-scroll` (ladder / tools tab).
+ * WHY: Home stays on full `shell-top` so `HomeRadarBoard` clears the fixed HUD — compact inset
+ * tucked the gold-rim board under PRO and read as a fixed top-left stepped clip on iOS.
+ */
 export function isCompactShellRoutePath(pathname: string): boolean {
-  return (
-    isHomeRoutePath(pathname) ||
-    isLadderRoutePath(pathname) ||
-    isToolsTabRoutePath(pathname)
-  );
+  return isLadderRoutePath(pathname) || isToolsTabRoutePath(pathname);
 }
 
 /** True for home tab (`/user-info`) and nested home paths. */

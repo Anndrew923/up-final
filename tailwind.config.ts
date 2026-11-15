@@ -16,15 +16,16 @@ export default {
        * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
        * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
        * `pt-[env(safe-area-inset-top)]` + `min-h-14` (3.5rem) so scroll content clears the HUD
-       * slot. Home / ladder / tools **tab** use `shell-top-compact` instead (denser layout).
+       * slot. Ladder / tools **tab** use `shell-top-compact` instead (denser layout). Home keeps
+       * full `shell-top` so the radar board never tucks under the fixed PRO cluster on iOS.
        * Join Arena + calculator `/tools/*` pages keep full `shell-top` so HUD back / titles clear the HUD.
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem)',
         /**
-         * Compact scroll/sticky offset for home + ladder + tools tab (WHY): Denser than `shell-top`;
+         * Compact scroll/sticky offset for ladder + tools tab (WHY): Denser than `shell-top`;
          * targets ~4–6px under the HUD icon row. AppShell: `pt-shell-top-compact`.
-         * Join Arena + calculator `/tools/*` keep full `shell-top` so HUD back / titles clear HUD.
+         * Home / Join Arena + calculator `/tools/*` keep full `shell-top` so HUD / titles clear.
          * Re-QA on notched devices if this value changes.
          */
         'shell-top-compact': 'calc(env(safe-area-inset-top, 0px) + 1.75rem)',
