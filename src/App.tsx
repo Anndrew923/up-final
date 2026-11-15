@@ -1,6 +1,7 @@
-import { Suspense, lazy, type ComponentType, type ReactElement } from 'react';
+import { Suspense, lazy, useState, type ComponentType, type ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppShell from './components/layout/AppShell';
+import LaunchQuoteSplash from './components/LaunchQuoteSplash';
 import type { NavItemKey } from './config/nav.config';
 import { NAV_ITEMS, toRelativeRoutePath } from './config/nav.config';
 import { ROUTES } from './config/routes';
@@ -18,6 +19,9 @@ import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
 import { useAuthStore } from './stores/authStore';
 // WHY: Eager import — lazy AuthChoice + Suspense fallback paints shell-like chrome between splash and modal.
 import AuthChoicePage from './pages/AuthChoicePage';
+
+/** Vitest mounts App for gate/smoke suites — skip ceremony so timers never stall the suite. */
+const ENABLE_LAUNCH_QUOTE_SPLASH = import.meta.env.MODE !== 'test';
 const AssessmentPage = lazy(() => import('./pages/AssessmentPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -202,6 +206,7 @@ export default function App() {
   };
   const shouldHoldSplash = resolveShouldHoldAuthBootstrapSplash(gateInput);
   const canMountShell = resolveCanMountAppShell(gateInput);
+  const [launchQuoteOpen, setLaunchQuoteOpen] = useState(ENABLE_LAUNCH_QUOTE_SPLASH);
 
   // WHY: Hard gate — never mount AppShell under splash/auth choice (overlay-only leaked boot UI).
   const gatedTree = canMountShell ? (
@@ -215,6 +220,12 @@ export default function App() {
   return (
     <>
       {gatedTree}
+      {launchQuoteOpen ? (
+        <LaunchQuoteSplash
+          ready={!shouldHoldSplash}
+          onDismissed={() => setLaunchQuoteOpen(false)}
+        />
+      ) : null}
       {canMountShell ? <TermsGatekeeper /> : null}
       <ExitConfirmModal open={exitModalOpen} onClose={closeExitModal} />
     </>

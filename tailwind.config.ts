@@ -232,6 +232,13 @@ export default {
   plugins: [
     plugin(({ addUtilities }) => {
       addUtilities({
+        /** Launch / full-bleed overlays — notch + home-indicator insets by name. */
+        '.pt-safe': {
+          paddingTop: 'max(0px, env(safe-area-inset-top, 0px))',
+        },
+        '.pb-safe': {
+          paddingBottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
+        },
         '.magitek-chassis-grid': {
           position: 'relative',
           isolation: 'isolate',
