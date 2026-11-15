@@ -5,7 +5,10 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES } from '../../../config/routes';
 import { SHELL_SCROLL_ID } from '../../../lib/shellScrollLock';
-import AppShell, { HOME_SHELL_TOP_SPACER_CLASS } from '../AppShell';
+import AppShell, {
+  HOME_SCROLL_COMPOSITOR_CLASS,
+  HOME_SHELL_TOP_SPACER_CLASS,
+} from '../AppShell';
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -103,6 +106,10 @@ describe('AppShell Home HUD clearance', () => {
     expect(scrollClasses).not.toContain('pt-shell-top-compact');
     // WHY token split: `pt-shell-top` is a prefix of `pt-shell-top-compact` — avoid substring traps.
     expect(scrollClasses).not.toContain('pt-shell-top');
+    expect(scroll?.getAttribute('data-webkit-scroll-isolate')).toBe('home');
+    for (const token of HOME_SCROLL_COMPOSITOR_CLASS.split(/\s+/)) {
+      expect(scrollClasses).toContain(token);
+    }
 
     const spacer = container.querySelector('[data-testid="home-shell-top-spacer"]');
     expect(spacer).toBeTruthy();
@@ -113,10 +120,12 @@ describe('AppShell Home HUD clearance', () => {
     act(() => root.unmount());
   });
 
-  it('keeps ladder on compact shell-top without a Home spacer', () => {
+  it('keeps ladder on compact shell-top without a Home spacer or compositor fence', () => {
     const { container, root } = renderShell(ROUTES.ladder);
     const scroll = container.querySelector(`#${SHELL_SCROLL_ID}`);
     expect(scroll?.className).toContain('pt-shell-top-compact');
+    expect(scroll?.getAttribute('data-webkit-scroll-isolate')).toBeNull();
+    expect(scroll?.className).not.toContain('isolation-isolate');
     expect(container.querySelector('[data-testid="home-shell-top-spacer"]')).toBeNull();
     act(() => root.unmount());
   });

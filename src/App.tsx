@@ -16,6 +16,7 @@ import {
 } from './logic/core/authGate';
 import { isFirestoreConfigured } from './services/firebaseClient';
 import { hasCompletedAuthOnboarding } from './services/authOnboardingService';
+import { bumpShellScrollCompositorAfterSplash } from './lib/shellScrollLock';
 import { useAuthStore } from './stores/authStore';
 // WHY: Eager import — lazy AuthChoice + Suspense fallback paints shell-like chrome between splash and modal.
 import AuthChoicePage from './pages/AuthChoicePage';
@@ -223,7 +224,11 @@ export default function App() {
       {launchQuoteOpen ? (
         <LaunchQuoteSplash
           ready={!shouldHoldSplash}
-          onDismissed={() => setLaunchQuoteOpen(false)}
+          onDismissed={() => {
+            setLaunchQuoteOpen(false);
+            // WHY: Splash covered GPU tile [0,0]; bump Home scroll compositor after unmount.
+            bumpShellScrollCompositorAfterSplash();
+          }}
         />
       ) : null}
       {canMountShell ? <TermsGatekeeper /> : null}

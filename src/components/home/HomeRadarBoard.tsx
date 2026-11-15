@@ -33,9 +33,16 @@ import { RADAR_CARD_V2 } from '../radar/radarVisualTokens';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
 import { hapticService } from '../../services/hapticService';
 import { cn } from '../../lib/cn';
+import { WEBKIT_COMPOSITOR_FENCE_CLASS } from '../../lib/shellScrollLock';
 
 /** Fixed mobile HUD density — 375–430 stays two columns inside the inset panel. */
 const AXIS_HUD_COLS = 2;
+
+/**
+ * Board compositor fence — alias of shared WebKit token (scroll + chart must match).
+ * WHY: Keep filter dirty-rects inside the board so iOS WKWebView does not invalidate tile [0,0].
+ */
+export const HOME_RADAR_BOARD_COMPOSITOR_CLASS = WEBKIT_COMPOSITOR_FENCE_CLASS;
 
 /**
  * Console board dual-shell chrome — outer rim + opaque face.
@@ -43,7 +50,7 @@ const AXIS_HUD_COLS = 2;
  * Inner radius must stay `calc(1rem - 1px)` while outer uses Tailwind `rounded-2xl` (= 1rem).
  */
 export const HOME_RADAR_BOARD_RIM_CLASS =
-  'relative overflow-hidden rounded-2xl bg-gradient-to-b from-accent-primary/70 via-zinc-700 to-zinc-800 p-px shadow-panel';
+  `relative overflow-hidden rounded-2xl bg-gradient-to-b from-accent-primary/70 via-zinc-700 to-zinc-800 p-px shadow-panel ${HOME_RADAR_BOARD_COMPOSITOR_CLASS}`;
 export const HOME_RADAR_BOARD_FACE_CLASS =
   'relative overflow-hidden rounded-[calc(1rem-1px)] bg-bg-card p-4 shadow-[inset_0_1px_0_0_rgba(255,140,0,0.28)]';
 

@@ -8,12 +8,15 @@ import type { RadarPkCompareMotion } from '../../logic/core/radarPkClashMotion';
 import type { RadarChartPoint } from '../../types/radarDisplay';
 import { SIX_AXIS_METRICS, type SixAxisMetric } from '../../types/scoring';
 import { buildRadarPkCompareStyleSheet } from './radarPkClashStyles';
+import { WEBKIT_COMPOSITOR_FENCE_CLASS } from '../../lib/shellScrollLock';
 import {
   getRadarPalette,
   RADAR_ATMOSPHERE_GLOW_OPACITY,
   RADAR_CARD_V2,
   RADAR_LASER_ALERT_PROFILE,
   RADAR_QUIET_PROFILE,
+  RADAR_RITUAL_SVG_FILTER_REGION,
+  RADAR_RITUAL_SVG_GLOW,
 } from './radarVisualTokens';
 
 export type HexRadarPoint = RadarChartPoint;
@@ -55,6 +58,44 @@ export interface HexRadarChartProps {
   className?: string;
   'aria-label'?: string;
 }
+
+type RitualDropShadowSpec = {
+  stdDeviation: number;
+  floodColor: string;
+};
+
+/**
+ * Bounded ritual feDropShadow filter — shared region so glow defs cannot diverge.
+ * WHY: Five ritual glows share the same WKWebView-safe pad; one helper keeps region + units DRY.
+ */
+const RitualBoundedGlowFilter: FC<{
+  id: string;
+  testId: string;
+  shadows: readonly RitualDropShadowSpec[];
+}> = ({ id, testId, shadows }) => (
+  <filter
+    id={id}
+    data-testid={testId}
+    filterUnits="userSpaceOnUse"
+    x={RADAR_RITUAL_SVG_FILTER_REGION.x}
+    y={RADAR_RITUAL_SVG_FILTER_REGION.y}
+    width={RADAR_RITUAL_SVG_FILTER_REGION.width}
+    height={RADAR_RITUAL_SVG_FILTER_REGION.height}
+    colorInterpolationFilters="sRGB"
+  >
+    {shadows.map((shadow, index) => (
+      <feDropShadow
+        key={`${shadow.floodColor}-${shadow.stdDeviation}-${index}`}
+        dx={0}
+        dy={0}
+        stdDeviation={shadow.stdDeviation}
+        floodColor={shadow.floodColor}
+        floodOpacity={1}
+      />
+    ))}
+  </filter>
+);
+
 /**
  * Presentational hex radar — purely maps `points` to geometry; data built in `logic/core` / hooks.
  */
@@ -214,8 +255,9 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
 
   return (
     <div
-      className={`relative aspect-square w-full ${className ?? ''}`}
+      className={`relative aspect-square w-full overflow-hidden ${WEBKIT_COMPOSITOR_FENCE_CLASS} ${className ?? ''}`}
       data-radar-presentation={presentation}
+      data-webkit-radar-isolate="true"
     >
       {!isQuiet ? (
         <div
@@ -249,6 +291,68 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
               <stop offset="70%" stopColor="rgba(56,189,248,0.22)" />
               <stop offset="100%" stopColor={RADAR_LASER_ALERT_PROFILE.polygon.edgeStop} />
             </radialGradient>
+          ) : null}
+          {/*
+            WHY bounded SVG filters (not CSS drop-shadow): keep dirty-rects inside viewBox pad so
+            WKWebView does not invalidate shell tile [0,0]. Gold reactor vs cyan overflow hues preserved.
+          */}
+          {!isQuiet ? (
+            <>
+              <RitualBoundedGlowFilter
+                id={`${auraGradientId}-poly-glow`}
+                testId="hex-radar-filter-poly-glow"
+                shadows={[
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.polyOuterStd,
+                    floodColor: RADAR_RITUAL_SVG_GLOW.polyOuter,
+                  },
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.polyInnerStd,
+                    floodColor: RADAR_RITUAL_SVG_GLOW.polyInner,
+                  },
+                ]}
+              />
+              <RitualBoundedGlowFilter
+                id={`${auraGradientId}-overflow-glow`}
+                testId="hex-radar-filter-overflow-glow"
+                shadows={[
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.overflowStd,
+                    floodColor: RADAR_RITUAL_SVG_GLOW.overflow,
+                  },
+                ]}
+              />
+              <RitualBoundedGlowFilter
+                id={`${auraGradientId}-overflow-vertex-glow`}
+                testId="hex-radar-filter-overflow-vertex-glow"
+                shadows={[
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.overflowVertexStd,
+                    floodColor: RADAR_RITUAL_SVG_GLOW.overflowVertex,
+                  },
+                ]}
+              />
+              <RitualBoundedGlowFilter
+                id={`${auraGradientId}-reactor-glow`}
+                testId="hex-radar-filter-reactor-glow"
+                shadows={[
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.reactorStd,
+                    floodColor: RADAR_LASER_ALERT_PROFILE.node.defaultGlow,
+                  },
+                ]}
+              />
+              <RitualBoundedGlowFilter
+                id={`${auraGradientId}-reactor-overclock-glow`}
+                testId="hex-radar-filter-reactor-overclock-glow"
+                shadows={[
+                  {
+                    stdDeviation: RADAR_RITUAL_SVG_GLOW.reactorStd,
+                    floodColor: RADAR_LASER_ALERT_PROFILE.node.overclockGlow,
+                  },
+                ]}
+              />
+            </>
           ) : null}
         </defs>
         {!isQuiet ? (
@@ -373,9 +477,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
             }
             strokeWidth={isQuiet ? RADAR_QUIET_PROFILE.overflowStrokeWidth : 1}
             strokeLinejoin="round"
-            style={
-              isQuiet ? undefined : { filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.5))' }
-            }
+            filter={isQuiet ? undefined : `url(#${auraGradientId}-overflow-glow)`}
           />
         ) : null}
 
@@ -412,10 +514,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
               strokeLinecap="round"
               strokeLinejoin="round"
               fillOpacity={RADAR_LASER_ALERT_PROFILE.polygon.fillBreathMax}
-              style={{
-                filter:
-                  'drop-shadow(0 0 12px rgba(34,211,238,0.9)) drop-shadow(0 0 4px rgba(34,211,238,1))',
-              }}
+              filter={`url(#${auraGradientId}-poly-glow)`}
             />
             <polygon
               points={dataPolygon}
@@ -508,8 +607,10 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
                 cy={node.yBase}
                 r={2.1}
                 fill={reactor.core}
-                style={
-                  reactor.glow ? { filter: `drop-shadow(0 0 6px ${reactor.glow})` } : undefined
+                filter={
+                  reactor.glow
+                    ? `url(#${auraGradientId}-${isOverclock ? 'reactor-overclock-glow' : 'reactor-glow'})`
+                    : undefined
                 }
               />
               {node.overflowExtra > 0 ? (
@@ -531,7 +632,7 @@ export const HexRadarChart: FC<HexRadarChartProps> = ({
                   className={
                     node.overflowExtra === maxOverflow ? 'fill-accent-info' : 'fill-accent-primary'
                   }
-                  style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.62))' }}
+                  filter={`url(#${auraGradientId}-overflow-vertex-glow)`}
                 />
               ) : null}
               <text

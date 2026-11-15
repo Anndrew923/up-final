@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../i18n';
 import {
+  HOME_RADAR_BOARD_COMPOSITOR_CLASS,
   HOME_RADAR_BOARD_FACE_CLASS,
   HOME_RADAR_BOARD_RIM_CLASS,
   HomeRadarBoard,
@@ -140,6 +141,9 @@ describe('HomeRadarBoard shell seam (Retina dual-chrome guard)', () => {
     expect(HOME_RADAR_BOARD_FACE_CLASS).not.toContain('bg-bg-card/90');
     expect(HOME_RADAR_BOARD_FACE_CLASS).toContain('rounded-[calc(1rem-1px)]');
     expect(HOME_RADAR_BOARD_RIM_CLASS).toContain('rounded-2xl');
+    expect(HOME_RADAR_BOARD_RIM_CLASS).toContain(HOME_RADAR_BOARD_COMPOSITOR_CLASS);
+    expect(HOME_RADAR_BOARD_COMPOSITOR_CLASS).toContain('isolation-isolate');
+    expect(HOME_RADAR_BOARD_COMPOSITOR_CLASS).toContain('transform-gpu');
 
     const straightHairlines = Array.from(board!.querySelectorAll('.absolute')).filter((el) => {
       const cls = el.className;

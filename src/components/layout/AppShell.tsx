@@ -20,7 +20,7 @@ import { useBootSequence } from '../../hooks/useBootSequence';
 import { useNavSensoryFeedback } from '../../hooks/useNavSensoryFeedback';
 import { usePushNavigateBridge } from '../../hooks/usePushNotificationLifecycle';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
-import { SHELL_SCROLL_ID } from '../../lib/shellScrollLock';
+import { SHELL_SCROLL_ID, WEBKIT_COMPOSITOR_FENCE_CLASS } from '../../lib/shellScrollLock';
 import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
 import SpecBadgeUnlockBanner from '../notifications/SpecBadgeUnlockBanner';
 import { useSpecBadgeUnlockToast } from '../../hooks/useSpecBadgeUnlockToast';
@@ -38,6 +38,13 @@ export interface AppShellProps {
  */
 export const HOME_SHELL_TOP_SPACER_CLASS =
   'pointer-events-none h-shell-top shrink-0';
+
+/**
+ * Home scroll compositor fence — own GPU layer so radar filters cannot dirty-clip
+ * tile [0,0] against the fixed HUD (iOS WKWebView invalidation bug).
+ * Alias of shared token so shell / board / chart fences cannot drift.
+ */
+export const HOME_SCROLL_COMPOSITOR_CLASS = WEBKIT_COMPOSITOR_FENCE_CLASS;
 
 /**
  * Phase 1 shell — three-layer layout contract (see `docs/PHASE0_SHELL_SPEC.md`).
@@ -83,7 +90,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       */}
       <div
         id={SHELL_SCROLL_ID}
-        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] ${scrollTopPadClass} ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
+        data-webkit-scroll-isolate={isHomeRoute ? 'home' : undefined}
+        className={`relative z-[1] h-[100dvh] overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] ${scrollTopPadClass} ${
+          isHomeRoute ? HOME_SCROLL_COMPOSITOR_CLASS : ''
+        } ${isShellBlocked ? 'pointer-events-none select-none' : ''}`}
         style={{
           paddingBottom: bottomChromeCalc(scrollBottomInsetPx),
         }}

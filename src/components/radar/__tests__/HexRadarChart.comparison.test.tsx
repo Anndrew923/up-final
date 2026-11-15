@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import HexRadarChart from '../HexRadarChart';
+import { RADAR_RITUAL_SVG_FILTER_REGION } from '../radarVisualTokens';
 import { SIX_AXIS_METRICS } from '../../../types/scoring';
 
 (
@@ -66,6 +67,38 @@ describe('HexRadarChart comparison layer', () => {
     });
 
     expect(container.querySelector('[data-testid="hex-radar-comparison"]')).toBeNull();
+  });
+
+  it('ritual mode uses bounded userSpaceOnUse SVG filters (not unbounded CSS drop-shadow)', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <HexRadarChart points={basePoints} scaleMax={120} aria-label="ritual filters" />
+      );
+    });
+
+    const rootEl = container.firstElementChild as HTMLElement | null;
+    expect(rootEl?.getAttribute('data-webkit-radar-isolate')).toBe('true');
+    expect(rootEl?.className).toContain('isolation-isolate');
+    expect(rootEl?.className).toContain('transform-gpu');
+
+    const polyFilter = container.querySelector('[data-testid="hex-radar-filter-poly-glow"]');
+    expect(polyFilter?.getAttribute('filterUnits')).toBe('userSpaceOnUse');
+    expect(polyFilter?.getAttribute('x')).toBe(String(RADAR_RITUAL_SVG_FILTER_REGION.x));
+    expect(polyFilter?.getAttribute('y')).toBe(String(RADAR_RITUAL_SVG_FILTER_REGION.y));
+    expect(polyFilter?.getAttribute('width')).toBe(String(RADAR_RITUAL_SVG_FILTER_REGION.width));
+    expect(polyFilter?.getAttribute('height')).toBe(String(RADAR_RITUAL_SVG_FILTER_REGION.height));
+    expect(container.querySelector('[data-testid="hex-radar-filter-overflow-glow"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-testid="hex-radar-filter-overflow-vertex-glow"]')
+    ).toBeTruthy();
+    expect(container.querySelector('[data-testid="hex-radar-filter-reactor-glow"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-testid="hex-radar-filter-reactor-overclock-glow"]')
+    ).toBeTruthy();
   });
 
   it('quiet combat aesthetic: solid gold clash line, ice-cyan plate, atmospheric depth without scanner', () => {

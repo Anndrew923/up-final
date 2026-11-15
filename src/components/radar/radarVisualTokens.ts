@@ -69,6 +69,31 @@ export const RADAR_LASER_ALERT_PROFILE = {
   },
 } as const;
 
+/**
+ * Bounded ritual SVG filter region in viewBox units (`0 0 200 200` + 40px pad).
+ * WHY: Replaces unbounded CSS `filter: drop-shadow` so WKWebView dirty-rects stay inside
+ * the radar layer instead of invalidating shell tile [0,0].
+ */
+export const RADAR_RITUAL_SVG_FILTER_REGION = {
+  x: -40,
+  y: -40,
+  width: 280,
+  height: 280,
+} as const;
+
+/** Ritual glow floods — mirror the former CSS drop-shadow colors (poly / overflow / overflow-dot). */
+export const RADAR_RITUAL_SVG_GLOW = {
+  polyOuter: 'rgba(34,211,238,0.9)',
+  polyInner: 'rgba(34,211,238,1)',
+  overflow: 'rgba(34,211,238,0.5)',
+  overflowVertex: 'rgba(34,211,238,0.62)',
+  polyOuterStd: 6,
+  polyInnerStd: 2,
+  overflowStd: 3,
+  overflowVertexStd: 3,
+  reactorStd: 3,
+} as const;
+
 /** Quiet combat accents — single source so stroke + vertices never drift apart. */
 const RADAR_QUIET_CYAN = '#22d3ee'; // cyan-400
 const RADAR_QUIET_GOLD = '#f59e0b'; // amber-500
