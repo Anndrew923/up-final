@@ -27,7 +27,11 @@ export interface TelemetryDrawContext {
   /** Soft drop shadow for HUD text on bright selfie backgrounds. */
   shadowColor: string;
   shadowBlur: number;
+  shadowOffsetX: number;
   shadowOffsetY: number;
+  /** Hi-DPI export: bilinear/high-quality resampling for cover-crop selfies. */
+  imageSmoothingEnabled: boolean;
+  imageSmoothingQuality: ImageSmoothingQuality;
   save(): void;
   restore(): void;
   beginPath(): void;
@@ -43,6 +47,8 @@ export interface TelemetryDrawContext {
   measureText(text: string): { width: number };
   clip(): void;
   rect(x: number, y: number, w: number, h: number): void;
+  /** Map logical plate coords → physical pixels (compose applies export scale once). */
+  scale(x: number, y: number): void;
   drawImage(
     image: TelemetryBackgroundSource,
     sx: number,

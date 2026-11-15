@@ -73,6 +73,7 @@ export function paintCornerReticles(ctx: TelemetryDrawContext): void {
   ctx.save();
   ctx.shadowColor = chrome.glow;
   ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.strokeStyle = chrome.stroke;
   ctx.lineWidth = 1.6;
@@ -86,6 +87,8 @@ export function paintCornerReticles(ctx: TelemetryDrawContext): void {
   }
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   ctx.restore();
 }
 
@@ -108,10 +111,12 @@ export function paintBrandWatermark(ctx: TelemetryDrawContext, year: number): vo
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.85)';
   ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   paintChromeLabel(ctx, String(year), cx, cy + yearDy, `18px ${FONT}`, chrome.yearFill);
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.restore();
 }

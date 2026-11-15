@@ -93,6 +93,7 @@ export function resolveSelfieRadarLabelPaint(input: {
 function clearNeonShadow(ctx: TelemetryDrawContext): void {
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 }
 
@@ -125,6 +126,7 @@ function paintAxisLabel(ctx: TelemetryDrawContext, text: string, paint: SelfieRa
   // WHY: Lighter scrim leaves axis labels over brighter pixels — ink shadow prevents washout.
   ctx.shadowColor = 'rgba(0,0,0,0.7)';
   ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 1;
   ctx.fillStyle = TELEMETRY_RADAR_LASER.label;
   ctx.textAlign = paint.align;
@@ -232,6 +234,7 @@ export function paintHolographicRadar(
   // Outer laser glow pass, then ice-white core stroke (path retained after fill).
   ctx.shadowColor = laser.neon;
   ctx.shadowBlur = 18;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.strokeStyle = laser.neon;
   ctx.lineWidth = 3.5;
@@ -263,6 +266,7 @@ export function paintHolographicRadar(
     const glow = vertex.overflowing ? TELEMETRY_RADAR_OVERFLOW_NODE : laser.nodeBound;
     ctx.shadowColor = glow;
     ctx.shadowBlur = 18;
+    ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     ctx.beginPath();
     ctx.arc(tipX, tipY, 7.5, 0, Math.PI * 2);

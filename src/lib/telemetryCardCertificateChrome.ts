@@ -121,6 +121,7 @@ export function paintCertificateFoilTitle(
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(0,0,0,0.85)';
   ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   try {
     ctx.font = font;
@@ -135,6 +136,7 @@ export function paintCertificateFoilTitle(
   }
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.restore();
 }

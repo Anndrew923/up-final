@@ -7,6 +7,7 @@ import {
   GUILLOCHE_MONOGRAM_CENTER,
   GUILLOCHE_UP_POLYLINES,
 } from './guillocheMonogramPaths';
+import { TELEMETRY_CERT_METAL } from './telemetryCardBackground';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
 /** Certificate crest outer ring — reference scale for proportional geometry. */
@@ -91,6 +92,7 @@ export function paintGuillocheSeal(
   ctx.save();
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
   if (backdrop) {
@@ -104,11 +106,18 @@ export function paintGuillocheSeal(
     ctx.fill();
   }
 
+  // Soft cast-metal halo — keeps the crest readable without washing the plate.
+  ctx.shadowColor = 'rgba(212,175,55,0.38)';
+  ctx.shadowBlur = 10 * k;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   ctx.strokeStyle = 'rgba(251,191,36,0.62)';
   ctx.lineWidth = Math.max(1, 2 * k);
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
   ctx.lineWidth = Math.max(0.75, 1.25 * k);
   ctx.beginPath();
   ctx.arc(cx, cy, ringInner, 0, Math.PI * 2);
@@ -150,11 +159,33 @@ export function paintGuillocheSeal(
   ctx.moveTo(hex[0]![0], hex[0]![1]);
   for (let i = 1; i < hex.length; i += 1) ctx.lineTo(hex[i]![0], hex[i]![1]);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(251,191,36,0.06)';
+  const shieldMetal = ctx.createRadialGradient(
+    cx - hexR * 0.28,
+    cy - hexR * 0.32,
+    Math.max(1, hexR * 0.08),
+    cx,
+    cy,
+    hexR
+  );
+  shieldMetal.addColorStop(0, `${TELEMETRY_CERT_METAL.mirror}38`);
+  shieldMetal.addColorStop(0.48, `${TELEMETRY_CERT_METAL.forged}1F`);
+  shieldMetal.addColorStop(1, `${TELEMETRY_CERT_METAL.deep}33`);
+  ctx.fillStyle = shieldMetal;
   ctx.fill();
   ctx.strokeStyle = 'rgba(251,191,36,0.55)';
   ctx.lineWidth = Math.max(1.25, 3 * k);
   ctx.stroke();
+
+  // Concentric lathe rings inside the shield — mechanical crest depth at 3× export.
+  for (let i = 1; i <= 8; i += 1) {
+    const rr = hexR * (i / 9);
+    ctx.beginPath();
+    ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+    ctx.strokeStyle =
+      i % 2 === 0 ? 'rgba(251,191,36,0.14)' : `${TELEMETRY_CERT_METAL.mirror}14`;
+    ctx.lineWidth = Math.max(0.4, 0.55 * k);
+    ctx.stroke();
+  }
 
   const diamond = Math.max(1.6, hexR * 0.085);
   paintApexDiamond(ctx, cx, cy - hexR, diamond);
@@ -164,12 +195,17 @@ export function paintGuillocheSeal(
   ctx.lineWidth = Math.max(1.4, 1.3 * (monogramScale / 2.2));
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
+  ctx.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = 0.5;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0.4;
   for (const path of GUILLOCHE_UP_POLYLINES) {
     strokeMonogramPolyline(ctx, path, cx, cy, monogramScale);
   }
 
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.restore();
 }

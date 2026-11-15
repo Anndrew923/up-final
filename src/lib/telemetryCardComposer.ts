@@ -9,7 +9,10 @@ import type { RadarGeometryPoint } from '../logic/core/radarGeometry';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import {
   tryPaintSelfieBackground,
+  TELEMETRY_CARD_EXPORT_SCALE,
   TELEMETRY_CARD_HEIGHT,
+  TELEMETRY_CARD_PIXEL_HEIGHT,
+  TELEMETRY_CARD_PIXEL_WIDTH,
   TELEMETRY_CARD_WIDTH,
 } from './telemetryCardBackground';
 import {
@@ -42,8 +45,13 @@ export {
   type TelemetryBackgroundSource,
 } from './telemetryCardCover';
 export {
+  TELEMETRY_CARD_EXPORT_SCALE,
   TELEMETRY_CARD_HEIGHT,
+  TELEMETRY_CARD_PIXEL_HEIGHT,
+  TELEMETRY_CARD_PIXEL_WIDTH,
   TELEMETRY_CARD_WIDTH,
+  TELEMETRY_CERT_METAL,
+  TELEMETRY_CERT_NIGHT,
 } from './telemetryCardBackground';
 export {
   TelemetryComposeError,
@@ -198,12 +206,14 @@ export interface TelemetryComposeDeps {
 function clearTextShadow(ctx: TelemetryDrawContext): void {
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 }
 
 function applyHudShadow(ctx: TelemetryDrawContext, shadow: HudShadowPreset): void {
   ctx.shadowColor = shadow.color;
   ctx.shadowBlur = shadow.blur;
+  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = shadow.offsetY;
 }
 
@@ -418,10 +428,15 @@ export async function composeTelemetryCard(
   await ensureTelemetrySerifFontsReady();
 
   const surface = (deps?.createSurface ?? createDomSurface)();
-  surface.width = TELEMETRY_CARD_WIDTH;
-  surface.height = TELEMETRY_CARD_HEIGHT;
+  // WHY: Physical pixels are 3× so Retina/social shares stay sharp; painters stay in 1080×1920.
+  surface.width = TELEMETRY_CARD_PIXEL_WIDTH;
+  surface.height = TELEMETRY_CARD_PIXEL_HEIGHT;
   const ctx = surface.getContext('2d');
   if (!ctx) throw new TelemetryComposeError('no-context');
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.scale(TELEMETRY_CARD_EXPORT_SCALE, TELEMETRY_CARD_EXPORT_SCALE);
 
   const usedSelfie =
     input.mode === 'selfie' ? tryPaintSelfieBackground(ctx, input.background) : false;

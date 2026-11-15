@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { SIX_AXIS_METRICS } from '../../types/scoring';
 import {
   TELEMETRY_CERT_INNER_FRAME_INSET,
+  TELEMETRY_CERT_RIVET_CENTERS,
+  TELEMETRY_CERT_RIVET_RADIUS,
   TELEMETRY_CERT_STAMP_CLEARANCE_PX,
   TELEMETRY_CERT_STAMP_MAX_Y,
 } from '../telemetryCardCertificate';
@@ -15,8 +17,13 @@ import { TELEMETRY_SERIF_FONT_STACK } from '../telemetryCardFonts';
 import {
   TELEMETRY_BRAND_WATERMARK,
   TELEMETRY_CARD_BRAND,
+  TELEMETRY_CARD_EXPORT_SCALE,
   TELEMETRY_CARD_HEIGHT,
+  TELEMETRY_CARD_PIXEL_HEIGHT,
+  TELEMETRY_CARD_PIXEL_WIDTH,
   TELEMETRY_CARD_WIDTH,
+  TELEMETRY_CERT_METAL,
+  TELEMETRY_CERT_NIGHT,
   TELEMETRY_CORNER_RETICLE,
   TELEMETRY_HUD_LAYOUT,
   TELEMETRY_HUD_MUTED_FILL,
@@ -82,7 +89,8 @@ type DrawCall =
       shadowColor: string;
     }
   | { type: 'strokeRect'; x: number; y: number; w: number; h: number }
-  | { type: 'arc'; x: number; y: number; radius: number };
+  | { type: 'arc'; x: number; y: number; radius: number }
+  | { type: 'scale'; x: number; y: number };
 
 function createRecordingSurface(options?: {
   drawImageImpl?: TelemetryDrawContext['drawImage'];
@@ -119,7 +127,10 @@ function createRecordingSurface(options?: {
     globalAlpha: 1,
     shadowColor: 'transparent',
     shadowBlur: 0,
+    shadowOffsetX: 0,
     shadowOffsetY: 0,
+    imageSmoothingEnabled: false,
+    imageSmoothingQuality: 'low',
     save: vi.fn(),
     restore: vi.fn(),
     beginPath: vi.fn(),
@@ -158,6 +169,9 @@ function createRecordingSurface(options?: {
     },
     clip: vi.fn(),
     rect: vi.fn(),
+    scale(x, y) {
+      calls.push({ type: 'scale', x, y });
+    },
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh) {
       if (options?.drawImageImpl) {
         options.drawImageImpl(image, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -332,18 +346,39 @@ describe('carbon certificate footer clearance', () => {
 });
 
 describe('composeTelemetryCard', () => {
-  it('paints the black-gold carbon certificate at 1080×1920', async () => {
+  it('paints the black-gold carbon certificate at 3× 3240×5760', async () => {
     const { surface, calls, blob } = createRecordingSurface();
     const result = await composeTelemetryCard(baseInput({ mode: 'carbon' }), {
       createSurface: () => surface,
     });
 
-    expect(surface.width).toBe(TELEMETRY_CARD_WIDTH);
-    expect(surface.height).toBe(TELEMETRY_CARD_HEIGHT);
+    expect(TELEMETRY_CARD_EXPORT_SCALE).toBe(3);
+    expect(TELEMETRY_CARD_WIDTH).toBe(1080);
+    expect(TELEMETRY_CARD_HEIGHT).toBe(1920);
+    expect(TELEMETRY_CARD_PIXEL_WIDTH).toBe(3240);
+    expect(TELEMETRY_CARD_PIXEL_HEIGHT).toBe(5760);
+    expect(surface.width).toBe(TELEMETRY_CARD_PIXEL_WIDTH);
+    expect(surface.height).toBe(TELEMETRY_CARD_PIXEL_HEIGHT);
+    expect(calls.some((call) => call.type === 'scale' && call.x === 3 && call.y === 3)).toBe(true);
+    const ctx = surface.getContext('2d');
+    expect(ctx?.imageSmoothingEnabled).toBe(true);
+    expect(ctx?.imageSmoothingQuality).toBe('high');
     expect(result).toBe(blob);
     expect(result.type).toBe('image/png');
 
-    expect(calls.some((call) => call.type === 'fillRect' && call.fillStyle === '#07080c')).toBe(
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_NIGHT.top)).toBe(
+      true
+    );
+    expect(
+      calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_NIGHT.bottom)
+    ).toBe(true);
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_METAL.mirror)).toBe(
+      true
+    );
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_METAL.forged)).toBe(
+      true
+    );
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_METAL.deep)).toBe(
       true
     );
     expect(
@@ -355,7 +390,20 @@ describe('composeTelemetryCard', () => {
           call.w === TELEMETRY_CARD_WIDTH - 96
       )
     ).toBe(true);
-    expect(calls.some((call) => call.type === 'arc' && call.radius === 7)).toBe(true);
+    expect(TELEMETRY_CERT_RIVET_RADIUS).toBe(7);
+    expect(TELEMETRY_CERT_RIVET_CENTERS).toHaveLength(4);
+    for (const [rx, ry] of TELEMETRY_CERT_RIVET_CENTERS) {
+      expect(
+        calls.some(
+          (call) =>
+            call.type === 'createRadialGradient' &&
+            call.x1 === rx &&
+            call.y1 === ry &&
+            call.r1 === TELEMETRY_CERT_RIVET_RADIUS
+        )
+      ).toBe(true);
+    }
+    expect(calls.some((call) => call.type === 'arc' && call.radius === 6)).toBe(true);
     expect(calls.some((call) => call.type === 'fillText' && call.text === TELEMETRY_CARD_BRAND)).toBe(
       true
     );
@@ -566,7 +614,7 @@ describe('composeTelemetryCard', () => {
     );
 
     expect(calls.some((call) => call.type === 'drawImage')).toBe(false);
-    expect(calls.some((call) => call.type === 'fillRect' && call.fillStyle === '#07080c')).toBe(
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_NIGHT.top)).toBe(
       true
     );
     expect(
@@ -597,7 +645,7 @@ describe('composeTelemetryCard', () => {
       )
     ).resolves.toBeInstanceOf(Blob);
 
-    expect(calls.some((call) => call.type === 'fillRect' && call.fillStyle === '#07080c')).toBe(
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_NIGHT.top)).toBe(
       true
     );
     expect(
@@ -617,7 +665,7 @@ describe('composeTelemetryCard', () => {
       createSurface: () => surface,
     });
     expect(calls.some((call) => call.type === 'drawImage')).toBe(false);
-    expect(calls.some((call) => call.type === 'fillRect' && call.fillStyle === '#07080c')).toBe(
+    expect(calls.some((call) => call.type === 'addColorStop' && call.color === TELEMETRY_CERT_NIGHT.top)).toBe(
       true
     );
   });

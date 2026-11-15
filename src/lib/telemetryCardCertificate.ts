@@ -1,7 +1,7 @@
 /**
- * Offline carbon plate — raster black-gold physiological certificate (1080×1920).
+ * Offline carbon plate — raster black-gold physiological certificate (1080×1920 logical).
  * WHY: Share Card without a selfie must match the DOM AestheticSpecCard, not the
- * dark telemetry weave + radar HUD used under selfie scrims.
+ * dark telemetry weave + radar HUD used under selfie scrims. Physical export is 3×.
  */
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import {
@@ -13,19 +13,30 @@ import {
   paintCertificateFoilTitle,
   paintCertificateTrackedStamp,
   TELEMETRY_CERT_CREST_CENTER,
-  TELEMETRY_CERT_FOIL,
   TELEMETRY_CERT_STAMP_TRACKING_PX,
   TELEMETRY_CERT_TITLE_Y,
 } from './telemetryCardCertificateChrome';
+import {
+  paintCertificateFrame,
+  paintCertificateLabel,
+  paintCertificateMeterRow,
+  TELEMETRY_CERT_FRAME_INSET,
+  withMicroEdgeShadow,
+  type TelemetryMeterLine,
+} from './telemetryCardCertificateFrame';
 import { TELEMETRY_SANS_FONT_STACK } from './telemetryCardFonts';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
-const FOIL = TELEMETRY_CERT_FOIL;
-const CERT_BASE = '#07080c';
+export type { TelemetryMeterLine } from './telemetryCardCertificateFrame';
+export {
+  TELEMETRY_CERT_FRAME_INSET,
+  TELEMETRY_CERT_RIVET_CENTERS,
+  TELEMETRY_CERT_RIVET_RADIUS,
+} from './telemetryCardCertificateFrame';
+
 const FONT = TELEMETRY_SANS_FONT_STACK;
-const INSET = 48;
-/** Distance from canvas edge to the inner foil stroke (outer INSET + inner offset). */
-export const TELEMETRY_CERT_INNER_FRAME_INSET = INSET + 10;
+/** Distance from canvas edge to the inner foil stroke (outer inset + inner offset). */
+export const TELEMETRY_CERT_INNER_FRAME_INSET = TELEMETRY_CERT_FRAME_INSET + 10;
 /** Stamp baseline must stay this many px above the inner foil bottom edge. */
 export const TELEMETRY_CERT_STAMP_CLEARANCE_PX = 24;
 export const TELEMETRY_CERT_STAMP_MAX_Y =
@@ -36,13 +47,6 @@ const CONTENT_LEFT = 96;
 const CONTENT_RIGHT = TELEMETRY_CARD_WIDTH - 96;
 const CONTENT_WIDTH = CONTENT_RIGHT - CONTENT_LEFT;
 
-export interface TelemetryMeterLine {
-  label: string;
-  value: string;
-  fillPct: number;
-  badge: string | null;
-}
-
 export interface TelemetryCertificatePaintInput {
   brandHeader: string;
   overallScore: number;
@@ -52,34 +56,6 @@ export interface TelemetryCertificatePaintInput {
   verifiedStamp: string;
   specs: readonly { kicker: string; title: string; subtitle?: string }[];
   meters: readonly TelemetryMeterLine[];
-}
-
-function paintLabel(
-  ctx: TelemetryDrawContext,
-  text: string,
-  x: number,
-  y: number,
-  font: string,
-  fill: string,
-  align: CanvasTextAlign,
-  baseline: CanvasTextBaseline,
-  maxWidth?: number
-): void {
-  if (!text) return;
-  ctx.fillStyle = fill;
-  ctx.textAlign = align;
-  ctx.textBaseline = baseline;
-  try {
-    ctx.font = font;
-    ctx.fillText(text, x, y, maxWidth);
-  } catch {
-    try {
-      ctx.font = '28px sans-serif';
-      ctx.fillText(text, x, y, maxWidth);
-    } catch {
-      /* plate still encodes without this run */
-    }
-  }
 }
 
 function wrapLines(
@@ -114,123 +90,6 @@ function wrapLines(
   return lines;
 }
 
-function paintFrame(ctx: TelemetryDrawContext): void {
-  ctx.save();
-  ctx.fillStyle = CERT_BASE;
-  ctx.fillRect(0, 0, TELEMETRY_CARD_WIDTH, TELEMETRY_CARD_HEIGHT);
-
-  ctx.strokeStyle = 'rgba(201,162,39,0.55)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(INSET, INSET, TELEMETRY_CARD_WIDTH - INSET * 2, TELEMETRY_CARD_HEIGHT - INSET * 2);
-  ctx.strokeStyle = 'rgba(161,161,170,0.28)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(
-    INSET + 10,
-    INSET + 10,
-    TELEMETRY_CARD_WIDTH - (INSET + 10) * 2,
-    TELEMETRY_CARD_HEIGHT - (INSET + 10) * 2
-  );
-
-  const rivets: Array<[number, number]> = [
-    [INSET + 18, INSET + 18],
-    [TELEMETRY_CARD_WIDTH - INSET - 18, INSET + 18],
-    [INSET + 18, TELEMETRY_CARD_HEIGHT - INSET - 18],
-    [TELEMETRY_CARD_WIDTH - INSET - 18, TELEMETRY_CARD_HEIGHT - INSET - 18],
-  ];
-  for (const [x, y] of rivets) {
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = FOIL.mid;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x - 1.5, y - 1.5, 2.2, 0, Math.PI * 2);
-    ctx.fillStyle = FOIL.light;
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function paintMeterRow(
-  ctx: TelemetryDrawContext,
-  meter: TelemetryMeterLine,
-  y: number
-): void {
-  const labelX = CONTENT_LEFT;
-  const valueX = CONTENT_LEFT + 210;
-  const trackX = CONTENT_LEFT + 320;
-  const trackW = 420;
-  const badgeX = CONTENT_RIGHT;
-
-  paintLabel(
-    ctx,
-    meter.label,
-    labelX,
-    y,
-    `22px ${FONT}`,
-    'rgba(161,161,170,0.95)',
-    'left',
-    'middle',
-    200
-  );
-  paintLabel(
-    ctx,
-    meter.value,
-    valueX,
-    y,
-    `bold 26px ${FONT}`,
-    meter.badge ? FOIL.light : '#f4f4f5',
-    'left',
-    'middle',
-    100
-  );
-
-  ctx.save();
-  ctx.strokeStyle = 'rgba(201,162,39,0.55)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(trackX, y);
-  ctx.lineTo(trackX + trackW, y);
-  ctx.stroke();
-  for (let i = 0; i <= 20; i += 1) {
-    const tx = trackX + (trackW * i) / 20;
-    ctx.beginPath();
-    ctx.moveTo(tx, y - 5);
-    ctx.lineTo(tx, y + 5);
-    ctx.strokeStyle = 'rgba(201,162,39,0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-  const fill = Math.min(100, Math.max(0, meter.fillPct));
-  const needleX = trackX + (trackW * fill) / 100;
-  ctx.beginPath();
-  ctx.arc(needleX, y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = FOIL.light;
-  ctx.fill();
-  ctx.restore();
-
-  if (meter.badge) {
-    const bw = 78;
-    const bh = 28;
-    ctx.save();
-    ctx.strokeStyle = 'rgba(201,162,39,0.7)';
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(badgeX - bw, y - bh / 2, bw, bh);
-    ctx.fillStyle = 'rgba(243,230,200,0.12)';
-    ctx.fillRect(badgeX - bw, y - bh / 2, bw, bh);
-    ctx.restore();
-    paintLabel(
-      ctx,
-      meter.badge,
-      badgeX - bw / 2,
-      y,
-      `bold 16px ${FONT}`,
-      FOIL.light,
-      'center',
-      'middle'
-    );
-  }
-}
-
 function measureWidth(
   ctx: TelemetryDrawContext,
   text: string,
@@ -247,12 +106,14 @@ function measureWidth(
 
 function paintRule(ctx: TelemetryDrawContext, y: number): void {
   ctx.save();
-  ctx.strokeStyle = 'rgba(201,162,39,0.28)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(CONTENT_LEFT, y);
-  ctx.lineTo(CONTENT_RIGHT, y);
-  ctx.stroke();
+  withMicroEdgeShadow(ctx, () => {
+    ctx.strokeStyle = 'rgba(201,162,39,0.28)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(CONTENT_LEFT, y);
+    ctx.lineTo(CONTENT_RIGHT, y);
+    ctx.stroke();
+  });
   ctx.restore();
 }
 
@@ -266,7 +127,7 @@ export function paintCertificatePlate(
   ctx: TelemetryDrawContext,
   input: TelemetryCertificatePaintInput
 ): void {
-  paintFrame(ctx);
+  paintCertificateFrame(ctx);
 
   const brand = input.brandHeader.trim();
   const brandFont = `26px ${FONT}`;
@@ -280,7 +141,7 @@ export function paintCertificatePlate(
   const brandMax = Math.max(160, CONTENT_WIDTH - scoreW - yearW - 48);
   const brandWidth = Math.min(measureWidth(ctx, brand, brandFont, 16), brandMax);
 
-  paintLabel(
+  paintCertificateLabel(
     ctx,
     brand,
     CONTENT_LEFT,
@@ -291,7 +152,7 @@ export function paintCertificatePlate(
     'middle',
     brandMax
   );
-  paintLabel(
+  paintCertificateLabel(
     ctx,
     scoreText,
     CONTENT_LEFT + brandWidth + 20,
@@ -301,7 +162,7 @@ export function paintCertificatePlate(
     'left',
     'middle'
   );
-  paintLabel(
+  paintCertificateLabel(
     ctx,
     yearText,
     CONTENT_RIGHT,
@@ -323,7 +184,7 @@ export function paintCertificatePlate(
 
   let specY = 720;
   for (const spec of input.specs.slice(0, 3)) {
-    paintLabel(
+    paintCertificateLabel(
       ctx,
       spec.kicker,
       CONTENT_LEFT,
@@ -334,7 +195,7 @@ export function paintCertificatePlate(
       'middle',
       220
     );
-    paintLabel(
+    paintCertificateLabel(
       ctx,
       spec.title,
       CONTENT_LEFT + 250,
@@ -349,7 +210,7 @@ export function paintCertificatePlate(
       const subFont = `22px ${FONT}`;
       const lines = wrapLines(ctx, spec.subtitle, subFont, CONTENT_WIDTH - 250, 2);
       lines.forEach((line, index) => {
-        paintLabel(
+        paintCertificateLabel(
           ctx,
           line,
           CONTENT_LEFT + 250,
@@ -384,7 +245,7 @@ export function paintCertificatePlate(
   paintRule(ctx, meterStartY - 48);
 
   input.meters.slice(0, 3).forEach((meter, index) => {
-    paintMeterRow(ctx, meter, meterStartY + index * meterGap);
+    paintCertificateMeterRow(ctx, meter, meterStartY + index * meterGap);
   });
 
   const footerRuleY = Math.min(meterStartY + metersBlock + 36, footerRuleMaxY);
@@ -392,7 +253,7 @@ export function paintCertificatePlate(
   const stampY = Math.min(battleCodeY + BATTLE_CODE_ABOVE_STAMP_PX, stampMaxY);
   paintRule(ctx, footerRuleY);
 
-  paintLabel(
+  paintCertificateLabel(
     ctx,
     input.battleCode,
     TELEMETRY_CARD_WIDTH / 2,
