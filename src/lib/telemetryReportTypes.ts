@@ -23,6 +23,11 @@ export interface TelemetrySingleLeafCardInput {
   leafTitleZh: string;
   /** Language-stable formal English secondary title (e.g. FAT-FREE MASS INDEX). */
   leafTitleEn: string;
+  /**
+   * UI locale for selfie single-line hero title (zh→leafTitleZh, en→leafTitleEn).
+   * Carbon bilingual paint ignores this and always draws both lines.
+   */
+  uiLocale?: 'zh' | 'en';
   rawReading: string;
   heroScore: number;
   /** Pre-formatted undiluted hero score (e.g. `80.31`). */

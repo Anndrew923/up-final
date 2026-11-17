@@ -216,6 +216,7 @@ export function useAestheticTelemetryShare(
           mode: reportMode === 'selfie' && background ? 'selfie' : 'carbon',
           aspectRatio: aspect,
           background,
+          uiLocale: i18n.language.toLowerCase().startsWith('en') ? 'en' : 'zh',
         });
       }
       const full = buildAestheticTelemetryExportInput(t, model, scores, {
@@ -225,7 +226,7 @@ export function useAestheticTelemetryShare(
       });
       return { ...full, reportType: 'full' };
     },
-    [leafResult, model, scores, selection.reportType, t]
+    [i18n.language, leafResult, model, scores, selection.reportType, t]
   );
 
   const composeSelfiePreview = useCallback(

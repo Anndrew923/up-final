@@ -38,6 +38,7 @@ describe('buildAestheticSingleLeafExportInput', () => {
     expect(input.reportType).toBe('single-leaf');
     expect(input.leafTitleZh).toBe('槓鈴臥推');
     expect(input.leafTitleEn).toBe('BARBELL BENCH PRESS');
+    expect(input.uiLocale).toBe('zh');
     expect(input.rawReading).toBe('110 KG × 1');
     expect(input.heroScoreText).toBe('80.31');
     expect(input.rawMetricLabel).toBe('實測數據');
@@ -64,5 +65,15 @@ describe('buildAestheticSingleLeafExportInput', () => {
     );
     expect(input.isOverflow).toBe(true);
     expect(input.overflowBadge).toBe('超限');
+  });
+
+  it('honors uiLocale override for selfie single-line English title', () => {
+    const input = buildAestheticSingleLeafExportInput(fakeT as unknown as TFunction, leafOk, {
+      mode: 'selfie',
+      aspectRatio: '9:16',
+      uiLocale: 'en',
+    });
+    expect(input.uiLocale).toBe('en');
+    expect(input.leafTitleEn).toBe('BARBELL BENCH PRESS');
   });
 });

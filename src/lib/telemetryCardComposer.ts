@@ -104,8 +104,8 @@ export const TELEMETRY_CARD_BRAND = 'ULTIMATE PHYSIQUE // DOMINANCE';
 
 /**
  * Right-column HUD dock (9:16) — brand → score → champagne title → specs.
- * WHY: Vertical rhythm is intentionally open (1220–1694) so the dock breathes into
- * unused lower plate space without colliding with corner reticles near ~1884.
+ * WHY: Open rhythm (1236–1710) plus optical +16px vs radar keeps columns visually
+ * level without colliding corner reticles near ~1884.
  */
 export const TELEMETRY_HUD_LAYOUT = resolveSelfieLayout('9:16').hud;
 
@@ -130,20 +130,24 @@ export const TELEMETRY_HUD_SPEC_RULE = {
 
 /**
  * Corridor divider between radar labels and the right HUD — paints before clip.
- * WHY: y0/y1 derive from HUD anchors so a layout tweak cannot leave a floating mid-line.
+ * WHY: x sits at the midpoint of label-wall→textX (575→630) so the hairline never
+ * bisects EN right-spoke glyphs; y0/y1 still track HUD anchors.
  */
 export const TELEMETRY_HUD_COLUMN_DIVIDER = {
-  x: 556,
+  x: 603,
   y0: TELEMETRY_HUD_LAYOUT.brandY,
   y1: TELEMETRY_HUD_RIGHT_BOTTOM_Y,
   stroke: 'rgba(165, 243, 252, 0.22)',
 } as const;
 
-/** Radar cy vs right-column vertical midpoint — center symmetry contract. */
+/**
+ * Right-column vertical midpoint — reference only for optical-offset assertions
+ * (radar sits ~34–40px above mid after −24/+16 leveling; not a hard lock).
+ */
 export const TELEMETRY_HUD_COLUMN_MID_Y =
   (TELEMETRY_HUD_LAYOUT.brandY + TELEMETRY_HUD_RIGHT_BOTTOM_Y) / 2;
 
-/** Geometry contract: hard label wall (≤530) vs right-column textX. */
+/** Geometry contract: hard label wall (575) vs right-column textX (630) → 55px. */
 export const TELEMETRY_RADAR_HUD_CLEARANCE_PX =
   TELEMETRY_HUD_LAYOUT.textX - TELEMETRY_RADAR_LABEL_MAX_RIGHT_X;
 

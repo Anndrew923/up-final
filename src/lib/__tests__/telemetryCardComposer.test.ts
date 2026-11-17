@@ -294,18 +294,19 @@ describe('selfie HUD geometry isolation', () => {
       yLabel: layout.cy,
     });
 
-    expect(layout.cx).toBe(248);
-    expect(layout.cy).toBe(1460);
-    expect(layout.outerRadius).toBe(140);
-    expect(layout.labelRadius).toBe(180);
-    expect(TELEMETRY_RADAR_TACTICAL_RING_RADIUS).toBe(152);
+    expect(layout.cx).toBe(290);
+    expect(layout.cy).toBe(1436);
+    expect(layout.outerRadius).toBe(164);
+    expect(layout.labelRadius).toBe(208);
+    expect(TELEMETRY_RADAR_TACTICAL_RING_RADIUS).toBe(176);
     expect(TELEMETRY_RADAR_TACTICAL_RING_RADIUS).toBeLessThan(layout.labelRadius);
     expect(TELEMETRY_RADAR_OVERFLOW_NODE).toBe('#FDE047');
-    expect(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X).toBe(530);
-    expect(hud.textX).toBe(585);
-    expect(hud.clip.x).toBe(585);
-    expect(hud.clip.w).toBe(435);
-    expect(hud.textMaxWidth).toBe(435);
+    expect(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X).toBe(575);
+    expect(hud.textX).toBe(630);
+    expect(hud.clip.x).toBe(630);
+    expect(hud.clip.w).toBe(402);
+    expect(hud.textMaxWidth).toBe(402);
+    expect(hud.clip.x + hud.clip.w).toBe(1032);
     expect(TELEMETRY_RADAR_HUD_CLEARANCE_PX).toBe(55);
     expect(TELEMETRY_RADAR_HUD_CLEARANCE_PX).toBeGreaterThanOrEqual(55);
 
@@ -313,6 +314,8 @@ describe('selfie HUD geometry isolation', () => {
     expect(leftLabelPaint.align).toBe('right');
     expect(rightLabelPaint.align).toBe('left');
     expect(rightLabelPaint.x).toBe(rightLabelStart);
+    expect(rightLabelStart).toBe(470);
+    expect(rightLabelPaint.maxWidth).toBe(105);
     expect(rightLabelPaint.maxWidth).toBe(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X - rightLabelStart);
     expect(rightLabelPaint.x + (rightLabelPaint.maxWidth ?? 0)).toBeLessThanOrEqual(
       TELEMETRY_RADAR_LABEL_MAX_RIGHT_X
@@ -320,15 +323,21 @@ describe('selfie HUD geometry isolation', () => {
     expect(TELEMETRY_HUD_LAYOUT.textX - TELEMETRY_RADAR_LABEL_MAX_RIGHT_X).toBeGreaterThanOrEqual(
       55
     );
+    // Left EN spoke outer edge — orbit anchor must clear the plate / reticle gutter.
+    expect(layout.cx - layout.labelRadius).toBeGreaterThanOrEqual(48);
+    expect(leftLabelPaint.x).toBeGreaterThanOrEqual(48);
+    // Long EN / ZH right labels stay left of the HUD column (no overlap).
+    expect(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X).toBeLessThan(hud.textX);
+    expect(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X).toBeLessThan(hud.clip.x);
 
-    expect(hud.brandY).toBe(1220);
-    expect(hud.scoreY).toBe(1315);
-    expect(hud.titleY).toBe(1395);
-    expect(hud.specStartY).toBe(1488);
+    expect(hud.brandY).toBe(1236);
+    expect(hud.scoreY).toBe(1331);
+    expect(hud.titleY).toBe(1411);
+    expect(hud.specStartY).toBe(1504);
     expect(hud.specRowGap).toBe(88);
     expect(hud.specTitleDy).toBe(30);
-    expect(hud.clip).toEqual({ x: 585, y: 1040, w: 435, h: 800 });
-    expect(TELEMETRY_HUD_RIGHT_BOTTOM_Y).toBe(1694);
+    expect(hud.clip).toEqual({ x: 630, y: 1056, w: 402, h: 800 });
+    expect(TELEMETRY_HUD_RIGHT_BOTTOM_Y).toBe(1710);
     expect(TELEMETRY_HUD_RIGHT_BOTTOM_Y).toBe(
       hud.specStartY + 2 * hud.specRowGap + hud.specTitleDy
     );
@@ -340,8 +349,14 @@ describe('selfie HUD geometry isolation', () => {
     expect(TELEMETRY_HUD_SPEC_RULE.y).toBeGreaterThan(hud.titleY);
     expect(TELEMETRY_HUD_SPEC_RULE.y).toBeLessThan(hud.specStartY);
     expect(TELEMETRY_HUD_COLUMN_MID_Y).toBe((hud.brandY + TELEMETRY_HUD_RIGHT_BOTTOM_Y) / 2);
-    expect(Math.abs(layout.cy - TELEMETRY_HUD_COLUMN_MID_Y)).toBeLessThanOrEqual(5);
-    expect(TELEMETRY_HUD_COLUMN_DIVIDER.x).toBe(556);
+    // WHY: Intentional optical offset (radar −24 / HUD +16) — not mathematical mid-lock.
+    const opticalDelta = Math.abs(layout.cy - TELEMETRY_HUD_COLUMN_MID_Y);
+    expect(opticalDelta).toBeGreaterThanOrEqual(30);
+    expect(opticalDelta).toBeLessThanOrEqual(45);
+    expect(layout.cy + layout.labelRadius).toBeLessThan(1884);
+    expect(TELEMETRY_HUD_COLUMN_DIVIDER.x).toBe(603);
+    expect(TELEMETRY_HUD_COLUMN_DIVIDER.x).toBeGreaterThan(TELEMETRY_RADAR_LABEL_MAX_RIGHT_X);
+    expect(TELEMETRY_HUD_COLUMN_DIVIDER.x).toBeLessThan(hud.textX);
     expect(TELEMETRY_HUD_COLUMN_DIVIDER.y0).toBe(hud.brandY);
     expect(TELEMETRY_HUD_COLUMN_DIVIDER.y1).toBe(TELEMETRY_HUD_RIGHT_BOTTOM_Y);
     expect(TELEMETRY_HUD_LAYOUT).not.toHaveProperty('battleCodeY');
@@ -641,8 +656,8 @@ describe('composeTelemetryCard', () => {
     expect(TELEMETRY_BRAND_WATERMARK.outerRadius).toBe(54);
     expect(TELEMETRY_BRAND_WATERMARK.yearDy).toBe(70);
     expect(TELEMETRY_CORNER_RETICLE.arm).toBe(36);
-    expect(TELEMETRY_RADAR_LAYOUT.cx).toBe(248);
-    expect(TELEMETRY_HUD_LAYOUT.textX).toBe(585);
+    expect(TELEMETRY_RADAR_LAYOUT.cx).toBe(290);
+    expect(TELEMETRY_HUD_LAYOUT.textX).toBe(630);
   });
 
   it('falls back to certificate when selfie background is invalid', async () => {
@@ -780,15 +795,34 @@ describe('composeTelemetryCard', () => {
   it('exports 4:5 selfie with feed-wall hard text shadow and dock inside 1350', async () => {
     const layout = resolveSelfieLayout('4:5');
     expect(layout.useFeedWallHardShadow).toBe(true);
-    expect(layout.hud.brandY).toBe(843);
+    expect(layout.radar.cx).toBe(290);
+    expect(layout.radar.outerRadius).toBe(164);
+    expect(layout.radar.labelRadius).toBe(208);
+    expect(layout.hud.textX).toBe(630);
+    expect(layout.hud.clip.x).toBe(630);
+    expect(layout.hud.clip.w).toBe(402);
+    expect(layout.hud.textMaxWidth).toBe(402);
+    expect(layout.radar.cy).toBe(1023);
+    expect(layout.hud.brandY).toBe(859);
+    expect(layout.hud.scoreY).toBe(944);
+    expect(layout.hud.titleY).toBe(1019);
+    expect(layout.hud.specStartY).toBe(1104);
+    expect(layout.hud.clip.y).toBe(779);
     const rightBottom =
       layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy;
+    expect(rightBottom).toBe(1266);
     const columnMid = (layout.hud.brandY + rightBottom) / 2;
-    expect(Math.abs(layout.radar.cy - columnMid)).toBeLessThanOrEqual(5);
+    const opticalDelta = Math.abs(layout.radar.cy - columnMid);
+    expect(opticalDelta).toBeGreaterThanOrEqual(30);
+    expect(opticalDelta).toBeLessThanOrEqual(45);
+    expect(layout.radar.cx - layout.radar.labelRadius).toBeGreaterThanOrEqual(48);
+    expect(layout.hud.brandY).toBeGreaterThan(675);
+    expect(layout.radar.cy - layout.radar.labelRadius).toBeGreaterThan(675);
     expect(rightBottom).toBeLessThan(layout.plateHeight - layout.reticle.inset - 24);
     expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThan(
       layout.plateHeight - layout.reticle.inset - 24
     );
+    expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThanOrEqual(1275);
     expect(TELEMETRY_FEED_WALL_HARD_SHADOW).toMatchObject({
       color: 'rgba(0, 0, 0, 0.92)',
       blur: 2,

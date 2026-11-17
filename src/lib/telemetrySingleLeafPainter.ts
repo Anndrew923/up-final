@@ -34,7 +34,12 @@ import {
   paintBilingualTitle,
   paintDualHeroSplit,
   paintSingleLeafHudLabel,
+  paintTierCapsuleCentered,
   resolveDualHeroGeom,
+  resolveSelfieDualHeroGeom,
+  resolveSelfieHudVerticalRhythm,
+  resolveSelfieTierPillMaxWidth,
+  SELFIE_DUAL_HERO_DIVIDER_X,
 } from './telemetrySingleLeafDualHero';
 import {
   SINGLE_LEAF_VERDICT_SLOT_HEIGHT,
@@ -275,38 +280,30 @@ export function paintSingleLeafSelfieHud(
   const contentLeft = 72;
   const contentRight = layout.plateWidth - 72;
   const contentWidth = contentRight - contentLeft;
-  const bandTop = h * SELFIE_CONTENT_TOP_RATIO;
-  const bandBottom = h * SELFIE_CONTENT_BOTTOM_RATIO;
-  const band = bandBottom - bandTop;
+  // WHY: Shared rhythm SSOT keeps stamp gap + 4:5 midline contracts testable without canvas.
+  const rhythm = resolveSelfieHudVerticalRhythm(
+    h,
+    input.aspectRatio,
+    SELFIE_CONTENT_TOP_RATIO,
+    SELFIE_CONTENT_BOTTOM_RATIO
+  );
 
-  const titleY = bandTop + band * 0.06;
-  paintBilingualTitle(ctx, input, cx, titleY, contentWidth, {
+  paintBilingualTitle(ctx, input, cx, rhythm.titleY, contentWidth, {
     hud: true,
     hardShadow: hard,
   });
 
-  const dualTop = Math.max(
-    titleY + BILINGUAL_TITLE_BLOCK_PX + 12,
-    bandTop + band * 0.28
-  );
-  const dualBottom = bandTop + band * 0.68;
-  const geom = resolveDualHeroGeom(contentLeft, contentRight, dualTop, dualBottom);
+  const geom = resolveSelfieDualHeroGeom(rhythm.dualTop, rhythm.dualBottom);
   paintDualHeroSplit(ctx, input, geom, { hud: true, hardShadow: hard });
 
-  const verdictTop = Math.max(dualBottom + 18, bandTop + band * 0.7);
-  const verdictBottom = verdictTop + SINGLE_LEAF_VERDICT_SLOT_HEIGHT;
-  const stampY = Math.min(Math.max(verdictBottom + 22, bandTop + band * 0.92), bandBottom);
-
-  paintSingleLeafHudLabel(
+  const capsuleText = input.isOverflow ? input.overflowBadge : input.tierCapsule.trim();
+  paintTierCapsuleCentered(
     ctx,
-    input.verdictPlaceholder,
-    cx,
-    verdictTop + SINGLE_LEAF_VERDICT_SLOT_HEIGHT / 2,
-    `20px ${SANS}`,
-    'rgba(244,244,245,0.78)',
-    'center',
-    'middle',
-    { maxWidth: contentWidth, hardShadow: hard }
+    capsuleText,
+    SELFIE_DUAL_HERO_DIVIDER_X,
+    rhythm.capsuleY,
+    resolveSelfieTierPillMaxWidth(contentWidth),
+    { gold: input.isOverflow, hardShadow: hard, hud: true }
   );
 
   const verified =
@@ -315,7 +312,7 @@ export function paintSingleLeafSelfieHud(
     ctx,
     verified,
     cx,
-    stampY,
+    rhythm.stampY,
     `18px ${SANS}`,
     'rgba(244,244,245,0.82)',
     'center',

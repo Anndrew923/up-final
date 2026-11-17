@@ -135,25 +135,25 @@ const CARBON_4_5: TelemetryCarbonLayout = {
 };
 
 /**
- * Story 9:16 selfie dock — open vertical rhythm.
- * WHY: Full brand→score→title→specs breathing room keeps the third spec row
- * inside an h:800 clip; 4:5 alone carries the lowered golden-third layout.
+ * Story 9:16 selfie dock — open vertical rhythm with optical vertical leveling.
+ * WHY: Radar −24px / HUD +16px offsets the top-heavy score glyph so both columns
+ * read level; third spec stays inside the h:800 clip above reticles.
  */
 const SELFIE_9_16: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 122, outerRadius: 54, yearDy: 70 },
   reticle: { inset: 36, arm: 36 },
-  // WHY: cy locks to HUD column midpoint (brand ↔ third-spec bottom) within ≤5px.
-  radar: { cx: 248, cy: 1460, outerRadius: 140, labelRadius: 180 },
+  // WHY: Optical vertical compensation (radar −24 / HUD +16); cx/radius keep ~60% left weight.
+  radar: { cx: 290, cy: 1436, outerRadius: 164, labelRadius: 208 },
   hud: {
-    clip: { x: 585, y: 1040, w: 435, h: 800 },
-    textX: 585,
-    brandY: 1220,
-    scoreY: 1315,
-    titleY: 1395,
-    specStartY: 1488,
+    clip: { x: 630, y: 1056, w: 402, h: 800 },
+    textX: 630,
+    brandY: 1236,
+    scoreY: 1331,
+    titleY: 1411,
+    specStartY: 1504,
     specRowGap: 88,
     specTitleDy: 30,
-    textMaxWidth: 435,
+    textMaxWidth: 402,
   },
   useFeedWallHardShadow: false,
   plateHeight: TELEMETRY_CARD_HEIGHT,
@@ -161,24 +161,24 @@ const SELFIE_9_16: TelemetrySelfieLayout = {
 };
 
 /**
- * Feed 4:5 selfie dock — Δ+243 (~18%) frees upper torso while keeping
- * cy + labelRadius under plateHeight - reticle.inset - 24.
+ * Feed 4:5 selfie dock — same optical vertical leveling as 9:16 (−24 / +16),
+ * with cy + labelRadius kept under plateHeight - reticle.inset - 24.
  */
 const SELFIE_4_5: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 88, outerRadius: 42, yearDy: 54 },
   reticle: { inset: 28, arm: 30 },
-  // WHY: cy = midpoint(brandY, third-spec bottom) so dual-column symmetry holds on 4:5 too.
-  radar: { cx: 248, cy: 1047, outerRadius: 108, labelRadius: 140 },
+  // WHY: Optical vertical compensation (radar −24 / HUD +16); horizontal weight matches 9:16.
+  radar: { cx: 290, cy: 1023, outerRadius: 164, labelRadius: 208 },
   hud: {
-    clip: { x: 585, y: 763, w: 435, h: 720 },
-    textX: 585,
-    brandY: 843,
-    scoreY: 928,
-    titleY: 1003,
-    specStartY: 1088,
+    clip: { x: 630, y: 779, w: 402, h: 720 },
+    textX: 630,
+    brandY: 859,
+    scoreY: 944,
+    titleY: 1019,
+    specStartY: 1104,
     specRowGap: 68,
     specTitleDy: 26,
-    textMaxWidth: 435,
+    textMaxWidth: 402,
   },
   useFeedWallHardShadow: true,
   plateHeight: 1350,

@@ -15,6 +15,14 @@ import type { TelemetrySingleLeafCardInput } from '../lib/telemetryReportTypes';
 import type { TelemetryBackgroundSource } from '../lib/telemetryCardCover';
 import type { TelemetryCardAspectRatio } from '../lib/telemetryCardTypes';
 
+function resolveUiLocale(
+  language: string | undefined,
+  override?: 'zh' | 'en'
+): 'zh' | 'en' {
+  if (override) return override;
+  return (language ?? '').toLowerCase().startsWith('en') ? 'en' : 'zh';
+}
+
 export function buildAestheticSingleLeafExportInput(
   t: TFunction,
   leafResult: Extract<SingleLeafReportResult, { status: 'ok' }>,
@@ -23,12 +31,18 @@ export function buildAestheticSingleLeafExportInput(
     aspectRatio: TelemetryCardAspectRatio;
     background?: TelemetryBackgroundSource | null;
     brandHeader?: string;
+    /** Optional override; defaults from `t.language` / zh. */
+    uiLocale?: 'zh' | 'en';
   }
 ): TelemetrySingleLeafCardInput {
   const year = new Date().getFullYear();
   const scoreText = formatOverallResonanceScore(leafResult.heroScore);
   const metric = scoreMeaningMetricForSingleLeaf(leafResult.leaf);
   const { populationClass } = resolveHumanScaleBandMeta(t, metric, leafResult.heroScore);
+  const tLang =
+    typeof (t as { language?: string }).language === 'string'
+      ? (t as { language?: string }).language
+      : undefined;
 
   return {
     reportType: 'single-leaf',
@@ -37,6 +51,7 @@ export function buildAestheticSingleLeafExportInput(
     leaf: leafResult.leaf,
     leafTitleZh: singleLeafZhTitle(leafResult.leaf),
     leafTitleEn: singleLeafEnTitle(leafResult.leaf),
+    uiLocale: resolveUiLocale(tLang, extras.uiLocale),
     rawReading: leafResult.rawReading,
     heroScore: leafResult.heroScore,
     heroScoreText: scoreText,

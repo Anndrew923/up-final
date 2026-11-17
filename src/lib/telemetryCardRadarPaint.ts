@@ -30,9 +30,11 @@ export const TELEMETRY_RADAR_TACTICAL_RING_RADIUS =
   TELEMETRY_RADAR_LAYOUT.outerRadius + 12;
 
 /**
- * Absolute right edge for any radar axis label — keeps ≥55px corridor before textX=585.
+ * Absolute right edge for any radar axis label — keeps ≥55px corridor before textX=630.
+ * WHY: Wall at 575 leaves ~105px for EN right spokes (ENDURANCE/EXPLOSIVE) after the
+ * enlarged hex start (cx+outerRadius+gap = 470) without colliding the HUD column.
  */
-export const TELEMETRY_RADAR_LABEL_MAX_RIGHT_X = 530;
+export const TELEMETRY_RADAR_LABEL_MAX_RIGHT_X = 575;
 
 /** Right-spoke labels start just outside the hex ring, left-aligned into the corridor. */
 export const TELEMETRY_RADAR_RIGHT_LABEL_GAP = 16;
