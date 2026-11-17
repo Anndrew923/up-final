@@ -33,13 +33,17 @@ import type { PhysicalProfile } from '../types/userProfile';
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../types/powerInputs';
 import { useScoreStore } from '../stores/scoreStore';
 import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
+import type { ExplosiveBranchId } from '../logic/aesthetic/pickHighestExplosiveLeaf';
 
 export type { ExplosiveCapNoticeInterpolation };
 export type { ExplosivePowerNormAnchors };
+export type { ExplosiveBranchId };
 
 export type ExplosiveAssessmentTab = 'jumps' | 'sprint';
 
 export type ExplosivePageErrorKey = ExplosiveAssessmentComputeError | null;
+
+export type ExplosiveBranchResult = { raw: number };
 
 export interface UseExplosiveAssessmentPageResult {
   profile: PhysicalProfile | null;
@@ -61,13 +65,26 @@ export interface UseExplosiveAssessmentPageResult {
     standingLongJumpInput: string;
     sprintInput: string;
   };
+  /**
+   * Always-populated metric strings for per-branch draft flush (not tab-blanked).
+   * WHY: Hidden tab panels stay mounted; leaf CTAs must flush the branch the user scored.
+   */
+  branchMetricInputs: {
+    verticalJumpInput: string;
+    standingLongJumpInput: string;
+    sprintInput: string;
+  };
   previewScore: number | null;
   previewBreakdown: ExplosivePowerBreakdown | null;
+  /** Per-branch undiluted scores from 「計算此項」 — independent of radar composite. */
+  perBranchResult: Partial<Record<ExplosiveBranchId, ExplosiveBranchResult>>;
   capNoticeInterpolation: ExplosiveCapNoticeInterpolation | null;
   powerNormAnchors: ExplosivePowerNormAnchors | null;
   submitDone: boolean;
   errorKey: ExplosivePageErrorKey;
   clearError: () => void;
+  /** Score one branch only — no radar write. */
+  calculateBranch: (branch: ExplosiveBranchId) => boolean;
   calculate: () => void;
   persistToDashboard: () => boolean;
   /**
@@ -148,18 +165,12 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
   const verticalJumpInput = form.verticalJump;
   const standingLongJumpInput = form.standingLongJump;
   const sprintInput = form.sprint;
-  const setVerticalJumpInput = useCallback((v: string) => {
-    setForm((f) => ({ ...f, verticalJump: v }));
-  }, []);
-  const setStandingLongJumpInput = useCallback((v: string) => {
-    setForm((f) => ({ ...f, standingLongJump: v }));
-  }, []);
-  const setSprintInput = useCallback((v: string) => {
-    setForm((f) => ({ ...f, sprint: v }));
-  }, []);
 
   const [previewScore, setPreviewScore] = useState<number | null>(null);
   const [previewBreakdown, setPreviewBreakdown] = useState<ExplosivePowerBreakdown | null>(null);
+  const [perBranchResult, setPerBranchResult] = useState<
+    Partial<Record<ExplosiveBranchId, ExplosiveBranchResult>>
+  >({});
   const [capNoticeInterpolation, setCapNoticeInterpolation] =
     useState<ExplosiveCapNoticeInterpolation | null>(null);
   const [submitDone, setSubmitDone] = useState(false);
@@ -168,28 +179,90 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
 
   const profileReady = isPhysicalProfileComplete(profile);
 
-  const metricScoringInputs = useMemo(() => {
-    const vj = toMetricLengthField(verticalJumpInput, unitSystem);
-    const slj = toMetricLengthField(standingLongJumpInput, unitSystem);
-    if (activeTab === 'jumps') {
-      return { verticalJumpInput: vj, standingLongJumpInput: slj, sprintInput: '' };
-    }
-    return { verticalJumpInput: '', standingLongJumpInput: '', sprintInput };
-  }, [activeTab, sprintInput, standingLongJumpInput, unitSystem, verticalJumpInput]);
-
-  const powerNormAnchors = useMemo((): ExplosivePowerNormAnchors | null => {
-    if (!profileReady || !profile) return null;
-    return getPowerStandardsForProfile(profile);
-  }, [profile, profileReady]);
-
-  const setActiveTab = useCallback((tab: ExplosiveAssessmentTab) => {
-    setActiveTabState(tab);
+  const clearCompositePreview = useCallback(() => {
     setPreviewScore(null);
     setPreviewBreakdown(null);
     setCapNoticeInterpolation(null);
     setSubmitDone(false);
     setErrorKey(null);
   }, []);
+
+  const clearBranchResult = useCallback((branch: ExplosiveBranchId) => {
+    setPerBranchResult((r) => {
+      if (!r[branch]) return r;
+      const next = { ...r };
+      delete next[branch];
+      return next;
+    });
+  }, []);
+
+  const clearAllBranchResults = useCallback(() => {
+    setPerBranchResult({});
+  }, []);
+
+  // WHY: Editing one card must not wipe sibling branch scores (StrengthLiftCard parity).
+  const setVerticalJumpInput = useCallback(
+    (v: string) => {
+      setForm((f) => ({ ...f, verticalJump: v }));
+      clearBranchResult('verticalJump');
+      clearCompositePreview();
+    },
+    [clearBranchResult, clearCompositePreview]
+  );
+  const setStandingLongJumpInput = useCallback(
+    (v: string) => {
+      setForm((f) => ({ ...f, standingLongJump: v }));
+      clearBranchResult('standingLongJump');
+      clearCompositePreview();
+    },
+    [clearBranchResult, clearCompositePreview]
+  );
+  const setSprintInput = useCallback(
+    (v: string) => {
+      setForm((f) => ({ ...f, sprint: v }));
+      clearBranchResult('sprint');
+      clearCompositePreview();
+    },
+    [clearBranchResult, clearCompositePreview]
+  );
+
+  const branchMetricInputs = useMemo(
+    () => ({
+      verticalJumpInput: toMetricLengthField(verticalJumpInput, unitSystem),
+      standingLongJumpInput: toMetricLengthField(standingLongJumpInput, unitSystem),
+      sprintInput,
+    }),
+    [sprintInput, standingLongJumpInput, unitSystem, verticalJumpInput]
+  );
+
+  const metricScoringInputs = useMemo(() => {
+    if (activeTab === 'jumps') {
+      return {
+        verticalJumpInput: branchMetricInputs.verticalJumpInput,
+        standingLongJumpInput: branchMetricInputs.standingLongJumpInput,
+        sprintInput: '',
+      };
+    }
+    return {
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: branchMetricInputs.sprintInput,
+    };
+  }, [activeTab, branchMetricInputs]);
+
+  const powerNormAnchors = useMemo((): ExplosivePowerNormAnchors | null => {
+    if (!profileReady || !profile) return null;
+    return getPowerStandardsForProfile(profile);
+  }, [profile, profileReady]);
+
+  const setActiveTab = useCallback(
+    (tab: ExplosiveAssessmentTab) => {
+      setActiveTabState(tab);
+      clearCompositePreview();
+      clearAllBranchResults();
+    },
+    [clearAllBranchResults, clearCompositePreview]
+  );
 
   useEffect(() => {
     const prev = prevUnitSystemRef.current;
@@ -200,17 +273,18 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       verticalJump: reprojectDisplayInput(f.verticalJump, 'length', prev, unitSystem),
       standingLongJump: reprojectDisplayInput(f.standingLongJump, 'length', prev, unitSystem),
     }));
-  }, [unitSystem]);
+    queueMicrotask(() => {
+      clearCompositePreview();
+      clearAllBranchResults();
+    });
+  }, [unitSystem, clearAllBranchResults, clearCompositePreview]);
 
   useEffect(() => {
     queueMicrotask(() => {
-      setPreviewScore(null);
-      setPreviewBreakdown(null);
-      setCapNoticeInterpolation(null);
-      setSubmitDone(false);
-      setErrorKey(null);
+      clearCompositePreview();
+      clearAllBranchResults();
     });
-  }, [verticalJumpInput, standingLongJumpInput, sprintInput, profile, unitSystem, activeTab]);
+  }, [profile, clearAllBranchResults, clearCompositePreview]);
 
   useEffect(() => {
     const sync = () => setProfile(loadPhysicalProfile());
@@ -231,6 +305,71 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
       setCapNoticeInterpolation(resolveExplosiveCapNoticeInterpolation(profile, result.capApplied));
     },
     [profile]
+  );
+
+  const calculateBranch = useCallback(
+    (branch: ExplosiveBranchId): boolean => {
+      setSubmitDone(false);
+      setErrorKey(null);
+      const empty = {
+        verticalJumpInput: '',
+        standingLongJumpInput: '',
+        sprintInput: '',
+      };
+      const inputs =
+        branch === 'verticalJump'
+          ? {
+              ...empty,
+              verticalJumpInput: toMetricLengthField(verticalJumpInput, unitSystem),
+            }
+          : branch === 'standingLongJump'
+            ? {
+                ...empty,
+                standingLongJumpInput: toMetricLengthField(
+                  standingLongJumpInput,
+                  unitSystem
+                ),
+              }
+            : { ...empty, sprintInput };
+
+      const result = tryComputeExplosiveAssessmentScore({
+        ...inputs,
+        profile,
+        profileReady,
+      });
+      if (!result.ok) {
+        clearBranchResult(branch);
+        setErrorKey(result.error);
+        return false;
+      }
+
+      const raw =
+        branch === 'verticalJump'
+          ? result.breakdown.verticalJumpRaw
+          : branch === 'standingLongJump'
+            ? result.breakdown.standingLongJumpRaw
+            : result.breakdown.sprintRaw;
+      if (raw == null || !Number.isFinite(raw) || raw <= 0) {
+        clearBranchResult(branch);
+        setErrorKey('no-inputs');
+        return false;
+      }
+
+      setPerBranchResult((r) => ({ ...r, [branch]: { raw } }));
+      setCapNoticeInterpolation(
+        resolveExplosiveCapNoticeInterpolation(profile, result.capApplied)
+      );
+      return true;
+    },
+    [
+      clearBranchResult,
+      profile,
+      profileReady,
+      sprintInput,
+      standingLongJumpInput,
+      unitSystem,
+      verticalJumpInput,
+    ]
   );
 
   const calculate = useCallback(() => {
@@ -314,13 +453,16 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
     sprintInput,
     setSprintInput,
     metricScoringInputs,
+    branchMetricInputs,
     previewScore,
     previewBreakdown,
+    perBranchResult,
     capNoticeInterpolation,
     powerNormAnchors,
     submitDone,
     errorKey,
     clearError,
+    calculateBranch,
     calculate,
     persistToDashboard,
     submitAssessment,

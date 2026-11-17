@@ -327,6 +327,7 @@ describe('selfie HUD geometry isolation', () => {
     expect(hud.specStartY).toBe(1488);
     expect(hud.specRowGap).toBe(88);
     expect(hud.specTitleDy).toBe(30);
+    expect(hud.clip).toEqual({ x: 585, y: 1040, w: 435, h: 800 });
     expect(TELEMETRY_HUD_RIGHT_BOTTOM_Y).toBe(1694);
     expect(TELEMETRY_HUD_RIGHT_BOTTOM_Y).toBe(
       hud.specStartY + 2 * hud.specRowGap + hud.specTitleDy
@@ -529,7 +530,7 @@ describe('composeTelemetryCard', () => {
       (call) =>
         call.type === 'createLinearGradient' && call.x0 === 0 && call.y0 === scrimY0
     );
-    expect(TELEMETRY_SELFIE_SCRIM_START_RATIO).toBe(0.58);
+    expect(TELEMETRY_SELFIE_SCRIM_START_RATIO).toBe(0.45);
     expect(scrimGradient).toEqual({
       type: 'createLinearGradient',
       x0: 0,
@@ -779,10 +780,15 @@ describe('composeTelemetryCard', () => {
   it('exports 4:5 selfie with feed-wall hard text shadow and dock inside 1350', async () => {
     const layout = resolveSelfieLayout('4:5');
     expect(layout.useFeedWallHardShadow).toBe(true);
-    expect(layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy).toBeLessThan(
-      layout.plateHeight
+    expect(layout.hud.brandY).toBe(843);
+    const rightBottom =
+      layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy;
+    const columnMid = (layout.hud.brandY + rightBottom) / 2;
+    expect(Math.abs(layout.radar.cy - columnMid)).toBeLessThanOrEqual(5);
+    expect(rightBottom).toBeLessThan(layout.plateHeight - layout.reticle.inset - 24);
+    expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThan(
+      layout.plateHeight - layout.reticle.inset - 24
     );
-    expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThan(layout.plateHeight);
     expect(TELEMETRY_FEED_WALL_HARD_SHADOW).toMatchObject({
       color: 'rgba(0, 0, 0, 0.92)',
       blur: 2,
@@ -809,11 +815,18 @@ describe('composeTelemetryCard', () => {
       dw: 1080,
       dh: 1350,
     });
-    const scorePaint = calls.find((call) => call.type === 'fillText' && call.text === '72.40');
-    expect(scorePaint).toMatchObject({
-      type: 'fillText',
-      shadowBlur: TELEMETRY_FEED_WALL_HARD_SHADOW.blur,
-      shadowColor: TELEMETRY_FEED_WALL_HARD_SHADOW.color,
-    });
+    const scorePaints = calls.filter(
+      (call) => call.type === 'fillText' && call.text === '72.40'
+    );
+    // Dual shadow: soft bloom first, then feed-wall hard kiss on 4:5.
+    expect(scorePaints.length).toBeGreaterThanOrEqual(2);
+    expect(
+      scorePaints.some(
+        (call) =>
+          call.type === 'fillText' &&
+          call.shadowBlur === TELEMETRY_FEED_WALL_HARD_SHADOW.blur &&
+          call.shadowColor === TELEMETRY_FEED_WALL_HARD_SHADOW.color
+      )
+    ).toBe(true);
   });
 });

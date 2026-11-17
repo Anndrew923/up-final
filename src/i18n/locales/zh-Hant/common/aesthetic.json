@@ -167,6 +167,48 @@
         "shareUnavailable": "此裝置無法分享檔案，請改用下載或稍後再試。",
         "shareFailed": "分享未完成，請稍後再試。"
       }
+    },
+    "singleLeaf": {
+      "generateReport": "生成專項戰報",
+      "unavailable": "此專項尚無有效成績，請先完成計算。",
+      "rawMetricLabel": "實測數據",
+      "upRatingLabel": "戰力評分",
+      "verdictPlaceholder": "SPECIALIST TELEMETRY VERIFIED",
+      "verifiedStamp": "VERIFIED PHYSIOLOGICAL SPECIFICATION // {{year}}",
+      "englishNames": {
+        "benchPress": "BARBELL BENCH PRESS",
+        "squat": "BARBELL BACK SQUAT",
+        "deadlift": "BARBELL DEADLIFT",
+        "latPulldown": "LAT PULLDOWN",
+        "shoulderPress": "OVERHEAD PRESS",
+        "verticalJump": "VERTICAL JUMP",
+        "standingLongJump": "STANDING LONG JUMP",
+        "sprint": "100M SPRINT",
+        "grip": "PEAK GRIP STRENGTH",
+        "cooper": "12-MINUTE COOPER RUN",
+        "run5km": "5K TIME TRIAL",
+        "smm": "SKELETAL MUSCLE MASS",
+        "smPercent": "SKELETAL MUSCLE RATIO",
+        "ffmi": "FAT-FREE MASS INDEX",
+        "armSize": "UPPER ARM GIRTH"
+      },
+      "labels": {
+        "benchPress": "槓鈴臥推",
+        "squat": "深蹲",
+        "deadlift": "硬舉",
+        "latPulldown": "滑輪下拉",
+        "shoulderPress": "肩推",
+        "verticalJump": "垂直跳",
+        "standingLongJump": "立定跳遠",
+        "sprint": "百米衝刺",
+        "grip": "絕對握力",
+        "cooper": "十二分鐘跑",
+        "run5km": "五公里計時",
+        "smm": "骨骼肌量",
+        "smPercent": "骨骼肌率",
+        "ffmi": "去脂指數",
+        "armSize": "上臂圍度"
+      }
     }
   }
 }

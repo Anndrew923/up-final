@@ -22,6 +22,8 @@ import AssessmentReferenceDisclosure, {
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import { flushCardioDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -33,6 +35,7 @@ import { formatRun5KmFloorClock } from '../logic/core/cardioScoring';
 import { scoreMeaningMetricForCardioTab } from '../logic/core/scoreMeaningCatalog';
 import { buildCardioAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { loadPhysicalProfile } from '../services/localStorageService';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const CardioAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -150,6 +153,17 @@ const CardioAssessmentPage: FC = () => {
     [t, profileReady, revealBlocking]
   );
 
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+  const cardioReportLeaf = isCooperTab ? 'cardio.cooper' : 'cardio.run5km';
+  const flushCardioForReport = () =>
+    flushCardioDraft({
+      tab: activeTab,
+      distanceInput,
+      runMinutesInput,
+      runSecondsInput,
+      gender: profile?.gender,
+    });
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="cardio" />
@@ -164,6 +178,11 @@ const CardioAssessmentPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={() => {
+          if (!flushCardioForReport()) return;
+          closeModal();
+          openWithLeaf(cardioReportLeaf);
+        }}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -327,6 +346,13 @@ const CardioAssessmentPage: FC = () => {
                 decadeKey: scoreMeaning.decadeKey,
                 ...hallSpectrum.badgeProps,
               }}
+              afterHero={
+                <AestheticSingleLeafTriggerButton
+                  leaf={cardioReportLeaf}
+                  disabled={revealBlocking}
+                  onBeforeOpen={flushCardioForReport}
+                />
+              }
             />
           ) : null}
 

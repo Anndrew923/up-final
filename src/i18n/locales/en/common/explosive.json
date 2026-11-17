@@ -20,6 +20,8 @@
     "capStandingLongJump": "Standing long jump capped at {{max}} {{unit}}. Scores use capped measurement.",
     "capSprint100m": "100 m time floored to {{min}} s. Specialty scores use floored time.",
     "branchScoresHeading": "Power Axis Detail",
+    "calculateThisBranch": "Calculate This Branch",
+    "branchRawScoreLabel": "Undiluted branch score",
     "branchVerticalJumpShort": "Standing Vertical Jump",
     "branchStandingLongJumpShort": "Standing Long Jump",
     "branchSprintShort": "100 m Sprint",

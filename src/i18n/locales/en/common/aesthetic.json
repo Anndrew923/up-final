@@ -167,6 +167,48 @@
         "shareUnavailable": "This device cannot share files. Try download instead.",
         "shareFailed": "Share did not complete. Please try again."
       }
+    },
+    "singleLeaf": {
+      "generateReport": "Generate Event Report",
+      "unavailable": "No valid score for this event yet. Calculate first.",
+      "rawMetricLabel": "RAW METRIC",
+      "upRatingLabel": "UP RATING",
+      "verdictPlaceholder": "SPECIALIST TELEMETRY VERIFIED",
+      "verifiedStamp": "VERIFIED PHYSIOLOGICAL SPECIFICATION // {{year}}",
+      "englishNames": {
+        "benchPress": "BARBELL BENCH PRESS",
+        "squat": "BARBELL BACK SQUAT",
+        "deadlift": "BARBELL DEADLIFT",
+        "latPulldown": "LAT PULLDOWN",
+        "shoulderPress": "OVERHEAD PRESS",
+        "verticalJump": "VERTICAL JUMP",
+        "standingLongJump": "STANDING LONG JUMP",
+        "sprint": "100M SPRINT",
+        "grip": "PEAK GRIP STRENGTH",
+        "cooper": "12-MINUTE COOPER RUN",
+        "run5km": "5K TIME TRIAL",
+        "smm": "SKELETAL MUSCLE MASS",
+        "smPercent": "SKELETAL MUSCLE RATIO",
+        "ffmi": "FAT-FREE MASS INDEX",
+        "armSize": "UPPER ARM GIRTH"
+      },
+      "labels": {
+        "benchPress": "Barbell Bench Press",
+        "squat": "Squat",
+        "deadlift": "Deadlift",
+        "latPulldown": "Lat Pulldown",
+        "shoulderPress": "Overhead Press",
+        "verticalJump": "Vertical Jump",
+        "standingLongJump": "Standing Long Jump",
+        "sprint": "100m Sprint",
+        "grip": "Absolute Grip",
+        "cooper": "12-Min Run",
+        "run5km": "5K Time Trial",
+        "smm": "Skeletal Muscle Mass",
+        "smPercent": "Muscle Mass Ratio",
+        "ffmi": "Fat-Free Mass Index",
+        "armSize": "Upper Arm Girth"
+      }
     }
   }
 }

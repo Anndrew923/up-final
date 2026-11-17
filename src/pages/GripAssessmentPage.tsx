@@ -17,7 +17,10 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import { flushGripDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
+import { parseInputToMetric } from '../logic/core/unitConverters';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { ROUTES } from '../config/routes';
 import { useGripMilestoneHint } from '../hooks/useGripMilestoneHint';
@@ -26,6 +29,7 @@ import { useUnit } from '../hooks/useUnit';
 import { buildGripAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
 import { useGripAssessmentPage } from '../hooks/useGripAssessmentPage';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const GripAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -97,6 +101,15 @@ const GripAssessmentPage: FC = () => {
     onBeforeOpenDyno: closeModal,
   });
   const peakLabel = t('grip.peakLabel', { unit: labels.weight });
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+
+  const flushGripForReport = () => {
+    if (!profile) return false;
+    const peakKg = parseInputToMetric(peakInput, 'weight', unitSystem);
+    if (peakKg == null || peakKg <= 0) return false;
+    flushGripDraft({ peakKg, gender: profile.gender });
+    return true;
+  };
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
@@ -112,6 +125,11 @@ const GripAssessmentPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={() => {
+          if (flushGripForReport() === false) return;
+          closeModal();
+          openWithLeaf('grip');
+        }}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -205,6 +223,13 @@ const GripAssessmentPage: FC = () => {
                 decadeKey: scoreMeaning.decadeKey,
                 ...hallSpectrum.badgeProps,
               }}
+              afterHero={
+                <AestheticSingleLeafTriggerButton
+                  leaf="grip"
+                  disabled={revealBlocking}
+                  onBeforeOpen={flushGripForReport}
+                />
+              }
             />
           ) : null}
 

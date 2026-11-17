@@ -2,22 +2,36 @@
  * Dual-mode aesthetic certificate export — carbon plaque vs selfie HUD preview + share.
  *
  * WHY: Modal stays presentational; this hook owns ImageBitmap / Object URL lifetimes so
- * WebView leaks cannot hide inside JSX event handlers.
+ * WebView leaks cannot hide inside JSX event handlers. SelfieBlobStamp includes aspect,
+ * reportType, leafKey, and contentHash so openWithLeaf remounts cannot share a stale PNG.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   readAestheticTelemetryAspectSession,
   writeAestheticTelemetryAspectSession,
 } from '../lib/aestheticTelemetryAspectSession';
-import { composeTelemetryCard } from '../lib/telemetryCardComposer';
+import { composeTelemetryReport } from '../lib/telemetryReportComposer';
 import type { TelemetryCardAspectRatio } from '../lib/telemetryCardTypes';
+import type { TelemetryReportInput } from '../lib/telemetryReportTypes';
+import {
+  buildPhysicalProfileHashKey,
+  buildSingleLeafContentHash,
+} from '../logic/aesthetic/singleLeafContentHash';
+import {
+  resolveSingleLeafReport,
+  type SingleLeafId,
+} from '../logic/aesthetic/singleLeafReport';
+import { buildSixAxisRadarData, countCoreSixFilled } from '../logic/core/scoring';
 import {
   captureSelfieImage,
   type SelfieCaptureSource,
 } from '../services/selfieCaptureService';
 import { shareTelemetryCardPng } from '../services/telemetryCardShareService';
+import type { AestheticReportSelection } from '../stores/aestheticReportUiStore';
 import { buildAestheticTelemetryExportInput } from './buildAestheticTelemetryExportInput';
+import { buildAestheticSingleLeafExportInput } from './buildAestheticSingleLeafExportInput';
+import { loadSingleLeafDraftBundle } from './loadSingleLeafDraftBundle';
 import type { AestheticSpecCardModel } from './useAestheticSpecCard';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
 
@@ -30,6 +44,14 @@ export type AestheticTelemetryErrorKey =
   | 'composeFailed'
   | 'shareUnavailable'
   | 'shareFailed';
+
+/** Cache stamp — any field change must drop selfieBlobRef. */
+export interface SelfieBlobStamp {
+  aspect: AestheticTelemetryAspect;
+  reportType: 'full' | 'single-leaf';
+  leafKey: SingleLeafId | null;
+  contentHash: string;
+}
 
 function mapCaptureError(
   reason: 'unavailable' | 'decode-failed'
@@ -49,7 +71,6 @@ function pinAspect(
   setAspectRatio: (value: AestheticTelemetryAspect) => void
 ): void {
   if (aspectRef.current === next) {
-    // Still refresh session so a remount mid-share recovers the user's choice.
     writeAestheticTelemetryAspectSession(next);
     return;
   }
@@ -58,8 +79,21 @@ function pinAspect(
   writeAestheticTelemetryAspectSession(next);
 }
 
-export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
-  const { t } = useTranslation('common');
+function stampsEqual(a: SelfieBlobStamp | null, b: SelfieBlobStamp): boolean {
+  if (!a) return false;
+  return (
+    a.aspect === b.aspect &&
+    a.reportType === b.reportType &&
+    a.leafKey === b.leafKey &&
+    a.contentHash === b.contentHash
+  );
+}
+
+export function useAestheticTelemetryShare(
+  model: AestheticSpecCardModel,
+  selection: AestheticReportSelection
+) {
+  const { t, i18n } = useTranslation('common');
   const scores = useMergedScoresFromLocalStores();
   const [mode, setMode] = useState<AestheticTelemetryMode>('carbon');
   const [aspectRatio, setAspectRatio] = useState<AestheticTelemetryAspect>(() =>
@@ -74,9 +108,51 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
   const bitmapRef = useRef<ImageBitmap | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const selfieBlobRef = useRef<Blob | null>(null);
-  /** Bound aspect for selfieBlobRef — share must never emit a mismatched cache. */
-  const selfieBlobAspectRef = useRef<AestheticTelemetryAspect | null>(null);
+  const selfieBlobStampRef = useRef<SelfieBlobStamp | null>(null);
   const aspectRef = useRef<AestheticTelemetryAspect>(aspectRatio);
+
+  const draftBundle = useMemo(() => loadSingleLeafDraftBundle(scores), [scores]);
+
+  const leafResult = useMemo(() => {
+    if (selection.reportType !== 'single-leaf') return null;
+    const resolved = resolveSingleLeafReport(selection.leaf, draftBundle);
+    return resolved.status === 'ok' ? resolved : null;
+  }, [draftBundle, selection]);
+
+  const contentHash = useMemo(() => {
+    if (selection.reportType === 'full') {
+      // Fingerprint axis values so a same-overall edit still busts the selfie cache.
+      const axisFp = buildSixAxisRadarData(scores)
+        .map((p) => `${p.key}:${p.value.toFixed(2)}`)
+        .join(',');
+      return [
+        'full',
+        model.overallScore.toFixed(2),
+        model.battleCode,
+        countCoreSixFilled(scores),
+        axisFp,
+        i18n.language,
+      ].join('|');
+    }
+    if (!leafResult) return `missing|${selection.leaf}|${i18n.language}`;
+    return buildSingleLeafContentHash({
+      leaf: leafResult.leaf,
+      rawReading: leafResult.rawReading,
+      heroScore: leafResult.heroScore,
+      profileKey: buildPhysicalProfileHashKey(draftBundle.profile),
+      locale: i18n.language,
+    });
+  }, [draftBundle.profile, i18n.language, leafResult, model.battleCode, model.overallScore, scores, selection]);
+
+  const currentStamp = useMemo<SelfieBlobStamp>(
+    () => ({
+      aspect: aspectRatio,
+      reportType: selection.reportType,
+      leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+      contentHash,
+    }),
+    [aspectRatio, contentHash, selection]
+  );
 
   const revokePreviewUrl = useCallback(() => {
     if (objectUrlRef.current) {
@@ -84,7 +160,7 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
     }
     objectUrlRef.current = null;
     selfieBlobRef.current = null;
-    selfieBlobAspectRef.current = null;
+    selfieBlobStampRef.current = null;
     setPreviewUrl(null);
   }, []);
 
@@ -128,27 +204,88 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
     if (aliveRef.current) setBusy(false);
   }, []);
 
+  const buildReportInput = useCallback(
+    (
+      aspect: AestheticTelemetryAspect,
+      reportMode: AestheticTelemetryMode,
+      background: ImageBitmap | null
+    ): TelemetryReportInput | null => {
+      if (selection.reportType === 'single-leaf') {
+        if (!leafResult) return null;
+        return buildAestheticSingleLeafExportInput(t, leafResult, {
+          mode: reportMode === 'selfie' && background ? 'selfie' : 'carbon',
+          aspectRatio: aspect,
+          background,
+        });
+      }
+      const full = buildAestheticTelemetryExportInput(t, model, scores, {
+        mode: reportMode === 'selfie' && background ? 'selfie' : 'carbon',
+        background,
+        aspectRatio: aspect,
+      });
+      return { ...full, reportType: 'full' };
+    },
+    [leafResult, model, scores, selection.reportType, t]
+  );
+
   const composeSelfiePreview = useCallback(
     async (aspect: AestheticTelemetryAspect) => {
       const bitmap = bitmapRef.current;
       if (!bitmap) return;
-      const input = buildAestheticTelemetryExportInput(t, model, scores, {
-        mode: 'selfie',
-        background: bitmap,
-        aspectRatio: aspect,
-      });
-      const blob = await composeTelemetryCard(input);
+      const input = buildReportInput(aspect, 'selfie', bitmap);
+      if (!input) {
+        setErrorKey('composeFailed');
+        return;
+      }
+      const blob = await composeTelemetryReport(input);
       if (!aliveRef.current) return;
       revokePreviewUrl();
       const url = URL.createObjectURL(blob);
       objectUrlRef.current = url;
       selfieBlobRef.current = blob;
-      selfieBlobAspectRef.current = aspect;
+      selfieBlobStampRef.current = {
+        aspect,
+        reportType: selection.reportType,
+        leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+        contentHash,
+      };
       setPreviewUrl(url);
       setMode('selfie');
     },
-    [model, revokePreviewUrl, scores, t]
+    [buildReportInput, contentHash, revokePreviewUrl, selection]
   );
+
+  // WHY: One effect owns stamp invalidation + selfie recompose — dual effects raced
+  // (clear preview → recompose) and could flash an empty stage on leaf flips.
+  useEffect(() => {
+    if (stampsEqual(selfieBlobStampRef.current, currentStamp) && (mode !== 'selfie' || previewUrl)) {
+      return;
+    }
+    selfieBlobRef.current = null;
+    selfieBlobStampRef.current = null;
+
+    if (mode !== 'selfie' || !bitmapRef.current) {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+        setPreviewUrl(null);
+      }
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        await composeSelfiePreview(aspectRef.current);
+      } catch {
+        if (!cancelled && aliveRef.current) setErrorKey('composeFailed');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stamp/content driven
+  }, [currentStamp]);
 
   const captureBackground = useCallback(
     async (source: SelfieCaptureSource) => {
@@ -169,7 +306,6 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
         try {
           await composeSelfiePreview(aspectRef.current);
         } catch {
-          // Compose failed after decode — drop the orphan bitmap so carbon mode stays leak-free.
           closeBitmap();
           if (aliveRef.current) setErrorKey('composeFailed');
         }
@@ -188,15 +324,12 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
 
       const needsSelfieRecompose = mode === 'selfie' && Boolean(bitmapRef.current);
       if (needsSelfieRecompose) {
-        // WHY: Flip aspect only after we can recompose — otherwise the pill can show 4:5
-        // while share still emits the cached 9:16 selfie PNG (or vice versa).
         if (!beginBusy()) return;
         const previous = aspectRef.current;
         pinAspect(next, aspectRef, setAspectRatio);
         try {
           await composeSelfiePreview(next);
         } catch {
-          // WHY: Roll back pill + session so a failed 4:5 compose cannot leave preview on 9:16.
           if (aliveRef.current) {
             pinAspect(previous, aspectRef, setAspectRatio);
             setErrorKey('composeFailed');
@@ -208,9 +341,8 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
       }
 
       pinAspect(next, aspectRef, setAspectRatio);
-      // Carbon (or selfie without bitmap): drop any stale export cache immediately.
       selfieBlobRef.current = null;
-      selfieBlobAspectRef.current = null;
+      selfieBlobStampRef.current = null;
     },
     [beginBusy, composeSelfiePreview, endBusy, mode]
   );
@@ -218,29 +350,38 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
   const shareReport = useCallback(async () => {
     if (!beginBusy()) return;
     try {
-      // WHY: Re-pin before native Share — sheet open/close must not leave React state at 9:16
-      // while aspectRef / session still hold the user's 4:5 choice.
       const aspect = aspectRef.current;
       pinAspect(aspect, aspectRef, setAspectRatio);
+
+      const stamp: SelfieBlobStamp = {
+        aspect,
+        reportType: selection.reportType,
+        leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+        contentHash,
+      };
 
       const cacheHit =
         mode === 'selfie' &&
         Boolean(selfieBlobRef.current) &&
-        selfieBlobAspectRef.current === aspect;
+        stampsEqual(selfieBlobStampRef.current, stamp);
 
       let blob: Blob | null = cacheHit ? selfieBlobRef.current : null;
 
       if (!blob) {
-        const input = buildAestheticTelemetryExportInput(t, model, scores, {
-          mode: mode === 'selfie' && bitmapRef.current ? 'selfie' : 'carbon',
-          background: mode === 'selfie' ? bitmapRef.current : null,
-          aspectRatio: aspect,
-        });
-        blob = await composeTelemetryCard(input);
+        const input = buildReportInput(
+          aspect,
+          mode === 'selfie' && bitmapRef.current ? 'selfie' : 'carbon',
+          mode === 'selfie' ? bitmapRef.current : null
+        );
+        if (!input) {
+          if (aliveRef.current) setErrorKey('composeFailed');
+          return;
+        }
+        blob = await composeTelemetryReport(input);
         if (!aliveRef.current) return;
         if (mode === 'selfie') {
           selfieBlobRef.current = blob;
-          selfieBlobAspectRef.current = aspect;
+          selfieBlobStampRef.current = stamp;
         }
       }
 
@@ -249,7 +390,6 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
         title: t('aesthetic.share.shareTitle'),
       });
       if (!aliveRef.current) return;
-      // WHY: Native sheet can remount the modal; re-assert aspect after it returns.
       pinAspect(aspectRef.current, aspectRef, setAspectRatio);
       if (!shared.ok && shared.reason !== 'cancelled') {
         setErrorKey(mapShareError(shared.reason));
@@ -259,7 +399,7 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
     } finally {
       endBusy();
     }
-  }, [beginBusy, endBusy, mode, model, scores, t]);
+  }, [beginBusy, buildReportInput, contentHash, endBusy, mode, selection, t]);
 
   const errorMessage = errorKey ? t(`aesthetic.share.errors.${errorKey}`) : null;
 
@@ -269,6 +409,7 @@ export function useAestheticTelemetryShare(model: AestheticSpecCardModel) {
     previewUrl,
     busy,
     errorMessage,
+    leafResult,
     captureBackground,
     resetToCarbon,
     selectAspectRatio,

@@ -16,6 +16,8 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import { flushMuscleDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
@@ -29,6 +31,8 @@ import {
   SMM_KG_CEILING_FEMALE,
   SMM_KG_CEILING_MALE,
 } from '../logic/core/muscleScoring';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
+import type { SingleLeafId } from '../logic/aesthetic/singleLeafReport';
 
 const MuscleAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -114,6 +118,12 @@ const MuscleAssessmentPage: FC = () => {
     'exceedsCeiling'
   );
 
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+  const muscleReportLeaf: SingleLeafId =
+    previewBreakdown && previewBreakdown.smPercentScoreRaw > previewBreakdown.smmScoreRaw
+      ? 'muscle.smPercent'
+      : 'muscle.smm';
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="muscle" />
@@ -128,6 +138,11 @@ const MuscleAssessmentPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={() => {
+          if (!flushMuscleDraft(smmInput)) return;
+          closeModal();
+          openWithLeaf(muscleReportLeaf);
+        }}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -209,6 +224,13 @@ const MuscleAssessmentPage: FC = () => {
                   decadeKey: scoreMeaning.decadeKey,
                   ...hallSpectrum.badgeProps,
                 }}
+                afterHero={
+                  <AestheticSingleLeafTriggerButton
+                    leaf={muscleReportLeaf}
+                    disabled={revealBlocking || scoreLocked}
+                    onBeforeOpen={() => flushMuscleDraft(smmInput)}
+                  />
+                }
               />
               {previewBreakdown ? (
                 <DisclosurePanel

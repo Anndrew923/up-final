@@ -134,9 +134,15 @@ const CARBON_4_5: TelemetryCarbonLayout = {
   plateWidth: TELEMETRY_CARD_WIDTH,
 };
 
+/**
+ * Story 9:16 selfie dock — open vertical rhythm.
+ * WHY: Full brand→score→title→specs breathing room keeps the third spec row
+ * inside an h:800 clip; 4:5 alone carries the lowered golden-third layout.
+ */
 const SELFIE_9_16: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 122, outerRadius: 54, yearDy: 70 },
   reticle: { inset: 36, arm: 36 },
+  // WHY: cy locks to HUD column midpoint (brand ↔ third-spec bottom) within ≤5px.
   radar: { cx: 248, cy: 1460, outerRadius: 140, labelRadius: 180 },
   hud: {
     clip: { x: 585, y: 1040, w: 435, h: 800 },
@@ -154,17 +160,22 @@ const SELFIE_9_16: TelemetrySelfieLayout = {
   plateWidth: TELEMETRY_CARD_WIDTH,
 };
 
+/**
+ * Feed 4:5 selfie dock — Δ+243 (~18%) frees upper torso while keeping
+ * cy + labelRadius under plateHeight - reticle.inset - 24.
+ */
 const SELFIE_4_5: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 88, outerRadius: 42, yearDy: 54 },
   reticle: { inset: 28, arm: 30 },
-  radar: { cx: 248, cy: 900, outerRadius: 108, labelRadius: 140 },
+  // WHY: cy = midpoint(brandY, third-spec bottom) so dual-column symmetry holds on 4:5 too.
+  radar: { cx: 248, cy: 1047, outerRadius: 108, labelRadius: 140 },
   hud: {
-    clip: { x: 585, y: 520, w: 435, h: 720 },
+    clip: { x: 585, y: 763, w: 435, h: 720 },
     textX: 585,
-    brandY: 600,
-    scoreY: 685,
-    titleY: 760,
-    specStartY: 845,
+    brandY: 843,
+    scoreY: 928,
+    titleY: 1003,
+    specStartY: 1088,
     specRowGap: 68,
     specTitleDy: 26,
     textMaxWidth: 435,

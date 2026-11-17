@@ -13,6 +13,9 @@ import {
 import type { FormatUnitOptions } from '../../logic/core/unitConverters';
 import type { StrengthLiftKey } from '../../types/strengthInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
+import { flushStrengthLiftDraft } from '../../hooks/flushSingleLeafAssessmentDraft';
+import { STRENGTH_LIFT_TO_LEAF } from '../../logic/aesthetic/pickHighestStrengthLeaf';
+import AestheticSingleLeafTriggerButton from '../aesthetic/AestheticSingleLeafTriggerButton';
 import SingleLiftMilestoneHint from './SingleLiftMilestoneHint';
 
 const ONE_RM_COUNT_UP_MS = 500;
@@ -268,6 +271,19 @@ const StrengthLiftCard: FC<StrengthLiftCardProps> = ({
               profileReady={profileReady}
             />
           ) : null}
+          <AestheticSingleLeafTriggerButton
+            leaf={STRENGTH_LIFT_TO_LEAF[lift]}
+            disabled={inputsDisabled}
+            onBeforeOpen={() => {
+              if (!hasScoredLiftReps) return false;
+              flushStrengthLiftDraft({
+                lift,
+                weightKg: result.weightUsedKg,
+                reps: scoredLiftReps,
+                bodyWeightKg: profile?.weightKg,
+              });
+            }}
+          />
         </div>
       ) : null}
     </fieldset>

@@ -70,6 +70,24 @@ vi.mock('../../../lib/telemetryCardComposer', () => ({
   composeTelemetryCard: (...args: unknown[]) => composeTelemetryCard(...args),
 }));
 
+vi.mock('../../../lib/telemetryReportComposer', () => ({
+  composeTelemetryReport: (...args: unknown[]) => composeTelemetryCard(...args),
+}));
+
+vi.mock('../../../hooks/loadSingleLeafDraftBundle', () => ({
+  loadSingleLeafDraftBundle: () => ({
+    profile: null,
+    strength: null,
+    power: null,
+    cardio: null,
+    muscle: null,
+    grip: null,
+    armSize: null,
+    ffmi: null,
+    scores: {},
+  }),
+}));
+
 vi.mock('../../../services/telemetryCardShareService', () => ({
   shareTelemetryCardPng: (...args: unknown[]) => shareTelemetryCardPng(...args),
 }));
@@ -120,7 +138,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={onClose} />
+          <AestheticSpecModal onClose={onClose} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -149,7 +167,7 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(share?.className).toContain('border-amber-400/60');
     expect(share?.className).toContain('bg-amber-500/15');
 
-    // Plan A: format pill above the plaque; bottom stack is Share + capture only.
+    // Aspect pill only above the plaque — report-type switch strip removed for max stage area.
     const aspectToggle = document.querySelector('[data-testid="aesthetic-aspect-toggle"]');
     expect(aspectToggle).not.toBeNull();
     expect(aspectToggle?.getAttribute('role')).toBe('tablist');
@@ -159,6 +177,8 @@ describe('AestheticSpecModal certificate shell', () => {
     expect(
       document.querySelector('[data-testid="aesthetic-aspect-feed"]')?.textContent?.trim()
     ).toBe('4:5 貼文');
+    expect(document.querySelector('[data-testid="aesthetic-report-switch-strip"]')).toBeNull();
+    expect(document.querySelector('[data-testid="aesthetic-report-switch-full"]')).toBeNull();
     const dialog = document.querySelector('[role="dialog"]');
     const stageWrap = document.querySelector(`[class="${CERT_STAGE_WRAP_CLASS}"]`);
     expect(dialog?.contains(aspectToggle)).toBe(true);
@@ -229,7 +249,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={onClose} />
+          <AestheticSpecModal onClose={onClose} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -262,7 +282,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={onClose} />
+          <AestheticSpecModal onClose={onClose} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -285,7 +305,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={onClose} />
+          <AestheticSpecModal onClose={onClose} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -312,7 +332,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -359,7 +379,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -398,7 +418,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -431,7 +451,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -454,7 +474,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={onClose} />
+          <AestheticSpecModal onClose={onClose} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -527,7 +547,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });
@@ -553,7 +573,7 @@ describe('AestheticSpecModal certificate shell', () => {
     act(() => {
       root.render(
         <I18nextProvider i18n={i18n}>
-          <AestheticSpecModal onClose={vi.fn()} />
+          <AestheticSpecModal onClose={vi.fn()} selection={{ reportType: 'full' }} />
         </I18nextProvider>
       );
     });

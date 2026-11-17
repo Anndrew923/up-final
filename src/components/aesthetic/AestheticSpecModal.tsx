@@ -7,6 +7,7 @@ import { useAestheticSpecCard } from '../../hooks/useAestheticSpecCard';
 import { useAestheticTelemetryShare } from '../../hooks/useAestheticTelemetryShare';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useShellScrollLock } from '../../hooks/useShellScrollLock';
+import type { AestheticReportSelection } from '../../stores/aestheticReportUiStore';
 import {
   CERT_ASPECT_PILL_WRAP_CLASS,
   CERT_FOOTER_WRAP_CLASS,
@@ -14,10 +15,12 @@ import {
   CERT_STAGE_WRAP_CLASS,
 } from './aestheticChrome';
 import { CERT_VEIL_REVEAL_CLASS } from '../../lib/certRevealMotion';
+import AestheticSingleLeafCard from './AestheticSingleLeafCard';
 import AestheticSpecCard from './AestheticSpecCard';
 
 export interface AestheticSpecModalProps {
   onClose: () => void;
+  selection: AestheticReportSelection;
 }
 
 const ACTION_BTN_CLASS =
@@ -71,7 +74,10 @@ const IconAlbum: FC = () => (
   </svg>
 );
 
-const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
+const AestheticSpecModal: FC<AestheticSpecModalProps> = ({
+  onClose,
+  selection,
+}) => {
   const { t } = useTranslation('common');
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -83,11 +89,12 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
     previewUrl,
     busy,
     errorMessage,
+    leafResult,
     captureBackground,
     resetToCarbon,
     selectAspectRatio,
     shareReport,
-  } = useAestheticTelemetryShare(model);
+  } = useAestheticTelemetryShare(model, selection);
   useFocusTrap(dialogRef, true);
   useShellScrollLock(true);
 
@@ -104,7 +111,6 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
       skip();
       return;
     }
-    // WHY: Allow dismiss even while compose/share is busy — unmount releases bitmap/URL.
     onClose();
   };
 
@@ -124,12 +130,19 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
   if (typeof document === 'undefined') return null;
 
   const showSelfiePreview = mode === 'selfie' && Boolean(previewUrl);
+  const showSingleLeaf =
+    selection.reportType === 'single-leaf' && leafResult != null && !showSelfiePreview;
+  const showFullCard =
+    selection.reportType === 'full' && !showSelfiePreview;
+  const leafUnavailable =
+    selection.reportType === 'single-leaf' && leafResult == null && !showSelfiePreview;
 
   return createPortal(
     <div
       className={`group fixed inset-0 ${Z_INDEX_CLASS.toolResultModal} flex h-dvh flex-col overflow-hidden px-4`}
       data-cert-phase={phase}
       data-telemetry-mode={mode}
+      data-report-type={selection.reportType}
       role="presentation"
     >
       <button
@@ -138,10 +151,6 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
         aria-label={t('aesthetic.labels.closeAria')}
         onClick={onBackdropClick}
       />
-      {/*
-        WHY: Column flex fills 100dvh — pill/footer stay shrink-0 above the Home Indicator;
-        the stage flex-1 absorbs leftover height so rem-subtracted max-h cannot clip 關閉.
-      */}
       <div
         ref={dialogRef}
         role="dialog"
@@ -155,10 +164,6 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
           {t('aesthetic.labels.triggerCta')}
         </h2>
 
-        {/*
-          WHY: Format pill sits above the plaque as a canvas toolbar — keeps the bottom
-          action stack to Share + capture only (Plan A). Owns top safe-area (shell pt-0).
-        */}
         <div className={CERT_ASPECT_PILL_WRAP_CLASS} onClick={stopRowClick}>
           <div
             data-testid="aesthetic-aspect-toggle"
@@ -213,6 +218,21 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
                 aspectRatio === '4:5' ? 'aspect-[4/5]' : 'aspect-[9/16]'
               } ${CERT_STAGE_FIT_CLASS} origin-center rounded-2xl border border-[#c9a227]/30 object-contain shadow-[0_16px_40px_rgba(0,0,0,0.55)]`}
             />
+          ) : showSingleLeaf && leafResult ? (
+            <AestheticSingleLeafCard
+              leafResult={leafResult}
+              aspectRatio={aspectRatio}
+            />
+          ) : showFullCard ? (
+            <AestheticSpecCard model={model} aspectRatio={aspectRatio} />
+          ) : leafUnavailable ? (
+            <p
+              data-testid="aesthetic-single-leaf-unavailable"
+              className="rounded-xl border border-amber-500/30 bg-zinc-950/80 px-4 py-6 text-center text-sm text-amber-100/90"
+              role="status"
+            >
+              {t('aesthetic.singleLeaf.unavailable')}
+            </p>
           ) : (
             <AestheticSpecCard model={model} aspectRatio={aspectRatio} />
           )}
@@ -232,16 +252,12 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
             </p>
           ) : null}
 
-          {/*
-            WHY: Modal root uses px-4 only — `.ui-modal-safe-footer` alone owns Home Indicator
-            inset so 預設/關閉 stay fully tappable above the bar on XR-class phones.
-          */}
           <div className="flex w-full flex-col gap-2.5">
             <button
               type="button"
               data-testid="aesthetic-share-report"
               className={SHARE_BTN_CLASS}
-              disabled={busy}
+              disabled={busy || leafUnavailable}
               onClick={() => {
                 void shareReport();
               }}
@@ -256,7 +272,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
                 type="button"
                 data-testid="aesthetic-selfie-camera"
                 className={ACTION_BTN_CLASS}
-                disabled={busy}
+                disabled={busy || leafUnavailable}
                 onClick={() => {
                   void captureBackground('camera');
                 }}
@@ -268,7 +284,7 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({ onClose }) => {
                 type="button"
                 data-testid="aesthetic-selfie-photos"
                 className={ACTION_BTN_CLASS}
-                disabled={busy}
+                disabled={busy || leafUnavailable}
                 onClick={() => {
                   void captureBackground('photos');
                 }}

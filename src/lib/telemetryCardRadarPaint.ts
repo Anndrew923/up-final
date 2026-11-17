@@ -8,19 +8,15 @@ import {
   type RadarGeometryPoint,
   type RadarPoint2D,
 } from '../logic/core/radarGeometry';
+import { resolveSelfieLayout } from './telemetryCardLayout';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 
 /**
  * Selfie HUD radar — left-biased so long EN axis labels stay left of the corridor.
  * WHY: Centered labels at labelRadius spilled "Explosive Power" into the right HUD.
  */
-/** 9:16 selfie radar dock — SSOT for unit assertions; runtime may override via layout. */
-export const TELEMETRY_RADAR_LAYOUT = {
-  cx: 248,
-  cy: 1460,
-  outerRadius: 140,
-  labelRadius: 180,
-} as const;
+/** 9:16 selfie radar dock — derived from layout SSOT so cy/radius cannot drift. */
+export const TELEMETRY_RADAR_LAYOUT = resolveSelfieLayout('9:16').radar;
 
 export type TelemetryRadarLayout = {
   cx: number;

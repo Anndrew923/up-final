@@ -31,6 +31,8 @@ export function useCoreSixRadar() {
     radarPoints,
     /** Display overall (resolved cardio); may differ from `scoreStore.overallScore` when only inputs/age change. */
     overallScore,
+    /** Same merged ScoreMap that feeds radar / overall — reuse to avoid a second local merge. */
+    scores: mergedMap,
     scaleMax,
     completionCount,
   };

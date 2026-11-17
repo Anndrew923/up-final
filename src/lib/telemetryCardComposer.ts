@@ -37,9 +37,12 @@ import {
 import {
   paintBrandWatermark,
   paintCornerReticles,
+  paintHudLabel,
+  paintHudLabelWithDualShadow,
+  paintSelfieRadarHalo,
+  resolveHudTextShadow,
 } from './telemetryCardSelfieChrome';
 import {
-  clearCanvasShadow,
   TelemetryComposeError,
   type TelemetryCanvasSurface,
   type TelemetryCardAspectRatio,
@@ -173,12 +176,6 @@ export const TELEMETRY_HUD_TITLE_GLOW = {
   offsetY: 0,
 } as const;
 
-type HudShadowPreset = {
-  color: string;
-  blur: number;
-  offsetY: number;
-};
-
 export type TelemetryCardMode = 'carbon' | 'selfie';
 
 export interface TelemetrySpecLine {
@@ -209,46 +206,6 @@ export interface TelemetryCardInput {
 
 export interface TelemetryComposeDeps {
   createSurface?: () => TelemetryCanvasSurface;
-}
-
-function applyHudShadow(ctx: TelemetryDrawContext, shadow: HudShadowPreset): void {
-  ctx.shadowColor = shadow.color;
-  ctx.shadowBlur = shadow.blur;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = shadow.offsetY;
-}
-
-function paintLabel(
-  ctx: TelemetryDrawContext,
-  text: string,
-  x: number,
-  y: number,
-  font: string,
-  fill: string,
-  align: CanvasTextAlign,
-  baseline: CanvasTextBaseline,
-  options?: { maxWidth?: number; shadow?: HudShadowPreset }
-): void {
-  if (!text) return;
-  const shadow = options?.shadow;
-  // WHY: Always zero residual blur first — export scale turns leftover shadow into glyph fog.
-  clearCanvasShadow(ctx);
-  ctx.fillStyle = fill;
-  ctx.textAlign = align;
-  ctx.textBaseline = baseline;
-  if (shadow) applyHudShadow(ctx, shadow);
-  try {
-    ctx.font = font;
-    ctx.fillText(text, x, y, options?.maxWidth);
-  } catch {
-    try {
-      ctx.font = '24px sans-serif';
-      ctx.fillText(text, x, y, options?.maxWidth);
-    } catch {
-      // Skip this run. The rest of the plate still encodes.
-    }
-  }
-  clearCanvasShadow(ctx);
 }
 
 function strokeSegment(
@@ -294,20 +251,13 @@ function paintSpecRule(ctx: TelemetryDrawContext, layout: TelemetrySelfieLayout)
   );
 }
 
-function resolveHudTextShadow(
-  layout: TelemetrySelfieLayout,
-  holographic: HudShadowPreset
-): HudShadowPreset {
-  if (!layout.useFeedWallHardShadow) return holographic;
-  return TELEMETRY_FEED_WALL_HARD_SHADOW;
-}
-
 function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
   const year = input.year ?? new Date().getFullYear();
   const layout = resolveSelfieLayout(input.aspectRatio ?? '9:16');
   // WHY: Watermark + reticles must paint before the right-column clip or they vanish.
   paintBrandWatermark(ctx, year, layout);
   paintCornerReticles(ctx, layout);
+  paintSelfieRadarHalo(ctx, layout.radar);
   paintHolographicRadar(ctx, input.axes, layout.radar);
   paintColumnDivider(ctx, layout);
 
@@ -318,21 +268,14 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     maxWidth: maxW,
     shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_TEXT_SHADOW),
   } as const;
-  const scoreShadow = {
-    maxWidth: maxW,
-    shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_SCORE_GLOW),
-  } as const;
-  const titleShadow = {
-    maxWidth: maxW,
-    shadow: resolveHudTextShadow(layout, TELEMETRY_HUD_TITLE_GLOW),
-  } as const;
+  const dual = { maxWidth: maxW, useFeedWallHardShadow: layout.useFeedWallHardShadow };
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(hud.clip.x, hud.clip.y, hud.clip.w, hud.clip.h);
   ctx.clip();
 
-  paintLabel(
+  paintHudLabel(
     ctx,
     brand,
     hud.textX,
@@ -343,7 +286,7 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     'middle',
     inkShadow
   );
-  paintLabel(
+  paintHudLabelWithDualShadow(
     ctx,
     formatOverallResonanceScore(input.overallScore),
     hud.textX,
@@ -352,9 +295,9 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     TELEMETRY_HUD_SCORE_FILL,
     'left',
     'middle',
-    scoreShadow
+    { ...dual, soft: TELEMETRY_HUD_SCORE_GLOW }
   );
-  paintLabel(
+  paintHudLabelWithDualShadow(
     ctx,
     input.title,
     hud.textX,
@@ -363,13 +306,13 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
     TELEMETRY_HUD_TITLE_FOIL,
     'left',
     'middle',
-    titleShadow
+    { ...dual, soft: TELEMETRY_HUD_TITLE_GLOW }
   );
   paintSpecRule(ctx, layout);
 
   input.specs.slice(0, 3).forEach((spec, index) => {
     const y = hud.specStartY + index * hud.specRowGap;
-    paintLabel(
+    paintHudLabel(
       ctx,
       spec.kicker,
       hud.textX,
@@ -380,7 +323,7 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
       'middle',
       inkShadow
     );
-    paintLabel(
+    paintHudLabelWithDualShadow(
       ctx,
       spec.title,
       hud.textX,
@@ -389,7 +332,7 @@ function paintHud(ctx: TelemetryDrawContext, input: TelemetryCardInput): void {
       TELEMETRY_HUD_SPEC_TITLE_FILL,
       'left',
       'middle',
-      inkShadow
+      dual
     );
   });
   ctx.restore();

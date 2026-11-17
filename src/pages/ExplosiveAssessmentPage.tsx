@@ -6,7 +6,6 @@ import AssessmentCeremonyOverlay from '../components/assessment/AssessmentCeremo
 import { AssessmentAmbientGlow } from '../components/assessment/AssessmentAmbientGlow';
 import { ShellFlowStack } from '../components/layout/ShellFlowStack';
 import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHeader';
-import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import {
@@ -18,8 +17,12 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
+import ExplosiveBranchCard from '../components/assessment/ExplosiveBranchCard';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { DisclosurePanel } from '../components/DisclosurePanel';
+import { flushExplosiveDraft } from '../hooks/flushSingleLeafAssessmentDraft';
+import { pickHighestExplosiveLeaf } from '../logic/aesthetic/pickHighestExplosiveLeaf';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { ROUTES } from '../config/routes';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -31,6 +34,7 @@ import { useExplosiveMilestoneHint } from '../hooks/useExplosiveMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const ExplosiveAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -49,13 +53,15 @@ const ExplosiveAssessmentPage: FC = () => {
     sprintInput,
     setSprintInput,
     metricScoringInputs,
+    branchMetricInputs,
     previewScore,
     previewBreakdown,
+    perBranchResult,
     capNoticeInterpolation,
     powerNormAnchors,
     submitDone,
     errorKey,
-    clearError,
+    calculateBranch,
     calculate,
     persistToDashboard,
     submitAssessment,
@@ -116,6 +122,11 @@ const ExplosiveAssessmentPage: FC = () => {
 
   const dash = t('explosive.branchDash');
   const fmtBranch = (v: number | null) => (v === null ? dash : v.toFixed(2));
+
+  const reportLeaf = useMemo(
+    () => (previewBreakdown ? pickHighestExplosiveLeaf(previewBreakdown) : null),
+    [previewBreakdown]
+  );
 
   const showCapNoticeBlock = profileReady && profile && capNoticeInterpolation != null;
   const isJumpsTab = activeTab === 'jumps';
@@ -180,6 +191,22 @@ const ExplosiveAssessmentPage: FC = () => {
     previewBreakdown.sprintRaw != null &&
     !hasRadarAxisPreview;
 
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+
+  const flushExplosiveForReport = () => {
+    // metricScoringInputs are already metric (cm / s) — do not re-project units.
+    const toPos = (raw: string): number | null => {
+      const n = Number(raw.trim());
+      return Number.isFinite(n) && n > 0 ? n : null;
+    };
+    flushExplosiveDraft({
+      tab: activeTab,
+      verticalJumpCm: toPos(metricScoringInputs.verticalJumpInput),
+      standingLongJumpCm: toPos(metricScoringInputs.standingLongJumpInput),
+      sprintSeconds: toPos(metricScoringInputs.sprintInput),
+    });
+  };
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="explosive" />
@@ -194,6 +221,15 @@ const ExplosiveAssessmentPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={
+          reportLeaf
+            ? () => {
+                flushExplosiveForReport();
+                closeModal();
+                openWithLeaf(reportLeaf);
+              }
+            : undefined
+        }
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -245,46 +281,30 @@ const ExplosiveAssessmentPage: FC = () => {
             labelledBy="explosive-tab-jumps"
             active={isJumpsTab}
           >
-            <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-vj">
-              <span className="font-medium text-zinc-200">
-                {t('explosive.verticalJumpLabel', { unit: labels.length })}
-              </span>
-              <HeroNumberInput
-                id="exp-vj"
-                inputMode="decimal"
-                min={0}
-                step={0.1}
-                className="max-w-xs"
-                placeholder={t('explosive.verticalJumpPlaceholder')}
+            <div className="space-y-3">
+              <ExplosiveBranchCard
+                branch="verticalJump"
                 value={verticalJumpInput}
-                disabled={tabDisabled}
-                onChange={(e) => {
-                  clearError();
-                  setVerticalJumpInput(e.target.value);
-                }}
-                aria-label={t('explosive.verticalJumpLabel', { unit: labels.length })}
+                lengthUnit={labels.length}
+                metricValue={branchMetricInputs.verticalJumpInput}
+                profileReady={profileReady}
+                inputsDisabled={tabDisabled}
+                result={perBranchResult.verticalJump}
+                onChange={setVerticalJumpInput}
+                onCalculate={() => calculateBranch('verticalJump')}
               />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-slj">
-              <span className="font-medium text-zinc-200">
-                {t('explosive.standingLongJumpLabel', { unit: labels.length })}
-              </span>
-              <HeroNumberInput
-                id="exp-slj"
-                inputMode="decimal"
-                min={0}
-                step={0.1}
-                className="max-w-xs"
-                placeholder={t('explosive.standingLongJumpPlaceholder')}
+              <ExplosiveBranchCard
+                branch="standingLongJump"
                 value={standingLongJumpInput}
-                disabled={tabDisabled}
-                onChange={(e) => {
-                  clearError();
-                  setStandingLongJumpInput(e.target.value);
-                }}
-                aria-label={t('explosive.standingLongJumpLabel', { unit: labels.length })}
+                lengthUnit={labels.length}
+                metricValue={branchMetricInputs.standingLongJumpInput}
+                profileReady={profileReady}
+                inputsDisabled={tabDisabled}
+                result={perBranchResult.standingLongJump}
+                onChange={setStandingLongJumpInput}
+                onCalculate={() => calculateBranch('standingLongJump')}
               />
-            </label>
+            </div>
           </AssessmentTabPanel>
 
           <AssessmentTabPanel
@@ -292,27 +312,16 @@ const ExplosiveAssessmentPage: FC = () => {
             labelledBy="explosive-tab-sprint"
             active={isSpecialtyTab}
           >
-            <label className="flex flex-col gap-1 text-xs text-zinc-400" htmlFor="exp-sprint">
-              <span className="font-medium text-zinc-200">{t('explosive.sprintLabel')}</span>
-              {/*
-                WHY type=text: specialty placeholder carries locale prose; number inputs truncate it.
-              */}
-              <HeroNumberInput
-                id="exp-sprint"
-                type="text"
-                inputMode="decimal"
-                autoComplete="off"
-                className="max-w-md"
-                placeholder={t('explosive.sprintPlaceholder')}
-                value={sprintInput}
-                disabled={tabDisabled}
-                onChange={(e) => {
-                  clearError();
-                  setSprintInput(e.target.value);
-                }}
-                aria-label={t('explosive.sprintLabel')}
-              />
-            </label>
+            <ExplosiveBranchCard
+              branch="sprint"
+              value={sprintInput}
+              metricValue={branchMetricInputs.sprintInput}
+              profileReady={profileReady}
+              inputsDisabled={tabDisabled}
+              result={perBranchResult.sprint}
+              onChange={setSprintInput}
+              onCalculate={() => calculateBranch('sprint')}
+            />
           </AssessmentTabPanel>
 
           {showCapNoticeBlock ? (
@@ -373,6 +382,15 @@ const ExplosiveAssessmentPage: FC = () => {
                     decadeKey: scoreMeaning.decadeKey,
                     ...hallSpectrum.badgeProps,
                   }}
+                  afterHero={
+                    reportLeaf ? (
+                      <AestheticSingleLeafTriggerButton
+                        leaf={reportLeaf}
+                        disabled={tabDisabled}
+                        onBeforeOpen={flushExplosiveForReport}
+                      />
+                    ) : null
+                  }
                 />
               ) : null}
 
@@ -405,7 +423,10 @@ const ExplosiveAssessmentPage: FC = () => {
                     </ul>
                     <div className="border-t border-zinc-800/80 pt-2">
                       <p className="text-xs text-zinc-400">{t('explosive.averageRawLabel')}</p>
-                      <p className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100">
+                      <p
+                        className="mt-0.5 font-mono text-lg tabular-nums text-zinc-100"
+                        data-testid="explosive-axis-average-raw"
+                      >
                         {axisAverageRaw.toFixed(2)}
                       </p>
                     </div>
@@ -426,6 +447,15 @@ const ExplosiveAssessmentPage: FC = () => {
                     <p className="text-xs text-amber-100/80">{t('explosive.previewSpecialtyOnly')}</p>
                   ) : null}
                 </div>
+              ) : null}
+
+              {/* Specialty-only path has no score-meaning panel — keep CTA above Write-to-Radar. */}
+              {reportLeaf && isSpecialtyOnlyPreview ? (
+                <AestheticSingleLeafTriggerButton
+                  leaf={reportLeaf}
+                  disabled={tabDisabled}
+                  onBeforeOpen={flushExplosiveForReport}
+                />
               ) : null}
             </div>
           ) : null}

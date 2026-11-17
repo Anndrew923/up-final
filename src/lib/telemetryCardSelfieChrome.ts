@@ -1,7 +1,8 @@
 /**
  * Selfie-plate chrome painted outside the right-column HUD clip.
  * WHY: Brand seal + corner reticles must survive bright gym-mirror backgrounds
- * without competing with the radar/text dock geometry contracts.
+ * without competing with the radar/text dock geometry contracts. Halo + dual
+ * HUD text shadows live here so telemetryCardComposer stays under 490 lines.
  */
 import { paintGuillocheSeal } from './guillocheSealPaint';
 import type { TelemetrySelfieLayout } from './telemetryCardLayout';
@@ -9,7 +10,30 @@ import {
   resolveSelfieLayout,
   TELEMETRY_FEED_WALL_HARD_SHADOW,
 } from './telemetryCardLayout';
-import type { TelemetryDrawContext } from './telemetryCardTypes';
+import {
+  clearCanvasShadow,
+  type TelemetryDrawContext,
+} from './telemetryCardTypes';
+
+export type HudShadowPreset = {
+  color: string;
+  blur: number;
+  offsetY: number;
+};
+
+/** Hard ink kiss — keeps glyph edges sharp on white fabric. */
+export const TELEMETRY_HUD_DUAL_HARD_SHADOW: HudShadowPreset = {
+  color: 'rgba(0, 0, 0, 0.95)',
+  blur: 1,
+  offsetY: 1,
+};
+
+/** Soft bloom under hard ink — kills local specular glare. */
+export const TELEMETRY_HUD_DUAL_SOFT_SHADOW: HudShadowPreset = {
+  color: 'rgba(0, 0, 0, 0.78)',
+  blur: 12,
+  offsetY: 3,
+};
 
 /**
  * Top-right Guilloche seal — 9:16 defaults (SSOT for unit assertions).
@@ -131,4 +155,115 @@ export function paintBrandWatermark(
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.restore();
+}
+
+/**
+ * Soft radial bed behind the left radar so axis labels stay readable on bright shirts.
+ * WHY: Bottom scrim alone still leaves mid-frame glare under the hex label orbit.
+ */
+export function paintSelfieRadarHalo(
+  ctx: TelemetryDrawContext,
+  radar: { cx: number; cy: number; labelRadius: number }
+): void {
+  const outer = radar.labelRadius * 1.38;
+  const gradient = ctx.createRadialGradient(
+    radar.cx,
+    radar.cy,
+    radar.labelRadius * 0.12,
+    radar.cx,
+    radar.cy,
+    outer
+  );
+  gradient.addColorStop(0, 'rgba(2, 6, 14, 0.58)');
+  gradient.addColorStop(0.55, 'rgba(2, 6, 14, 0.3)');
+  gradient.addColorStop(1, 'rgba(2, 6, 14, 0)');
+  ctx.save();
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(radar.cx, radar.cy, outer, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function applyHudShadow(ctx: TelemetryDrawContext, shadow: HudShadowPreset): void {
+  ctx.shadowColor = shadow.color;
+  ctx.shadowBlur = shadow.blur;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = shadow.offsetY;
+}
+
+/** Single-pass HUD label (brand / kickers) with optional ink or feed-wall shadow. */
+export function paintHudLabel(
+  ctx: TelemetryDrawContext,
+  text: string,
+  x: number,
+  y: number,
+  font: string,
+  fill: string,
+  align: CanvasTextAlign,
+  baseline: CanvasTextBaseline,
+  options?: { maxWidth?: number; shadow?: HudShadowPreset }
+): void {
+  if (!text) return;
+  const shadow = options?.shadow;
+  clearCanvasShadow(ctx);
+  ctx.fillStyle = fill;
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  if (shadow) applyHudShadow(ctx, shadow);
+  try {
+    ctx.font = font;
+    ctx.fillText(text, x, y, options?.maxWidth);
+  } catch {
+    try {
+      ctx.font = '24px sans-serif';
+      ctx.fillText(text, x, y, options?.maxWidth);
+    } catch {
+      /* plate still encodes */
+    }
+  }
+  clearCanvasShadow(ctx);
+}
+
+/**
+ * Dual-pass anti-glare text — soft bloom then hard kiss (feed wall may replace hard).
+ * WHY: Single soft blur washes out on IG JPEG; hard-only looks cut-out on neon gym lights.
+ */
+export function paintHudLabelWithDualShadow(
+  ctx: TelemetryDrawContext,
+  text: string,
+  x: number,
+  y: number,
+  font: string,
+  fill: string,
+  align: CanvasTextAlign,
+  baseline: CanvasTextBaseline,
+  options: {
+    maxWidth?: number;
+    useFeedWallHardShadow?: boolean;
+    soft?: HudShadowPreset;
+    hard?: HudShadowPreset;
+  }
+): void {
+  if (!text) return;
+  const soft = options.soft ?? TELEMETRY_HUD_DUAL_SOFT_SHADOW;
+  const hard = options.useFeedWallHardShadow
+    ? TELEMETRY_FEED_WALL_HARD_SHADOW
+    : (options.hard ?? TELEMETRY_HUD_DUAL_HARD_SHADOW);
+  paintHudLabel(ctx, text, x, y, font, fill, align, baseline, {
+    maxWidth: options.maxWidth,
+    shadow: soft,
+  });
+  paintHudLabel(ctx, text, x, y, font, fill, align, baseline, {
+    maxWidth: options.maxWidth,
+    shadow: hard,
+  });
+}
+
+export function resolveHudTextShadow(
+  layout: TelemetrySelfieLayout,
+  holographic: HudShadowPreset
+): HudShadowPreset {
+  if (!layout.useFeedWallHardShadow) return holographic;
+  return TELEMETRY_FEED_WALL_HARD_SHADOW;
 }

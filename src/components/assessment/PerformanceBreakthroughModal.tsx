@@ -26,6 +26,14 @@ import ClubDispatchModal from './ClubDispatchModal';
 import TachometerMilestoneBar from './TachometerMilestoneBar';
 import AssessmentHeroScoreWithNormBadge from './AssessmentHeroScoreWithNormBadge';
 import { HallSpectrumEntryButton } from './AssessmentScoreMeaningPanel';
+import {
+  AESTHETIC_SINGLE_LEAF_CTA_MODAL_CLASS,
+  AestheticSingleLeafCtaIcon,
+} from '../aesthetic/aestheticSingleLeafCtaChrome';
+import BreakthroughSyncActionBar, {
+  type BreakthroughSyncAction,
+} from './BreakthroughSyncActionBar';
+import { cn } from '../../lib/cn';
 
 type ClubSyncIntent = 'global' | 'guild';
 
@@ -56,6 +64,11 @@ export interface PerformanceBreakthroughModalProps {
    * WHY: Disable focus trap + Escape so nested Hall owns dismiss; avoids closing both layers.
    */
   spectrumOverlayOpen?: boolean;
+  /**
+   * High-exposure single-leaf report CTA between sync actions and dismiss.
+   * WHY: Capture the breakthrough peak moment — flush + open plaque without scrolling the page.
+   */
+  onGenerateSingleLeafReport?: () => void;
 }
 
 const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
@@ -70,6 +83,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   milestoneHintLabel = null,
   onOpenHallSpectrum,
   spectrumOverlayOpen = false,
+  onGenerateSingleLeafReport,
 }) => {
   const { t } = useTranslation('common');
   const titleId = useId();
@@ -81,8 +95,11 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
   const [pipelineBusy, setPipelineBusy] = useState(false);
   const [dashboardPersistedInSession, setDashboardPersistedInSession] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  // WHY: Accordion starts collapsed so each breakthrough opens as a clean 3-key footer.
+  const [syncMenuExpanded, setSyncMenuExpanded] = useState(false);
   const [clubDispatchOpen, setClubDispatchOpen] = useState(false);
   const [pendingClubIntent, setPendingClubIntent] = useState<ClubSyncIntent | null>(null);
+  const syncMenuRegionId = useId();
   const {
     identitySheetOpen,
     closeIdentitySheet,
@@ -270,10 +287,15 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
     setSummaryExpanded((prev) => !prev);
   }, []);
 
+  const toggleSyncMenuExpanded = useCallback(() => {
+    setSyncMenuExpanded((prev) => !prev);
+  }, []);
+
   // WHY: Each breakthrough reveal starts collapsed — prior expand state would steal dopamine focus.
   useEffect(() => {
     if (!open) return;
     setSummaryExpanded(false);
+    setSyncMenuExpanded(false);
     setClubDispatchOpen(false);
     setPendingClubIntent(null);
     closeIdentitySheet();
@@ -286,6 +308,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       setPipelineBusy(false);
       setDashboardPersistedInSession(false);
       setSummaryExpanded(false);
+      setSyncMenuExpanded(false);
       setClubDispatchOpen(false);
       setPendingClubIntent(null);
       closeIdentitySheet();
@@ -319,6 +342,75 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
         populationClass: payload.populationClass,
       });
 
+  // WHY: Count visible sync targets so a lone action stays one-tap; 2+ collapse under SYNC.
+  const syncActions: BreakthroughSyncAction[] = [];
+  if (showDashboardSync) {
+    syncActions.push({
+      id: 'dashboard',
+      idleLabel: t('assessment.breakthrough.syncBtn'),
+      busyLabel: t('assessment.breakthrough.syncing'),
+      disabled: syncDisabled || actionsBusy,
+      busy: isDashboardSyncing,
+      onClick: () => {
+        void handleDashboardSync();
+      },
+      tone: 'neutral',
+    });
+  }
+  if (showDashboardThenArena && arenaSync) {
+    syncActions.push({
+      id: 'arena',
+      idleLabel: isDualMembership
+        ? t('assessment.breakthrough.syncDashboardThenArenaWithClub')
+        : t('assessment.breakthrough.syncDashboardThenArena'),
+      busyLabel: t('assessment.breakthrough.syncDashboardThenArenaBusy'),
+      disabled:
+        syncDisabled ||
+        actionsBusy ||
+        arenaSync.targetCount === 0 ||
+        arenaSync.gate === 'no-score' ||
+        arenaSync.gate === 'invalid-score',
+      busy: isPipelineRunning,
+      onClick: () => {
+        if (isDualMembership) {
+          openClubDispatch('global');
+          return;
+        }
+        void runPersistThenCloud('global');
+      },
+      tone: 'neutral',
+    });
+    if (isDualMembership) {
+      syncActions.push({
+        id: 'guild',
+        idleLabel: t('assessment.breakthrough.syncDashboardThenArenaGuildOnly'),
+        busyLabel: t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy'),
+        disabled: syncDisabled || actionsBusy || !(arenaSync.overallScore > 0),
+        busy: isPipelineRunning,
+        onClick: () => {
+          openClubDispatch('guild');
+        },
+        tone: 'guild',
+      });
+    }
+  }
+  const generateReportCta =
+    onGenerateSingleLeafReport != null ? (
+      <button
+        type="button"
+        data-testid="breakthrough-generate-single-leaf"
+        className={cn(
+          AESTHETIC_SINGLE_LEAF_CTA_MODAL_CLASS,
+          hasActions ? 'mt-3' : 'mb-3'
+        )}
+        disabled={hasActions ? actionsBusy || nestedOverlayOpen : nestedOverlayOpen}
+        onClick={onGenerateSingleLeafReport}
+      >
+        <AestheticSingleLeafCtaIcon className="size-4" />
+        {t('aesthetic.singleLeaf.generateReport')}
+      </button>
+    ) : null;
+
   return createPortal(
     <div
       className={`fixed inset-0 ${Z_INDEX_CLASS.performanceBreakthroughModal} flex items-center justify-center ui-modal-safe-shell`}
@@ -345,8 +437,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
       >
         <AuraReactiveFrame auraKey={payload.auraKey} className="max-h-[min(88dvh,40rem)]">
           {/*
-            WHY: Scroll the score/summary/tachometer column only — keep dual CTAs pinned so
-            expand never pushes primary actions below the fold on short mobile viewports.
+            WHY: Scroll score/summary/tachometer only — pin the 3-key footer (sync /
+            report / dismiss) so expand never pushes primary actions below the fold.
           */}
           <div className="flex max-h-[min(88dvh,40rem)] flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -418,65 +510,14 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
 
             {hasActions ? (
               <div className="mt-2 w-full shrink-0">
-                {showDashboardSync ? (
-                  <button
-                    type="button"
-                    className="w-full rounded-xl bg-amber-500 py-3 text-sm font-medium text-black transition-all duration-200 hover:bg-amber-400 disabled:pointer-events-none disabled:opacity-40"
-                    disabled={syncDisabled || actionsBusy}
-                    onClick={() => void handleDashboardSync()}
-                  >
-                    {isDashboardSyncing
-                      ? t('assessment.breakthrough.syncing')
-                      : t('assessment.breakthrough.syncBtn')}
-                  </button>
-                ) : null}
-
-                {showDashboardThenArena && arenaSync ? (
-                  <div className="mt-2 space-y-2">
-                    <button
-                      type="button"
-                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-medium tracking-tight text-zinc-200 transition-all duration-200 hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40"
-                      disabled={
-                        syncDisabled ||
-                        actionsBusy ||
-                        arenaSync.targetCount === 0 ||
-                        arenaSync.gate === 'no-score' ||
-                        arenaSync.gate === 'invalid-score'
-                      }
-                      onClick={() => {
-                        if (isDualMembership) {
-                          openClubDispatch('global');
-                          return;
-                        }
-                        void runPersistThenCloud('global');
-                      }}
-                    >
-                      {isPipelineRunning
-                        ? t('assessment.breakthrough.syncDashboardThenArenaBusy')
-                        : isDualMembership
-                          ? t('assessment.breakthrough.syncDashboardThenArenaWithClub')
-                          : t('assessment.breakthrough.syncDashboardThenArena')}
-                    </button>
-                    {isDualMembership ? (
-                      <button
-                        type="button"
-                        className="w-full rounded-xl border border-cyan-500/30 bg-transparent py-2.5 text-xs font-medium tracking-tight text-cyan-200/90 transition-all duration-200 hover:bg-cyan-500/10 disabled:pointer-events-none disabled:opacity-40"
-                        disabled={
-                          syncDisabled ||
-                          actionsBusy ||
-                          !(arenaSync.overallScore > 0)
-                        }
-                        onClick={() => {
-                          openClubDispatch('guild');
-                        }}
-                      >
-                        {isPipelineRunning
-                          ? t('assessment.breakthrough.syncDashboardThenArenaGuildOnlyBusy')
-                          : t('assessment.breakthrough.syncDashboardThenArenaGuildOnly')}
-                      </button>
-                    ) : null}
-                  </div>
-                ) : null}
+                <BreakthroughSyncActionBar
+                  actions={syncActions}
+                  menuExpanded={syncMenuExpanded}
+                  menuLabel={t('assessment.breakthrough.syncMenu')}
+                  menuRegionId={syncMenuRegionId}
+                  menuDisabled={syncDisabled || actionsBusy}
+                  onToggleMenu={toggleSyncMenuExpanded}
+                />
 
                 {pipelineBanner !== 'none' ? (
                   <p
@@ -509,6 +550,8 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
                   />
                 ) : null}
 
+                {generateReportCta}
+
                 <button
                   type="button"
                   className="mt-3 block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"
@@ -520,6 +563,7 @@ const PerformanceBreakthroughModal: FC<PerformanceBreakthroughModalProps> = ({
               </div>
             ) : (
               <div className="mt-6 w-full shrink-0">
+                {generateReportCta}
                 <button
                   type="button"
                   className="block w-full py-1 text-center text-xs font-normal tracking-wide text-zinc-500 transition hover:text-zinc-300"

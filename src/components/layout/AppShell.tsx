@@ -24,6 +24,7 @@ import { SHELL_SCROLL_ID, WEBKIT_COMPOSITOR_FENCE_CLASS } from '../../lib/shellS
 import DynoIntelConsole from '../dynoIntel/DynoIntelConsole';
 import SpecBadgeUnlockBanner from '../notifications/SpecBadgeUnlockBanner';
 import { useSpecBadgeUnlockToast } from '../../hooks/useSpecBadgeUnlockToast';
+import AestheticSpecModalHost from '../aesthetic/AestheticSpecModalHost';
 import HudBackControl from './HudBackControl';
 import HudProfileControls from './HudProfileControls';
 
@@ -143,6 +144,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       <SpecBadgeUnlockBanner />
 
       <BootSequenceOverlay active={bootActive} onComplete={completeBoot} />
+
+      <AestheticSpecModalHost />
     </div>
   );
 };

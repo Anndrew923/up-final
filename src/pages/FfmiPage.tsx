@@ -13,6 +13,7 @@ import PerformanceBreakthroughModal from '../components/assessment/PerformanceBr
 import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { ROUTES } from '../config/routes';
 import { FFMI_HUMAN_CAP_FEMALE, FFMI_HUMAN_CAP_MALE } from '../logic/core/ffmiScoring';
@@ -23,6 +24,7 @@ import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAss
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const FfmiPage: FC = () => {
   const { t } = useTranslation('common');
@@ -87,6 +89,8 @@ const FfmiPage: FC = () => {
     uploadBundle: ladderUploadBundle,
   });
 
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="ffmi" />
@@ -101,6 +105,14 @@ const FfmiPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={
+          breakdown?.allowsRadarSubmit
+            ? () => {
+                closeModal();
+                openWithLeaf('ffmi');
+              }
+            : undefined
+        }
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -159,6 +171,11 @@ const FfmiPage: FC = () => {
                       decadeKey: scoreMeaning.decadeKey,
                       ...hallSpectrum.badgeProps,
                     }}
+                    afterHero={
+                      breakdown.allowsRadarSubmit ? (
+                        <AestheticSingleLeafTriggerButton leaf="ffmi" disabled={revealBlocking} />
+                      ) : null
+                    }
                   />
                 ) : null}
 

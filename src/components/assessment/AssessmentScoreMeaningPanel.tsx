@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import type { ScoreMeaningResult } from '../../hooks/useScoreMeaning';
 import { cn } from '../../lib/cn';
 import AssessmentHeroScoreWithNormBadge, {
@@ -86,6 +86,11 @@ export interface AssessmentScoreMeaningPanelProps {
   /** Integrated hero score + NormBadge (left column). Preferred over demoted headerLabel. */
   hero?: AssessmentScoreMeaningHero | null;
   /**
+   * Slot directly under the score / NormBadge row (above long meaning copy).
+   * WHY: Keeps high-exposure CTAs (e.g. generate single-leaf report) above the fold.
+   */
+  afterHero?: ReactNode;
+  /**
    * Optional mono kicker — only rendered when `hero` is absent.
    * WHY: Demoted; integrated hero replaces the old headerLabel + isolated score stack.
    */
@@ -119,6 +124,7 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
   tone,
   hallEntry = null,
   hero = null,
+  afterHero = null,
   headerLabel,
 }) => {
   const styles = TONE_STYLES[tone];
@@ -161,6 +167,7 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
         )}
         {hallEntry ? <HallSpectrumEntryButton {...hallEntry} /> : null}
       </div>
+      {afterHero ? <div className="mt-3">{afterHero}</div> : null}
       <h3 className="mt-3 text-base font-semibold tracking-tight text-zinc-50">{meaning.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">{meaning.summary}</p>
       {milestoneHintLabel != null &&

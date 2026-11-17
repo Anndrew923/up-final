@@ -67,9 +67,6 @@ vi.mock('../HomeResonanceOverlay', () => ({
   default: () => null,
 }));
 
-vi.mock('../../aesthetic/AestheticSpecModal', () => ({
-  default: () => <div data-testid="aesthetic-spec-modal" />,
-}));
 
 vi.mock('../../radar/HexRadarChart', () => ({
   default: ({
@@ -164,6 +161,12 @@ describe('HomeRadarBoard console axis view', () => {
 
   it('fires a milestone haptic before opening the aesthetic spec certificate', async () => {
     const { hapticService } = await import('../../../services/hapticService');
+    const { useAestheticReportUiStore } = await import(
+      '../../../stores/aestheticReportUiStore'
+    );
+    act(() => {
+      useAestheticReportUiStore.getState().close();
+    });
     renderBoard();
     const trigger = container!.querySelector('[data-testid="aesthetic-spec-trigger"]');
     expect(trigger).not.toBeNull();
@@ -174,7 +177,7 @@ describe('HomeRadarBoard console axis view', () => {
 
     expect(hapticService.trigger).toHaveBeenCalledTimes(1);
     expect(hapticService.trigger).toHaveBeenCalledWith('milestone');
-    expect(container!.querySelector('[data-testid="aesthetic-spec-modal"]')).not.toBeNull();
+    expect(useAestheticReportUiStore.getState().isOpen).toBe(true);
   });
 
   it('defaults to fitness lexicon and 2dp HUD values', () => {

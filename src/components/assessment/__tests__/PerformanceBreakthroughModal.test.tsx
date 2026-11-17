@@ -24,6 +24,8 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.breakthrough.closeAria') return 'Close';
       if (key === 'assessment.breakthrough.kicker') return 'Axis Breakthrough';
       if (key === 'assessment.breakthrough.confirmDismiss') return 'CONFIRM';
+      if (key === 'aesthetic.singleLeaf.generateReport') return 'Generate Event Report';
+      if (key === 'assessment.breakthrough.syncMenu') return 'SYNC';
       if (key === 'assessment.breakthrough.syncBtn') return 'Sync Dashboard';
       if (key === 'assessment.breakthrough.syncDashboardThenArena') return 'Sync global ladder';
       if (key === 'assessment.breakthrough.syncDashboardThenArenaWithClub') return 'Sync Arena+Club';
@@ -380,6 +382,26 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     await Promise.resolve();
   }
 
+  function syncMenuToggle(): HTMLButtonElement | null {
+    return document.querySelector(
+      '[data-testid="breakthrough-sync-menu-toggle"]'
+    ) as HTMLButtonElement | null;
+  }
+
+  function syncAction(id: 'dashboard' | 'arena' | 'guild'): HTMLButtonElement | null {
+    return document.querySelector(
+      `[data-testid="breakthrough-sync-action-${id}"]`
+    ) as HTMLButtonElement | null;
+  }
+
+  function expandSyncMenu(): void {
+    const toggle = syncMenuToggle();
+    expect(toggle).not.toBeNull();
+    act(() => {
+      toggle!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+  }
+
   beforeEach(() => {
     host = document.createElement('div');
     document.body.appendChild(host);
@@ -408,8 +430,6 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     async (membershipSurface) => {
       // WHY: Non-dual surfaces must never show club-only CTA or open ClubDispatch on arena tap.
       // onSyncToDashboard is required so the dashboard CTA renders alongside the arena CTA.
-      const findBtn = (label: string) =>
-        Array.from(document.querySelectorAll('button')).find((el) => el.textContent === label);
       const persistToDashboard = vi.fn(() => true);
 
       act(() => {
@@ -429,17 +449,21 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
         );
       });
 
-      expect(findBtn('Sync Club Only')).toBeUndefined();
-      expect(findBtn('Sync Arena+Club')).toBeUndefined();
-      expect(findBtn('Sync Dashboard')).toBeDefined();
-      expect(findBtn('Sync global ladder')).toBeDefined();
+      // Multi-target: SYNC accordion starts collapsed (children remain in DOM but inert).
+      expect(syncMenuToggle()).not.toBeNull();
+      expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('false');
+      expect(syncAction('guild')).toBeNull();
       expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
 
-      const arenaBtn = findBtn('Sync global ladder');
-      expect(arenaBtn).toBeDefined();
+      expandSyncMenu();
+      expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('true');
+      expect(syncAction('guild')).toBeNull();
+      expect(syncAction('dashboard')).not.toBeNull();
+      expect(syncAction('arena')).not.toBeNull();
+      expect(syncAction('arena')?.textContent).toBe('Sync global ladder');
 
       await act(async () => {
-        arenaBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        syncAction('arena')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await flushPipeline();
       });
 
@@ -465,11 +489,10 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
     });
 
     expect(document.querySelector('[data-testid="club-dispatch-modal"]')).toBeNull();
-
-    const guildBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Club Only'
-    );
-    expect(guildBtn).toBeDefined();
+    expandSyncMenu();
+    const guildBtn = syncAction('guild');
+    expect(guildBtn).not.toBeNull();
+    expect(guildBtn?.textContent).toBe('Sync Club Only');
 
     act(() => {
       guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -522,9 +545,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const guildBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Club Only'
-    );
+    expandSyncMenu();
+    const guildBtn = syncAction('guild');
 
     act(() => {
       guildBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -558,9 +580,9 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
+    expect(arenaBtn?.textContent).toBe('Sync Arena+Club');
 
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -607,9 +629,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -636,9 +657,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -678,9 +698,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -714,9 +733,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -756,9 +774,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -789,9 +806,8 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       );
     });
 
-    const arenaBtn = Array.from(document.querySelectorAll('button')).find(
-      (el) => el.textContent === 'Sync Arena+Club'
-    );
+    expandSyncMenu();
+    const arenaBtn = syncAction('arena');
     act(() => {
       arenaBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -827,6 +843,119 @@ describe('PerformanceBreakthroughModal club dispatch modal', () => {
       .join('\n');
     expect(statusText).toContain('全數同步');
     expect(statusText).not.toContain('未公開全球');
+  });
+
+  it('single sync target fires directly without accordion', async () => {
+    const onSync = vi.fn(async () => undefined);
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onSyncToDashboard={onSync}
+        />
+      );
+    });
+
+    expect(syncMenuToggle()).toBeNull();
+    const dashboardBtn = syncAction('dashboard');
+    expect(dashboardBtn).not.toBeNull();
+    expect(dashboardBtn?.textContent).toBe('Sync Dashboard');
+
+    await act(async () => {
+      dashboardBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(onSync).toHaveBeenCalledTimes(1);
+  });
+
+  it('multi sync targets stay collapsed until SYNC expands each action', async () => {
+    const onSync = vi.fn(async () => undefined);
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onSyncToDashboard={onSync}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('false');
+    expect(syncMenuToggle()?.textContent).toContain('SYNC');
+
+    expandSyncMenu();
+    expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('true');
+    expect(syncAction('dashboard')).not.toBeNull();
+    expect(syncAction('arena')).not.toBeNull();
+    expect(syncAction('guild')).not.toBeNull();
+
+    await act(async () => {
+      syncAction('dashboard')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(onSync).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets sync accordion to collapsed when payload changes while open', () => {
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    expandSyncMenu();
+    expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('true');
+
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={{ ...basePayload, scoreDisplay: '91.00', populationClass: '菁英' }}
+          onClose={vi.fn()}
+          onPersistToDashboard={() => true}
+          arenaSync={dualSync}
+        />
+      );
+    });
+
+    expect(syncMenuToggle()?.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('renders generate-single-leaf CTA between sync actions and dismiss', () => {
+    const onGenerate = vi.fn();
+    act(() => {
+      root.render(
+        <PerformanceBreakthroughModal
+          open
+          payload={basePayload}
+          onClose={vi.fn()}
+          onSyncToDashboard={vi.fn()}
+          onGenerateSingleLeafReport={onGenerate}
+        />
+      );
+    });
+
+    const reportBtn = document.querySelector(
+      '[data-testid="breakthrough-generate-single-leaf"]'
+    ) as HTMLButtonElement | null;
+    expect(reportBtn).not.toBeNull();
+    expect(reportBtn?.textContent).toContain('Generate Event Report');
+
+    act(() => {
+      reportBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onGenerate).toHaveBeenCalledTimes(1);
   });
 });
 

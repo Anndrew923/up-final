@@ -20,6 +20,8 @@
     "capStandingLongJump": "立定跳遠已封頂為 {{max}} {{unit}}。計分與儲存皆採用封頂後數值。",
     "capSprint100m": "100 公尺成績已設下限為 {{min}} 秒。專項計分與儲存皆採用調整後時間。",
     "branchScoresHeading": "爆發力軸細節",
+    "calculateThisBranch": "計算此項",
+    "branchRawScoreLabel": "單項戰力評分",
     "branchVerticalJumpShort": "原地垂直跳",
     "branchStandingLongJumpShort": "立定跳遠",
     "branchSprintShort": "百米衝刺",

@@ -14,6 +14,9 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import { flushArmSizeDraft } from '../hooks/flushSingleLeafAssessmentDraft';
+import { parseInputToMetric } from '../logic/core/unitConverters';
 import { useArmSizeAssessmentPage } from '../hooks/useArmSizeAssessmentPage';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
@@ -24,6 +27,7 @@ import { buildArmSizeAssessmentSupplementalTargets } from '../logic/core/assessm
 import { ARM_SIZE_MAX_CM } from '../logic/core/armSizeScoring';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
 import { useScoreStore } from '../stores/scoreStore';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const ArmSizeAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -91,6 +95,16 @@ const ArmSizeAssessmentPage: FC = () => {
     onBeforeOpenDyno: closeModal,
   });
 
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+
+  const flushArmSizeForReport = () => {
+    const armCm = parseInputToMetric(armCircumferenceInput, 'length', unitSystem);
+    const bf = Number(bodyFatInput.trim());
+    if (armCm == null || armCm <= 0 || !Number.isFinite(bf) || bf <= 0) return false;
+    flushArmSizeDraft({ armCircumferenceCm: armCm, bodyFatPct: bf });
+    return true;
+  };
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="armSize" />
@@ -103,6 +117,11 @@ const ArmSizeAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={() => {
+          if (flushArmSizeForReport() === false) return;
+          closeModal();
+          openWithLeaf('armSize');
+        }}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -191,6 +210,13 @@ const ArmSizeAssessmentPage: FC = () => {
                   decadeKey: scoreMeaning.decadeKey,
                   ...hallSpectrum.badgeProps,
                 }}
+                afterHero={
+                  <AestheticSingleLeafTriggerButton
+                    leaf="armSize"
+                    disabled={revealBlocking}
+                    onBeforeOpen={flushArmSizeForReport}
+                  />
+                }
               />
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-400">

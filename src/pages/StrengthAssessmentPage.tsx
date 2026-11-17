@@ -18,15 +18,19 @@ import PerformanceBreakthroughModal from '../components/assessment/PerformanceBr
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
+import { flushAllStrengthLiftDrafts } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { useUnit } from '../hooks/useUnit';
+import { pickHighestStrengthLeaf } from '../logic/aesthetic/pickHighestStrengthLeaf';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import type { FormatUnitOptions } from '../logic/core/unitConverters';
+import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 import { STRENGTH_LIFT_KEYS, type StrengthLiftKey } from '../types/strengthInputs';
 
 function fmtBranchLine(
@@ -129,6 +133,32 @@ const StrengthAssessmentPage: FC = () => {
     onBeforeOpenDyno: closeModal,
   });
 
+  const reportLeaf = useMemo(
+    () => (combinedBreakdown ? pickHighestStrengthLeaf(combinedBreakdown.branches) : null),
+    [combinedBreakdown]
+  );
+  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+
+  const flushStrengthForReport = () => {
+    if (!combinedBreakdown?.branches.length) return false;
+    flushAllStrengthLiftDrafts({
+      lifts: combinedBreakdown.branches.map((b) => ({
+        lift: b.lift,
+        weightKg: b.weightKg,
+        reps: b.reps,
+      })),
+      bodyWeightKg: profile?.weightKg,
+    });
+    return true;
+  };
+
+  const openStrengthReport = (leaf = reportLeaf) => {
+    if (!leaf) return;
+    if (flushStrengthForReport() === false) return;
+    closeModal();
+    openWithLeaf(leaf);
+  };
+
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
       <AssessmentCeremonyOverlay ceremony={ceremony} accent="strength" />
@@ -144,6 +174,7 @@ const StrengthAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
+        onGenerateSingleLeafReport={reportLeaf ? () => openStrengthReport(reportLeaf) : undefined}
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -245,6 +276,15 @@ const StrengthAssessmentPage: FC = () => {
                       decadeKey: scoreMeaning.decadeKey,
                       ...hallSpectrum.badgeProps,
                     }}
+                    afterHero={
+                      reportLeaf ? (
+                        <AestheticSingleLeafTriggerButton
+                          leaf={reportLeaf}
+                          disabled={!profileReady || submitBusy || revealBlocking}
+                          onBeforeOpen={flushStrengthForReport}
+                        />
+                      ) : null
+                    }
                   />
                 ) : null}
 

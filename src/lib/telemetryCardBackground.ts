@@ -117,16 +117,16 @@ export function paintCarbonNightPlate(
 }
 
 /**
- * Scrim starts lower so more of the selfie stays bright; dock text relies on its
- * own laser glow + ink shadow instead of a near-black veil.
+ * Scrim starts mid-frame so the lowered HUD sits on a dark bed; floor opacity
+ * must crush bright shirts / gym-mirror glare under radar labels + score dock.
  */
-export const TELEMETRY_SELFIE_SCRIM_START_RATIO = 0.58;
+export const TELEMETRY_SELFIE_SCRIM_START_RATIO = 0.45;
 
 /** Mid / floor stops for the navy eye-care veil (shared with unit assertions). */
 export const TELEMETRY_SELFIE_SCRIM_STOPS = {
   midOffset: 0.45,
-  mid: 'rgba(2,6,14,0.28)',
-  floor: 'rgba(2,6,14,0.64)',
+  mid: 'rgba(2,6,14,0.42)',
+  floor: 'rgba(2,6,14,0.86)',
 } as const;
 
 function paintEyeCareScrim(

@@ -82,9 +82,6 @@ vi.mock('../HomeResonanceOverlay', () => ({
     open ? <div data-testid="resonance-overlay" /> : null,
 }));
 
-vi.mock('../../aesthetic/AestheticSpecModal', () => ({
-  default: () => <div data-testid="aesthetic-spec-modal" />,
-}));
 
 vi.mock('../../radar/HexRadarChart', () => ({
   default: ({
@@ -156,9 +153,15 @@ describe('HomeRadarBoard sync arrival', () => {
     });
   }
 
-  it('does not open the spec certificate until the fitness CTA is clicked', () => {
+  it('does not open the spec certificate until the fitness CTA is clicked', async () => {
+    const { useAestheticReportUiStore } = await import(
+      '../../../stores/aestheticReportUiStore'
+    );
+    act(() => {
+      useAestheticReportUiStore.getState().close();
+    });
     renderBoard();
-    expect(document.querySelector('[data-testid="aesthetic-spec-modal"]')).toBeNull();
+    expect(useAestheticReportUiStore.getState().isOpen).toBe(false);
     expect(document.querySelector('[data-testid="resonance-overlay"]')).toBeNull();
 
     const trigger = container!.querySelector(
@@ -170,7 +173,7 @@ describe('HomeRadarBoard sync arrival', () => {
       trigger?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(document.querySelector('[data-testid="aesthetic-spec-modal"]')).not.toBeNull();
+    expect(useAestheticReportUiStore.getState().isOpen).toBe(true);
   });
 
   it('plays radar fill, score ticker, and a non-blocking toast on arrival pulse', () => {

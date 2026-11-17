@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HexRadarChart from '../radar/HexRadarChart';
-import AestheticSpecModal from '../aesthetic/AestheticSpecModal';
 import { ConsoleCtaPlate } from './ConsoleCtaPlate';
 import HomeDiagnosticsPanel from './HomeDiagnosticsPanel';
 import HomeResonanceOverlay from './HomeResonanceOverlay';
@@ -31,6 +30,8 @@ import {
 import { SixAxisDataGridLabel } from '../radar/SixAxisDataGridLabel';
 import { RADAR_CARD_V2 } from '../radar/radarVisualTokens';
 import { useShellInteractionBlocked } from '../../stores/uiInteractionStore';
+import { useAestheticReportUiStore } from '../../stores/aestheticReportUiStore';
+import { resolveSmartDefaultFromLocalScores } from '../../hooks/loadSingleLeafDraftBundle';
 import { hapticService } from '../../services/hapticService';
 import { cn } from '../../lib/cn';
 import { WEBKIT_COMPOSITOR_FENCE_CLASS } from '../../lib/shellScrollLock';
@@ -60,12 +61,12 @@ export const HOME_RADAR_BOARD_FACE_CLASS =
  */
 export const HomeRadarBoard: FC = () => {
   const { t } = useTranslation('common');
-  const { radarPoints, overallScore, scaleMax } = useCoreSixRadar();
+  const { radarPoints, overallScore, scaleMax, scores: mergedScores } = useCoreSixRadar();
   const { viewMode, isSurging, setViewMode } = useConsoleAxisViewMode();
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile | null>(() =>
     loadPhysicalProfile()
   );
-  const [aestheticOpen, setAestheticOpen] = useState(false);
+  const openWithSmartDefault = useAestheticReportUiStore((s) => s.openWithSmartDefault);
   const isBlocking = useShellInteractionBlocked();
 
   useEffect(() => {
@@ -294,7 +295,11 @@ export const HomeRadarBoard: FC = () => {
                         // WHY: Certificate open is a deliberate plate transition — Medium
                         // milestone (not Light ack / Heavy climax) matches homologation weight.
                         void hapticService.trigger('milestone');
-                        setAestheticOpen(true);
+                        const smart =
+                          resolveSmartDefaultFromLocalScores(mergedScores) ?? {
+                            reportType: 'full' as const,
+                          };
+                        openWithSmartDefault(smart);
                       }}
                     >
                       {specTriggerCta}
@@ -326,7 +331,6 @@ export const HomeRadarBoard: FC = () => {
         scaleMax={scaleMax}
         onClose={closeRitual}
       />
-      {aestheticOpen ? <AestheticSpecModal onClose={() => setAestheticOpen(false)} /> : null}
       <HomeSyncArrivalToast open={toastVisible} fading={toastFading} label={syncArrivalToast} />
     </>
   );
