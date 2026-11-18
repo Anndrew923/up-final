@@ -15,22 +15,16 @@ import {
   resolveCarbonPrimaryTitle,
   resolveCarbonSecondaryTitle,
 } from '../../lib/telemetrySingleLeafDualHero';
+import AestheticCarbonCenteredStack from './AestheticCarbonCenteredStack';
 import AestheticCardArmor from './AestheticCardArmor';
-import AestheticDualHeroMidTier from './AestheticDualHeroMidTier';
-import AestheticDualHeroRawReading from './AestheticDualHeroRawReading';
-import GuillocheCrest from './GuillocheCrest';
 import {
   CERT_STAGE_FIT_CLASS,
-  FOIL_HERO_STAMP_CLASS,
   FOIL_HERO_TITLE_CLASS,
-  FOIL_HERO_WING_LEFT_CLASS,
-  FOIL_HERO_WING_RIGHT_CLASS,
   FOIL_RULE_CLASS,
 } from './aestheticChrome';
 import {
   CERT_FOOTER_REVEAL_CLASS,
   CERT_PLATE_REVEAL_CLASS,
-  CERT_STAMP_REVEAL_CLASS,
 } from '../../lib/certRevealMotion';
 
 export interface AestheticSingleLeafCardProps {
@@ -121,101 +115,20 @@ const AestheticSingleLeafCard: FC<AestheticSingleLeafCardProps> = ({
               </p>
             </header>
 
-            <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 py-1 text-center">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-[46%] h-[58%] w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(201,162,39,0.10)_0%,rgba(122,92,40,0.04)_45%,transparent_72%)]"
-              />
-
-              <GuillocheCrest />
-
-              <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
-
-              <h3 className={`relative ${FOIL_HERO_STAMP_CLASS} ${CERT_STAMP_REVEAL_CLASS}`}>
-                <span className={FOIL_HERO_WING_LEFT_CLASS} aria-hidden="true" />
-                <span
-                  data-testid="aesthetic-single-leaf-title-primary"
-                  className={SINGLE_LEAF_TITLE_CLASS}
-                >
-                  {primaryTitle}
-                </span>
-                <span className={FOIL_HERO_WING_RIGHT_CLASS} aria-hidden="true" />
-              </h3>
-              <p
-                data-testid="aesthetic-single-leaf-title-secondary"
-                className="relative font-mono text-[8px] tracking-[0.16em] text-zinc-500"
-              >
-                {secondaryTitle}
-              </p>
-
-              <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
-
-              {/* Dual-hero: pure 2-layer columns — mid-axis owns the tier plaque. */}
-              <div
-                data-testid="aesthetic-single-leaf-dual-hero"
-                className="relative grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1.5 px-0.5"
-              >
-                <div className="flex min-w-0 flex-col items-center justify-center gap-1 py-1">
-                  <p className="font-mono text-[7px] tracking-[0.16em] text-zinc-500">
-                    {plateCopy.rawMetricLabel}
-                  </p>
-                  <AestheticDualHeroRawReading
-                    rawReading={plateCopy.rawReading}
-                    testId="aesthetic-single-leaf-raw"
-                  />
-                </div>
-
-                <div
-                  aria-hidden="true"
-                  className="my-1 w-px self-stretch bg-gradient-to-b from-transparent via-[#c9a227]/55 to-transparent"
-                />
-
-                <div className="flex min-w-0 flex-col items-center justify-center gap-1 py-1">
-                  <p className="font-mono text-[7px] tracking-[0.16em] text-zinc-500">
-                    {plateCopy.upRatingLabel}
-                  </p>
-                  <p
-                    data-testid="aesthetic-single-leaf-score"
-                    className="max-w-full px-0.5 text-center font-['UPSerifTC','Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif] text-[clamp(0.7rem,3.8vw,1.25rem)] font-bold leading-tight tabular-nums text-[#f3e6c8]"
-                  >
-                    {plateCopy.heroScoreText}
-                  </p>
-                </div>
-              </div>
-
-              <AestheticDualHeroMidTier
-                tierCapsule={plateCopy.tierCapsule}
-                isOverflow={plateCopy.isOverflow}
-                testIdPrefix="aesthetic-single-leaf"
-              />
-
-              <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
-
-              <div
-                data-testid="aesthetic-single-leaf-verdict-slot"
-                className="relative flex w-full shrink-0 flex-col items-center justify-center gap-1 px-3 text-center"
-                style={{ height: SINGLE_LEAF_VERDICT_SLOT_DESIGN_PX }}
-              >
-                {plateCopy.verdict ? (
-                  <>
-                    <p
-                      data-testid="aesthetic-single-leaf-verdict-epithet"
-                      className="w-full text-[clamp(0.55rem,2.4vw,0.72rem)] font-bold tracking-[0.08em] text-[#FDE68A]"
-                    >
-                      {plateCopy.verdict.epithet}
-                    </p>
-                    <p
-                      data-testid="aesthetic-single-leaf-verdict-critique"
-                      className="w-full max-w-[18rem] text-center text-[clamp(0.48rem,2.1vw,0.62rem)] font-medium leading-snug text-white/85 [text-wrap:balance]"
-                    >
-                      {plateCopy.verdict.critique}
-                    </p>
-                  </>
-                ) : null}
-              </div>
-
-              <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
-            </div>
+            <AestheticCarbonCenteredStack
+              testIdPrefix="aesthetic-single-leaf"
+              primaryTitle={primaryTitle}
+              secondaryTitle={secondaryTitle}
+              titleClassName={SINGLE_LEAF_TITLE_CLASS}
+              verdictSlotHeightPx={SINGLE_LEAF_VERDICT_SLOT_DESIGN_PX}
+              rawMetricLabel={plateCopy.rawMetricLabel}
+              upRatingLabel={plateCopy.upRatingLabel}
+              rawReading={plateCopy.rawReading}
+              heroScoreText={plateCopy.heroScoreText}
+              tierCapsule={plateCopy.tierCapsule}
+              isOverflow={plateCopy.isOverflow}
+              verdict={plateCopy.verdict}
+            />
 
             <footer className={`mt-1 shrink-0 border-t ${FOIL_RULE_CLASS} pt-2`}>
               <p

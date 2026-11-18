@@ -1,15 +1,25 @@
 /**
- * Carbon dual-hero vertical rhythm — stamp-anchored plaque + verdict slot.
- * WHY: Pure geometry SSOT keeps painter under 500 while filling bottom black air.
+ * Carbon black-gold single-leaf / axis-summary vertical rhythm (hud === false).
+ *
+ * Design Intent (WHY):
+ * Compact Centered Stack — pack crest → title → dual → plaque → verdict into one
+ * tight group, then center that group between header rule and stamp so 4:5 / 9:16
+ * share the same mid-plate balance (no top-docked title + stamp reverse-anchor void).
+ *
+ * Isolation: Selfie HUD (`hud === true`) never imports this module for Y math.
  */
+import { resolveCarbonLayout } from './telemetryCardLayout';
 import { CARBON_TIER_CAPSULE_HEIGHT } from './telemetrySingleLeafTierPlaque';
 import {
   SINGLE_LEAF_VERDICT_SLOT_HEIGHT,
   type TelemetryReportAspect,
 } from './telemetryReportTypes';
 
-/** Must match `BILINGUAL_TITLE_BLOCK_PX` in dualHero — avoids circular imports. */
-const CARBON_BILINGUAL_TITLE_BLOCK_PX = 52;
+/**
+ * Foil ZH title + EN subtitle block height.
+ * WHY: Owned here so dualHero re-exports one value — no 52px twin constants.
+ */
+export const CARBON_BILINGUAL_TITLE_BLOCK_PX = 52;
 
 /** Dedicated coach-copy stage under mid-axis plaque (115–130). */
 export const CARBON_VERDICT_SLOT_HEIGHT = SINGLE_LEAF_VERDICT_SLOT_HEIGHT;
@@ -30,58 +40,80 @@ export interface SingleLeafCarbonRhythm {
   stampY: number;
 }
 
+/** Crest radii — story vs feed. */
+export const CARBON_CREST_OUTER_STORY = 104;
+export const CARBON_CREST_OUTER_FEED = 84;
+export const CARBON_CREST_GLOW_STORY = 114;
+export const CARBON_CREST_GLOW_FEED = 94;
+
+/** Crest → title gap (crest bottom → primary title baseline). */
+export const GAP_CREST_TITLE_STORY = 30;
+export const GAP_CREST_TITLE_FEED = 26;
+/** Title block → dual band top. */
+export const GAP_TITLE_DUAL_STORY = 52;
+export const GAP_TITLE_DUAL_FEED = 48;
+/** Dual bottom → plaque top; plaque bottom → verdict top. */
+export const GAP_STACK_STORY = 36;
+export const GAP_STACK_FEED = 34;
+/** Dual hero band height (compact vs legacy 236/200). */
+export const DUAL_BAND_STORY = 200;
+export const DUAL_BAND_FEED = 176;
+/** Breathing room under header rule / above stamp before centering. */
+export const STAGE_PAD_TOP_STORY = 28;
+export const STAGE_PAD_TOP_FEED = 20;
+export const STAGE_PAD_BOTTOM_STORY = 28;
+export const STAGE_PAD_BOTTOM_FEED = 20;
+
 /**
- * Carbon certificate rhythm — crest/title dock from top; dual→plaque→verdict
- * reverse-anchor from stamp so bottom black void collapses.
+ * Compact Centered Stack for Carbon plates.
+ * @param headerRuleY — bottom of header rule; defaults from `resolveCarbonLayout`.
+ * @param stampMaxY — verified-stamp baseline (content stage bottom anchor).
  */
 export function resolveSingleLeafCarbonRhythm(
   aspect: TelemetryReportAspect,
-  stampMaxY: number
+  stampMaxY: number,
+  headerRuleY = resolveCarbonLayout(aspect).headerRuleY
 ): SingleLeafCarbonRhythm {
   const isFeed = aspect === '4:5';
-  const titleY = isFeed ? 372 : 520;
-  const minDualTop = titleY + CARBON_BILINGUAL_TITLE_BLOCK_PX + (isFeed ? 26 : 44);
-  const dualBand = isFeed ? 200 : 236;
+  const crestOuter = isFeed ? CARBON_CREST_OUTER_FEED : CARBON_CREST_OUTER_STORY;
+  const crestGlow = isFeed ? CARBON_CREST_GLOW_FEED : CARBON_CREST_GLOW_STORY;
+  const gapCrestTitle = isFeed ? GAP_CREST_TITLE_FEED : GAP_CREST_TITLE_STORY;
+  const gapTitleDual = isFeed ? GAP_TITLE_DUAL_FEED : GAP_TITLE_DUAL_STORY;
+  const gapStack = isFeed ? GAP_STACK_FEED : GAP_STACK_STORY;
+  const dualBand = isFeed ? DUAL_BAND_FEED : DUAL_BAND_STORY;
+  const stagePadTop = isFeed ? STAGE_PAD_TOP_FEED : STAGE_PAD_TOP_STORY;
+  const stagePadBottom = isFeed ? STAGE_PAD_BOTTOM_FEED : STAGE_PAD_BOTTOM_STORY;
   const plaqueH = CARBON_TIER_CAPSULE_HEIGHT;
   const verdictH = CARBON_VERDICT_SLOT_HEIGHT;
-  const gapStamp = isFeed ? 18 : 26;
-  const gapVerdictPlaque = isFeed ? 16 : 20;
-  const gapPlaqueDual = isFeed ? 22 : 28;
 
-  const stampY = stampMaxY;
-  let verdictBottom = stampY - gapStamp;
-  let verdictTop = verdictBottom - verdictH;
-  let plaqueY = verdictTop - gapVerdictPlaque - plaqueH / 2;
-  let dualBottom = plaqueY - plaqueH / 2 - gapPlaqueDual;
-  let dualTop = dualBottom - dualBand;
+  // Relative stack from crest top (y = 0) — gaps match Compact Centered Stack brief.
+  const crestTop = 0;
+  const crestCy = crestTop + crestOuter;
+  const titleY = crestCy + crestOuter + gapCrestTitle;
+  const dualTop = titleY + CARBON_BILINGUAL_TITLE_BLOCK_PX + gapTitleDual;
+  const dualBottom = dualTop + dualBand;
+  const plaqueTop = dualBottom + gapStack;
+  const plaqueY = plaqueTop + plaqueH / 2;
+  const verdictTop = plaqueTop + plaqueH + gapStack;
+  const verdictBottom = verdictTop + verdictH;
+  const stackH = verdictBottom - crestTop;
 
-  // WHY: Title collision → forward-dock dual, then re-seat plaque/verdict under it.
-  if (dualTop < minDualTop) {
-    dualTop = minDualTop;
-    dualBottom = dualTop + dualBand;
-    plaqueY = dualBottom + gapPlaqueDual + plaqueH / 2;
-    verdictTop = plaqueY + plaqueH / 2 + gapVerdictPlaque;
-    verdictBottom = verdictTop + verdictH;
-    // Prefer keeping stamp clearance if the forward stack still fits.
-    if (verdictBottom + gapStamp > stampY) {
-      verdictTop = stampY - gapStamp - verdictH;
-      plaqueY = verdictTop - gapVerdictPlaque - plaqueH / 2;
-      dualBottom = plaqueY - plaqueH / 2 - gapPlaqueDual;
-      dualTop = Math.min(dualBottom - Math.max(160, dualBand * 0.75), dualBottom - 160);
-      dualTop = Math.max(minDualTop, dualTop);
-    }
-  }
+  const stageTop = headerRuleY + stagePadTop;
+  const stageBottom = stampMaxY - stagePadBottom;
+  const stageSpan = stageBottom - stageTop;
+  // Center the compact group; if stage is tighter than stack, pin to stageTop.
+  const offset = stageTop + Math.max(0, (stageSpan - stackH) / 2);
 
   return {
-    crestCy: isFeed ? 236 : 330,
-    crestOuter: isFeed ? 84 : 104,
-    crestGlow: isFeed ? 94 : 114,
-    titleY,
-    dualTop,
-    dualBottom,
-    plaqueY,
-    verdictTop,
+    crestCy: crestCy + offset,
+    crestOuter,
+    crestGlow,
+    titleY: titleY + offset,
+    dualTop: dualTop + offset,
+    dualBottom: dualBottom + offset,
+    plaqueY: plaqueY + offset,
+    verdictTop: verdictTop + offset,
     verdictHeight: verdictH,
-    stampY,
+    stampY: stampMaxY,
   };
 }

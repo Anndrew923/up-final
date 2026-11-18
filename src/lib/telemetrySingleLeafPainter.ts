@@ -146,7 +146,11 @@ export function paintSingleLeafCertificate(
   const contentRight = w - 96;
   const contentWidth = contentRight - contentLeft;
   const cx = w / 2;
-  const rhythm = resolveSingleLeafCarbonRhythm(input.aspectRatio, layout.stampMaxY);
+  const rhythm = resolveSingleLeafCarbonRhythm(
+    input.aspectRatio,
+    layout.stampMaxY,
+    layout.headerRuleY
+  );
 
   paintCertificateFrame(ctx, layout.plateWidth, layout.plateHeight);
 

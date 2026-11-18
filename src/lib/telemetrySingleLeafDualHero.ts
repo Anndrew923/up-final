@@ -47,6 +47,7 @@ import {
   type SelfieMetricParts,
 } from './telemetrySingleLeafMetricMix';
 import {
+  CARBON_BILINGUAL_TITLE_BLOCK_PX,
   CARBON_VERDICT_SLOT_HEIGHT,
   CARBON_VERDICT_SLOT_MAX,
   CARBON_VERDICT_SLOT_MIN,
@@ -79,8 +80,8 @@ const SERIF = TELEMETRY_SERIF_FONT_STACK;
 export const DUAL_HERO_GAP = 28;
 export const DUAL_HERO_DIVIDER_PAD = 14;
 
-/** Foil ZH title + EN subtitle block — carbon rhythm; do not enlarge for selfie. */
-export const BILINGUAL_TITLE_BLOCK_PX = 52;
+/** Foil ZH title + EN subtitle block — carbon rhythm SSOT; do not enlarge for selfie. */
+export const BILINGUAL_TITLE_BLOCK_PX = CARBON_BILINGUAL_TITLE_BLOCK_PX;
 
 /** Selfie dual-hero inward centers — 35px gutter each side of plate mid (540). */
 export const SELFIE_DUAL_HERO_LEFT_CX = 335;

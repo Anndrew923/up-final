@@ -51,7 +51,12 @@ export function resolveUiLocaleFromI18n(i18n: {
 
 /** Extract language tag from i18next `t` binding (resolvedLanguage first). */
 export function resolveLanguageFromT(t: unknown): string | undefined {
-  if (!t || typeof t !== 'object') return undefined;
+  // WHY: i18next `TFunction` is callable (`typeof === 'function'`) but still
+  // carries `language` / `resolvedLanguage` as own properties — object-only
+  // guards silently drop EN and force zh verdict/title paths.
+  if (t == null || (typeof t !== 'object' && typeof t !== 'function')) {
+    return undefined;
+  }
   const rec = t as { language?: unknown; resolvedLanguage?: unknown };
   if (typeof rec.resolvedLanguage === 'string') return rec.resolvedLanguage;
   if (typeof rec.language === 'string') return rec.language;

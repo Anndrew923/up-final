@@ -47,5 +47,7 @@ describe('resolveUiLocale', () => {
       resolveLanguageFromT({ language: 'zh-Hant', resolvedLanguage: 'en-GB' })
     ).toBe('en-GB');
     expect(resolveLanguageFromT({ language: 'en' })).toBe('en');
+    const tFn = Object.assign(() => '', { language: 'en-US' });
+    expect(resolveLanguageFromT(tFn)).toBe('en-US');
   });
 });

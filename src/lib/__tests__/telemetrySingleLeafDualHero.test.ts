@@ -49,6 +49,22 @@ import {
   splitMetricParts,
   splitSelfieMetricParts,
 } from '../telemetrySingleLeafDualHero';
+import {
+  CARBON_BILINGUAL_TITLE_BLOCK_PX,
+  CARBON_CREST_OUTER_FEED,
+  CARBON_CREST_OUTER_STORY,
+  DUAL_BAND_FEED,
+  DUAL_BAND_STORY,
+  GAP_STACK_FEED,
+  GAP_STACK_STORY,
+  GAP_TITLE_DUAL_FEED,
+  GAP_TITLE_DUAL_STORY,
+  STAGE_PAD_BOTTOM_FEED,
+  STAGE_PAD_BOTTOM_STORY,
+  STAGE_PAD_TOP_FEED,
+  STAGE_PAD_TOP_STORY,
+} from '../telemetrySingleLeafCarbonRhythm';
+import { resolveCarbonLayout } from '../telemetryCardLayout';
 import { SINGLE_LEAF_VERDICT_SLOT_HEIGHT } from '../telemetryReportTypes';
 import type { TelemetryDrawContext } from '../telemetryCardTypes';
 import type { TelemetrySingleLeafCardInput } from '../telemetryReportTypes';
@@ -146,7 +162,7 @@ describe('telemetrySingleLeafDualHero', () => {
     expect(CARBON_METRIC_PART_GAP_PX).toBe(9);
   });
 
-  it('locks carbon mid-axis plaque + verdict slot contracts', () => {
+  it('locks carbon mid-axis plaque + Compact Centered Stack contracts', () => {
     expect(CARBON_TIER_CAPSULE_FONT_PX).toBe(29);
     expect(CARBON_TIER_CAPSULE_HEIGHT).toBe(58);
     expect(CARBON_TIER_CAPSULE_MIN_WIDTH).toBe(260);
@@ -154,20 +170,68 @@ describe('telemetrySingleLeafDualHero', () => {
     expect(SINGLE_LEAF_VERDICT_SLOT_HEIGHT).toBe(122);
     expect(CARBON_VERDICT_SLOT_HEIGHT).toBeGreaterThanOrEqual(CARBON_VERDICT_SLOT_MIN);
     expect(CARBON_VERDICT_SLOT_HEIGHT).toBeLessThanOrEqual(CARBON_VERDICT_SLOT_MAX);
+    expect(BILINGUAL_TITLE_BLOCK_PX).toBe(CARBON_BILINGUAL_TITLE_BLOCK_PX);
 
-    const storyStampMaxY = 1920 - (48 + 10) - 24;
-    const story = resolveSingleLeafCarbonRhythm('9:16', storyStampMaxY);
-    expect(story.plaqueY).toBeGreaterThan(story.dualBottom);
-    expect(story.verdictTop).toBeGreaterThan(story.plaqueY);
+    const storyLayout = resolveCarbonLayout('9:16');
+    const story = resolveSingleLeafCarbonRhythm(
+      '9:16',
+      storyLayout.stampMaxY,
+      storyLayout.headerRuleY
+    );
+    expect(story.crestOuter).toBe(CARBON_CREST_OUTER_STORY);
+    expect(story.dualBottom - story.dualTop).toBe(DUAL_BAND_STORY);
+    expect(story.dualTop - (story.titleY + CARBON_BILINGUAL_TITLE_BLOCK_PX)).toBe(
+      GAP_TITLE_DUAL_STORY
+    );
+    expect(story.plaqueY).toBe(
+      story.dualBottom + GAP_STACK_STORY + CARBON_TIER_CAPSULE_HEIGHT / 2
+    );
+    expect(story.verdictTop).toBe(
+      story.plaqueY + CARBON_TIER_CAPSULE_HEIGHT / 2 + GAP_STACK_STORY
+    );
     expect(story.verdictHeight).toBe(122);
     expect(story.verdictTop + story.verdictHeight).toBeLessThan(story.stampY);
-    // Mid-axis plaque sits on plate centerline (cx = 540) — rhythm owns Y only.
-    expect(SELFIE_DUAL_HERO_DIVIDER_X).toBe(540);
+    // Outer gaps stay symmetric when stage pads match (header→crest vs verdict→stamp).
+    expect(STAGE_PAD_TOP_STORY).toBe(STAGE_PAD_BOTTOM_STORY);
+    const storyCrestTop = story.crestCy - story.crestOuter;
+    const storyVerdictBottom = story.verdictTop + story.verdictHeight;
+    const storyGapTop = storyCrestTop - storyLayout.headerRuleY;
+    const storyGapBottom = story.stampY - storyVerdictBottom;
+    expect(storyGapTop).toBe(storyGapBottom);
+    expect(storyGapTop).toBeGreaterThanOrEqual(STAGE_PAD_TOP_STORY);
 
-    const feedStampMaxY = 1350 - (48 + 10) - 20;
-    const feed = resolveSingleLeafCarbonRhythm('4:5', feedStampMaxY);
+    const feedLayout = resolveCarbonLayout('4:5');
+    const feed = resolveSingleLeafCarbonRhythm(
+      '4:5',
+      feedLayout.stampMaxY,
+      feedLayout.headerRuleY
+    );
+    expect(feed.crestOuter).toBe(CARBON_CREST_OUTER_FEED);
+    expect(feed.dualBottom - feed.dualTop).toBe(DUAL_BAND_FEED);
+    expect(feed.dualTop - (feed.titleY + CARBON_BILINGUAL_TITLE_BLOCK_PX)).toBe(
+      GAP_TITLE_DUAL_FEED
+    );
+    expect(feed.plaqueY).toBe(
+      feed.dualBottom + GAP_STACK_FEED + CARBON_TIER_CAPSULE_HEIGHT / 2
+    );
     expect(feed.verdictTop + feed.verdictHeight).toBeLessThan(feed.stampY);
-    expect(feed.dualTop).toBeLessThan(feed.dualBottom);
+    expect(STAGE_PAD_TOP_FEED).toBe(STAGE_PAD_BOTTOM_FEED);
+    const feedCrestTop = feed.crestCy - feed.crestOuter;
+    const feedVerdictBottom = feed.verdictTop + feed.verdictHeight;
+    const feedGapTop = feedCrestTop - feedLayout.headerRuleY;
+    const feedGapBottom = feed.stampY - feedVerdictBottom;
+    expect(feedGapTop).toBe(feedGapBottom);
+    expect(feedGapTop).toBeGreaterThanOrEqual(STAGE_PAD_TOP_FEED);
+
+    // Default headerRuleY must track layout SSOT (no twin 126/158 literals).
+    const storyDefault = resolveSingleLeafCarbonRhythm('9:16', storyLayout.stampMaxY);
+    expect(storyDefault.titleY).toBe(story.titleY);
+    const feedDefault = resolveSingleLeafCarbonRhythm('4:5', feedLayout.stampMaxY);
+    expect(feedDefault.titleY).toBe(feed.titleY);
+
+    // Tight stage pins stack to stageTop (no negative offset).
+    const tight = resolveSingleLeafCarbonRhythm('9:16', 900, 100);
+    expect(tight.crestCy - tight.crestOuter).toBe(100 + STAGE_PAD_TOP_STORY);
   });
 
   it('exports large ceremonial plaque + wing constants', () => {
