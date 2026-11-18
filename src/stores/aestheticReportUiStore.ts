@@ -6,6 +6,7 @@
  */
 import { create } from 'zustand';
 import type { AestheticAxisSummaryAxis } from '../logic/aesthetic/axisSummaryReport';
+import type { MuscleAxisMeasuredMetrics } from '../logic/aesthetic/muscleAxisMeasured';
 import type { SingleLeafId } from '../logic/aesthetic/singleLeafReport';
 import type { SmartDefaultSelection } from '../logic/aesthetic/singleLeafReport';
 
@@ -14,12 +15,20 @@ export type AestheticAxisSummarySelection = {
   axis: AestheticAxisSummaryAxis;
   heroScore: number;
   coveredCount: number;
+  /** WHY: Muscle plate left column shows measured kg/% instead of "N 項綜合". */
+  muscleMeasured?: MuscleAxisMeasuredMetrics;
 };
 
 export type AestheticReportSelection =
   | { reportType: 'full' }
   | { reportType: 'single-leaf'; leaf: SingleLeafId }
   | AestheticAxisSummarySelection;
+
+export type AestheticAxisSummaryOpenPayload = {
+  heroScore: number;
+  coveredCount: number;
+  muscleMeasured?: MuscleAxisMeasuredMetrics;
+};
 
 export interface AestheticReportUiStore {
   isOpen: boolean;
@@ -28,7 +37,7 @@ export interface AestheticReportUiStore {
   openWithLeaf: (leaf: SingleLeafId) => void;
   openWithAxisSummary: (
     axis: AestheticAxisSummaryAxis,
-    payload: { heroScore: number; coveredCount: number }
+    payload: AestheticAxisSummaryOpenPayload
   ) => void;
   close: () => void;
 }
@@ -56,6 +65,7 @@ export const useAestheticReportUiStore = create<AestheticReportUiStore>((set) =>
         axis,
         heroScore: payload.heroScore,
         coveredCount: payload.coveredCount,
+        ...(payload.muscleMeasured ? { muscleMeasured: payload.muscleMeasured } : {}),
       },
     });
   },

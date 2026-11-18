@@ -187,9 +187,23 @@ describe('AssessmentLobbyCard', () => {
     unmount();
   });
 
-  it('renders a pure single-line title without subtitle tier', () => {
-    const { container, unmount } = renderCard({ title: '最大肌力', glanceLabel: '未測' });
-    expect(container.querySelector('h2')?.textContent).toBe('最大肌力');
+  it('wraps dual-col titles up to two lines beside a vertically centered glance rail', () => {
+    const { container, unmount } = renderCard({
+      title: 'Skeletal Muscle',
+      glanceLabel: '88.12',
+      glanceFilled: true,
+      size: 'standard',
+    });
+    const link = container.querySelector('a');
+    const title = container.querySelector('h2');
+    expect(link?.className).toContain('items-center');
+    expect(title?.textContent).toBe('Skeletal Muscle');
+    expect(title?.className.split(/\s+/)).not.toContain('truncate');
+    expect(title?.className.split(/\s+/)).not.toContain('whitespace-nowrap');
+    expect(title?.className).toContain('line-clamp-2');
+    expect(title?.className).toContain('break-words');
+    expect(title?.className).toContain('leading-snug');
+    expect(title?.className).toContain('text-[11px]');
     expect(container.querySelector('p')).toBeNull();
     expect(container.textContent).not.toContain('整車馬力');
     unmount();

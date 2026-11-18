@@ -217,4 +217,33 @@ describe('MuscleAssessmentPage reference disclosure', () => {
 
     unmount();
   });
+
+  it('shows dual-branch breakdown permanently under the hero score', () => {
+    mockUseMuscleAssessmentPage.mockReturnValue({
+      ...baseHookReturn(),
+      previewScore: 88.25,
+      previewBreakdown: {
+        smPercent: 47.41,
+        smmScoreRaw: 92.1,
+        smPercentScoreRaw: 84.4,
+      },
+    });
+    mockUseScoreMeaning.mockReturnValue({
+      title: null,
+      summary: null,
+      bandId: 'TIER_80',
+      decadeKey: '80',
+      populationClass: '高階玩家',
+      nextMilestone: null,
+      remainingPoints: null,
+    });
+
+    const { container, unmount } = renderPage();
+    const line = container.querySelector('[data-testid="muscle-breakdown-line"]');
+    expect(line).toBeTruthy();
+    expect(line?.textContent).toContain('muscle.breakdownLine');
+    expect(container.querySelector('#muscle-calc-details')).toBeNull();
+
+    unmount();
+  });
 });

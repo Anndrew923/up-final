@@ -15,6 +15,7 @@ import {
   resolveCarbonPrimaryTitle,
   resolveCarbonSecondaryTitle,
 } from '../../lib/telemetrySingleLeafDualHero';
+import { useUnitPreferenceStore } from '../../stores/unitPreferenceStore';
 import AestheticCarbonCenteredStack from './AestheticCarbonCenteredStack';
 import AestheticCardArmor from './AestheticCardArmor';
 import {
@@ -45,6 +46,7 @@ const AestheticAxisSummaryCard: FC<AestheticAxisSummaryCardProps> = ({
   aspectRatio = '9:16',
 }) => {
   const { t, i18n } = useTranslation('common');
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
   const viewportRef = useRef<HTMLElement>(null);
   const plate = resolveTelemetryCardSize(aspectRatio);
   const scale = useCertPlateFitScale(viewportRef, plate.width, plate.height);
@@ -61,14 +63,16 @@ const AestheticAxisSummaryCard: FC<AestheticAxisSummaryCardProps> = ({
           axis: selection.axis,
           heroScore: selection.heroScore,
           coveredCount: selection.coveredCount,
+          muscleMeasured: selection.muscleMeasured,
         },
         {
           mode: 'carbon',
           aspectRatio,
           uiLocale: resolveUiLocaleFromI18n(i18n),
+          unitSystem,
         }
       ),
-    [aspectRatio, i18n.language, i18n.resolvedLanguage, selection, t]
+    [aspectRatio, i18n.language, i18n.resolvedLanguage, selection, t, unitSystem]
   );
   const primaryTitle = resolveCarbonPrimaryTitle(plateCopy);
   const secondaryTitle = resolveCarbonSecondaryTitle(plateCopy);

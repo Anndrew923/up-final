@@ -30,6 +30,7 @@ import {
 import { shareTelemetryCardPng } from '../services/telemetryCardShareService';
 import type { AestheticAxisSummaryAxis } from '../logic/aesthetic/axisSummaryReport';
 import type { AestheticReportSelection } from '../stores/aestheticReportUiStore';
+import { useUnitPreferenceStore } from '../stores/unitPreferenceStore';
 import { resolveUiLocaleFromI18n } from '../i18n/language';
 import { buildAestheticTelemetryExportInput } from './buildAestheticTelemetryExportInput';
 import { buildAestheticSingleLeafExportInput } from './buildAestheticSingleLeafExportInput';
@@ -100,6 +101,7 @@ export function useAestheticTelemetryShare(
 ) {
   const { t, i18n } = useTranslation('common');
   const scores = useMergedScoresFromLocalStores();
+  const unitSystem = useUnitPreferenceStore((s) => s.unitSystem);
   const [mode, setMode] = useState<AestheticTelemetryMode>('carbon');
   const [aspectRatio, setAspectRatio] = useState<AestheticTelemetryAspect>(() =>
     readAestheticTelemetryAspectSession()
@@ -140,11 +142,17 @@ export function useAestheticTelemetryShare(
       ].join('|');
     }
     if (selection.reportType === 'axis-summary') {
+      const measured = selection.muscleMeasured;
+      const measuredFp = measured
+        ? `${measured.smmKg.toFixed(2)}:${measured.smPercent.toFixed(2)}`
+        : '';
       return [
         'axis-summary',
         selection.axis,
         selection.heroScore.toFixed(2),
         String(selection.coveredCount),
+        measuredFp,
+        unitSystem,
         i18n.resolvedLanguage ?? i18n.language,
       ].join('|');
     }
@@ -167,6 +175,7 @@ export function useAestheticTelemetryShare(
     model.overallScore,
     scores,
     selection,
+    unitSystem,
   ]);
 
   const currentStamp = useMemo<SelfieBlobStamp>(
@@ -257,12 +266,14 @@ export function useAestheticTelemetryShare(
             axis: selection.axis,
             heroScore: selection.heroScore,
             coveredCount: selection.coveredCount,
+            muscleMeasured: selection.muscleMeasured,
           },
           {
             mode: dualMode,
             aspectRatio: aspect,
             background,
             uiLocale,
+            unitSystem,
           }
         );
       }
@@ -273,7 +284,7 @@ export function useAestheticTelemetryShare(
       });
       return { ...full, reportType: 'full' };
     },
-    [i18n.language, i18n.resolvedLanguage, leafResult, model, scores, selection, t]
+    [i18n.language, i18n.resolvedLanguage, leafResult, model, scores, selection, t, unitSystem]
   );
 
   const composeSelfiePreview = useCallback(

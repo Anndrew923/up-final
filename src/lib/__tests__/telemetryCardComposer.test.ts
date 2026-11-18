@@ -361,6 +361,60 @@ describe('selfie HUD geometry isolation', () => {
     expect(TELEMETRY_HUD_COLUMN_DIVIDER.y1).toBe(TELEMETRY_HUD_RIGHT_BOTTOM_Y);
     expect(TELEMETRY_HUD_LAYOUT).not.toHaveProperty('battleCodeY');
   });
+
+  it('keeps 9:16 and 4:5 dual-column top/bottom edge deltas identical', () => {
+    const story = resolveSelfieLayout('9:16');
+    const feed = resolveSelfieLayout('4:5');
+
+    const edgeMetrics = (layout: ReturnType<typeof resolveSelfieLayout>) => {
+      const rightBottom =
+        layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy;
+      const radarTop = layout.radar.cy - layout.radar.labelRadius;
+      const radarBottom = layout.radar.cy + layout.radar.labelRadius;
+      return {
+        topDelta: layout.hud.brandY - radarTop,
+        bottomDelta: rightBottom - radarBottom,
+        brandFromCy: layout.hud.brandY - layout.radar.cy,
+        scoreFromCy: layout.hud.scoreY - layout.radar.cy,
+        titleFromCy: layout.hud.titleY - layout.radar.cy,
+        specStartFromCy: layout.hud.specStartY - layout.radar.cy,
+        clipFromCy: layout.hud.clip.y - layout.radar.cy,
+        rightBottom,
+        columnMid: (layout.hud.brandY + rightBottom) / 2,
+      };
+    };
+
+    const storyEdge = edgeMetrics(story);
+    const feedEdge = edgeMetrics(feed);
+
+    // Shared vertical contract — feed must not reintroduce the old +44px top skew.
+    expect(storyEdge.topDelta).toBe(8);
+    expect(feedEdge.topDelta).toBe(storyEdge.topDelta);
+    expect(feedEdge.bottomDelta).toBe(storyEdge.bottomDelta);
+    expect(feedEdge.brandFromCy).toBe(storyEdge.brandFromCy);
+    expect(feedEdge.scoreFromCy).toBe(storyEdge.scoreFromCy);
+    expect(feedEdge.titleFromCy).toBe(storyEdge.titleFromCy);
+    expect(feedEdge.specStartFromCy).toBe(storyEdge.specStartFromCy);
+    expect(feedEdge.clipFromCy).toBe(storyEdge.clipFromCy);
+    expect(story.hud.specRowGap).toBe(feed.hud.specRowGap);
+    expect(story.hud.specTitleDy).toBe(feed.hud.specTitleDy);
+
+    for (const [layout, edge] of [
+      [story, storyEdge],
+      [feed, feedEdge],
+    ] as const) {
+      const opticalDelta = Math.abs(layout.radar.cy - edge.columnMid);
+      expect(opticalDelta).toBeGreaterThanOrEqual(30);
+      expect(opticalDelta).toBeLessThanOrEqual(45);
+      expect(edge.rightBottom).toBeLessThan(
+        layout.plateHeight - layout.reticle.inset - 24
+      );
+      // Scrim bed starts at 45% plate height — dual columns must sit fully under it.
+      const scrimY0 = layout.plateHeight * TELEMETRY_SELFIE_SCRIM_START_RATIO;
+      expect(layout.radar.cy - layout.radar.labelRadius).toBeGreaterThan(scrimY0);
+      expect(layout.hud.brandY).toBeGreaterThan(scrimY0);
+    }
+  });
 });
 
 describe('carbon certificate footer clearance', () => {
@@ -803,26 +857,35 @@ describe('composeTelemetryCard', () => {
     expect(layout.hud.clip.w).toBe(402);
     expect(layout.hud.textMaxWidth).toBe(402);
     expect(layout.radar.cy).toBe(1023);
-    expect(layout.hud.brandY).toBe(859);
-    expect(layout.hud.scoreY).toBe(944);
-    expect(layout.hud.titleY).toBe(1019);
-    expect(layout.hud.specStartY).toBe(1104);
-    expect(layout.hud.clip.y).toBe(779);
+    // WHY: 9:16-relative anchors (cy−200 / −105 / −25 / +68) — not the old compact dock.
+    expect(layout.hud.brandY).toBe(823);
+    expect(layout.hud.scoreY).toBe(918);
+    expect(layout.hud.titleY).toBe(998);
+    expect(layout.hud.specStartY).toBe(1091);
+    expect(layout.hud.specRowGap).toBe(88);
+    expect(layout.hud.specTitleDy).toBe(30);
+    expect(layout.hud.clip).toEqual({ x: 630, y: 643, w: 402, h: 679 });
     const rightBottom =
       layout.hud.specStartY + 2 * layout.hud.specRowGap + layout.hud.specTitleDy;
-    expect(rightBottom).toBe(1266);
+    expect(rightBottom).toBe(1297);
     const columnMid = (layout.hud.brandY + rightBottom) / 2;
     const opticalDelta = Math.abs(layout.radar.cy - columnMid);
     expect(opticalDelta).toBeGreaterThanOrEqual(30);
     expect(opticalDelta).toBeLessThanOrEqual(45);
     expect(layout.radar.cx - layout.radar.labelRadius).toBeGreaterThanOrEqual(48);
-    expect(layout.hud.brandY).toBeGreaterThan(675);
-    expect(layout.radar.cy - layout.radar.labelRadius).toBeGreaterThan(675);
+    // Feed dock stays in the lower half so the photo face remains readable above.
+    expect(layout.hud.brandY).toBeGreaterThan(layout.plateHeight / 2);
+    expect(layout.radar.cy - layout.radar.labelRadius).toBeGreaterThan(
+      layout.plateHeight / 2
+    );
     expect(rightBottom).toBeLessThan(layout.plateHeight - layout.reticle.inset - 24);
     expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThan(
       layout.plateHeight - layout.reticle.inset - 24
     );
     expect(layout.radar.cy + layout.radar.labelRadius).toBeLessThanOrEqual(1275);
+    expect(layout.hud.clip.y + layout.hud.clip.h).toBeLessThanOrEqual(
+      layout.plateHeight - layout.reticle.inset
+    );
     expect(TELEMETRY_FEED_WALL_HARD_SHADOW).toMatchObject({
       color: 'rgba(0, 0, 0, 0.92)',
       blur: 2,

@@ -173,6 +173,7 @@
       "coverageReadingZh": "{{count}} 項綜合",
       "coverageUnitLifts": "LIFTS",
       "coverageUnitTests": "TESTS",
+      "muscleDualMetricLabel": "SMM · BW RATIO",
       "strength": {
         "titleZh": "力量綜合評測",
         "titleEn": "STRENGTH TEST"

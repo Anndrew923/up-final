@@ -135,53 +135,85 @@ const CARBON_4_5: TelemetryCarbonLayout = {
 };
 
 /**
+ * Shared HUD vertical rhythm relative to radar.cy.
+ * WHY: Single SSOT so 4:5 cannot reintroduce top-edge skew vs 9:16 (was +44px).
+ */
+const SELFIE_HUD_FROM_RADAR_CY = {
+  brandY: -200,
+  scoreY: -105,
+  titleY: -25,
+  specStartY: 68,
+  clipY: -380,
+  specRowGap: 88,
+  specTitleDy: 30,
+} as const;
+
+const SELFIE_HUD_COLUMN = {
+  textX: 630,
+  clipX: 630,
+  clipW: 402,
+  textMaxWidth: 402,
+} as const;
+
+/** Left-biased radar — same cx/radius on both aspects; only cy reflows with plate height. */
+const SELFIE_RADAR_BASE = {
+  cx: 290,
+  outerRadius: 164,
+  labelRadius: 208,
+} as const;
+
+function buildSelfieHud(
+  radarCy: number,
+  clipHeight: number
+): TelemetrySelfieLayout['hud'] {
+  const o = SELFIE_HUD_FROM_RADAR_CY;
+  const c = SELFIE_HUD_COLUMN;
+  return {
+    clip: { x: c.clipX, y: radarCy + o.clipY, w: c.clipW, h: clipHeight },
+    textX: c.textX,
+    brandY: radarCy + o.brandY,
+    scoreY: radarCy + o.scoreY,
+    titleY: radarCy + o.titleY,
+    specStartY: radarCy + o.specStartY,
+    specRowGap: o.specRowGap,
+    specTitleDy: o.specTitleDy,
+    textMaxWidth: c.textMaxWidth,
+  };
+}
+
+/**
  * Story 9:16 selfie dock — open vertical rhythm with optical vertical leveling.
  * WHY: Radar −24px / HUD +16px offsets the top-heavy score glyph so both columns
  * read level; third spec stays inside the h:800 clip above reticles.
  */
+const SELFIE_9_16_RADAR_CY = 1436;
+const SELFIE_9_16_CLIP_H = 800;
 const SELFIE_9_16: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 122, outerRadius: 54, yearDy: 70 },
   reticle: { inset: 36, arm: 36 },
-  // WHY: Optical vertical compensation (radar −24 / HUD +16); cx/radius keep ~60% left weight.
-  radar: { cx: 290, cy: 1436, outerRadius: 164, labelRadius: 208 },
-  hud: {
-    clip: { x: 630, y: 1056, w: 402, h: 800 },
-    textX: 630,
-    brandY: 1236,
-    scoreY: 1331,
-    titleY: 1411,
-    specStartY: 1504,
-    specRowGap: 88,
-    specTitleDy: 30,
-    textMaxWidth: 402,
-  },
+  radar: { ...SELFIE_RADAR_BASE, cy: SELFIE_9_16_RADAR_CY },
+  hud: buildSelfieHud(SELFIE_9_16_RADAR_CY, SELFIE_9_16_CLIP_H),
   useFeedWallHardShadow: false,
   plateHeight: TELEMETRY_CARD_HEIGHT,
   plateWidth: TELEMETRY_CARD_WIDTH,
 };
 
 /**
- * Feed 4:5 selfie dock — same optical vertical leveling as 9:16 (−24 / +16),
- * with cy + labelRadius kept under plateHeight - reticle.inset - 24.
+ * Feed 4:5 selfie dock — derived from the same cy-relative HUD SSOT as 9:16.
+ * WHY clip.h = plate − reticle − clip.y: shorter plate must still clear L-frame arms.
  */
+const SELFIE_4_5_RADAR_CY = 1023;
+const SELFIE_4_5_PLATE_H = 1350;
+const SELFIE_4_5_RETICLE_INSET = 28;
+const SELFIE_4_5_CLIP_Y = SELFIE_4_5_RADAR_CY + SELFIE_HUD_FROM_RADAR_CY.clipY;
+const SELFIE_4_5_CLIP_H = SELFIE_4_5_PLATE_H - SELFIE_4_5_RETICLE_INSET - SELFIE_4_5_CLIP_Y;
 const SELFIE_4_5: TelemetrySelfieLayout = {
   watermark: { cx: 942, cy: 88, outerRadius: 42, yearDy: 54 },
-  reticle: { inset: 28, arm: 30 },
-  // WHY: Optical vertical compensation (radar −24 / HUD +16); horizontal weight matches 9:16.
-  radar: { cx: 290, cy: 1023, outerRadius: 164, labelRadius: 208 },
-  hud: {
-    clip: { x: 630, y: 779, w: 402, h: 720 },
-    textX: 630,
-    brandY: 859,
-    scoreY: 944,
-    titleY: 1019,
-    specStartY: 1104,
-    specRowGap: 68,
-    specTitleDy: 26,
-    textMaxWidth: 402,
-  },
+  reticle: { inset: SELFIE_4_5_RETICLE_INSET, arm: 30 },
+  radar: { ...SELFIE_RADAR_BASE, cy: SELFIE_4_5_RADAR_CY },
+  hud: buildSelfieHud(SELFIE_4_5_RADAR_CY, SELFIE_4_5_CLIP_H),
   useFeedWallHardShadow: true,
-  plateHeight: 1350,
+  plateHeight: SELFIE_4_5_PLATE_H,
   plateWidth: TELEMETRY_CARD_WIDTH,
 };
 

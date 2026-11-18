@@ -4,6 +4,7 @@ import { buildAestheticAxisSummaryExportInput } from '../buildAestheticAxisSumma
 
 function fakeT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.axisSummary.coverageLabel') return '評測覆蓋';
+  if (key === 'aesthetic.axisSummary.muscleDualMetricLabel') return '骨骼肌 · 體重比';
   if (key === 'aesthetic.axisSummary.coverageReadingZh') {
     return `${opts?.count ?? 0} 項綜合`;
   }
@@ -20,6 +21,8 @@ function fakeT(key: string, opts?: Record<string, unknown>): string {
     return `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${opts?.year}`;
   }
   if (key === 'aesthetic.labels.brandHeader') return '最強肉體 // 生理統治力';
+  if (key === 'units.weight.kg') return 'kg';
+  if (key === 'units.weight.lb') return 'lb';
   if (key === 'dynoIntel.humanPraise.byDecade.70.populationClass') return '進階訓練者';
   if (key === 'dynoIntel.humanPraise.byDecade.100.populationClass') return '凡體覺醒';
   if (key.startsWith('dynoIntel.humanPraise.byDecade.')) return '嬰兒期';
@@ -28,6 +31,7 @@ function fakeT(key: string, opts?: Record<string, unknown>): string {
 
 function fakeEnT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.axisSummary.coverageLabel') return 'COVERAGE';
+  if (key === 'aesthetic.axisSummary.muscleDualMetricLabel') return 'SMM · BW RATIO';
   if (key === 'aesthetic.axisSummary.coverageUnitLifts') return 'LIFTS';
   if (key === 'aesthetic.axisSummary.coverageUnitTests') return 'TESTS';
   if (key === 'aesthetic.axisSummary.strength.titleZh') return '力量綜合評測';
@@ -41,6 +45,8 @@ function fakeEnT(key: string, opts?: Record<string, unknown>): string {
     return `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${opts?.year}`;
   }
   if (key === 'aesthetic.labels.brandHeader') return 'ULTIMATE PHYSIQUE';
+  if (key === 'units.weight.kg') return 'kg';
+  if (key === 'units.weight.lb') return 'lb';
   if (key === 'dynoIntel.humanPraise.byDecade.70.populationClass') return 'Advanced Lifter';
   if (key.startsWith('dynoIntel.humanPraise.byDecade.')) return 'Rookie';
   return key;
@@ -101,7 +107,6 @@ describe('buildAestheticAxisSummaryExportInput', () => {
       expect(input.verdict?.critique).toMatch(/Among the strongest lifters/);
       expect(input.leafTitleEn).toBe('STRENGTH TEST');
       expect(input.rawReading).toBe('5 LIFTS');
-      // Visible plate fields (not leafTitleZh payload) must stay CJK-free.
       const visible = [
         input.leafTitleEn,
         input.rawMetricLabel,
@@ -119,7 +124,7 @@ describe('buildAestheticAxisSummaryExportInput', () => {
     }
   );
 
-  it('formats explosive/muscle EN coverage as N TESTS and golds at >= 100', () => {
+  it('formats explosive EN coverage as N TESTS and golds muscle at >= 100', () => {
     const explosive = buildAestheticAxisSummaryExportInput(
       Object.assign(fakeEnT, { language: 'en' }) as unknown as TFunction,
       { axis: 'explosivePower', heroScore: 88, coveredCount: 2 },
@@ -130,11 +135,44 @@ describe('buildAestheticAxisSummaryExportInput', () => {
 
     const overflow = buildAestheticAxisSummaryExportInput(
       fakeT as unknown as TFunction,
-      { axis: 'muscleMass', heroScore: 105, coveredCount: 2 },
-      { mode: 'carbon', aspectRatio: '9:16', uiLocale: 'zh' }
+      {
+        axis: 'muscleMass',
+        heroScore: 105,
+        coveredCount: 2,
+        muscleMeasured: { smmKg: 44, smPercent: 47.41 },
+      },
+      { mode: 'carbon', aspectRatio: '9:16', uiLocale: 'zh', unitSystem: 'metric' }
     );
     expect(overflow.isOverflow).toBe(true);
     expect(overflow.tierCapsule).toBe('凡體覺醒');
     expect(overflow.leafTitleZh).toBe('骨骼肌綜合評測');
+    expect(overflow.rawMetricLabel).toBe('骨骼肌 · 體重比');
+    expect(overflow.rawReading).toBe('44 kg · 47.4%');
+  });
+
+  it('falls back to coverage reading when muscleMeasured is missing', () => {
+    const input = buildAestheticAxisSummaryExportInput(
+      fakeT as unknown as TFunction,
+      { axis: 'muscleMass', heroScore: 88, coveredCount: 2 },
+      { mode: 'carbon', aspectRatio: '9:16', uiLocale: 'zh' }
+    );
+    expect(input.rawMetricLabel).toBe('評測覆蓋');
+    expect(input.rawReading).toBe('2 項綜合');
+  });
+
+  it('formats muscle measured reading in imperial with SMM · BW RATIO label', () => {
+    const input = buildAestheticAxisSummaryExportInput(
+      Object.assign(fakeEnT, { language: 'en' }) as unknown as TFunction,
+      {
+        axis: 'muscleMass',
+        heroScore: 88,
+        coveredCount: 2,
+        muscleMeasured: { smmKg: 32.5, smPercent: 42.14 },
+      },
+      { mode: 'carbon', aspectRatio: '9:16', uiLocale: 'en', unitSystem: 'imperial' }
+    );
+    expect(input.rawMetricLabel).toBe('SMM · BW RATIO');
+    expect(input.rawReading).toBe('71.7 lb · 42.1%');
+    expect(input.leafTitleEn).toBe('MUSCLE MASS TEST');
   });
 });

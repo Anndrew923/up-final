@@ -7,9 +7,15 @@ import {
   AXIS_SUMMARY_OVERFLOW_HERO,
   type AestheticAxisSummaryAxis,
 } from '../logic/aesthetic/axisSummaryReport';
+import {
+  formatMuscleAxisMeasuredReading,
+  isValidMuscleAxisMeasured,
+  type MuscleAxisMeasuredMetrics,
+} from '../logic/aesthetic/muscleAxisMeasured';
 import { resolveTelemetryVerdictForTarget } from '../logic/aesthetic/telemetryVerdictCatalog';
 import { resolveHumanScaleBandMeta } from '../logic/core/humanScaleBandResolver';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
+import type { UnitSystem } from '../logic/core/unitConverters';
 import {
   resolveLanguageFromT,
   resolveUiLocale,
@@ -42,6 +48,7 @@ export function buildAestheticAxisSummaryExportInput(
     axis: AestheticAxisSummaryAxis;
     heroScore: number;
     coveredCount: number;
+    muscleMeasured?: MuscleAxisMeasuredMetrics;
   },
   extras: {
     mode: 'carbon' | 'selfie';
@@ -49,6 +56,8 @@ export function buildAestheticAxisSummaryExportInput(
     background?: TelemetryBackgroundSource | null;
     brandHeader?: string;
     uiLocale?: TelemetryUiLocale;
+    /** Active display system for muscle dual raw (defaults metric). */
+    unitSystem?: UnitSystem;
   }
 ): TelemetryAxisSummaryCardInput {
   const year = new Date().getFullYear();
@@ -59,6 +68,11 @@ export function buildAestheticAxisSummaryExportInput(
     source.heroScore
   );
   const uiLocale = resolveUiLocale(resolveLanguageFromT(t), extras.uiLocale);
+  const unitSystem = extras.unitSystem ?? 'metric';
+  const muscleMeasured =
+    source.axis === 'muscleMass' && isValidMuscleAxisMeasured(source.muscleMeasured)
+      ? source.muscleMeasured
+      : null;
   const verdict =
     extras.mode === 'carbon'
       ? resolveTelemetryVerdictForTarget(
@@ -77,11 +91,19 @@ export function buildAestheticAxisSummaryExportInput(
     leafTitleZh: t(`aesthetic.axisSummary.${source.axis}.titleZh`),
     leafTitleEn: t(`aesthetic.axisSummary.${source.axis}.titleEn`),
     uiLocale,
-    rawReading: resolveCoverageReading(t, source.axis, source.coveredCount, uiLocale),
+    rawReading: muscleMeasured
+      ? formatMuscleAxisMeasuredReading(muscleMeasured, unitSystem, {
+          kg: t('units.weight.kg'),
+          lb: t('units.weight.lb'),
+        })
+      : resolveCoverageReading(t, source.axis, source.coveredCount, uiLocale),
     heroScore: source.heroScore,
     heroScoreText: scoreText,
     isOverflow: source.heroScore >= AXIS_SUMMARY_OVERFLOW_HERO,
-    rawMetricLabel: t('aesthetic.axisSummary.coverageLabel'),
+    // WHY dedicated muscleDualMetricLabel: dual raw is SMM + BW% — not generic RAW METRIC.
+    rawMetricLabel: muscleMeasured
+      ? t('aesthetic.axisSummary.muscleDualMetricLabel')
+      : t('aesthetic.axisSummary.coverageLabel'),
     upRatingLabel: t('aesthetic.singleLeaf.upRatingLabel'),
     tierCapsule: populationClass,
     ...(verdict ? { verdict } : {}),

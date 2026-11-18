@@ -50,6 +50,22 @@ describe('aestheticReportUiStore dual-track open', () => {
     });
   });
 
+  it('openWithAxisSummary can lock muscle measured dual raw', () => {
+    useAestheticReportUiStore.getState().openWithAxisSummary('muscleMass', {
+      heroScore: 88.2,
+      coveredCount: 2,
+      muscleMeasured: { smmKg: 32.5, smPercent: 42.1 },
+    });
+    const state = useAestheticReportUiStore.getState();
+    expect(state.selection).toEqual({
+      reportType: 'axis-summary',
+      axis: 'muscleMass',
+      heroScore: 88.2,
+      coveredCount: 2,
+      muscleMeasured: { smmKg: 32.5, smPercent: 42.1 },
+    });
+  });
+
   it('close clears open flag without wiping last selection identity', () => {
     useAestheticReportUiStore.getState().openWithLeaf('grip');
     useAestheticReportUiStore.getState().close();

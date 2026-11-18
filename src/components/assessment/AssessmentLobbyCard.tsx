@@ -31,8 +31,8 @@ function isModifiedPointerEvent(event: {
 }
 
 /**
- * WHY single-line titles (Plan A) + right glance (Phase 2): Metaphor subtitles removed;
- * status density moves to mono readout so the Bento does not feel hollow.
+ * WHY wrap-friendly titles + right glance: Metaphor subtitles removed; long EN labels
+ * (Explosive Power / Skeletal Muscle) fold via line-clamp-2 instead of single-line truncate.
  * WHY label/value material split: Title stays zinc medium; filled glance is amber mono so
  * the score reads as the primary datum without competing with the axis name.
  * WHY: `cn` does not tw-merge — radius must live only in SIZE_SHELL (not base + override).
@@ -43,10 +43,14 @@ const SIZE_SHELL: Record<AssessmentLobbyCardSize, string> = {
   capsule: 'min-h-[3rem] rounded-xl px-3.5 py-3 sm:min-h-[3.125rem]',
 };
 
+/**
+ * WHY size split: Hero keeps flagship scale; dual-col / capsule stay ~11–12px so
+ * two-line EN wraps (Explosive Power) do not crowd the glance rail.
+ */
 const SIZE_TITLE: Record<AssessmentLobbyCardSize, string> = {
-  hero: 'text-sm font-medium sm:text-base',
-  standard: 'text-xs font-medium sm:text-sm',
-  capsule: 'text-[11px] font-medium sm:text-xs',
+  hero: 'text-sm font-medium leading-snug sm:text-base',
+  standard: 'text-[11px] font-medium leading-snug sm:text-xs',
+  capsule: 'text-[11px] font-medium leading-snug sm:text-xs',
 };
 
 /** Filled glance weight/size — hero is the flagship rail. */
@@ -127,7 +131,8 @@ export function AssessmentLobbyCard({
 
       <h2
         className={cn(
-          'relative z-10 min-w-0 flex-1 truncate text-zinc-100 transition-colors group-hover:text-zinc-50',
+          // WHY line-clamp-2 (not truncate): dual-col EN titles wrap once; never ellipsis on line 1.
+          'relative z-10 min-w-0 flex-1 text-pretty break-words line-clamp-2 text-zinc-100 transition-colors group-hover:text-zinc-50',
           SIZE_TITLE[size]
         )}
       >

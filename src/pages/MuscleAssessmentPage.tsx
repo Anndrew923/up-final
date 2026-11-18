@@ -18,7 +18,6 @@ import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenc
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
 import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import { flushMuscleDraft } from '../hooks/flushSingleLeafAssessmentDraft';
-import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
@@ -27,6 +26,7 @@ import { useMuscleMilestoneHint } from '../hooks/useMuscleMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildMuscleAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import {
+  parseSmmKg,
   resolveMuscleDualSovereignI18nKey,
   SMM_KG_CEILING_FEMALE,
   SMM_KG_CEILING_MALE,
@@ -36,7 +36,6 @@ import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 const MuscleAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
   const [standardsInfoOpen, setStandardsInfoOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const {
     profileReady,
@@ -121,6 +120,12 @@ const MuscleAssessmentPage: FC = () => {
   // WHY: Muscle composite always blends SMM kg + SM% norms when preview succeeds.
   const muscleCoveredCount = previewBreakdown ? 2 : 0;
   const muscleAxisScore = previewScore ?? heroScore;
+  const muscleMeasured = useMemo(() => {
+    if (!previewBreakdown) return undefined;
+    const smmKg = parseSmmKg(smmInput);
+    if (smmKg == null) return undefined;
+    return { smmKg, smPercent: previewBreakdown.smPercent };
+  }, [previewBreakdown, smmInput]);
 
   const openMuscleAxisSummary = () => {
     if (muscleAxisScore == null || !Number.isFinite(muscleAxisScore) || muscleCoveredCount <= 0) {
@@ -131,6 +136,7 @@ const MuscleAssessmentPage: FC = () => {
     openWithAxisSummary('muscleMass', {
       heroScore: muscleAxisScore,
       coveredCount: muscleCoveredCount,
+      ...(muscleMeasured ? { muscleMeasured } : {}),
     });
   };
 
@@ -240,29 +246,26 @@ const MuscleAssessmentPage: FC = () => {
                       axis="muscleMass"
                       heroScore={muscleAxisScore}
                       coveredCount={muscleCoveredCount}
+                      muscleMeasured={muscleMeasured}
                       disabled={revealBlocking || scoreLocked}
                       onBeforeOpen={() => flushMuscleDraft(smmInput)}
                     />
                   ) : null
                 }
               />
+              {/* WHY: Dual-branch scores stay visible under the hero — users must see why the
+                  axis-summary plaque is a composite of absolute SMM + SM%. */}
               {previewBreakdown ? (
-                <DisclosurePanel
-                  instanceId="muscle-calc-details"
-                  expanded={detailsOpen}
-                  onToggle={() => setDetailsOpen((v) => !v)}
-                  toggleExpandLabel={t('assessment.viewCalculationDetails')}
-                  toggleCollapseLabel={t('assessment.hideCalculationDetails')}
-                  variant="link"
+                <p
+                  data-testid="muscle-breakdown-line"
+                  className="text-xs leading-relaxed text-zinc-400"
                 >
-                  <p className="text-xs leading-relaxed text-zinc-400">
-                    {t('muscle.breakdownLine', {
-                      smmScore: previewBreakdown.smmScoreRaw.toFixed(2),
-                      smPct: previewBreakdown.smPercent.toFixed(2),
-                      smPctScore: previewBreakdown.smPercentScoreRaw.toFixed(2),
-                    })}
-                  </p>
-                </DisclosurePanel>
+                  {t('muscle.breakdownLine', {
+                    smmScore: previewBreakdown.smmScoreRaw.toFixed(2),
+                    smPct: previewBreakdown.smPercent.toFixed(2),
+                    smPctScore: previewBreakdown.smPercentScoreRaw.toFixed(2),
+                  })}
+                </p>
               ) : null}
             </div>
           ) : null}

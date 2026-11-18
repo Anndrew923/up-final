@@ -35,6 +35,14 @@ export type AestheticCarbonCenteredStackProps = {
 const SCORE_CLASS =
   "max-w-full px-0.5 text-center font-['UPSerifTC','Songti_TC','Noto_Serif_TC','STSong',Palatino,Georgia,serif] text-[clamp(0.7rem,3.8vw,1.25rem)] font-bold leading-tight tabular-nums text-[#f3e6c8]";
 
+/**
+ * WHY truncate (not wrap): dual-col kickers — especially muscle `SMM · BW RATIO` — must
+ * stay one line under narrow card width. `truncate` already implies nowrap + ellipsis.
+ * WHY tracking 0.12em: tighter than title mono so EN dual labels fit without early clip.
+ */
+const DUAL_HERO_KICKER_CLASS =
+  'max-w-full truncate font-mono text-[7px] tracking-[0.12em] text-zinc-500';
+
 const AestheticCarbonCenteredStack: FC<AestheticCarbonCenteredStackProps> = ({
   testIdPrefix,
   primaryTitle,
@@ -86,7 +94,10 @@ const AestheticCarbonCenteredStack: FC<AestheticCarbonCenteredStackProps> = ({
         className="relative mt-3.5 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1.5 px-0.5"
       >
         <div className="flex min-w-0 flex-col items-center justify-center gap-1 py-1">
-          <p className="font-mono text-[7px] tracking-[0.16em] text-zinc-500">
+          <p
+            data-testid={`${testIdPrefix}-raw-kicker`}
+            className={DUAL_HERO_KICKER_CLASS}
+          >
             {rawMetricLabel}
           </p>
           <AestheticDualHeroRawReading
@@ -101,7 +112,10 @@ const AestheticCarbonCenteredStack: FC<AestheticCarbonCenteredStackProps> = ({
         />
 
         <div className="flex min-w-0 flex-col items-center justify-center gap-1 py-1">
-          <p className="font-mono text-[7px] tracking-[0.16em] text-zinc-500">
+          <p
+            data-testid={`${testIdPrefix}-score-kicker`}
+            className={DUAL_HERO_KICKER_CLASS}
+          >
             {upRatingLabel}
           </p>
           <p data-testid={`${testIdPrefix}-score`} className={SCORE_CLASS}>
