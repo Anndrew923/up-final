@@ -8,6 +8,7 @@
  *
  * Isolation: Selfie HUD (`hud === true`) never imports this module for Y math.
  */
+import type { TelemetryUiLocale } from '../i18n/language';
 import { resolveCarbonLayout } from './telemetryCardLayout';
 import { CARBON_TIER_CAPSULE_HEIGHT } from './telemetrySingleLeafTierPlaque';
 import {
@@ -20,6 +21,11 @@ import {
  * WHY: Owned here so dualHero re-exports one value — no 52px twin constants.
  */
 export const CARBON_BILINGUAL_TITLE_BLOCK_PX = 52;
+/**
+ * EN carbon foil-only height (no ZH secondary lane).
+ * WHY: Shrinks title→dual gap so monolingual plates stay compact-centered.
+ */
+export const CARBON_MONOLINGUAL_TITLE_BLOCK_PX = 28;
 
 /** Dedicated coach-copy stage under mid-axis plaque (115–130). */
 export const CARBON_VERDICT_SLOT_HEIGHT = SINGLE_LEAF_VERDICT_SLOT_HEIGHT;
@@ -64,15 +70,25 @@ export const STAGE_PAD_TOP_FEED = 20;
 export const STAGE_PAD_BOTTOM_STORY = 28;
 export const STAGE_PAD_BOTTOM_FEED = 20;
 
+export function resolveCarbonTitleBlockPx(
+  uiLocale: TelemetryUiLocale | undefined = 'zh'
+): number {
+  return uiLocale === 'en'
+    ? CARBON_MONOLINGUAL_TITLE_BLOCK_PX
+    : CARBON_BILINGUAL_TITLE_BLOCK_PX;
+}
+
 /**
  * Compact Centered Stack for Carbon plates.
  * @param headerRuleY — bottom of header rule; defaults from `resolveCarbonLayout`.
  * @param stampMaxY — verified-stamp baseline (content stage bottom anchor).
+ * @param uiLocale — EN omits ZH secondary → shorter title block.
  */
 export function resolveSingleLeafCarbonRhythm(
   aspect: TelemetryReportAspect,
   stampMaxY: number,
-  headerRuleY = resolveCarbonLayout(aspect).headerRuleY
+  headerRuleY = resolveCarbonLayout(aspect).headerRuleY,
+  uiLocale: TelemetryUiLocale | undefined = 'zh'
 ): SingleLeafCarbonRhythm {
   const isFeed = aspect === '4:5';
   const crestOuter = isFeed ? CARBON_CREST_OUTER_FEED : CARBON_CREST_OUTER_STORY;
@@ -85,12 +101,13 @@ export function resolveSingleLeafCarbonRhythm(
   const stagePadBottom = isFeed ? STAGE_PAD_BOTTOM_FEED : STAGE_PAD_BOTTOM_STORY;
   const plaqueH = CARBON_TIER_CAPSULE_HEIGHT;
   const verdictH = CARBON_VERDICT_SLOT_HEIGHT;
+  const titleBlockPx = resolveCarbonTitleBlockPx(uiLocale);
 
   // Relative stack from crest top (y = 0) — gaps match Compact Centered Stack brief.
   const crestTop = 0;
   const crestCy = crestTop + crestOuter;
   const titleY = crestCy + crestOuter + gapCrestTitle;
-  const dualTop = titleY + CARBON_BILINGUAL_TITLE_BLOCK_PX + gapTitleDual;
+  const dualTop = titleY + titleBlockPx + gapTitleDual;
   const dualBottom = dualTop + dualBand;
   const plaqueTop = dualBottom + gapStack;
   const plaqueY = plaqueTop + plaqueH / 2;

@@ -48,9 +48,11 @@ import {
 } from './telemetrySingleLeafMetricMix';
 import {
   CARBON_BILINGUAL_TITLE_BLOCK_PX,
+  CARBON_MONOLINGUAL_TITLE_BLOCK_PX,
   CARBON_VERDICT_SLOT_HEIGHT,
   CARBON_VERDICT_SLOT_MAX,
   CARBON_VERDICT_SLOT_MIN,
+  resolveCarbonTitleBlockPx,
   resolveSingleLeafCarbonRhythm,
   type SingleLeafCarbonRhythm,
 } from './telemetrySingleLeafCarbonRhythm';
@@ -126,7 +128,9 @@ export {
   CARBON_VERDICT_SLOT_HEIGHT,
   CARBON_VERDICT_SLOT_MAX,
   CARBON_VERDICT_SLOT_MIN,
+  CARBON_MONOLINGUAL_TITLE_BLOCK_PX,
   resolveCarbonTierPillMaxWidth,
+  resolveCarbonTitleBlockPx,
   resolveSingleLeafCarbonRhythm,
   splitMetricParts,
   splitSelfieMetricParts,
@@ -150,9 +154,12 @@ export const resolveSelfieHeroTitle = resolveLocalePrimaryTitle;
 /** Alias — Carbon foil primary stamp. */
 export const resolveCarbonPrimaryTitle = resolveLocalePrimaryTitle;
 
-/** Carbon secondary line — the other language keeps bilingual plate texture. */
+/**
+ * Carbon secondary line — ZH plates keep EN texture; EN plates omit ZH entirely.
+ * WHY: English carbon cards must show zero CJK in the title stack.
+ */
 export function resolveCarbonSecondaryTitle(input: TelemetryDualHeroCardInput): string {
-  return input.uiLocale === 'en' ? input.leafTitleZh : input.leafTitleEn;
+  return input.uiLocale === 'en' ? '' : input.leafTitleEn;
 }
 
 export function fitBoldFontSize(
@@ -419,8 +426,8 @@ export function paintDualHeroSplit(
 }
 
 /**
- * Carbon: locale-swapped bilingual titles; Selfie HUD: single locale line.
- * WHY: EN app locale must promote English to the foil stamp without dropping ZH texture.
+ * Carbon: locale-aware titles; Selfie HUD: single locale line.
+ * WHY: EN carbon promotes English foil and drops ZH secondary; Selfie stays single-line.
  */
 export function paintBilingualTitle(
   ctx: TelemetryDrawContext,
@@ -447,9 +454,11 @@ export function paintBilingualTitle(
   }
 
   paintCertificateFoilTitle(ctx, resolveLocalePrimaryTitle(input), cx, titleY);
+  const secondary = resolveCarbonSecondaryTitle(input).trim();
+  if (!secondary) return;
   paintCertificateLabel(
     ctx,
-    resolveCarbonSecondaryTitle(input),
+    secondary,
     cx,
     titleY + 44,
     `22px ${SANS}`,

@@ -27,6 +27,7 @@ const ZH_POPULATION_CLASS: Record<string, string> = {
 };
 
 const EN_POPULATION_CLASS: Record<string, string> = {
+  '80': 'Gym Strong',
   '100': 'Breakout',
   '110': 'Transcendent',
   '120': 'Historic Tier',
@@ -45,6 +46,20 @@ function fakeT(key: string, opts?: Record<string, unknown>): string {
   const decadeMatch = /^dynoIntel\.humanPraise\.byDecade\.(\d+)\.populationClass$/.exec(key);
   if (decadeMatch) {
     return ZH_POPULATION_CLASS[decadeMatch[1]] ?? '嬰兒期';
+  }
+  return key;
+}
+
+function fakeEnT(key: string, opts?: Record<string, unknown>): string {
+  if (key === 'aesthetic.singleLeaf.rawMetricLabel') return 'RAW METRIC';
+  if (key === 'aesthetic.singleLeaf.upRatingLabel') return 'UP RATING';
+  if (key === 'aesthetic.singleLeaf.verifiedStamp') {
+    return `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${opts?.year}`;
+  }
+  if (key === 'aesthetic.labels.brandHeader') return 'ULTIMATE PHYSIQUE // DOMINANCE';
+  const decadeMatch = /^dynoIntel\.humanPraise\.byDecade\.(\d+)\.populationClass$/.exec(key);
+  if (decadeMatch) {
+    return EN_POPULATION_CLASS[decadeMatch[1]] ?? 'Gym Strong';
   }
   return key;
 }
@@ -122,9 +137,10 @@ describe('buildAestheticSingleLeafExportInput', () => {
   it.each(['en', 'en-US'] as const)(
     'resolves English carbon verdict from t.language=%s',
     (language) => {
-      const tEn = Object.assign((key: string, opts?: Record<string, unknown>) => fakeT(key, opts), {
-        language,
-      }) as unknown as TFunction;
+      const tEn = Object.assign(
+        (key: string, opts?: Record<string, unknown>) => fakeEnT(key, opts),
+        { language }
+      ) as unknown as TFunction;
       const input = buildAestheticSingleLeafExportInput(tEn, leafOk, {
         mode: 'carbon',
         aspectRatio: '9:16',
@@ -134,6 +150,20 @@ describe('buildAestheticSingleLeafExportInput', () => {
       expect(input.verdict?.critique).toMatch(/Hard-forged muscular strength/);
       expect(input.leafTitleEn).toBe('BARBELL BENCH PRESS');
       expect(input.leafTitleZh).toBe('槓鈴臥推');
+      const visible = [
+        input.leafTitleEn,
+        input.rawMetricLabel,
+        input.rawReading,
+        input.upRatingLabel,
+        input.heroScoreText,
+        input.tierCapsule,
+        input.brandHeader ?? '',
+        input.verifiedStamp ?? '',
+        input.verdict?.epithet ?? '',
+        input.verdict?.critique ?? '',
+        ...(input.verdict?.critiqueLines ?? []),
+      ].join('\n');
+      expect(/[\u4e00-\u9fff]/.test(visible)).toBe(false);
     }
   );
 });

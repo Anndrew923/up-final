@@ -29,14 +29,15 @@ export const SINGLE_LEAF_VERDICT_SLOT_HEIGHT = 125;
 export interface TelemetryDualHeroPlateFields {
   mode: TelemetryReportMode;
   aspectRatio: TelemetryReportAspect;
-  /** Language-stable Chinese primary title. */
+  /** Language-stable Chinese title (Carbon ZH foil primary; payload retained for EN). */
   leafTitleZh: string;
-  /** Language-stable formal English secondary title. */
+  /** Language-stable English title (Carbon EN foil primary / ZH secondary texture). */
   leafTitleEn: string;
   /**
    * UI locale for plate copy:
-   * - Selfie: single-line hero title (zh→leafTitleZh, en→leafTitleEn).
-   * - Carbon: swaps foil primary/secondary + selects verdict catalog language.
+   * - Selfie: single-line hero (zh→leafTitleZh, en→leafTitleEn).
+   * - Carbon ZH: foil ZH primary + EN secondary; Carbon EN: EN foil only (no ZH secondary).
+   * - Also selects Carbon verdict catalog language.
    */
   uiLocale?: TelemetryUiLocale;
   rawReading: string;

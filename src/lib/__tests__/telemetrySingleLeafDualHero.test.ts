@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   BILINGUAL_TITLE_BLOCK_PX,
+  CARBON_MONOLINGUAL_TITLE_BLOCK_PX,
   fitBoldFontSize,
   resolveDualHeroGeom,
   resolveSelfieDualHeroGeom,
   resolveCarbonPrimaryTitle,
   resolveCarbonSecondaryTitle,
+  resolveCarbonTitleBlockPx,
   resolveLocalePrimaryTitle,
   resolveSelfieHeroTitle,
   resolveSelfieHudDropPx,
@@ -322,7 +324,7 @@ describe('telemetrySingleLeafDualHero', () => {
     );
   });
 
-  it('swaps Carbon primary/secondary titles for en vs zh', () => {
+  it('swaps Carbon primary title and drops ZH secondary for en', () => {
     const zhPlate = baseInput({ uiLocale: 'zh' });
     expect(resolveLocalePrimaryTitle(zhPlate)).toBe('槓鈴臥推');
     expect(resolveCarbonPrimaryTitle(zhPlate)).toBe('槓鈴臥推');
@@ -331,7 +333,73 @@ describe('telemetrySingleLeafDualHero', () => {
     const enPlate = baseInput({ uiLocale: 'en' });
     expect(resolveLocalePrimaryTitle(enPlate)).toBe('BARBELL BENCH PRESS');
     expect(resolveCarbonPrimaryTitle(enPlate)).toBe('BARBELL BENCH PRESS');
-    expect(resolveCarbonSecondaryTitle(enPlate)).toBe('槓鈴臥推');
+    expect(resolveCarbonSecondaryTitle(enPlate)).toBe('');
+  });
+
+  it('keeps EN carbon visible plate copy free of CJK and shortens title block', () => {
+    const CJK_RE = /[\u4e00-\u9fff]/;
+    const enPlate = baseInput({
+      mode: 'carbon',
+      uiLocale: 'en',
+      rawMetricLabel: 'RAW METRIC',
+      upRatingLabel: 'UP RATING',
+      tierCapsule: 'Gym Strong',
+      brandHeader: 'ULTIMATE PHYSIQUE // DOMINANCE',
+      verifiedStamp: 'VERIFIED PHYSIOLOGICAL SPECIFICATION // 2026',
+      verdict: {
+        epithet: 'IRON STABILIZER',
+        critique:
+          'Hard-forged muscular strength—output rivals dedicated competitive athletes.',
+        critiqueLines: [
+          'Hard-forged muscular strength—',
+          'output rivals dedicated competitive athletes.',
+        ],
+      },
+    });
+
+    expect(resolveCarbonSecondaryTitle(enPlate)).toBe('');
+    expect(resolveCarbonTitleBlockPx('en')).toBe(CARBON_MONOLINGUAL_TITLE_BLOCK_PX);
+    expect(resolveCarbonTitleBlockPx('zh')).toBe(CARBON_BILINGUAL_TITLE_BLOCK_PX);
+
+    const visible = [
+      resolveCarbonPrimaryTitle(enPlate),
+      resolveCarbonSecondaryTitle(enPlate),
+      enPlate.rawMetricLabel,
+      enPlate.rawReading,
+      enPlate.upRatingLabel,
+      enPlate.heroScoreText,
+      enPlate.tierCapsule,
+      enPlate.brandHeader ?? '',
+      enPlate.verifiedStamp ?? '',
+      String(enPlate.year ?? ''),
+      enPlate.verdict?.epithet ?? '',
+      enPlate.verdict?.critique ?? '',
+      ...(enPlate.verdict?.critiqueLines ?? []),
+    ].join('\n');
+    expect(CJK_RE.test(visible)).toBe(false);
+
+    const layout = resolveCarbonLayout('9:16');
+    const zhRhythm = resolveSingleLeafCarbonRhythm(
+      '9:16',
+      layout.stampMaxY,
+      layout.headerRuleY,
+      'zh'
+    );
+    const enRhythm = resolveSingleLeafCarbonRhythm(
+      '9:16',
+      layout.stampMaxY,
+      layout.headerRuleY,
+      'en'
+    );
+    expect(enRhythm.dualTop - enRhythm.titleY).toBe(
+      CARBON_MONOLINGUAL_TITLE_BLOCK_PX + GAP_TITLE_DUAL_STORY
+    );
+    expect(zhRhythm.dualTop - zhRhythm.titleY).toBe(
+      CARBON_BILINGUAL_TITLE_BLOCK_PX + GAP_TITLE_DUAL_STORY
+    );
+    expect(enRhythm.dualTop - enRhythm.titleY).toBeLessThan(
+      zhRhythm.dualTop - zhRhythm.titleY
+    );
   });
 
   it('clamps long selfie hero strings under 340 without colliding the mid line', () => {

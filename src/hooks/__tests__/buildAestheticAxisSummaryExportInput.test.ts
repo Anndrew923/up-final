@@ -101,6 +101,21 @@ describe('buildAestheticAxisSummaryExportInput', () => {
       expect(input.verdict?.critique).toMatch(/Among the strongest lifters/);
       expect(input.leafTitleEn).toBe('STRENGTH ASSESSMENT');
       expect(input.rawReading).toBe('5 LIFTS');
+      // Visible plate fields (not leafTitleZh payload) must stay CJK-free.
+      const visible = [
+        input.leafTitleEn,
+        input.rawMetricLabel,
+        input.rawReading,
+        input.upRatingLabel,
+        input.heroScoreText,
+        input.tierCapsule,
+        input.brandHeader ?? '',
+        input.verifiedStamp ?? '',
+        input.verdict?.epithet ?? '',
+        input.verdict?.critique ?? '',
+        ...(input.verdict?.critiqueLines ?? []),
+      ].join('\n');
+      expect(/[\u4e00-\u9fff]/.test(visible)).toBe(false);
     }
   );
 

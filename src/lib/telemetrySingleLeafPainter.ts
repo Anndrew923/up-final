@@ -150,7 +150,8 @@ export function paintSingleLeafCertificate(
   const rhythm = resolveSingleLeafCarbonRhythm(
     input.aspectRatio,
     layout.stampMaxY,
-    layout.headerRuleY
+    layout.headerRuleY,
+    input.uiLocale
   );
 
   paintCertificateFrame(ctx, layout.plateWidth, layout.plateHeight);

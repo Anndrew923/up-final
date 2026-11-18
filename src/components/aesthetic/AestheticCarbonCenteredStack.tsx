@@ -67,12 +67,14 @@ const AestheticCarbonCenteredStack: FC<AestheticCarbonCenteredStackProps> = ({
         </span>
         <span className={FOIL_HERO_WING_RIGHT_CLASS} aria-hidden="true" />
       </h3>
-      <p
-        data-testid={`${testIdPrefix}-title-secondary`}
-        className="relative font-mono text-[8px] tracking-[0.16em] text-zinc-500"
-      >
-        {secondaryTitle}
-      </p>
+      {secondaryTitle.trim() ? (
+        <p
+          data-testid={`${testIdPrefix}-title-secondary`}
+          className="relative font-mono text-[8px] tracking-[0.16em] text-zinc-500"
+        >
+          {secondaryTitle}
+        </p>
+      ) : null}
 
       <div
         aria-hidden="true"
