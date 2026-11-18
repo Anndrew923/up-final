@@ -1,7 +1,9 @@
 import type { FC } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import type { RestorePurchasesStatus } from '../../logic/core/restorePurchasesStatus';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
+import SubscriptionLegalFooter from '../arena/SubscriptionLegalFooter';
 
 export interface DynoIntelPaywallViewProps {
   reason: DynoIntelPaywallReason;
@@ -9,6 +11,13 @@ export interface DynoIntelPaywallViewProps {
   billingError: boolean;
   onSubscribe: () => void;
   onDismiss: () => void;
+  /** Dismiss sheet before Privacy route so AppShell overlay does not cover legal page. */
+  onBeforePrivacyNavigate?: () => void;
+  /** Restore Purchases — owned by console/hook layer; view stays presentational. */
+  onRestorePurchases: () => void;
+  restoreBusy: boolean;
+  restoreDisabled: boolean;
+  restoreStatus: RestorePurchasesStatus;
 }
 
 const FEATURE_ROWS = [
@@ -31,9 +40,15 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
   billingError,
   onSubscribe,
   onDismiss,
+  onBeforePrivacyNavigate,
+  onRestorePurchases,
+  restoreBusy,
+  restoreDisabled,
+  restoreStatus,
 }) => {
   const { t } = useTranslation('common');
   const ctaMotionOn = !usePrefersReducedMotion();
+  const actionBusy = busy || restoreBusy;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -87,18 +102,27 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
         {billingError ? (
           <p className="mt-3 text-sm text-red-300">{t('dynoIntel.paywall.billingFail')}</p>
         ) : null}
+
+        <SubscriptionLegalFooter
+          className="mt-4"
+          onBeforePrivacyNavigate={onBeforePrivacyNavigate}
+          onRestorePurchases={onRestorePurchases}
+          restoreBusy={restoreBusy}
+          restoreDisabled={restoreDisabled}
+          restoreStatus={restoreStatus}
+        />
       </div>
 
       <footer className="ui-modal-safe-footer shrink-0 border-t border-zinc-800/80 px-4">
         <button
           type="button"
-          disabled={busy}
+          disabled={actionBusy}
           onClick={onSubscribe}
           className={`group relative mb-2 min-h-12 w-full overflow-hidden rounded-xl border border-orange-400/90 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(255,100,0,0.55),0_0_48px_rgba(255,60,0,0.25)] transition hover:shadow-[0_0_36px_rgba(255,120,0,0.7),0_0_56px_rgba(255,40,0,0.35)] disabled:cursor-not-allowed disabled:border-zinc-700 disabled:shadow-none ${
-            busy ? 'bg-zinc-800 text-zinc-500' : ''
+            actionBusy ? 'bg-zinc-800 text-zinc-500' : ''
           }`}
         >
-          {!busy ? (
+          {!actionBusy ? (
             <>
               <span
                 className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-400 to-red-500 bg-[length:200%_200%] ${
@@ -113,12 +137,12 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
             </>
           ) : null}
           <span className="relative z-[1]">
-            {busy ? t('dynoIntel.paywall.busy') : t('dynoIntel.paywall.cta')}
+            {actionBusy ? t('dynoIntel.paywall.busy') : t('dynoIntel.paywall.cta')}
           </span>
         </button>
         <button
           type="button"
-          disabled={busy}
+          disabled={actionBusy}
           onClick={onDismiss}
           className="min-h-10 w-full rounded-xl border border-zinc-700 px-4 text-sm text-zinc-400"
         >

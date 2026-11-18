@@ -31,7 +31,7 @@
       "historicDryGoddess": { "title": "OLYMPIA PRO", "subtitle": "THAT WAIST THO" },
       "historicBeast": { "title": "SILVERBACK", "subtitle": "UNREAL DENSITY" },
       "historicAmazonian": { "title": "AMAZONIAN QUEEN", "subtitle": "TALL & DANGEROUS" },
-      "unshakableWall": { "title": "BRICK OUTHOUSE", "subtitle": "WALKING SAFE HAVEN" },
+      "unshakableWall": { "title": "BRICK OUTHOUSE", "subtitle": "SAFE HARBOR PHYSIQUE" },
       "unshakableShield": { "title": "GODDESS BUILD", "subtitle": "TURN HEADS EVERYWHERE" },
       "transcendentDry": { "title": "LIVING STATUE", "subtitle": "PAPER-THIN SKIN" },
       "transcendentDryF": { "title": "SNATCHED ELITE", "subtitle": "AB CRACKS FOR DAYS" },
@@ -39,9 +39,9 @@
       "valkyrieTranscendent": { "title": "LEAN & MEAN", "subtitle": "FERAL AURA" },
       "ironFortress": { "title": "FRIDGE BUILD", "subtitle": "HEAVYWEIGHT CHAMP" },
       "ironFortressF": { "title": "THICK BADDIE", "subtitle": "POWER & GRACE" },
-      "awakenedDryGod": { "title": "WASHBOARD ABS", "subtitle": "SHRED CITY MAYOR" },
-      "athenaDryGod": { "title": "LETHAL BONES", "subtitle": "LETHAL SHOULDER CAPS" },
-      "awakenedGodform": { "title": "DORITO SHAPE", "subtitle": "V-TAPER CRAZY" },
+      "awakenedDryGod": { "title": "WASHBOARD ABS", "subtitle": "MAYOR OF SHRED TOWN" },
+      "athenaDryGod": { "title": "LETHAL BONES", "subtitle": "CLAVICLE KILL SHOT" },
+      "awakenedGodform": { "title": "DORITO SHAPE", "subtitle": "V-TAPER ON BLAST" },
       "athenaAwakened": { "title": "HOURGLASS ELITE", "subtitle": "INSTAGRAM REALITY" },
       "heavyTitan": { "title": "THICK BOI", "subtitle": "BUILT FOR BEAR HUGS" },
       "heavyAmazonian": { "title": "MUSCLE MOMMY", "subtitle": "DEATH BY SNU SNU" },
@@ -51,17 +51,17 @@
       "greekGoddess": { "title": "PURE SUPREMACY", "subtitle": "HIP-TO-WAIST PERFECTION" },
       "peakAesthetic": { "title": "MIRROR BREAKER", "subtitle": "AESTHETIC GOD" },
       "athenaForm": { "title": "GYM CRUSH", "subtitle": "FLAWLESS CORE" },
-      "titanColossus": { "title": "POWERHOUSE", "subtitle": "PROTECTOR VIBES" },
+      "titanColossus": { "title": "POWERHOUSE", "subtitle": "BODYGUARD PHYSIQUE" },
       "amazonianStrength": { "title": "THICK THIGHS", "subtitle": "SAVE LIVES & BREAK NECKS" },
       "striatedLean": { "title": "SHREDDED AF", "subtitle": "VASCULARITY INSANE" },
-      "chiseledWaist": { "title": "WAIST SNATCHED", "subtitle": "ABSOLUTE CORE" },
+      "chiseledWaist": { "title": "WAIST SNATCHED", "subtitle": "CORE FOR DAYS" },
       "goldenVTaper": { "title": "V-TAPER DEMON", "subtitle": "BACK LIKE A RUNWAY" },
       "goldenHourglass": { "title": "ELITE HOURGLASS", "subtitle": "PROPORTION CHEAT CODE" },
       "heavyArmor": { "title": "WALKING TANK", "subtitle": "WIDE FRAME" },
       "curvyPower": { "title": "THICK & TONED", "subtitle": "CURVES & POWER" },
       "athleticFrame": { "title": "RUNWAY MODEL", "subtitle": "CLOTHES FIT PERFECTLY" },
       "sleekAthletic": { "title": "LEAN MACHINE", "subtitle": "LONG & ELEGANT" },
-      "solidBase": { "title": "NEWBIE GAINS", "subtitle": "POTENTIAL UNLOCKING" },
+      "solidBase": { "title": "NEWBIE GAINS", "subtitle": "GAINS INCOMING" },
       "firmBase": { "title": "TONED & CUTE", "subtitle": "SHAPING UP" },
       "cleanTone": { "title": "LEAN & CLEAN", "subtitle": "GOODBYE FLUFF" },
       "tonedGrace": { "title": "SUBTLE FLEX", "subtitle": "GLOWING UP" },
@@ -69,7 +69,7 @@
       "softCurve": { "title": "SOFT & SWEET", "subtitle": "GREAT FOR HUGS" },
       "urbanDaily": { "title": "AVERAGE JOE", "subtitle": "SURVIVING NOT THRIVING" },
       "urbanGrace": { "title": "CASUAL WALKER", "subtitle": "NATURALLY CUTE" },
-      "nativeLean": { "title": "SKINNY LEGEND", "subtitle": "WIND BLOWS ME AWAY" },
+      "nativeLean": { "title": "SKINNY LEGEND", "subtitle": "ONE GUST AND GONE" },
       "nativeGrace": { "title": "SLIM & SLENDER", "subtitle": "WAITING FOR GAINS" },
       "nativeStock": { "title": "BLANK CANVAS", "subtitle": "POTENTIAL UNLOCKED" },
       "nativeCurve": { "title": "SWEET CURVES", "subtitle": "POTENTIAL UNLOCKED" }
@@ -77,10 +77,10 @@
     "force": {
       "m": {
         "base": { "title": "CAN'T OPEN JARS", "subtitle": "CAN'T OPEN BOTTLES · BEAST DORMANT" },
-        "50": { "title": "GROCERY BEAST", "subtitle": "ONE-TRIP GROCERIES · FRAME AWAKENING" },
+        "50": { "title": "GROCERY BEAST", "subtitle": "ONE-TRIP GROCERIES · FRAME ONLINE" },
         "60": { "title": "SKINNY NO MORE", "subtitle": "OPENS JARS SOLO · FINALLY LOOKING SOLID" },
         "70": { "title": "SLEEVE BUSTER", "subtitle": "PUMP IN THE SLEEVES · WALKING ARMOR" },
-        "80": { "title": "BICEP DIPLOMACY", "subtitle": "GUNS NEGOTIATE · HUG SECURITY" },
+        "80": { "title": "BICEP DIPLOMACY", "subtitle": "GUNS NEGOTIATE · HUGS FEEL SAFE" },
         "90": { "title": "WALKING WEAPON", "subtitle": "CRUSHES APPLES SOLO · BONES CRACK ON HIT" },
         "100": { "title": "OBJECT CRUSHER", "subtitle": "WATCH HANDSHAKES · PROPERTY HAZARD" },
         "110": { "title": "FAKE PLATES???", "subtitle": "UNREAL WEIGHT · BROS STARING" },
@@ -88,11 +88,11 @@
         "130": { "title": "PHYSICS CRUSHER", "subtitle": "PHYSICS QUIT · GRAVITY SALUTES" }
       },
       "f": {
-        "base": { "title": "DELICATE FLOWER", "subtitle": "NEEDS BOTTLE HELP · CHARM AWAKENING" },
+        "base": { "title": "DELICATE FLOWER", "subtitle": "NEEDS BOTTLE HELP · CHARM LOADING" },
         "50": { "title": "COSTCO QUEEN", "subtitle": "ONE-HAND MILK CARRY · INDEPENDENT" },
         "60": { "title": "BUILT DIFFERENT", "subtitle": "MOVES FURNITURE EASY · CHILL CHARM" },
         "70": { "title": "WATER JUG PRO", "subtitle": "5-GALLON FLIP · BROS JAW DROPPED" },
-        "80": { "title": "LID DESTROYER", "subtitle": "LIDS POP FAST · SISTER POWER" },
+        "80": { "title": "LID DESTROYER", "subtitle": "LIDS POP FAST · BIG SIS ENERGY" },
         "90": { "title": "BROS SALUTE YOU", "subtitle": "CASUAL 225 DEADLIFT · RACK CLEARED" },
         "100": { "title": "COMMAND RESPECT", "subtitle": "SQUATS SCARE BROS · CALL HER MA'AM" },
         "110": { "title": "BOYFRIEND CARRY", "subtitle": "ONE-ARM BF CARRY · WEAK KNEES" },
@@ -102,19 +102,19 @@
     },
     "kinetic": {
       "m": {
-        "base": { "title": "CALLS AN UBER", "subtitle": "LIFE IS FOR REST · STAMINA DORMANT" },
+        "base": { "title": "CALLS AN UBER", "subtitle": "REST IS THE POINT · STAMINA ASLEEP" },
         "50": { "title": "CORNER CRUISER", "subtitle": "FEW EXTRA STEPS · DAILY CARDIO QUOTA MET" },
         "60": { "title": "BUS CHASER", "subtitle": "BUS SPRINTS EASY · CHILL ENERGY" },
-        "70": { "title": "ICE-COLD HEART", "subtitle": "CALMER THAN A PLAYBOY · HAIR FLIP" },
+        "70": { "title": "ICE-COLD HEART", "subtitle": "PULSE ICE-COLD · CASUAL HAIR FLIP" },
         "80": { "title": "STILL CHILLING", "subtitle": "OTHERS GASP · YOU ACCELERATE" },
         "90": { "title": "SCARY STAMINA", "subtitle": "HIIT IS WARMUP · BOTTOMLESS TANK" },
-        "100": { "title": "FATIGUE IMMUNE", "subtitle": "NO WORD FOR TIRED · RIVALS GAPPED" },
+        "100": { "title": "FATIGUE IMMUNE", "subtitle": "NO WORD FOR TIRED · RIVALS DUSTED" },
         "110": { "title": "ZERO COOLDOWN", "subtitle": "ZERO COOLDOWN · ROUND TWO READY" },
-        "120": { "title": "OUTRUN ZOMBIES", "subtitle": "ZOMBIES CHASE IN VAIN · BAR FULL" },
+        "120": { "title": "OUTRUN ZOMBIES", "subtitle": "ZOMBIES CHASE IN VAIN · TANK FULL" },
         "130": { "title": "MARATHON STROLL", "subtitle": "MARATHONS ARE STROLLS · BIOLOGY BROKE" }
       },
       "f": {
-        "base": { "title": "ELEVATOR ONLY", "subtitle": "NEVER STAND · RESERVING BASE ENERGY" },
+        "base": { "title": "ELEVATOR ONLY", "subtitle": "NEVER STAND · ENERGY IN RESERVE" },
         "50": { "title": "HOT GIRL WALKER", "subtitle": "ALL-DAY SHOPPING · JOGGING SKIPPED" },
         "60": { "title": "PILATES GLOW", "subtitle": "LIGHT FOOTED · FAIRY AURA" },
         "70": { "title": "DEWY GLOW QUEEN", "subtitle": "ROSY POST-WORKOUT · HEALTHY GLOW" },
@@ -122,7 +122,7 @@
         "90": { "title": "TRAIL READY", "subtitle": "PEAKS ANYTIME · ATHLETIC GRACE" },
         "100": { "title": "OUTRUNNING BROS", "subtitle": "POKER FACE HIIT · BROS GASPING" },
         "110": { "title": "INSTANT REBOOT", "subtitle": "TWO BREATHS RESET · GAS TANK FULL" },
-        "120": { "title": "TRIATHLON CHILL", "subtitle": "ULTRA IS A PICNIC · WILD FORCE" },
+        "120": { "title": "TRIATHLON CHILL", "subtitle": "ULTRA IS A PICNIC · RAW DRIVE" },
         "130": { "title": "ENDURANCE QUEEN", "subtitle": "MARATHON MYTH · BEYOND HUMAN LIMITS" }
       }
     },
@@ -175,15 +175,15 @@
       "coverageUnitTests": "TESTS",
       "strength": {
         "titleZh": "力量綜合評測",
-        "titleEn": "STRENGTH ASSESSMENT"
+        "titleEn": "STRENGTH TEST"
       },
       "explosivePower": {
         "titleZh": "爆發力綜合評測",
-        "titleEn": "EXPLOSIVE ASSESSMENT"
+        "titleEn": "EXPLOSIVE TEST"
       },
       "muscleMass": {
         "titleZh": "骨骼肌綜合評測",
-        "titleEn": "MUSCLE MASS ASSESSMENT"
+        "titleEn": "MUSCLE MASS TEST"
       }
     },
     "singleLeaf": {

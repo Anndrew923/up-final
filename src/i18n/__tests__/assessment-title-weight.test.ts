@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import assessment from '../locales/en/common/assessment.json';
 import armSize from '../locales/en/common/armSize.json';
 import cardio from '../locales/en/common/cardio.json';
+import aestheticEn from '../locales/en/common/aesthetic.json';
+import aestheticZh from '../locales/zh-Hant/common/aesthetic.json';
+import explosive from '../locales/en/common/explosive.json';
 import ffmi from '../locales/en/common/ffmi.json';
 import grip from '../locales/en/common/grip.json';
 import home from '../locales/en/common/home.json';
+import muscle from '../locales/en/common/muscle.json';
 import strength from '../locales/en/common/strength.json';
 import tools from '../locales/en/common/tools.json';
 
@@ -12,9 +16,22 @@ describe('English assessment title weight', () => {
   it('uses compact Test labels only on dedicated assessment page titles', () => {
     expect(strength.strength.title).toBe('Strength Test');
     expect(grip.grip.title).toBe('Grip Strength Test');
+    expect(explosive.explosive.title).toBe('Explosive Power Test');
+    expect(muscle.muscle.title).toBe('Skeletal Muscle Test');
     expect(cardio.cardio.title).toBe('Cardio Test');
     expect(ffmi.ffmi.title).toBe('FFMI Test');
     expect(armSize.armSize.title).toBe('Arm Size Test');
+  });
+
+  it('keeps Carbon axis titleEn as TEST in both locales (zh UI still resolves titleEn)', () => {
+    const axes = ['strength', 'explosivePower', 'muscleMass'] as const;
+    for (const axis of axes) {
+      const enTitle = aestheticEn.aesthetic.axisSummary[axis].titleEn;
+      const zhTitle = aestheticZh.aesthetic.axisSummary[axis].titleEn;
+      expect(enTitle).toMatch(/ TEST$/);
+      expect(enTitle).not.toMatch(/ASSESSMENT/);
+      expect(zhTitle).toBe(enTitle);
+    }
   });
 
   it('uses physiology-aligned EN lobby titles (SSOT with club dispatch labels)', () => {

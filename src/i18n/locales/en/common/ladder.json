@@ -4,7 +4,7 @@
     "genesisEarlyBird": {
       "kicker": "Genesis · Early Bird Seats",
       "title": "⚡ Genesis Ladder: early-bird seats open",
-      "body": "Free access to the \"Global Ladder\" for the first {{count}} registered players during the genesis launch. The ladder will become Pro-exclusive once reached; early participants will retain priority access.",
+      "body": "Free Global Ladder access for the first {{count}} registered players during the genesis launch. Once seats fill, the ladder becomes Pro-exclusive; early participants keep priority access.",
       "proNote": "Note: Pro features such as DYNO INTEL still require a subscription.",
       "dontShowAgain": "Got it — don't show again",
       "enterCta": "Enter the Arena",
@@ -28,8 +28,8 @@
     "strengthKgShardHint": "Ranking uses SBD estimated 1RM (kg). Re-save all three lifts and sync to refresh legacy rows.",
     "promotion": {
       "title": "Rank Up +{{delta}}",
-      "current": "Current Rank: #{{rank}}",
-      "milestone": "Milestone: Top {{milestone}}"
+      "current": "Now ranked #{{rank}}",
+      "milestone": "Milestone unlocked: Top {{milestone}}"
     },
     "divisionPickerTitle": "Arena Zone",
     "projectFilterLabel": "Sub-Ranking",
@@ -74,12 +74,12 @@
       "pkToggle": {
         "enable": "Clash",
         "disable": "End Clash",
-        "scanning": "Clashing..."
+        "scanning": "Clashing…"
       },
       "pkScan": {
-        "kicker": "DIAGNOSING MODELS",
+        "kicker": "COMPARING BUILDS",
         "status": "SCANNING SNAPSHOTS…",
-        "aria": "Extracting power and comparing six-axis radar"
+        "aria": "Reading power metrics and comparing six-axis radar"
       },
       "compareLegendAria": "Radar comparison legend",
       "compareLegendMember": "{{name}}",
@@ -89,10 +89,10 @@
         "viewerFallback": "Me"
       },
       "battleReport": {
-        "dominance": "{{wins}}W {{losses}}L · Dominance ({{delta}})",
+        "dominance": "{{wins}}W {{losses}}L · Dominant ({{delta}})",
         "lead": "{{wins}}W {{losses}}L · Slight edge ({{delta}})",
         "even": "{{wins}}W {{losses}}L · Evenly matched",
-        "trailing": "{{wins}}W {{losses}}L · Chasing ({{delta}})"
+        "trailing": "{{wins}}W {{losses}}L · Trailing ({{delta}})"
       }
     },
     "moderation": {

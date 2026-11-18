@@ -65,7 +65,7 @@
       "strength": {
         "BASE": {
           "title": "10 hp Scooter",
-          "summary": "[10 hp SCOOTER] Stock chassis. Massive headroom—consistent load work builds your first real power gain."
+          "summary": "[10 hp SCOOTER] Factory-stock platform. Massive headroom—consistent load work builds your first real power gain."
         },
         "TIER_40": {
           "title": "90 hp Daily Driver",
@@ -89,7 +89,7 @@
         },
         "TIER_90": {
           "title": "430 hp Sport Flagship",
-          "summary": "[430 hp FLAGSHIP] Past amateur ceiling. Serious horsepower—chassis core drifting toward pro-grade output."
+          "summary": "[430 hp FLAGSHIP] Past amateur ceiling. Serious horsepower—chassis stiffness trending toward pro-grade output."
         },
         "TIER_100": {
           "title": "550 hp Track Apex Chassis",
@@ -109,15 +109,15 @@
         },
         "TIER_140": {
           "title": "1200 hp Rocket Rig",
-          "summary": "[1200 hp ROCKET] Gravity-tier output. International master overflow—a thousand hp understates your power."
+          "summary": "[1200 hp ROCKET] Gravity-defying output. International master-class surplus—a thousand hp understates your power."
         },
         "LEGEND": {
-          "title": "1500 hp Planetary Asset",
-          "summary": "[1500 hp PLANET] Spec overflow. Beyond normal physiology—legend-tier crystallization of human strength."
+          "title": "1500 hp Hypercar Apex",
+          "summary": "[1500 hp PLANET] Off the published map. Beyond normal physiology—human strength forged at legend scale."
         },
         "PANTHEON": {
           "title": "Pantheon Horsepower",
-          "summary": "[PANTHEON HP] Spec archived. Ultimate output aligned with myth—the Pantheon eternal core."
+          "summary": "[PANTHEON HP] Archived to the Pantheon. Ultimate output aligned with myth—an eternal core of force."
         }
       },
       "explosivePower": {
@@ -171,11 +171,11 @@
         },
         "LEGEND": {
           "title": "Aerospace Rocket Propulsion",
-          "summary": "[AEROSPACE ROCKET] Legend-athlete tier. Spec overflow beyond biomechanics—instant kinetic energy tears at gravity."
+          "summary": "[AEROSPACE ROCKET] Legend-athlete tier. Beyond biomechanical limits—instant kinetic energy tears at gravity."
         },
         "PANTHEON": {
           "title": "Pantheon",
-          "summary": "[PANTHEON] Spec archived. Undisputed strongest explosive output on Earth—the naked eye can't track it."
+          "summary": "[PANTHEON] Archived to the Pantheon. Undisputed strongest explosive output on Earth—too fast for the naked eye."
         }
       },
       "cardio": {
@@ -225,15 +225,15 @@
         },
         "TIER_140": {
           "title": "4.5 bar Rocket Cooling Build",
-          "summary": "[4.5 bar DREAM] Final-boss tier. Cooling ignores high-heat flex—opponents don't want your name on the start list."
+          "summary": "[4.5 bar DREAM] Dream-spec apex. Cooling ignores high-heat flex—rivals don't want your name on the start list."
         },
         "LEGEND": {
-          "title": "5.5 bar Planetary Heat Asset",
-          "summary": "[5.5 bar LONG-RUN GOD] Spec overflow. Beyond normal physiology—almost nobody stays in your slipstream."
+          "title": "5.5 bar Endurance Hypercore",
+          "summary": "[5.5 bar LONG-RUN GOD] Off the published map. Beyond normal physiology—almost nobody stays in your slipstream."
         },
         "PANTHEON": {
           "title": "6.5 bar Pantheon Cryo Cooling",
-          "summary": "[PANTHEON COOLING] Spec archived. Myth-tier cardiorespiratory output—unkillable engine, Pantheon sealed."
+          "summary": "[PANTHEON COOLING] Archived to the Pantheon. Myth-tier cardiorespiratory output—a tireless powerplant, sealed forever."
         }
       },
       "cooper": {
@@ -251,7 +251,7 @@
         },
         "TIER_60": {
           "title": "1.2 bar Hot Hatch Timed Redline",
-          "summary": "[1.2 bar TIMED HOLD] Entering the regular-runner cohort—rhythm locked in, max distance steadily pushed. Holds high RPM for the full 12-minute window with anti-overheat headroom; most stock chassis flirt with blow-by at this boost."
+          "summary": "[1.2 bar TIMED HOLD] Entering the regular-runner cohort—rhythm locked in, max distance steadily climbing. Holds high RPM for the full 12-minute window with thermal headroom; most stock platforms start bleeding boost here."
         },
         "TIER_70": {
           "title": "1.5 bar Anti-Lactate Transient Grip",
@@ -283,15 +283,15 @@
         },
         "TIER_140": {
           "title": "4.5 bar Rocket Transient Cooling Module",
-          "summary": "[4.5 bar DREAM BURST] Final boss of the 12-minute timed test. EGT and cooling ignore max-HR flex—full-throttle cardiorespiratory dump leaves the norm cohort behind."
+          "summary": "[4.5 bar DREAM BURST] Dream-spec apex of the 12-minute timed test. EGT and cooling ignore max-HR flex—full-throttle cardio dump leaves the norm cohort behind."
         },
         "LEGEND": {
-          "title": "5.5 bar Planetary Transient Heat Asset",
-          "summary": "[5.5 bar THRESHOLD GOD] Spec overflow. Beyond age-group physiology—12-minute VO₂ at world-elite tier, extreme lactate tolerance, unkillable heat efficiency."
+          "title": "5.5 bar Transient Hypercore",
+          "summary": "[5.5 bar THRESHOLD GOD] Off the published map. Beyond age-group physiology—12-minute VO₂ at world-elite tier, extreme lactate tolerance, tireless thermal efficiency."
         },
         "PANTHEON": {
           "title": "6.5 bar Pantheon Vacuum Superconductor Cooling",
-          "summary": "[PANTHEON BURST] 12-minute distance archived overflow. Myth-tier instantaneous cardiorespiratory spec—undisputed Earth-strongest aerobic/anaerobic core, Pantheon sealed."
+          "summary": "[PANTHEON BURST] 12-minute distance archived beyond the chart. Myth-tier cardiorespiratory peak—Earth's strongest aerobic/anaerobic core, sealed in the Pantheon."
         }
       },
       "bodyFat": {
@@ -344,12 +344,12 @@
           "summary": "[6.0T AERO] Augmented build tier. Fighter-jet multi-turbo architecture—brutal shear resistance at density limits."
         },
         "LEGEND": {
-          "title": "8.0L W16 Planetary Asset",
-          "summary": "[8.0L W16 PLANET] Spec overflow. Myth-tier density synced—1500 hp, 1600 Nm, 5.5 bar; PANTHEON · Ultimate Starship Concept strength totem."
+          "title": "8.0L W16 Hypercar Megablock",
+          "summary": "[8.0L W16 PLANET] Off the published map. Myth-tier density locked—1500 hp, 1600 Nm, 5.5 bar; PANTHEON · Ultimate Starship Concept powerplant."
         },
         "PANTHEON": {
           "title": "Pantheon Ultimate Displacement",
-          "summary": "[PANTHEON DISPLACEMENT] Spec archived. Myth-tier multi-motor fusion—Ultimate Physique Pantheon sealed."
+          "summary": "[PANTHEON DISPLACEMENT] Archived to the Pantheon. Myth-tier multi-motor fusion—Ultimate Physique sealed forever."
         }
       },
       "muscleMass": {
@@ -387,7 +387,7 @@
         },
         "TIER_110": {
           "title": "Factory Race-Spec Widebody",
-          "summary": "[MONSTER SPEC] Past genetic limits. Factory widebody synced—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
+          "summary": "[MONSTER SPEC] Past genetic limits. Factory widebody locked in—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
         },
         "TIER_120": {
           "title": "Endurance Low-Drag Carbon Shell",
@@ -395,19 +395,19 @@
         },
         "TIER_130": {
           "title": "Thousand-hp Carbon Heavy Shell",
-          "summary": "[ULTIMATE BUILD] Pro titan tier. Factory frame plus brutal aftermarket—exterior built to declare limit horsepower."
+          "summary": "[ULTIMATE BUILD] Pro titan tier. Factory frame plus brutal aftermarket—an exterior built to advertise limit horsepower."
         },
         "TIER_140": {
           "title": "Bespoke Aerospace Widebody",
-          "summary": "[MEGABEAST WIDEBODY] Different species visually. Outline width and mass thickness defy belief—industrial-monster scale."
+          "summary": "[MEGABEAST WIDEBODY] Visually a different species. Outline width and mass thickness defy belief—industrial-monster scale."
         },
         "LEGEND": {
           "title": "PANTHEON Monolithic Carbon Frame",
-          "summary": "[PLANETARY ASSET] Spec overflow. PANTHEON · Ultimate Starship Concept carbon synced—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; surface miracle."
+          "summary": "[HYPERCAR APEX] Off the published map. PANTHEON · Ultimate Starship Concept carbon package locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; unmatched on the surface."
         },
         "PANTHEON": {
           "title": "Pantheon Myth Build",
-          "summary": "[PANTHEON WIDEBODY] Spec archived. Myth-tier ultimate physique visual—handful on Earth carry this exterior."
+          "summary": "[PANTHEON WIDEBODY] Archived to the Pantheon. Myth-tier ultimate physique visual—only a handful on Earth carry this exterior."
         }
       },
       "gripStrength": {
@@ -433,7 +433,7 @@
         },
         "TIER_80": {
           "title": "Circuit-Spec Semi-Slick Tires",
-          "summary": "[MOUNTAIN HAIRPINS] Dominant grip tier. Semi-slicks synced—350 hp, 450 Nm, 1.8 bar, 4.0T V8; minimal flex."
+          "summary": "[MOUNTAIN HAIRPINS] Dominant grip tier. Semi-slicks locked in—350 hp, 450 Nm, 1.8 bar, 4.0T V8; minimal flex."
         },
         "TIER_90": {
           "title": "Race Full-Slick Limit",
@@ -453,19 +453,19 @@
         },
         "TIER_130": {
           "title": "Heated-Blanket Full Slick",
-          "summary": "[RAPTOR CLAMP] International arm-wrestling masters and top strongmen. Gym bars yield under clamp—ultimate softened bite on track."
+          "summary": "[RAPTOR CLAMP] International arm-wrestling masters and top strongmen. Gym bars yield under clamp—ultimate sticky bite on track."
         },
         "TIER_140": {
           "title": "Hydraulic Vise Compound",
           "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide. Factory hydraulic vise clamp stress—friction defies physics; terminal control flawless."
         },
         "LEGEND": {
-          "title": "Aerospace-Grade Planetary Compound",
-          "summary": "[PLANETARY ASSET] World-top arm-wrestling gods and heavy strongman peaks! 1500 hp PANTHEON · Ultimate Starship Concept sync—beyond most human grip specs; Earth's strongest outlier."
+          "title": "Aerospace-Grade Race Compound",
+          "summary": "[HYPERCAR APEX] World-class arm-wrestling gods and heavy strongman peaks. 1500 hp PANTHEON · Ultimate Starship Concept lock—beyond most human grip specs; Earth's strongest outlier."
         },
         "PANTHEON": {
           "title": "Pantheon Ultimate Gravity Bite",
-          "summary": "[PANTHEON] Single-digit humans after body-weight calibration. Grip model sealed; friction overflow—archived to Dyno Intel Pantheon, written into history."
+          "summary": "[PANTHEON] Single-digit humans after body-weight calibration. Grip model sealed; friction off the chart—archived to Dyno Intel Pantheon, written into history."
         }
       },
       "armSize": {
@@ -519,11 +519,11 @@
         },
         "LEGEND": {
           "title": "30-Inch Aerospace",
-          "summary": "[30\" AEROSPACE] Spec overflow. Sync locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; ultimate limb aesthetics."
+          "summary": "[30\" AEROSPACE] Off the published map. Sync locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; ultimate limb aesthetics."
         },
         "PANTHEON": {
           "title": "Pantheon Immortal Wheels",
-          "summary": "[PANTHEON RIM] Spec archived. Myth-tier ultimate diameter—expansion the naked eye can't track."
+          "summary": "[PANTHEON RIM] Archived to the Pantheon. Myth-tier ultimate diameter—expansion too extreme for the naked eye."
         }
       }
     },
@@ -542,31 +542,31 @@
     "archetypes": {
       "G_PLATFORM": {
         "title": "Serial Code: Iron Chassis",
-        "summary": "Strength leads all six axes. Extreme rigidity—in the {{genderGroup}} lineup, heavy-platform class; gravity reads as light-load cruise."
+        "summary": "Strength leads all six axes. Extreme rigidity—heavy-platform class in the {{genderGroup}} lineup; gravity feels like light-load cruise."
       },
       "HIGH_OUTPUT": {
         "title": "Serial Code: High-Output Afterburn",
-        "summary": "Explosive power leads. Razor throttle—launch-control neural fire, redline in minimum distance."
+        "summary": "Explosive power leads. Razor-sharp throttle—launch-control neural fire that hits redline in the shortest possible distance."
       },
       "ENDURANCE_PROTO": {
         "title": "Serial Code: Endurance Prototype",
-        "summary": "Cardio leads all six axes. Elite thermal management—24-hour endurance-race stability, long-range dominance."
+        "summary": "Cardio leads all six axes. Elite thermal management—24-hour endurance stability and long-range dominance."
       },
       "WIDE_BODY": {
         "title": "Serial Code: Wide-Body Architecture",
-        "summary": "Muscle mass leads. Serious downforce frame—dense fiber base, immovable heavyweight in any arena."
+        "summary": "Muscle mass leads. Serious downforce frame—dense fiber base and an immovable heavyweight presence in any arena."
       },
       "AERO_SPEC": {
         "title": "Serial Code: Aero Optimization",
-        "summary": "FFMI leads all six axes. Track-record displacement and power-to-weight—minimal drag, every gram tuned."
+        "summary": "FFMI leads all six axes. Race-bred displacement and power-to-weight—minimal drag, every gram tuned."
       },
       "MR_SPEC": {
         "title": "Serial Code: Mid-Engine Balance",
-        "summary": "Grip leads all six axes. Surgical steering, fierce bite—mid-engine neural control through the apex."
+        "summary": "Grip leads all six axes. Surgical steering and fierce bite—mid-engine neural control through the apex."
       },
       "GT_CRUISER": {
         "title": "Serial Code: Global Grand Tourer",
-        "summary": "All six axes balanced—full-spectrum unlocked. Flagship elegance and ferocity, zero power gaps."
+        "summary": "All six axes balanced—full spectrum unlocked. Flagship elegance and ferocity with zero power gaps."
       }
     }
   },

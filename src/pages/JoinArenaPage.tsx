@@ -10,6 +10,7 @@ import ProSubscriptionResultModal, {
   type ProSubscriptionFailureReason,
   type ProSubscriptionResultKind,
 } from '../components/arena/ProSubscriptionResultModal';
+import SubscriptionLegalFooter from '../components/arena/SubscriptionLegalFooter';
 import PromoCodeRedeemPanel from '../components/promo/PromoCodeRedeemPanel';
 import ProBadge from '../components/ProBadge';
 import UserProIdentityRow from '../components/UserProIdentityRow';
@@ -22,6 +23,7 @@ import { hasCoreAccess, isValidActiveProExpiry } from '../logic/core/entitlement
 import { resolveIdentityInitial } from '../logic/core/identity';
 import { mapPurchaseProFailureToUi } from '../logic/core/purchaseProUiFailure';
 import { useGenesisSeatSummary } from '../hooks/useGenesisSeatSummary';
+import { useRestorePurchases } from '../hooks/useRestorePurchases';
 import { useUiGate } from '../hooks/useUiGate';
 import { formatGenesisSeatSummaryCopy } from '../lib/genesisSeatSummaryCopy';
 import {
@@ -78,6 +80,12 @@ const JoinArenaPage: FC = () => {
     DEFAULT_PRO_SUBSCRIPTION_PLAN
   );
   const showAppleSignIn = isNativeAppleSignInAvailable();
+  const {
+    busy: restoreBusy,
+    status: restoreStatus,
+    canRestore,
+    restorePurchases,
+  } = useRestorePurchases({ enabled: !authBusy && !billingBusy });
 
   const isPro = useEntitlementStore((s) => s.isPro);
   const isGenesisEarlyBird = useEntitlementStore((s) => s.isGenesisEarlyBird === true);
@@ -189,12 +197,12 @@ const JoinArenaPage: FC = () => {
   };
 
   const subscribeDisabled =
-    billingBusy || authBusy || authStatus === 'loading' || hasActiveStoreBilling;
+    billingBusy || authBusy || restoreBusy || authStatus === 'loading' || hasActiveStoreBilling;
 
   const primaryCtaLabel = t(
     resolveJoinArenaPrimaryCtaKey({
       from: joinFrom,
-      busy: billingBusy || authBusy || authStatus === 'loading',
+      busy: billingBusy || authBusy || restoreBusy || authStatus === 'loading',
       showPlanPicker,
       promoOnlyConvert,
       uiGateKind: uiGate.kind,
@@ -318,10 +326,22 @@ const JoinArenaPage: FC = () => {
           )}
         </section>
 
+        {/* WHY: Auto-renew + Terms/Privacy + Restore Purchases (Guideline 3.1.2). */}
+        <SubscriptionLegalFooter
+          className="px-1"
+          onRestorePurchases={() => {
+            void restorePurchases();
+          }}
+          restoreBusy={restoreBusy}
+          restoreDisabled={!canRestore}
+          restoreStatus={restoreStatus}
+        />
+
         {/* WHY: De-emphasized vs purchase path — store manage must not compete with plan/CTA. */}
         <button
           type="button"
           className="mx-auto block text-xs text-zinc-500 underline underline-offset-2 transition hover:text-zinc-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+          disabled={restoreBusy}
           onClick={() => {
             void openStoreSubscriptionManagement().catch(() => {
               // Store / browser sheet failures are non-fatal; user can retry.

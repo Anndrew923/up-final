@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -16,7 +16,6 @@ import {
   signOutFirebase,
 } from '../services/firebaseClient';
 import { openStoreSubscriptionManagement } from '../services/storeSubscriptionManageService';
-import { restorePurchasesFromDevice } from '../services/subscriptionService';
 import { sensoryPreferences } from '../services/sensoryPreferences';
 import { soundService } from '../services/soundService';
 import { useAuthStore } from '../stores/authStore';
@@ -25,6 +24,7 @@ import { useEntitlementStore } from '../stores/entitlementStore';
 import { useDynoIntelLogStore } from '../stores/dynoIntelLogStore';
 import { useBootSequence } from './useBootSequence';
 import { useCurrentUserIsAdmin } from './useCurrentUserIsAdmin';
+import { useRestorePurchases } from './useRestorePurchases';
 
 export type SettingsBanner =
   | 'idle'
@@ -116,6 +116,21 @@ export function useSettingsPage(): SettingsPageState {
   const [soundEnabled, setSoundEnabled] = useState(() => sensoryPreferences.isSoundEnabled());
   const { isAdmin, ready: adminCheckReady } = useCurrentUserIsAdmin();
   const locale = toSupportedLng(i18n.resolvedLanguage ?? i18n.language);
+  // WHY: Gate shared restore on Settings-local busy so sign-in/out cannot race store restore.
+  const {
+    busy: restoreBusy,
+    status: restoreStatus,
+    canRestore,
+    restorePurchases: runRestorePurchases,
+  } = useRestorePurchases({
+    enabled: busyAction === 'none',
+  });
+
+  // WHY: Project shared restore outcomes into Settings banner so existing toast/list copy stays SSOT.
+  useEffect(() => {
+    if (restoreStatus === 'idle') return;
+    setBanner(restoreStatus);
+  }, [restoreStatus]);
 
   const toggleSound = useCallback(() => {
     const next = !sensoryPreferences.isSoundEnabled();
@@ -128,10 +143,15 @@ export function useSettingsPage(): SettingsPageState {
   const isLinkedSignedIn = authStatus === 'signed-in' && !isAnonymous;
   const showAppleSignIn = isNativeAppleSignInAvailable();
 
-  const canSignIn = authStatus !== 'loading' && !isLinkedSignedIn && busyAction === 'none';
-  const canSignOut = isLinkedSignedIn && busyAction === 'none';
-  const canDeleteAccount = isLinkedSignedIn && busyAction === 'none';
-  const canRestorePurchases = authStatus !== 'loading' && busyAction === 'none';
+  const canSignIn =
+    authStatus !== 'loading' && !isLinkedSignedIn && busyAction === 'none' && !restoreBusy;
+  const canSignOut = isLinkedSignedIn && busyAction === 'none' && !restoreBusy;
+  const canDeleteAccount = isLinkedSignedIn && busyAction === 'none' && !restoreBusy;
+  // WHY: `canRestore` already gates on `enabled: busyAction === 'none'` + auth + in-flight.
+  const canRestorePurchases = canRestore;
+  const effectiveBusyAction: SettingsBusyAction = restoreBusy
+    ? 'restore-purchases'
+    : busyAction;
 
   const state = useMemo<SettingsPageState>(
     () => ({
@@ -145,7 +165,7 @@ export function useSettingsPage(): SettingsPageState {
       locale,
       soundEnabled,
       soundSettingsVisible: !SOUND_PIPELINE_TACTICALLY_SILENCED,
-      busyAction,
+      busyAction: effectiveBusyAction,
       banner,
       canSignIn,
       showAppleSignIn,
@@ -241,35 +261,7 @@ export function useSettingsPage(): SettingsPageState {
       async restorePurchases() {
         if (!canRestorePurchases) return;
         setBanner('idle');
-        setBusyAction('restore-purchases');
-        try {
-          const result = await restorePurchasesFromDevice();
-          if (result.outcome === 'restored' && result.proActive) {
-            setBanner('restore-ok');
-            return;
-          }
-          if (result.outcome === 'no_receipt' && result.proActive) {
-            setBanner('restore-ok');
-            return;
-          }
-          if (result.outcome === 'invalid_expiry') {
-            setBanner('restore-invalid-expiry');
-            return;
-          }
-          if (result.outcome === 'sync_failed') {
-            setBanner('restore-sync-failed');
-            return;
-          }
-          if (result.outcome === 'no_receipt') {
-            setBanner('restore-empty');
-            return;
-          }
-          setBanner('restore-fail');
-        } catch {
-          setBanner('restore-fail');
-        } finally {
-          setBusyAction('none');
-        }
+        await runRestorePurchases();
       },
       async openManageSubscription() {
         try {
@@ -325,7 +317,7 @@ export function useSettingsPage(): SettingsPageState {
       membership,
       locale,
       soundEnabled,
-      busyAction,
+      effectiveBusyAction,
       banner,
       canSignIn,
       showAppleSignIn,
@@ -337,6 +329,7 @@ export function useSettingsPage(): SettingsPageState {
       dynoIntelLogCount,
       clearDynoIntelHistory,
       toggleSound,
+      runRestorePurchases,
       t,
       navigate,
       resetBoot,

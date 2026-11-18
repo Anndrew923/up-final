@@ -169,7 +169,7 @@
         "title": "Geometry ID: {{height}}cm / {{wrist}}cm",
         "currentLabel": "Current",
         "currentValue": "Wt {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
-        "goldenLabel": "✨ Golden Ratio Talent",
+        "goldenLabel": "✨ Golden Ratio Target",
         "goldenValue": "Wt {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
         "maxLabel": "Max-tuned",
         "maxValue": "Wt {{weight}}kg / BF {{bodyFat}}% / Arm {{arm}}cm / SMM {{smm}}kg",
@@ -180,9 +180,9 @@
         "upgradeGuideLimit_male": "Guide: [Max-tuned] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "upgradeGuideLimit_female": "Guide: [Max-tuned] Need +{{smmGap}}kg muscle and +{{armGap}}cm arm.",
         "beyondTitle_male": "👑 Peak Physique Horizon",
-        "beyondBody_male": "Your physique has topped your sex's natural ceiling. Morphology Lab marks you as Legendary Peak — standard guides no longer apply. Hold the summit.",
+        "beyondBody_male": "Your physique has cleared the natural ceiling for males. Morphology Lab marks you as Legendary Peak — standard guides no longer apply. Hold the summit.",
         "beyondTitle_female": "👑 Peak Physique Horizon",
-        "beyondBody_female": "Your physique has topped your sex's natural ceiling. Morphology Lab marks you as Epic Apex — standard guides no longer apply. You own the limit proportions."
+        "beyondBody_female": "Your physique has cleared the natural ceiling for females. Morphology Lab marks you as Epic Apex — standard guides no longer apply. You own the limit proportions."
       },
       "help": {
         "dismiss": "Got it",
@@ -197,12 +197,12 @@
           "mesoBody": "Skeletal muscle, joints, and athletic proportion.",
           "ectoLabel": "Ectomorphy",
           "ectoBody": "Linearity, frame length, and visual proportion.",
-          "outro": "Height, weight, and bone inputs place your geometry ID and remodel path."
+          "outro": "Height, weight, and bone inputs place your geometry ID and remodeling path."
         },
         "goldenRatio": {
           "infoAria": "Open Golden Ratio guide",
           "title": "How is Golden Ratio calculated?",
-          "intro": "A lean visual-aesthetics track — formulas from elite aesthetics and exercise physiology:",
+          "intro": "A lean visual-aesthetics track — formulas drawn from elite aesthetics and exercise physiology:",
           "colMetric": "Metric",
           "colMale": "Male",
           "colFemale": "Female",
@@ -220,10 +220,10 @@
       },
       "appendix": {
         "title": "Algorithm Notes",
-        "heathCarter": "Built on Heath–Carter somatotype. Full clinical formulas need skinfolds and bone breadths; this app uses wrist girth plus body-composition inputs as a field-practical proxy (±2–4% residual).",
-        "genderTracks": "[Gender Dual-Track] Male anchors: BF 12% / 9% / 7% with ΔSMM×0.48 arm weighting. Female elegant-line: BF 24% / 21% / 18%, FFM×0.85 residual, arm ΔSMM×0.28 (no double suppression). Golden Ratio mid-target: male BMI 23 / BF 11% / SMM = FFM×0.57; female BMI 19.5 / BF 20% / SMM = FFM×55%. Muscle-first upgrade fork: mass cleared + BF in bulk band (male ≤16% / female ≤25%) → [Legendary bulk]; mass cleared + BF high → [Cut]; under-mass → [Cut] or [Golden bulk] by golden BF. If live lean mass exceeds the gender-scaled ceiling, Legendary Defense expands point B so it never shrinks inward of current status.",
-        "legendaryDefense": "[Extreme Morphotype] Default ceiling reflects population-normal lean-tissue upper bound. When measured muscle and arm already exceed that estimate, Legendary Physique Defense re-anchors and expands the ceiling from live metrics.",
-        "biaDisclaimer": "[Measurement Variability] SMM uses the commercial BIA convention 0.57×FFM. Hydration swings (carb load, pump, creatine, inflammation) may shift readings ±3–5%. For physique tracking only — not medical diagnosis."
+        "heathCarter": "Built on the Heath–Carter somatotype model. Full clinical formulas require skinfolds and bone breadths; this app uses wrist girth plus body-composition inputs as a field-practical proxy (about ±2–4% residual error).",
+        "genderTracks": "[Gender Dual-Track] Male anchors: BF 12% / 9% / 7% with ΔSMM×0.48 arm weighting. Female elegant-line: BF 24% / 21% / 18%, FFM×0.85 residual, arm ΔSMM×0.28 (no double suppression). Golden Ratio mid-target: male BMI 23 / BF 11% / SMM = FFM×0.57; female BMI 19.5 / BF 20% / SMM = FFM×0.55. Muscle-first upgrade fork: mass cleared + BF in bulk band (male ≤16% / female ≤25%) → [Legendary bulk]; mass cleared + BF high → [Cut]; under-mass → [Cut] or [Golden bulk] by golden BF. If live lean mass exceeds the gender-scaled ceiling, Legendary Defense expands point B so it never contracts below current status.",
+        "legendaryDefense": "[Extreme Morphotype] The default ceiling reflects the population-normal upper bound for lean tissue. When measured muscle and arm already exceed that estimate, Legendary Physique Defense re-anchors and expands the ceiling from live metrics.",
+        "biaDisclaimer": "[Measurement Variability] Skeletal muscle mass (SMM) follows the common commercial BIA convention of 0.57×FFM. Hydration swings from carb loading, pumps, creatine, or inflammation can shift readings by about ±3–5%. Values are for physique tracking and research reference only — not a medical diagnosis."
       }
     },
     "codex": {

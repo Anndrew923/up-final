@@ -10,11 +10,11 @@ function fakeT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.axisSummary.coverageUnitLifts') return 'LIFTS';
   if (key === 'aesthetic.axisSummary.coverageUnitTests') return 'TESTS';
   if (key === 'aesthetic.axisSummary.strength.titleZh') return '力量綜合評測';
-  if (key === 'aesthetic.axisSummary.strength.titleEn') return 'STRENGTH ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.strength.titleEn') return 'STRENGTH TEST';
   if (key === 'aesthetic.axisSummary.explosivePower.titleZh') return '爆發力綜合評測';
-  if (key === 'aesthetic.axisSummary.explosivePower.titleEn') return 'EXPLOSIVE ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.explosivePower.titleEn') return 'EXPLOSIVE TEST';
   if (key === 'aesthetic.axisSummary.muscleMass.titleZh') return '骨骼肌綜合評測';
-  if (key === 'aesthetic.axisSummary.muscleMass.titleEn') return 'MUSCLE MASS ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.muscleMass.titleEn') return 'MUSCLE MASS TEST';
   if (key === 'aesthetic.singleLeaf.upRatingLabel') return '戰力評分';
   if (key === 'aesthetic.singleLeaf.verifiedStamp') {
     return `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${opts?.year}`;
@@ -31,11 +31,11 @@ function fakeEnT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.axisSummary.coverageUnitLifts') return 'LIFTS';
   if (key === 'aesthetic.axisSummary.coverageUnitTests') return 'TESTS';
   if (key === 'aesthetic.axisSummary.strength.titleZh') return '力量綜合評測';
-  if (key === 'aesthetic.axisSummary.strength.titleEn') return 'STRENGTH ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.strength.titleEn') return 'STRENGTH TEST';
   if (key === 'aesthetic.axisSummary.explosivePower.titleZh') return '爆發力綜合評測';
-  if (key === 'aesthetic.axisSummary.explosivePower.titleEn') return 'EXPLOSIVE ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.explosivePower.titleEn') return 'EXPLOSIVE TEST';
   if (key === 'aesthetic.axisSummary.muscleMass.titleZh') return '骨骼肌綜合評測';
-  if (key === 'aesthetic.axisSummary.muscleMass.titleEn') return 'MUSCLE MASS ASSESSMENT';
+  if (key === 'aesthetic.axisSummary.muscleMass.titleEn') return 'MUSCLE MASS TEST';
   if (key === 'aesthetic.singleLeaf.upRatingLabel') return 'UP RATING';
   if (key === 'aesthetic.singleLeaf.verifiedStamp') {
     return `VERIFIED PHYSIOLOGICAL SPECIFICATION // ${opts?.year}`;
@@ -57,7 +57,7 @@ describe('buildAestheticAxisSummaryExportInput', () => {
     expect(input.reportType).toBe('axis-summary');
     expect(input.axis).toBe('strength');
     expect(input.leafTitleZh).toBe('力量綜合評測');
-    expect(input.leafTitleEn).toBe('STRENGTH ASSESSMENT');
+    expect(input.leafTitleEn).toBe('STRENGTH TEST');
     expect(input.rawMetricLabel).toBe('評測覆蓋');
     expect(input.rawReading).toBe('5 項綜合');
     expect(input.heroScoreText).toBe('70.40');
@@ -99,7 +99,7 @@ describe('buildAestheticAxisSummaryExportInput', () => {
       expect(input.uiLocale).toBe('en');
       expect(input.verdict?.epithet).toBe('LOAD CONQUEROR');
       expect(input.verdict?.critique).toMatch(/Among the strongest lifters/);
-      expect(input.leafTitleEn).toBe('STRENGTH ASSESSMENT');
+      expect(input.leafTitleEn).toBe('STRENGTH TEST');
       expect(input.rawReading).toBe('5 LIFTS');
       // Visible plate fields (not leafTitleZh payload) must stay CJK-free.
       const visible = [
@@ -126,7 +126,7 @@ describe('buildAestheticAxisSummaryExportInput', () => {
       { mode: 'carbon', aspectRatio: '9:16', uiLocale: 'en' }
     );
     expect(explosive.rawReading).toBe('2 TESTS');
-    expect(explosive.leafTitleEn).toBe('EXPLOSIVE ASSESSMENT');
+    expect(explosive.leafTitleEn).toBe('EXPLOSIVE TEST');
 
     const overflow = buildAestheticAxisSummaryExportInput(
       fakeT as unknown as TFunction,

@@ -1,0 +1,4 @@
+/* Camera / Photo Library — English (App Store permission prompts) */
+NSCameraUsageDescription = "Ultimate Physique uses the camera to capture workout photos for your performance spec cards and to update your leaderboard profile avatar.";
+NSPhotoLibraryUsageDescription = "Ultimate Physique accesses your photo library so you can select workout photos for performance spec cards and set your leaderboard avatar.";
+NSPhotoLibraryAddUsageDescription = "Ultimate Physique saves your generated performance spec cards and edited avatar images to your photo library.";

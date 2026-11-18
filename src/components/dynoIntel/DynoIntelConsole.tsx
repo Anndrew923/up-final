@@ -11,6 +11,7 @@ import { useDynoIntelQuota } from '../../hooks/useDynoIntelQuota';
 import { useDynoIntelSheet } from '../../hooks/useDynoIntelSheet';
 import { useDynoIntelSuggestions } from '../../hooks/useDynoIntelSuggestions';
 import { useDynoRouteContext } from '../../hooks/useDynoRouteContext';
+import { useRestorePurchases } from '../../hooks/useRestorePurchases';
 import {
   canUseDynoIntelFull,
   isEntitlementCheckSettled,
@@ -80,6 +81,12 @@ const DynoIntelConsole = () => {
   const [paywallBillingError, setPaywallBillingError] = useState(false);
   const [authGateOpen, setAuthGateOpen] = useState(false);
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
+  const {
+    busy: paywallRestoreBusy,
+    status: paywallRestoreStatus,
+    canRestore: canRestorePaywallPurchases,
+    restorePurchases: restorePaywallPurchases,
+  } = useRestorePurchases({ enabled: !paywallBusy });
 
   const resolveBaseContext = useCallback(() => {
     const locale = i18n.language === 'zh-Hant' ? 'zh-Hant' : 'en';
@@ -320,6 +327,7 @@ const DynoIntelConsole = () => {
   }, [clearPendingLaunch]);
 
   const handlePaywallSubscribe = useCallback(async () => {
+    if (paywallRestoreBusy) return;
     setPaywallBillingError(false);
     setPaywallBusy(true);
     try {
@@ -345,7 +353,7 @@ const DynoIntelConsole = () => {
     } finally {
       setPaywallBusy(false);
     }
-  }, [clearChat, openJoinArenaProFunnel, restoreLatestLog]);
+  }, [clearChat, openJoinArenaProFunnel, paywallRestoreBusy, restoreLatestLog]);
 
   const handleSubmitQuestion = useCallback(
     (question: string) => {
@@ -403,6 +411,13 @@ const DynoIntelConsole = () => {
         paywallBillingError={paywallBillingError}
         onPaywallSubscribe={() => void handlePaywallSubscribe()}
         onPaywallDismiss={handlePaywallDismiss}
+        onPaywallBeforePrivacyNavigate={handleSheetClose}
+        onPaywallRestorePurchases={() => {
+          void restorePaywallPurchases();
+        }}
+        paywallRestoreBusy={paywallRestoreBusy}
+        paywallRestoreDisabled={!canRestorePaywallPurchases}
+        paywallRestoreStatus={paywallRestoreStatus}
         consoleLabel={consoleLabel}
         remaining={quota.remaining}
         limit={quota.limit}

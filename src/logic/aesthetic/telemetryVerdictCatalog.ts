@@ -100,15 +100,15 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     40: {
       zh: ['基礎構築者', '力量起步階段，提升訓練動作熟悉度，便能快速突破門檻。'],
-      en: ['BASE CONSTRUCTOR', 'Early lifting stage—building movement familiarity clears the base threshold fast.'],
+      en: ['BASE BUILDER', 'Early lifting stage—building movement familiarity clears the base threshold fast.'],
     },
     50: {
       zh: ['常模突破者', '站穩大眾平均力量線，超越未訓練人群，持續推進必獲紮實回報。'],
-      en: ['NORM BREAKER', 'Squarely on the public baseline—stronger than untrained novices with steady upside.'],
+      en: ['NORM BREAKER', 'Squarely on the public baseline—stronger than untrained novices with room to grow.'],
     },
     60: {
       zh: ['健身房主力', '力量明顯超越新手，規律訓練開始兌現，自律付出正轉化為實力。'],
-      en: ['FLOOR REGULAR', 'Clearly separated from casual gym-goers—consistent barbell work is paying off.'],
+      en: ['GYM MAINSTAY', 'Clearly separated from casual gym-goers—consistent barbell work is paying off.'],
     },
     70: {
       zh: ['阻力征服者', '躋身健身房前段班；穩紮穩打遠離傷病，當前力量已足以稱霸一方。'],
@@ -144,7 +144,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     150: {
       zh: ['地表最強重載', '碳基力量至高穹頂，單憑肉身將重力踩在腳下，無可匹敵的星球資產。'],
-      en: ['APEX FORCE', 'The supreme dome of human strength—gravity under heel, a true planetary asset.'],
+      en: ['APEX FORCE', 'The pinnacle of human strength—gravity underfoot, a physique unmatched on the planet.'],
     },
   },
   explosivePower: {
@@ -194,11 +194,11 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     140: {
       zh: ['核爆級動能', '踏入不可思議的怪物領域，毀滅性瞬間加速度讓對手在起跑線即遭壓制。'],
-      en: ['NUCLEAR KINETICS', 'True monster territory—devastating first-step acceleration outclasses rivals at go.'],
+      en: ['NUCLEAR KINETICS', 'True monster territory—devastating acceleration outclasses rivals off the line.'],
     },
     150: {
       zh: ['地表最強爆發', '人類快縮肌與神經反射至高穹頂，純粹速度與彈跳的化身，頂級運動資產。'],
-      en: ['APEX EXPLOSION', 'The supreme pinnacle of human fast-twitch power and reflex—pure kinetic dominance.'],
+      en: ['APEX EXPLOSION', 'The pinnacle of human fast-twitch power and reflex—pure kinetic dominance.'],
     },
   },
   cardio: {
@@ -228,11 +228,11 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     90: {
       zh: ['永動巡航者', '嚴格紀律鑄就深不見底的心肺，超越眾人的不只是配速，更是強大意志力。'],
-      en: ['ENDURANCE PACE', 'Forged by strict discipline—outlasting the crowd through sheer aerobic grit.'],
+      en: ['PERPETUAL CRUISER', 'Forged by strict discipline—outlasting the crowd through sheer aerobic grit.'],
     },
     100: {
       zh: ['無氧閾值覺醒', '心肺容積推進至百分以上，生理節奏掌控超越單純健康範疇，耐力賽場自帶壓迫感。'],
-      en: ['THRESHOLD AWAKENED', 'Aerobic capacity past 100—control beyond mere health that presses any endurance course.'],
+      en: ['THRESHOLD AWAKENED', 'Aerobic capacity past 100—control beyond basic fitness that dominates any course.'],
     },
     110: {
       zh: ['鐵肺長征者', '有氧代謝與恢復效率達優秀職業選手水準，長距離高配速巡航仍游刃有餘。'],
@@ -278,11 +278,11 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     80: {
       zh: ['重裝肌甲者', '人群中無法忽視的視覺亮點，純粹堅持與汗水堆出厚實肌甲，逼近凡人頂點。'],
-      en: ['HEAVY MUSCLE ARMOR', 'An unmistakable visual standout—pure grit forged dense armor near the mortal peak.'],
+      en: ['HEAVY MUSCLE ARMOR', 'An unmistakable visual standout—pure grit has forged dense armor near the mortal peak.'],
     },
     90: {
       zh: ['凡人肌量頂點', '放棄平庸娛樂將時間投入雕琢軀體，這份厚實存在感在人群中已達頂尖水準。'],
-      en: ['MORTAL MASS PEAK', 'Trading comfort for iron forged commanding natural volume—an imposing physique.'],
+      en: ['MORTAL MASS PEAK', 'Trading comfort for iron has forged commanding natural volume—an imposing physique.'],
     },
     100: {
       zh: ['自然健體巔峰', '跨越百分肌量門檻，骨骼肌比肩自然健體世界冠軍，厚實輪廓氣場無可忽視。'],
@@ -352,7 +352,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     130: {
       zh: ['超常模離群帶', '突破競技統計圖表上限，近乎神話級的體組成數據。'],
-      en: ['STATISTICAL ANOMALY', 'Breaking past athletic chart limits into near-mythic composition.'],
+      en: ['CHART BREAKER', 'Breaking past athletic chart limits into near-mythic composition.'],
     },
     140: {
       zh: ['怪物級離群指標', '逼近系統生理上限，近乎非人的恐怖去脂結構密度。'],
@@ -360,7 +360,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     150: {
       zh: ['地表最強 FFMI', '觸及滿分穹頂，人類去脂體組成承載力的絕對天花板。'],
-      en: ['APEX FFMI', 'Reaching the supreme ceiling of human lean mass relative to height.'],
+      en: ['APEX FFMI', 'Reaching the absolute ceiling of human lean mass relative to height.'],
     },
   },
   gripStrength: {
@@ -414,7 +414,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     150: {
       zh: ['地表最強握力', '人類前臂與指力發展至高穹頂，單憑雙手將極限踩在腳下，星球級之握。'],
-      en: ['APEX GRIP', 'The supreme dome of human forearm and finger strength—unrivaled bare-hand power.'],
+      en: ['APEX GRIP', 'The pinnacle of human forearm and finger strength—unrivaled bare-hand power on earth.'],
     },
   },
   armSize: {
@@ -424,7 +424,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     40: {
       zh: ['維度構築者', '上肢基礎正在打底，累積二三頭肌量將穩步推升臂圍。'],
-      en: ['GIRTH BUILDER', 'Building early upper-arm foundation—stacking bicep and tricep mass raises girth.'],
+      en: ['GIRTH BUILDER', 'Building early upper-arm foundation—stacking biceps and triceps mass raises girth.'],
     },
     50: {
       zh: ['勻稱臂圍者', '大眾平均基準達成，上肢份量逐步成形。'],
@@ -460,7 +460,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     130: {
       zh: ['統計學巨臂神話', '違背常理的超大臂圍，成就運動統計中難以複製的奇蹟。'],
-      en: ['STATISTICAL CANNONS', 'Unreal arm girth—an irreplicable marvel in athletic statistics.'],
+      en: ['STATISTICAL CANNONS', 'Unreal arm girth—an unrepeatable marvel of upper-body mass in athletic statistics.'],
     },
     140: {
       zh: ['怪物級上肢維度', '超越常人比例認知的震撼巨臂，進化成純粹力量圖騰。'],
@@ -468,7 +468,7 @@ export const TELEMETRY_VERDICT_CATALOG: Record<
     },
     150: {
       zh: ['地表最強臂圍', '人類手臂圍度的終極天花板，無可匹敵的星球級傳奇。'],
-      en: ['APEX ARM GIRTH', 'The supreme ceiling of human arm girth—an unrivaled planetary visual legend.'],
+      en: ['APEX ARM GIRTH', 'The pinnacle of human arm girth—an unmatched visual landmark on the planet.'],
     },
   },
 };

@@ -1,18 +1,18 @@
 {
   "legal": {
-    "consentLineBefore": "By signing in or continuing, you confirm you have read and agree to the",
+    "consentLineBefore": "By signing in or continuing, you confirm that you have read and agree to the",
     "consentLink": "Terms of Service & Health Disclaimer",
     "modalTitle": "Terms of Service & Health Disclaimer",
     "modalKicker": "Legal",
     "sectionMedicalTitle": "Not medical advice",
-    "sectionMedicalBody": "Scores and assessments in this app (including 5 km timing and other fitness tests) are for personal logs and ladder play only — not medical diagnosis, prescriptions, or emergency care.",
+    "sectionMedicalBody": "Scores and assessments in this app (including the 5K time trial and other fitness tests) are for personal logging and leaderboard use only. They are not medical diagnosis, prescribing information, or emergency care guidance.",
     "sectionRiskTitle": "Exercise at your own risk",
-    "sectionRiskBody": "Assess your condition before intense training. Stop immediately if you feel unwell and seek professional medical help. You accept responsibility for training decisions and physical risk.",
+    "sectionRiskBody": "Assess your condition before intense training. Stop immediately if you feel unwell and seek professional medical care. You remain responsible for your training decisions and any physical risk that follows.",
     "sectionServiceTitle": "Service use",
-    "sectionServiceBody": "Signing in or continuing means you agree to use assessments, the ladder, and local features under product rules. We may ask again when terms versions change.",
+    "sectionServiceBody": "By signing in or continuing, you agree to use assessments, the ladder, and local features under the product rules. We may request renewed consent when these terms are updated.",
     "acceptContinue": "Agree and continue",
     "closePreview": "Close",
     "gateTitle": "Before you continue",
-    "gateIntro": "Review & accept to continue."
+    "gateIntro": "Please review and accept these terms to continue."
   }
 }

@@ -1,0 +1,4 @@
+/* 相機／相簿 — 繁中（系統權限提示） */
+NSCameraUsageDescription = "「最強肉體」需要使用相機拍攝訓練照片以生成個人戰報卡，或拍攝天梯個人頭像。";
+NSPhotoLibraryUsageDescription = "「最強肉體」需要存取相簿以挑選訓練照片生成戰報卡，或選擇天梯個人頭像。";
+NSPhotoLibraryAddUsageDescription = "「最強肉體」需要儲存權限，以將生成的黑金戰報卡與頭像保存至您的相簿。";

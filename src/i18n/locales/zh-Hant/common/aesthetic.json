@@ -175,15 +175,15 @@
       "coverageUnitTests": "TESTS",
       "strength": {
         "titleZh": "力量綜合評測",
-        "titleEn": "STRENGTH ASSESSMENT"
+        "titleEn": "STRENGTH TEST"
       },
       "explosivePower": {
         "titleZh": "爆發力綜合評測",
-        "titleEn": "EXPLOSIVE ASSESSMENT"
+        "titleEn": "EXPLOSIVE TEST"
       },
       "muscleMass": {
         "titleZh": "骨骼肌綜合評測",
-        "titleEn": "MUSCLE MASS ASSESSMENT"
+        "titleEn": "MUSCLE MASS TEST"
       }
     },
     "singleLeaf": {

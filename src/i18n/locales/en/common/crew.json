@@ -55,12 +55,12 @@
       "pkToggle": {
         "enable": "Clash",
         "disable": "End Clash",
-        "scanning": "Clashing..."
+        "scanning": "Clashing…"
       },
       "pkScan": {
-        "kicker": "DIAGNOSING MODELS",
+        "kicker": "COMPARING BUILDS",
         "status": "SCANNING SNAPSHOTS…",
-        "aria": "Extracting power and comparing six-axis radar"
+        "aria": "Reading power metrics and comparing six-axis radar"
       },
       "battleBanner": {
         "vs": "VS",
@@ -68,10 +68,10 @@
         "viewerFallback": "Me"
       },
       "battleReport": {
-        "dominance": "{{wins}}W {{losses}}L · Dominance ({{delta}})",
+        "dominance": "{{wins}}W {{losses}}L · Dominant ({{delta}})",
         "lead": "{{wins}}W {{losses}}L · Slight edge ({{delta}})",
         "even": "{{wins}}W {{losses}}L · Evenly matched",
-        "trailing": "{{wins}}W {{losses}}L · Chasing ({{delta}})"
+        "trailing": "{{wins}}W {{losses}}L · Trailing ({{delta}})"
       }
     },
     "dispatch": {

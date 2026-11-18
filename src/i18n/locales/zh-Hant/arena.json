@@ -13,6 +13,8 @@
   "genesisPioneerProUpsellBanner": "✦ 您已享有終身天梯特權 · 升級解鎖高階算力",
   "confirmSubscribePro": "確認訂閱 PRO",
   "signInToSubscribePro": "登入以訂閱 PRO",
+  "autoRenewDisclosure": "訂閱將自動續訂，除非您在當前訂閱期結束前至少 24 小時關閉自動續訂。費用將於到期前 24 小時內向您的商店帳號收取，您可隨時前往 App Store 或 Google Play 帳號設定管理或取消訂閱。",
+  "legalFooter": "詳見本服務的 <terms>服務條款</terms> 與 <privacy>隱私權政策</privacy>。",
   "returnToHome": "返回首頁",
   "compareTitle": "Core 與 Pro 權益對照",
   "compareCoreLabel": "本機",

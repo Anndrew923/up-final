@@ -13,6 +13,8 @@
   "genesisPioneerProUpsellBanner": "✦ Lifetime Ladder Access Unlocked · Upgrade for High-Compute Features",
   "confirmSubscribePro": "Subscribe to PRO",
   "signInToSubscribePro": "Sign in to Subscribe",
+  "autoRenewDisclosure": "Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period. Your store account will be charged for renewal within 24 hours prior to the end of the current period. You can manage or cancel your subscription anytime in your App Store or Google Play account settings.",
+  "legalFooter": "See our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
   "returnToHome": "Return Home",
   "compareTitle": "Core vs Pro",
   "compareCoreLabel": "CORE",

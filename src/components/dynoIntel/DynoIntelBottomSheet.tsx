@@ -15,6 +15,7 @@ import {
 import { cn } from '../../lib/cn';
 import { splitDynoIntelCommentaryParagraphs } from '../../logic/core/dynoIntelCommentaryFormat';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
+import type { RestorePurchasesStatus } from '../../logic/core/restorePurchasesStatus';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import type { DynoIntelLogEntry } from '../../logic/core/dynoIntelLogTypes';
 import type { DynoIntelDisplayMeta } from '../../logic/core/resolveDynoIntelDisplayMeta';
@@ -35,6 +36,11 @@ export interface DynoIntelBottomSheetProps {
   paywallBillingError: boolean;
   onPaywallSubscribe: () => void;
   onPaywallDismiss: () => void;
+  onPaywallBeforePrivacyNavigate?: () => void;
+  onPaywallRestorePurchases: () => void;
+  paywallRestoreBusy: boolean;
+  paywallRestoreDisabled: boolean;
+  paywallRestoreStatus: RestorePurchasesStatus;
   consoleLabel: string;
   remaining: number;
   limit: number;
@@ -63,6 +69,11 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
   paywallBillingError,
   onPaywallSubscribe,
   onPaywallDismiss,
+  onPaywallBeforePrivacyNavigate,
+  onPaywallRestorePurchases,
+  paywallRestoreBusy,
+  paywallRestoreDisabled,
+  paywallRestoreStatus,
   consoleLabel,
   remaining,
   limit,
@@ -204,6 +215,11 @@ const DynoIntelBottomSheet: FC<DynoIntelBottomSheetProps> = ({
             billingError={paywallBillingError}
             onSubscribe={onPaywallSubscribe}
             onDismiss={onPaywallDismiss}
+            onBeforePrivacyNavigate={onPaywallBeforePrivacyNavigate}
+            onRestorePurchases={onPaywallRestorePurchases}
+            restoreBusy={paywallRestoreBusy}
+            restoreDisabled={paywallRestoreDisabled}
+            restoreStatus={paywallRestoreStatus}
           />
         ) : (
           <>

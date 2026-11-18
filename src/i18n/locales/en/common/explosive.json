@@ -1,7 +1,7 @@
 {
   "explosive": {
     "kicker": "Power",
-    "title": "Explosive Power Assessment",
+    "title": "Explosive Power Test",
     "subtitle": "Torque axis uses the jump average only; 100 m is specialty-only.",
     "tabJumps": "Jump Tests",
     "tabSprint": "100 m Sprint",

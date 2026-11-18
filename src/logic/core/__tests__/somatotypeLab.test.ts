@@ -771,7 +771,7 @@ describe('max tuned physique + lab snapshot', () => {
     );
     expect(zhTools.tools.somatotypeLab.gap.goldenLabel).toContain('黃金比例天賦');
     expect(zhTools.tools.somatotypeLab.gap.goldenLabel).not.toContain('Golden Ratio');
-    expect(enTools.tools.somatotypeLab.gap.goldenLabel).toContain('Golden Ratio Talent');
+    expect(enTools.tools.somatotypeLab.gap.goldenLabel).toContain('Golden Ratio Target');
     expect(enTools.tools.somatotypeLab.gap.goldenLabel).not.toMatch(/\/\s*Golden Ratio/);
   });
 

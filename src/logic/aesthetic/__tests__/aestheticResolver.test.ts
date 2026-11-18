@@ -343,7 +343,7 @@ describe('aesthetic copy isolation', () => {
     expect(en.labels.visualLineWithNote).toContain('{{note}}');
     expect(en.visual.assassin.subtitle).toBe('LOOKS CAN KILL');
     expect(en.force.m['110'].subtitle).toBe('UNREAL WEIGHT · BROS STARING');
-    expect(en.kinetic.m['100'].subtitle).toBe('NO WORD FOR TIRED · RIVALS GAPPED');
+    expect(en.kinetic.m['100'].subtitle).toBe('NO WORD FOR TIRED · RIVALS DUSTED');
     expect(en.kinetic.m['90'].title).toBe('SCARY STAMINA');
     expect(en.labels.brandHeader).toBe('ULTIMATE PHYSIQUE // DOMINANCE');
     expect(en.labels.brandHeader.endsWith(':')).toBe(false);
