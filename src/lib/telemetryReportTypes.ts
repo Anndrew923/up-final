@@ -20,7 +20,7 @@ export type TelemetryReportAspect = TelemetryCardAspectRatio;
  * Fixed verdict slot height on the logical carbon plate (115–130 stage).
  * WHY: Shared by Canvas rhythm + DOM preview so coach copy never reflows the stamp.
  */
-export const SINGLE_LEAF_VERDICT_SLOT_HEIGHT = 122;
+export const SINGLE_LEAF_VERDICT_SLOT_HEIGHT = 125;
 
 /**
  * Shared dual-hero paint fields (Carbon + Selfie).

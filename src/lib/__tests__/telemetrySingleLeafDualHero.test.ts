@@ -166,8 +166,8 @@ describe('telemetrySingleLeafDualHero', () => {
     expect(CARBON_TIER_CAPSULE_FONT_PX).toBe(29);
     expect(CARBON_TIER_CAPSULE_HEIGHT).toBe(58);
     expect(CARBON_TIER_CAPSULE_MIN_WIDTH).toBe(260);
-    expect(CARBON_VERDICT_SLOT_HEIGHT).toBe(122);
-    expect(SINGLE_LEAF_VERDICT_SLOT_HEIGHT).toBe(122);
+    expect(CARBON_VERDICT_SLOT_HEIGHT).toBe(125);
+    expect(SINGLE_LEAF_VERDICT_SLOT_HEIGHT).toBe(125);
     expect(CARBON_VERDICT_SLOT_HEIGHT).toBeGreaterThanOrEqual(CARBON_VERDICT_SLOT_MIN);
     expect(CARBON_VERDICT_SLOT_HEIGHT).toBeLessThanOrEqual(CARBON_VERDICT_SLOT_MAX);
     expect(BILINGUAL_TITLE_BLOCK_PX).toBe(CARBON_BILINGUAL_TITLE_BLOCK_PX);
@@ -189,7 +189,7 @@ describe('telemetrySingleLeafDualHero', () => {
     expect(story.verdictTop).toBe(
       story.plaqueY + CARBON_TIER_CAPSULE_HEIGHT / 2 + GAP_STACK_STORY
     );
-    expect(story.verdictHeight).toBe(122);
+    expect(story.verdictHeight).toBe(125);
     expect(story.verdictTop + story.verdictHeight).toBeLessThan(story.stampY);
     // Outer gaps stay symmetric when stage pads match (header→crest vs verdict→stamp).
     expect(STAGE_PAD_TOP_STORY).toBe(STAGE_PAD_BOTTOM_STORY);

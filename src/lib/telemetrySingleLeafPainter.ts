@@ -52,6 +52,7 @@ import {
   CARBON_VERDICT_CRITIQUE_MAX_WIDTH,
   CARBON_VERDICT_EPITHET_FILL,
   CARBON_VERDICT_EPITHET_FONT_PX,
+  CARBON_VERDICT_EPITHET_LETTER_SPACING,
   CARBON_VERDICT_EPITHET_OFFSET_Y,
 } from '../logic/aesthetic/telemetryVerdictCatalog';
 
@@ -261,12 +262,24 @@ function paintCarbonVerdictBlock(
     ctx.textBaseline = 'middle';
     ctx.fillStyle = CARBON_VERDICT_EPITHET_FILL;
     ctx.font = epithetFont;
-    ctx.fillText(
-      verdict.epithet,
-      cx,
-      verdictTop + CARBON_VERDICT_EPITHET_OFFSET_Y,
-      CARBON_VERDICT_CRITIQUE_MAX_WIDTH
-    );
+    // WHY: Match certificate chrome — only mutate letterSpacing when the engine
+    // exposes a string IDL; restore to '0px' so undefined never becomes "undefined".
+    const supportsLetterSpacing = typeof ctx.letterSpacing === 'string';
+    if (supportsLetterSpacing) {
+      ctx.letterSpacing = CARBON_VERDICT_EPITHET_LETTER_SPACING;
+    }
+    try {
+      ctx.fillText(
+        verdict.epithet,
+        cx,
+        verdictTop + CARBON_VERDICT_EPITHET_OFFSET_Y,
+        CARBON_VERDICT_CRITIQUE_MAX_WIDTH
+      );
+    } finally {
+      if (supportsLetterSpacing) {
+        ctx.letterSpacing = '0px';
+      }
+    }
 
     ctx.fillStyle = CARBON_VERDICT_CRITIQUE_FILL;
     ctx.font = critiqueFont;
@@ -275,6 +288,7 @@ function paintCarbonVerdictBlock(
       CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y,
     ];
     for (let i = 0; i < lines.length && i < yOffsets.length; i += 1) {
+      // Hard clamp via CARBON_VERDICT_CRITIQUE_MAX_WIDTH — dual insurance with wrap.
       ctx.fillText(
         lines[i]!,
         cx,

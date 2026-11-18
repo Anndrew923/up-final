@@ -52,9 +52,9 @@ export const GAP_CREST_TITLE_FEED = 26;
 /** Title block → dual band top. */
 export const GAP_TITLE_DUAL_STORY = 52;
 export const GAP_TITLE_DUAL_FEED = 48;
-/** Dual bottom → plaque top; plaque bottom → verdict top. */
-export const GAP_STACK_STORY = 36;
-export const GAP_STACK_FEED = 34;
+/** Dual bottom → plaque top; plaque bottom → verdict top (tightened for 125px verdict). */
+export const GAP_STACK_STORY = 34;
+export const GAP_STACK_FEED = 32;
 /** Dual hero band height (compact vs legacy 236/200). */
 export const DUAL_BAND_STORY = 200;
 export const DUAL_BAND_FEED = 176;

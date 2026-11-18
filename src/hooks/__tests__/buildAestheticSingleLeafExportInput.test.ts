@@ -76,7 +76,7 @@ describe('buildAestheticSingleLeafExportInput', () => {
     expect(input).not.toHaveProperty('normRatingLine');
     expect(input).not.toHaveProperty('battleCode');
     expect(input).not.toHaveProperty('unlockedAxesLabel');
-    expect(SINGLE_LEAF_VERDICT_SLOT_HEIGHT).toBe(122);
+    expect(SINGLE_LEAF_VERDICT_SLOT_HEIGHT).toBe(125);
   });
 
   it('keeps decade populationClass on tierCapsule when heroScore >= 100 (overflow gold only)', () => {

@@ -128,15 +128,16 @@ const AestheticCarbonCenteredStack: FC<AestheticCarbonCenteredStackProps> = ({
       >
         {verdict ? (
           <>
+            {/* Optical preview scale (~1.5× design px) — not 1:1 with canvas 32/26. */}
             <p
               data-testid={`${testIdPrefix}-verdict-epithet`}
-              className="w-full text-[clamp(0.55rem,2.4vw,0.72rem)] font-bold tracking-[0.08em] text-[#FDE68A]"
+              className="w-full text-[16px] font-bold tracking-[0.12em] text-[#FDE68A] sm:text-[17px]"
             >
               {verdict.epithet}
             </p>
             <p
               data-testid={`${testIdPrefix}-verdict-critique`}
-              className="w-full max-w-[18rem] text-center text-[clamp(0.48rem,2.1vw,0.62rem)] font-medium leading-snug text-white/85 [text-wrap:balance]"
+              className="w-full max-w-[92%] text-center text-[13.5px] font-medium leading-snug text-white/90 [text-wrap:balance] sm:text-[14px]"
             >
               {verdict.critique}
             </p>

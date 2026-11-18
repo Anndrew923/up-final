@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { AESTHETIC_AXIS_SUMMARY_AXES } from '../axisSummaryReport';
 import { SINGLE_LEAF_IDS } from '../singleLeafReport';
 import {
+  CARBON_VERDICT_CRITIQUE_FONT_PX,
+  CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y,
+  CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y,
   CARBON_VERDICT_CRITIQUE_MAX_LINES,
   CARBON_VERDICT_CRITIQUE_MAX_WIDTH,
+  CARBON_VERDICT_EPITHET_FONT_PX,
+  CARBON_VERDICT_EPITHET_OFFSET_Y,
   EN_CRITIQUE_ORPHAN_MIN_CHARS,
   TELEMETRY_VERDICT_CATALOG,
   VERDICT_DECADE_KEYS,
@@ -128,8 +133,25 @@ describe('telemetryVerdictCatalog', () => {
     expect(axis.epithet).toBe('高密度肌群');
   });
 
+  it('locks enlarged Carbon verdict type + 840px safety gutter', () => {
+    expect(CARBON_VERDICT_EPITHET_FONT_PX).toBe(32);
+    expect(CARBON_VERDICT_CRITIQUE_FONT_PX).toBe(26);
+    expect(CARBON_VERDICT_CRITIQUE_MAX_WIDTH).toBe(840);
+    expect(CARBON_VERDICT_EPITHET_OFFSET_Y).toBe(32);
+    expect(CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y).toBe(68);
+    expect(CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y).toBe(104);
+    // Line2 middle + half critique glyph must stay inside 125px slot.
+    expect(
+      CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y + CARBON_VERDICT_CRITIQUE_FONT_PX / 2
+    ).toBeLessThanOrEqual(125);
+    expect(
+      CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y - CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y
+    ).toBe(36);
+  });
+
   it('balances long EN critique at em-dash (no orphan second line)', () => {
-    const measure = (text: string) => estimateCritiqueGlyphWidth(text);
+    const measure = (text: string) =>
+      estimateCritiqueGlyphWidth(text, CARBON_VERDICT_CRITIQUE_FONT_PX);
     const critique = TELEMETRY_VERDICT_CATALOG.cardio[60].en[1];
     const lines = wrapCritiqueLines(
       measure,
@@ -148,7 +170,9 @@ describe('telemetryVerdictCatalog', () => {
   });
 
   it('wraps all 182 catalog critiques into ≤2 balanced lines without orphans', () => {
-    const measure = (text: string) => estimateCritiqueGlyphWidth(text);
+    // WHY: Measure at live critique px so max-width gutter stays honest after type enlargement.
+    const measure = (text: string) =>
+      estimateCritiqueGlyphWidth(text, CARBON_VERDICT_CRITIQUE_FONT_PX);
     for (const family of VERDICT_FAMILIES) {
       for (const decade of VERDICT_DECADE_KEYS) {
         const entry = TELEMETRY_VERDICT_CATALOG[family][decade];

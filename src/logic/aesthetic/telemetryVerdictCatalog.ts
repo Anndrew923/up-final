@@ -72,16 +72,22 @@ export const VERDICT_DECADE_KEYS: readonly VerdictDecadeKey[] = [
   0, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150,
 ] as const;
 
-/** Canvas Carbon verdict stage — logical plate px relative to verdictTop. */
-export const CARBON_VERDICT_EPITHET_OFFSET_Y = 28;
-export const CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y = 62;
-export const CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y = 90;
-export const CARBON_VERDICT_CRITIQUE_MAX_WIDTH = 820;
+/**
+ * Canvas Carbon verdict stage — logical plate px relative to verdictTop.
+ * WHY: Larger epithet/critique rebalance bottom weight; 840px gutters keep 88-char EN safe.
+ */
+export const CARBON_VERDICT_EPITHET_OFFSET_Y = 32;
+export const CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y = 68;
+/** Line2 = line1 + 36px leading (Medium critique). */
+export const CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y = 104;
+export const CARBON_VERDICT_CRITIQUE_MAX_WIDTH = 840;
 export const CARBON_VERDICT_CRITIQUE_MAX_LINES = 2;
-export const CARBON_VERDICT_EPITHET_FONT_PX = 24;
-export const CARBON_VERDICT_CRITIQUE_FONT_PX = 20;
+export const CARBON_VERDICT_EPITHET_FONT_PX = 32;
+export const CARBON_VERDICT_CRITIQUE_FONT_PX = 26;
+/** Letter-spacing applied in painter for epithet weight (0.12em). */
+export const CARBON_VERDICT_EPITHET_LETTER_SPACING = '0.12em';
 export const CARBON_VERDICT_EPITHET_FILL = '#FDE68A';
-export const CARBON_VERDICT_CRITIQUE_FILL = 'rgba(255, 255, 255, 0.86)';
+export const CARBON_VERDICT_CRITIQUE_FILL = 'rgba(255, 255, 255, 0.90)';
 
 export const TELEMETRY_VERDICT_CATALOG: Record<
   VerdictFamily,
@@ -523,7 +529,7 @@ export function estimateCritiqueGlyphWidth(
 ): number {
   let width = 0;
   for (const ch of Array.from(text)) {
-    // CJK / fullwidth ≈ em; Latin / punctuation ≈ 0.55em (Medium 20px plate).
+    // CJK / fullwidth ≈ em; Latin / punctuation ≈ 0.55em (Medium 26px plate).
     width += /[\u1100-\uD7AF\u3000-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/.test(ch)
       ? fontPx
       : fontPx * 0.55;
