@@ -18,7 +18,7 @@ import PerformanceBreakthroughModal from '../components/assessment/PerformanceBr
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
-import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { flushAllStrengthLiftDrafts } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -27,7 +27,6 @@ import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAss
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useStrengthAssessmentPage } from '../hooks/useStrengthAssessmentPage';
 import { useUnit } from '../hooks/useUnit';
-import { pickHighestStrengthLeaf } from '../logic/aesthetic/pickHighestStrengthLeaf';
 import { buildStrengthAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
 import type { FormatUnitOptions } from '../logic/core/unitConverters';
 import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
@@ -133,11 +132,9 @@ const StrengthAssessmentPage: FC = () => {
     onBeforeOpenDyno: closeModal,
   });
 
-  const reportLeaf = useMemo(
-    () => (combinedBreakdown ? pickHighestStrengthLeaf(combinedBreakdown.branches) : null),
-    [combinedBreakdown]
-  );
-  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+  const axisHeroScore = liveScore ?? combinedBreakdown?.averageRaw ?? null;
+  const axisCoveredCount = combinedBreakdown?.branches.length ?? 0;
+  const openWithAxisSummary = useAestheticReportUiStore((s) => s.openWithAxisSummary);
 
   const flushStrengthForReport = () => {
     if (!combinedBreakdown?.branches.length) return false;
@@ -152,11 +149,16 @@ const StrengthAssessmentPage: FC = () => {
     return true;
   };
 
-  const openStrengthReport = (leaf = reportLeaf) => {
-    if (!leaf) return;
+  const openStrengthAxisSummary = () => {
+    if (axisHeroScore == null || !Number.isFinite(axisHeroScore) || axisCoveredCount <= 0) {
+      return;
+    }
     if (flushStrengthForReport() === false) return;
     closeModal();
-    openWithLeaf(leaf);
+    openWithAxisSummary('strength', {
+      heroScore: axisHeroScore,
+      coveredCount: axisCoveredCount,
+    });
   };
 
   return (
@@ -174,7 +176,11 @@ const StrengthAssessmentPage: FC = () => {
         arenaSync={ladderSync}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
-        onGenerateSingleLeafReport={reportLeaf ? () => openStrengthReport(reportLeaf) : undefined}
+        onGenerateSingleLeafReport={
+          axisHeroScore != null && axisCoveredCount > 0
+            ? () => openStrengthAxisSummary()
+            : undefined
+        }
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -277,9 +283,11 @@ const StrengthAssessmentPage: FC = () => {
                       ...hallSpectrum.badgeProps,
                     }}
                     afterHero={
-                      reportLeaf ? (
-                        <AestheticSingleLeafTriggerButton
-                          leaf={reportLeaf}
+                      axisHeroScore != null && axisCoveredCount > 0 ? (
+                        <AestheticAxisSummaryTriggerButton
+                          axis="strength"
+                          heroScore={axisHeroScore}
+                          coveredCount={axisCoveredCount}
                           disabled={!profileReady || submitBusy || revealBlocking}
                           onBeforeOpen={flushStrengthForReport}
                         />

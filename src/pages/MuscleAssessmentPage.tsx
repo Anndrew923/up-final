@@ -16,7 +16,7 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
-import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
+import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import { flushMuscleDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -32,7 +32,6 @@ import {
   SMM_KG_CEILING_MALE,
 } from '../logic/core/muscleScoring';
 import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
-import type { SingleLeafId } from '../logic/aesthetic/singleLeafReport';
 
 const MuscleAssessmentPage: FC = () => {
   const { t } = useTranslation('common');
@@ -118,11 +117,22 @@ const MuscleAssessmentPage: FC = () => {
     'exceedsCeiling'
   );
 
-  const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
-  const muscleReportLeaf: SingleLeafId =
-    previewBreakdown && previewBreakdown.smPercentScoreRaw > previewBreakdown.smmScoreRaw
-      ? 'muscle.smPercent'
-      : 'muscle.smm';
+  const openWithAxisSummary = useAestheticReportUiStore((s) => s.openWithAxisSummary);
+  // WHY: Muscle composite always blends SMM kg + SM% norms when preview succeeds.
+  const muscleCoveredCount = previewBreakdown ? 2 : 0;
+  const muscleAxisScore = previewScore ?? heroScore;
+
+  const openMuscleAxisSummary = () => {
+    if (muscleAxisScore == null || !Number.isFinite(muscleAxisScore) || muscleCoveredCount <= 0) {
+      return;
+    }
+    if (!flushMuscleDraft(smmInput)) return;
+    closeModal();
+    openWithAxisSummary('muscleMass', {
+      heroScore: muscleAxisScore,
+      coveredCount: muscleCoveredCount,
+    });
+  };
 
   return (
     <main className="ui-shell relative max-w-3xl text-zinc-100">
@@ -138,11 +148,11 @@ const MuscleAssessmentPage: FC = () => {
         milestoneHintLabel={nextMilestoneHint}
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
-        onGenerateSingleLeafReport={() => {
-          if (!flushMuscleDraft(smmInput)) return;
-          closeModal();
-          openWithLeaf(muscleReportLeaf);
-        }}
+        onGenerateSingleLeafReport={
+          muscleAxisScore != null && muscleCoveredCount > 0
+            ? () => openMuscleAxisSummary()
+            : undefined
+        }
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
       <AssessmentAmbientGlow />
@@ -225,11 +235,15 @@ const MuscleAssessmentPage: FC = () => {
                   ...hallSpectrum.badgeProps,
                 }}
                 afterHero={
-                  <AestheticSingleLeafTriggerButton
-                    leaf={muscleReportLeaf}
-                    disabled={revealBlocking || scoreLocked}
-                    onBeforeOpen={() => flushMuscleDraft(smmInput)}
-                  />
+                  muscleAxisScore != null && muscleCoveredCount > 0 ? (
+                    <AestheticAxisSummaryTriggerButton
+                      axis="muscleMass"
+                      heroScore={muscleAxisScore}
+                      coveredCount={muscleCoveredCount}
+                      disabled={revealBlocking || scoreLocked}
+                      onBeforeOpen={() => flushMuscleDraft(smmInput)}
+                    />
+                  ) : null
                 }
               />
               {previewBreakdown ? (

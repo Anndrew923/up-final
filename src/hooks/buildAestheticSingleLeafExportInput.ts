@@ -9,19 +9,17 @@ import {
   singleLeafEnTitle,
   singleLeafZhTitle,
 } from '../logic/aesthetic/singleLeafScoreMeaning';
+import { resolveTelemetryVerdictForTarget } from '../logic/aesthetic/telemetryVerdictCatalog';
 import { resolveHumanScaleBandMeta } from '../logic/core/humanScaleBandResolver';
 import { formatOverallResonanceScore } from '../logic/core/scoring';
+import {
+  resolveLanguageFromT,
+  resolveUiLocale,
+  type TelemetryUiLocale,
+} from '../i18n/language';
 import type { TelemetrySingleLeafCardInput } from '../lib/telemetryReportTypes';
 import type { TelemetryBackgroundSource } from '../lib/telemetryCardCover';
 import type { TelemetryCardAspectRatio } from '../lib/telemetryCardTypes';
-
-function resolveUiLocale(
-  language: string | undefined,
-  override?: 'zh' | 'en'
-): 'zh' | 'en' {
-  if (override) return override;
-  return (language ?? '').toLowerCase().startsWith('en') ? 'en' : 'zh';
-}
 
 export function buildAestheticSingleLeafExportInput(
   t: TFunction,
@@ -31,17 +29,22 @@ export function buildAestheticSingleLeafExportInput(
     aspectRatio: TelemetryCardAspectRatio;
     background?: TelemetryBackgroundSource | null;
     brandHeader?: string;
-    /** Optional override; defaults from `t.language` / zh. */
-    uiLocale?: 'zh' | 'en';
+    /** Optional override; defaults from `t.resolvedLanguage ?? t.language`. */
+    uiLocale?: TelemetryUiLocale;
   }
 ): TelemetrySingleLeafCardInput {
   const year = new Date().getFullYear();
   const scoreText = formatOverallResonanceScore(leafResult.heroScore);
   const metric = scoreMeaningMetricForSingleLeaf(leafResult.leaf);
   const { populationClass } = resolveHumanScaleBandMeta(t, metric, leafResult.heroScore);
-  const tLang =
-    typeof (t as { language?: string }).language === 'string'
-      ? (t as { language?: string }).language
+  const uiLocale = resolveUiLocale(resolveLanguageFromT(t), extras.uiLocale);
+  const verdict =
+    extras.mode === 'carbon'
+      ? resolveTelemetryVerdictForTarget(
+          { reportType: 'single-leaf', leaf: leafResult.leaf },
+          leafResult.heroScore,
+          uiLocale
+        )
       : undefined;
 
   return {
@@ -51,16 +54,15 @@ export function buildAestheticSingleLeafExportInput(
     leaf: leafResult.leaf,
     leafTitleZh: singleLeafZhTitle(leafResult.leaf),
     leafTitleEn: singleLeafEnTitle(leafResult.leaf),
-    uiLocale: resolveUiLocale(tLang, extras.uiLocale),
+    uiLocale,
     rawReading: leafResult.rawReading,
     heroScore: leafResult.heroScore,
     heroScoreText: scoreText,
     isOverflow: leafResult.isOverflow,
-    overflowBadge: t('aesthetic.labels.overflowBadge'),
     rawMetricLabel: t('aesthetic.singleLeaf.rawMetricLabel'),
     upRatingLabel: t('aesthetic.singleLeaf.upRatingLabel'),
     tierCapsule: populationClass,
-    verdictPlaceholder: t('aesthetic.singleLeaf.verdictPlaceholder'),
+    ...(verdict ? { verdict } : {}),
     year,
     verifiedStamp: t('aesthetic.singleLeaf.verifiedStamp', { year }),
     brandHeader: extras.brandHeader ?? t('aesthetic.labels.brandHeader'),

@@ -168,12 +168,29 @@
         "shareFailed": "分享未完成，請稍後再試。"
       }
     },
+    "axisSummary": {
+      "coverageLabel": "評測覆蓋",
+      "coverageReadingZh": "{{count}} 項綜合",
+      "coverageUnitLifts": "LIFTS",
+      "coverageUnitTests": "TESTS",
+      "strength": {
+        "titleZh": "力量綜合評測",
+        "titleEn": "STRENGTH ASSESSMENT"
+      },
+      "explosivePower": {
+        "titleZh": "爆發力綜合評測",
+        "titleEn": "EXPLOSIVE ASSESSMENT"
+      },
+      "muscleMass": {
+        "titleZh": "骨骼肌綜合評測",
+        "titleEn": "MUSCLE MASS ASSESSMENT"
+      }
+    },
     "singleLeaf": {
       "generateReport": "生成專項戰報",
       "unavailable": "此專項尚無有效成績，請先完成計算。",
       "rawMetricLabel": "實測數據",
       "upRatingLabel": "戰力評分",
-      "verdictPlaceholder": "SPECIALIST TELEMETRY VERIFIED",
       "verifiedStamp": "VERIFIED PHYSIOLOGICAL SPECIFICATION // {{year}}",
       "englishNames": {
         "benchPress": "BARBELL BENCH PRESS",

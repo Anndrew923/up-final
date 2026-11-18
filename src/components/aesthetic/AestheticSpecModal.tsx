@@ -15,6 +15,7 @@ import {
   CERT_STAGE_WRAP_CLASS,
 } from './aestheticChrome';
 import { CERT_VEIL_REVEAL_CLASS } from '../../lib/certRevealMotion';
+import AestheticAxisSummaryCard from './AestheticAxisSummaryCard';
 import AestheticSingleLeafCard from './AestheticSingleLeafCard';
 import AestheticSpecCard from './AestheticSpecCard';
 
@@ -132,6 +133,8 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({
   const showSelfiePreview = mode === 'selfie' && Boolean(previewUrl);
   const showSingleLeaf =
     selection.reportType === 'single-leaf' && leafResult != null && !showSelfiePreview;
+  const showAxisSummary =
+    selection.reportType === 'axis-summary' && !showSelfiePreview;
   const showFullCard =
     selection.reportType === 'full' && !showSelfiePreview;
   const leafUnavailable =
@@ -221,6 +224,11 @@ const AestheticSpecModal: FC<AestheticSpecModalProps> = ({
           ) : showSingleLeaf && leafResult ? (
             <AestheticSingleLeafCard
               leafResult={leafResult}
+              aspectRatio={aspectRatio}
+            />
+          ) : showAxisSummary ? (
+            <AestheticAxisSummaryCard
+              selection={selection}
               aspectRatio={aspectRatio}
             />
           ) : showFullCard ? (

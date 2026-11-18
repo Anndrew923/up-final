@@ -18,7 +18,7 @@ import {
   clearCanvasShadow,
   type TelemetryDrawContext,
 } from './telemetryCardTypes';
-import type { TelemetrySingleLeafCardInput } from './telemetryReportTypes';
+import type { TelemetryDualHeroCardInput } from './telemetryReportTypes';
 import {
   paintSelfieCeremonialTierCapsule,
   resolveSelfieTierPillMaxWidth,
@@ -33,13 +33,33 @@ import {
   SELFIE_TIER_WING_RAY_PX,
 } from './telemetrySingleLeafTierPlaque';
 import {
+  CARBON_METRIC_PART_GAP_PX,
+  CARBON_METRIC_PRIMARY_PX,
+  CARBON_METRIC_SECONDARY_PX,
+  paintCarbonMetricMixed,
   paintSelfieMetricMixed,
   SELFIE_METRIC_PART_GAP_PX,
   SELFIE_METRIC_PRIMARY_PX,
   SELFIE_METRIC_SECONDARY_PX,
+  splitMetricParts,
   splitSelfieMetricParts,
+  type MetricParts,
   type SelfieMetricParts,
 } from './telemetrySingleLeafMetricMix';
+import {
+  CARBON_VERDICT_SLOT_HEIGHT,
+  CARBON_VERDICT_SLOT_MAX,
+  CARBON_VERDICT_SLOT_MIN,
+  resolveSingleLeafCarbonRhythm,
+  type SingleLeafCarbonRhythm,
+} from './telemetrySingleLeafCarbonRhythm';
+import {
+  CARBON_TIER_CAPSULE_FONT_PX,
+  CARBON_TIER_CAPSULE_HEIGHT,
+  CARBON_TIER_CAPSULE_MIN_WIDTH,
+  CARBON_TIER_CAPSULE_PAD_X,
+  resolveCarbonTierPillMaxWidth,
+} from './telemetrySingleLeafTierPlaque';
 import {
   resolveSelfieHudDropPx,
   resolveSelfieHudVerticalRhythm,
@@ -95,14 +115,43 @@ export {
   SELFIE_METRIC_PART_GAP_PX,
   SELFIE_METRIC_PRIMARY_PX,
   SELFIE_METRIC_SECONDARY_PX,
+  CARBON_METRIC_PART_GAP_PX,
+  CARBON_METRIC_PRIMARY_PX,
+  CARBON_METRIC_SECONDARY_PX,
+  CARBON_TIER_CAPSULE_FONT_PX,
+  CARBON_TIER_CAPSULE_HEIGHT,
+  CARBON_TIER_CAPSULE_MIN_WIDTH,
+  CARBON_TIER_CAPSULE_PAD_X,
+  CARBON_VERDICT_SLOT_HEIGHT,
+  CARBON_VERDICT_SLOT_MAX,
+  CARBON_VERDICT_SLOT_MIN,
+  resolveCarbonTierPillMaxWidth,
+  resolveSingleLeafCarbonRhythm,
+  splitMetricParts,
   splitSelfieMetricParts,
+  type MetricParts,
   type SelfieHudVerticalRhythm,
   type SelfieMetricParts,
+  type SingleLeafCarbonRhythm,
 };
 
-/** Locale-aware single-line selfie title (carbon still paints both Zh + En). */
-export function resolveSelfieHeroTitle(input: TelemetrySingleLeafCardInput): string {
+/**
+ * Locale-primary plate title (Selfie single-line + Carbon foil stamp).
+ * WHY: One pick keeps EN app locale from silently keeping ZH in the hero slot.
+ */
+export function resolveLocalePrimaryTitle(input: TelemetryDualHeroCardInput): string {
   return input.uiLocale === 'en' ? input.leafTitleEn : input.leafTitleZh;
+}
+
+/** Alias — selfie HUD single-line hero. */
+export const resolveSelfieHeroTitle = resolveLocalePrimaryTitle;
+
+/** Alias — Carbon foil primary stamp. */
+export const resolveCarbonPrimaryTitle = resolveLocalePrimaryTitle;
+
+/** Carbon secondary line — the other language keeps bilingual plate texture. */
+export function resolveCarbonSecondaryTitle(input: TelemetryDualHeroCardInput): string {
+  return input.uiLocale === 'en' ? input.leafTitleZh : input.leafTitleEn;
 }
 
 export function fitBoldFontSize(
@@ -176,68 +225,22 @@ function paintHudLabel(
   paintOnce(options?.hardShadow === true);
 }
 
+/**
+ * Selfie mid-axis ceremonial plaque dispatcher.
+ * WHY: Carbon certificate paints via `paintCarbonCeremonialTierCapsule` — this
+ * helper must not keep a second dead simple-capsule path.
+ */
 export function paintTierCapsuleCentered(
   ctx: TelemetryDrawContext,
   text: string,
   cx: number,
   y: number,
   maxWidth: number,
-  options?: { gold?: boolean; hardShadow?: boolean; hud?: boolean }
+  _options?: { gold?: boolean; hardShadow?: boolean; hud?: boolean }
 ): void {
   if (!text) return;
-  const hud = options?.hud === true;
-  if (hud) {
-    paintSelfieCeremonialTierCapsule(ctx, text, cx, y, maxWidth);
-    return;
-  }
-
-  let fontPx = 22;
-  let font = `bold ${fontPx}px ${SANS}`;
-  try {
-    ctx.font = font;
-  } catch {
-    ctx.font = `bold ${fontPx}px sans-serif`;
-  }
-  const padX = 12;
-  let tw = ctx.measureText(text).width;
-  while (tw + padX * 2 > maxWidth && fontPx > 14) {
-    fontPx -= 1;
-    font = `bold ${fontPx}px ${SANS}`;
-    try {
-      ctx.font = font;
-    } catch {
-      break;
-    }
-    tw = ctx.measureText(text).width;
-  }
-  const bw = Math.min(tw + padX * 2, maxWidth);
-  const bh = fontPx + 14;
-  const left = cx - bw / 2;
-  const top = y - bh / 2;
-
-  ctx.save();
-  if (options?.hardShadow) {
-    ctx.shadowColor = 'rgba(0,0,0,0.85)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 2;
-  }
-  ctx.fillStyle = options?.gold ? 'rgba(243,230,200,0.22)' : 'rgba(201,162,39,0.14)';
-  ctx.strokeStyle = options?.gold ? 'rgba(243,230,200,0.85)' : 'rgba(201,162,39,0.65)';
-  ctx.lineWidth = 1.5;
-  ctx.fillRect(left, top, bw, bh);
-  ctx.strokeRect(left, top, bw, bh);
-  clearCanvasShadow(ctx);
-
-  ctx.fillStyle = options?.gold ? '#f3e6c8' : '#f4f4f5';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  try {
-    ctx.font = font;
-    ctx.fillText(text, cx, y, bw - 8);
-  } catch {
-    /* skip */
-  }
-  ctx.restore();
+  void _options;
+  paintSelfieCeremonialTierCapsule(ctx, text, cx, y, maxWidth);
 }
 
 function paintVerticalDivider(
@@ -321,20 +324,17 @@ export function resolveSelfieDualHeroGeom(
 /** Left raw metric + right UP rating — equal visual weight, font-clamped. */
 export function paintDualHeroSplit(
   ctx: TelemetryDrawContext,
-  input: TelemetrySingleLeafCardInput,
+  input: TelemetryDualHeroCardInput,
   geom: DualHeroGeom,
-  options?: { hud?: boolean; hardShadow?: boolean }
+  options?: { hud?: boolean }
 ): void {
   const hud = options?.hud === true;
-  const hard = options?.hardShadow === true;
   const maxHero = hud ? SELFIE_DUAL_HERO_MAX_PX : 58;
   const minHero = 28;
   const labelFont = hud
     ? `bold ${SELFIE_DUAL_HERO_LABEL_PX}px ${SANS}`
     : `20px ${SANS}`;
   const labelFill = hud ? 'rgba(255, 255, 255, 0.80)' : 'rgba(161,161,170,0.9)';
-  // Selfie left magnitude uses paintSelfieMetricMixed (#FFFFFF); carbon keeps uniform fill.
-  const rawFill = '#f4f4f5';
   const scoreFill = hud ? '#FFE58F' : TELEMETRY_CERT_TITLE_FOIL.mid;
 
   // WHY: Hud divider frames only the level 2-layer columns; mid-axis capsule sits below.
@@ -393,14 +393,8 @@ export function paintDualHeroSplit(
       { maxWidth: geom.colMaxW, dualShadow: true }
     );
   } else {
-    const rawSize = fitBoldFontSize(
-      ctx,
-      input.rawReading,
-      geom.colMaxW,
-      maxHero,
-      minHero,
-      SANS
-    );
+    // WHY: Carbon mid-axis owns the tier plaque — columns stay pure 2-layer symmetric.
+    paintCarbonMetricMixed(ctx, input.rawReading, geom.leftCx, geom.valueY, geom.colMaxW);
     const scoreSize = fitBoldFontSize(
       ctx,
       input.heroScoreText,
@@ -409,43 +403,27 @@ export function paintDualHeroSplit(
       minHero,
       SERIF
     );
-    // Keep columns optically balanced — both heroes share the smaller fitted size.
-    const heroSize = Math.min(rawSize, scoreSize);
-    paintCertificateLabel(
-      ctx,
-      input.rawReading,
-      geom.leftCx,
-      geom.valueY,
-      `bold ${heroSize}px ${SANS}`,
-      rawFill,
-      'center',
-      'middle',
-      geom.colMaxW
-    );
     paintCertificateLabel(
       ctx,
       input.heroScoreText,
       geom.rightCx,
       geom.valueY,
-      `bold ${heroSize}px ${SERIF}`,
+      `bold ${scoreSize}px ${SERIF}`,
       scoreFill,
       'center',
       'middle',
       geom.colMaxW
     );
-    const capsule = input.isOverflow ? input.overflowBadge : input.tierCapsule.trim();
-    paintTierCapsuleCentered(ctx, capsule, geom.rightCx, geom.capsuleY, geom.colMaxW, {
-      gold: input.isOverflow,
-      hardShadow: hard,
-      hud: false,
-    });
   }
 }
 
-/** Chinese foil primary + formal English secondary. */
+/**
+ * Carbon: locale-swapped bilingual titles; Selfie HUD: single locale line.
+ * WHY: EN app locale must promote English to the foil stamp without dropping ZH texture.
+ */
 export function paintBilingualTitle(
   ctx: TelemetryDrawContext,
-  input: TelemetrySingleLeafCardInput,
+  input: TelemetryDualHeroCardInput,
   cx: number,
   titleY: number,
   contentWidth: number,
@@ -455,7 +433,7 @@ export function paintBilingualTitle(
   if (hud) {
     paintHudLabel(
       ctx,
-      resolveSelfieHeroTitle(input),
+      resolveLocalePrimaryTitle(input),
       cx,
       titleY,
       `bold ${SELFIE_DUAL_HERO_TITLE_ZH_PX}px ${SERIF}`,
@@ -467,10 +445,10 @@ export function paintBilingualTitle(
     return;
   }
 
-  paintCertificateFoilTitle(ctx, input.leafTitleZh, cx, titleY);
+  paintCertificateFoilTitle(ctx, resolveLocalePrimaryTitle(input), cx, titleY);
   paintCertificateLabel(
     ctx,
-    input.leafTitleEn,
+    resolveCarbonSecondaryTitle(input),
     cx,
     titleY + 44,
     `22px ${SANS}`,

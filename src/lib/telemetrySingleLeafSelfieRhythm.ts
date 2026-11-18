@@ -2,7 +2,7 @@
  * Selfie single-leaf vertical rhythm (drop + stamp-anchored plaque).
  * WHY: Pure geometry SSOT — keeps dualHero paint under the 500-line split threshold.
  */
-import type { TelemetrySingleLeafCardInput } from './telemetryReportTypes';
+import type { TelemetryReportAspect } from './telemetryReportTypes';
 import { SELFIE_TIER_CAPSULE_HEIGHT } from './telemetrySingleLeafTierPlaque';
 
 export const SELFIE_BILINGUAL_TITLE_BLOCK_PX = 56;
@@ -15,9 +15,7 @@ export const SELFIE_TIER_STAMP_GAP_MAX = 38;
 export const SELFIE_HUD_DROP_9_16 = 120;
 export const SELFIE_HUD_DROP_4_5 = 70;
 
-export function resolveSelfieHudDropPx(
-  aspect: TelemetrySingleLeafCardInput['aspectRatio']
-): number {
+export function resolveSelfieHudDropPx(aspect: TelemetryReportAspect): number {
   return aspect === '4:5' ? SELFIE_HUD_DROP_4_5 : SELFIE_HUD_DROP_9_16;
 }
 
@@ -39,7 +37,7 @@ export interface SelfieHudVerticalRhythm {
  */
 export function resolveSelfieHudVerticalRhythm(
   plateHeight: number,
-  aspect: TelemetrySingleLeafCardInput['aspectRatio'],
+  aspect: TelemetryReportAspect,
   contentTopRatio = 0.58,
   contentBottomRatio = 0.89
 ): SelfieHudVerticalRhythm {

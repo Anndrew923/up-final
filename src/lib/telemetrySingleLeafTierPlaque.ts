@@ -1,7 +1,6 @@
 /**
- * Ceremonial mid-axis tier plaque for single-leaf selfie HUD only.
- * WHY: Keeps dual-hero orchestration under the 500-line split threshold while
- * carbon retains its simple single-stroke capsule in dualHero.
+ * Ceremonial mid-axis tier plaque — selfie HUD + carbon certificate presets.
+ * WHY: Keeps dual-hero orchestration under the 500-line split threshold.
  */
 import { TELEMETRY_SANS_FONT_STACK } from './telemetryCardFonts';
 import {
@@ -15,10 +14,38 @@ export const SELFIE_TIER_CAPSULE_FONT_PX = 34;
 export const SELFIE_TIER_CAPSULE_PAD_X = 48;
 export const SELFIE_TIER_CAPSULE_HEIGHT = 66;
 export const SELFIE_TIER_CAPSULE_MIN_WIDTH = 280;
+
+/** Carbon mid-axis plaque — slightly tighter than selfie HUD ceremonial. */
+export const CARBON_TIER_CAPSULE_FONT_PX = 29;
+export const CARBON_TIER_CAPSULE_PAD_X = 40;
+export const CARBON_TIER_CAPSULE_HEIGHT = 58;
+export const CARBON_TIER_CAPSULE_MIN_WIDTH = 260;
+
 export const SELFIE_TIER_CAPSULE_FILL = '#FDE68A';
 export const SELFIE_TIER_WING_OUTSET_PX = 14;
 export const SELFIE_TIER_WING_DIAMOND_PX = 6;
 export const SELFIE_TIER_WING_RAY_PX = 96;
+
+export interface CeremonialTierPreset {
+  fontPx: number;
+  padX: number;
+  height: number;
+  minWidth: number;
+}
+
+const SELFIE_TIER_PRESET: CeremonialTierPreset = {
+  fontPx: SELFIE_TIER_CAPSULE_FONT_PX,
+  padX: SELFIE_TIER_CAPSULE_PAD_X,
+  height: SELFIE_TIER_CAPSULE_HEIGHT,
+  minWidth: SELFIE_TIER_CAPSULE_MIN_WIDTH,
+};
+
+const CARBON_TIER_PRESET: CeremonialTierPreset = {
+  fontPx: CARBON_TIER_CAPSULE_FONT_PX,
+  padX: CARBON_TIER_CAPSULE_PAD_X,
+  height: CARBON_TIER_CAPSULE_HEIGHT,
+  minWidth: CARBON_TIER_CAPSULE_MIN_WIDTH,
+};
 
 /** Half-span of diamond + ray past the pill edge — keeps wings inside content gutters. */
 export function resolveSelfieTierWingReachPx(): number {
@@ -30,6 +57,10 @@ export function resolveSelfieTierWingReachPx(): number {
 }
 
 export function resolveSelfieTierPillMaxWidth(contentWidth: number): number {
+  return Math.max(140, contentWidth - 2 * resolveSelfieTierWingReachPx());
+}
+
+export function resolveCarbonTierPillMaxWidth(contentWidth: number): number {
   return Math.max(140, contentWidth - 2 * resolveSelfieTierWingReachPx());
 }
 
@@ -51,22 +82,22 @@ function paintDiamond(
   ctx.fill();
 }
 
-/** Dual-frame metal plaque + flanking diamond wing rays (selfie HUD only). */
-export function paintSelfieCeremonialTierCapsule(
+function paintCeremonialTierCapsule(
   ctx: TelemetryDrawContext,
   text: string,
   cx: number,
   y: number,
-  maxWidth: number
+  maxWidth: number,
+  preset: CeremonialTierPreset
 ): void {
-  let fontPx = SELFIE_TIER_CAPSULE_FONT_PX;
+  let fontPx = preset.fontPx;
   let font = `bold ${fontPx}px ${SANS}`;
   try {
     ctx.font = font;
   } catch {
     ctx.font = `bold ${fontPx}px sans-serif`;
   }
-  const padX = SELFIE_TIER_CAPSULE_PAD_X;
+  const padX = preset.padX;
   let tw = ctx.measureText(text).width;
   while (tw + padX * 2 > maxWidth && fontPx > 16) {
     fontPx -= 1;
@@ -78,15 +109,13 @@ export function paintSelfieCeremonialTierCapsule(
     }
     tw = ctx.measureText(text).width;
   }
-  // WHY: minWidth 280 keeps short ZH titles (高階玩家) on a thick metal plaque base.
-  const bw = Math.min(maxWidth, Math.max(SELFIE_TIER_CAPSULE_MIN_WIDTH, tw + padX * 2));
-  const bh = SELFIE_TIER_CAPSULE_HEIGHT;
+  const bw = Math.min(maxWidth, Math.max(preset.minWidth, tw + padX * 2));
+  const bh = preset.height;
   const left = cx - bw / 2;
   const top = y - bh / 2;
   const right = left + bw;
 
   ctx.save();
-  // Wings under the plate so metal occludes the inner ray tips.
   for (const side of [-1, 1] as const) {
     const edge = side < 0 ? left : right;
     const diamondCx = edge + side * SELFIE_TIER_WING_OUTSET_PX;
@@ -137,4 +166,26 @@ export function paintSelfieCeremonialTierCapsule(
   }
   clearCanvasShadow(ctx);
   ctx.restore();
+}
+
+/** Dual-frame metal plaque + flanking diamond wing rays (selfie HUD). */
+export function paintSelfieCeremonialTierCapsule(
+  ctx: TelemetryDrawContext,
+  text: string,
+  cx: number,
+  y: number,
+  maxWidth: number
+): void {
+  paintCeremonialTierCapsule(ctx, text, cx, y, maxWidth, SELFIE_TIER_PRESET);
+}
+
+/** Carbon mid-axis ceremonial plaque (slightly tighter type/height). */
+export function paintCarbonCeremonialTierCapsule(
+  ctx: TelemetryDrawContext,
+  text: string,
+  cx: number,
+  y: number,
+  maxWidth: number
+): void {
+  paintCeremonialTierCapsule(ctx, text, cx, y, maxWidth, CARBON_TIER_PRESET);
 }

@@ -7,10 +7,17 @@ import { useTranslation } from 'react-i18next';
 import type { SingleLeafReportResult } from '../../logic/aesthetic/singleLeafReport';
 import { buildAestheticSingleLeafExportInput } from '../../hooks/buildAestheticSingleLeafExportInput';
 import { useCertPlateFitScale } from '../../hooks/useCertPlateFitScale';
+import { resolveUiLocaleFromI18n } from '../../i18n/language';
 import { resolveTelemetryCardSize } from '../../lib/telemetryCardBackground';
 import { SINGLE_LEAF_VERDICT_SLOT_HEIGHT } from '../../lib/telemetryReportTypes';
 import type { TelemetryCardAspectRatio } from '../../lib/telemetryCardTypes';
+import {
+  resolveCarbonPrimaryTitle,
+  resolveCarbonSecondaryTitle,
+} from '../../lib/telemetrySingleLeafDualHero';
 import AestheticCardArmor from './AestheticCardArmor';
+import AestheticDualHeroMidTier from './AestheticDualHeroMidTier';
+import AestheticDualHeroRawReading from './AestheticDualHeroRawReading';
 import GuillocheCrest from './GuillocheCrest';
 import {
   CERT_STAGE_FIT_CLASS,
@@ -18,7 +25,6 @@ import {
   FOIL_HERO_TITLE_CLASS,
   FOIL_HERO_WING_LEFT_CLASS,
   FOIL_HERO_WING_RIGHT_CLASS,
-  FOIL_PLATE_CLASS,
   FOIL_RULE_CLASS,
 } from './aestheticChrome';
 import {
@@ -59,13 +65,12 @@ const AestheticSingleLeafCard: FC<AestheticSingleLeafCardProps> = ({
       buildAestheticSingleLeafExportInput(t, leafResult, {
         mode: 'carbon',
         aspectRatio,
+        uiLocale: resolveUiLocaleFromI18n(i18n),
       }),
-    [aspectRatio, i18n.language, leafResult, t]
+    [aspectRatio, i18n.language, i18n.resolvedLanguage, leafResult, t]
   );
-
-  const capsule = plateCopy.isOverflow
-    ? plateCopy.overflowBadge
-    : plateCopy.tierCapsule;
+  const primaryTitle = resolveCarbonPrimaryTitle(plateCopy);
+  const secondaryTitle = resolveCarbonSecondaryTitle(plateCopy);
 
   return (
     <article
@@ -128,19 +133,24 @@ const AestheticSingleLeafCard: FC<AestheticSingleLeafCardProps> = ({
 
               <h3 className={`relative ${FOIL_HERO_STAMP_CLASS} ${CERT_STAMP_REVEAL_CLASS}`}>
                 <span className={FOIL_HERO_WING_LEFT_CLASS} aria-hidden="true" />
-                <span className={SINGLE_LEAF_TITLE_CLASS}>{plateCopy.leafTitleZh}</span>
+                <span
+                  data-testid="aesthetic-single-leaf-title-primary"
+                  className={SINGLE_LEAF_TITLE_CLASS}
+                >
+                  {primaryTitle}
+                </span>
                 <span className={FOIL_HERO_WING_RIGHT_CLASS} aria-hidden="true" />
               </h3>
               <p
-                data-testid="aesthetic-single-leaf-title-en"
+                data-testid="aesthetic-single-leaf-title-secondary"
                 className="relative font-mono text-[8px] tracking-[0.16em] text-zinc-500"
               >
-                {plateCopy.leafTitleEn}
+                {secondaryTitle}
               </p>
 
               <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
 
-              {/* Dual-hero split: raw metric | UP rating */}
+              {/* Dual-hero: pure 2-layer columns — mid-axis owns the tier plaque. */}
               <div
                 data-testid="aesthetic-single-leaf-dual-hero"
                 className="relative grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1.5 px-0.5"
@@ -149,12 +159,10 @@ const AestheticSingleLeafCard: FC<AestheticSingleLeafCardProps> = ({
                   <p className="font-mono text-[7px] tracking-[0.16em] text-zinc-500">
                     {plateCopy.rawMetricLabel}
                   </p>
-                  <p
-                    data-testid="aesthetic-single-leaf-raw"
-                    className="max-w-full px-0.5 text-center text-[clamp(0.7rem,3.8vw,1.25rem)] font-bold leading-tight tabular-nums tracking-wide text-zinc-50"
-                  >
-                    {plateCopy.rawReading}
-                  </p>
+                  <AestheticDualHeroRawReading
+                    rawReading={plateCopy.rawReading}
+                    testId="aesthetic-single-leaf-raw"
+                  />
                 </div>
 
                 <div
@@ -172,31 +180,38 @@ const AestheticSingleLeafCard: FC<AestheticSingleLeafCardProps> = ({
                   >
                     {plateCopy.heroScoreText}
                   </p>
-                  {capsule ? (
-                    <span
-                      className={FOIL_PLATE_CLASS}
-                      data-testid={
-                        plateCopy.isOverflow
-                          ? 'aesthetic-single-leaf-overflow'
-                          : 'aesthetic-single-leaf-tier'
-                      }
-                    >
-                      {capsule}
-                    </span>
-                  ) : null}
                 </div>
               </div>
+
+              <AestheticDualHeroMidTier
+                tierCapsule={plateCopy.tierCapsule}
+                isOverflow={plateCopy.isOverflow}
+                testIdPrefix="aesthetic-single-leaf"
+              />
 
               <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />
 
               <div
                 data-testid="aesthetic-single-leaf-verdict-slot"
-                className="relative flex w-full shrink-0 items-center justify-center"
+                className="relative flex w-full shrink-0 flex-col items-center justify-center gap-1 px-3 text-center"
                 style={{ height: SINGLE_LEAF_VERDICT_SLOT_DESIGN_PX }}
               >
-                <p className="font-mono text-[8px] tracking-[0.16em] text-zinc-500">
-                  {plateCopy.verdictPlaceholder}
-                </p>
+                {plateCopy.verdict ? (
+                  <>
+                    <p
+                      data-testid="aesthetic-single-leaf-verdict-epithet"
+                      className="w-full text-[clamp(0.55rem,2.4vw,0.72rem)] font-bold tracking-[0.08em] text-[#FDE68A]"
+                    >
+                      {plateCopy.verdict.epithet}
+                    </p>
+                    <p
+                      data-testid="aesthetic-single-leaf-verdict-critique"
+                      className="w-full max-w-[18rem] text-center text-[clamp(0.48rem,2.1vw,0.62rem)] font-medium leading-snug text-white/85 [text-wrap:balance]"
+                    >
+                      {plateCopy.verdict.critique}
+                    </p>
+                  </>
+                ) : null}
               </div>
 
               <div aria-hidden="true" className={`relative w-[78%] border-t ${FOIL_RULE_CLASS}`} />

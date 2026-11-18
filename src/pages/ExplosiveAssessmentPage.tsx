@@ -19,6 +19,7 @@ import AssessmentReferenceDisclosure, {
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
 import ExplosiveBranchCard from '../components/assessment/ExplosiveBranchCard';
 import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { flushExplosiveDraft } from '../hooks/flushSingleLeafAssessmentDraft';
@@ -127,6 +128,18 @@ const ExplosiveAssessmentPage: FC = () => {
     () => (previewBreakdown ? pickHighestExplosiveLeaf(previewBreakdown) : null),
     [previewBreakdown]
   );
+  const axisCoveredCount = useMemo(() => {
+    if (!previewBreakdown) return 0;
+    let n = 0;
+    if (previewBreakdown.verticalJumpRaw != null && previewBreakdown.verticalJumpRaw > 0) n += 1;
+    if (
+      previewBreakdown.standingLongJumpRaw != null &&
+      previewBreakdown.standingLongJumpRaw > 0
+    ) {
+      n += 1;
+    }
+    return n;
+  }, [previewBreakdown]);
 
   const showCapNoticeBlock = profileReady && profile && capNoticeInterpolation != null;
   const isJumpsTab = activeTab === 'jumps';
@@ -192,6 +205,7 @@ const ExplosiveAssessmentPage: FC = () => {
     !hasRadarAxisPreview;
 
   const openWithLeaf = useAestheticReportUiStore((s) => s.openWithLeaf);
+  const openWithAxisSummary = useAestheticReportUiStore((s) => s.openWithAxisSummary);
 
   const flushExplosiveForReport = () => {
     // metricScoringInputs are already metric (cm / s) — do not re-project units.
@@ -204,6 +218,18 @@ const ExplosiveAssessmentPage: FC = () => {
       verticalJumpCm: toPos(metricScoringInputs.verticalJumpInput),
       standingLongJumpCm: toPos(metricScoringInputs.standingLongJumpInput),
       sprintSeconds: toPos(metricScoringInputs.sprintInput),
+    });
+  };
+
+  const openExplosiveAxisSummary = () => {
+    if (axisAverageRaw == null || !Number.isFinite(axisAverageRaw) || axisCoveredCount <= 0) {
+      return;
+    }
+    flushExplosiveForReport();
+    closeModal();
+    openWithAxisSummary('explosivePower', {
+      heroScore: axisAverageRaw,
+      coveredCount: axisCoveredCount,
     });
   };
 
@@ -222,13 +248,15 @@ const ExplosiveAssessmentPage: FC = () => {
         onOpenHallSpectrum={hallSpectrum.canOpen ? hallSpectrum.openDrawer : undefined}
         spectrumOverlayOpen={hallSpectrum.drawerProps.open}
         onGenerateSingleLeafReport={
-          reportLeaf
-            ? () => {
-                flushExplosiveForReport();
-                closeModal();
-                openWithLeaf(reportLeaf);
-              }
-            : undefined
+          hasRadarAxisPreview && axisAverageRaw != null && axisCoveredCount > 0
+            ? () => openExplosiveAxisSummary()
+            : reportLeaf && isSpecialtyOnlyPreview
+              ? () => {
+                  flushExplosiveForReport();
+                  closeModal();
+                  openWithLeaf(reportLeaf);
+                }
+              : undefined
         }
       />
       <HallOfFameSpectrumDrawer {...hallSpectrum.drawerProps} />
@@ -383,9 +411,11 @@ const ExplosiveAssessmentPage: FC = () => {
                     ...hallSpectrum.badgeProps,
                   }}
                   afterHero={
-                    reportLeaf ? (
-                      <AestheticSingleLeafTriggerButton
-                        leaf={reportLeaf}
+                    axisAverageRaw != null && axisCoveredCount > 0 ? (
+                      <AestheticAxisSummaryTriggerButton
+                        axis="explosivePower"
+                        heroScore={axisAverageRaw}
+                        coveredCount={axisCoveredCount}
                         disabled={tabDisabled}
                         onBeforeOpen={flushExplosiveForReport}
                       />

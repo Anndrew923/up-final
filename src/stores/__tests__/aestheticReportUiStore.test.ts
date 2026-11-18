@@ -35,6 +35,21 @@ describe('aestheticReportUiStore dual-track open', () => {
     });
   });
 
+  it('openWithAxisSummary locks composite axis score + coverage', () => {
+    useAestheticReportUiStore.getState().openWithAxisSummary('strength', {
+      heroScore: 70.4,
+      coveredCount: 5,
+    });
+    const state = useAestheticReportUiStore.getState();
+    expect(state.isOpen).toBe(true);
+    expect(state.selection).toEqual({
+      reportType: 'axis-summary',
+      axis: 'strength',
+      heroScore: 70.4,
+      coveredCount: 5,
+    });
+  });
+
   it('close clears open flag without wiping last selection identity', () => {
     useAestheticReportUiStore.getState().openWithLeaf('grip');
     useAestheticReportUiStore.getState().close();
@@ -43,3 +58,4 @@ describe('aestheticReportUiStore dual-track open', () => {
     expect(state.selection).toEqual({ reportType: 'single-leaf', leaf: 'grip' });
   });
 });
+

@@ -30,7 +30,6 @@ import {
 } from './telemetryCardSelfieChrome';
 import type { TelemetryDrawContext } from './telemetryCardTypes';
 import {
-  BILINGUAL_TITLE_BLOCK_PX,
   paintBilingualTitle,
   paintDualHeroSplit,
   paintSingleLeafHudLabel,
@@ -39,12 +38,22 @@ import {
   resolveSelfieDualHeroGeom,
   resolveSelfieHudVerticalRhythm,
   resolveSelfieTierPillMaxWidth,
+  resolveSingleLeafCarbonRhythm,
+  resolveCarbonTierPillMaxWidth,
   SELFIE_DUAL_HERO_DIVIDER_X,
 } from './telemetrySingleLeafDualHero';
+import { paintCarbonCeremonialTierCapsule } from './telemetrySingleLeafTierPlaque';
+import type { TelemetryDualHeroCardInput } from './telemetryReportTypes';
 import {
-  SINGLE_LEAF_VERDICT_SLOT_HEIGHT,
-  type TelemetrySingleLeafCardInput,
-} from './telemetryReportTypes';
+  CARBON_VERDICT_CRITIQUE_FILL,
+  CARBON_VERDICT_CRITIQUE_FONT_PX,
+  CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y,
+  CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y,
+  CARBON_VERDICT_CRITIQUE_MAX_WIDTH,
+  CARBON_VERDICT_EPITHET_FILL,
+  CARBON_VERDICT_EPITHET_FONT_PX,
+  CARBON_VERDICT_EPITHET_OFFSET_Y,
+} from '../logic/aesthetic/telemetryVerdictCatalog';
 
 const SANS = TELEMETRY_SANS_FONT_STACK;
 
@@ -126,44 +135,10 @@ function paintSelfieBottomScrim(
   ctx.fillRect(0, y0, plateWidth, plateHeight - y0);
 }
 
-interface SingleLeafCarbonRhythm {
-  crestCy: number;
-  crestOuter: number;
-  crestGlow: number;
-  titleY: number;
-  dualTop: number;
-  dualBottom: number;
-  verdictTop: number;
-  stampY: number;
-}
-
-/** Tighter crest→dual-hero rhythm than full six-axis carbon. */
-function resolveSingleLeafCarbonRhythm(
-  aspect: TelemetrySingleLeafCardInput['aspectRatio'],
-  stampMaxY: number
-): SingleLeafCarbonRhythm {
-  const isFeed = aspect === '4:5';
-  const titleY = isFeed ? 372 : 520;
-  // WHY: dualTop clears bilingual title block so EN subtitle never collides with heroes.
-  const dualTop = titleY + BILINGUAL_TITLE_BLOCK_PX + (isFeed ? 26 : 44);
-  const dualBottom = dualTop + (isFeed ? 210 : 250);
-  const verdictTop = dualBottom + (isFeed ? 28 : 36);
-  return {
-    crestCy: isFeed ? 236 : 330,
-    crestOuter: isFeed ? 84 : 104,
-    crestGlow: isFeed ? 94 : 114,
-    titleY,
-    dualTop,
-    dualBottom,
-    verdictTop,
-    stampY: stampMaxY,
-  };
-}
-
-/** Carbon black-gold single-leaf plaque. */
+/** Carbon black-gold dual-hero plaque (single-leaf + axis-summary). */
 export function paintSingleLeafCertificate(
   ctx: TelemetryDrawContext,
-  input: TelemetrySingleLeafCardInput
+  input: TelemetryDualHeroCardInput
 ): void {
   const layout = resolveCarbonLayout(input.aspectRatio);
   const w = layout.plateWidth;
@@ -228,26 +203,29 @@ export function paintSingleLeafCertificate(
   );
   paintDualHeroSplit(ctx, input, geom);
 
-  paintPrecisionBand(ctx, contentLeft + 40, contentRight - 40, rhythm.verdictTop - 18);
+  // Mid-axis ceremonial plaque (cx = 540) — tier copy never lives in the right column.
+  const capsule = input.tierCapsule.trim();
+  if (capsule) {
+    paintCarbonCeremonialTierCapsule(
+      ctx,
+      capsule,
+      cx,
+      rhythm.plaqueY,
+      resolveCarbonTierPillMaxWidth(contentWidth)
+    );
+  }
 
-  const verdictMid = rhythm.verdictTop + SINGLE_LEAF_VERDICT_SLOT_HEIGHT / 2;
-  paintCertificateLabel(
-    ctx,
-    input.verdictPlaceholder,
-    cx,
-    verdictMid,
-    `22px ${SANS}`,
-    'rgba(161,161,170,0.72)',
-    'center',
-    'middle',
-    contentWidth
-  );
+  paintPrecisionBand(ctx, contentLeft + 40, contentRight - 40, rhythm.verdictTop - 14);
+
+  if (input.verdict) {
+    paintCarbonVerdictBlock(ctx, input.verdict, cx, rhythm.verdictTop);
+  }
 
   paintPrecisionBand(
     ctx,
     contentLeft + 40,
     contentRight - 40,
-    rhythm.verdictTop + SINGLE_LEAF_VERDICT_SLOT_HEIGHT + 12
+    rhythm.verdictTop + rhythm.verdictHeight + 10
   );
 
   const verified =
@@ -263,10 +241,50 @@ export function paintSingleLeafCertificate(
   );
 }
 
-/** Selfie HUD single-leaf — dual-hero in lower third over bottom scrim. */
+function paintCarbonVerdictBlock(
+  ctx: TelemetryDrawContext,
+  verdict: NonNullable<TelemetryDualHeroCardInput['verdict']>,
+  cx: number,
+  verdictTop: number
+): void {
+  const epithetFont = `bold ${CARBON_VERDICT_EPITHET_FONT_PX}px ${SANS}`;
+  const critiqueFont = `500 ${CARBON_VERDICT_CRITIQUE_FONT_PX}px ${SANS}`;
+  // WHY: Prefer builder-prewrapped lines so PNG and DOM preview stay lockstep.
+  const lines = verdict.critiqueLines.slice(0, 2);
+
+  withMicroEdgeShadow(ctx, () => {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = CARBON_VERDICT_EPITHET_FILL;
+    ctx.font = epithetFont;
+    ctx.fillText(
+      verdict.epithet,
+      cx,
+      verdictTop + CARBON_VERDICT_EPITHET_OFFSET_Y,
+      CARBON_VERDICT_CRITIQUE_MAX_WIDTH
+    );
+
+    ctx.fillStyle = CARBON_VERDICT_CRITIQUE_FILL;
+    ctx.font = critiqueFont;
+    const yOffsets = [
+      CARBON_VERDICT_CRITIQUE_LINE1_OFFSET_Y,
+      CARBON_VERDICT_CRITIQUE_LINE2_OFFSET_Y,
+    ];
+    for (let i = 0; i < lines.length && i < yOffsets.length; i += 1) {
+      ctx.fillText(
+        lines[i]!,
+        cx,
+        verdictTop + yOffsets[i]!,
+        CARBON_VERDICT_CRITIQUE_MAX_WIDTH
+      );
+    }
+  });
+}
+
+/** Selfie HUD dual-hero — lower third over bottom scrim. */
 export function paintSingleLeafSelfieHud(
   ctx: TelemetryDrawContext,
-  input: TelemetrySingleLeafCardInput
+  input: TelemetryDualHeroCardInput
 ): void {
   const layout = resolveSelfieLayout(input.aspectRatio);
   const year = input.year ?? new Date().getFullYear();
@@ -294,16 +312,16 @@ export function paintSingleLeafSelfieHud(
   });
 
   const geom = resolveSelfieDualHeroGeom(rhythm.dualTop, rhythm.dualBottom);
-  paintDualHeroSplit(ctx, input, geom, { hud: true, hardShadow: hard });
+  paintDualHeroSplit(ctx, input, geom, { hud: true });
 
-  const capsuleText = input.isOverflow ? input.overflowBadge : input.tierCapsule.trim();
+  // WHY: Selfie mid-axis owns ceremonial plaque; carbon uses paintCarbonCeremonialTierCapsule.
+  const capsuleText = input.tierCapsule.trim();
   paintTierCapsuleCentered(
     ctx,
     capsuleText,
     SELFIE_DUAL_HERO_DIVIDER_X,
     rhythm.capsuleY,
-    resolveSelfieTierPillMaxWidth(contentWidth),
-    { gold: input.isOverflow, hardShadow: hard, hud: true }
+    resolveSelfieTierPillMaxWidth(contentWidth)
   );
 
   const verified =
@@ -322,11 +340,12 @@ export function paintSingleLeafSelfieHud(
 }
 
 /**
- * Rasterize a single-leaf plate. Selfie background failure falls back to carbon.
+ * Rasterize a dual-hero plate (single-leaf or axis-summary).
+ * Selfie background failure falls back to carbon.
  */
 export function paintSingleLeafReport(
   ctx: TelemetryDrawContext,
-  input: TelemetrySingleLeafCardInput
+  input: TelemetryDualHeroCardInput
 ): void {
   const plate = resolveTelemetryCardSize(input.aspectRatio);
   const usedSelfie =

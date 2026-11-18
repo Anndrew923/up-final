@@ -1,7 +1,7 @@
 /**
  * Shell-mounted host for the aesthetic telemetry modal (store-driven).
- * WHY: Assessment pages open via openWithLeaf / home via openWithSmartDefault —
- * Host only mirrors store open/selection; no in-modal report-type switcher.
+ * WHY: Assessment pages open via openWithLeaf / openWithAxisSummary; home via
+ * openWithSmartDefault. Host only mirrors store open/selection.
  */
 import type { FC } from 'react';
 import { useAestheticReportUiStore } from '../../stores/aestheticReportUiStore';

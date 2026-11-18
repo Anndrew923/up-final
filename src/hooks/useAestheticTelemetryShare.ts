@@ -28,9 +28,12 @@ import {
   type SelfieCaptureSource,
 } from '../services/selfieCaptureService';
 import { shareTelemetryCardPng } from '../services/telemetryCardShareService';
+import type { AestheticAxisSummaryAxis } from '../logic/aesthetic/axisSummaryReport';
 import type { AestheticReportSelection } from '../stores/aestheticReportUiStore';
+import { resolveUiLocaleFromI18n } from '../i18n/language';
 import { buildAestheticTelemetryExportInput } from './buildAestheticTelemetryExportInput';
 import { buildAestheticSingleLeafExportInput } from './buildAestheticSingleLeafExportInput';
+import { buildAestheticAxisSummaryExportInput } from './buildAestheticAxisSummaryExportInput';
 import { loadSingleLeafDraftBundle } from './loadSingleLeafDraftBundle';
 import type { AestheticSpecCardModel } from './useAestheticSpecCard';
 import { useMergedScoresFromLocalStores } from './useMergedScoresFromLocalStores';
@@ -48,8 +51,9 @@ export type AestheticTelemetryErrorKey =
 /** Cache stamp — any field change must drop selfieBlobRef. */
 export interface SelfieBlobStamp {
   aspect: AestheticTelemetryAspect;
-  reportType: 'full' | 'single-leaf';
+  reportType: 'full' | 'single-leaf' | 'axis-summary';
   leafKey: SingleLeafId | null;
+  axisKey: AestheticAxisSummaryAxis | null;
   contentHash: string;
 }
 
@@ -85,6 +89,7 @@ function stampsEqual(a: SelfieBlobStamp | null, b: SelfieBlobStamp): boolean {
     a.aspect === b.aspect &&
     a.reportType === b.reportType &&
     a.leafKey === b.leafKey &&
+    a.axisKey === b.axisKey &&
     a.contentHash === b.contentHash
   );
 }
@@ -131,24 +136,45 @@ export function useAestheticTelemetryShare(
         model.battleCode,
         countCoreSixFilled(scores),
         axisFp,
-        i18n.language,
+        i18n.resolvedLanguage ?? i18n.language,
       ].join('|');
     }
-    if (!leafResult) return `missing|${selection.leaf}|${i18n.language}`;
+    if (selection.reportType === 'axis-summary') {
+      return [
+        'axis-summary',
+        selection.axis,
+        selection.heroScore.toFixed(2),
+        String(selection.coveredCount),
+        i18n.resolvedLanguage ?? i18n.language,
+      ].join('|');
+    }
+    if (!leafResult) {
+      return `missing|${selection.leaf}|${i18n.resolvedLanguage ?? i18n.language}`;
+    }
     return buildSingleLeafContentHash({
       leaf: leafResult.leaf,
       rawReading: leafResult.rawReading,
       heroScore: leafResult.heroScore,
       profileKey: buildPhysicalProfileHashKey(draftBundle.profile),
-      locale: i18n.language,
+      locale: i18n.resolvedLanguage ?? i18n.language,
     });
-  }, [draftBundle.profile, i18n.language, leafResult, model.battleCode, model.overallScore, scores, selection]);
+  }, [
+    draftBundle.profile,
+    i18n.language,
+    i18n.resolvedLanguage,
+    leafResult,
+    model.battleCode,
+    model.overallScore,
+    scores,
+    selection,
+  ]);
 
   const currentStamp = useMemo<SelfieBlobStamp>(
     () => ({
       aspect: aspectRatio,
       reportType: selection.reportType,
       leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+      axisKey: selection.reportType === 'axis-summary' ? selection.axis : null,
       contentHash,
     }),
     [aspectRatio, contentHash, selection]
@@ -210,23 +236,44 @@ export function useAestheticTelemetryShare(
       reportMode: AestheticTelemetryMode,
       background: ImageBitmap | null
     ): TelemetryReportInput | null => {
+      const uiLocale = resolveUiLocaleFromI18n({
+        language: i18n.language,
+        resolvedLanguage: i18n.resolvedLanguage,
+      });
+      const dualMode = reportMode === 'selfie' && background ? 'selfie' : 'carbon';
       if (selection.reportType === 'single-leaf') {
         if (!leafResult) return null;
         return buildAestheticSingleLeafExportInput(t, leafResult, {
-          mode: reportMode === 'selfie' && background ? 'selfie' : 'carbon',
+          mode: dualMode,
           aspectRatio: aspect,
           background,
-          uiLocale: i18n.language.toLowerCase().startsWith('en') ? 'en' : 'zh',
+          uiLocale,
         });
       }
+      if (selection.reportType === 'axis-summary') {
+        return buildAestheticAxisSummaryExportInput(
+          t,
+          {
+            axis: selection.axis,
+            heroScore: selection.heroScore,
+            coveredCount: selection.coveredCount,
+          },
+          {
+            mode: dualMode,
+            aspectRatio: aspect,
+            background,
+            uiLocale,
+          }
+        );
+      }
       const full = buildAestheticTelemetryExportInput(t, model, scores, {
-        mode: reportMode === 'selfie' && background ? 'selfie' : 'carbon',
+        mode: dualMode,
         background,
         aspectRatio: aspect,
       });
       return { ...full, reportType: 'full' };
     },
-    [i18n.language, leafResult, model, scores, selection.reportType, t]
+    [i18n.language, i18n.resolvedLanguage, leafResult, model, scores, selection, t]
   );
 
   const composeSelfiePreview = useCallback(
@@ -248,6 +295,7 @@ export function useAestheticTelemetryShare(
         aspect,
         reportType: selection.reportType,
         leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+        axisKey: selection.reportType === 'axis-summary' ? selection.axis : null,
         contentHash,
       };
       setPreviewUrl(url);
@@ -358,6 +406,7 @@ export function useAestheticTelemetryShare(
         aspect,
         reportType: selection.reportType,
         leafKey: selection.reportType === 'single-leaf' ? selection.leaf : null,
+        axisKey: selection.reportType === 'axis-summary' ? selection.axis : null,
         contentHash,
       };
 

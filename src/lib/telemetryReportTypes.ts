@@ -1,61 +1,102 @@
 /**
- * Discriminated report input for full six-axis vs single-leaf share plates.
+ * Discriminated report input for full six-axis vs single-leaf vs axis-summary plates.
  * WHY: Orthogonal to mode (carbon|selfie) and aspect (9:16|4:5) so cache stamps
- * can invalidate on reportType/leaf without touching locked telemetryCardTypes.
+ * can invalidate on reportType/leaf/axis without touching locked telemetryCardTypes.
  */
+import type { AestheticAxisSummaryAxis } from '../logic/aesthetic/axisSummaryReport';
 import type { SingleLeafId } from '../logic/aesthetic/singleLeafReport';
+import type { TelemetryVerdictCopy } from '../logic/aesthetic/telemetryVerdictCatalog';
+import type { TelemetryUiLocale } from '../i18n/language';
 import type { TelemetryCardInput } from './telemetryCardComposer';
 import type { TelemetryBackgroundSource } from './telemetryCardCover';
 import type { TelemetryCardAspectRatio } from './telemetryCardTypes';
 
+export type { TelemetryVerdictCopy, TelemetryUiLocale };
+
 export type TelemetryReportMode = 'carbon' | 'selfie';
 export type TelemetryReportAspect = TelemetryCardAspectRatio;
 
-/** Fixed verdict slot height on the logical plate — P2 copy must fit without reflow. */
-export const SINGLE_LEAF_VERDICT_SLOT_HEIGHT = 92;
+/**
+ * Fixed verdict slot height on the logical carbon plate (115–130 stage).
+ * WHY: Shared by Canvas rhythm + DOM preview so coach copy never reflows the stamp.
+ */
+export const SINGLE_LEAF_VERDICT_SLOT_HEIGHT = 122;
 
-export interface TelemetrySingleLeafCardInput {
-  reportType: 'single-leaf';
+/**
+ * Shared dual-hero paint fields (Carbon + Selfie).
+ * WHY: Axis-summary reuses the single-leaf geometry without polluting SINGLE_LEAF_IDS.
+ */
+export interface TelemetryDualHeroPlateFields {
   mode: TelemetryReportMode;
   aspectRatio: TelemetryReportAspect;
-  leaf: SingleLeafId;
-  /** Language-stable Chinese primary title (e.g. 去脂指數) — not UI-locale dependent. */
+  /** Language-stable Chinese primary title. */
   leafTitleZh: string;
-  /** Language-stable formal English secondary title (e.g. FAT-FREE MASS INDEX). */
+  /** Language-stable formal English secondary title. */
   leafTitleEn: string;
   /**
-   * UI locale for selfie single-line hero title (zh→leafTitleZh, en→leafTitleEn).
-   * Carbon bilingual paint ignores this and always draws both lines.
+   * UI locale for plate copy:
+   * - Selfie: single-line hero title (zh→leafTitleZh, en→leafTitleEn).
+   * - Carbon: swaps foil primary/secondary + selects verdict catalog language.
    */
-  uiLocale?: 'zh' | 'en';
+  uiLocale?: TelemetryUiLocale;
   rawReading: string;
   heroScore: number;
-  /** Pre-formatted undiluted hero score (e.g. `80.31`). */
+  /** Pre-formatted score (e.g. `70.40`). */
   heroScoreText: string;
+  /** Drives gold foil on the tier plaque when heroScore >= 100; never overrides copy. */
   isOverflow: boolean;
-  overflowBadge: string;
-  /** Column kicker — 實測數據 / RAW METRIC. */
+  /** Column kicker — left metric. */
   rawMetricLabel: string;
-  /** Column kicker — 戰力評分 / UP RATING. */
+  /** Column kicker — UP rating. */
   upRatingLabel: string;
-  /** Decade population class capsule; ignored when `isOverflow` (use overflowBadge). */
+  /** Decade population class for the tier plaque (incl. 100–150+ titles). */
   tierCapsule: string;
-  /** P1 placeholder inside the fixed verdict slot. */
-  verdictPlaceholder: string;
+  /**
+   * Carbon-only coach verdict (epithet + critique).
+   * WHY: Selfie HUD stays data-only — omit / leave undefined when mode === 'selfie'.
+   */
+  verdict?: TelemetryVerdictCopy;
   brandHeader?: string;
   year?: number;
   verifiedStamp?: string;
   background?: TelemetryBackgroundSource | null;
 }
 
+export interface TelemetrySingleLeafCardInput extends TelemetryDualHeroPlateFields {
+  reportType: 'single-leaf';
+  leaf: SingleLeafId;
+}
+
+export interface TelemetryAxisSummaryCardInput extends TelemetryDualHeroPlateFields {
+  reportType: 'axis-summary';
+  axis: AestheticAxisSummaryAxis;
+  coveredCount: number;
+}
+
+export type TelemetryDualHeroCardInput =
+  | TelemetrySingleLeafCardInput
+  | TelemetryAxisSummaryCardInput;
+
 export type TelemetryFullReportInput = TelemetryCardInput & {
   reportType: 'full';
 };
 
-export type TelemetryReportInput = TelemetryFullReportInput | TelemetrySingleLeafCardInput;
+export type TelemetryReportInput = TelemetryFullReportInput | TelemetryDualHeroCardInput;
 
 export function isSingleLeafReportInput(
   input: TelemetryReportInput
 ): input is TelemetrySingleLeafCardInput {
   return input.reportType === 'single-leaf';
+}
+
+export function isAxisSummaryReportInput(
+  input: TelemetryReportInput
+): input is TelemetryAxisSummaryCardInput {
+  return input.reportType === 'axis-summary';
+}
+
+export function isDualHeroReportInput(
+  input: TelemetryReportInput
+): input is TelemetryDualHeroCardInput {
+  return input.reportType === 'single-leaf' || input.reportType === 'axis-summary';
 }

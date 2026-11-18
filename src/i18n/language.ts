@@ -1,5 +1,11 @@
 export type SupportedLng = 'en' | 'zh-Hant';
 
+/**
+ * Dual-hero plate UI locale (Carbon titles + verdict catalog).
+ * WHY: Distinct from bundle code `zh-Hant` — painters/builders only need zh|en.
+ */
+export type TelemetryUiLocale = 'zh' | 'en';
+
 /** Persist manual / detected choice — must match `detection.lookupLocalStorage` in `i18n.ts`. */
 export const I18N_STORAGE_KEY = 'up-final.i18n.lang';
 
@@ -17,6 +23,39 @@ export function toSupportedLng(lng: string | undefined | null): SupportedLng {
   const lower = String(lng).toLowerCase();
   if (lower.startsWith('zh')) return 'zh-Hant';
   return 'en';
+}
+
+/**
+ * Resolve Carbon/Selfie plate locale from i18n tags.
+ * WHY: `en` / `en-US` / `en-GB` must never silently fall back to zh for verdict + title swap.
+ */
+export function resolveUiLocale(
+  language: string | undefined | null,
+  override?: TelemetryUiLocale
+): TelemetryUiLocale {
+  if (override) return override;
+  return String(language ?? '')
+    .toLowerCase()
+    .startsWith('en')
+    ? 'en'
+    : 'zh';
+}
+
+/** Prefer `resolvedLanguage` so mid-switch tags (en-US) still map to English plates. */
+export function resolveUiLocaleFromI18n(i18n: {
+  language?: string;
+  resolvedLanguage?: string;
+}): TelemetryUiLocale {
+  return resolveUiLocale(i18n.resolvedLanguage ?? i18n.language);
+}
+
+/** Extract language tag from i18next `t` binding (resolvedLanguage first). */
+export function resolveLanguageFromT(t: unknown): string | undefined {
+  if (!t || typeof t !== 'object') return undefined;
+  const rec = t as { language?: unknown; resolvedLanguage?: unknown };
+  if (typeof rec.resolvedLanguage === 'string') return rec.resolvedLanguage;
+  if (typeof rec.language === 'string') return rec.language;
+  return undefined;
 }
 
 export function hasUserLocaleOverride(): boolean {

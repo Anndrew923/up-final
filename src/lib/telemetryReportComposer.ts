@@ -2,7 +2,7 @@
  * Report-type dispatcher for offline share plates.
  *
  * WHY: `telemetryCardComposer` stays locked at ≤490 lines / full-axis only.
- * This module routes `full` → existing composer and `single-leaf` → leaf painter.
+ * This module routes `full` → existing composer and dual-hero → leaf painter.
  */
 import { composeTelemetryCard, type TelemetryComposeDeps } from './telemetryCardComposer';
 import {
@@ -16,9 +16,9 @@ import {
   type TelemetryDrawContext,
 } from './telemetryCardTypes';
 import {
-  isSingleLeafReportInput,
+  isDualHeroReportInput,
+  type TelemetryDualHeroCardInput,
   type TelemetryReportInput,
-  type TelemetrySingleLeafCardInput,
 } from './telemetryReportTypes';
 
 function createDomSurface(): TelemetryCanvasSurface {
@@ -63,8 +63,8 @@ function surfaceToPngBlob(surface: TelemetryCanvasSurface): Promise<Blob> {
   });
 }
 
-async function composeSingleLeafTelemetryCard(
-  input: TelemetrySingleLeafCardInput,
+async function composeDualHeroTelemetryCard(
+  input: TelemetryDualHeroCardInput,
   deps?: TelemetryComposeDeps
 ): Promise<Blob> {
   await ensureTelemetrySerifFontsReady();
@@ -84,18 +84,18 @@ async function composeSingleLeafTelemetryCard(
   return surfaceToPngBlob(surface);
 }
 
-/** Compose full six-axis or single-leaf PNG. Never touches Firestore. */
+/** Compose full six-axis or dual-hero PNG. Never touches Firestore. */
 export async function composeTelemetryReport(
   input: TelemetryReportInput,
   deps?: TelemetryComposeDeps
 ): Promise<Blob> {
-  if (isSingleLeafReportInput(input)) {
-    return composeSingleLeafTelemetryCard(input, deps);
+  if (isDualHeroReportInput(input)) {
+    return composeDualHeroTelemetryCard(input, deps);
   }
   const { reportType: _reportType, ...cardInput } = input;
   void _reportType;
   return composeTelemetryCard(cardInput, deps);
 }
 
-export type { TelemetryReportInput, TelemetrySingleLeafCardInput };
+export type { TelemetryReportInput, TelemetryDualHeroCardInput, TelemetrySingleLeafCardInput } from './telemetryReportTypes';
 export type { TelemetryFullReportInput } from './telemetryReportTypes';
