@@ -17,7 +17,9 @@ export const HISTORY_COLLAPSIBLE_CHROME = {
   kicker:
     'block whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.18em] text-accent-primary/90',
   title:
-    'mt-0.5 block whitespace-nowrap text-base font-semibold tracking-tight text-zinc-100 sm:text-lg',
+    'mt-0.5 block min-w-0 truncate text-base font-semibold tracking-tight text-zinc-100 sm:text-lg',
+  /** Title column — min-w-0 + truncate so EN never collides with the chevron. */
+  headerTitleStack: 'min-w-0 flex-1',
   headerTopRow: 'grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3',
   headerPillsRow: 'flex w-full flex-wrap items-center gap-2 pt-0.5',
   /**
@@ -25,9 +27,14 @@ export const HISTORY_COLLAPSIBLE_CHROME = {
    * Design intent: soft dashboard tile — depth from fill, not stacked borders.
    */
   headerToggle: `${HEADER_SURFACE} text-left transition-[background-color,transform] duration-150 hover:bg-white/[0.05] active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60`,
-  /** Non-button panel shell when Share must sit beside the chevron (Evolution). */
+  /**
+   * Non-button panel shell — Evolution only: circular share Icon sits beside the
+   * chevron so the title column stays min-w-0 / truncate without text CTAs.
+   */
   headerPanel: HEADER_SURFACE,
+  /** Round instrument button shell — chevron + share reuse for equal height. */
   chevronBadge:
-    'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10',
+    'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 transition hover:border-amber-500/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60 disabled:cursor-not-allowed disabled:opacity-50',
   chevronIcon: 'h-3.5 w-3.5 shrink-0 text-amber-500',
+  headerActions: 'flex shrink-0 items-center gap-2',
 } as const;

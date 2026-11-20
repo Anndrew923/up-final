@@ -42,7 +42,7 @@ const HistoryArchiveSection: FC<HistoryArchiveSectionProps> = ({ summary, childr
         onClick={() => setExpanded((v) => !v)}
       >
         <span className={chrome.headerTopRow}>
-          <span className="min-w-0">
+          <span className={chrome.headerTitleStack}>
             <span className={chrome.kicker}>{t('history.archive.kicker')}</span>
             <span className={chrome.title}>{t('history.archive.title')}</span>
             <span className="sr-only">{actionLabel}</span>

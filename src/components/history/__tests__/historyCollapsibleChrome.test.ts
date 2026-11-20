@@ -20,6 +20,11 @@ describe('HISTORY_COLLAPSIBLE_CHROME', () => {
     expect(HISTORY_COLLAPSIBLE_CHROME.pill).toContain('border-0');
     expect(HISTORY_COLLAPSIBLE_CHROME.pill).toContain('bg-white/[0.05]');
     expect(HISTORY_COLLAPSIBLE_CHROME.kicker).toContain('whitespace-nowrap');
+    expect(HISTORY_COLLAPSIBLE_CHROME.headerTitleStack).toContain('min-w-0');
+    expect(HISTORY_COLLAPSIBLE_CHROME.headerTitleStack).toContain('flex-1');
+    expect(HISTORY_COLLAPSIBLE_CHROME.title).toContain('truncate');
     expect(HISTORY_COLLAPSIBLE_CHROME.chevronBadge).toContain('rounded-full');
+    expect(HISTORY_COLLAPSIBLE_CHROME.chevronBadge).toContain('h-6');
+    expect(HISTORY_COLLAPSIBLE_CHROME.headerActions).toContain('gap-2');
   });
 });

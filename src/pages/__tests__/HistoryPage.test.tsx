@@ -171,7 +171,7 @@ describe('HistoryPage', () => {
     act(() => root.unmount());
   });
 
-  it('keeps the English dyno rhythm title fully visible above pills', async () => {
+  it('keeps the English dyno rhythm title above pills with truncate anti-collision', async () => {
     await i18n.changeLanguage('en');
     const { container, root } = renderHistoryPage();
 
@@ -185,8 +185,9 @@ describe('HistoryPage', () => {
     );
 
     expect(titleEl?.textContent).toBe('Dyno Rhythm');
-    expect(titleEl?.className).toContain('whitespace-nowrap');
-    expect(titleEl?.className).not.toContain('truncate');
+    // WHY: Shared chrome truncates titles so EN never collides with the chevron.
+    expect(titleEl?.className).toContain('truncate');
+    expect(titleEl?.className).toContain('min-w-0');
     expect(rhythmToggle?.className).toContain('flex-col');
     expect(rhythmToggle?.textContent).toContain(`This week 0/${WEEKLY_RHYTHM_TARGET}`);
     expect(rhythmToggle?.textContent).toContain('Lifetime 0 days');

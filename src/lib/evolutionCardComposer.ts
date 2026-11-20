@@ -3,17 +3,23 @@
  *
  * WHY: Isolated from `composeTelemetryCard` / `telemetryCardLayout` so Carbon /
  * Selfie optical regressions stay green while LOGS ships a dual-radar share plate
- * that mirrors on-screen `HexRadarChart` ritual compare (amber dashed baseline +
- * cyan solid current) without mutating those modules.
+ * that mirrors on-screen `HexRadarChart` ritual compare (warm `#FBBF24` dashed
+ * baseline + high-voltage cyan bloom current) without mutating those modules.
+ *
+ * Layout WHY: Vertical bands are hard-separated so EN long labels
+ * (`Skeletal Muscle`, `Baseline (YYYY.MM.DD)`) never share a Y band with the
+ * legend or hero score — social readers must decode the plate in one glance.
  */
-import {
-  computeSixAxisRadarVertices,
-  type RadarGeometryPoint,
-  type RadarPoint2D,
-} from '../logic/core/radarGeometry';
+import type { RadarGeometryPoint } from '../logic/core/radarGeometry';
 import { formatSignedDelta } from '../logic/core/formatSignedDelta';
 import type { LogEvolutionAxisDelta, LogEvolutionMode } from '../logic/core/logEvolutionReport';
 import type { SixAxisMetric } from '../types/scoring';
+import {
+  EVOLUTION_RADAR_BASELINE_DASH,
+  EVOLUTION_RADAR_BASELINE_STROKE,
+  EVOLUTION_RADAR_NEON,
+  paintEvolutionDualRadar,
+} from './evolutionRadarPainter';
 import {
   clearCanvasShadow,
   TelemetryComposeError,
@@ -34,20 +40,78 @@ export const EVOLUTION_CARD_PIXEL_HEIGHT =
 
 const FONT_STACK = '"PingFang TC", "Noto Sans TC", "Helvetica Neue", sans-serif';
 
+/**
+ * Vertical / horizontal band SSOT (logical px).
+ * WHY exported so layout contracts can assert EN anti-overlap without screenshot diffs.
+ */
+export const EVOLUTION_CARD_LAYOUT = {
+  frameInset: 36,
+  frameInnerInset: 44,
+  bracketLen: 32,
+  radarCx: EVOLUTION_CARD_LOGIC_WIDTH / 2,
+  /** Raised ~22px vs prior 420 — frees mid-plate for legend / hero. */
+  radarCy: 398,
+  /** Shrunk ~16px vs prior 200. */
+  radarRadius: 184,
+  radarLabelExtra: 32,
+  /** Must match `paintEvolutionDualRadar` label font — clearance math SSOT. */
+  radarLabelFontPx: 20,
+  /**
+   * Legend band center — bottom spoke label sits at cy+radius+labelExtra;
+   * keep ≥36px clear air under that label's glyph box.
+   */
+  legendY: 678,
+  legendFontPx: 23,
+  /** Minimum clear gap between EN Baseline / Current text boxes at mid-plate. */
+  legendCenterGap: 48,
+  legendSwatch: 36,
+  legendSwatchGap: 10,
+  legendMaxTextWidth: 300,
+  /** ≥32px air under legend glyph box before OVERALL POWER. */
+  overallLabelY: 740,
+  overallLabelFontPx: 12,
+  overallScoreY: 786,
+  overallScoreFontPx: 44,
+  /**
+   * WHY: Center-to-center must clear both em-halves plus ≥12px optical air;
+   * prior 814 packed a 44px score into a 26px +Δ and visually crushed the hero.
+   */
+  overallDeltaY: 837,
+  overallDeltaFontPx: 26,
+  axisGridStartY: 866,
+  axisCardW: 460,
+  axisCardH: 80,
+  axisGapX: 28,
+  axisGapY: 8,
+} as const;
+
+/** Em half-box factor for middle-baseline clearance math (matches canvas optical feel). */
+const GLYPH_HALF_EM = 0.55;
+
 const COLORS = {
-  bgTop: '#0a0a0b',
+  bgTop: '#0c0a09',
   bgBottom: '#000000',
-  hairline: 'rgba(255, 140, 0, 0.35)',
-  brand: '#fbbf24',
+  warmGoldCore: 'rgba(217, 119, 6, 0.14)',
+  warmGoldEdge: 'rgba(245, 158, 11, 0)',
+  frameOuter: 'rgba(217, 119, 6, 0.42)',
+  frameInner: 'rgba(245, 158, 11, 0.28)',
+  bracket: 'rgba(245, 158, 11, 0.72)',
+  /** Plate gold — SSOT with radar baseline / PR nodes. */
+  brand: EVOLUTION_RADAR_BASELINE_STROKE,
   muted: 'rgba(161, 161, 170, 0.92)',
   ink: '#f4f4f5',
-  cyan: '#22d3ee',
-  cyanFill: 'rgba(34, 211, 238, 0.22)',
-  amber: '#fbbf24',
+  baselineScore: 'rgba(212, 212, 216, 0.88)',
+  currentScore: EVOLUTION_RADAR_BASELINE_STROKE,
+  /** Legend current swatch — SSOT with neon main tube. */
+  cyan: EVOLUTION_RADAR_NEON.main,
+  cyanGlow: 'rgba(34, 211, 238, 0.4)',
+  /** Legend baseline swatch — SSOT with radar baseline stroke. */
+  baselineStroke: EVOLUTION_RADAR_BASELINE_STROKE,
+  amber: EVOLUTION_RADAR_BASELINE_STROKE,
   green: '#4ade80',
-  grid: 'rgba(63, 63, 70, 0.85)',
   card: 'rgba(24, 24, 27, 0.72)',
-  pr: '#fbbf24',
+  cardStroke: 'rgba(120, 113, 108, 0.45)',
+  pr: EVOLUTION_RADAR_BASELINE_STROKE,
 } as const;
 
 export interface EvolutionCardCopy {
@@ -76,6 +140,61 @@ export interface EvolutionCardComposeInput {
 
 export interface EvolutionComposeDeps {
   createSurface?: () => TelemetryCanvasSurface;
+}
+
+export interface EvolutionLegendAnchors {
+  midX: number;
+  legendY: number;
+  leftTextRightX: number;
+  rightTextLeftX: number;
+  centerGap: number;
+  maxTextWidth: number;
+  fontPx: number;
+}
+
+/** Bottom spoke label center Y (muscle / Skeletal Muscle). */
+export function resolveEvolutionRadarBottomLabelY(
+  layout: typeof EVOLUTION_CARD_LAYOUT = EVOLUTION_CARD_LAYOUT
+): number {
+  return layout.radarCy + layout.radarRadius + layout.radarLabelExtra;
+}
+
+/**
+ * Clear air from bottom-spoke label glyph box bottom → legend glyph box top.
+ */
+export function resolveEvolutionLegendClearancePx(
+  layout: typeof EVOLUTION_CARD_LAYOUT = EVOLUTION_CARD_LAYOUT
+): number {
+  const labelHalf = layout.radarLabelFontPx * GLYPH_HALF_EM;
+  const legendHalf = layout.legendFontPx * GLYPH_HALF_EM;
+  return layout.legendY - legendHalf - (resolveEvolutionRadarBottomLabelY(layout) + labelHalf);
+}
+
+/**
+ * Clear air from overall score glyph box bottom → +Δ glyph box top.
+ */
+export function resolveEvolutionScoreDeltaClearancePx(
+  layout: typeof EVOLUTION_CARD_LAYOUT = EVOLUTION_CARD_LAYOUT
+): number {
+  const scoreHalf = layout.overallScoreFontPx * GLYPH_HALF_EM;
+  const deltaHalf = layout.overallDeltaFontPx * GLYPH_HALF_EM;
+  return layout.overallDeltaY - deltaHalf - (layout.overallScoreY + scoreHalf);
+}
+
+export function resolveEvolutionLegendAnchors(
+  layout: typeof EVOLUTION_CARD_LAYOUT = EVOLUTION_CARD_LAYOUT
+): EvolutionLegendAnchors {
+  const midX = layout.radarCx;
+  const halfGap = layout.legendCenterGap / 2;
+  return {
+    midX,
+    legendY: layout.legendY,
+    leftTextRightX: midX - halfGap,
+    rightTextLeftX: midX + halfGap,
+    centerGap: layout.legendCenterGap,
+    maxTextWidth: layout.legendMaxTextWidth,
+    fontPx: layout.legendFontPx,
+  };
 }
 
 export function resolveEvolutionCardSize(): {
@@ -146,223 +265,176 @@ function deltaFill(delta: number | null): string {
   return delta > 0 ? COLORS.green : COLORS.amber;
 }
 
-function tracePolygon(ctx: TelemetryDrawContext, points: readonly RadarPoint2D[]): void {
-  const first = points[0];
-  if (!first) return;
-  ctx.beginPath();
-  ctx.moveTo(first.x, first.y);
-  for (let i = 1; i < points.length; i += 1) {
-    const point = points[i];
-    if (point) ctx.lineTo(point.x, point.y);
+function paintCornerBrackets(
+  ctx: TelemetryDrawContext,
+  inset: number,
+  len: number,
+  w: number,
+  h: number
+): void {
+  ctx.strokeStyle = COLORS.bracket;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'square';
+  const corners: Array<[number, number, number, number, number, number]> = [
+    [inset, inset + len, inset, inset, inset + len, inset],
+    [w - inset - len, inset, w - inset, inset, w - inset, inset + len],
+    [inset, h - inset - len, inset, h - inset, inset + len, h - inset],
+    [w - inset - len, h - inset, w - inset, h - inset, w - inset, h - inset - len],
+  ];
+  for (const [x0, y0, x1, y1, x2, y2] of corners) {
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
   }
-  ctx.closePath();
 }
 
 function paintBackground(ctx: TelemetryDrawContext, w: number, h: number): void {
-  const gradient = ctx.createLinearGradient(0, 0, 0, h);
-  gradient.addColorStop(0, COLORS.bgTop);
-  gradient.addColorStop(1, COLORS.bgBottom);
-  ctx.fillStyle = gradient;
+  const linear = ctx.createLinearGradient(0, 0, 0, h);
+  linear.addColorStop(0, COLORS.bgTop);
+  linear.addColorStop(1, COLORS.bgBottom);
+  ctx.fillStyle = linear;
   ctx.fillRect(0, 0, w, h);
 
-  ctx.strokeStyle = COLORS.hairline;
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(36, 36, w - 72, h - 72);
-}
+  // WHY: Soft champagne radial behind the hex — warms the cold cyan polygon without glitter.
+  const warm = ctx.createRadialGradient(
+    EVOLUTION_CARD_LAYOUT.radarCx,
+    EVOLUTION_CARD_LAYOUT.radarCy,
+    40,
+    EVOLUTION_CARD_LAYOUT.radarCx,
+    EVOLUTION_CARD_LAYOUT.radarCy,
+    420
+  );
+  warm.addColorStop(0, COLORS.warmGoldCore);
+  warm.addColorStop(1, COLORS.warmGoldEdge);
+  ctx.fillStyle = warm;
+  ctx.fillRect(0, 0, w, h);
 
-function paintDualRadar(
-  ctx: TelemetryDrawContext,
-  baselineAxes: readonly RadarGeometryPoint[],
-  currentAxes: readonly RadarGeometryPoint[],
-  cx: number,
-  cy: number,
-  outerRadius: number
-): void {
-  const labelRadius = outerRadius + 36;
-  const rings = [1, 0.66, 0.33] as const;
-
-  const paintGrid = (axes: readonly RadarGeometryPoint[]) => {
-    if (axes.length === 0) return;
-    const geo = computeSixAxisRadarVertices({
-      points: axes,
-      cx,
-      cy,
-      outerRadius,
-      labelRadius,
-    });
-    for (const scale of rings) {
-      tracePolygon(
-        ctx,
-        geo.hexagon.map((p) => ({
-          x: cx + (p.x - cx) * scale,
-          y: cy + (p.y - cy) * scale,
-        }))
-      );
-      ctx.strokeStyle = COLORS.grid;
-      ctx.lineWidth = 1.25;
-      ctx.stroke();
-    }
-    for (const vertex of geo.hexagon) {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(vertex.x, vertex.y);
-      ctx.strokeStyle = 'rgba(63, 63, 70, 0.55)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-  };
-
-  paintGrid(currentAxes.length > 0 ? currentAxes : baselineAxes);
-
-  if (baselineAxes.length > 0) {
-    const baselineGeo = computeSixAxisRadarVertices({
-      points: baselineAxes,
-      cx,
-      cy,
-      outerRadius,
-      labelRadius,
-    });
-    // WHY: Match ritual HexRadarChart compare layer — amber dashed, no fill.
-    tracePolygon(ctx, baselineGeo.scorePolygon);
-    ctx.strokeStyle = COLORS.amber;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([8, 6]);
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  if (currentAxes.length > 0) {
-    const currentGeo = computeSixAxisRadarVertices({
-      points: currentAxes,
-      cx,
-      cy,
-      outerRadius,
-      labelRadius,
-    });
-    tracePolygon(ctx, currentGeo.scorePolygon);
-    ctx.fillStyle = COLORS.cyanFill;
-    ctx.fill();
-    ctx.shadowColor = 'rgba(34, 211, 238, 0.55)';
-    ctx.shadowBlur = 18;
-    ctx.strokeStyle = COLORS.cyan;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    clearCanvasShadow(ctx);
-
-    for (const vertex of currentGeo.vertices) {
-      ctx.beginPath();
-      ctx.arc(vertex.xBase, vertex.yBase, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = COLORS.cyan;
-      ctx.fill();
-    }
-
-    ctx.fillStyle = COLORS.ink;
-    ctx.font = `20px ${FONT_STACK}`;
-    ctx.textBaseline = 'middle';
-    for (const vertex of currentGeo.vertices) {
-      const align =
-        vertex.textAnchor === 'start'
-          ? 'left'
-          : vertex.textAnchor === 'end'
-            ? 'right'
-            : 'center';
-      ctx.textAlign = align;
-      ctx.fillText(vertex.label, vertex.xLabel, vertex.yLabel);
-    }
-  }
+  const inset = EVOLUTION_CARD_LAYOUT.frameInset;
+  const inner = EVOLUTION_CARD_LAYOUT.frameInnerInset;
+  ctx.strokeStyle = COLORS.frameOuter;
+  ctx.lineWidth = 1.75;
+  ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
+  ctx.strokeStyle = COLORS.frameInner;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(inner, inner, w - inner * 2, h - inner * 2);
+  paintCornerBrackets(ctx, inset, EVOLUTION_CARD_LAYOUT.bracketLen, w, h);
 }
 
 /**
- * Dual-line legend under the hex — mirrors on-screen LogEvolutionCard so social
- * viewers can decode amber dashed vs cyan solid without the in-app chrome.
+ * Dual-line legend under the hex — right/left text anchors hug a fixed center gap
+ * so EN `Baseline (YYYY.MM.DD)` never collides with `Current (YYYY.MM.DD)`.
  */
-function paintRadarLegend(
-  ctx: TelemetryDrawContext,
-  copy: EvolutionCardCopy,
-  cy: number
-): void {
-  const midX = EVOLUTION_CARD_LOGIC_WIDTH / 2;
-  const y = cy + 248;
-  const leftX = midX - 220;
-  const rightX = midX + 40;
+function paintRadarLegend(ctx: TelemetryDrawContext, copy: EvolutionCardCopy): void {
+  const anchors = resolveEvolutionLegendAnchors();
+  const { legendY, leftTextRightX, rightTextLeftX, maxTextWidth, fontPx } = anchors;
+  const swatch = EVOLUTION_CARD_LAYOUT.legendSwatch;
+  const swatchGap = EVOLUTION_CARD_LAYOUT.legendSwatchGap;
 
   ctx.save();
-  ctx.strokeStyle = COLORS.amber;
+  ctx.font = `${fontPx}px ${FONT_STACK}`;
+  ctx.textBaseline = 'middle';
+
+  const leftTextW = Math.min(ctx.measureText(copy.legendBaseline).width, maxTextWidth);
+  const leftSwatchRight = leftTextRightX - leftTextW - swatchGap;
+  const leftSwatchLeft = leftSwatchRight - swatch;
+
+  ctx.strokeStyle = COLORS.baselineStroke;
   ctx.lineWidth = 2.5;
-  ctx.setLineDash([8, 6]);
+  // WHY: Same dash SSOT as radar baseline — legend `---` must never drift.
+  ctx.setLineDash([...EVOLUTION_RADAR_BASELINE_DASH]);
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(leftX, y);
-  ctx.lineTo(leftX + 36, y);
+  ctx.moveTo(leftSwatchLeft, legendY);
+  ctx.lineTo(leftSwatchRight, legendY);
   ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.fillStyle = COLORS.ink;
-  ctx.font = `15px ${FONT_STACK}`;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(copy.legendBaseline, leftX + 46, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(copy.legendBaseline, leftTextRightX, legendY, maxTextWidth);
 
   ctx.strokeStyle = COLORS.cyan;
   ctx.lineWidth = 3;
-  ctx.shadowColor = 'rgba(34, 211, 238, 0.45)';
-  ctx.shadowBlur = 10;
+  ctx.shadowColor = COLORS.cyanGlow;
+  ctx.shadowBlur = 8;
   ctx.beginPath();
-  ctx.moveTo(rightX, y);
-  ctx.lineTo(rightX + 36, y);
+  ctx.moveTo(rightTextLeftX, legendY);
+  ctx.lineTo(rightTextLeftX + swatch, legendY);
   ctx.stroke();
   clearCanvasShadow(ctx);
 
   ctx.fillStyle = COLORS.ink;
-  ctx.fillText(copy.legendCurrent, rightX + 46, y);
+  ctx.textAlign = 'left';
+  ctx.fillText(
+    copy.legendCurrent,
+    rightTextLeftX + swatch + swatchGap,
+    legendY,
+    maxTextWidth
+  );
   ctx.restore();
 }
 
-function paintOverallFocus(
-  ctx: TelemetryDrawContext,
-  input: EvolutionCardComposeInput,
-  y: number
-): void {
+function paintOverallFocus(ctx: TelemetryDrawContext, input: EvolutionCardComposeInput): void {
   const { copy, mode, baselineOverall, currentOverall, overallDelta } = input;
+  const midX = EVOLUTION_CARD_LAYOUT.radarCx;
+  const labelY = EVOLUTION_CARD_LAYOUT.overallLabelY;
+  const scoreY = EVOLUTION_CARD_LAYOUT.overallScoreY;
+  const deltaY = EVOLUTION_CARD_LAYOUT.overallDeltaY;
+
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   if (mode === 'baseline_ready') {
     ctx.fillStyle = COLORS.brand;
     ctx.font = `700 28px ${FONT_STACK}`;
-    ctx.fillText(copy.baselineLocked, EVOLUTION_CARD_LOGIC_WIDTH / 2, y);
+    ctx.fillText(copy.baselineLocked, midX, scoreY);
     return;
   }
 
   ctx.fillStyle = COLORS.muted;
-  ctx.font = `12px ${FONT_STACK}`;
-  ctx.fillText(copy.overallLabel, EVOLUTION_CARD_LOGIC_WIDTH / 2, y - 34);
+  ctx.font = `${EVOLUTION_CARD_LAYOUT.overallLabelFontPx}px ${FONT_STACK}`;
+  ctx.fillText(copy.overallLabel, midX, labelY);
 
   const from = formatScore(baselineOverall, copy.emptyScore);
   const to = formatScore(currentOverall, copy.emptyScore);
-  ctx.fillStyle = COLORS.ink;
-  ctx.font = `700 44px ${FONT_STACK}`;
-  ctx.fillText(`${from}  →  ${to}`, EVOLUTION_CARD_LOGIC_WIDTH / 2, y + 8);
+  const arrow = '  →  ';
+  ctx.font = `700 ${EVOLUTION_CARD_LAYOUT.overallScoreFontPx}px ${FONT_STACK}`;
+  const fromW = ctx.measureText(from).width;
+  const arrowW = ctx.measureText(arrow).width;
+  const toW = ctx.measureText(to).width;
+  const totalW = fromW + arrowW + toW;
+  let cursor = midX - totalW / 2;
+  ctx.textAlign = 'left';
+  // WHY: Cool baseline vs champagne current — “past calm → present glory” without glitter FX.
+  ctx.fillStyle = COLORS.baselineScore;
+  ctx.fillText(from, cursor, scoreY);
+  cursor += fromW;
+  ctx.fillStyle = COLORS.muted;
+  ctx.fillText(arrow, cursor, scoreY);
+  cursor += arrowW;
+  ctx.fillStyle = COLORS.currentScore;
+  ctx.fillText(to, cursor, scoreY);
 
+  ctx.textAlign = 'center';
   const badge = formatSignedDelta(overallDelta, copy.emptyScore);
   ctx.fillStyle = deltaFill(overallDelta);
-  ctx.font = `700 26px ${FONT_STACK}`;
-  ctx.fillText(badge, EVOLUTION_CARD_LOGIC_WIDTH / 2, y + 52);
+  ctx.font = `700 ${EVOLUTION_CARD_LAYOUT.overallDeltaFontPx}px ${FONT_STACK}`;
+  ctx.fillText(badge, midX, deltaY);
 }
 
 function paintAxisGrid(
   ctx: TelemetryDrawContext,
   deltas: readonly LogEvolutionAxisDelta[],
-  copy: EvolutionCardCopy,
-  startY: number
+  copy: EvolutionCardCopy
 ): void {
   const cols = 2;
-  const cardW = 460;
-  const cardH = 92;
-  const gapX = 28;
-  const gapY = 18;
+  const cardW = EVOLUTION_CARD_LAYOUT.axisCardW;
+  const cardH = EVOLUTION_CARD_LAYOUT.axisCardH;
+  const gapX = EVOLUTION_CARD_LAYOUT.axisGapX;
+  const gapY = EVOLUTION_CARD_LAYOUT.axisGapY;
+  const startY = EVOLUTION_CARD_LAYOUT.axisGridStartY;
   const originX = (EVOLUTION_CARD_LOGIC_WIDTH - (cols * cardW + gapX)) / 2;
 
   deltas.forEach((row, index) => {
@@ -372,7 +444,7 @@ function paintAxisGrid(
     const y = startY + rowIdx * (cardH + gapY);
 
     ctx.fillStyle = COLORS.card;
-    ctx.strokeStyle = 'rgba(63, 63, 70, 0.9)';
+    ctx.strokeStyle = COLORS.cardStroke;
     ctx.lineWidth = 1;
     ctx.fillRect(x, y, cardW, cardH);
     ctx.strokeRect(x, y, cardW, cardH);
@@ -381,28 +453,28 @@ function paintAxisGrid(
     ctx.textBaseline = 'middle';
     ctx.fillStyle = COLORS.muted;
     ctx.font = `13px ${FONT_STACK}`;
-    ctx.fillText(copy.axisLabels[row.axis], x + 18, y + 24);
+    ctx.fillText(copy.axisLabels[row.axis], x + 18, y + 22);
 
     if (row.isPersonalBest) {
       ctx.fillStyle = COLORS.pr;
       ctx.font = `700 12px ${FONT_STACK}`;
       ctx.textAlign = 'right';
-      ctx.fillText(copy.prBadge, x + cardW - 18, y + 24);
+      ctx.fillText(copy.prBadge, x + cardW - 18, y + 22);
     }
 
     ctx.textAlign = 'left';
     ctx.fillStyle = COLORS.ink;
-    ctx.font = `600 22px ${FONT_STACK}`;
+    ctx.font = `600 20px ${FONT_STACK}`;
     ctx.fillText(
       `${formatScore(row.from, copy.emptyScore)} → ${formatScore(row.to, copy.emptyScore)}`,
       x + 18,
-      y + 58
+      y + 52
     );
 
     ctx.textAlign = 'right';
     ctx.fillStyle = deltaFill(row.delta);
-    ctx.font = `700 20px ${FONT_STACK}`;
-    ctx.fillText(formatSignedDelta(row.delta, copy.emptyScore), x + cardW - 18, y + 58);
+    ctx.font = `700 18px ${FONT_STACK}`;
+    ctx.fillText(formatSignedDelta(row.delta, copy.emptyScore), x + cardW - 18, y + 52);
   });
 }
 
@@ -416,6 +488,7 @@ export function paintEvolutionCard(
 ): void {
   const w = EVOLUTION_CARD_LOGIC_WIDTH;
   const h = EVOLUTION_CARD_LOGIC_HEIGHT;
+  const layout = EVOLUTION_CARD_LAYOUT;
   paintBackground(ctx, w, h);
 
   ctx.textAlign = 'left';
@@ -428,12 +501,21 @@ export function paintEvolutionCard(
   ctx.font = `16px ${FONT_STACK}`;
   ctx.fillText(input.copy.dateRange, 72, 122);
 
-  paintDualRadar(ctx, input.baselineAxes, input.currentAxes, w / 2, 420, 200);
-  paintRadarLegend(ctx, input.copy, 420);
-  paintOverallFocus(ctx, input, 730);
+  paintEvolutionDualRadar(ctx, {
+    baselineAxes: input.baselineAxes,
+    currentAxes: input.currentAxes,
+    deltas: input.deltas,
+    cx: layout.radarCx,
+    cy: layout.radarCy,
+    outerRadius: layout.radarRadius,
+    labelExtra: layout.radarLabelExtra,
+    labelFontPx: layout.radarLabelFontPx,
+  });
+  paintRadarLegend(ctx, input.copy);
+  paintOverallFocus(ctx, input);
 
   if (input.mode === 'comparing' && input.deltas.length > 0) {
-    paintAxisGrid(ctx, input.deltas, input.copy, 810);
+    paintAxisGrid(ctx, input.deltas, input.copy);
   }
 }
 

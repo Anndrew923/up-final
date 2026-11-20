@@ -3,8 +3,7 @@
  *
  * WHY: Presentational only — deltas / Day-1 resolution live in
  * `buildLogEvolutionReport`; PNG encode + Share Sheet live in the share hook.
- * Collapse chrome mirrors HistoryFootprintDashboard so the three LOGS sections
- * share one visual / interaction vocabulary.
+ * Header matches Rhythm / Archive height: title + [share Icon][chevron] only.
  */
 import { useId, useMemo, useState, type FC } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +27,53 @@ export interface LogEvolutionCardProps {
   onShare?: () => void;
   onSelectDay1Baseline: () => void;
   onSelectPreviousLog: () => void;
+}
+
+/** Lucide-style Share2 paths — no lucide-react dependency in this package. */
+function ShareIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.59 13.51 15.42 17.49" />
+      <path d="M15.41 6.51 8.59 10.49" />
+    </svg>
+  );
+}
+
+function ShareSpinner({ className }: { className?: string }) {
+  return (
+    <svg
+      className={`${className ?? ''} animate-spin`}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="3"
+      />
+      <path
+        className="opacity-90"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V2C5.373 2 2 5.373 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-1.647z"
+      />
+    </svg>
+  );
 }
 
 const LogEvolutionCard: FC<LogEvolutionCardProps> = ({
@@ -73,17 +119,54 @@ const LogEvolutionCard: FC<LogEvolutionCardProps> = ({
 
   const baselineDate = formatEvolutionCardDate(report.baseline?.createdAt, empty);
   const currentDate = formatEvolutionCardDate(report.current?.createdAt, empty);
+  // WHY: Collapsed pill uses short DAY 1 — EN must not read “Baseline: DAY 1 BASELINE”.
   const baselinePillLabel = day1Active
-    ? t('history.evolution.day1Baseline')
+    ? t('history.evolution.day1BaselineShort')
     : baselineDate;
 
   const actionLabel = expanded
     ? t('history.evolution.toggleCollapse')
     : t('history.evolution.toggleExpand');
+  const shareAriaLabel = sharing
+    ? t('history.evolution.sharing')
+    : t('history.evolution.shareButton');
 
   if (!report.current) return null;
 
   const toggleExpanded = () => setExpanded((v) => !v);
+  const handleShare = () => onShare?.();
+
+  const headerActions = (
+    <div className={chrome.headerActions}>
+      <button
+        type="button"
+        data-testid="log-evolution-share"
+        disabled={sharing || !onShare}
+        onClick={handleShare}
+        className={chrome.chevronBadge}
+        aria-label={shareAriaLabel}
+        aria-busy={sharing || undefined}
+      >
+        {sharing ? (
+          <ShareSpinner className={chrome.chevronIcon} />
+        ) : (
+          <ShareIcon className={chrome.chevronIcon} />
+        )}
+      </button>
+      <button
+        type="button"
+        id={toggleId}
+        data-testid="log-evolution-toggle"
+        className={chrome.chevronBadge}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        aria-label={actionLabel}
+        onClick={toggleExpanded}
+      >
+        <CollapsibleChevron expanded={expanded} className={chrome.chevronIcon} />
+      </button>
+    </div>
+  );
 
   return (
     <section data-testid="log-evolution-card">
@@ -91,37 +174,17 @@ const LogEvolutionCard: FC<LogEvolutionCardProps> = ({
         <div className={chrome.headerTopRow}>
           <button
             type="button"
-            className="min-w-0 text-left transition hover:opacity-90"
+            className={`${chrome.headerTitleStack} text-left transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60`}
+            // WHY: Click expands for convenience, but aria-expanded lives only on the
+            // chevron (toggleId) so AT don't announce two disclosure controls.
             onClick={toggleExpanded}
           >
             <span className={chrome.kicker}>{t('history.evolution.kicker')}</span>
             <span className={chrome.title}>{t('history.evolution.title')}</span>
           </button>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              data-testid="log-evolution-share"
-              disabled={sharing || !onShare}
-              onClick={() => onShare?.()}
-              className="inline-flex items-center justify-center rounded-lg border border-accent-primary/45 bg-accent-primary/10 px-2.5 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-primary transition hover:bg-accent-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {sharing ? t('history.evolution.sharing') : t('history.evolution.share')}
-            </button>
-            {/* Single a11y expand control — Share stays a sibling so it never nests inside toggle. */}
-            <button
-              type="button"
-              id={toggleId}
-              data-testid="log-evolution-toggle"
-              className={`${chrome.chevronBadge} transition hover:border-amber-500/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60`}
-              aria-expanded={expanded}
-              aria-controls={panelId}
-              aria-label={actionLabel}
-              onClick={toggleExpanded}
-            >
-              <CollapsibleChevron expanded={expanded} className={chrome.chevronIcon} />
-            </button>
-          </div>
+          {headerActions}
         </div>
+
         {!expanded ? (
           <button
             type="button"
@@ -164,7 +227,10 @@ const LogEvolutionCard: FC<LogEvolutionCardProps> = ({
               aria-labelledby={toggleId}
               aria-hidden={false}
             >
-              <div className="mt-3 flex flex-wrap gap-2" data-testid="log-evolution-baseline-switcher">
+              <div
+                className="mt-3 flex flex-wrap items-center gap-2"
+                data-testid="log-evolution-baseline-switcher"
+              >
                 <button
                   type="button"
                   data-testid="log-evolution-baseline-day1"

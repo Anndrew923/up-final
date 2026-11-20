@@ -20,7 +20,7 @@ describe('history.evolution / archive i18n parity', () => {
     expect(sectionKeys(zhHistory, 'archive')).toEqual(sectionKeys(enHistory, 'archive'));
   });
 
-  it('exposes legend, collapse, and archive copy for both locales', () => {
+  it('exposes legend, collapse, shareButton, and archive copy for both locales', () => {
     for (const bundle of [zhHistory, enHistory]) {
       const evo = bundle.history.evolution;
       const archive = bundle.history.archive;
@@ -28,9 +28,18 @@ describe('history.evolution / archive i18n parity', () => {
       expect(evo.legendCurrent).toContain('{{date}}');
       expect(evo.collapsedOverall).toContain('{{from}}');
       expect(evo.collapsedBaseline).toContain('{{label}}');
+      expect(evo.day1BaselineShort).toBe('DAY 1');
+      expect(typeof evo.shareButton).toBe('string');
+      expect(evo.shareButton.length).toBeGreaterThan(0);
       expect(archive.kicker).toBe('DYNO ARCHIVE');
       expect(archive.collapsedCount).toContain('{{count}}');
       expect(archive.collapsedBest).toContain('{{bestScore}}');
     }
+    expect(enHistory.history.evolution.shareButton).toBe('Share evolution');
+    expect(zhHistory.history.evolution.shareButton).toBe('分享進化');
+    expect('shareShort' in enHistory.history.evolution).toBe(false);
+    expect('share' in enHistory.history.evolution).toBe(false);
+    expect('shareShort' in zhHistory.history.evolution).toBe(false);
+    expect('share' in zhHistory.history.evolution).toBe(false);
   });
 });

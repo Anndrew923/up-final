@@ -135,6 +135,7 @@ function createRecordingSurface(options?: {
     textBaseline: 'middle',
     letterSpacing: '0px',
     globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
     shadowColor: 'transparent',
     shadowBlur: 0,
     shadowOffsetX: 0,

@@ -59,7 +59,7 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
         onClick={onToggle}
       >
         <span className={HISTORY_COLLAPSIBLE_CHROME.headerTopRow}>
-          <span className="min-w-0">
+          <span className={HISTORY_COLLAPSIBLE_CHROME.headerTitleStack}>
             <span className={HISTORY_COLLAPSIBLE_CHROME.kicker}>
               {t('history.footprint.kicker')}
             </span>

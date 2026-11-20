@@ -25,6 +25,11 @@ export interface TelemetryDrawContext {
   textAlign: CanvasTextAlign;
   textBaseline: CanvasTextBaseline;
   globalAlpha: number;
+  /**
+   * Additive neon bloom (`lighter`) for ritual stroke stacks.
+   * WHY: SVG feDropShadow has no Canvas twin; optical add approximates tube glow.
+   */
+  globalCompositeOperation: GlobalCompositeOperation;
   /** Optional; used for wide-tracked stamp engraving when the runtime supports it. */
   letterSpacing?: string;
   /** Soft drop shadow for HUD text on bright selfie backgrounds. */
