@@ -115,8 +115,8 @@
           "body": "Pro uplink — deep briefings and cross-axis diagnostics."
         }
       },
-      "price": "NT$ 30 / mo ($1.00 USD)",
-      "cta": "⚡ Ignite Pro · NT$30/mo",
+      "price": "${{monthly}} USD / mo · ${{annual}} USD / yr",
+      "cta": "⚡ Ignite Pro · ${{annual}} USD / yr",
       "dismiss": "Return to console",
       "busy": "Authorizing…",
       "billingFail": "Billing failed — retry or restore purchases in Settings."

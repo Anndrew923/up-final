@@ -10,6 +10,8 @@ import {
   getPowerAgeRange,
   getPowerStandardsForProfile,
   mergeScoreMapWithResolvedExplosivePower,
+  parsePowerMeasurementField,
+  parseStrictPositiveMeasurement,
   resolveExplosiveLadderScoreBundle,
   resolveExplosivePowerScoreForDisplay,
   scoreIncreasingOverflowAboveT100,
@@ -25,8 +27,17 @@ import {
   resolveExplosiveMilestoneRawGap,
 } from '../powerMilestoneGap';
 import { clampScoreMapValue } from '../scoring';
-import { EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS } from '../explosiveInputCaps';
+import { getExplosiveSprint100mFloorSeconds } from '../explosiveInputCaps';
+import {
+  getSprint100mWrSeconds,
+  SPRINT_100M_WR_SECONDS,
+  SPRINT_STANDARDS_MALE,
+} from '../sprint100mStandards';
 import { resolveScoreMeaningMilestone } from '../scoreMeaningCatalog';
+import {
+  resolveSingleLeafReport,
+  type SingleLeafDraftBundle,
+} from '../../aesthetic/singleLeafReport';
 
 describe('getPowerAgeRange', () => {
   it('maps 13–15 to 12-15 bucket', () => {
@@ -132,31 +143,32 @@ describe('calculateVjumpScore', () => {
 });
 
 describe('calculateScoreDecreasing', () => {
-  /** Male 21–30 sprint anchors — regression guard for 4th-power warp above T100. */
-  const male2130Sprint = { 0: 17, 50: 14, 100: 11 } as const;
+  /** Male 21–30 from WR SSOT — regression guard for 4th-power warp above T100. */
+  const male2130Sprint = SPRINT_STANDARDS_MALE['21-30'];
+  const male2130Wr = SPRINT_100M_WR_SECONDS.male['21-30'];
 
   it('interpolates between T50 and T0 without warp (mid-band unchanged)', () => {
-    expect(calculateScoreDecreasing(14, male2130Sprint)).toBe(50);
+    expect(calculateScoreDecreasing(male2130Sprint[50], male2130Sprint)).toBe(50);
     expect(calculateScoreDecreasing(15, male2130Sprint)).toBeCloseTo(33.33, 2);
-    expect(calculateScoreDecreasing(17, male2130Sprint)).toBe(0);
-    expect(calculateScoreDecreasing(18, male2130Sprint)).toBe(0);
+    expect(calculateScoreDecreasing(male2130Sprint[0], male2130Sprint)).toBe(0);
+    expect(calculateScoreDecreasing(male2130Sprint[0] + 1, male2130Sprint)).toBe(0);
   });
 
   it('applies 4th-power warp above T100 (male 21–30 critical checkpoints)', () => {
-    expect(calculateScoreDecreasing(11, male2130Sprint)).toBe(100);
+    expect(calculateScoreDecreasing(male2130Sprint[100], male2130Sprint)).toBe(100);
     expect(calculateScoreDecreasing(10.2, male2130Sprint)).toBe(120.92);
     expect(calculateScoreDecreasing(10, male2130Sprint)).toBe(132);
     expect(calculateScoreDecreasing(9.92, male2130Sprint)).toBe(137.93);
-    expect(calculateScoreDecreasing(9.58, male2130Sprint)).toBe(177.19);
+    expect(calculateScoreDecreasing(male2130Wr, male2130Sprint)).toBe(177.19);
   });
 
   it('scoreSprintOverflowAboveT100 matches calculateScoreDecreasing at T100 and below', () => {
     expect(scoreSprintOverflowAboveT100(0)).toBe(100);
-    expect(scoreSprintOverflowAboveT100(11 - 9.58)).toBe(177.19);
+    expect(scoreSprintOverflowAboveT100(male2130Sprint[100] - male2130Wr)).toBe(177.19);
   });
 
   it('clamps Bolt-class sprint raw into radar 0–200 via clampScoreMapValue', () => {
-    const raw = calculateScoreDecreasing(9.58, male2130Sprint);
+    const raw = calculateScoreDecreasing(male2130Wr, male2130Sprint);
     expect(raw).toBe(177.19);
     expect(clampScoreMapValue(raw)).toBe(raw);
     expect(clampScoreMapValue(raw)).toBeLessThanOrEqual(200);
@@ -179,9 +191,11 @@ describe('calculateScoreDecreasing', () => {
     });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.persisted.sprintSeconds).toBe(EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS.male);
+    expect(r.persisted.sprintSeconds).toBe(getExplosiveSprint100mFloorSeconds('male', 25));
+    expect(r.persisted.sprintSeconds).toBe(9.45);
     expect(r.capApplied.sprint).toBe(true);
-    expect(r.breakdown.sprintRaw).toBe(210.64);
+    // floor Δt vs T100=11 → raw ≈ 200.26 before ladder clamp
+    expect(r.breakdown.sprintRaw).toBe(200.26);
     expect(r.breakdown.averageRaw).toBeNull();
     expect(r.writesRadarAxis).toBe(false);
     expect(r.score).toBeNull();
@@ -191,6 +205,157 @@ describe('calculateScoreDecreasing', () => {
     });
     expect(ladder.sprint).toBe(200);
     expect(ladder.composite).toBeNull();
+  });
+
+  it('male 41–50 and female 21–30 elite times floor then clamp preview/selfie/ladder to 200', () => {
+    const male45: PhysicalProfile = {
+      gender: 'male',
+      age: 45,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    };
+    const female25: PhysicalProfile = {
+      gender: 'female',
+      age: 25,
+      heightCm: 165,
+      weightKg: 58,
+      updatedAt: '',
+    };
+
+    const maleR = tryComputeExplosiveAssessmentScore({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '9.58',
+      profile: male45,
+      profileReady: true,
+    });
+    expect(maleR.ok).toBe(true);
+    if (!maleR.ok) return;
+    expect(maleR.persisted.sprintSeconds).toBe(9.8);
+    expect(clampScoreMapValue(maleR.breakdown.sprintRaw!)).toBe(200);
+
+    const femaleR = tryComputeExplosiveAssessmentScore({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '9.4',
+      profile: female25,
+      profileReady: true,
+    });
+    expect(femaleR.ok).toBe(true);
+    if (!femaleR.ok) return;
+    expect(femaleR.persisted.sprintSeconds).toBe(10.36);
+    expect(clampScoreMapValue(femaleR.breakdown.sprintRaw!)).toBe(200);
+
+    const maleLadder = resolveExplosiveLadderScoreBundle(male45, {
+      explosivePower: { sprintSeconds: maleR.persisted.sprintSeconds },
+    });
+    const femaleLadder = resolveExplosiveLadderScoreBundle(female25, {
+      explosivePower: { sprintSeconds: femaleR.persisted.sprintSeconds },
+    });
+    expect(maleLadder.sprint).toBe(200);
+    expect(femaleLadder.sprint).toBe(200);
+
+    const emptyDrafts = {
+      strength: null,
+      cardio: null,
+      muscle: null,
+      grip: null,
+      armSize: null,
+      ffmi: null,
+      scores: {},
+    } satisfies Omit<SingleLeafDraftBundle, 'profile' | 'power'>;
+    const maleDrafts: SingleLeafDraftBundle = {
+      ...emptyDrafts,
+      profile: male45,
+      power: { explosivePower: { sprintSeconds: maleR.persisted.sprintSeconds } },
+    };
+    const femaleDrafts: SingleLeafDraftBundle = {
+      ...emptyDrafts,
+      profile: female25,
+      power: { explosivePower: { sprintSeconds: femaleR.persisted.sprintSeconds } },
+    };
+    const maleLeaf = resolveSingleLeafReport('explosive.sprint', maleDrafts);
+    const femaleLeaf = resolveSingleLeafReport('explosive.sprint', femaleDrafts);
+    expect(maleLeaf.status).toBe('ok');
+    expect(femaleLeaf.status).toBe('ok');
+    if (maleLeaf.status === 'ok' && femaleLeaf.status === 'ok') {
+      expect(maleLeaf.heroScore).toBe(200);
+      expect(femaleLeaf.heroScore).toBe(200);
+      expect(maleLeaf.heroScore).toBe(maleLadder.sprint);
+      expect(femaleLeaf.heroScore).toBe(femaleLadder.sprint);
+      expect(clampScoreMapValue(maleR.breakdown.sprintRaw!)).toBe(maleLeaf.heroScore);
+      expect(clampScoreMapValue(femaleR.breakdown.sprintRaw!)).toBe(femaleLeaf.heroScore);
+    }
+  });
+
+  it('scores every age/sex WR second at 177.19 through tryCompute path', () => {
+    const ages: Array<{ age: number; gender: 'male' | 'female' }> = [
+      { age: 14, gender: 'male' },
+      { age: 18, gender: 'male' },
+      { age: 25, gender: 'male' },
+      { age: 35, gender: 'male' },
+      { age: 45, gender: 'male' },
+      { age: 55, gender: 'male' },
+      { age: 65, gender: 'male' },
+      { age: 75, gender: 'male' },
+      { age: 14, gender: 'female' },
+      { age: 18, gender: 'female' },
+      { age: 25, gender: 'female' },
+      { age: 35, gender: 'female' },
+      { age: 45, gender: 'female' },
+      { age: 55, gender: 'female' },
+      { age: 65, gender: 'female' },
+      { age: 75, gender: 'female' },
+    ];
+    for (const { age, gender } of ages) {
+      const wr = getSprint100mWrSeconds(gender, age);
+      expect(wr).not.toBeNull();
+      if (wr == null) continue;
+      const profile: PhysicalProfile = {
+        gender,
+        age,
+        heightCm: gender === 'male' ? 175 : 165,
+        weightKg: gender === 'male' ? 75 : 58,
+        updatedAt: '',
+      };
+      const r = tryComputeExplosiveAssessmentScore({
+        verticalJumpInput: '',
+        standingLongJumpInput: '',
+        sprintInput: String(wr),
+        profile,
+        profileReady: true,
+      });
+      expect(r.ok).toBe(true);
+      if (!r.ok) continue;
+      expect(r.breakdown.sprintRaw).toBeCloseTo(177.19, 2);
+      expect(clampScoreMapValue(r.breakdown.sprintRaw!)).toBeCloseTo(177.19, 2);
+    }
+  });
+
+  it('rejects dirty sprint strings (comma / suffix)', () => {
+    expect(parsePowerMeasurementField('11,5')).toBe('invalid');
+    expect(parsePowerMeasurementField('11.5abc')).toBe('invalid');
+    expect(parseStrictPositiveMeasurement('11,5')).toBeNull();
+    expect(parseStrictPositiveMeasurement('11.5abc')).toBeNull();
+    expect(parseStrictPositiveMeasurement('11.50')).toBe(11.5);
+
+    const profile: PhysicalProfile = {
+      gender: 'male',
+      age: 25,
+      heightCm: 175,
+      weightKg: 75,
+      updatedAt: '',
+    };
+    const dirty = tryComputeExplosiveAssessmentScore({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '11,5',
+      profile,
+      profileReady: true,
+    });
+    expect(dirty.ok).toBe(false);
+    if (!dirty.ok) expect(dirty.error).toBe('invalid-sprint');
   });
 });
 

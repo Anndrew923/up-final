@@ -14,6 +14,7 @@ import {
   type ExplosivePowerBreakdown,
   type ExplosivePowerNormAnchors,
 } from '../logic/core/powerScoring';
+import { clampScoreMapValue } from '../logic/core/scoring';
 import { isPhysicalProfileComplete } from '../logic/core/physicalProfile';
 import {
   formatLengthInput,
@@ -355,7 +356,8 @@ export function useExplosiveAssessmentPage(): UseExplosiveAssessmentPageResult {
         return false;
       }
 
-      setPerBranchResult((r) => ({ ...r, [branch]: { raw } }));
+      // WHY: Branch card must match Selfie / ladder ≤200 — never show uncapped overflow raw.
+      setPerBranchResult((r) => ({ ...r, [branch]: { raw: clampScoreMapValue(raw) } }));
       setCapNoticeInterpolation(
         resolveExplosiveCapNoticeInterpolation(profile, result.capApplied)
       );

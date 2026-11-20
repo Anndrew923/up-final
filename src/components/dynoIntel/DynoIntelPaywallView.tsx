@@ -1,9 +1,17 @@
 import type { FC } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { resolveProPaywallPriceVars } from '../../config/proSubscriptionPlans';
 import type { RestorePurchasesStatus } from '../../logic/core/restorePurchasesStatus';
 import { usePrefersReducedMotion } from '../../lib/motionPreference';
 import type { DynoIntelPaywallReason } from '../../types/dynoIntelPaywall';
 import SubscriptionLegalFooter from '../arena/SubscriptionLegalFooter';
+
+/**
+ * WHY: Store `priceString` is not wired into Dyno paywall yet — marketing fallbacks
+ * must track `resolveProPaywallPriceVars` (same SSOT as JoinArenaPlanPicker) so ASC/Play
+ * review never sees stale $1.00 / NT$30 copy.
+ */
+const PAYWALL_PRICE_VARS = resolveProPaywallPriceVars();
 
 export interface DynoIntelPaywallViewProps {
   reason: DynoIntelPaywallReason;
@@ -95,7 +103,7 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
             ))}
           </ul>
           <p className="mt-3 border-t border-zinc-800/80 pt-3 font-mono text-sm font-semibold tracking-wide text-amber-200">
-            {t('dynoIntel.paywall.price')}
+            {t('dynoIntel.paywall.price', PAYWALL_PRICE_VARS)}
           </p>
         </div>
 
@@ -137,7 +145,9 @@ const DynoIntelPaywallView: FC<DynoIntelPaywallViewProps> = ({
             </>
           ) : null}
           <span className="relative z-[1]">
-            {actionBusy ? t('dynoIntel.paywall.busy') : t('dynoIntel.paywall.cta')}
+            {actionBusy
+              ? t('dynoIntel.paywall.busy')
+              : t('dynoIntel.paywall.cta', PAYWALL_PRICE_VARS)}
           </span>
         </button>
         <button

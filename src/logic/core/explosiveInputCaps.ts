@@ -3,14 +3,16 @@
  * in the scoring model. Caps apply before norm-table math; persisted saves use capped values.
  *
  * Standing long jump user spec is in meters (3.80 m / 3.20 m) — this app stores cm everywhere else.
+ *
+ * Sprint floor (WHY): world-record SSOT (`sprint100mStandards`) — floor = WR − 0.13 so elite
+ * typos clamp near radar 200 without a second T100 mirror (shared with powerScoring).
  */
 import type { PhysicalProfile } from '../../types/userProfile';
 import { normalizeGenderForNormTables } from './genderNormalize';
+import { getSprint100mFloorSeconds } from './sprint100mStandards';
 
 export const EXPLOSIVE_VERTICAL_JUMP_MAX_CM = { male: 135, female: 135 } as const;
 export const EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM = { male: 390, female: 390 } as const;
-/** 100 m — fastest time (s) the model accepts; faster inputs are floored here (lower s = better). */
-export const EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS = { male: 9.4, female: 9.4 } as const;
 
 export type ExplosiveCapApplied = {
   verticalJump: boolean;
@@ -26,8 +28,12 @@ export function getExplosiveStandingLongJumpCapCm(gender: 'male' | 'female'): nu
   return EXPLOSIVE_STANDING_LONG_JUMP_MAX_CM[gender];
 }
 
-export function getExplosiveSprint100mFloorSeconds(gender: 'male' | 'female'): number {
-  return EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS[gender];
+/** Age/sex 100 m floor from WR SSOT (`WR − 0.13`). */
+export function getExplosiveSprint100mFloorSeconds(
+  gender: 'male' | 'female',
+  age?: number | string | null
+): number {
+  return getSprint100mFloorSeconds(gender, age);
 }
 
 /** WHY: cap notices and floors must follow the same sex norm as powerScoring (e.g. 女性 token). */
@@ -58,7 +64,9 @@ export function getExplosiveCapNoticeInterpolation(
   } = {};
   if (cap.verticalJump) out.maxVerticalJumpCm = getExplosiveVerticalJumpCapCm(gender);
   if (cap.standingLongJump) out.maxStandingLongJumpCm = getExplosiveStandingLongJumpCapCm(gender);
-  if (cap.sprint) out.sprint100mFloorSeconds = getExplosiveSprint100mFloorSeconds(gender);
+  if (cap.sprint) {
+    out.sprint100mFloorSeconds = getExplosiveSprint100mFloorSeconds(gender, profile.age);
+  }
   return out;
 }
 
@@ -70,7 +78,8 @@ export function applyExplosiveInputCaps(
     verticalJumpCm: number | null;
     standingLongJumpCm: number | null;
     sprintSeconds: number | null;
-  }
+  },
+  opts?: { age?: number | string | null }
 ): {
   verticalJumpCm: number | null;
   standingLongJumpCm: number | null;
@@ -99,7 +108,7 @@ export function applyExplosiveInputCaps(
     capApplied.standingLongJump = true;
   }
 
-  const spFloor = EXPLOSIVE_SPRINT_100M_FLOOR_SECONDS[gender];
+  const spFloor = getSprint100mFloorSeconds(gender, opts?.age);
   if (sprintSeconds !== null && sprintSeconds > 0 && sprintSeconds < spFloor) {
     sprintSeconds = spFloor;
     capApplied.sprint = true;
@@ -117,5 +126,5 @@ export function applyExplosiveInputCapsForProfile(
   }
 ): ReturnType<typeof applyExplosiveInputCaps> {
   const g = resolveExplosiveCapGender(profile);
-  return applyExplosiveInputCaps(g, input);
+  return applyExplosiveInputCaps(g, input, { age: profile.age });
 }

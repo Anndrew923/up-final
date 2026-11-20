@@ -115,8 +115,8 @@
           "body": "Pro 全頻道通電，解鎖智慧遙測、深度說明與跨軸診斷。"
         }
       },
-      "price": "NT$ 30 / 月 ($1.00 USD)",
-      "cta": "⚡ 點火 Pro Pass (NT$ 30 / 月)",
+      "price": "${{monthly}} USD / 月 · ${{annual}} USD / 年",
+      "cta": "⚡ 點火 Pro Pass · ${{annual}} USD / 年",
       "dismiss": "返回控制台",
       "busy": "金流授權中…",
       "billingFail": "金流連線失敗 — 請重試或至設定還原購買。"

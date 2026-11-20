@@ -83,7 +83,7 @@ describe('HistoryPage', () => {
     await i18n.changeLanguage('zh-Hant');
   });
 
-  it('renders mobile log cards with six-axis bento and no horizontal table', async () => {
+  it('keeps the three LOGS sections collapsed by default, then reveals archive cards after expand', async () => {
     const t = i18n.getFixedT('zh-Hant', 'common');
     const { container, root } = renderHistoryPage();
 
@@ -94,6 +94,24 @@ describe('HistoryPage', () => {
     expect(container.querySelector('table')).toBeNull();
     expect(container.querySelector('.overflow-x-auto')).toBeNull();
     expect(container.querySelector('main')?.className).toContain('max-w-md');
+
+    const rhythmToggle = container.querySelector('#history-rhythm-toggle');
+    const evolutionToggle = container.querySelector('[data-testid="log-evolution-toggle"]');
+    const archiveToggle = container.querySelector('[data-testid="history-archive-toggle"]');
+    expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(evolutionToggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(archiveToggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelector('[data-testid="log-evolution-collapsed-pills"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="history-archive-collapsed-pills"]')).toBeTruthy();
+    // Deferred mount — heavy radar / log trees stay off the collapsed first paint.
+    expect(container.querySelector('[data-testid="log-evolution-radar"]')).toBeNull();
+    expect(container.querySelector('[data-testid="history-log-card-list"]')).toBeNull();
+
+    act(() => {
+      (archiveToggle as HTMLButtonElement).click();
+    });
+
+    expect(archiveToggle?.getAttribute('aria-expanded')).toBe('true');
     expect(container.querySelector('[data-testid="history-log-card-list"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="history-log-card"]')).toBeTruthy();
 
@@ -124,7 +142,7 @@ describe('HistoryPage', () => {
     expect(rhythmToggle?.textContent).toContain(`本週 0/${WEEKLY_RHYTHM_TARGET}`);
     expect(rhythmToggle?.textContent).toContain('累積 0 天');
     expect(rhythmToggle?.textContent).toContain('展開測功節奏');
-    expect(rhythmToggle?.className).toContain('rounded-lg');
+    expect(rhythmToggle?.className).toContain('rounded-xl');
     expect(rhythmToggle?.getAttribute('aria-label')).toBeNull();
     expect(rhythmToggle?.getAttribute('aria-expanded')).toBe('false');
     expect(rhythmPanel?.getAttribute('aria-hidden')).toBe('true');

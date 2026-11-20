@@ -2,19 +2,22 @@
  * Explosive power — radar axis = vertical jump + standing long jump only (fixed /2).
  * 100 m sprint is specialty-only: scored for ladder shard + local persist, never enters
  * the six-axis composite (aligned with cardio Cooper-only / no 5km radar fallback).
- * Norm tables align with reference-app `assessmentStandards.js`; sprint overflow above T100
- * uses a 4th-power warp (`SPRINT_OVERFLOW_*`); standing long jump uses meter-based
- * `INCREASING_OVERFLOW_*`; vertical jump uses cm-based `VJUMP_OVERFLOW_*`.
+ * Sprint 0/50/100 anchors + input floors come from world-record SSOT (`sprint100mStandards`);
+ * overflow above T100 uses a 4th-power warp (`SPRINT_OVERFLOW_*`). Standing long jump uses
+ * meter-based `INCREASING_OVERFLOW_*`; vertical jump uses cm-based `VJUMP_OVERFLOW_*`.
  */
 import type { ExplosivePowerRawPersisted, PowerInputsPersisted } from '../../types/powerInputs';
 import type { PhysicalProfile } from '../../types/userProfile';
 import type { ScoreMap } from '../../types/scoring';
 import { applyExplosiveInputCapsForProfile, type ExplosiveCapApplied } from './explosiveInputCaps';
 import { normalizeGenderForNormTables } from './genderNormalize';
+import { getPowerAgeRange, type PowerAgeBucket } from './powerAgeRange';
 import { isPhysicalProfileComplete } from './physicalProfile';
 import { clampScoreMapValue } from './scoring';
+import { getSprint100mStandardRow } from './sprint100mStandards';
 
 export type { ExplosiveCapApplied } from './explosiveInputCaps';
+export { getPowerAgeRange, type PowerAgeBucket } from './powerAgeRange';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -112,16 +115,6 @@ export function calculateScoreIncreasing(value: number, standard: PowerStandardR
  */
 export const EXPLOSIVE_COMPOSITE_FIXED_DENOMINATOR = 2 as const;
 
-export type PowerAgeBucket =
-  | '12-15'
-  | '16-20'
-  | '21-30'
-  | '31-40'
-  | '41-50'
-  | '51-60'
-  | '61-70'
-  | '71-80';
-
 /** Sprint / jump standard row: score anchors at 0, 50, 100 points. */
 export type PowerStandardRow = Readonly<Record<0 | 50 | 100, number>>;
 
@@ -172,47 +165,6 @@ export const STANDING_LONG_JUMP_STANDARDS_FEMALE: Readonly<
   '71-80': { 0: 40, 50: 90, 100: 140 },
 };
 
-/** Lower seconds = better (0 / 50 / 100 score anchors). */
-export const SPRINT_STANDARDS_MALE: Readonly<Record<PowerAgeBucket, PowerStandardRow>> = {
-  '12-15': { 0: 18, 50: 15, 100: 12 },
-  '16-20': { 0: 17, 50: 14, 100: 11 },
-  '21-30': { 0: 17, 50: 14, 100: 11 },
-  '31-40': { 0: 18, 50: 15, 100: 12 },
-  '41-50': { 0: 19, 50: 16, 100: 13 },
-  '51-60': { 0: 20, 50: 17, 100: 14 },
-  '61-70': { 0: 22, 50: 19, 100: 16 },
-  '71-80': { 0: 24, 50: 21, 100: 18 },
-};
-
-export const SPRINT_STANDARDS_FEMALE: Readonly<Record<PowerAgeBucket, PowerStandardRow>> = {
-  '12-15': { 0: 19, 50: 16, 100: 13 },
-  '16-20': { 0: 18, 50: 15, 100: 12 },
-  '21-30': { 0: 18, 50: 15, 100: 12 },
-  '31-40': { 0: 19, 50: 16, 100: 13 },
-  '41-50': { 0: 20, 50: 17, 100: 14 },
-  '51-60': { 0: 21, 50: 18, 100: 15 },
-  '61-70': { 0: 23, 50: 20, 100: 17 },
-  '71-80': { 0: 25, 50: 22, 100: 19 },
-};
-
-/**
- * Age buckets match reference-app power tables (12–80). Profile in this app starts at 13;
- * ages 13–15 use the `12-15` row. Above 80 → null (no table).
- */
-export function getPowerAgeRange(age: number | string | null | undefined): PowerAgeBucket | null {
-  const a = parseInt(String(age), 10);
-  if (!a || a <= 0) return null;
-  if (a >= 12 && a <= 15) return '12-15';
-  if (a >= 16 && a <= 20) return '16-20';
-  if (a >= 21 && a <= 30) return '21-30';
-  if (a >= 31 && a <= 40) return '31-40';
-  if (a >= 41 && a <= 50) return '41-50';
-  if (a >= 51 && a <= 60) return '51-60';
-  if (a >= 61 && a <= 70) return '61-70';
-  if (a >= 71 && a <= 80) return '71-80';
-  return null;
-}
-
 /** Resolved norm rows for explosive reference UI (null when profile incomplete or age outside tables). */
 export type ExplosivePowerNormAnchors = NonNullable<
   ReturnType<typeof getPowerStandardsForProfile>
@@ -230,10 +182,10 @@ export function getPowerStandardsForProfile(profile: PhysicalProfile): {
   const vjMap = g === 'male' ? VERTICAL_JUMP_STANDARDS_MALE : VERTICAL_JUMP_STANDARDS_FEMALE;
   const sljMap =
     g === 'male' ? STANDING_LONG_JUMP_STANDARDS_MALE : STANDING_LONG_JUMP_STANDARDS_FEMALE;
-  const spMap = g === 'male' ? SPRINT_STANDARDS_MALE : SPRINT_STANDARDS_FEMALE;
   const vjump = vjMap[range];
   const slj = sljMap[range];
-  const sprint = spMap[range];
+  // WHY: Sprint anchors from WR SSOT — never hand-maintain a second T100 table here.
+  const sprint = getSprint100mStandardRow(g, profile.age);
   if (!vjump || !slj || !sprint) return null;
   return { vjump, slj, sprint, ageRange: range };
 }
@@ -459,12 +411,24 @@ export type ExplosiveAssessmentComputeError =
 
 type FieldParse = 'empty' | { value: number } | 'invalid';
 
-function parsePowerMeasurementField(raw: string): FieldParse {
+/**
+ * Strict positive measurement parse shared by explosive preview/submit and branch flush.
+ * WHY: `parseFloat("11.5abc")` / `parseFloat("11,5")` silently truncate; reject dirty strings.
+ */
+export function parsePowerMeasurementField(raw: string): FieldParse {
   const t = raw.trim();
   if (!t) return 'empty';
-  const n = parseFloat(t);
+  // Digits with optional single decimal point only — no commas, suffixes, or scientific notation.
+  if (!/^(?:\d+\.?\d*|\.\d+)$/.test(t)) return 'invalid';
+  const n = Number(t);
   if (!Number.isFinite(n) || n <= 0) return 'invalid';
   return { value: n };
+}
+
+/** UI / draft helper — null when empty or invalid (never partial parse). */
+export function parseStrictPositiveMeasurement(raw: string): number | null {
+  const parsed = parsePowerMeasurementField(raw);
+  return typeof parsed === 'object' ? parsed.value : null;
 }
 
 /** Single source for preview + submit so radar cannot drift from visible inputs. */

@@ -13,6 +13,8 @@ import {
 import type { ExplosiveBranchResult } from '../../hooks/useExplosiveAssessmentPage';
 import { flushExplosiveDraft } from '../../hooks/flushSingleLeafAssessmentDraft';
 import { useScoreMeaning } from '../../hooks/useScoreMeaning';
+import { parseStrictPositiveMeasurement } from '../../logic/core/powerScoring';
+import type { PhysicalProfile } from '../../types/userProfile';
 import AestheticSingleLeafTriggerButton from '../aesthetic/AestheticSingleLeafTriggerButton';
 import NormBadgeChip from '../common/NormBadgeChip';
 import { HeroNumberInput } from './HeroNumberInput';
@@ -24,6 +26,8 @@ export interface ExplosiveBranchCardProps {
   lengthUnit?: string;
   /** Metric cm (jumps) or seconds (sprint) for draft flush. */
   metricValue: string;
+  /** Profile for age/sex input caps on draft flush (same as tryCompute). */
+  profile: PhysicalProfile | null;
   profileReady: boolean;
   inputsDisabled: boolean;
   result?: ExplosiveBranchResult;
@@ -49,16 +53,12 @@ const BRANCH_PLACEHOLDER_KEY: Record<ExplosiveBranchId, string> = {
   sprint: 'explosive.sprintPlaceholder',
 };
 
-function parsePositiveMetric(raw: string): number | null {
-  const n = Number(raw.trim());
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
-
 const ExplosiveBranchCard: FC<ExplosiveBranchCardProps> = ({
   branch,
   value,
   lengthUnit = 'cm',
   metricValue,
+  profile,
   profileReady,
   inputsDisabled,
   result,
@@ -145,13 +145,14 @@ const ExplosiveBranchCard: FC<ExplosiveBranchCardProps> = ({
             leaf={leaf}
             disabled={inputsDisabled}
             onBeforeOpen={() => {
-              const metric = parsePositiveMetric(metricValue);
+              const metric = parseStrictPositiveMeasurement(metricValue);
               if (metric == null) return false;
               flushExplosiveDraft({
                 tab: explosiveBranchFlushTab(branch),
                 verticalJumpCm: branch === 'verticalJump' ? metric : null,
                 standingLongJumpCm: branch === 'standingLongJump' ? metric : null,
                 sprintSeconds: branch === 'sprint' ? metric : null,
+                profile,
               });
             }}
           />

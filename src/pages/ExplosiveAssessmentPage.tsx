@@ -35,6 +35,8 @@ import { useExplosiveMilestoneHint } from '../hooks/useExplosiveMilestoneHint';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { useUnit } from '../hooks/useUnit';
 import { buildExplosiveAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
+import { parseStrictPositiveMeasurement } from '../logic/core/powerScoring';
+import { clampScoreMapValue } from '../logic/core/scoring';
 import { useAestheticReportUiStore } from '../stores/aestheticReportUiStore';
 
 const ExplosiveAssessmentPage: FC = () => {
@@ -95,13 +97,19 @@ const ExplosiveAssessmentPage: FC = () => {
     pool: 'explosive',
     metric: 'explosivePower',
     scoreDecimals: 2,
-    getScore: () =>
-      previewScore ??
-      (previewBreakdown?.averageRaw != null
-        ? previewBreakdown.averageRaw
-        : previewBreakdown?.sprintRaw != null
-          ? previewBreakdown.sprintRaw
-          : null),
+    getScore: () => {
+      // WHY: Specialty sprint reveal must show ≤200 — same contract as Selfie / ladder upload.
+      const unclamped =
+        previewScore ??
+        (previewBreakdown?.averageRaw != null
+          ? previewBreakdown.averageRaw
+          : previewBreakdown?.sprintRaw != null
+            ? previewBreakdown.sprintRaw
+            : null);
+      return unclamped != null && Number.isFinite(unclamped)
+        ? clampScoreMapValue(unclamped)
+        : null;
+    },
     hasError: () => errorKey != null || !profileReady,
     compute: calculate,
   });
@@ -122,7 +130,8 @@ const ExplosiveAssessmentPage: FC = () => {
       : t('home.profile.male');
 
   const dash = t('explosive.branchDash');
-  const fmtBranch = (v: number | null) => (v === null ? dash : v.toFixed(2));
+  const fmtBranch = (v: number | null) =>
+    v === null ? dash : clampScoreMapValue(v).toFixed(2);
 
   const reportLeaf = useMemo(
     () => (previewBreakdown ? pickHighestExplosiveLeaf(previewBreakdown) : null),
@@ -174,7 +183,11 @@ const ExplosiveAssessmentPage: FC = () => {
     previewBreakdown != null &&
     previewBreakdown.averageRaw != null &&
     Number.isFinite(previewBreakdown.averageRaw);
-  const axisAverageRaw = hasRadarAxisPreview ? previewBreakdown!.averageRaw : null;
+  // WHY: One clamped axis score for hero / hall / axis-summary / details — matches ladder ≤200.
+  const axisAverageRaw =
+    hasRadarAxisPreview && previewBreakdown!.averageRaw != null
+      ? clampScoreMapValue(previewBreakdown!.averageRaw)
+      : null;
   const interpretationScore = previewScore ?? axisAverageRaw;
   const heroScore = displayScore ?? interpretationScore;
   const scoreMeaning = useScoreMeaning('explosivePower', heroScore);
@@ -189,12 +202,7 @@ const ExplosiveAssessmentPage: FC = () => {
   );
   const hallSpectrum = useHallOfFameSpectrumDrawer({
     axisId: 'explosivePower',
-    scoreDisplay:
-      heroScore != null
-        ? heroScore.toFixed(2)
-        : axisAverageRaw != null
-          ? axisAverageRaw.toFixed(2)
-          : null,
+    scoreDisplay: heroScore != null ? heroScore.toFixed(2) : null,
     decadeKey: scoreMeaning?.decadeKey,
     populationClass: scoreMeaning?.populationClass,
     onBeforeOpenDyno: closeModal,
@@ -209,15 +217,14 @@ const ExplosiveAssessmentPage: FC = () => {
 
   const flushExplosiveForReport = () => {
     // metricScoringInputs are already metric (cm / s) — do not re-project units.
-    const toPos = (raw: string): number | null => {
-      const n = Number(raw.trim());
-      return Number.isFinite(n) && n > 0 ? n : null;
-    };
     flushExplosiveDraft({
       tab: activeTab,
-      verticalJumpCm: toPos(metricScoringInputs.verticalJumpInput),
-      standingLongJumpCm: toPos(metricScoringInputs.standingLongJumpInput),
-      sprintSeconds: toPos(metricScoringInputs.sprintInput),
+      verticalJumpCm: parseStrictPositiveMeasurement(metricScoringInputs.verticalJumpInput),
+      standingLongJumpCm: parseStrictPositiveMeasurement(
+        metricScoringInputs.standingLongJumpInput
+      ),
+      sprintSeconds: parseStrictPositiveMeasurement(metricScoringInputs.sprintInput),
+      profile,
     });
   };
 
@@ -315,6 +322,7 @@ const ExplosiveAssessmentPage: FC = () => {
                 value={verticalJumpInput}
                 lengthUnit={labels.length}
                 metricValue={branchMetricInputs.verticalJumpInput}
+                profile={profile}
                 profileReady={profileReady}
                 inputsDisabled={tabDisabled}
                 result={perBranchResult.verticalJump}
@@ -326,6 +334,7 @@ const ExplosiveAssessmentPage: FC = () => {
                 value={standingLongJumpInput}
                 lengthUnit={labels.length}
                 metricValue={branchMetricInputs.standingLongJumpInput}
+                profile={profile}
                 profileReady={profileReady}
                 inputsDisabled={tabDisabled}
                 result={perBranchResult.standingLongJump}
@@ -344,6 +353,7 @@ const ExplosiveAssessmentPage: FC = () => {
               branch="sprint"
               value={sprintInput}
               metricValue={branchMetricInputs.sprintInput}
+              profile={profile}
               profileReady={profileReady}
               inputsDisabled={tabDisabled}
               result={perBranchResult.sprint}

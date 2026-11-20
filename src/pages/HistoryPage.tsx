@@ -1,14 +1,22 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import HistoryArchiveSection from '../components/history/HistoryArchiveSection';
 import HistoryFootprintDashboard from '../components/history/HistoryFootprintDashboard';
 import HistoryLogCard from '../components/history/HistoryLogCard';
+import LogEvolutionCard from '../components/history/LogEvolutionCard';
 import { useHistoryRhythmExpanded } from '../hooks/useHistoryRhythmExpanded';
+import { useLogEvolutionShare } from '../hooks/useLogEvolutionShare';
 import { useTrainingFootprint } from '../hooks/useTrainingFootprint';
 import { persistSpecBadgeUnionFromDevice } from '../services/specBadgeDeriveSnapshot';
 import { loadSeenBadgeIds, markBadgesAsSeen } from '../services/specBadgeSeenService';
 import { loadTrainingFootprint } from '../services/trainingFootprintService';
 import { getUnseenBadgeIds } from '../logic/core/specBadgeSeen';
+import { buildHistoryArchiveSummary } from '../logic/core/historyArchiveSummary';
+import {
+  badgeMapFromReport,
+  buildLogEvolutionReport,
+} from '../logic/core/logEvolutionReport';
 import { useHistoryStore } from '../stores/historyStore';
 import { useScoreStore } from '../stores/scoreStore';
 
@@ -23,6 +31,8 @@ export default function HistoryPage() {
   const { expanded: rhythmExpanded, toggle: toggleRhythm, expand: expandRhythm } =
     useHistoryRhythmExpanded();
   const focusedBadgeId = (location.state as { focusBadgeId?: string } | null)?.focusBadgeId ?? null;
+  const [selectedBaselineId, setSelectedBaselineId] = useState<string | null>(null);
+  const { sharing, shareEvolution } = useLogEvolutionShare();
 
   // WHY: Snapshot unseen IDs once at mount so the glow animation fires only on first visit.
   // Pure read — no writes, no dispatches.
@@ -34,6 +44,13 @@ export default function HistoryPage() {
     return new Set(getUnseenBadgeIds([...persisted, ...live], stored));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const evolutionReport = useMemo(
+    () => buildLogEvolutionReport(records, { selectedBaselineId }),
+    [records, selectedBaselineId]
+  );
+  const badgeById = useMemo(() => badgeMapFromReport(evolutionReport), [evolutionReport]);
+  const archiveSummary = useMemo(() => buildHistoryArchiveSummary(records), [records]);
 
   useEffect(() => {
     loadLocalHistory();
@@ -54,13 +71,14 @@ export default function HistoryPage() {
   const handleRemoveRecord = (id: string) => {
     if (!window.confirm(t('history.deleteConfirm', { ns: 'common' }))) return;
     removeHistoryRecord(id);
+    if (selectedBaselineId === id) setSelectedBaselineId(null);
   };
 
   return (
     <main className="ui-shell mx-auto w-full max-w-md space-y-5">
-      <section className="relative overflow-hidden rounded-xl border border-accent-primary/35 bg-bg-card shadow-panel">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-primary/40 to-transparent" />
-        <div className="border-b border-zinc-800 px-4 py-5">
+      {/* Soft page stage — section tiles own their own hairline; no nested gold rings / hr. */}
+      <section className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-bg-card shadow-panel">
+        <div className="px-4 pb-2 pt-5">
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90">
             {t('history.kicker', { ns: 'common' })}
           </p>
@@ -69,7 +87,7 @@ export default function HistoryPage() {
           </h1>
         </div>
 
-        <div className="border-b border-zinc-800 px-4 py-4">
+        <div className="space-y-3 px-4 pb-5 pt-2">
           <HistoryFootprintDashboard
             {...footprint}
             expanded={rhythmExpanded}
@@ -77,24 +95,46 @@ export default function HistoryPage() {
             unseenBadgeIds={unseenBadgeIds}
             focusedBadgeId={focusedBadgeId}
           />
-        </div>
 
-        <div className="px-4 py-4">
           {records.length === 0 ? (
-            <p className="py-10 text-center text-sm text-zinc-500">
+            <p className="py-8 text-center text-sm text-zinc-500">
               {t('history.empty', { ns: 'common' })}
             </p>
           ) : (
-            <div className="space-y-3" data-testid="history-log-card-list">
-              {records.map((row) => (
-                <HistoryLogCard
-                  key={row.id}
-                  record={row}
-                  valueEmptyLabel={t('history.valueEmpty', { ns: 'common' })}
-                  onDelete={handleRemoveRecord}
-                />
-              ))}
-            </div>
+            <>
+              <LogEvolutionCard
+                report={evolutionReport}
+                sharing={sharing}
+                onShare={() => {
+                  void shareEvolution(evolutionReport);
+                }}
+                onSelectDay1Baseline={() => {
+                  setSelectedBaselineId(evolutionReport.day1BaselineId);
+                }}
+                onSelectPreviousLog={() => {
+                  if (evolutionReport.previousLogId) {
+                    setSelectedBaselineId(evolutionReport.previousLogId);
+                  }
+                }}
+              />
+              <HistoryArchiveSection summary={archiveSummary}>
+                {records.map((row) => {
+                  const badge = badgeById.get(row.id);
+                  return (
+                    <HistoryLogCard
+                      key={row.id}
+                      record={row}
+                      valueEmptyLabel={t('history.valueEmpty', { ns: 'common' })}
+                      onDelete={handleRemoveRecord}
+                      isDay1Baseline={badge?.isDay1Baseline}
+                      isPersonalBest={badge?.isPersonalBest}
+                      isSelectedBaseline={evolutionReport.selectedBaselineId === row.id}
+                      onSelectAsBaseline={() => setSelectedBaselineId(row.id)}
+                    />
+                  );
+                })}
+              </HistoryArchiveSection>
+            </>
           )}
         </div>
       </section>

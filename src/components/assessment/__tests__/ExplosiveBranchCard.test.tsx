@@ -36,6 +36,14 @@ vi.mock('../../../stores/aestheticReportUiStore', () => ({
   ) => sel({ openWithLeaf }),
 }));
 
+const testProfile = {
+  gender: 'male' as const,
+  age: 25,
+  heightCm: 175,
+  weightKg: 75,
+  updatedAt: '',
+};
+
 describe('ExplosiveBranchCard', () => {
   let root: Root;
   let host: HTMLDivElement;
@@ -66,6 +74,7 @@ describe('ExplosiveBranchCard', () => {
           value="55"
           lengthUnit="cm"
           metricValue="55"
+          profile={testProfile}
           profileReady
           inputsDisabled={false}
           result={{ raw: 87.5 }}
@@ -102,6 +111,7 @@ describe('ExplosiveBranchCard', () => {
       verticalJumpCm: 55,
       standingLongJumpCm: null,
       sprintSeconds: null,
+      profile: testProfile,
     });
     expect(openWithLeaf).toHaveBeenCalledWith('explosive.verticalJump');
   });
@@ -113,6 +123,7 @@ describe('ExplosiveBranchCard', () => {
           branch="sprint"
           value="11.45"
           metricValue="11.45"
+          profile={testProfile}
           profileReady
           inputsDisabled={false}
           result={{ raw: 92.1 }}
@@ -134,6 +145,7 @@ describe('ExplosiveBranchCard', () => {
       verticalJumpCm: null,
       standingLongJumpCm: null,
       sprintSeconds: 11.45,
+      profile: testProfile,
     });
     expect(openWithLeaf).toHaveBeenCalledWith('explosive.sprint');
   });
@@ -146,6 +158,7 @@ describe('ExplosiveBranchCard', () => {
           value="220"
           lengthUnit="cm"
           metricValue="220"
+          profile={testProfile}
           profileReady
           inputsDisabled={false}
           result={{ raw: 101.2 }}
@@ -166,6 +179,7 @@ describe('ExplosiveBranchCard', () => {
       verticalJumpCm: null,
       standingLongJumpCm: 220,
       sprintSeconds: null,
+      profile: testProfile,
     });
     expect(openWithLeaf).toHaveBeenCalledWith('explosive.standingLongJump');
   });

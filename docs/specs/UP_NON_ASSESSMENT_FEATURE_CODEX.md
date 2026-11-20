@@ -597,7 +597,7 @@ i18n：`assessment.hallSpectrum.title`「{{axisTitle}} · 名人堂光譜」；`
 | `pro-required` | PRO 頻道待解鎖 | 解鎖智庫完全體：15倍算力大點火 |
 | `quota-exhausted` | 今日免費額度已用盡 | 每日免費額度已熔斷 |
 
-CTA：「⚡ 點火 Pro Pass (NT$ 30 / 月)」；價目「NT$ 30 / 月 ($1.00 USD)」。
+CTA：「⚡ 點火 Pro Pass · $14.99 USD / 年」（預設年訂，與 `purchaseProSubscription()` 一致）；價目 fallback「$1.99 USD / 月 · $14.99 USD / 年」（SSOT：`PRO_SUBSCRIPTION_PLANS`）。
 
 Pro 三大核心（paywall features）：全球即時天梯；無限雲端護航；DYNO INTEL 智慧分析官。
 
@@ -867,7 +867,7 @@ Toast：`badgeToast.unlocked`「規格解鎖」；`tapToView`「點擊查看」�
 | **核心互動** | Google／Apple 登入；選 Pro 方案；優惠碼；商店訂閱。Home／Dyno／backup funnel **不**套用天梯早鳥免費 CTA。 |
 | **影片亮點** | 可作結尾 CTA；主畫面建議用主控 PRO 卡。 |
 
-Paywall 價目現況文案：NT$ 30 / 月 ($1.00 USD)。
+Paywall 價目現況文案（fallback）：$1.99 USD / 月 · $14.99 USD / 年（`src/config/proSubscriptionPlans.ts`）。
 
 `EntitlementState` 關鍵欄：`purchaseStatus: 'none' | 'owned'`；`subscriptionStatus: 'free' | 'pro' | 'grace' | 'expired'`；`isPro`；`isGenesisEarlyBird`；`genesisSeatNumber`。
 

@@ -12,10 +12,26 @@ export interface HistoryLogCardProps {
   record: LocalHistoryRecord;
   valueEmptyLabel: string;
   onDelete: (id: string) => void;
+  /** Optional — earliest archive plaque (Day 1 baseline). */
+  isDay1Baseline?: boolean;
+  /** Optional — beat prior archive high on overall or any axis. */
+  isPersonalBest?: boolean;
+  /** Optional — currently selected evolution compare baseline. */
+  isSelectedBaseline?: boolean;
+  /** Optional — set this row as dual-radar compare baseline. */
+  onSelectAsBaseline?: () => void;
 }
 
 /** Mobile-native dyno log card — six-axis bento + expandable raw telemetry report. */
-const HistoryLogCard: FC<HistoryLogCardProps> = ({ record, valueEmptyLabel, onDelete }) => {
+const HistoryLogCard: FC<HistoryLogCardProps> = ({
+  record,
+  valueEmptyLabel,
+  onDelete,
+  isDay1Baseline = false,
+  isPersonalBest = false,
+  isSelectedBaseline = false,
+  onSelectAsBaseline,
+}) => {
   const { t } = useTranslation('common');
   const panelId = useId();
   const telemetry = buildHistoryRawTelemetryViewModel(record.rawInputs);
@@ -23,12 +39,17 @@ const HistoryLogCard: FC<HistoryLogCardProps> = ({ record, valueEmptyLabel, onDe
 
   return (
     <article
-      className="rounded-xl border border-zinc-800/90 bg-zinc-950/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+      className={`rounded-xl border bg-zinc-950/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] ${
+        isSelectedBaseline
+          ? 'border-amber-400/45 ring-1 ring-amber-400/25'
+          : 'border-zinc-800/90'
+      }`}
       data-testid="history-log-card"
+      data-selected-baseline={isSelectedBaseline ? 'true' : undefined}
     >
       <header className="flex items-start justify-between gap-2 border-b border-zinc-800/80 px-3.5 py-3">
         {/* shrink-0: date must never be crushed into ellipsis by the overall/score cluster. */}
-        <div className="shrink-0">
+        <div className="min-w-0 shrink-0">
           <time
             dateTime={record.createdAt}
             className="block whitespace-nowrap font-mono text-[11px] tabular-nums text-zinc-400"
@@ -36,13 +57,48 @@ const HistoryLogCard: FC<HistoryLogCardProps> = ({ record, valueEmptyLabel, onDe
           >
             {formatHistoryCardSavedAt(record.createdAt)}
           </time>
-          <button
-            type="button"
-            onClick={() => onDelete(record.id)}
-            className="mt-1.5 text-[10px] font-medium text-zinc-500 transition hover:text-red-300"
-          >
-            {t('history.delete')}
-          </button>
+          {isDay1Baseline || isPersonalBest ? (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {isDay1Baseline ? (
+                <span
+                  className="rounded border border-amber-400/40 bg-amber-950/45 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-200"
+                  data-testid="history-day1-badge"
+                >
+                  {t('history.evolution.day1Badge')}
+                </span>
+              ) : null}
+              {isPersonalBest ? (
+                <span
+                  className="rounded border border-emerald-500/40 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-emerald-300"
+                  data-testid="history-pr-badge"
+                >
+                  {t('history.evolution.prBadge')}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onDelete(record.id)}
+              className="text-[10px] font-medium text-zinc-500 transition hover:text-red-300"
+            >
+              {t('history.delete')}
+            </button>
+            {onSelectAsBaseline ? (
+              <button
+                type="button"
+                data-testid="history-set-baseline"
+                onClick={onSelectAsBaseline}
+                disabled={isSelectedBaseline}
+                className="text-[10px] font-medium text-amber-400/90 transition hover:text-amber-200 disabled:cursor-default disabled:opacity-50"
+              >
+                {isSelectedBaseline
+                  ? t('history.evolution.baselineActive')
+                  : t('history.evolution.setBaseline')}
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">

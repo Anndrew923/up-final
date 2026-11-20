@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   flushAllStrengthLiftDrafts,
   flushCardioDraft,
+  flushExplosiveDraft,
   flushGripDraft,
   flushMuscleDraft,
   flushStrengthLiftDraft,
@@ -11,12 +12,15 @@ import {
   loadCardioInputs,
   loadGripInputs,
   loadMuscleInputs,
+  loadPowerInputs,
   loadStrengthInputs,
 } from '../../services/localStorageService';
 import {
   explosiveBranchFlushTab,
   pickHighestExplosiveLeaf,
 } from '../../logic/aesthetic/pickHighestExplosiveLeaf';
+import { tryComputeExplosiveAssessmentScore } from '../../logic/core/powerScoring';
+import type { PhysicalProfile } from '../../types/userProfile';
 
 const memory = new Map<string, string>();
 
@@ -103,6 +107,17 @@ describe('pickHighestExplosiveLeaf', () => {
     ).toBe('explosive.standingLongJump');
   });
 
+  it('uses clamped scores so uncapped sprint overflow cannot beat a full jump', () => {
+    expect(
+      pickHighestExplosiveLeaf({
+        verticalJumpRaw: 200,
+        standingLongJumpRaw: null,
+        sprintRaw: 700,
+        averageRaw: 100,
+      })
+    ).toBe('explosive.verticalJump');
+  });
+
   it('returns null when no branch is scored', () => {
     expect(
       pickHighestExplosiveLeaf({
@@ -118,5 +133,53 @@ describe('pickHighestExplosiveLeaf', () => {
     expect(explosiveBranchFlushTab('verticalJump')).toBe('jumps');
     expect(explosiveBranchFlushTab('standingLongJump')).toBe('jumps');
     expect(explosiveBranchFlushTab('sprint')).toBe('sprint');
+  });
+});
+
+describe('flushExplosiveDraft sprint cap parity', () => {
+  const male45: PhysicalProfile = {
+    gender: 'male',
+    age: 45,
+    heightCm: 175,
+    weightKg: 75,
+    updatedAt: '',
+  };
+
+  beforeEach(() => {
+    memory.clear();
+  });
+
+  it('stores the same floored sprint seconds as tryCompute submit', () => {
+    flushExplosiveDraft({
+      tab: 'sprint',
+      verticalJumpCm: null,
+      standingLongJumpCm: null,
+      sprintSeconds: 9.58,
+      profile: male45,
+    });
+    const draftSec = loadPowerInputs()?.explosivePower?.sprintSeconds;
+    expect(draftSec).toBe(9.8);
+
+    const submit = tryComputeExplosiveAssessmentScore({
+      verticalJumpInput: '',
+      standingLongJumpInput: '',
+      sprintInput: '9.58',
+      profile: male45,
+      profileReady: true,
+    });
+    expect(submit.ok).toBe(true);
+    if (!submit.ok) return;
+    expect(submit.persisted.sprintSeconds).toBe(draftSec);
+  });
+
+  it('no-ops when profile is null (never writes uncapped sprint)', () => {
+    flushExplosiveDraft({
+      tab: 'sprint',
+      verticalJumpCm: null,
+      standingLongJumpCm: null,
+      sprintSeconds: 9.58,
+      profile: null,
+    });
+    expect(loadPowerInputs()?.explosivePower?.sprintSeconds).toBeUndefined();
   });
 });

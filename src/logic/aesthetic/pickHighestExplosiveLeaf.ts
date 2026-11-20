@@ -2,6 +2,7 @@
  * Pick the highest-scoring explosive leaf from a live breakdown (assessment CTA).
  */
 import type { ExplosivePowerBreakdown } from '../core/powerScoring';
+import { clampScoreMapValue } from '../core/scoring';
 import type { SingleLeafId } from './singleLeafReport';
 
 /** Per-branch cards on ExplosiveAssessmentPage (mirrors StrengthLiftKey → leaf). */
@@ -24,22 +25,23 @@ export function pickHighestExplosiveLeaf(
   breakdown: ExplosivePowerBreakdown
 ): SingleLeafId | null {
   const candidates: { leaf: SingleLeafId; score: number }[] = [];
+  // WHY: Compare clamp(≤200) so uncapped sprint overflow cannot beat a full jump leaf.
   if (breakdown.verticalJumpRaw != null && breakdown.verticalJumpRaw > 0) {
     candidates.push({
       leaf: EXPLOSIVE_BRANCH_TO_LEAF.verticalJump,
-      score: breakdown.verticalJumpRaw,
+      score: clampScoreMapValue(breakdown.verticalJumpRaw),
     });
   }
   if (breakdown.standingLongJumpRaw != null && breakdown.standingLongJumpRaw > 0) {
     candidates.push({
       leaf: EXPLOSIVE_BRANCH_TO_LEAF.standingLongJump,
-      score: breakdown.standingLongJumpRaw,
+      score: clampScoreMapValue(breakdown.standingLongJumpRaw),
     });
   }
   if (breakdown.sprintRaw != null && breakdown.sprintRaw > 0) {
     candidates.push({
       leaf: EXPLOSIVE_BRANCH_TO_LEAF.sprint,
-      score: breakdown.sprintRaw,
+      score: clampScoreMapValue(breakdown.sprintRaw),
     });
   }
   if (candidates.length === 0) return null;

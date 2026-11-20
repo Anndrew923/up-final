@@ -3,35 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { CollapsibleChevron } from '../CollapsibleChevron';
 import type { TrainingFootprintPanelView } from '../../logic/core/trainingFootprintBadges';
 import type { FootprintLevel } from '../../logic/core/trainingFootprint';
+import { HISTORY_COLLAPSIBLE_CHROME } from './historyCollapsibleChrome';
 import HistorySpecBadgeRack from './HistorySpecBadgeRack';
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 const TOGGLE_ID = 'history-rhythm-toggle';
 const PANEL_ID = 'history-rhythm-panel';
-
-const PILL_CLASS =
-  'whitespace-nowrap rounded-full border border-zinc-700/50 bg-zinc-800/80 px-2.5 py-0.5 font-mono text-[11px] tabular-nums text-zinc-300 sm:text-xs';
-
-/** Match History page kicker: small mono track, never heavier than the title. */
-const KICKER_CLASS =
-  'block font-mono text-[10px] uppercase tracking-[0.25em] text-accent-primary/90';
-
-const TITLE_CLASS =
-  'mt-0.5 block whitespace-nowrap text-base font-semibold tracking-tight text-zinc-100 sm:text-lg';
-
-const HEADER_TOP_ROW_CLASS =
-  'grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3';
-
-const HEADER_PILLS_ROW_CLASS = 'flex w-full flex-wrap items-center gap-2 pt-0.5';
-
-/** Design intent: two-tier control so title stays fully visible; pills never compete on the title row. */
-const HEADER_TOGGLE_CLASS =
-  'flex w-full flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-950/80 p-3 text-left transition-[background-color,border-color,transform] duration-150 hover:border-zinc-700 hover:bg-zinc-900/80 active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-info/60 sm:p-3.5';
-
-const CHEVRON_BADGE_CLASS =
-  'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10';
-
-const CHEVRON_ICON_CLASS = 'h-3.5 w-3.5 shrink-0 text-amber-500';
 
 const LEVEL_DOT_CLASS: Record<FootprintLevel | 0, string> = {
   0: 'bg-zinc-800',
@@ -76,30 +53,35 @@ const HistoryFootprintDashboard: FC<HistoryFootprintDashboardProps> = ({
       <button
         type="button"
         id={TOGGLE_ID}
-        className={HEADER_TOGGLE_CLASS}
+        className={HISTORY_COLLAPSIBLE_CHROME.headerToggle}
         aria-expanded={expanded}
         aria-controls={PANEL_ID}
         onClick={onToggle}
       >
-        <span className={HEADER_TOP_ROW_CLASS}>
+        <span className={HISTORY_COLLAPSIBLE_CHROME.headerTopRow}>
           <span className="min-w-0">
-            <span className={KICKER_CLASS}>{t('history.footprint.kicker')}</span>
-            <span className={TITLE_CLASS}>{title}</span>
+            <span className={HISTORY_COLLAPSIBLE_CHROME.kicker}>
+              {t('history.footprint.kicker')}
+            </span>
+            <span className={HISTORY_COLLAPSIBLE_CHROME.title}>{title}</span>
             <span className="sr-only">{actionLabel}</span>
           </span>
-          <span className={CHEVRON_BADGE_CLASS}>
-            <CollapsibleChevron expanded={expanded} className={CHEVRON_ICON_CLASS} />
+          <span className={HISTORY_COLLAPSIBLE_CHROME.chevronBadge}>
+            <CollapsibleChevron
+              expanded={expanded}
+              className={HISTORY_COLLAPSIBLE_CHROME.chevronIcon}
+            />
           </span>
         </span>
         {!expanded ? (
-          <span className={HEADER_PILLS_ROW_CLASS}>
-            <span className={PILL_CLASS}>
+          <span className={HISTORY_COLLAPSIBLE_CHROME.headerPillsRow}>
+            <span className={HISTORY_COLLAPSIBLE_CHROME.pill}>
               {t('history.footprint.collapsedWeekly', {
                 count: weeklyCount,
                 target: weeklyTarget,
               })}
             </span>
-            <span className={PILL_CLASS}>
+            <span className={HISTORY_COLLAPSIBLE_CHROME.pill}>
               {t('history.footprint.collapsedLifetime', { count: lifetimeDays })}
             </span>
           </span>

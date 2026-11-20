@@ -9,6 +9,7 @@ import type { ExplosiveAssessmentTab } from './useExplosiveAssessmentPage';
 import type { CardioTab } from './useCardioAssessmentPage';
 import type { StrengthLiftKey } from '../types/strengthInputs';
 import type { ExplosivePowerRawPersisted } from '../types/powerInputs';
+import type { PhysicalProfile } from '../types/userProfile';
 import {
   loadCardioInputs,
   loadPowerInputs,
@@ -26,6 +27,7 @@ import {
   parse5KmFieldSplit,
   parseCooperDistanceMeters,
 } from '../logic/core/cardioScoring';
+import { applyExplosiveInputCapsForProfile } from '../logic/core/explosiveInputCaps';
 import { applyGripPeakCap } from '../logic/core/gripStrength';
 import { parseSmmKg } from '../logic/core/muscleScoring';
 
@@ -132,14 +134,28 @@ export function flushExplosiveDraft(args: {
   verticalJumpCm: number | null;
   standingLongJumpCm: number | null;
   sprintSeconds: number | null;
+  /** Required for age/sex sprint floor — same pipeline as tryComputeExplosiveAssessmentScore. */
+  profile: PhysicalProfile | null;
 }): void {
+  // WHY: Never persist uncapped elite typos when profile is missing — same gate as tryCompute.
+  if (!args.profile) return;
+
   const prev = loadPowerInputs()?.explosivePower ?? {};
   const next: ExplosivePowerRawPersisted = { ...prev };
+
+  // WHY: Draft must store the same capped seconds/cm as formal submit so Selfie re-read matches preview.
+  const uncapped = {
+    verticalJumpCm: args.tab === 'jumps' ? args.verticalJumpCm : null,
+    standingLongJumpCm: args.tab === 'jumps' ? args.standingLongJumpCm : null,
+    sprintSeconds: args.tab === 'sprint' ? args.sprintSeconds : null,
+  };
+  const capped = applyExplosiveInputCapsForProfile(args.profile, uncapped);
+
   if (args.tab === 'jumps') {
-    if (args.verticalJumpCm != null) next.verticalJumpCm = args.verticalJumpCm;
-    if (args.standingLongJumpCm != null) next.standingLongJumpCm = args.standingLongJumpCm;
-  } else if (args.sprintSeconds != null) {
-    next.sprintSeconds = args.sprintSeconds;
+    if (capped.verticalJumpCm != null) next.verticalJumpCm = capped.verticalJumpCm;
+    if (capped.standingLongJumpCm != null) next.standingLongJumpCm = capped.standingLongJumpCm;
+  } else if (capped.sprintSeconds != null) {
+    next.sprintSeconds = capped.sprintSeconds;
   }
   savePowerInputs({ explosivePower: next });
 }

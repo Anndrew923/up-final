@@ -9,7 +9,8 @@ function readStoredExpanded(): boolean {
 }
 
 /**
- * Remembers whether 測功節奏 is expanded. Missing/invalid storage → collapsed (first-screen density).
+ * Remembers whether 測功節奏 is expanded.
+ * Missing/invalid storage → collapsed — aligned with HISTORY_SECTION_DEFAULT_EXPANDED.
  */
 export function useHistoryRhythmExpanded(): {
   expanded: boolean;

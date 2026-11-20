@@ -21,3 +21,17 @@ export const PRO_SUBSCRIPTION_PLANS = {
 export type ProSubscriptionPlanId = keyof typeof PRO_SUBSCRIPTION_PLANS;
 
 export const DEFAULT_PRO_SUBSCRIPTION_PLAN: ProSubscriptionPlanId = 'annual';
+
+/**
+ * i18n interpolation bag for Dyno / marketing paywalls when store `priceString` is absent.
+ * WHY: One formatter so UI cannot re-hardcode stale $1.00 / NT$30 while SKUs stay unchanged.
+ */
+export function resolveProPaywallPriceVars(): {
+  readonly monthly: string;
+  readonly annual: string;
+} {
+  return {
+    monthly: PRO_SUBSCRIPTION_PLANS.monthly.priceUsd.toFixed(2),
+    annual: PRO_SUBSCRIPTION_PLANS.annual.priceUsd.toFixed(2),
+  };
+}

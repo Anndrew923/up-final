@@ -34,7 +34,7 @@ export interface AppShellProps {
 }
 
 /**
- * Home in-flow top clearance — mirrors `spacing.shell-top` (safe-area + 3.5rem).
+ * Home in-flow top clearance — mirrors `spacing.shell-top` (safe-area + 3.5rem + 6px).
  * WHY exported for tests so the spacer token cannot drift from AppShell markup.
  */
 export const HOME_SHELL_TOP_SPACER_CLASS =
@@ -127,7 +127,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       >
         {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
         <div
-          className={`shell-hud-slot flex min-h-14 shrink-0 items-center gap-3 px-4 pt-[env(safe-area-inset-top,0px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          className={`shell-hud-slot flex min-h-14 shrink-0 items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+6px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >
           {/* WHY skip on Home: back already self-hides on tabs; omit mount so right-rail stays profile-only. */}
           {isHomeRoute ? null : <HudBackControl />}
