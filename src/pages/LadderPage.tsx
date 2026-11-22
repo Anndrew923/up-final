@@ -545,7 +545,7 @@ export default function LadderPage() {
   }
 
   return (
-    <main className="ui-shell-compact relative z-10 max-w-3xl bg-[#090b0e]">
+    <main className="ui-shell relative z-10 max-w-3xl bg-[#090b0e]">
       {/*
         WHY decor outside space-y: Absolute wash still counts as a space-y sibling and would
         margin-push the first content card (16px black gap under the card radius). Keep

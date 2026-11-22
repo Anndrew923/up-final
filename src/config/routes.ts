@@ -52,15 +52,6 @@ export function isJoinArenaRoutePath(pathname: string): boolean {
   return pathname === ROUTES.joinArena || pathname.startsWith(`${ROUTES.joinArena}/`);
 }
 
-/**
- * Routes that use `spacing.shell-top-compact` as `#layer-shell-scroll` padding (ladder / tools tab).
- * WHY: Home is excluded — it uses an in-flow `h-shell-top` spacer (see AppShell) so WKWebView
- * overflow padding cannot form a non-scrolling top clip dead-zone over `HomeRadarBoard`.
- */
-export function isCompactShellRoutePath(pathname: string): boolean {
-  return isLadderRoutePath(pathname) || isToolsTabRoutePath(pathname);
-}
-
 /** True for home tab (`/user-info`) and nested home paths. */
 export function isHomeRoutePath(pathname: string): boolean {
   return pathname === ROUTES.home || pathname.startsWith(`${ROUTES.home}/`);
@@ -68,8 +59,8 @@ export function isHomeRoutePath(pathname: string): boolean {
 
 /**
  * Tools deck **tab only** (`/training-tools`).
- * WHY: Compact HUD clearance for the deck list. Calculator subpages keep full `shell-top`
- * so page titles clear the fixed HUD row (avatar + optional back).
+ * WHY: Primary bottom-nav tab identity (no HUD back). Nested `/training-tools/…` stays on this
+ * tab; calculator routes under `/tools/…` are separate paths with HUD back + full shell-top.
  */
 export function isToolsTabRoutePath(pathname: string): boolean {
   return pathname === ROUTES.tools || pathname.startsWith(`${ROUTES.tools}/`);
@@ -102,7 +93,7 @@ export function isHudBackRoutePath(pathname: string): boolean {
 
 /**
  * Tools deck tab + nested calculator routes under `/tools/…` (Dyno Intel / tooling context).
- * Not the same as compact-shell eligibility — see `isToolsTabRoutePath`.
+ * Broader than `isToolsTabRoutePath` (tab-only) — includes calculator subpaths.
  */
 export function isToolsDeckRoutePath(pathname: string): boolean {
   return (

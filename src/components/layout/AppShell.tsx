@@ -11,7 +11,6 @@ import {
   bottomChromeCalc,
 } from '../../constants/bottomChrome';
 import {
-  isCompactShellRoutePath,
   isHomeRoutePath,
   isJoinArenaRoutePath,
   isLadderRoutePath,
@@ -61,7 +60,6 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   useNavSensoryFeedback();
   const isHomeRoute = isHomeRoutePath(location.pathname);
   const bootActive = shouldShow && isHomeRoute;
-  const isCompactShellRoute = isCompactShellRoutePath(location.pathname);
   // WHY: Ladder bridge / Join Arena floating CTA sit above BottomNav — each route owns a taller scroll inset.
   // Calculators use in-flow CTAs and the default Dyno-visible AppShell inset.
   const scrollBottomInsetPx = isLadderRoutePath(location.pathname)
@@ -71,11 +69,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       : APP_SHELL_SCROLL_BOTTOM_PX;
   // WHY Home pt-0 + in-flow spacer: iOS WKWebView treats overflow padding-top as a non-scrolling
   // clip dead-zone (~status-bar left ear). Spacer scrolls with content so radar can pass the top.
-  const scrollTopPadClass = isHomeRoute
-    ? 'pt-0'
-    : isCompactShellRoute
-      ? 'pt-shell-top-compact'
-      : 'pt-shell-top';
+  // Non-Home always uses full `pt-shell-top` so frosted HUD never clips tab titles (ladder/tools).
+  const scrollTopPadClass = isHomeRoute ? 'pt-0' : 'pt-shell-top';
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-bg-base text-zinc-100">
@@ -87,7 +82,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
       {/*
         Single scroll outlet — block flow only (no flex-col) to avoid nested flex + overflow-hidden traps.
-        Top inset: Home `pt-0` + in-flow spacer; ladder/tools `pt-shell-top-compact`; else `pt-shell-top`.
+        Top inset: Home `pt-0` + in-flow spacer; all other routes `pt-shell-top` (frosted HUD clearance).
       */}
       <div
         id={SHELL_SCROLL_ID}
@@ -120,12 +115,17 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         id="layer-shell-frame"
         data-shell-hud-anchor={isHomeRoute ? 'home-right' : 'full-width'}
         className={`pointer-events-none fixed top-0 z-[40] flex flex-col justify-start motion-safe:transition-opacity motion-safe:duration-300 ${
-          isHomeRoute ? 'right-0 w-fit' : 'inset-x-0'
+          isHomeRoute
+            ? 'right-0 w-fit'
+            : // WHY: Assessment / sub-tool scroll must not ghost through back + PRO rail.
+              // Home stays transparent w-fit — full-width frosted HUD re-triggers iOS WKWebView clip.
+              // Token `bg-bg-base/90` (not magic hex) stays locked to theme.colors.bg.base.
+              'inset-x-0 border-b border-white/5 bg-bg-base/90 backdrop-blur-md'
         } ${isShellBlocked ? 'opacity-40 saturate-50' : ''}`}
         inert={isShellBlocked ? true : undefined}
         aria-hidden={isShellBlocked || undefined}
       >
-        {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift. */}
+        {/* `min-h-14` (3.5rem) is the height term inside `spacing.shell-top` — do not drift (no extra pb). */}
         <div
           className={`shell-hud-slot flex min-h-14 shrink-0 items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+6px)] ${isShellBlocked ? 'pointer-events-none' : 'pointer-events-auto'}`}
         >

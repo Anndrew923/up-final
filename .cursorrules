@@ -74,8 +74,8 @@ UI_RWD_SafeArea_Guardrails:
     - Always specify CSS Fallback defaults (e.g., `env(safe-area-inset-bottom, 24px)`) to ensure 1:1 fidelity during PC DevTools testing.
 
   Shell_Compactness_HUD_Conflict_Rule:
-    - Sub-tool pages or calculators containing top-right back buttons MUST NOT be set to `compact` shell (`isCompactShellRoutePath`).
-    - Keep sub-pages on standard `ui-shell` height to prevent overlap with the fixed top-right AppShell HUD (settings/avatar).
+    - Non-Home routes MUST use full AppShell `pt-shell-top` so titles clear the frosted full-width HUD (do not reintroduce compact scroll insets).
+    - Sub-tool / calculator pages with HUD back keep standard `ui-shell` (or gutters-only `ui-shell-compact` + AppShell top pad) so content never sits under the settings/avatar rail.
 
 # ------------------------------------------------------------------------------
 # SECTION 5: EVOLUTIONARY ROADMAP (計分與雷達演進)

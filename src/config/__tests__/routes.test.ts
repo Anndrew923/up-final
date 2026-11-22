@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   ROUTES,
-  isCompactShellRoutePath,
   isCrewRoutePath,
   isHomeRoutePath,
   isHudBackRoutePath,
@@ -99,34 +98,6 @@ describe('isOneRmCalculatorRoutePath', () => {
   it('rejects sibling tool routes', () => {
     expect(isOneRmCalculatorRoutePath(ROUTES.plateCalculator)).toBe(false);
     expect(isOneRmCalculatorRoutePath(ROUTES.tools)).toBe(false);
-  });
-});
-
-describe('isCompactShellRoutePath', () => {
-  it('includes ladder and tools tab only; Home uses in-flow shell-top spacer instead', () => {
-    expect(isCompactShellRoutePath(ROUTES.home)).toBe(false);
-    expect(isCompactShellRoutePath(`${ROUTES.home}/nested`)).toBe(false);
-    expect(isCompactShellRoutePath(ROUTES.ladder)).toBe(true);
-    expect(isCompactShellRoutePath(ROUTES.tools)).toBe(true);
-  });
-
-  it('keeps join-arena on full shell so HUD back clears page kicker', () => {
-    expect(isCompactShellRoutePath(ROUTES.joinArena)).toBe(false);
-  });
-
-  it('keeps calculator subpages on full shell so titles clear HUD', () => {
-    expect(isCompactShellRoutePath(ROUTES.oneRmCalculator)).toBe(false);
-    expect(isCompactShellRoutePath(ROUTES.plateCalculator)).toBe(false);
-    expect(isCompactShellRoutePath(ROUTES.somatotypeLab)).toBe(false);
-  });
-
-  it('keeps Crew HQ on full shell so title clears HUD', () => {
-    expect(isCompactShellRoutePath(ROUTES.crew)).toBe(false);
-  });
-
-  it('rejects other primary tabs', () => {
-    expect(isCompactShellRoutePath(ROUTES.history)).toBe(false);
-    expect(isCompactShellRoutePath(ROUTES.assessment)).toBe(false);
   });
 });
 

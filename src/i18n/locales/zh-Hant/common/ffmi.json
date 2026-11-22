@@ -12,7 +12,7 @@
     "resultFfmi": "調整後 FFMI（顯示）",
     "resultRadarScore": "雷達用分",
     "radarScoreLockedLabel": "已鎖定",
-    "resultScoreUncapped": "公式原始分（封頂前）",
+    "resultScoreUncapped": "未套用人體極限保護前之參考分",
     "resultFfmiCapped": "用於給分之 FFMI",
     "categoryLabel": "區間",
     "worldRecordLockTitle": "人體極限 FFMI 上限",
@@ -32,7 +32,7 @@
       "whatIsTitle": "FFMI 是什麼？",
       "whatIsIntro": "FFMI（無脂肪質量指數）在同身高下結合體脂，評估肌肉量表現，通常比單看 BMI 更有訓練參考意義；數值越高多半代表去脂體重相對較高。下列情境容易造成結果失真：",
       "caveats": {
-        "tall": "身高顯著高於平均（例如 ≥190 cm）；本頁公式對身高超過 1.8 m 另有調整項。",
+        "tall": "身高顯著高於平均（例如 ≥190 cm）；本頁對高身材另有身高調整項，以降低比例偏差。",
         "highFat": "體脂率顯著高於一般填報區間時，對脂肪與淨重的拆解較敏感。",
         "heavy": "相對於身高，體重偏高時，對估算脂肪以外的質量影響較大。"
       }

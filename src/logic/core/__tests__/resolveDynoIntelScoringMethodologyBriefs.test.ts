@@ -66,8 +66,11 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(strength?.body).toMatch(/McCulloch/);
 
     const cooper = briefs.find((b) => b.metric === 'cooper');
-    expect(cooper?.body).toMatch(/4900/);
-    expect(cooper?.body).toMatch(/4400/);
+    // WHY: Cooper p5 is architecture-only — hard-coded distance ceilings must stay out of Dyno copy.
+    expect(cooper?.body).toMatch(/極限距離上限|鎖定最高分/);
+    expect(cooper?.body).not.toMatch(/4900/);
+    expect(cooper?.body).not.toMatch(/4400/);
+    expect(cooper?.body).not.toMatch(/\{\{maleCap\}\}/);
 
     const fiveKm = briefs.find((b) => b.metric === '5km');
     expect(fiveKm?.body).toMatch(/20:00/);
@@ -79,8 +82,12 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(grip?.body).toMatch(/IronMind/);
     expect(grip?.body).toMatch(/CoC/);
     expect(grip?.body).toMatch(/Magnus Samuelsson/);
-    expect(grip?.body).toMatch(/1\.4/);
-    expect(grip?.body).toMatch(/200/);
+    expect(grip?.body).toMatch(/雙段|精英基準線|200/);
+    // WHY: Grip methodology must narrate architecture, never proprietary slope / W_factor constants.
+    expect(grip?.body).not.toMatch(/1\.4/);
+    expect(grip?.body).not.toMatch(/2\.24/);
+    expect(grip?.body).not.toMatch(/W_factor/);
+    expect(grip?.body).not.toMatch(/100\.8/);
 
     const muscle = briefs.find((b) => b.metric === 'muscleMass');
     expect(muscle?.body).toMatch(/Hafthor|魔山/);
@@ -89,6 +96,8 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(muscle?.body).toMatch(/Iris Kyle|艾瑞斯/);
     expect(muscle?.body).toMatch(/100 kg/);
     expect(muscle?.body).toMatch(/67 kg/);
+    expect(muscle?.body).toMatch(/高肌量動態權重/);
+    expect(muscle?.body).not.toMatch(/巨獸加權/);
     expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 
@@ -99,12 +108,20 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(briefs).toHaveLength(DYNO_SCORING_METHODOLOGY_CATALOG.length);
     expect(briefs.map((b) => b.metric)).toEqual([...EXPECTED_METHODOLOGY_METRICS]);
 
+    const cooper = briefs.find((b) => b.metric === 'cooper');
+    expect(cooper?.body).toMatch(/human-limit ceiling|maximum score/i);
+    expect(cooper?.body).not.toMatch(/4900/);
+    expect(cooper?.body).not.toMatch(/4400/);
+
     const grip = briefs.find((b) => b.metric === 'gripStrength');
     expect(grip?.body).toMatch(/IronMind/i);
     expect(grip?.body).toMatch(/CoC|Captains of Crush/i);
     expect(grip?.body).toMatch(/Magnus Samuelsson/);
-    expect(grip?.body).toMatch(/1\.4/);
-    expect(grip?.body).toMatch(/200/);
+    expect(grip?.body).toMatch(/dual-slope|elite benchmark|200/i);
+    expect(grip?.body).not.toMatch(/1\.4/);
+    expect(grip?.body).not.toMatch(/2\.24/);
+    expect(grip?.body).not.toMatch(/W_factor/);
+    expect(grip?.body).not.toMatch(/100\.8/);
 
     const muscle = briefs.find((b) => b.metric === 'muscleMass');
     expect(muscle?.body).toMatch(/Hafthor Bjornsson|The Mountain/i);
@@ -113,6 +130,8 @@ describe('resolveDynoIntelScoringMethodologyBriefs', () => {
     expect(muscle?.body).toMatch(/Iris Kyle/i);
     expect(muscle?.body).toMatch(/100 kg/);
     expect(muscle?.body).toMatch(/67 kg/);
+    expect(muscle?.body).toMatch(/high-mass dynamic weighting/i);
+    expect(muscle?.body).not.toMatch(/80% SMM/);
     expect(muscle?.body).not.toMatch(/\{\{maleMax\}\}/);
   });
 });

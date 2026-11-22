@@ -16,20 +16,13 @@ export default {
        * Design intent (WHY): A fixed `4rem` ignored notch safe-area and overshot the HUD on
        * desktop, stacking dead air above every tab. This token must mirror the HUD slot exactly:
        * `pt-[calc(env(safe-area-inset-top)+6px)]` + `min-h-14` (3.5rem) so scroll content clears
-       * the HUD (Dynamic Island +6px clearance). Ladder / tools **tab** use `shell-top-compact`.
+       * the HUD (Dynamic Island +6px clearance). Non-Home routes (incl. ladder / tools tab) use
+       * full `shell-top` now that the HUD is a frosted full-width bar.
        * Home uses the same token as an **in-flow** `h-shell-top` spacer (not overflow padding)
-       * so iOS WKWebView does not create a fixed top clip dead-zone. Join Arena + calculator
-       * `/tools/*` keep `pt-shell-top` so HUD back / titles clear the HUD.
+       * so iOS WKWebView does not create a fixed top clip dead-zone.
        */
       spacing: {
         'shell-top': 'calc(env(safe-area-inset-top, 0px) + 3.5rem + 6px)',
-        /**
-         * Compact scroll/sticky offset for ladder + tools tab (WHY): Denser than `shell-top`;
-         * targets ~4–6px under the HUD icon row. AppShell: `pt-shell-top-compact`.
-         * Home uses in-flow `h-shell-top` instead; Join Arena + `/tools/*` keep `pt-shell-top`.
-         * Re-QA on notched devices if this value changes.
-         */
-        'shell-top-compact': 'calc(env(safe-area-inset-top, 0px) + 1.75rem + 6px)',
         /**
          * Overlay/sheet padding that clears BottomNav inner row + safe-area.
          * WHY: `4rem` is `h-16` / `BOTTOM_NAV_SHELL_PX` (64). Keep in lockstep — do not hardcode 64px at call sites.

@@ -214,8 +214,7 @@ const JoinArenaPage: FC = () => {
   return (
     <>
       <main className="ui-shell-compact relative flex w-full max-w-xl flex-col justify-start gap-6 bg-bg-base pt-1 text-zinc-100">
-        {/* WHY: Page uses ui-shell-compact (no extra top pad) while AppShell applies full pt-shell-top —
-            Join Arena is intentionally NOT in isCompactShellRoutePath so HUD back clears the kicker. */}
+        {/* WHY: ui-shell-compact = gutters only; AppShell full pt-shell-top clears HUD back + kicker. */}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
           <div className="ui-magitek-grid absolute inset-0 opacity-[0.07]" />
           <div className="absolute -left-24 top-[22%] h-72 w-72 rounded-full bg-accent-primary/15 blur-[100px]" />

@@ -17,7 +17,7 @@ export default function ToolsPage() {
   const cloudSync = useCloudSyncCard();
 
   return (
-    <main className="ui-shell-compact relative max-w-3xl text-zinc-100">
+    <main className="ui-shell relative max-w-3xl text-zinc-100">
       {/*
         WHY decor outside space-y: Absolute backdrop still counts as a space-y sibling
         and would margin-push the header. Stack only in-flow content — no CSS sibling hacks.

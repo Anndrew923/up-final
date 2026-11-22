@@ -22,7 +22,7 @@
       "p2": "Use a track or flat route; count laps or GPS meters. Warm up 10–15 minutes before the test.",
       "p3": "Score maps sex and age to norm distance tables. Cooper band from age 13+.",
       "p4": "Norm distances follow published Cooper chart lineage; this app uses the reference anchor table.",
-      "p5": "Model ceilings: 4900 m (male), 4400 m (female); scores cap above."
+      "p5": "Distances beyond the sex- and age-specific human-limit ceiling lock the maximum score at that ceiling."
     },
     "run5kmHeading": "5 km Finish Time",
     "minutesLabel": "Minutes",

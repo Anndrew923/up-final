@@ -28,7 +28,7 @@
     "specialtyScoresHeading": "Specialty optional",
     "branchDash": "—",
     "averageRawLabel": "Power axis average (standing vertical + standing long jump) / 2",
-    "radarClampNote": "Radar axis clamps to 0–200 when formula average is outside range.",
+    "radarClampNote": "When the average exceeds the single-axis theoretical ceiling, the stored radar value converges to 200.",
     "previewSpecialtyOnly": "Specialty score (not in six-axis)",
     "nextMilestoneHint": "{{points}} pts until next tier upgrade",
     "nextMilestoneHintWithRawBoth": "{{points}} pts until next tier upgrade (Vertical Jump approx. +{{vJump}} {{unit}} or Broad Jump approx. +{{bJump}} {{unit}})",
@@ -54,7 +54,7 @@
       "toggleCollapse": "Hide Norm Overview",
       "title": "Norm Tables & Scoring Context",
       "disclaimer": "Scores map to age/sex norms — fitness self-tracking only, not medical diagnosis.",
-      "anchorsIntro": "Approximate raw anchors at 0 / 50 / 100 points:",
+      "anchorsIntro": "Approximate scoring benchmarks at 0 / 50 / 100 points:",
       "ageBand": "Norm age band: {{band}}",
       "ageBands": {
         "12-15": "12–15",
@@ -74,10 +74,10 @@
       "sourceLabel": "Sources (overview):",
       "sourceBody": "Public fitness norms and field-test literature inform the reference anchors.",
       "basisLabel": "Event basis:",
-      "basisVjump": "Standing vertical jump — six-axis core; averaged with standing long jump.",
-      "basisSlj": "Standing long jump — six-axis core; averaged with standing vertical jump.",
-      "basisSprint": "100 m — specialty only; never falls back into six-axis.",
-      "remark": "Displayed anchors match scoring rows in this app."
+      "basisVjump": "Standing vertical jump: field-test norms + past-100 advanced bonus; six-axis core.",
+      "basisSlj": "Standing long jump: field-test norms + past-100 advanced bonus; averaged with standing vertical jump into the power axis.",
+      "basisSprint": "100 m — specialty only; never enters the six-axis radar.",
+      "remark": "Below are age-band reference benchmarks for your current profile (educational / self-test context)."
     },
     "errors": {
       "missing-profile": "Complete physical profile on Home first.",

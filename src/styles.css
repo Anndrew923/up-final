@@ -52,7 +52,7 @@
 
   /**
    * Horizontal gutters only (`padding-top: 0`) — vertical HUD clearance lives on AppShell
-   * (`pt-shell-top` / `pt-shell-top-compact`, or Home in-flow `h-shell-top` spacer).
+   * (`pt-shell-top`, or Home in-flow `h-shell-top` spacer).
    */
   .ui-shell-compact {
     @apply mx-auto w-full max-w-6xl px-5 pb-8 md:px-8;

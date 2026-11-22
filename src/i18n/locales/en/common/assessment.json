@@ -114,7 +114,7 @@
       "overlayAria": "Assessment diagnostic scan in progress",
       "messages": {
         "strength": {
-          "m0": "Calibrating DOTS Anchor Coefficients…",
+          "m0": "Matching Strength Norm Benchmarks…",
           "m1": "Parsing Five-Axis Strength Spectrum…",
           "m2": "Matching Hardened Load Curves…",
           "m3": "Estimating Per-Lift 1RM Convergence…",
@@ -125,10 +125,10 @@
         },
         "grip": {
           "m0": "Reading Peak Grip Signal…",
-          "m1": "Calibrating Grip Conversion Factor…",
-          "m2": "Matching Sex-Weighted Model…",
+          "m1": "Converting Grip Performance…",
+          "m2": "Matching Sex-Specific Norm Model…",
           "m3": "Scanning Grip-Axis Dynamic Range…",
-          "m4": "Verifying Model Cap Logic…",
+          "m4": "Verifying Input Ceiling Convergence…",
           "m5": "Synthesizing Grip-Axis Preview Score…",
           "m6": "Locking Potential Spec Output…",
           "m7": "Completing Grip Diagnostic Sequence…"
@@ -168,7 +168,7 @@
           "m1": "Calibrating Standing-Long-Jump Torque Curve…",
           "m2": "Matching Sprint Transient Decay Model…",
           "m3": "Scanning Explosive-Axis Dynamic Range…",
-          "m4": "Verifying Elite Cap and Floor Guards…",
+          "m4": "Verifying Elite Ceiling and Floor Protection…",
           "m5": "Synthesizing Power-Axis Preview Score…",
           "m6": "Locking Torque-Spec Output…",
           "m7": "Completing Explosive Diagnostic Sequence…"
@@ -178,7 +178,7 @@
           "m1": "Calibrating Body-Fat Rim Offset Model…",
           "m2": "Matching Benchmark Radius Anchors…",
           "m3": "Scanning Rim-Spec Dynamic Range…",
-          "m4": "Verifying Axis Ceiling Logic…",
+          "m4": "Verifying Single-Axis Ceiling Convergence…",
           "m5": "Synthesizing Arm-Size Preview Score…",
           "m6": "Locking Rim-Spec Output…",
           "m7": "Completing Arm-Size Diagnostic Sequence…"

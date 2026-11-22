@@ -28,7 +28,7 @@
     "specialtyScoresHeading": "專項選填",
     "branchDash": "—",
     "averageRawLabel": "爆發力軸平均（原地垂直跳＋立定跳）／2",
-    "radarClampNote": "寫入雷達時若公式平均超出 0–200，會套用軸向封頂後再儲存。",
+    "radarClampNote": "寫入雷達時若平均超出單軸理論上限，將以 200 分收斂封頂後再儲存。",
     "previewSpecialtyOnly": "專項分數（不計入六軸）",
     "nextMilestoneHint": "距離下一階升級尚需 {{points}} 分",
     "nextMilestoneHintWithRawBoth": "距離下一階升級尚需 {{points}} 分（縱跳約需 +{{vJump}} {{unit}} 或立定跳遠約需 +{{bJump}} {{unit}}）",
@@ -54,7 +54,7 @@
       "toggleCollapse": "收合常模與給分說明",
       "title": "常模表與給分脈絡",
       "disclaimer": "本頁分數依年齡、性別對照常模換算，僅供自我追蹤，不作醫療診斷。",
-      "anchorsIntro": "依你目前首頁資料，下列為該常模年齡組之原始錨點（0／50／100 分）：",
+      "anchorsIntro": "依你目前首頁資料，下列為該常模年齡組之給分基準（0／50／100 分）：",
       "ageBand": "常模年齡組：{{band}}",
       "ageBands": {
         "12-15": "12–15 歲",
@@ -72,12 +72,12 @@
       "noAnchorsHint": "依首頁年齡無法對應常模列（表定約 12–80 歲）。",
       "profileIncompleteForAnchors": "請先在首頁填齊身體資料（含年齡、性別）。",
       "sourceLabel": "參考來源（概略）：",
-      "sourceBody": "公開體適能常模與場測文獻脈絡，與本專案沿用之參考實作同一套錨點結構。",
+      "sourceBody": "公開體適能常模與場測文獻脈絡，作為本評測給分參考基準之依據。",
       "basisLabel": "各項目對照重點：",
-      "basisSlj": "立定跳遠：常模＋公尺制溢出；與原地垂直跳平均寫入爆發力軸。",
-      "basisVjump": "原地垂直跳：場測常模＋公分制溢出；六軸核心。",
-      "basisSprint": "100 公尺：專項選填，僅天梯／本機留存，絕不 Fallback 進六軸。",
-      "remark": "畫面上顯示的錨點即本 App 實際計分所用之同一列數值。"
+      "basisSlj": "立定跳遠：常模＋破百進階加分；與原地垂直跳平均寫入爆發力軸。",
+      "basisVjump": "原地垂直跳：場測常模＋破百進階加分；六軸核心。",
+      "basisSprint": "100 公尺：專項選填，僅天梯／本機留存，不計入六軸雷達。",
+      "remark": "以下為你目前年齡組對照之給分參考基準（衛教／自測參考）。"
     },
     "errors": {
       "missing-profile": "請先在首頁填寫完整身體資料。",

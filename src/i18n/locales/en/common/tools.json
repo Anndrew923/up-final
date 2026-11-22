@@ -221,9 +221,9 @@
       "appendix": {
         "title": "Algorithm Notes",
         "heathCarter": "Built on the Heath–Carter somatotype model. Full clinical formulas require skinfolds and bone breadths; this app uses wrist girth plus body-composition inputs as a field-practical proxy (about ±2–4% residual error).",
-        "genderTracks": "[Gender Dual-Track] Male anchors: BF 12% / 9% / 7% with ΔSMM×0.48 arm weighting. Female elegant-line: BF 24% / 21% / 18%, FFM×0.85 residual, arm ΔSMM×0.28 (no double suppression). Golden Ratio mid-target: male BMI 23 / BF 11% / SMM = FFM×0.57; female BMI 19.5 / BF 20% / SMM = FFM×0.55. Muscle-first upgrade fork: mass cleared + BF in bulk band (male ≤16% / female ≤25%) → [Legendary bulk]; mass cleared + BF high → [Cut]; under-mass → [Cut] or [Golden bulk] by golden BF. If live lean mass exceeds the gender-scaled ceiling, Legendary Defense expands point B so it never contracts below current status.",
+        "genderTracks": "[Gender Dual-Track] Sex-specific body-composition norms and ideal-proportion benchmarks drive staged muscle-gain / fat-loss priorities and silhouette targets. Male and female tracks follow independent elegant-line and muscle-first upgrade paths; when live lean mass already exceeds the sex-calibrated skeletal estimate, Legendary Defense keeps the target from contracting below current status.",
         "legendaryDefense": "[Extreme Morphotype] The default ceiling reflects the population-normal upper bound for lean tissue. When measured muscle and arm already exceed that estimate, Legendary Physique Defense re-anchors and expands the ceiling from live metrics.",
-        "biaDisclaimer": "[Measurement Variability] Skeletal muscle mass (SMM) follows the common commercial BIA convention of 0.57×FFM. Hydration swings from carb loading, pumps, creatine, or inflammation can shift readings by about ±3–5%. Values are for physique tracking and research reference only — not a medical diagnosis."
+        "biaDisclaimer": "[Measurement Variability] Fat-free mass and skeletal-muscle conversions align with mainstream commercial multi-frequency BIA conventions. Because BIA is highly hydration-sensitive, carb loading, pumps, creatine, or inflammation can temporarily shift readings. Values are for physique tracking and research reference only — not a medical diagnosis."
       }
     },
     "codex": {

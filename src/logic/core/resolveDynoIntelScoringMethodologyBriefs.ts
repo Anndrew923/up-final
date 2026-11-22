@@ -1,9 +1,5 @@
 import type { TFunction } from 'i18next';
-import {
-  COOPER_MAX_DISTANCE_FEMALE_METERS,
-  COOPER_MAX_DISTANCE_MALE_METERS,
-  getRun5KmSpecClockParams,
-} from './cardioScoring';
+import { getRun5KmSpecClockParams } from './cardioScoring';
 import {
   SMM_KG_CEILING_FEMALE,
   SMM_KG_CEILING_MALE,
@@ -15,11 +11,11 @@ import type { DynoScoringMethodologyBrief } from './dynoIntelTypes';
 
 const RUN_5KM_SPEC_CLOCKS = getRun5KmSpecClockParams();
 
+/**
+ * WHY: Only pass interpolations still referenced by i18n copy.
+ * Cooper p5 is architecture-only (no hard-coded distance ceilings) — do not re-inject maleCap/femaleCap.
+ */
 const METHODOLOGY_I18N_INTERPOLATIONS: Record<string, Record<string, number | string>> = {
-  'cardio.cooperInfo.p5': {
-    maleCap: COOPER_MAX_DISTANCE_MALE_METERS,
-    femaleCap: COOPER_MAX_DISTANCE_FEMALE_METERS,
-  },
   'cardio.run5kmSpec.baseMale': {
     t100: RUN_5KM_SPEC_CLOCKS.maleT100,
     t0: RUN_5KM_SPEC_CLOCKS.maleT0,

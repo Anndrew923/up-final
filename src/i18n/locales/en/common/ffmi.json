@@ -12,7 +12,7 @@
     "resultFfmi": "Adjusted FFMI (Display)",
     "resultRadarScore": "Radar Score",
     "radarScoreLockedLabel": "Locked",
-    "resultScoreUncapped": "Formula Score Before Cap",
+    "resultScoreUncapped": "Reference Score Before Human-Limit Protection",
     "resultFfmiCapped": "FFMI Used for Radar Score",
     "categoryLabel": "Band",
     "worldRecordLockTitle": "Human-Limit FFMI Ceiling",
@@ -32,7 +32,7 @@
       "whatIsTitle": "What Is FFMI?",
       "whatIsIntro": "FFMI (Fat-Free Mass Index) reflects lean mass vs height and body fat — often more informative than BMI for training. Skews when:",
       "caveats": {
-        "tall": "Height far above average (≥190 cm). Tall correction applies above 1.8 m.",
+        "tall": "Height far above average (≥190 cm). A tall-athlete height adjustment reduces proportion bias.",
         "highFat": "Body fat unusually high vs typical reporting ranges.",
         "heavy": "Body weight unusually high for height, affecting fat-free mass estimate."
       }

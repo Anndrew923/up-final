@@ -103,8 +103,7 @@ describe('AppShell Home HUD clearance', () => {
     const scroll = container.querySelector(`#${SHELL_SCROLL_ID}`);
     const scrollClasses = scroll?.className.split(/\s+/) ?? [];
     expect(scrollClasses).toContain('pt-0');
-    expect(scrollClasses).not.toContain('pt-shell-top-compact');
-    // WHY token split: `pt-shell-top` is a prefix of `pt-shell-top-compact` — avoid substring traps.
+    // WHY exact token: Home must stay `pt-0` + in-flow spacer (never overflow `pt-shell-top`).
     expect(scrollClasses).not.toContain('pt-shell-top');
     expect(scroll?.getAttribute('data-webkit-scroll-isolate')).toBe('home');
     for (const token of HOME_SCROLL_COMPOSITOR_CLASS.split(/\s+/)) {
@@ -120,10 +119,12 @@ describe('AppShell Home HUD clearance', () => {
     act(() => root.unmount());
   });
 
-  it('keeps ladder on compact shell-top without a Home spacer or compositor fence', () => {
+  it('keeps ladder on full shell-top without a Home spacer or compositor fence', () => {
     const { container, root } = renderShell(ROUTES.ladder);
     const scroll = container.querySelector(`#${SHELL_SCROLL_ID}`);
-    expect(scroll?.className).toContain('pt-shell-top-compact');
+    const scrollClasses = scroll?.className.split(/\s+/) ?? [];
+    // WHY: Frosted full-width HUD matches `shell-top`; compact inset clipped the ladder title.
+    expect(scrollClasses).toContain('pt-shell-top');
     expect(scroll?.getAttribute('data-webkit-scroll-isolate')).toBeNull();
     expect(scroll?.className).not.toContain('isolation-isolate');
     expect(container.querySelector('[data-testid="home-shell-top-spacer"]')).toBeNull();
@@ -141,8 +142,10 @@ describe('AppShell Home HUD clearance', () => {
     expect(frame?.className).toContain('pointer-events-none');
     expect(frame?.className).not.toContain('inset-x-0');
     expect(frame?.className).not.toMatch(/\bbg-bg-base\b/);
+    expect(frame?.className).not.toMatch(/\bbg-bg-base\/90\b/);
     expect(frame?.className).not.toMatch(/\bbg-black\b/);
     expect(frame?.className).not.toMatch(/\bbg-zinc-950\b/);
+    expect(frame?.className).not.toContain('backdrop-blur-md');
     expect(container.querySelector('[data-testid="hud-back"]')).toBeNull();
     expect(container.querySelector('[data-testid="hud-profile"]')).toBeTruthy();
     act(() => root.unmount());
@@ -154,6 +157,10 @@ describe('AppShell Home HUD clearance', () => {
     expect(frame?.getAttribute('data-shell-hud-anchor')).toBe('full-width');
     expect(frame?.className).toContain('inset-x-0');
     expect(frame?.className).not.toContain('w-fit');
+    // WHY: Frosted mask blocks scroll text under back + PRO without touching Home's transparent rail.
+    expect(frame?.className).toContain('bg-bg-base/90');
+    expect(frame?.className).toContain('backdrop-blur-md');
+    expect(frame?.className).toContain('border-b');
     expect(container.querySelector('[data-testid="hud-back"]')).toBeTruthy();
     act(() => root.unmount());
   });
