@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { storeLinks } from '../config/storeLinks';
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -10,16 +9,16 @@ export function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <p className="font-serif text-lg text-zinc-100">最強肉體</p>
-            <p className="mt-1 font-mono text-xs text-zinc-500">
-              Ultimate Physique · v{storeLinks.appVersion}
+            <p className="mt-1 font-mono text-xs tracking-wider text-zinc-400">
+              ULTIMATE PHYSIQUE
             </p>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-zinc-400">
-              科學化、可解釋、可重現的體能評測工具。本工具僅供個人訓練紀錄與交流，不構成醫療診斷或處方。
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-zinc-300">
+              本工具提供運動生理學數據量化與訓練紀錄，不構成醫療診斷或處方；全球天梯為自願上傳之系統校驗成績。
             </p>
           </div>
           <div>
             <p className="ui-kicker mb-3">LINKS</p>
-            <ul className="space-y-2 text-sm text-zinc-400">
+            <ul className="space-y-2 text-sm text-zinc-300">
               <li>
                 <Link to="/science" className="hover:text-brand">
                   科學評測白皮書
@@ -34,16 +33,19 @@ export function Footer() {
           </div>
           <div>
             <p className="ui-kicker mb-3">COMPLIANCE</p>
-            <p className="text-sm leading-relaxed text-zinc-500">
-              Local-First：詳細評測與日誌預設存於本機。全球天梯為自報成績經系統校驗，非實驗室認證。
+            <p className="text-sm leading-relaxed text-zinc-300">
+              詳細評測與日誌預設存於本機。全球天梯為自報成績經系統校驗。
             </p>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-white/5 pt-6 font-mono text-[11px] text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
-          <span>
+        <div className="mt-10 flex flex-col gap-3 border-t border-white/5 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-mono text-[11px] text-zinc-400">
             © {year} 最強肉體 Ultimate Physique. All rights reserved.
           </span>
-          <span>zh-Hant / EN legal surfaces in-app</span>
+          <div className="locale-pill" aria-label="語系">
+            <span className="rounded-full bg-brand/20 px-2 py-0.5 text-brand">繁中</span>
+            <span className="text-zinc-400">EN（App 內）</span>
+          </div>
         </div>
       </div>
     </footer>

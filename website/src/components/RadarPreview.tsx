@@ -21,17 +21,18 @@ const AXES = scienceAxes.map((axis) => ({
   score: DEMO_SCORES[axis.id] ?? 80,
 }));
 
-const SIZE = 360;
+/** Compact canvas so hero radar fits one desktop viewport with chrome. */
+const SIZE = 300;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
-const MAX_R = 108;
+const MAX_R = 92;
 
 /** Visual radius: 0–100 linear; >100 overclock compresses with sqrt (app-aligned feel). */
 function scoreToRadius(score: number): number {
   const clamped = Math.max(0, Math.min(200, score));
   if (clamped <= 100) return (clamped / 100) * MAX_R;
   const overflow = clamped - 100;
-  return MAX_R + Math.sqrt(overflow / 100) * 24;
+  return MAX_R + Math.sqrt(overflow / 100) * 20;
 }
 
 function polar(angleDeg: number, r: number): { x: number; y: number } {
@@ -53,7 +54,7 @@ export function RadarPreview() {
   const [mode, setMode] = useState<ViewMode>('physique');
 
   return (
-    <div className="ui-panel relative overflow-hidden p-4 sm:p-6 shadow-brand">
+    <div className="ui-panel relative overflow-hidden p-3 sm:p-4 shadow-brand lg:max-h-[340px]">
       <div
         className="pointer-events-none absolute inset-0 bg-grid-faint bg-grid opacity-40"
         aria-hidden
@@ -62,15 +63,11 @@ export function RadarPreview() {
         className="pointer-events-none absolute -top-20 right-0 h-40 w-40 rounded-full bg-brand/20 blur-3xl"
         aria-hidden
       />
-      <div
-        className="pointer-events-none absolute -bottom-16 left-0 h-36 w-36 rounded-full bg-energy/15 blur-3xl"
-        aria-hidden
-      />
 
-      <div className="relative mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="ui-kicker">RADAR // LIVE PREVIEW</p>
-          <p className="mt-1 font-mono text-xs text-zinc-400">
+          <p className="mt-0.5 font-mono text-xs text-zinc-400">
             OVERALL <span className="text-brand">{OVERALL}</span> / 200
           </p>
         </div>
@@ -106,10 +103,10 @@ export function RadarPreview() {
         </div>
       </div>
 
-      <div className="relative mx-auto w-full max-w-[360px]">
+      <div className="relative mx-auto w-full max-w-[300px] lg:max-h-[260px]">
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className="mx-auto h-auto w-full"
+          className="mx-auto h-auto max-h-[260px] w-full"
           role="img"
           aria-label={`六軸雷達預覽，綜合戰力 ${OVERALL}`}
         >
@@ -133,7 +130,7 @@ export function RadarPreview() {
 
           {AXES.map((_, i) => {
             const angle = (360 / AXES.length) * i;
-            const p = polar(angle, MAX_R + 24);
+            const p = polar(angle, MAX_R + 18);
             return (
               <line
                 key={`spoke-${i}`}
@@ -163,17 +160,17 @@ export function RadarPreview() {
                 key={axis.key}
                 cx={tip.x}
                 cy={tip.y}
-                r={overclock ? 5 : 3.5}
-                fill={overclock ? '#FDE047' : '#00bfff'}
-                stroke={overclock ? '#ff8c00' : 'transparent'}
-                strokeWidth={1.5}
+                r={overclock ? 4.5 : 3}
+                fill={overclock ? '#ff8c00' : '#00bfff'}
+                stroke={overclock ? '#FDE047' : 'transparent'}
+                strokeWidth={1.25}
               />
             );
           })}
 
           {AXES.map((axis, i) => {
             const angle = (360 / AXES.length) * i;
-            const p = polar(angle, MAX_R + 48);
+            const p = polar(angle, MAX_R + 40);
             const label =
               mode === 'physique' ? axis.physiqueLabel : axis.telemetryLabel;
             const sub =
@@ -182,20 +179,20 @@ export function RadarPreview() {
               <g key={`label-${axis.key}`}>
                 <text
                   x={p.x}
-                  y={p.y - 4}
+                  y={p.y - 3}
                   textAnchor="middle"
-                  fill="#e4e4e7"
-                  fontSize={11}
+                  fill="#f4f4f5"
+                  fontSize={10}
                   fontFamily="Inter, system-ui, sans-serif"
                 >
                   {label}
                 </text>
                 <text
                   x={p.x}
-                  y={p.y + 10}
+                  y={p.y + 9}
                   textAnchor="middle"
-                  fill="#71717a"
-                  fontSize={10}
+                  fill="#a1a1aa"
+                  fontSize={9}
                   fontFamily="ui-monospace, monospace"
                 >
                   {sub}
@@ -207,8 +204,8 @@ export function RadarPreview() {
         </svg>
       </div>
 
-      <p className="relative mt-3 text-center font-mono text-[10px] text-zinc-500 sm:text-xs">
-        虛線環＝100 分世紀門檻 · 黃點＝Overclock 溢出（&gt;100）
+      <p className="relative mt-1 text-center font-mono text-[10px] text-zinc-400 sm:text-[11px]">
+        虛線環 = 100 分精英門檻 · 橘金點 = 超頻突破 (&gt;100)
       </p>
     </div>
   );

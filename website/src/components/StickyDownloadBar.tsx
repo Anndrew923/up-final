@@ -13,11 +13,11 @@ export function StickyDownloadBar({ onDownload }: StickyDownloadBarProps) {
           <p className="truncate font-mono text-[10px] tracking-wider text-energy">
             START DYNO
           </p>
-          <p className="truncate text-sm text-zinc-200">開始測功 · 本機六軸全開</p>
+          <p className="truncate text-sm text-zinc-200">開始六軸評測 · 核心永久免費</p>
         </div>
         <button type="button" onClick={onDownload} className="btn-primary shrink-0 !py-2.5">
           <Download className="h-4 w-4" />
-          下載
+          開始評測
         </button>
       </div>
     </div>

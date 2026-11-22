@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import { storeLinks } from '../config/storeLinks';
 
 const NAV = [
   { to: '/', label: '首頁', end: true },
@@ -44,11 +43,11 @@ export function Navbar({ onDownload }: NavbarProps) {
       <div className="ui-container">
         <div className="grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:h-16">
           <Link to="/" className="min-w-0" onClick={() => setOpen(false)}>
-            <span className="block truncate font-serif text-base text-zinc-50 sm:text-lg">
+            <span className="block truncate font-serif text-base text-zinc-100 sm:text-lg">
               最強肉體
             </span>
-            <span className="block truncate font-mono text-[10px] tracking-wider text-zinc-500 sm:text-[11px]">
-              ULTIMATE PHYSIQUE · v{storeLinks.appVersion}
+            <span className="block truncate font-mono text-[10px] tracking-wider text-zinc-400 sm:text-[11px]">
+              ULTIMATE PHYSIQUE
             </span>
           </Link>
 
@@ -59,7 +58,7 @@ export function Navbar({ onDownload }: NavbarProps) {
               </NavLink>
             ))}
             <button type="button" onClick={onDownload} className="btn-primary !py-2 !text-xs">
-              立即下載
+              開始六軸評測
             </button>
           </div>
 
@@ -79,10 +78,10 @@ export function Navbar({ onDownload }: NavbarProps) {
         <div className="fixed inset-0 z-[60] bg-base md:hidden" role="dialog" aria-modal="true">
           <div className="ui-container flex h-full flex-col safe-pt safe-pb">
             <div className="grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-              <span className="font-serif text-lg text-zinc-50">最強肉體</span>
+              <span className="font-serif text-lg text-zinc-100">最強肉體</span>
               <button
                 type="button"
-                className="rounded-lg border border-white/10 p-2"
+                className="rounded-lg border border-white/10 p-2 text-zinc-200"
                 aria-label="關閉選單"
                 onClick={() => setOpen(false)}
               >
@@ -115,12 +114,9 @@ export function Navbar({ onDownload }: NavbarProps) {
                   onDownload();
                 }}
               >
-                立即下載 / 開始測功
+                開始六軸評測
               </button>
             </nav>
-            <p className="mt-auto font-mono text-xs text-zinc-600">
-              TELEMETRY // HUD NAV
-            </p>
           </div>
         </div>
       )}

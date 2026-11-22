@@ -20,12 +20,12 @@ const BENTO = [
   {
     icon: Gauge,
     title: '跨量級公平對標',
-    body: '依性別、年齡（McCulloch 係數）與體重（IPF DOTS／異速生長）消除體型紅利，讓不同量級訓練者站在同一基準線比較。',
+    body: '導入 IPF DOTS、McCulloch 年齡係數與異速生長模型，消除體重與年齡紅利，實現跨量級公平對標。',
   },
   {
     icon: Share2,
-    title: 'Carbon 黑金戰報 & 單項葉節點名片',
-    body: '支援六軸全能證書與單一強項（如自由重量平板臥推、握力、立定跳遠）獨立生成 9:16／4:5 高畫質戰報，免除弱項曝光包袱。',
+    title: 'Carbon 黑金戰報 & 單項成績卡',
+    body: '一鍵匯出六軸全能戰報與單項（自由重量平板臥推、槓鈴深蹲、硬舉、握力）高質感分享卡，精準展現強項。',
   },
   {
     icon: Users,
@@ -35,45 +35,49 @@ const BENTO = [
   {
     icon: Sparkles,
     title: 'DYNO INTEL 數據智庫',
-    body: '專注於解碼你的六軸遙測數據與體重模擬推演，拒絕空泛的通用百科廢話。',
+    body: '拒絕空泛套話，基於你的六軸實測數據與體重模擬推演，提供精準弱項診斷與訓練方向。',
   },
 ] as const;
 
 export function HomePage({ onDownload }: HomePageProps) {
   return (
     <div className="overflow-x-hidden pb-24 md:pb-0">
-      {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/5">
         <div
           className="pointer-events-none absolute inset-0 bg-grid-faint bg-grid opacity-30"
           aria-hidden
         />
-        <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-brand/20 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-energy/10 blur-3xl" />
+        <div
+          className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-brand/20 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-energy/10 blur-3xl"
+          aria-hidden
+        />
 
-        <div className="ui-container relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:gap-12 lg:py-24">
+        <div className="ui-container relative grid items-center gap-8 py-12 sm:py-16 lg:grid-cols-2 lg:gap-10 lg:py-16">
           <div className="min-w-0">
-            <p className="ui-kicker">TELEMETRY // 人口學校準體能評測系統</p>
-            <h1 className="mt-4 font-serif text-3xl leading-snug text-zinc-50 text-balance sm:text-4xl lg:text-[2.75rem]">
+            <p className="ui-kicker">SPORTS SCIENCE // 運動生理學量化評測系統</p>
+            <h1 className="mt-4 font-serif text-3xl leading-snug text-zinc-100 text-balance sm:text-4xl lg:text-[2.65rem]">
               別再憑感覺訓練，用運動生理學量化你的真實戰力。
             </h1>
-            <p className="mt-5 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-              輸入身體基線與訓練表現，將最大肌力、爆發力、心肺耐力、骨骼肌量、FFMI
-              與握力映射至統一{' '}
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+              將最大肌力、爆發力、心肺、骨骼肌量、FFMI 與握力映射至{' '}
               <span className="font-mono text-brand">0–200</span>{' '}
-              分科學量尺，生成專屬六軸雷達與戰力認證。
+              科學量尺，生成專屬六軸戰力雷達。
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button type="button" onClick={onDownload} className="btn-primary">
-                立即下載 / 開始測功
+                開始六軸評測
               </button>
               <Link to="/science" className="btn-secondary">
                 查閱科學評測白皮書
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <p className="mt-6 font-mono text-[11px] text-zinc-600">
-              最強肉體 / Ultimate Physique · Local-First Core 永久可用
+            <p className="mt-6 font-mono text-[11px] text-zinc-400">
+              支援 iOS &amp; Android · 核心評測永久免費
             </p>
           </div>
           <div className="min-w-0">
@@ -82,12 +86,11 @@ export function HomePage({ onDownload }: HomePageProps) {
         </div>
       </section>
 
-      {/* Bento */}
       <section className="ui-section" id="features">
         <div className="ui-container">
-          <p className="ui-kicker">DYNO MODULES</p>
-          <h2 className="mt-3 font-serif text-2xl text-zinc-50 sm:text-3xl">
-            核心亮點 · 測功機卡片
+          <p className="ui-kicker">CORE SYSTEMS</p>
+          <h2 className="mt-3 font-serif text-2xl text-zinc-100 sm:text-3xl">
+            四大核心評測系統
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {BENTO.map((item) => (
@@ -96,22 +99,21 @@ export function HomePage({ onDownload }: HomePageProps) {
                 <h3 className="mt-3 text-base font-semibold text-zinc-100 sm:text-lg">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{item.body}</p>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-300">{item.body}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Athletes */}
       <section className="ui-section border-y border-white/5 bg-panel/40" id="athletes">
         <div className="ui-container">
           <p className="ui-kicker">ATHLETE ENDORSEMENT</p>
-          <h2 className="mt-3 font-serif text-2xl text-zinc-50 sm:text-3xl">
+          <h2 className="mt-3 font-serif text-2xl text-zinc-100 sm:text-3xl">
             專項運動員實測背書牆
           </h2>
-          <p className="mt-3 max-w-2xl text-sm text-zinc-400">
-            官方認證專項代表席位。後續只需更新資料源即可解鎖選手照片、賽事抬頭與實測數據。
+          <p className="mt-3 max-w-2xl text-sm text-zinc-300">
+            嚴選各領域頂尖運動員與教練實測標竿，驗證跨專項體能表現。
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {athletesData.map((athlete) => (
@@ -121,15 +123,14 @@ export function HomePage({ onDownload }: HomePageProps) {
         </div>
       </section>
 
-      {/* Pricing */}
       <section className="ui-section" id="pricing">
         <div className="ui-container">
-          <p className="ui-kicker">ACCESS · LOCAL-FIRST</p>
-          <h2 className="mt-3 font-serif text-2xl text-zinc-50 sm:text-3xl">
+          <p className="ui-kicker">ACCESS</p>
+          <h2 className="mt-3 font-serif text-2xl text-zinc-100 sm:text-3xl">
             方案與早鳥權益
           </h2>
-          <p className="mt-3 max-w-2xl text-sm text-zinc-400">
-            Core 本機能力永遠免月費。訂閱解鎖的是雲端、全球天梯與高算力遙測解碼。
+          <p className="mt-3 max-w-2xl text-sm text-zinc-300">
+            核心六軸評測永久免費；升級解鎖雲端同步、全球天梯與 AI 深度分析。
           </p>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -153,24 +154,23 @@ export function HomePage({ onDownload }: HomePageProps) {
               accent="brand"
               highlight
               features={[
-                '終身免訂閱進入全球天梯',
-                '保留 Core 本機全能力',
-                '不解鎖 Dyno／Cloud（與憲法一致）',
-                '席次有限 · 先到先得',
+                '終身免訂閱解鎖全球天梯排行',
+                '保留免費版全部核心功能',
+                '限量前 2,000 名創世席次（額滿即止）',
               ]}
               icon={Trophy}
             />
             <PricingCard
               badge="PRO"
-              title="訂閱"
+              title="訂閱 PRO"
               price="$1.99 / 月"
               priceSub="或 $14.99 USD／年"
               accent="brand"
               features={[
                 '雲端備份與還原',
-                '全球天梯（付費牆開啟後）',
+                '全球多維天梯完整通行權',
                 'DYNO INTEL 每日 30 次高算力',
-                '體重模擬推演（Pro）',
+                '體重模擬推演',
               ]}
               icon={Cloud}
             />
@@ -178,7 +178,7 @@ export function HomePage({ onDownload }: HomePageProps) {
 
           <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <button type="button" onClick={onDownload} className="btn-primary">
-              立即下載 / 開始測功
+              開始六軸評測
             </button>
             <a href="#features" className="btn-secondary">
               回到亮點
@@ -192,48 +192,44 @@ export function HomePage({ onDownload }: HomePageProps) {
 
 function AthleteCardView({ athlete }: { athlete: AthleteCard }) {
   const recruiting = athlete.status === 'recruiting';
+
+  if (recruiting) {
+    return (
+      <article className="ui-card flex min-h-[200px] flex-col border-dashed border-white/15 p-4">
+        <p className="font-mono text-[10px] tracking-wide text-energy">
+          {athlete.specialtyTag}
+        </p>
+        <span className="mt-4 inline-flex w-fit items-center rounded-full border border-brand/40 bg-brand/10 px-2.5 py-1 font-mono text-[10px] text-brand">
+          席位招募中
+        </span>
+        <h3 className="mt-4 text-sm font-semibold text-zinc-100">{athlete.name}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+          {athlete.positioning}
+        </p>
+      </article>
+    );
+  }
+
   return (
-    <article
-      className={`ui-card flex min-h-[220px] flex-col p-4 ${
-        recruiting ? 'border-dashed border-white/15 opacity-90' : 'shadow-brand'
-      }`}
-    >
+    <article className="ui-card flex min-h-[200px] flex-col p-4 shadow-brand">
       <p className="font-mono text-[10px] tracking-wide text-energy">
         {athlete.specialtyTag}
       </p>
-      <div className="mt-4 flex h-16 items-center justify-center rounded-xl border border-white/10 bg-base/60">
-        {athlete.photoUrl ? (
-          <img
-            src={athlete.photoUrl}
-            alt={athlete.name}
-            className="h-full w-full rounded-xl object-cover"
-          />
-        ) : (
-          <span className="font-mono text-[10px] text-zinc-600">
-            {recruiting ? 'SLOT LOCKED' : 'BENCHMARK'}
-          </span>
-        )}
-      </div>
-      <h3 className="mt-3 text-sm font-semibold text-zinc-100">{athlete.name}</h3>
-      <p className="text-xs text-zinc-500">{athlete.title}</p>
       {athlete.eventHeadline && (
-        <p className="mt-2 text-xs text-brand">{athlete.eventHeadline}</p>
+        <p className="mt-3 text-xs text-brand">{athlete.eventHeadline}</p>
       )}
+      <h3 className="mt-2 text-sm font-semibold text-zinc-100">{athlete.name}</h3>
+      <p className="text-xs text-zinc-400">{athlete.title}</p>
       {athlete.metrics && (
-        <ul className="mt-2 space-y-1 text-[11px] leading-snug text-zinc-400">
+        <ul className="mt-3 space-y-1 text-[11px] leading-snug text-zinc-300">
           {athlete.metrics.map((m) => (
             <li key={m}>· {m}</li>
           ))}
         </ul>
       )}
       {athlete.quote && (
-        <p className="mt-auto pt-3 text-[11px] italic leading-relaxed text-zinc-500">
+        <p className="mt-auto pt-3 text-[11px] italic leading-relaxed text-zinc-300">
           「{athlete.quote}」
-        </p>
-      )}
-      {recruiting && (
-        <p className="mt-auto pt-3 font-mono text-[10px] text-zinc-600">
-          官方認證專項代表招募／解鎖中
         </p>
       )}
     </article>
@@ -282,10 +278,10 @@ function PricingCard({
           {badge}
         </span>
       </div>
-      <h3 className="mt-3 font-serif text-xl text-zinc-50">{title}</h3>
+      <h3 className="mt-3 font-serif text-xl text-zinc-100">{title}</h3>
       <p className="mt-2 font-mono text-lg text-zinc-100">{price}</p>
-      {priceSub && <p className="font-mono text-xs text-zinc-500">{priceSub}</p>}
-      <ul className="mt-5 space-y-2 text-sm text-zinc-400">
+      {priceSub && <p className="font-mono text-xs text-zinc-400">{priceSub}</p>}
+      <ul className="mt-5 space-y-2 text-sm text-zinc-300">
         {features.map((f) => (
           <li key={f} className="flex gap-2">
             <span className="text-brand">▸</span>

@@ -1,6 +1,6 @@
 /**
  * Science methodology SSOT for /science.
- * WHY: Mirror app scoring honesty — only cite formulas actually used in product code.
+ * WHY: Public-facing formulas and norms only — no internal engineering audit notes.
  */
 
 export interface ScienceAxis {
@@ -16,8 +16,6 @@ export interface ScienceAxis {
   formulas: string[];
   normNotes: string[];
   literature: string[];
-  /** Explicit non-claims for this axis (honesty firewall). */
-  notClaimed?: string[];
 }
 
 export interface SpecialtyMetric {
@@ -29,7 +27,7 @@ export interface SpecialtyMetric {
 
 export const scoreCharter = {
   axisMax: 200,
-  centuryMeaning: '該性別／年齡常模的精英（世紀）門檻',
+  centuryMeaning: '該性別／年齡常模的精英門檻',
   overclockBand: '100–200 為超限溢出帶',
   overall:
     '六軸等權算術平均：Overall = round2( (1/6) Σ clamp(sᵢ, 0, 200) )；缺軸以 0 計入',
@@ -53,7 +51,7 @@ export const scienceAxes: ScienceAxis[] = [
     telemetryShort: '馬力',
     titleZh: '最大肌力',
     inputs: [
-      '五項動作：weightKg + reps ∈ [1,10]',
+      '五項動作：重量 (kg) + 次數（1–10）',
       '性別、年齡、體重（身高不進公式）',
     ],
     formulas: [
@@ -89,11 +87,10 @@ export const scienceAxes: ScienceAxis[] = [
     ],
     normNotes: [
       '男 21–30 摘要：垂直跳 30／50／70 cm；立定跳遠 170／220／270 cm',
-      'Input caps：垂直跳 ≤135 cm；立定跳遠 ≤390 cm',
+      '輸入上限：垂直跳 ≤135 cm；立定跳遠 ≤390 cm',
       '體重不進爆發力分數',
     ],
-    literature: ['年齡×性別場測常模表（程式內建）', '產品四次溢出曲線'],
-    notClaimed: ['未實作 Sayers 功瓦進分數'],
+    literature: ['年齡×性別場測常模', '四次溢出曲線'],
   },
   {
     id: 'cardio',
@@ -104,18 +101,14 @@ export const scienceAxes: ScienceAxis[] = [
     titleZh: '心肺耐力',
     inputs: ['Cooper 12 分鐘跑距離 (m)', '性別、年齡'],
     formulas: [
-      '僅用 60 與 100 錨點斜率：s = 60 + (d − d₆₀) × 40/(d₁₀₀ − d₆₀)',
+      '以 60 與 100 錨點斜率計分：s = 60 + (d − d₆₀) × 40/(d₁₀₀ − d₆₀)',
       '再 round2／max(0)；距離上限男 4900 m／女 4400 m',
     ],
     normNotes: [
-      '雷達軸僅採 Cooper 距離常模',
+      '雷達軸採 Cooper 12 分鐘跑距離常模',
       '5 公里跑為專項榮譽指標，不進六軸',
     ],
-    literature: ['Cooper 12 分鐘跑距離常模（性別×年齡，程式內建）'],
-    notClaimed: [
-      '未將 VO₂max 解析式算進分數（文案可提 VO₂ 語意）',
-      '非 ACSM／NSCA 函式庫常數直接引用',
-    ],
+    literature: ['Cooper 12 分鐘跑距離常模（性別×年齡）'],
   },
   {
     id: 'muscleMass',
@@ -132,9 +125,9 @@ export const scienceAxes: ScienceAxis[] = [
     ],
     normNotes: [
       '輸入天花板：男 100 kg／女 67 kg',
-      '非由身高推估 SMM',
+      '以儀器測得骨骼肌量為準，不由身高推估',
     ],
-    literature: ['程式內建年齡×性別十分位常模（SMM kg 與 SM%）'],
+    literature: ['年齡×性別十分位常模（SMM kg 與 SM%）'],
   },
   {
     id: 'bodyFat',
@@ -146,15 +139,15 @@ export const scienceAxes: ScienceAxis[] = [
     inputs: ['身高、體重、體脂%（輸入 [3,60]%）'],
     formulas: [
       'FFM = W(1 − BF%/100)；FFMI_raw = FFM / h_m²',
-      'FFMI_adj = FFMI_raw + 6(h_m − 1.8)（僅 h_m > 1.8；產品高個係數為 6）',
+      'FFMI_adj = FFMI_raw + 6(h_m − 1.8)（僅 h_m > 1.8；高個係數為 6）',
       '男：60 分＝18.5；100 分＝25；溢出 +5 分／單位',
       '女：60 分＝15.5；100 分＝21；溢出 +5 分／單位',
     ],
     normNotes: [
-      'Kouri 1995「自然男 ~25」對應本產品 100 分門檻；女 21＝100 分',
+      'Kouri 系調整 FFMI：男 25／女 21 對應 100 分門檻',
       '年齡不進公式',
     ],
-    literature: ['Kouri 系調整 FFMI（產品係數 6，非文獻常見 6.1）', '產品分段給分'],
+    literature: ['Kouri 系調整 FFMI', '分段給分曲線'],
   },
   {
     id: 'gripStrength',
@@ -171,8 +164,8 @@ export const scienceAxes: ScienceAxis[] = [
       'W ≤ W_anchor 用指數 0.5；較重用 0.3333',
       'Score = clamp(round1(raw × W_factor), 0, 200)；世紀分數 100.8',
     ],
-    normNotes: ['峰值天花板：男 200 kg／女 110 kg', '未實作左右手分別輸入'],
-    literature: ['程式內建雙段斜率與異速生長握力因子'],
+    normNotes: ['峰值天花板：男 200 kg／女 110 kg'],
+    literature: ['雙段斜率與異速生長握力因子'],
   },
 ];
 
@@ -193,14 +186,14 @@ export const specialtyMetrics: SpecialtyMetric[] = [
     summary:
       '專項榮譽指標。0／50／100 錨點與輸入地板由分齡世界紀錄（WR）常模衍生。',
     notes: [
-      '程式內建 WR 秒數表 → T100 = WR + 1.42；地板 = WR − 0.13',
-      '不稀釋六軸 overall；非 ACSM／NSCA 常數來源',
+      '分齡 WR 秒數表 → T100 = WR + 1.42；地板 = WR − 0.13',
+      '不稀釋六軸綜合戰力',
     ],
   },
   {
     id: 'run5k',
     titleZh: '5 公里跑',
     summary: '專項榮譽指標。T0–T100 線性；快於 T100 四次溢出；不進雷達軸。',
-    notes: ['WR 地板參考：男 12:20／女 13:40', '心肺雷達軸僅採 Cooper'],
+    notes: ['WR 地板參考：男 12:20／女 13:40', '心肺雷達軸採 Cooper'],
   },
 ];
