@@ -4,28 +4,28 @@ import { ArrowLeft } from 'lucide-react';
 
 export function PrivacyPage() {
   return (
-    <div className="overflow-x-hidden pb-24 md:pb-0">
+    <div className="max-w-[100vw] overflow-x-hidden">
       <section className="border-b border-white/5 bg-panel/50">
-        <div className="ui-container py-12 sm:py-16">
+        <div className="ui-container py-8 sm:py-16">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-brand"
+            className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100"
           >
             <ArrowLeft className="h-4 w-4" />
             返回首頁
           </Link>
-          <p className="ui-kicker mt-6">LEGAL // PRIVACY & DISCLAIMER</p>
-          <h1 className="mt-3 font-serif text-3xl text-zinc-100 sm:text-4xl">
+          <p className="ui-kicker mt-4 sm:mt-6">LEGAL // PRIVACY & DISCLAIMER</p>
+          <h1 className="mt-2 font-serif text-2xl text-zinc-100 sm:mt-3 sm:text-4xl">
             隱私權政策與健康免責聲明
           </h1>
-          <p className="mt-3 font-mono text-xs text-zinc-400">
+          <p className="mt-2 font-mono text-xs text-zinc-400 sm:mt-3">
             最強肉體 Ultimate Physique · 最後更新：2026-11-22
           </p>
         </div>
       </section>
 
       <section className="ui-section">
-        <div className="ui-container max-w-3xl space-y-10 text-sm leading-relaxed sm:text-base">
+        <div className="ui-container max-w-3xl space-y-8 break-words text-sm leading-relaxed sm:space-y-10 sm:text-base">
           <Block title="1. 產品定位與健康免責">
             <p className="text-zinc-300">
               最強肉體為健身自我追蹤工具，不提供醫療診斷、治療建議或緊急醫療指示。數據與評測僅供個人訓練紀錄與天梯交流，不作醫療診斷、處方或緊急醫療指示。
@@ -91,8 +91,8 @@ export function PrivacyPage() {
           <Block title="6. 訂閱自動續訂揭露">
             <p className="text-zinc-300">
               PRO 訂閱標價參考：月訂{' '}
-              <span className="font-mono text-brand">$1.99 USD</span>
-              ；年訂 <span className="font-mono text-brand">$14.99 USD</span>
+              <span className="font-mono text-zinc-100">$1.99 USD</span>
+              ；年訂 <span className="font-mono text-zinc-100">$14.99 USD</span>
               。實際扣款以 App Store／Google Play 為準。
             </p>
             <p className="text-zinc-300">

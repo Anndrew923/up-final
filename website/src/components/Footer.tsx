@@ -20,12 +20,12 @@ export function Footer() {
             <p className="ui-kicker mb-3">LINKS</p>
             <ul className="space-y-2 text-sm text-zinc-300">
               <li className="text-zinc-300">
-                <Link to="/science" className="text-zinc-300 hover:text-brand">
+                <Link to="/science" className="text-zinc-300 hover:text-zinc-100">
                   科學評測白皮書
                 </Link>
               </li>
               <li className="text-zinc-300">
-                <Link to="/privacy" className="text-zinc-300 hover:text-brand">
+                <Link to="/privacy" className="text-zinc-300 hover:text-zinc-100">
                   隱私權政策與健康免責
                 </Link>
               </li>
@@ -43,7 +43,7 @@ export function Footer() {
             © {year} 最強肉體 Ultimate Physique. All rights reserved.
           </span>
           <div className="locale-pill" aria-label="目前語系：繁體中文；英文版於 App 內">
-            <span className="rounded-full bg-brand/20 px-2 py-0.5 text-brand">繁中</span>
+            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-zinc-200">繁中</span>
             <span className="text-zinc-400">EN（App 內）</span>
           </div>
         </div>

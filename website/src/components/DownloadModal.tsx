@@ -74,7 +74,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
               id={titleId}
               className="mt-1 font-serif text-xl text-zinc-50 sm:text-2xl"
             >
-              開始六軸評測
+              開始免費評測
             </h2>
             <p className="mt-2 text-sm text-zinc-400">{autoHint}</p>
           </div>

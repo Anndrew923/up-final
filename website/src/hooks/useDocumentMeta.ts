@@ -6,12 +6,12 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/': {
     title: `${SITE} — 科學體能評測系統`,
     description:
-      '別再憑感覺訓練。輸入身體基線與訓練表現，映射至統一 0–200 分科學量尺，生成專屬六軸雷達與戰力認證。',
+      '別再憑感覺訓練。輸入身體基線與訓練表現，以 100 分為人類精英基準量尺生成專屬六軸雷達；破百即超頻突破。',
   },
   '/science': {
     title: `科學評測白皮書 — ${SITE}`,
     description:
-      '六軸 0–200 分尺方法論：Brzycki、IPF DOTS、McCulloch、Kouri 調整 FFMI、Cooper 距離常模與異速生長握力因子。',
+      '六軸評測方法論：以 100 分為精英基準、破百為超頻。Brzycki、BVDK/Konertz DOTS、McCulloch、Kouri 調整 FFMI、Cooper 與握力異速正規化。',
   },
   '/privacy': {
     title: `隱私權政策與健康免責 — ${SITE}`,

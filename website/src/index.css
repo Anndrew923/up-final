@@ -3,6 +3,26 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+    SSOT chrome metrics — keep Navbar h-14/sm:h-16, main offset, and scroll-margin
+    in lockstep so fixed header never covers content or hash targets.
+  */
+  :root {
+    --site-nav-bar-h: 3.5rem; /* h-14 */
+    --site-nav-offset: calc(
+      var(--site-nav-bar-h) + env(safe-area-inset-top, 0px)
+    );
+    --site-sticky-cta-clearance: calc(
+      5.5rem + env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --site-nav-bar-h: 4rem; /* sm:h-16 */
+    }
+  }
+
   html {
     scroll-behavior: smooth;
     color-scheme: dark;
@@ -10,10 +30,22 @@
     color: #e4e4e7;
   }
 
+  /* Clear fixed navbar (+ safe-area) so in-page anchors are not hidden under the bar. */
+  #hero,
+  #features,
+  #pricing,
+  #athletes {
+    scroll-margin-top: var(--site-nav-offset);
+  }
+
   body {
     @apply bg-void text-zinc-200 overflow-x-hidden antialiased;
     min-height: 100dvh;
     color: #e4e4e7;
+  }
+
+  #root {
+    @apply overflow-x-hidden;
   }
 
   p,
@@ -27,12 +59,21 @@
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 
+  /* Mobile-first: tighter vertical rhythm; breathe more from sm up. */
   .ui-section {
-    @apply py-16 sm:py-20 lg:py-24;
+    @apply py-10 sm:py-16 lg:py-24;
   }
 
   .ui-kicker {
     @apply font-mono text-[11px] sm:text-xs tracking-[0.18em] uppercase text-energy;
+  }
+
+  /*
+    CJK eyebrows — keep energy tone / size, drop Latin uppercase + wide tracking
+    that spaces Chinese glyphs into hard-to-scan ribbons.
+  */
+  .ui-kicker-zh {
+    @apply font-mono text-[11px] sm:text-xs tracking-wide text-energy normal-case;
   }
 
   .ui-card {
@@ -48,11 +89,11 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:border-brand/50 hover:bg-brand/10;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-800/80;
   }
 
   .formula-box {
-    @apply overflow-x-auto rounded-xl border border-white/10 bg-void/80 p-4 font-mono text-xs sm:text-sm leading-relaxed text-zinc-300;
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/10 bg-void/80 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
   }
 
   /* Display-only locale hint — not an interactive language switcher. */
@@ -72,5 +113,26 @@
 
   .safe-pt {
     padding-top: max(0px, env(safe-area-inset-top, 0px));
+  }
+
+  /* Content top pad matching fixed Navbar (bar height + notch). */
+  .site-nav-offset-pt {
+    padding-top: var(--site-nav-offset);
+  }
+
+  /* Mobile sticky CTA: intentional py + home-indicator (not max()). */
+  .site-sticky-cta-pb {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Page bottom clearance while sticky CTA is visible (md+ unused). */
+  .site-sticky-cta-clearance {
+    padding-bottom: var(--site-sticky-cta-clearance);
+  }
+
+  @media (min-width: 768px) {
+    .site-sticky-cta-clearance {
+      padding-bottom: 0;
+    }
   }
 }
