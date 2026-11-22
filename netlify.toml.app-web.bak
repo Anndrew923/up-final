@@ -1,3 +1,16 @@
+# =============================================================================
+# BACKUP ONLY — do NOT restore this file as root `netlify.toml` while this repo
+# also hosts the marketing site under `website/` (Netlify Base directory =
+# `website` reads `website/netlify.toml`). A root `netlify.toml` with [build]
+# was overriding the website site's build command.
+#
+# For the App / Hosting Netlify site (repo root as base):
+#   Build command : npm run build:web
+#   Publish directory : dist
+# Set those in the Netlify UI (or a dedicated site config), not via a root
+# netlify.toml that would again shadow `website/netlify.toml`.
+# =============================================================================
+
 [build]
   # WHY: Web/Hosting must refuse a production bundle without App Check site key
   # (see scripts/verify-ladder-production-env.mjs + docs/PRODUCTION_SECURITY_ROLLOUT.md).
