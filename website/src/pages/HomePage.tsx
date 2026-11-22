@@ -153,24 +153,15 @@ export function HomePage({ onDownload }: HomePageProps) {
               </Link>
             </div>
           </div>
-          <div className="min-w-0">
+          <div id="radar" className="min-w-0">
             <RadarPreview />
           </div>
         </div>
       </section>
 
-      <section
-        className="ui-section border-b border-white/5 bg-panel/30"
-        id="grade-spectrum"
-      >
+      <section className="ui-section" id="systems">
         <div className="ui-container">
-          <OverallGradeLadderCard />
-        </div>
-      </section>
-
-      <section className="ui-section" id="features">
-        <div className="ui-container">
-          <p className="ui-kicker">CORE SYSTEMS</p>
+          <p className="ui-kicker-zh">核心系統</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             四大核心評測系統
           </h2>
@@ -182,7 +173,17 @@ export function HomePage({ onDownload }: HomePageProps) {
         </div>
       </section>
 
-      <section className="ui-section border-y border-white/5 bg-panel/40" id="athletes">
+      <section
+        className="ui-section border-y border-white/5 bg-panel/30"
+        id="ladder"
+      >
+        <div className="ui-container">
+          <OverallGradeLadderCard />
+        </div>
+      </section>
+
+      {/* WHY border-b (not border-y): #ladder already draws the shared top hairline. */}
+      <section className="ui-section border-b border-white/5 bg-panel/40" id="athletes">
         <div className="ui-container">
           <p className="ui-kicker-zh">實測背書</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
@@ -201,15 +202,15 @@ export function HomePage({ onDownload }: HomePageProps) {
 
       <section
         className="relative overflow-x-hidden border-y border-zinc-900 bg-zinc-950/80 ui-section"
-        id="pricing"
+        id="plans"
       >
-        {/* Champagne ambient — separates ACCESS from cool telemetry sections above. */}
+        {/* Champagne ambient — separates 權益方案 from cool telemetry sections above. */}
         <div
           className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_70%)] blur-2xl"
           aria-hidden
         />
         <div className="ui-container relative">
-          <p className="ui-kicker">ACCESS</p>
+          <p className="ui-kicker-zh">權益方案</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             方案與早鳥權益
           </h2>

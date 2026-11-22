@@ -12,8 +12,9 @@
     --site-nav-offset: calc(
       var(--site-nav-bar-h) + env(safe-area-inset-top, 0px)
     );
+    /* WHY ≥6rem: sticky CTA row + safe-area must clear footer legal copy on mobile. */
     --site-sticky-cta-clearance: calc(
-      5.5rem + env(safe-area-inset-bottom, 0px)
+      6.5rem + env(safe-area-inset-bottom, 0px)
     );
   }
 
@@ -31,10 +32,12 @@
   }
 
   /* Clear fixed navbar (+ safe-area) so in-page anchors are not hidden under the bar. */
-  #hero,
-  #features,
-  #pricing,
-  #athletes {
+  #radar,
+  #systems,
+  #ladder,
+  #athletes,
+  #plans,
+  #hero {
     scroll-margin-top: var(--site-nav-offset);
   }
 

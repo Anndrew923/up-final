@@ -55,7 +55,7 @@ export const athletes: Athlete[] = [
       },
       {
         label: '五大核心肌力',
-        line: '平板臥推 135 kg · 槓鈴深蹲 170 kg · 硬舉 180 kg · 滑輪下拉 130 kg · 站姿肩推 70 kg',
+        line: '平板臥推 135 kg · 槓鈴深蹲 170 kg · 硬舉 180 kg · 滑輪下拉 130 kg · 站姿槓鈴肩推 70 kg',
       },
       {
         label: '爆發、心肺與握力',

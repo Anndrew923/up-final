@@ -202,8 +202,7 @@ export const OVERALL_GRADE_DEFAULT_BAND: OverallGradeBandId = 'norm';
 export const overallGradeLadderMeta = {
   kicker: '戰力段位光譜',
   title: '14 階評級探測器',
-  lead:
-    '對照綜合戰力分數落點：運動生理學人類尺度位階 × 賽會認證（Homologation Grade）。切換下方階段，找出你目前的車系階梯。',
+  lead: '切換階段，對照你的綜合戰力分數、運動生理位階與賽會認證載具。',
   eliteBadge: '破百超頻',
 } as const;
 

@@ -63,7 +63,7 @@ export function StickyDownloadBar({
       <div className="ui-container flex items-center gap-3 pt-3 site-sticky-cta-pb">
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono text-[10px] tracking-wider text-zinc-400">
-            START DYNO
+            開始評測
           </p>
           <p className="truncate text-sm text-zinc-200">開始免費評測 · 核心永久免費</p>
         </div>

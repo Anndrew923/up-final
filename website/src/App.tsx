@@ -29,8 +29,42 @@ export default function App() {
 
   useEffect(() => {
     trackPageView();
-    window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  /*
+    WHY: pathname-only scroll-to-top would cancel /#anchor jumps from /science|/privacy.
+    Retry briefly so HomePage nodes exist after route paint; scroll-margin uses --site-nav-offset.
+  */
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+      return undefined;
+    }
+
+    const id = decodeURIComponent(location.hash.slice(1));
+    let cancelled = false;
+    let attempts = 0;
+    let timer = 0;
+
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      attempts += 1;
+      if (attempts < 12) {
+        timer = window.setTimeout(tryScroll, 40);
+      }
+    };
+
+    timer = window.setTimeout(tryScroll, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [location.pathname, location.hash]);
 
   /*
     WHY chrome siblings of the scroll shell: fixed Navbar / Sticky CTA / Modal

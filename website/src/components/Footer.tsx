@@ -17,7 +17,7 @@ export function Footer() {
             </p>
           </div>
           <div>
-            <p className="ui-kicker mb-3">LINKS</p>
+            <p className="ui-kicker-zh mb-3">連結</p>
             <ul className="space-y-2 text-sm text-zinc-300">
               <li className="text-zinc-300">
                 <Link to="/science" className="text-zinc-300 hover:text-zinc-100">
@@ -32,7 +32,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <p className="ui-kicker mb-3">COMPLIANCE</p>
+            <p className="ui-kicker-zh mb-3">合規說明</p>
             <p className="text-sm leading-relaxed text-zinc-300">
               詳細評測與日誌預設存於本機。全球天梯為自報成績經系統校驗。
             </p>
