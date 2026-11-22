@@ -158,11 +158,8 @@ export function HomePage({ onDownload }: HomePageProps) {
         <div className="ui-container">
           <p className="ui-kicker-zh">實測背書</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
-            專項運動員實測背書牆
+            專項運動員實測
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-300 sm:mt-3">
-            嚴選頂尖運動員與教練實測，驗證跨專項體能表現。
-          </p>
           <div className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {athletes.map((athlete) => (
               <AthleteEndorsementCard key={athlete.id} athlete={athlete} />

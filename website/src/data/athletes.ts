@@ -2,9 +2,9 @@
  * Athlete endorsement wall SSOT.
  * WHY: Marketing unlocks / swaps slots here — no HomePage edits required.
  *
- * Founder assets (drop into `website/public/`):
- * - `/founder-battle-card.png` — telemetry battle card; missing → dashed placeholder
- * Featured founder card has no circular avatar (portrait lives on the battle card).
+ * Featured lead-developer assets (drop into `website/public/`):
+ * - `/founder-battle-card.png` — telemetry battle card filename (stable public path)
+ * Featured card has no circular avatar (portrait lives on the battle card).
  */
 
 export type AthleteStatus = 'verified' | 'locked';
@@ -23,14 +23,14 @@ export interface Athlete {
   name: string;
   /** Subtitle under name */
   role: string;
-  /** Optional circular portrait for simple verified cards (not used on featured founder). */
+  /** Optional circular portrait for simple verified cards (not used on featured lead-dev card). */
   avatarUrl?: string;
   /**
    * Optional telemetry battle-card image (lightbox on click).
-   * Founder default: `/founder-battle-card.png`
+   * Lead-dev default path: `/founder-battle-card.png` (stable public filename).
    */
   battleCardUrl?: string;
-  /** Structured metric groups (preferred for verified founder layout). */
+  /** Structured metric groups (preferred for featured verified layout). */
   metricGroups?: AthleteMetricGroup[];
   /** Flat metric lines (legacy / simple verified cards). */
   metrics?: string[];
@@ -44,9 +44,9 @@ export const athletes: Athlete[] = [
   {
     id: 'founder-anndrew',
     status: 'verified',
-    badge: '創辦人實測標竿',
+    badge: '主要開發者實測標竿',
     name: 'Anndrew',
-    role: '創辦人 · 肌力體能教練 · 84.7 kg 量級',
+    role: '主要開發者 · 肌力體能教練',
     battleCardUrl: '/founder-battle-card.png',
     metricGroups: [
       {
@@ -62,7 +62,7 @@ export const athletes: Athlete[] = [
         line: '垂直跳 70 cm · 立定跳遠 283 cm · 庫珀 12 分鐘跑 2,800 m · 單手握力 70.5 kg',
       },
     ],
-    quote: '先測準自己，再對準常模——終結訓練內耗。',
+    quote: '讓統計數字停止你的內耗，讓我看看你有多強！',
   },
   {
     id: 'recruit-bodybuilding',

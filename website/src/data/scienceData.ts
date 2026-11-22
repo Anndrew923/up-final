@@ -63,10 +63,6 @@ export const scoreCharter = {
   specialtiesExcluded: ['臂圍', '100 公尺衝刺', '5 公里跑'],
 };
 
-/** Homepage radar toggle hint — keep ≤2 mobile lines so the hex stays in first viewport. */
-export const radarTelemetryHint =
-  '切換模式不重算分數，僅將體能數據映射為馬力、扭矩等動力語彙。';
-
 /** Five-lift public table — biomechanics & role only; no proprietary lift ceilings. */
 export const strengthLiftCatalog: readonly StrengthLiftPublicRow[] = [
   {

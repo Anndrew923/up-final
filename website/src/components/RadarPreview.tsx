@@ -1,5 +1,5 @@
 import { useId, useState, type FC } from 'react';
-import { radarTelemetryHint, scienceAxes } from '../data/scienceData';
+import { scienceAxes } from '../data/scienceData';
 import {
   computeRadarPreviewGeometry,
   formatAxisScoreReadout,
@@ -139,9 +139,6 @@ export function RadarPreview() {
           />
         </div>
       </div>
-      <p className="relative mb-3 max-w-xl text-xs leading-relaxed text-zinc-400 sm:mb-4">
-        {radarTelemetryHint}
-      </p>
 
       <div className="relative mx-auto w-full max-w-[min(100%,340px)] lg:max-h-[280px]">
         <div

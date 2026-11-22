@@ -61,11 +61,15 @@ export function StickyDownloadBar({
       {...(!visible ? { inert: true } : {})}
     >
       <div className="ui-container flex items-center gap-3 pt-3 site-sticky-cta-pb">
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-[10px] tracking-wider text-zinc-400">
-            開始評測
+        {/*
+          WHY: Left copy must not repeat the button label; keep ≤8 CJK on the
+          headline so 360px phones never hit truncate/ellipsis beside the CTA.
+        */}
+        <div className="min-w-0 flex-1 leading-snug">
+          <p className="font-mono text-[10px] tracking-wider text-energy">
+            核心功能永久免費
           </p>
-          <p className="truncate text-sm text-zinc-200">開始免費評測 · 核心永久免費</p>
+          <p className="text-sm text-zinc-200">一鍵測出六軸戰力</p>
         </div>
         <button
           type="button"
@@ -73,7 +77,7 @@ export function StickyDownloadBar({
           tabIndex={visible ? 0 : -1}
           className="btn-primary shrink-0 !py-2.5"
         >
-          <Download className="h-4 w-4" />
+          <Download className="h-4 w-4" aria-hidden />
           開始免費評測
         </button>
       </div>
