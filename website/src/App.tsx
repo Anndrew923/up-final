@@ -29,7 +29,7 @@ export default function App() {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-base">
+    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-void text-zinc-200">
       <Navbar onDownload={openDownload} />
       <main className="flex-1">
         <Routes>

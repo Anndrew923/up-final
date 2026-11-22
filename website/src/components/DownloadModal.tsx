@@ -171,7 +171,7 @@ function StoreCard({
         </span>
       </div>
       {showQr && (
-        <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-lg border border-white/10 bg-base">
+        <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-lg border border-white/10 bg-void">
           {qr ? (
             <img
               src={qr}

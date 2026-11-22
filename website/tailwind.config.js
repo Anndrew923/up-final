@@ -4,7 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        base: '#050505',
+        /**
+         * WHY: Named `void` (not `base`) so it never collides with Tailwind’s
+         * font-size utilities `text-base` / `sm:text-base` — that collision made
+         * subtitle copy paint as #050505 (invisible on dark backgrounds).
+         */
+        void: '#050505',
         panel: '#0a0a0a',
         card: '#111111',
         brand: {

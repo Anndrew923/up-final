@@ -5,13 +5,20 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: dark;
+    /* WHY: Any unstyled node inherits light-on-dark — never browser default black. */
+    color: #e4e4e7;
   }
 
   body {
-    @apply bg-base text-zinc-100 overflow-x-hidden;
+    @apply bg-void text-zinc-200 overflow-x-hidden antialiased;
     min-height: 100dvh;
-    /* WHY: Explicit light-on-dark default; pages set zinc-300/400 on body copy. */
-    color: #f4f4f5;
+    color: #e4e4e7;
+  }
+
+  p,
+  li {
+    color: inherit;
   }
 }
 
@@ -45,7 +52,7 @@
   }
 
   .formula-box {
-    @apply overflow-x-auto rounded-xl border border-white/10 bg-base/80 p-4 font-mono text-xs sm:text-sm leading-relaxed text-zinc-300;
+    @apply overflow-x-auto rounded-xl border border-white/10 bg-void/80 p-4 font-mono text-xs sm:text-sm leading-relaxed text-zinc-300;
   }
 
   /* Display-only locale hint — not an interactive language switcher. */

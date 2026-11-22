@@ -39,7 +39,7 @@ export function Navbar({ onDownload }: NavbarProps) {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-base/90 backdrop-blur-md safe-pt">
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-void/90 backdrop-blur-md safe-pt">
       <div className="ui-container">
         <div className="grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:h-16">
           <Link to="/" className="min-w-0" onClick={() => setOpen(false)}>
@@ -75,7 +75,7 @@ export function Navbar({ onDownload }: NavbarProps) {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-[60] bg-base md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[60] bg-void md:hidden" role="dialog" aria-modal="true">
           <div className="ui-container flex h-full flex-col safe-pt safe-pb">
             <div className="grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
               <span className="font-serif text-lg text-zinc-100">最強肉體</span>

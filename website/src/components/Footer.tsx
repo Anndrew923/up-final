@@ -19,13 +19,13 @@ export function Footer() {
           <div>
             <p className="ui-kicker mb-3">LINKS</p>
             <ul className="space-y-2 text-sm text-zinc-300">
-              <li>
-                <Link to="/science" className="hover:text-brand">
+              <li className="text-zinc-300">
+                <Link to="/science" className="text-zinc-300 hover:text-brand">
                   科學評測白皮書
                 </Link>
               </li>
-              <li>
-                <Link to="/privacy" className="hover:text-brand">
+              <li className="text-zinc-300">
+                <Link to="/privacy" className="text-zinc-300 hover:text-brand">
                   隱私權政策與健康免責
                 </Link>
               </li>

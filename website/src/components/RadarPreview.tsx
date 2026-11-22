@@ -72,7 +72,7 @@ export function RadarPreview() {
           </p>
         </div>
         <div
-          className="inline-flex rounded-xl border border-white/10 bg-base/80 p-1"
+          className="inline-flex rounded-xl border border-white/10 bg-void/80 p-1"
           role="group"
           aria-label="雷達視圖切換"
         >

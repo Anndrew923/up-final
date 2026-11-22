@@ -223,7 +223,9 @@ function AthleteCardView({ athlete }: { athlete: AthleteCard }) {
       {athlete.metrics && (
         <ul className="mt-3 space-y-1 text-[11px] leading-snug text-zinc-300">
           {athlete.metrics.map((m) => (
-            <li key={m}>· {m}</li>
+            <li key={m} className="text-zinc-300">
+              · {m}
+            </li>
           ))}
         </ul>
       )}
@@ -283,9 +285,9 @@ function PricingCard({
       {priceSub && <p className="font-mono text-xs text-zinc-400">{priceSub}</p>}
       <ul className="mt-5 space-y-2 text-sm text-zinc-300">
         {features.map((f) => (
-          <li key={f} className="flex gap-2">
+          <li key={f} className="flex gap-2 text-zinc-300">
             <span className="text-brand">▸</span>
-            <span>{f}</span>
+            <span className="text-zinc-300">{f}</span>
           </li>
         ))}
       </ul>

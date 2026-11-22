@@ -46,24 +46,24 @@ export function PrivacyPage() {
 
           <Block title="3. 我們處理的資料類型">
             <ul className="list-disc space-y-2 pl-5 text-zinc-300">
-              <li>
+              <li className="text-zinc-300">
                 <span className="text-zinc-100">身體基線（本機為主）：</span>
                 性別、年齡、身高、體重；選填職業、訓練時數／年資、地區與天梯匿名偏好。
               </li>
-              <li>
+              <li className="text-zinc-300">
                 <span className="text-zinc-100">評測輸入（本機；可進歷史）：</span>
                 力量五項重量／次數、爆發垂直跳／立定跳遠、Cooper
                 距離、骨骼肌量、握力峰值、臂圍與體脂、FFMI 相關輸入等。
               </li>
-              <li>
+              <li className="text-zinc-300">
                 <span className="text-zinc-100">帳號與雲端：</span>
                 Google／Apple 登入；天梯暱稱與頭像；訂閱／創世席等權益欄位。
               </li>
-              <li>
+              <li className="text-zinc-300">
                 <span className="text-zinc-100">天梯公開摘要：</span>
                 顯示名或匿名標記、最佳分數摘要、更新時間、供篩選的人口學投影欄；可選 Pro 標記。
               </li>
-              <li>
+              <li className="text-zinc-300">
                 <span className="text-zinc-100">DYNO INTEL：</span>
                 遙測上下文與問題經後端配額與安全閘控處理；本機保留有限則數日誌。
               </li>
@@ -81,10 +81,10 @@ export function PrivacyPage() {
 
           <Block title="5. 您的權利">
             <ul className="list-disc space-y-2 pl-5 text-zinc-300">
-              <li>撤除全球天梯公開足跡（移除公開排行摘要）。</li>
-              <li>刪除帳號與相關雲端資料（依產品內流程）。</li>
-              <li>恢復購買（透過 App Store／Google Play）。</li>
-              <li>App 內提供隱私／條款語系切換入口（繁中／英文）。</li>
+              <li className="text-zinc-300">撤除全球天梯公開足跡（移除公開排行摘要）。</li>
+              <li className="text-zinc-300">刪除帳號與相關雲端資料（依產品內流程）。</li>
+              <li className="text-zinc-300">恢復購買（透過 App Store／Google Play）。</li>
+              <li className="text-zinc-300">App 內提供隱私／條款語系切換入口（繁中／英文）。</li>
             </ul>
           </Block>
 

@@ -40,14 +40,14 @@ export function SciencePage() {
                   統一分數空間憲章
                 </h2>
                 <ul className="mt-4 space-y-2 text-sm leading-relaxed text-zinc-300">
-                  <li>
+                  <li className="text-zinc-300">
                     單軸上限：
                     <span className="font-mono text-brand"> {scoreCharter.axisMax}</span>
                   </li>
-                  <li>100 分語意：{scoreCharter.centuryMeaning}</li>
-                  <li>{scoreCharter.overclockBand}</li>
-                  <li className="break-words">{scoreCharter.overall}</li>
-                  <li>
+                  <li className="text-zinc-300">100 分語意：{scoreCharter.centuryMeaning}</li>
+                  <li className="text-zinc-300">{scoreCharter.overclockBand}</li>
+                  <li className="break-words text-zinc-300">{scoreCharter.overall}</li>
+                  <li className="text-zinc-300">
                     不進六軸：
                     {scoreCharter.specialtiesExcluded.join('、')}（專項榮譽）
                   </li>
@@ -63,7 +63,7 @@ export function SciencePage() {
           <h2 className="font-serif text-2xl text-zinc-100">六大維度詳細拆解</h2>
           {scienceAxes.map((axis) => (
             <article key={axis.id} className="ui-card overflow-hidden">
-              <div className="border-b border-white/5 bg-base/40 px-4 py-4 sm:px-6">
+              <div className="border-b border-white/5 bg-void/40 px-4 py-4 sm:px-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-[11px] text-energy">
                     {axis.telemetryCode} · {axis.carMetaphor}
@@ -76,13 +76,17 @@ export function SciencePage() {
                   <p className="ui-kicker mb-2">INPUTS</p>
                   <ul className="space-y-1.5 text-sm text-zinc-300">
                     {axis.inputs.map((line) => (
-                      <li key={line}>· {line}</li>
+                      <li key={line} className="text-zinc-300">
+                        · {line}
+                      </li>
                     ))}
                   </ul>
                   <p className="ui-kicker mb-2 mt-5">NORM / NOTES</p>
                   <ul className="space-y-1.5 text-sm text-zinc-300">
                     {axis.normNotes.map((line) => (
-                      <li key={line}>· {line}</li>
+                      <li key={line} className="text-zinc-300">
+                        · {line}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -98,7 +102,9 @@ export function SciencePage() {
                   <p className="ui-kicker mb-2 mt-5">LITERATURE / SOURCE</p>
                   <ul className="space-y-1 text-sm text-zinc-300">
                     {axis.literature.map((l) => (
-                      <li key={l}>· {l}</li>
+                      <li key={l} className="text-zinc-300">
+                        · {l}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -109,7 +115,7 @@ export function SciencePage() {
                   <p className="ui-kicker mb-3">五項動作 · 100 分錨點 DOTS</p>
                   <div className="overflow-x-auto rounded-xl border border-white/10">
                     <table className="w-full min-w-[480px] text-left text-sm">
-                      <thead className="bg-base/80 font-mono text-[11px] text-zinc-400">
+                      <thead className="bg-void/80 font-mono text-[11px] text-zinc-400">
                         <tr>
                           <th className="px-3 py-2 font-medium">動作</th>
                           <th className="px-3 py-2 font-medium">錨點 DOTS</th>
@@ -149,7 +155,9 @@ export function SciencePage() {
                 <p className="mt-2 text-sm leading-relaxed text-zinc-300">{m.summary}</p>
                 <ul className="mt-3 space-y-1 font-mono text-[11px] text-zinc-400">
                   {m.notes.map((n) => (
-                    <li key={n}>· {n}</li>
+                    <li key={n} className="text-zinc-400">
+                      · {n}
+                    </li>
                   ))}
                 </ul>
               </article>
