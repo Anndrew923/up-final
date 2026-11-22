@@ -20,7 +20,7 @@ export interface StoreLinkConfig {
 
 export const storeLinks: StoreLinkConfig = {
   packageId: 'com.ultimatephysique.fitness2025',
-  appVersion: '1.0.59',
+  appVersion: '1.0.60',
   /** Set real App Store URL and flip iosAvailable when live. */
   iosUrl: '',
   androidUrl:
