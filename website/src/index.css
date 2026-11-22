@@ -10,12 +10,8 @@
   body {
     @apply bg-base text-zinc-100 overflow-x-hidden;
     min-height: 100dvh;
+    /* WHY: Explicit light-on-dark default; pages set zinc-300/400 on body copy. */
     color: #f4f4f5;
-  }
-
-  p,
-  li {
-    @apply text-zinc-300;
   }
 }
 
@@ -30,18 +26,6 @@
 
   .ui-kicker {
     @apply font-mono text-[11px] sm:text-xs tracking-[0.18em] uppercase text-energy;
-  }
-
-  .ui-title {
-    @apply text-zinc-100;
-  }
-
-  .ui-body {
-    @apply text-zinc-300;
-  }
-
-  .ui-muted {
-    @apply text-zinc-400;
   }
 
   .ui-card {
@@ -64,8 +48,9 @@
     @apply overflow-x-auto rounded-xl border border-white/10 bg-base/80 p-4 font-mono text-xs sm:text-sm leading-relaxed text-zinc-300;
   }
 
+  /* Display-only locale hint — not an interactive language switcher. */
   .locale-pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-mono text-[11px] text-zinc-300 transition hover:border-brand/40 hover:text-zinc-100;
+    @apply inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-mono text-[11px] text-zinc-300;
   }
 }
 

@@ -42,7 +42,7 @@ export function Footer() {
           <span className="font-mono text-[11px] text-zinc-400">
             © {year} 最強肉體 Ultimate Physique. All rights reserved.
           </span>
-          <div className="locale-pill" aria-label="語系">
+          <div className="locale-pill" aria-label="目前語系：繁體中文；英文版於 App 內">
             <span className="rounded-full bg-brand/20 px-2 py-0.5 text-brand">繁中</span>
             <span className="text-zinc-400">EN（App 內）</span>
           </div>

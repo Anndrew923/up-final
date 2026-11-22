@@ -119,8 +119,8 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
           />
         </div>
 
-        <p className="mt-4 font-mono text-[10px] text-zinc-500">
-          v{storeLinks.appVersion} · {storeLinks.packageId}
+        <p className="mt-4 font-mono text-[10px] text-zinc-400">
+          最強肉體 Ultimate Physique · 支援 iOS &amp; Android
         </p>
       </div>
     </div>
@@ -164,7 +164,7 @@ function StoreCard({
         <span className="font-mono text-xs text-energy">{label}</span>
         <span
           className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${
-            available ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-500'
+            available ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-400'
           }`}
         >
           {status}
@@ -181,7 +181,7 @@ function StoreCard({
               height={112}
             />
           ) : (
-            <span className="font-mono text-[10px] text-zinc-600">QR…</span>
+            <span className="font-mono text-[10px] text-zinc-400">QR…</span>
           )}
         </div>
       )}
@@ -192,7 +192,7 @@ function StoreCard({
         className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
           available
             ? 'bg-white/5 text-zinc-100 hover:bg-brand/15 hover:text-brand'
-            : 'cursor-not-allowed bg-white/[0.03] text-zinc-600'
+            : 'cursor-not-allowed bg-white/[0.03] text-zinc-400'
         }`}
       >
         <ExternalLink className="h-3.5 w-3.5" />
