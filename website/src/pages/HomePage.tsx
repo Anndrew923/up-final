@@ -10,6 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import { AthleteEndorsementCard } from '../components/AthleteEndorsementCard';
+import { DeveloperHobbyBanner } from '../components/DeveloperHobbyBanner';
 import { OverallGradeLadderCard } from '../components/OverallGradeLadderCard';
 import { RadarPreview } from '../components/RadarPreview';
 import { athletes } from '../data/athletes';
@@ -52,59 +53,28 @@ const BENTO = [
     accent: 'sky',
     icon: Gauge,
     title: '打破量級與性別紅利，實力客觀說話',
-    body: [
-      {
-        text: '體重降 3 kg、臥推少 5 kg，到底是退步還是變強？整合',
-        emph: false,
-      },
-      {
-        text: '最大肌力、垂直跳爆發、心肺續航、握力與體組成常模',
-        emph: true,
-      },
-      {
-        text: '，消除體重與性別差異，算出最真實的六軸戰力。',
-        emph: false,
-      },
-    ],
+    body: '體重降 3 kg、臥推少 5 kg，是退步還是變強？整合六大體能與體組成常模，消除量級與性別差異，算出真實戰力。',
   },
   {
     sys: '02',
     accent: 'cyan',
     icon: Share2,
     title: '專屬戰力戰報 & 訓練自拍卡',
-    body: [
-      {
-        text: '記錄每一次身體改裝的軌跡。無論六邊形全能戰力、單項破 PR 還是健身房自拍，一鍵生成',
-        emph: false,
-      },
-      { text: '高質感戰報', emph: true },
-      { text: '，讓每一次突破清晰可見。', emph: false },
-    ],
+    body: '記錄每次身體改裝軌跡。無論六邊形全能戰力、單項破 PR 或健身房自拍，一鍵生成高質感戰報卡片。',
   },
   {
     sys: '03',
     accent: 'teal',
     icon: Users,
     title: '全球天梯 & 俱樂部私榜',
-    body: [
-      { text: '尋找同齡、同量級甚至跨性別的訓練同好，疊加', emph: false },
-      { text: '雙人雷達正面 PK', emph: true },
-      { text: '，在良性切磋中找到下一個突破目標。', emph: false },
-    ],
+    body: '尋找同齡、同量級甚至跨性別的訓練同好，疊加雙人雷達正面 PK，在良性切磋中鎖定下一個突破目標。',
   },
   {
     sys: '04',
     accent: 'indigo',
     icon: Sparkles,
     title: 'DYNO INTEL 戰力引擎',
-    body: [
-      { text: '重量推得上去，心肺或握力卻拖垮總分？精準揪出六軸中的', emph: false },
-      { text: '弱項短板', emph: true },
-      {
-        text: '，給出下一步調校方向，把每一次汗水都轉化為有效改裝。',
-        emph: false,
-      },
-    ],
+    body: '重量推得上去，心肺或握力卻拖垮總分？精準揪出六軸弱項短板，給出下一步調校方向，讓每滴汗都有效。',
   },
 ] as const;
 
@@ -153,8 +123,9 @@ export function HomePage({ onDownload }: HomePageProps) {
               </Link>
             </div>
           </div>
-          <div id="radar" className="min-w-0">
+          <div id="radar" className="min-w-0 space-y-3">
             <RadarPreview />
+            <DeveloperHobbyBanner />
           </div>
         </div>
       </section>
@@ -300,16 +271,8 @@ function FeatureSystemCard({ item }: { item: (typeof BENTO)[number] }) {
       <h3 className="relative mt-3 text-base font-semibold text-zinc-100 sm:mt-4 sm:text-lg">
         {item.title}
       </h3>
-      <p className="relative mt-1.5 text-sm leading-relaxed text-zinc-300 sm:mt-2">
-        {item.body.map((part, index) =>
-          part.emph ? (
-            <span key={`${item.sys}-e${index}`} className="font-medium text-zinc-100">
-              {part.text}
-            </span>
-          ) : (
-            <span key={`${item.sys}-t${index}`}>{part.text}</span>
-          ),
-        )}
+      <p className="relative mt-1.5 text-sm leading-snug text-zinc-300 sm:mt-2 sm:leading-relaxed">
+        {item.body}
       </p>
     </article>
   );
