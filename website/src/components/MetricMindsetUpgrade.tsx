@@ -19,7 +19,7 @@ const CARDS: readonly ContrastCard[] = [
   {
     label: '訓練指標',
     metric: '最強肉體分數',
-    body: '跳脫單項重量，六軸量化真實戰力',
+    body: '跳脫單一維度，六軸量化真實戰力',
   },
 ];
 
