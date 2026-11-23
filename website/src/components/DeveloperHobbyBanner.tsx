@@ -19,12 +19,9 @@ const DEV_HOBBY_PAIRS = [
 export function DeveloperHobbyBanner() {
   return (
     <aside className="rounded-2xl border border-white/10 bg-panel/50 px-3.5 py-3 sm:px-4 sm:py-3.5">
-      <p className="ui-kicker-zh">開發者小嗜好</p>
+      <p className="ui-kicker-zh">開發者彩蛋</p>
       <p className="mt-1.5 text-sm font-semibold text-zinc-50">
-        把肉體當超跑調校，是開發者的一點浪漫。
-      </p>
-      <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-        切換上方「遙測頻譜」，將六大生理指標轉譯為動力工程語彙（未來解鎖更多主題）：
+        把肉體當超跑改裝，切換「遙測頻譜」一秒體驗。
       </p>
       <ul
         className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3"
