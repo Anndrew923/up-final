@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Gauge } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Gauge } from 'lucide-react';
 import {
   academicReferences,
   doiDisplayLabel,
@@ -10,7 +10,20 @@ import {
   telemetryMapping,
 } from '../data/scienceData';
 
-export function SciencePage() {
+interface SciencePageProps {
+  onDownload: () => void;
+}
+
+/** In-page TOC — compact pills; hash targets clear fixed navbar via scroll-margin. */
+const SCIENCE_TOC = [
+  { id: 'science-charter', label: '分數憲章' },
+  { id: 'science-telemetry', label: '遙測映射' },
+  { id: 'science-axes', label: '六軸方法論' },
+  { id: 'science-specialty', label: '專項榮譽' },
+  { id: 'science-refs', label: '文獻索引' },
+] as const;
+
+export function SciencePage({ onDownload }: SciencePageProps) {
   return (
     <div className="max-w-[100vw] overflow-x-hidden">
       <section className="border-b border-white/5 bg-panel/50">
@@ -30,12 +43,27 @@ export function SciencePage() {
             最強肉體 Ultimate Physique 將原始物理量映射至以 100
             分為人類精英基準的六軸量尺；破百即超頻突破，並以可解釋的運動生理學公式與常模建立評測依據。
           </p>
+
+          <nav
+            className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+            aria-label="白皮書章節導覽"
+          >
+            {SCIENCE_TOC.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="rounded-lg border border-white/15 bg-steel/80 px-3 py-2 text-center font-mono text-[11px] tracking-wide text-zinc-200 transition hover:border-energy/40 hover:text-energy sm:text-left sm:text-xs"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </section>
 
       <section className="ui-section">
         <div className="ui-container space-y-6">
-          <div className="ui-card min-w-0 p-4 sm:p-8">
+          <div id="science-charter" className="ui-card min-w-0 p-4 sm:p-8">
             <div className="flex min-w-0 items-start gap-3">
               <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-energy" />
               <div className="min-w-0 flex-1">
@@ -43,25 +71,25 @@ export function SciencePage() {
                 <h2 className="font-serif text-xl text-zinc-100 sm:text-2xl">
                   統一分數空間憲章
                 </h2>
-                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-zinc-300">
-                  <li>
+                <div className="formula-box-steel mt-4 space-y-2.5">
+                  <p>
                     單軸理論上限：
-                    <span className="font-mono text-energy"> {scoreCharter.axisMax}</span>
+                    <span className="text-energy"> {scoreCharter.axisMax}</span>
                     {' '}分
-                  </li>
-                  <li>100 分語意：{scoreCharter.eliteBenchmarkMeaning}</li>
-                  <li>{scoreCharter.overclockBand}</li>
-                  <li className="break-words">{scoreCharter.overall}</li>
-                  <li>
+                  </p>
+                  <p>100 分語意：{scoreCharter.eliteBenchmarkMeaning}</p>
+                  <p>{scoreCharter.overclockBand}</p>
+                  <p className="break-words">{scoreCharter.overall}</p>
+                  <p>
                     不進六軸：
                     {scoreCharter.specialtiesExcluded.join('、')}（專項榮譽）
-                  </li>
-                </ul>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="ui-card min-w-0 p-4 sm:p-8">
+          <div id="science-telemetry" className="ui-card min-w-0 p-4 sm:p-8">
             <div className="flex min-w-0 items-start gap-3">
               <Gauge className="mt-0.5 h-5 w-5 shrink-0 text-energy" />
               <div className="min-w-0 flex-1">
@@ -91,7 +119,7 @@ export function SciencePage() {
         </div>
       </section>
 
-      <section className="pb-16 sm:pb-20">
+      <section id="science-axes" className="pb-16 sm:pb-20">
         <div className="ui-container space-y-6">
           <div>
             <p className="ui-kicker-zh mb-2">六軸方法論</p>
@@ -123,10 +151,10 @@ export function SciencePage() {
                 <div className="min-w-0">
                   <p className="ui-kicker-zh mb-2">核心公式與模型架構</p>
                   {/*
-                    WHY prose (not mono formula-box): public copy is narrative architecture,
-                    not compact equation dumps — mono tracking hurts long CJK readability.
+                    WHY formula-box (night + mono): elevates Brzycki / DOTS / FFMI / Cooper
+                    model lines as telemetry frames without deleting a single sentence.
                   */}
-                  <ul className="space-y-3 rounded-xl border border-white/10 bg-void/80 p-3 text-sm leading-relaxed text-zinc-300 sm:p-4">
+                  <ul className="formula-box list-none space-y-3">
                     {axis.formulas.map((f, i) => (
                       <li key={`${axis.id}-fx-${i}`} className="break-words">
                         · {f}
@@ -190,7 +218,10 @@ export function SciencePage() {
         </div>
       </section>
 
-      <section className="border-t border-white/5 bg-panel/40 ui-section">
+      <section
+        id="science-specialty"
+        className="border-t border-white/5 bg-panel/40 ui-section"
+      >
         <div className="ui-container">
           <p className="ui-kicker-zh mb-2">專項榮譽</p>
           <h2 className="font-serif text-2xl text-zinc-100">專項指標說明</h2>
@@ -213,7 +244,7 @@ export function SciencePage() {
         </div>
       </section>
 
-      <section className="border-t border-white/5 ui-section">
+      <section id="science-refs" className="border-t border-white/5 ui-section">
         <div className="ui-container">
           <p className="ui-kicker-zh">文獻索引</p>
           <h2 className="mt-2 font-serif text-2xl text-zinc-100">
@@ -247,6 +278,25 @@ export function SciencePage() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      <section id="science-cta" className="border-t border-white/10 bg-steel ui-section">
+        <div className="ui-container">
+          <div className="rounded-2xl border border-energy/30 bg-night/80 p-5 sm:p-8">
+            <p className="ui-kicker-zh">實測轉換</p>
+            <h2 className="mt-2 max-w-2xl text-balance font-serif text-xl text-zinc-100 sm:text-2xl">
+              看懂背後的運動生理學模型了嗎？立即輸入數據，生成你的六軸戰力雷達
+            </h2>
+            <button
+              type="button"
+              onClick={onDownload}
+              className="btn-primary mt-5 min-h-11 w-full sm:w-auto"
+            >
+              開始免費評測
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </section>
     </div>

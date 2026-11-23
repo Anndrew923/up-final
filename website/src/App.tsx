@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { DownloadModal } from './components/DownloadModal';
+import { BackToTopButton } from './components/BackToTopButton';
 import { StickyDownloadBar } from './components/StickyDownloadBar';
 import { HomePage } from './pages/HomePage';
 import { SciencePage } from './pages/SciencePage';
@@ -82,7 +83,10 @@ export default function App() {
         <main className="site-nav-offset-pt max-w-[100vw] flex-1 overflow-x-hidden">
           <Routes>
             <Route path="/" element={<HomePage onDownload={openDownload} />} />
-            <Route path="/science" element={<SciencePage />} />
+            <Route
+              path="/science"
+              element={<SciencePage onDownload={openDownload} />}
+            />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -93,6 +97,7 @@ export default function App() {
         onDownload={openDownload}
         onVisibilityChange={onStickyVisibility}
       />
+      <BackToTopButton />
       <DownloadModal open={downloadOpen} onClose={closeDownload} />
     </>
   );

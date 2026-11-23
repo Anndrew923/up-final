@@ -16,7 +16,7 @@ const ROUTE_META: Record<string, { title: string; description: string }> = {
   '/privacy': {
     title: `隱私權政策與健康免責 — ${SITE}`,
     description:
-      '本機優先資料原則、天梯公開欄位、訂閱自動續訂揭露，以及非醫療免責聲明。',
+      '本機優先與上傳邊界、Firebase／RevenueCat／Gemini 用途、帳號刪除與本機清除步驟、客服信箱與訂閱自動續訂揭露。',
   },
 };
 

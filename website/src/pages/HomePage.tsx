@@ -1,90 +1,22 @@
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight,
-  Cloud,
-  Gauge,
-  Lock,
-  Share2,
-  Sparkles,
-  Trophy,
-  Users,
-} from 'lucide-react';
-import { AthleteEndorsementCard } from '../components/AthleteEndorsementCard';
+import { ArrowRight, Cloud, Lock, Trophy } from 'lucide-react';
+import { AthletesShowcase } from '../components/AthletesShowcase';
 import { DeveloperHobbyBanner } from '../components/DeveloperHobbyBanner';
 import { MetricMindsetUpgrade } from '../components/MetricMindsetUpgrade';
 import { OverallGradeLadderCard } from '../components/OverallGradeLadderCard';
 import { RadarPreview } from '../components/RadarPreview';
-import { athletes } from '../data/athletes';
+import { SystemsShowcase } from '../components/SystemsShowcase';
 
 interface HomePageProps {
   onDownload: () => void;
 }
-
-type FeatureAccent = 'sky' | 'cyan' | 'teal' | 'indigo';
-
-/**
- * Four-step cool telemetry spectrum (sky → cyan → teal → indigo).
- * WHY: Mobile stacks vertically — progressive hues avoid adjacent same-color cards.
- */
-const FEATURE_ACCENT: Record<
-  FeatureAccent,
-  { badge: string; glow: string }
-> = {
-  sky: {
-    badge: 'border border-sky-500/20 bg-sky-500/10 text-sky-400',
-    glow: 'bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_55%)]',
-  },
-  cyan: {
-    badge: 'border border-cyan-500/20 bg-cyan-500/10 text-cyan-400',
-    glow: 'bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_55%)]',
-  },
-  teal: {
-    badge: 'border border-teal-500/20 bg-teal-500/10 text-teal-400',
-    glow: 'bg-[radial-gradient(circle_at_top_left,rgba(45,212,191,0.14),transparent_55%)]',
-  },
-  indigo: {
-    badge: 'border border-indigo-500/20 bg-indigo-500/10 text-indigo-400',
-    glow: 'bg-[radial-gradient(circle_at_top_left,rgba(129,140,248,0.14),transparent_55%)]',
-  },
-};
-
-const BENTO = [
-  {
-    sys: '01',
-    accent: 'sky',
-    icon: Gauge,
-    title: '打破量級與性別紅利，實力客觀說話',
-    body: '體重降 3 kg、臥推少 5 kg，是退步還是變強？整合六大體能與體組成常模，消除量級與性別差異，算出真實戰力。',
-  },
-  {
-    sys: '02',
-    accent: 'cyan',
-    icon: Share2,
-    title: '專屬戰力戰報 & 訓練自拍卡',
-    body: '記錄每次身體改裝軌跡。無論六邊形全能戰力、單項破 PR 或健身房自拍，一鍵生成高質感戰報卡片。',
-  },
-  {
-    sys: '03',
-    accent: 'teal',
-    icon: Users,
-    title: '全球天梯 & 俱樂部私榜',
-    body: '尋找同齡、同量級甚至跨性別的訓練同好，疊加雙人雷達正面 PK，在良性切磋中鎖定下一個突破目標。',
-  },
-  {
-    sys: '04',
-    accent: 'indigo',
-    icon: Sparkles,
-    title: 'DYNO INTEL 戰力引擎',
-    body: '重量推得上去，心肺或握力卻拖垮總分？精準揪出六軸弱項短板，給出下一步調校方向，讓每滴汗都有效。',
-  },
-] as const;
 
 export function HomePage({ onDownload }: HomePageProps) {
   return (
     <div className="max-w-[100vw] overflow-x-hidden">
       <section
         id="hero"
-        className="relative overflow-x-hidden border-b border-white/5"
+        className="relative overflow-x-hidden border-b border-white/5 bg-ink"
       >
         {/* WHY: Isolate decorative overflow so radar labels are not clipped. */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -134,22 +66,23 @@ export function HomePage({ onDownload }: HomePageProps) {
       {/* WHY: Sits after hobby tease, before systems — mindset bridge without bloating hero. */}
       <MetricMindsetUpgrade />
 
-      <section className="ui-section" id="systems">
+      <section
+        className="ui-section border-y border-violet-500/20 bg-night"
+        id="systems"
+      >
         <div className="ui-container">
-          <p className="ui-kicker-zh">核心系統</p>
+          <p className="ui-kicker-zh-violet">核心系統</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             四大核心評測系統
           </h2>
-          <div className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4">
-            {BENTO.map((item) => (
-              <FeatureSystemCard key={item.sys} item={item} />
-            ))}
+          <div className="mt-5 sm:mt-8">
+            <SystemsShowcase />
           </div>
         </div>
       </section>
 
       <section
-        className="ui-section border-y border-white/5 bg-panel/30"
+        className="ui-section border-t border-amber-500/25 bg-hall"
         id="ladder"
       >
         <div className="ui-container">
@@ -157,32 +90,31 @@ export function HomePage({ onDownload }: HomePageProps) {
         </div>
       </section>
 
-      {/* WHY border-b (not border-y): #ladder already draws the shared top hairline. */}
-      <section className="ui-section border-b border-white/5 bg-panel/40" id="athletes">
+      <section
+        className="ui-section border-y border-white/10 bg-zinc-900/85"
+        id="athletes"
+      >
         <div className="ui-container">
-          <p className="ui-kicker-zh">實測背書</p>
+          <p className="ui-kicker-zh-orange">實測背書</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             專項運動員實測
           </h2>
-          <div className="mt-5 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            {athletes.map((athlete) => (
-              <AthleteEndorsementCard key={athlete.id} athlete={athlete} />
-            ))}
+          <div className="mt-5 sm:mt-8 lg:max-w-3xl">
+            <AthletesShowcase />
           </div>
         </div>
       </section>
 
       <section
-        className="relative overflow-x-hidden border-y border-zinc-900 bg-zinc-950/80 ui-section"
+        className="relative overflow-x-hidden border-t border-amber-400/25 bg-gradient-to-b from-amber-500/[0.09] via-[#090B10] to-ink ui-section"
         id="plans"
       >
-        {/* Champagne ambient — separates 權益方案 from cool telemetry sections above. */}
         <div
-          className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_70%)] blur-2xl"
+          className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-amber-500/10 blur-2xl"
           aria-hidden
         />
         <div className="ui-container relative">
-          <p className="ui-kicker-zh">權益方案</p>
+          <p className="ui-kicker-zh-amber">權益方案</p>
           <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             方案與早鳥權益
           </h2>
@@ -190,51 +122,64 @@ export function HomePage({ onDownload }: HomePageProps) {
             核心評測零門檻永久免費；解鎖天梯與戰力引擎，挑戰更高維度。
           </p>
 
-          <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3">
-            <PricingCard
-              badge="CORE"
-              title="本機版"
-              price="免費開放"
-              priceSub="免註冊即用"
-              tier="core"
-              features={[
-                '六軸戰力評測與雷達全開',
-                '訓練日誌、1RM計算器與槓片計算器',
-                '專屬戰力圖卡與自拍浮水印匯出',
-                '全站零廣告干擾，純粹專注訓練',
-              ]}
-              icon={Lock}
-            />
-            <PricingCard
-              badge="GENESIS"
-              title="創世早鳥席"
-              price="限量 2,000 席"
-              priceSub="額滿永久絕版"
-              tier="genesis"
-              features={[
-                '終身免訂閱，永久解鎖全球天梯（讀取／上傳）',
-                '專屬創世先鋒席次編號（限量 2,000 席）',
-                '完整保留免費版全部核心功能',
-              ]}
-              icon={Trophy}
-            />
-            <PricingCard
-              badge="PRO"
-              title="訂閱 PRO"
-              price="$1.99 / 月"
-              priceSub="年繳 $14.99 USD（現省 37%）"
-              tier="pro"
-              features={[
-                '跨裝置雲端數據自動備份與還原',
-                '全球多維天梯完整參賽與篩選權',
-                '俱樂部私榜建立與專屬對決排行',
-                'DYNO INTEL 戰力引擎每日 30 次深度分析',
-              ]}
-              icon={Cloud}
-            />
+          {/* WHY: Mobile leads with GENESIS; desktop keeps CORE | GENESIS | PRO. */}
+          <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3 lg:items-stretch">
+            <div className="order-2 h-full lg:order-1">
+              <PricingCard
+                badge="CORE"
+                title="本機版"
+                price="免費開放"
+                priceSub="免註冊即用"
+                tier="core"
+                features={[
+                  '六軸戰力評測與雷達全開',
+                  '訓練日誌、1RM計算器與槓片計算器',
+                  '專屬戰力圖卡與自拍浮水印匯出',
+                  '全站零廣告干擾，純粹專注訓練',
+                ]}
+                icon={Lock}
+                ctaLabel="免費下載開測"
+                ctaVariant="ghost"
+                onCta={onDownload}
+              />
+            </div>
+            <div className="order-1 h-full lg:order-2">
+              <PricingCard
+                badge="GENESIS"
+                title="創世早鳥席"
+                price="限量 2,000 席"
+                priceSub="額滿永久絕版"
+                priceTag="一次解鎖 · 終身免訂閱"
+                tier="genesis"
+                features={[
+                  '終身免訂閱，永久解鎖全球天梯（讀取／上傳）',
+                  '專屬創世先鋒席次編號（限量 2,000 席）',
+                  '完整保留免費版全部核心功能',
+                ]}
+                icon={Trophy}
+                ctaLabel="下載 App 搶占早鳥席"
+                ctaVariant="primary"
+                onCta={onDownload}
+              />
+            </div>
+            <div className="order-3 h-full">
+              <PricingCard
+                badge="PRO"
+                title="訂閱 PRO"
+                price="$1.99 / 月"
+                priceSub="年繳 $14.99 USD（現省 37%）"
+                tier="pro"
+                features={[
+                  '跨裝置雲端數據自動備份與還原',
+                  '全球多維天梯完整參賽與篩選權',
+                  '俱樂部私榜建立與專屬對決排行',
+                  'DYNO INTEL 戰力引擎每日 30 次深度分析',
+                ]}
+                icon={Cloud}
+              />
+            </div>
           </div>
 
-          {/* WHY: Primary orange CTA lives in StickyDownloadBar — avoid double orange at fold end. */}
           <div className="mt-6 flex flex-col items-stretch gap-2.5 sm:mt-10 sm:flex-row sm:items-center sm:gap-3">
             <Link to="/science" className="btn-secondary min-h-11 w-full sm:w-auto">
               查閱科學評測白皮書
@@ -250,42 +195,14 @@ export function HomePage({ onDownload }: HomePageProps) {
   );
 }
 
-function FeatureSystemCard({ item }: { item: (typeof BENTO)[number] }) {
-  const accent = FEATURE_ACCENT[item.accent];
-
-  return (
-    <article className="relative overflow-hidden rounded-2xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/90 to-zinc-950 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] sm:p-6">
-      <div
-        className={`pointer-events-none absolute inset-0 ${accent.glow}`}
-        aria-hidden
-      />
-      <div className="relative flex items-start justify-between gap-3">
-        <div
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${accent.badge}`}
-        >
-          <item.icon className="h-5 w-5" aria-hidden />
-        </div>
-        <span className="font-mono text-[11px] tracking-widest text-zinc-500">
-          SYS // {item.sys}
-        </span>
-      </div>
-      <h3 className="relative mt-3 text-base font-semibold text-zinc-100 sm:mt-4 sm:text-lg">
-        {item.title}
-      </h3>
-      <p className="relative mt-1.5 text-sm leading-snug text-zinc-300 sm:mt-2 sm:leading-relaxed">
-        {item.body}
-      </p>
-    </article>
-  );
-}
-
 type PricingTier = 'core' | 'genesis' | 'pro';
+type PricingCtaVariant = 'primary' | 'ghost';
 
 const PRICING_TIER_SHELL: Record<PricingTier, string> = {
-  core: 'bg-zinc-900/60 border-zinc-800',
+  core: 'bg-zinc-900/60 border-zinc-800 p-3.5 sm:p-4',
   genesis:
-    'bg-gradient-to-b from-amber-500/10 via-zinc-900/90 to-zinc-950 border-amber-400/50 shadow-[0_0_30px_-10px_rgba(245,158,11,0.2)]',
-  pro: 'bg-gradient-to-b from-indigo-500/10 to-zinc-950 border-indigo-400/35',
+    'bg-gradient-to-b from-amber-500/[0.12] via-zinc-900/90 to-zinc-950 border-amber-400/60 shadow-[0_0_36px_-8px_rgba(245,158,11,0.28)] p-4 sm:p-6',
+  pro: 'bg-gradient-to-b from-indigo-500/10 to-zinc-950 border-indigo-400/35 p-3.5 sm:p-4',
 };
 
 const PRICING_TIER_ACCENT: Record<PricingTier, string> = {
@@ -299,23 +216,32 @@ function PricingCard({
   title,
   price,
   priceSub,
+  priceTag,
   features,
   tier,
   icon: Icon,
+  ctaLabel,
+  ctaVariant,
+  onCta,
 }: {
   badge: string;
   title: string;
   price: string;
   priceSub?: string;
+  priceTag?: string;
   features: string[];
   tier: PricingTier;
   icon: typeof Lock;
+  ctaLabel?: string;
+  ctaVariant?: PricingCtaVariant;
+  onCta?: () => void;
 }) {
   const accentClass = PRICING_TIER_ACCENT[tier];
+  const featureGap = tier === 'genesis' ? 'mt-5 space-y-2' : 'mt-3.5 space-y-1.5';
 
   return (
     <article
-      className={`relative flex flex-col rounded-2xl border p-4 sm:p-6 ${PRICING_TIER_SHELL[tier]}`}
+      className={`relative flex h-full flex-col rounded-2xl border ${PRICING_TIER_SHELL[tier]}`}
     >
       {tier === 'genesis' ? (
         <span className="absolute -top-2.5 right-4 rounded-full bg-amber-400 px-2.5 py-0.5 font-mono text-[10px] font-bold text-zinc-950">
@@ -328,12 +254,29 @@ function PricingCard({
           {badge}
         </span>
       </div>
-      <h3 className="mt-3 font-serif text-xl text-zinc-100">{title}</h3>
-      <p className="mt-2 font-mono text-lg text-zinc-100">{price}</p>
+      <h3
+        className={`font-serif text-zinc-100 ${
+          tier === 'genesis' ? 'mt-3 text-xl' : 'mt-2.5 text-lg'
+        }`}
+      >
+        {title}
+      </h3>
+      <div
+        className={`flex flex-wrap items-center gap-2 ${
+          tier === 'genesis' ? 'mt-2' : 'mt-1.5'
+        }`}
+      >
+        <p className="font-mono text-lg text-zinc-100">{price}</p>
+        {priceTag ? (
+          <span className="rounded-md border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 font-mono text-[10px] tracking-wide text-amber-300">
+            {priceTag}
+          </span>
+        ) : null}
+      </div>
       {priceSub ? (
         <p className="font-mono text-xs text-zinc-400">{priceSub}</p>
       ) : null}
-      <ul className="mt-5 space-y-2 text-sm text-zinc-300">
+      <ul className={`${featureGap} flex-1 text-sm text-zinc-300`}>
         {features.map((f) => (
           <li key={f} className="flex gap-2">
             <span className="shrink-0 text-zinc-500" aria-hidden>
@@ -343,6 +286,19 @@ function PricingCard({
           </li>
         ))}
       </ul>
+      {ctaLabel && onCta ? (
+        <button
+          type="button"
+          onClick={onCta}
+          className={
+            ctaVariant === 'primary'
+              ? 'btn-primary mt-5 w-full min-h-11'
+              : 'btn-secondary mt-4 w-full min-h-10 !py-2.5 text-sm'
+          }
+        >
+          {ctaLabel}
+        </button>
+      ) : null}
     </article>
   );
 }

@@ -1,7 +1,6 @@
 /**
- * Homepage「指標觀念升級」— two equal-weight metaphor cards.
- * WHY: 體脂率 / 最強肉體分數 read as twin cores under the gold-line, not baseline vs hero.
- * Layout: 1-col stack on phone, 2-col from md; shared energy chrome; text-pretty curbs orphans.
+ * Homepage「指標觀念升級」— twin equal-weight titanium cards on a steel-blue band.
+ * WHY: De-blue chrome + `steel` stage so this block reads apart from ink systems above/below.
  */
 
 interface ContrastCard {
@@ -23,16 +22,16 @@ const CARDS: readonly ContrastCard[] = [
   },
 ];
 
-const CARD_SHELL = 'border-energy/40 bg-energy/[0.06]';
+const CARD_SHELL = 'border-white/30 bg-white/[0.06]';
 
 export function MetricMindsetUpgrade() {
   return (
     <section
-      className="border-b border-white/5 bg-panel/20 py-8 sm:py-12"
+      className="border-y border-white/15 bg-steel py-6"
       aria-labelledby="metric-mindset-heading"
     >
       <div className="ui-container">
-        <p className="ui-kicker-zh">指標觀念升級</p>
+        <p className="ui-kicker-zh-amber">指標觀念升級</p>
         <h2
           id="metric-mindset-heading"
           className="mt-2 max-w-3xl text-balance font-serif text-xl leading-snug text-zinc-100 sm:mt-3 sm:text-3xl"
@@ -46,14 +45,14 @@ export function MetricMindsetUpgrade() {
               key={card.label}
               className={`rounded-xl border px-3 py-2.5 sm:px-3.5 sm:py-3 ${CARD_SHELL}`}
             >
-              <p className="font-mono text-[10px] tracking-wide text-energy sm:text-[11px]">
+              <p className="font-mono text-[10px] tracking-wide text-amber-300 sm:text-[11px]">
                 {card.label}
                 <span className="mx-1 opacity-50" aria-hidden>
                   ｜
                 </span>
                 {card.metric}
               </p>
-              <p className="mt-1 text-pretty text-sm leading-snug text-zinc-100">
+              <p className="mt-1 text-pretty text-sm font-semibold leading-snug text-white">
                 {card.body}
               </p>
             </li>

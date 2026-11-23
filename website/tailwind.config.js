@@ -10,6 +10,14 @@ export default {
          * subtitle copy paint as #050505 (invisible on dark backgrounds).
          */
         void: '#050505',
+        /** Homepage stage black — slightly lifted vs void for full-bleed section rhythm. */
+        ink: '#06080B',
+        /** Mindset upgrade steel-blue band — reads apart from ink systems. */
+        steel: '#121A26',
+        /** Systems night-violet stage — cool purple hall between steel and hall. */
+        night: '#0D0A17',
+        /** Ladder black-gold hall — warm brown-black stage. */
+        hall: '#16110A',
         panel: '#0a0a0a',
         card: '#111111',
         brand: {

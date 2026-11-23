@@ -32,12 +32,15 @@
   }
 
   /* Clear fixed navbar (+ safe-area) so in-page anchors are not hidden under the bar. */
+  /* Home section ids + doc-page prefixes (science-*, privacy-*). */
   #radar,
   #systems,
   #ladder,
   #athletes,
   #plans,
-  #hero {
+  #hero,
+  [id^='science-'],
+  [id^='privacy-'] {
     scroll-margin-top: var(--site-nav-offset);
   }
 
@@ -79,6 +82,19 @@
     @apply font-mono text-[11px] sm:text-xs tracking-wide text-energy normal-case;
   }
 
+  /* Section-tone kickers — same type recipe as ui-kicker-zh, own color (no utility clash). */
+  .ui-kicker-zh-amber {
+    @apply font-mono text-[11px] sm:text-xs tracking-wide text-amber-400 normal-case;
+  }
+
+  .ui-kicker-zh-orange {
+    @apply font-mono text-[11px] sm:text-xs tracking-wide text-orange-400 normal-case;
+  }
+
+  .ui-kicker-zh-violet {
+    @apply font-mono text-[11px] sm:text-xs tracking-wide text-violet-400 normal-case;
+  }
+
   .ui-card {
     @apply rounded-2xl border border-white/10 bg-card;
   }
@@ -95,8 +111,20 @@
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-800/80;
   }
 
+  /*
+    Telemetry formula frames — stage tokens via theme(), not @apply bg-*.
+    WHY: @apply bg-night/bg-steel can 500 under Vite HMR when monorepo root Tailwind
+    config is resolved first (root has no night/steel). theme() + pinned postcss config
+    keep frames stable.
+  */
   .formula-box {
-    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/10 bg-void/80 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-violet-500/25 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
+    background-color: theme('colors.night');
+  }
+
+  .formula-box-steel {
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/15 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
+    background-color: theme('colors.steel');
   }
 
   /* Display-only locale hint — not an interactive language switcher. */

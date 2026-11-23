@@ -1,3 +1,3 @@
-# Optional portraits for future verified recruit cards (simple layout).
-# Set `avatarUrl: '/athletes/<file>.jpg'` in `src/data/athletes.ts`.
+# Optional portraits for future verified recruit cards.
+# Drop files here; wire paths from `website/src/data/athletes.ts` when a seat unlocks.
 # Featured lead-dev card uses `/founder-battle-card.png` only — no circular avatar.
