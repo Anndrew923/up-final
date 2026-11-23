@@ -51,7 +51,7 @@ export function MetricMindsetUpgrade() {
                 <span className="mx-1 opacity-50" aria-hidden>
                   ｜
                 </span>
-                <span>{card.metric}</span>
+                {card.metric}
               </p>
               <p className="mt-1 text-pretty text-sm leading-snug text-zinc-100">
                 {card.body}
