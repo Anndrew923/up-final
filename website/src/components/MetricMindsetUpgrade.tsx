@@ -13,7 +13,7 @@ const CARDS: readonly ContrastCard[] = [
   {
     label: '瘦身指標',
     metric: '體脂率',
-    body: '跳脫只看體重，精準掌握體組成',
+    body: '跳脫只看體重，科學解析身體組成',
   },
   {
     label: '訓練指標',
