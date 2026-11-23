@@ -116,7 +116,7 @@ export function RadarPreview() {
 
       <div className="relative mb-2 flex flex-col gap-2 sm:mb-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="ui-kicker-zh">雷達即時預覽</p>
+          <p className="ui-kicker-zh whitespace-nowrap">雷達即時預覽 · 示範數據</p>
           <p className="mt-0.5 font-mono text-xs text-zinc-400">
             綜合戰力{' '}
             <span className="font-semibold text-cyan-300">{OVERALL}</span>
