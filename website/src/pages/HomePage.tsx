@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { AthleteEndorsementCard } from '../components/AthleteEndorsementCard';
 import { DeveloperHobbyBanner } from '../components/DeveloperHobbyBanner';
+import { MetricMindsetUpgrade } from '../components/MetricMindsetUpgrade';
 import { OverallGradeLadderCard } from '../components/OverallGradeLadderCard';
 import { RadarPreview } from '../components/RadarPreview';
 import { athletes } from '../data/athletes';
@@ -129,6 +130,9 @@ export function HomePage({ onDownload }: HomePageProps) {
           </div>
         </div>
       </section>
+
+      {/* WHY: Sits after hobby tease, before systems — mindset bridge without bloating hero. */}
+      <MetricMindsetUpgrade />
 
       <section className="ui-section" id="systems">
         <div className="ui-container">
