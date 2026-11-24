@@ -118,23 +118,55 @@ export function RadarPreview() {
   const dash = RADAR_PREVIEW.polygonDashLength;
 
   return (
-    <div className="ui-panel relative overflow-x-hidden p-3 sm:p-4">
+    /*
+      WHY: Stage wash lives on a wrapper outside the panel. ui-panel keeps
+      overflow-x-hidden for chart bleed; a -z-10 child inside that stacking
+      context is clipped and painted under bg-panel — dead glow / debt.
+    */
+    <div className="relative">
       <div
-        className="pointer-events-none absolute inset-0 bg-grid-faint bg-grid opacity-40"
+        className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(ellipse_at_50%_35%,rgba(0,191,255,0.16),transparent_68%)] blur-2xl"
         aria-hidden
       />
-      <div
-        className="pointer-events-none absolute -top-16 right-0 h-36 w-36 rounded-full bg-energy/10 blur-3xl"
-        aria-hidden
-      />
+      <div className="ui-panel relative overflow-x-hidden border-white/15 p-3 shadow-energy sm:p-4">
+        <div
+          className="pointer-events-none absolute inset-0 bg-grid-faint bg-grid opacity-40"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          aria-hidden
+        />
+        {/* Single internal wash — was duplicated left+right blobs. */}
+        <div
+          className="pointer-events-none absolute -top-16 left-1/2 h-40 w-48 -translate-x-1/2 rounded-full bg-energy/15 blur-3xl"
+          aria-hidden
+        />
 
-      <div className="relative mb-2 min-w-0 sm:mb-3">
-        <p className="ui-kicker-zh whitespace-nowrap">雷達即時預覽 · 示範數據</p>
-        <p className="mt-0.5 font-mono text-xs text-zinc-400">
-          綜合戰力{' '}
-          <span className="font-semibold text-cyan-300">{OVERALL}</span>
-        </p>
-      </div>
+        <div className="relative mb-3 flex min-w-0 items-start justify-between gap-3 sm:mb-4 sm:items-center">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full bg-energy shadow-[0_0_8px_rgba(0,191,255,0.85)] animate-energy-breathe"
+                aria-hidden
+              />
+              <h3 className="text-base font-bold text-white sm:text-lg">
+                雷達即時預覽
+              </h3>
+            </div>
+            <p className="mt-0.5 pl-4 font-mono text-[10px] tracking-wide text-zinc-500 sm:text-[11px]">
+              互動示範數據
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-mono text-[10px] tracking-wide text-zinc-500 sm:text-[11px]">
+              綜合戰力
+            </p>
+            <p className="font-mono text-2xl font-black tabular-nums leading-none text-energy sm:text-3xl">
+              {OVERALL}
+            </p>
+          </div>
+        </div>
 
       <div className="relative mx-auto w-full max-w-[min(100%,340px)] lg:max-h-[280px]">
         <div
@@ -470,6 +502,7 @@ export function RadarPreview() {
         <p className="sr-only" aria-live="polite">
           目前視圖：{mode === 'physique' ? '體能指標' : '遙測頻譜'}
         </p>
+      </div>
       </div>
     </div>
   );

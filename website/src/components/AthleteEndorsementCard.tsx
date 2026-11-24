@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useId, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useCallback, useState } from 'react';
 import type { VerifiedAthleteEntry } from '../data/athletes';
+import { ImageLightbox } from './ImageLightbox';
 
 /**
  * Compact verified Bento — thumb + identity row, then full metrics/quote.
@@ -96,63 +96,6 @@ function BattleCardThumb({
   );
 }
 
-function BattleCardLightbox({
-  src,
-  name,
-  onClose,
-}: {
-  src: string;
-  name: string;
-  onClose: () => void;
-}) {
-  const titleId = useId();
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      onClick={onClose}
-    >
-      <div
-        className="relative max-h-[90dvh] w-full max-w-lg"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <p id={titleId} className="sr-only">
-          {name} 實機遙測戰報卡
-        </p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute -top-10 right-0 rounded-full border border-zinc-600 bg-zinc-900/90 px-3 py-1 font-mono text-[11px] text-zinc-200 transition hover:border-zinc-400"
-        >
-          關閉
-        </button>
-        <img
-          src={src}
-          alt={`${name} 實機遙測戰報卡放大檢視`}
-          className="max-h-[85dvh] w-full rounded-xl border border-zinc-700 object-contain shadow-2xl"
-        />
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 export function AthleteEndorsementCard({
   athlete,
 }: {
@@ -216,9 +159,10 @@ export function AthleteEndorsementCard({
       </article>
 
       {lightboxSrc ? (
-        <BattleCardLightbox
+        <ImageLightbox
           src={lightboxSrc}
-          name={athlete.name}
+          title={`${athlete.name} 實機遙測戰報卡`}
+          alt={`${athlete.name} 實機遙測戰報卡放大檢視`}
           onClose={closeLightbox}
         />
       ) : null}

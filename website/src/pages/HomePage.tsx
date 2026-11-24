@@ -59,18 +59,39 @@ export function HomePage({ onDownload }: HomePageProps) {
         className="border-b border-white/5 bg-ink ui-section"
       >
         <div className="ui-container">
+          {/*
+            WHY: Vertical beam + badge break the flat ink void after Hero scroll,
+            pulling the eye into the pain headline before the radar instrument.
+            Beam/LED are decorative; badge copy stays in the a11y tree.
+          */}
+          <div className="mb-6 flex flex-col items-center sm:mb-8">
+            <div
+              className="h-10 w-px bg-gradient-to-b from-transparent via-energy/70 to-energy/20 sm:h-12"
+              aria-hidden
+            />
+            <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-energy/35 bg-energy/10 px-3 py-1 font-mono text-[10px] tracking-wide text-energy sm:text-[11px]">
+              <span
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-energy shadow-[0_0_8px_rgba(0,191,255,0.85)] animate-energy-breathe"
+                aria-hidden
+              />
+              CORE ENGINE · 六軸戰力診斷
+            </span>
+          </div>
+
           <div className="ui-section-head">
-            <h2 className="text-pretty font-serif text-xl font-bold leading-snug text-zinc-100 sm:text-3xl">
+            <h2 className="text-pretty font-serif text-3xl font-black leading-[1.22] tracking-tight text-zinc-100 sm:text-5xl sm:leading-[1.15]">
               增肌怕胖、減脂怕掉力、
               <br className="sm:hidden" />
-              練大卻跑不動？
+              <span className="text-white [text-shadow:0_0_24px_rgba(255,255,255,0.22)]">
+                練大卻跑不動？
+              </span>
             </h2>
             {/* WHY: 起→承 bridge before the instrument — keeps radar card as the 「轉」 beat. */}
             <p className="mt-4 text-pretty text-base leading-relaxed text-zinc-300 sm:mt-5 sm:text-lg">
               問題不在你不夠努力，而是缺乏全局視角。
               <br />
               <span className="text-white">《最強肉體》</span>
-              用<span className="text-energy">六軸常模</span>
+              用<span className="text-energy">六軸基準</span>
               即時診斷，一眼揪出你的短板與強項。
             </p>
           </div>
@@ -91,7 +112,11 @@ export function HomePage({ onDownload }: HomePageProps) {
         id="systems"
       >
         <div className="ui-container">
-          <div className="ui-section-head">
+          {/*
+            WHY: Override ui-section-head mb on phone so title + 1×4 tabs + phone
+            can share one viewport with the sticky download bar.
+          */}
+          <div className="ui-section-head mb-4 sm:mb-12">
             <p className="ui-kicker-zh-violet">核心系統</p>
             <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
               四大核心評測系統

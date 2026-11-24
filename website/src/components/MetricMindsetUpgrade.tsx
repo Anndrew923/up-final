@@ -1,75 +1,226 @@
+import type { ReactElement } from 'react';
+
 /**
- * Homepage「指標觀念升級」— twin equal-weight contrast cards on a steel-blue band.
- * WHY: Strip HUD chrome (scanlines / sparks / polylines / corner brackets) so the
- * locked eight-character contrast copy breathes on a clean dark stage.
+ * Homepage「指標觀念升級」— side-by-side visual contrast cards.
+ * WHY: Wordy left-copy + mini gauges diluted the analogy; pure glowing ring vs
+ * six-axis radar (with one-line captions) mirrors「體脂率 ↔ 六軸戰力」at a glance.
  */
 
+type MetricSpectrum = 'amber' | 'energy';
+
 interface ContrastCard {
-  label: string;
-  metric: string;
-  body: string;
-  wash: string;
-  border: string;
-  labelTone: string;
-  stroke: string;
-  fill: string;
+  spectrum: MetricSpectrum;
+  kicker: string;
+  title: string;
 }
 
 const CARDS: readonly ContrastCard[] = [
   {
-    label: '瘦身指標',
-    metric: '體脂率',
-    body: '跳脫只看體重，科學解析身體組成',
-    wash: 'from-amber-500/15 via-transparent to-transparent',
-    border: 'border-amber-400/35',
-    labelTone: 'text-amber-300/90',
-    stroke: 'rgba(251,191,36,0.45)',
-    fill: 'rgba(251,191,36,0.08)',
+    spectrum: 'amber',
+    kicker: '瘦身 · 體脂率',
+    title: '看體脂，不只體重',
   },
   {
-    label: '訓練指標',
-    metric: '最強肉體分數',
-    body: '跳脫單一維度，六軸量化真實戰力',
-    wash: 'from-energy/18 via-transparent to-transparent',
-    border: 'border-energy/35',
-    labelTone: 'text-energy/90',
-    stroke: 'rgba(0,191,255,0.45)',
-    fill: 'rgba(0,191,255,0.08)',
+    spectrum: 'energy',
+    kicker: '訓練 · 六軸戰力',
+    title: '看六軸，不只單項',
   },
 ];
 
-/** Quiet hex watermark — presentational accent only. */
-function MiniHexMark({ stroke, fill }: { stroke: string; fill: string }) {
+const SPECTRUM = {
+  amber: {
+    wash: 'from-amber-500/18 via-transparent to-transparent',
+    border: 'border-amber-400/35',
+    kicker: 'text-amber-300/90',
+    accent: '#fbbf24',
+    accentSoft: 'rgba(251,191,36,0.35)',
+    accentFill: 'rgba(251,191,36,0.2)',
+    accentDim: 'rgba(251,191,36,0.12)',
+  },
+  energy: {
+    wash: 'from-energy/20 via-transparent to-transparent',
+    border: 'border-energy/35',
+    kicker: 'text-energy/90',
+    accent: '#00bfff',
+    accentSoft: 'rgba(0,191,255,0.4)',
+    accentFill: 'rgba(0,191,255,0.18)',
+  },
+} as const;
+
+/** Shared diagram stage — no nested chrome frame; glyph breathes on the card. */
+const DIAGRAM_STAGE =
+  'relative mx-auto flex aspect-square w-full max-w-[9.5rem] items-center justify-center sm:max-w-[11rem]';
+
+const RING_CX = 64;
+const RING_CY = 64;
+const RING_R = 42;
+const RING_STROKE = 11;
+const RING_C = 2 * Math.PI * RING_R;
+/** Fat arc ≈ 34% — visual stand-in for composition split, not a live metric. */
+const RING_FAT = RING_C * 0.34;
+const RING_LEAN = RING_C - RING_FAT;
+const RING_ROTATE = `rotate(-90 ${RING_CX} ${RING_CY})`;
+
+/** Amber — dual-segment composition ring (fat arc + lean arc). */
+function CompositionRingDiagram() {
+  const { accent, accentSoft, accentDim } = SPECTRUM.amber;
+
   return (
-    <svg
-      viewBox="0 0 64 64"
-      className="h-14 w-14 shrink-0 opacity-35 sm:h-16 sm:w-16"
-      aria-hidden
-    >
-      <polygon
-        points="32,6 54,19 54,45 32,58 10,45 10,19"
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1"
-        opacity="0.5"
-      />
-      <polygon
-        points="32,14 46,22 46,42 32,50 18,42 18,22"
-        fill="none"
-        stroke={stroke}
-        strokeWidth="0.8"
-        opacity="0.4"
-      />
-      <polygon
-        points="32,18 44,25 42,40 32,46 20,38 22,24"
-        fill={fill}
-        stroke={stroke}
-        strokeWidth="1.1"
-      />
-      <circle cx="32" cy="32" r="1.6" fill={stroke} />
-    </svg>
+    <div className={DIAGRAM_STAGE} aria-hidden>
+      <svg
+        viewBox="0 0 128 128"
+        className="h-full w-full drop-shadow-[0_0_18px_rgba(251,191,36,0.28)]"
+      >
+        <circle
+          cx={RING_CX}
+          cy={RING_CY}
+          r={RING_R}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={RING_STROKE}
+        />
+        <circle
+          cx={RING_CX}
+          cy={RING_CY}
+          r={RING_R}
+          fill="none"
+          stroke={accentDim}
+          strokeWidth={RING_STROKE}
+          strokeDasharray={`${RING_LEAN} ${RING_FAT}`}
+          strokeDashoffset={-RING_FAT}
+          strokeLinecap="butt"
+          transform={RING_ROTATE}
+        />
+        <circle
+          cx={RING_CX}
+          cy={RING_CY}
+          r={RING_R}
+          fill="none"
+          stroke={accent}
+          strokeWidth={RING_STROKE}
+          strokeDasharray={`${RING_FAT} ${RING_LEAN}`}
+          strokeLinecap="butt"
+          transform={RING_ROTATE}
+          style={{ filter: `drop-shadow(0 0 6px ${accentSoft})` }}
+        />
+        <circle cx={RING_CX} cy={RING_CY} r="18" fill="rgba(9,9,11,0.85)" />
+        <circle
+          cx={RING_CX}
+          cy={RING_CY}
+          r="18"
+          fill="none"
+          stroke={accentSoft}
+          strokeWidth="1.2"
+        />
+        <circle cx={RING_CX} cy={RING_CY} r="3.2" fill={accent} />
+      </svg>
+    </div>
   );
 }
+
+const RADAR_CX = 64;
+const RADAR_CY = 64;
+const RADAR_OUTER = 46;
+const RADAR_FACE_R = 34;
+const RADAR_FACE_SCALES = [0.92, 0.7, 0.85, 0.62, 0.78, 0.88] as const;
+
+function hexRingPoints(cx: number, cy: number, r: number): string {
+  return Array.from({ length: 6 }, (_, i) => {
+    const a = -Math.PI / 2 + (i * Math.PI) / 3;
+    return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+  }).join(' ');
+}
+
+const HEX_OUTER = hexRingPoints(RADAR_CX, RADAR_CY, RADAR_OUTER);
+const HEX_MID = hexRingPoints(RADAR_CX, RADAR_CY, RADAR_OUTER * 0.66);
+const HEX_INNER = hexRingPoints(RADAR_CX, RADAR_CY, RADAR_OUTER * 0.33);
+const HEX_SPOKES = Array.from({ length: 6 }, (_, i) => {
+  const a = -Math.PI / 2 + (i * Math.PI) / 3;
+  return {
+    x2: RADAR_CX + RADAR_OUTER * Math.cos(a),
+    y2: RADAR_CY + RADAR_OUTER * Math.sin(a),
+  };
+});
+const COMBAT_FACE = RADAR_FACE_SCALES.map((scale, i) => {
+  const a = -Math.PI / 2 + (i * Math.PI) / 3;
+  return `${RADAR_CX + RADAR_FACE_R * scale * Math.cos(a)},${RADAR_CY + RADAR_FACE_R * scale * Math.sin(a)}`;
+}).join(' ');
+const COMBAT_NODES = RADAR_FACE_SCALES.map((scale, i) => {
+  const a = -Math.PI / 2 + (i * Math.PI) / 3;
+  return {
+    cx: RADAR_CX + RADAR_FACE_R * scale * Math.cos(a),
+    cy: RADAR_CY + RADAR_FACE_R * scale * Math.sin(a),
+  };
+});
+
+/** Energy — concentric hex grid + lit six-axis combat polygon. */
+function SixAxisRadarDiagram() {
+  const { accent, accentSoft, accentFill } = SPECTRUM.energy;
+
+  return (
+    <div className={DIAGRAM_STAGE} aria-hidden>
+      <svg
+        viewBox="0 0 128 128"
+        className="h-full w-full drop-shadow-[0_0_18px_rgba(0,191,255,0.3)]"
+      >
+        <polygon
+          points={HEX_OUTER}
+          fill="none"
+          stroke="rgba(255,255,255,0.12)"
+          strokeWidth="1"
+        />
+        <polygon
+          points={HEX_MID}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="0.9"
+        />
+        <polygon
+          points={HEX_INNER}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth="0.8"
+        />
+        {HEX_SPOKES.map((spoke, i) => (
+          <line
+            key={i}
+            x1={RADAR_CX}
+            y1={RADAR_CY}
+            x2={spoke.x2}
+            y2={spoke.y2}
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="0.8"
+          />
+        ))}
+        <polygon
+          points={COMBAT_FACE}
+          fill={accentFill}
+          stroke={accent}
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+          style={{ filter: `drop-shadow(0 0 8px ${accentSoft})` }}
+        />
+        {COMBAT_NODES.map((node, i) => (
+          <circle
+            key={i}
+            cx={node.cx}
+            cy={node.cy}
+            r="2.6"
+            fill={accent}
+            stroke="rgba(0,0,0,0.35)"
+            strokeWidth="0.6"
+          />
+        ))}
+        <circle cx={RADAR_CX} cy={RADAR_CY} r="2.4" fill={accent} />
+      </svg>
+    </div>
+  );
+}
+
+const DIAGRAM_BY_SPECTRUM: Record<MetricSpectrum, () => ReactElement> = {
+  amber: CompositionRingDiagram,
+  energy: SixAxisRadarDiagram,
+};
 
 export function MetricMindsetUpgrade() {
   return (
@@ -88,36 +239,43 @@ export function MetricMindsetUpgrade() {
           </h2>
         </div>
 
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 md:items-stretch">
-          {CARDS.map((card) => (
-            <li
-              key={card.label}
-              className={`relative h-full overflow-hidden rounded-xl border bg-gradient-to-br from-zinc-900/95 via-zinc-950 to-black p-6 sm:p-7 ${card.border}`}
-            >
-              <div
-                className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${card.wash}`}
-                aria-hidden
-              />
+        {/*
+          WHY: Always 2-up — title analogy is 1:1; stacked cards broke the rhyme
+          on phone. Diagram dominates; caption is one locked line under.
+        */}
+        <ul className="grid grid-cols-2 gap-3 sm:gap-6">
+          {CARDS.map((card) => {
+            const tone = SPECTRUM[card.spectrum];
+            const Diagram = DIAGRAM_BY_SPECTRUM[card.spectrum];
+            return (
+              <li
+                key={card.spectrum}
+                className={`relative overflow-hidden rounded-xl border bg-gradient-to-b from-zinc-900/95 via-zinc-950 to-black px-2.5 pb-3.5 pt-4 sm:px-5 sm:pb-5 sm:pt-6 ${tone.border}`}
+              >
+                <div
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${tone.wash}`}
+                  aria-hidden
+                />
 
-              <div className="relative flex h-full items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`font-mono text-[10px] tracking-wide sm:text-[11px] ${card.labelTone}`}
-                  >
-                    {card.label}
-                    <span className="mx-1.5 opacity-50" aria-hidden>
-                      ·
-                    </span>
-                    {card.metric}
-                  </p>
-                  <p className="mt-3 text-pretty text-base font-semibold leading-relaxed text-white">
-                    {card.body}
-                  </p>
+                <div className="relative flex flex-col items-center">
+                  <div className="flex w-full items-center justify-center py-1 sm:py-2">
+                    <Diagram />
+                  </div>
+                  <div className="mt-2 w-full min-w-0 text-center sm:mt-3">
+                    <p
+                      className={`truncate font-mono text-[9px] tracking-wide sm:text-[11px] ${tone.kicker}`}
+                    >
+                      {card.kicker}
+                    </p>
+                    {/* WHY: truncate + whitespace-nowrap keep the locked couplet on one line at 2-up phone width. */}
+                    <p className="mt-1 truncate whitespace-nowrap text-xs font-bold leading-tight text-white sm:mt-1.5 sm:text-base">
+                      {card.title}
+                    </p>
+                  </div>
                 </div>
-                <MiniHexMark stroke={card.stroke} fill={card.fill} />
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

@@ -201,4 +201,31 @@
       padding-bottom: 0;
     }
   }
+
+  /*
+    Soft energy pulse — radar section beam / instrument LEDs.
+    WHY: Tailwind animate-pulse is too coarse for a thin vertical beam cue.
+  */
+  @keyframes energy-breathe {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+  }
+
+  .animate-energy-breathe {
+    animation: energy-breathe 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-energy-breathe {
+      animation: none;
+      opacity: 0.85;
+    }
+  }
 }
