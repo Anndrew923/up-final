@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Athlete } from '../data/athletes';
+import { MARKETING_POSTER_SRC } from '../config/marketingMedia';
 
 /**
- * Verified athlete stage — full metric groups + battle card.
+ * Verified athlete Bento stage — photo/HUD tile + battle card + full metric wall.
  * WHY: Marketing requires every measured field retained; orange chrome matches #athletes.
  */
 
@@ -40,10 +41,12 @@ function BattleCardSlot({
   src,
   name,
   onOpen,
+  scoreHint,
 }: {
   src: string;
   name: string;
   onOpen: (resolvedSrc: string) => void;
+  scoreHint?: string;
 }) {
   // WHY: Keep placeholder visible until onLoad — avoids a broken-image flash before onError.
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -73,6 +76,11 @@ function BattleCardSlot({
           onError={() => setPhase('error')}
           className="aspect-[3/4] w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
         />
+        {scoreHint ? (
+          <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-orange-300 shadow-lg backdrop-blur-sm">
+            {scoreHint}
+          </span>
+        ) : null}
         <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2 pt-8 font-mono text-[10px] tracking-wide text-zinc-300 opacity-90">
           點擊放大檢視
         </span>
@@ -144,13 +152,50 @@ export function AthleteEndorsementCard({ athlete }: { athlete: Athlete }) {
 
   return (
     <>
-      <article className="ui-card relative overflow-hidden p-3.5 sm:p-5">
-        <div
-          className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-45 [mask-image:radial-gradient(circle_at_top_left,black,transparent_50%)]"
-          aria-hidden
-        />
-        <div className="relative grid gap-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:items-start md:gap-6">
-          <div className="min-w-0">
+      {/*
+        Bento grid: photo tile + battle card on the visual rail;
+        metrics + quote remain 100% complete on the data rail.
+      */}
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-12 lg:gap-5">
+        {/* Visual bento — training still + battle-card score chip (from athlete SSOT) */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1 lg:gap-4">
+          <article className="relative overflow-hidden rounded-2xl border border-orange-400/25 bg-zinc-950">
+            <img
+              src={MARKETING_POSTER_SRC}
+              alt=""
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-[1px]"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-black/40 to-black/90" />
+            <div className="hud-scanlines opacity-[0.15]" aria-hidden />
+            <div className="relative flex min-h-[140px] flex-col justify-end p-3.5 sm:min-h-[160px] sm:p-4">
+              <p className="font-mono text-[10px] tracking-wide text-orange-300">
+                FIELD // TENSION
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white">{athlete.name}</p>
+              <p className="mt-0.5 text-xs text-zinc-400">{athlete.role}</p>
+            </div>
+          </article>
+
+          {athlete.battleCardUrl ? (
+            <div className="mx-auto w-full max-w-[260px] sm:max-w-none">
+              <BattleCardSlot
+                src={athlete.battleCardUrl}
+                name={athlete.name}
+                onOpen={setLightboxSrc}
+                scoreHint={athlete.battleScoreHint}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Data wall — every metric group + quote retained */}
+        <article className="ui-card relative overflow-hidden p-3.5 sm:p-5 lg:col-span-7">
+          <div
+            className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-45 [mask-image:radial-gradient(circle_at_top_left,black,transparent_50%)]"
+            aria-hidden
+          />
+          <div className="relative min-w-0">
             <p className="font-mono text-[11px] tracking-wide text-orange-400 sm:text-xs">
               {athlete.badge}
             </p>
@@ -180,18 +225,8 @@ export function AthleteEndorsementCard({ athlete }: { athlete: Athlete }) {
               </p>
             ) : null}
           </div>
-
-          {athlete.battleCardUrl ? (
-            <div className="mx-auto w-full max-w-[240px] md:mx-0 md:max-w-none">
-              <BattleCardSlot
-                src={athlete.battleCardUrl}
-                name={athlete.name}
-                onOpen={setLightboxSrc}
-              />
-            </div>
-          ) : null}
-        </div>
-      </article>
+        </article>
+      </div>
 
       {lightboxSrc ? (
         <BattleCardLightbox

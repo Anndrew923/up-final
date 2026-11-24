@@ -25,6 +25,11 @@ export interface Athlete {
    * Lead-dev default path: `/founder-battle-card.png` (stable public filename).
    */
   battleCardUrl?: string;
+  /**
+   * Overall score chip on the battle-card tile (e.g. `98.49`).
+   * WHY: Lives in data SSOT so UI never hardcodes measured readout numerals.
+   */
+  battleScoreHint?: string;
   /** Full structured metric groups — every measured field retained. */
   metricGroups?: readonly AthleteMetricGroup[];
   quote?: string;
@@ -47,6 +52,7 @@ export const featuredAthlete: Athlete = {
   name: 'Anndrew',
   role: '主要開發者 · 肌力體能教練',
   battleCardUrl: '/founder-battle-card.png',
+  battleScoreHint: '98.49',
   metricGroups: [
     {
       label: '體組成基準',

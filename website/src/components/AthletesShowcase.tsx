@@ -5,10 +5,11 @@ import {
   athleteShowcaseTabs,
   featuredAthlete,
 } from '../data/athletes';
+import { MARKETING_POSTER_SRC } from '../config/marketingMedia';
 
 /**
- * Homepage「專項運動員實測」— WHOOP/Strava-style title tabs + one stage panel.
- * WHY: One tabbed stage replaces empty recruit cards; verified metrics stay complete.
+ * Homepage「專項運動員實測」— WHOOP Bento collage + title tabs.
+ * WHY: One tabbed stage; verified metrics stay complete; recruit seats keep full focus copy.
  * Tabs: 2×2 phone / 4-col sm+; orange selected chrome matches section kicker.
  */
 
@@ -87,7 +88,7 @@ export function AthletesShowcase() {
         {active.kind === 'verified' ? (
           <AthleteEndorsementCard athlete={featuredAthlete} />
         ) : (
-          <RecruitPanel
+          <RecruitBento
             title={active.recruit.title}
             focus={active.recruit.focus}
           />
@@ -97,27 +98,45 @@ export function AthletesShowcase() {
   );
 }
 
-function RecruitPanel({ title, focus }: { title: string; focus: string }) {
+function RecruitBento({ title, focus }: { title: string; focus: string }) {
   return (
-    <article className="ui-card relative overflow-hidden p-4 sm:p-5">
-      <div
-        className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-50 [mask-image:radial-gradient(circle_at_top_left,black,transparent_55%)]"
-        aria-hidden
-      />
-      <div className="relative">
-        <span className="inline-flex items-center rounded-md border border-orange-400/40 bg-orange-500/10 px-2 py-1 font-mono text-[11px] tracking-wide text-orange-300">
-          標竿席位開放申請
-        </span>
-        <h3 className="mt-3 text-base font-semibold text-zinc-100 sm:text-lg">
-          {title}
-        </h3>
-        <p className="mt-2 text-pretty text-sm leading-relaxed text-zinc-300">
-          {focus}
-        </p>
-        <p className="mt-3 text-pretty text-sm leading-relaxed text-zinc-400">
-          {athleteRecruitInvite}
-        </p>
-      </div>
-    </article>
+    <div className="grid gap-3 sm:grid-cols-5 sm:gap-4">
+      {/* Visual rail — single recruit badge (no duplicate on copy rail). */}
+      <article className="relative min-h-[160px] overflow-hidden rounded-2xl border border-orange-400/20 bg-zinc-950 sm:col-span-2">
+        <img
+          src={MARKETING_POSTER_SRC}
+          alt=""
+          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-[1px]"
+          decoding="async"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-orange-500/20" />
+        <div className="relative flex h-full min-h-[160px] flex-col justify-end p-4">
+          <span className="inline-flex w-fit items-center rounded-md border border-orange-400/40 bg-orange-500/10 px-2 py-1 font-mono text-[11px] tracking-wide text-orange-300">
+            標竿席位開放申請
+          </span>
+          <p className="mt-3 font-mono text-[10px] tracking-wide text-zinc-400">
+            BENCHMARK // OPEN
+          </p>
+        </div>
+      </article>
+
+      <article className="ui-card relative overflow-hidden p-4 sm:col-span-3 sm:p-5">
+        <div
+          className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-50 [mask-image:radial-gradient(circle_at_top_left,black,transparent_55%)]"
+          aria-hidden
+        />
+        <div className="relative">
+          <h3 className="text-base font-semibold text-zinc-100 sm:text-lg">
+            {title}
+          </h3>
+          <p className="mt-2 text-pretty text-sm leading-relaxed text-zinc-300">
+            {focus}
+          </p>
+          <p className="mt-3 text-pretty text-sm leading-relaxed text-zinc-400">
+            {athleteRecruitInvite}
+          </p>
+        </div>
+      </article>
+    </div>
   );
 }

@@ -38,6 +38,7 @@
   #ladder,
   #athletes,
   #plans,
+  #faq,
   #hero,
   [id^='science-'],
   [id^='privacy-'] {
@@ -130,6 +131,41 @@
   /* Display-only locale hint — not an interactive language switcher. */
   .locale-pill {
     @apply inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-mono text-[11px] text-zinc-300;
+  }
+
+  /*
+    Metal membership card brush — used by #plans CORE / GENESIS shells.
+    WHY: Keep brushed sheen in CSS (not inline) so Tailwind purge stays clean.
+  */
+  .metal-card-titanium::before,
+  .metal-card-gold::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.4;
+    background-image: repeating-linear-gradient(
+      115deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 3px
+    );
+  }
+
+  .hud-scanlines {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.35) 3px,
+      rgba(255, 255, 255, 0.35) 4px
+    );
   }
 }
 
