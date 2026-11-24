@@ -3,16 +3,13 @@ import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { HOME_TOC } from '../data/homeToc';
+import { scrollHomeAnchor } from '../utils/scrollHomeAnchor';
 
 const PAGE_NAV = [
   { to: '/', label: '首頁', end: true },
   { to: '/science', label: '科學評測白皮書', end: false },
   { to: '/privacy', label: '隱私條款', end: false },
 ] as const;
-
-function scrollToHomeAnchor(hash: string) {
-  document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
-}
 
 interface NavbarProps {
   onDownload: () => void;
@@ -136,7 +133,7 @@ export function Navbar({ onDownload }: NavbarProps) {
                         onClick={() => {
                           closeMenus();
                           // WHY: same-hash re-click does not update location; force scroll.
-                          requestAnimationFrame(() => scrollToHomeAnchor(item.hash));
+                          requestAnimationFrame(() => scrollHomeAnchor(item.hash));
                         }}
                         className="block rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition hover:bg-white/5 hover:text-zinc-100"
                       >
@@ -237,7 +234,7 @@ export function Navbar({ onDownload }: NavbarProps) {
                           to={`/#${item.hash}`}
                           onClick={() => {
                             closeMenus();
-                            requestAnimationFrame(() => scrollToHomeAnchor(item.hash));
+                            requestAnimationFrame(() => scrollHomeAnchor(item.hash));
                           }}
                           className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm leading-snug text-zinc-300 transition hover:border-white/20 hover:text-zinc-100 ${
                             index === HOME_TOC.length - 1 && HOME_TOC.length % 2 === 1

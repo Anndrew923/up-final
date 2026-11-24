@@ -4,6 +4,7 @@ import { AthletesShowcase } from '../components/AthletesShowcase';
 import { DeveloperHobbyBanner } from '../components/DeveloperHobbyBanner';
 import { FaqAccordion } from '../components/FaqAccordion';
 import { HeroBackdrop } from '../components/HeroBackdrop';
+import { HeroStoreCta } from '../components/HeroStoreCta';
 import { MetricMindsetUpgrade } from '../components/MetricMindsetUpgrade';
 import { OverallGradeLadderCard } from '../components/OverallGradeLadderCard';
 import { RadarPreview } from '../components/RadarPreview';
@@ -13,102 +14,76 @@ interface HomePageProps {
   onDownload: () => void;
 }
 
-function LaurelBadge({ label }: { label: string }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
-      <svg
-        viewBox="0 0 48 40"
-        className="h-8 w-10 text-amber-300/90 sm:h-9 sm:w-11"
-        fill="none"
-        aria-hidden
-      >
-        <path
-          d="M8 28c2-8 8-14 16-16 8 2 14 8 16 16"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M10 22c1.5-4 4.5-7 8-8M38 22c-1.5-4-4.5-7-8-8M12 30c2 2 5 3 8 3M36 30c-2 2-5 3-8 3"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          opacity="0.75"
-        />
-        <circle cx="24" cy="14" r="2.2" fill="currentColor" opacity="0.9" />
-      </svg>
-      <p className="max-w-[9.5rem] font-mono text-[10px] leading-snug tracking-wide text-zinc-300 sm:max-w-none sm:text-[11px]">
-        {label}
-      </p>
-    </div>
-  );
-}
-
 export function HomePage({ onDownload }: HomePageProps) {
   return (
     <div className="max-w-[100vw] overflow-x-hidden">
+      {/*
+        Ladder flagship hero: -mt under fixed chrome, 100svh stage, bottom-anchored
+        copy via flex-1 spacer (not justify-end) so short phones never overlap the fixed nav.
+      */}
       <section
         id="hero"
-        className="relative overflow-x-hidden border-b border-white/5 bg-ink"
+        className="relative flex min-h-[100svh] -mt-[var(--site-nav-offset)] flex-col overflow-x-hidden border-b border-white/5 bg-ink"
       >
         <HeroBackdrop />
 
-        <div className="ui-container relative grid items-center gap-6 py-6 sm:gap-8 sm:py-14 lg:grid-cols-2 lg:gap-10 lg:py-16">
-          <div className="min-w-0">
-            <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 rounded-full border border-white/15 bg-black/35 px-3 py-1 font-mono text-[10px] tracking-wide text-amber-200/95 backdrop-blur-sm sm:text-[11px]">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.8)]" aria-hidden />
+        <div className="relative z-10 flex flex-1 flex-col items-center px-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] pt-[var(--site-nav-offset)] text-center sm:px-6 sm:pb-10">
+          <div className="min-h-8 w-full flex-1 sm:min-h-10" aria-hidden />
+          <div className="mx-auto w-full max-w-2xl shrink-0">
+            <p className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-2 rounded-full border border-white/15 bg-black/40 px-3 py-1 font-mono text-[10px] tracking-wide text-amber-200/95 backdrop-blur-sm sm:text-[11px]">
+              <span
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.8)]"
+                aria-hidden
+              />
               肌力體能教練實測研發 · 六大運動生理學常模
             </p>
 
-            <div className="mt-4 flex items-start justify-between gap-2 sm:mt-5 sm:gap-4">
-              <LaurelBadge label="六軸常模量化引擎" />
-              <div className="hidden h-10 w-px shrink-0 bg-white/10 sm:block" aria-hidden />
-              <LaurelBadge label="14 階超跑級天梯" />
-            </div>
-
-            <h1 className="mt-4 max-w-[17.5rem] font-serif text-[1.65rem] leading-[1.28] text-white sm:mt-5 sm:max-w-none sm:text-4xl sm:leading-snug lg:text-[2.65rem]">
+            <h1 className="mt-5 font-serif text-[1.85rem] font-bold leading-[1.25] text-white sm:mt-6 sm:text-5xl sm:leading-tight lg:text-[3.15rem]">
               終結訓練內耗，
-              <br className="sm:hidden" />
+              <br />
               用數據定義真實戰力。
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-300 sm:mt-5 sm:text-base">
-              增肌怕胖、減脂怕掉力、練大卻跑不動？
-              <br />
-              把每次訓練當作精準改裝，用六軸常模看清真實戰力。
+
+            <HeroStoreCta onDownload={onDownload} />
+
+            <p className="mt-4 text-[11px] leading-snug text-zinc-300 sm:mt-5 sm:text-xs">
+              核心評測永久免費 · 創世早鳥席終身免訂閱
             </p>
-            <div className="mt-4 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
-              <button
-                id="hero-primary-cta"
-                type="button"
-                onClick={onDownload}
-                className="btn-primary min-h-11 w-full sm:w-auto"
-              >
-                開始免費評測
-              </button>
-              <Link
-                to="/science"
-                className="btn-secondary min-h-11 w-full sm:w-auto"
-              >
-                科學評測白皮書
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            {/* WHY: Price anchor mirrors #plans positioning — no invented dollar amounts. */}
-            <a
-              href="#plans"
-              className="mt-3 inline-flex max-w-full items-center rounded-lg border border-white/20 bg-white/[0.07] px-3 py-2 font-mono text-[11px] leading-snug tracking-wide text-zinc-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-sm transition hover:border-amber-400/50 hover:text-amber-200 sm:mt-4 sm:text-xs"
-            >
-              核心評測永久免費 · 創世早鳥席一次性買斷終身免訂閱
-            </a>
           </div>
-          <div id="radar" className="min-w-0 space-y-3">
-            <RadarPreview />
+        </div>
+      </section>
+
+      {/* Screen 2 — pain → solution bridge → live radar demo. */}
+      <section
+        id="radar"
+        className="border-b border-white/5 bg-ink ui-section"
+      >
+        <div className="ui-container">
+          <div className="ui-section-head">
+            <h2 className="text-pretty font-serif text-xl font-bold leading-snug text-zinc-100 sm:text-3xl">
+              增肌怕胖、減脂怕掉力、
+              <br className="sm:hidden" />
+              練大卻跑不動？
+            </h2>
+            {/* WHY: 起→承 bridge before the instrument — keeps radar card as the 「轉」 beat. */}
+            <p className="mt-4 text-pretty text-base leading-relaxed text-zinc-300 sm:mt-5 sm:text-lg">
+              問題不在你不夠努力，而是缺乏全局視角。
+              <br />
+              <span className="text-white">《最強肉體》</span>
+              用<span className="text-energy">六軸常模</span>
+              即時診斷，一眼揪出你的短板與強項。
+            </p>
+          </div>
+          <RadarPreview />
+          {/* WHY: Tighter gap — radar mode switch now sits at card bottom and
+              should read as one beat into the「遙測頻譜」hobby CTA. */}
+          <div className="mt-4 sm:mt-5">
             <DeveloperHobbyBanner />
           </div>
         </div>
       </section>
 
-      {/* WHY: Sits after hobby tease, before systems — mindset bridge without bloating hero. */}
+      {/* WHY: Sits after radar demo, before systems — mindset bridge. */}
       <MetricMindsetUpgrade />
 
       <section
@@ -116,13 +91,13 @@ export function HomePage({ onDownload }: HomePageProps) {
         id="systems"
       >
         <div className="ui-container">
-          <p className="ui-kicker-zh-violet">核心系統</p>
-          <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
-            四大核心評測系統
-          </h2>
-          <div className="mt-5 sm:mt-8">
-            <SystemsShowcase />
+          <div className="ui-section-head">
+            <p className="ui-kicker-zh-violet">核心系統</p>
+            <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
+              四大核心評測系統
+            </h2>
           </div>
+          <SystemsShowcase />
         </div>
       </section>
 
@@ -140,13 +115,13 @@ export function HomePage({ onDownload }: HomePageProps) {
         id="athletes"
       >
         <div className="ui-container">
-          <p className="ui-kicker-zh-orange">實測背書</p>
-          <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
-            專項運動員實測
-          </h2>
-          <div className="mt-5 sm:mt-8">
-            <AthletesShowcase />
+          <div className="ui-section-head">
+            <p className="ui-kicker-zh-orange">實測背書</p>
+            <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
+              專項運動員實測
+            </h2>
           </div>
+          <AthletesShowcase />
         </div>
       </section>
 
@@ -159,16 +134,18 @@ export function HomePage({ onDownload }: HomePageProps) {
           aria-hidden
         />
         <div className="ui-container relative">
-          <p className="ui-kicker-zh-amber">權益方案</p>
-          <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
-            方案與早鳥權益
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-300 sm:mt-3">
-            核心評測零門檻永久免費；解鎖天梯與戰力引擎，挑戰更高維度。
-          </p>
+          <div className="ui-section-head">
+            <p className="ui-kicker-zh-amber">權益方案</p>
+            <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
+              方案與早鳥權益
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:mt-4">
+              核心評測零門檻永久免費；解鎖天梯與戰力引擎，挑戰更高維度。
+            </p>
+          </div>
 
           {/* WHY: Mobile leads with GENESIS; desktop keeps CORE | GENESIS | PRO. Copy SSOT unchanged. */}
-          <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3 lg:items-stretch">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-3 lg:items-stretch">
             <div className="order-2 h-full lg:order-1">
               <PricingCard
                 badge="CORE"
@@ -227,7 +204,7 @@ export function HomePage({ onDownload }: HomePageProps) {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col items-stretch gap-2.5 sm:mt-10 sm:flex-row sm:items-center sm:gap-3">
+          <div className="mt-10 flex flex-col items-center justify-center gap-2.5 sm:mt-12 sm:flex-row sm:gap-3">
             <Link to="/science" className="btn-secondary min-h-11 w-full sm:w-auto">
               查閱科學評測白皮書
               <ArrowRight className="h-4 w-4" />

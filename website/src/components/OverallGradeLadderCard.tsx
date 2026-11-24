@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Layers } from 'lucide-react';
 import {
   OVERALL_GRADE_DEFAULT_BAND,
@@ -32,86 +32,145 @@ const ELITE_SHELL =
   'border-amber-400/45 border-l-[3px] border-l-amber-400 bg-amber-400/[0.07]';
 const ELITE_CHIP = 'border-amber-400/50 bg-amber-400/10 text-amber-400';
 
-/** Decorative axis fill widths — Tailwind classes avoid inline style churn. */
-const TELEMETRY_BARS = [
-  { id: 'a1', widthClass: 'w-[55%]' },
-  { id: 'a2', widthClass: 'w-4/5' },
-  { id: 'a3', widthClass: 'w-[42%]' },
-  { id: 'a4', widthClass: 'w-[95%]' },
-  { id: 'a5', widthClass: 'w-[68%]' },
-  { id: 'a6', widthClass: 'w-3/4' },
-] as const;
+/**
+ * Decorative axis fills per probe band — Tailwind width classes only.
+ * WHY: Watermark bars must visibly track the active band (not a static six-pack),
+ * while staying presentational (no scoring math).
+ */
+const TELEMETRY_WIDTHS: Record<
+  OverallGradeBandId,
+  readonly [string, string, string, string, string, string]
+> = {
+  foundation: ['w-[30%]', 'w-[45%]', 'w-[38%]', 'w-[52%]', 'w-[42%]', 'w-1/2'],
+  norm: ['w-[55%]', 'w-4/5', 'w-[42%]', 'w-[95%]', 'w-[68%]', 'w-3/4'],
+  overclock: ['w-[70%]', 'w-[88%]', 'w-[60%]', 'w-full', 'w-[78%]', 'w-[85%]'],
+  pantheon: ['w-[82%]', 'w-[95%]', 'w-[75%]', 'w-full', 'w-[90%]', 'w-[92%]'],
+};
 
 /**
- * Ladder dual-phone stage — primary grade card + offset telemetry twin.
- * WHY: Adds depth without replacing the 14-tier interactive list.
+ * Bottom-only fade — keeps left/right amber glow intact (no radial side wipe).
+ * WHY: Radial mask muted the wing phones; linear bottom fade clears into the tabs.
  */
-function DualPhoneStage({
-  bandLabel,
-  rangeHint,
-  sampleTier,
+const WATERMARK_MASK =
+  '[-webkit-mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]';
+
+const PHONE_GLOW_BORDER =
+  'border-amber-400/70 shadow-[0_0_0_1px_rgba(251,191,36,0.35),0_0_28px_-4px_rgba(245,158,11,0.55)]';
+
+/** Quiet hex filament — left wing only; stroke via currentColor (no glyph copy). */
+function HexFilamentMark() {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className="h-14 w-14 text-amber-300/80 sm:h-16 sm:w-16"
+      aria-hidden
+    >
+      <polygon
+        points="32,6 54,19 54,45 32,58 10,45 10,19"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.55"
+      />
+      <polygon
+        points="32,14 46,22 46,42 32,50 18,42 18,22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="0.8"
+        opacity="0.45"
+      />
+      <polygon
+        points="32,18 44,25 42,40 32,46 20,38 22,24"
+        fill="currentColor"
+        fillOpacity="0.12"
+        stroke="currentColor"
+        strokeWidth="1.1"
+      />
+      <line
+        x1="32"
+        y1="18"
+        x2="32"
+        y2="46"
+        stroke="currentColor"
+        strokeWidth="0.6"
+        opacity="0.5"
+      />
+      <line
+        x1="22"
+        y1="24"
+        x2="42"
+        y2="40"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        opacity="0.4"
+      />
+      <line
+        x1="42"
+        y1="25"
+        x2="20"
+        y2="38"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        opacity="0.4"
+      />
+      <circle cx="32" cy="32" r="1.8" fill="currentColor" />
+    </svg>
+  );
+}
+
+function WatermarkPhoneShell({
+  className,
+  children,
 }: {
-  bandLabel: string;
-  rangeHint: string;
-  sampleTier: OverallGradeTier | undefined;
+  className: string;
+  children: ReactNode;
 }) {
-  const homologationZh = sampleTier
-    ? extractHomologationZh(sampleTier.homologation)
-    : '超跑遙測';
+  return (
+    <div
+      className={`rounded-2xl border bg-gradient-to-b p-2 ${PHONE_GLOW_BORDER} ${className}`}
+    >
+      <div className="mx-auto mb-2 h-1 w-8 rounded-full bg-amber-400/45" />
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Dual-phone watermark — geometry + band-linked bars only (zero copy).
+ * WHY: Any GRADE/TELEMETRY glyphs fought the H2; pure filaments keep wing glow
+ * and stage rhythm without reclaiming document-flow height.
+ */
+function DualPhoneWatermark({ bandId }: { bandId: OverallGradeBandId }) {
+  const barWidths = TELEMETRY_WIDTHS[bandId];
 
   return (
-    <div className="relative mx-auto mb-6 h-[220px] w-full max-w-sm sm:mb-8 sm:h-[250px]">
-      {/* Secondary phone — telemetry spectrum (offset behind). */}
-      <div
-        className="absolute right-2 top-4 w-[42%] rotate-[8deg] rounded-2xl border border-amber-400/25 bg-gradient-to-b from-zinc-800 to-zinc-950 p-2 shadow-xl sm:right-6 sm:w-[40%]"
-        aria-hidden
-      >
-        <div className="mx-auto mb-1.5 h-1 w-8 rounded-full bg-zinc-700" />
-        <div className="rounded-xl bg-void/80 p-2.5">
-          <p className="font-mono text-[8px] tracking-wide text-amber-400/80">
-            TELEMETRY
-          </p>
-          <p className="mt-1 font-mono text-[10px] text-zinc-200">超跑遙測頻譜</p>
-          <div className="mt-2 space-y-1">
-            {TELEMETRY_BARS.map((bar, i) => (
-              <div key={bar.id} className="flex items-center gap-1">
-                <span className="w-4 font-mono text-[7px] text-zinc-500">
-                  A{i + 1}
-                </span>
-                <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className={`h-full rounded-full bg-gradient-to-r from-amber-600/80 to-amber-300 ${bar.widthClass}`}
-                  />
-                </div>
+    <div
+      className={`pointer-events-none absolute inset-0 flex items-center justify-center opacity-35 sm:opacity-40 ${WATERMARK_MASK}`}
+      aria-hidden
+    >
+      <div className="relative h-[200px] w-[min(100%,28rem)] sm:h-[220px] sm:w-[min(100%,32rem)]">
+        {/* Right wing — amber telemetry bars (length tracks active band). */}
+        <WatermarkPhoneShell className="absolute right-0 top-4 w-[42%] translate-x-8 rotate-[8deg] from-zinc-800 to-zinc-950 sm:right-2 sm:w-[38%] sm:translate-x-12">
+          <div className="flex min-h-[7.5rem] flex-col justify-center gap-1.5 rounded-xl bg-void/80 px-2.5 py-3 sm:min-h-[8.25rem]">
+            {barWidths.map((widthClass, i) => (
+              <div
+                key={`bar-${i}`}
+                className="h-1.5 overflow-hidden rounded-full bg-zinc-800/90"
+              >
+                <div
+                  className={`h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-200 shadow-[0_0_6px_rgba(251,191,36,0.65)] ${widthClass}`}
+                />
               </div>
             ))}
           </div>
-          <p className="mt-2 font-mono text-[8px] text-zinc-500">{homologationZh}</p>
-        </div>
-      </div>
+        </WatermarkPhoneShell>
 
-      {/* Primary phone — grade readout (front). */}
-      <div className="absolute left-2 top-0 w-[48%] -rotate-[5deg] rounded-2xl border border-amber-400/45 bg-gradient-to-b from-[#2a2114] to-zinc-950 p-2 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)] sm:left-4 sm:w-[44%]">
-        <div className="mx-auto mb-1.5 h-1 w-8 rounded-full bg-amber-400/30" />
-        <div className="rounded-xl border border-amber-400/20 bg-black/50 p-2.5">
-          <p className="font-mono text-[8px] tracking-wide text-amber-300">
-            GRADE // LIVE
-          </p>
-          <p className="mt-1.5 text-sm font-semibold text-zinc-50">{bandLabel}</p>
-          <p className="mt-0.5 font-mono text-[10px] tabular-nums text-amber-300/90">
-            {rangeHint}
-          </p>
-          {sampleTier ? (
-            <>
-              <p className="mt-2 font-mono text-[9px] text-amber-200/90">
-                {sampleTier.scoreRange}
-              </p>
-              <p className="mt-1 text-[11px] font-medium leading-snug text-zinc-200">
-                {sampleTier.physiologyClass}
-              </p>
-            </>
-          ) : null}
-        </div>
+        {/* Left wing — hex filament only (paints above right for depth). */}
+        <WatermarkPhoneShell className="absolute left-0 top-0 w-[46%] -translate-x-8 -rotate-[5deg] from-[#2a2114] to-zinc-950 sm:left-2 sm:w-[40%] sm:-translate-x-12">
+          <div className="flex min-h-[7.5rem] w-full items-center justify-center rounded-xl border border-amber-400/35 bg-black/55 px-2 sm:min-h-[8.25rem]">
+            <HexFilamentMark />
+          </div>
+        </WatermarkPhoneShell>
       </div>
     </div>
   );
@@ -126,8 +185,6 @@ export function OverallGradeLadderCard() {
     OVERALL_GRADE_DEFAULT_BAND
   );
   const tiers = tiersForBand(activeBand);
-  const activeBandMeta = overallGradeBands.find((b) => b.id === activeBand);
-  const sampleTier = tiers[Math.min(1, tiers.length - 1)] ?? tiers[0];
 
   const focusBand = (bandId: OverallGradeBandId) => {
     setActiveBand(bandId);
@@ -159,30 +216,31 @@ export function OverallGradeLadderCard() {
 
   return (
     <div className="min-w-0">
-      <div className="flex min-w-0 items-start gap-3">
-        <Layers className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden />
-        <div className="min-w-0 flex-1">
+      {/*
+        No ui-section-head mb-10 — DualPhone is glyph-free watermark; wings need
+        overflow-visible (page root already clips x-scroll).
+      */}
+      <div className="relative mx-auto max-w-2xl overflow-visible text-center">
+        <DualPhoneWatermark bandId={activeBand} />
+        <div className="relative z-10">
           {/* WHY: Amber kicker — ladder section is the cool→warm mid-page climax. */}
-          <p className="ui-kicker-zh-amber mb-2">
-            {overallGradeLadderMeta.kicker}
+          <p className="ui-kicker-zh-amber">
+            <span className="inline-flex items-center justify-center gap-2">
+              <Layers className="h-4 w-4 shrink-0 text-amber-400" aria-hidden />
+              {overallGradeLadderMeta.kicker}
+            </span>
           </p>
-          <h2 className="font-serif text-xl text-zinc-100 sm:text-3xl">
+          <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
             {overallGradeLadderMeta.title}
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-300 sm:mt-4">
+          <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:mt-4">
             {overallGradeLadderMeta.lead}
           </p>
         </div>
       </div>
 
-      <DualPhoneStage
-        bandLabel={activeBandMeta?.label ?? ''}
-        rangeHint={activeBandMeta?.rangeHint ?? ''}
-        sampleTier={sampleTier}
-      />
-
       <div
-        className="mt-1 grid grid-cols-2 gap-2 sm:grid-cols-4"
+        className="mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-4"
         role="tablist"
         aria-label="戰力段位階段"
       >
@@ -222,7 +280,7 @@ export function OverallGradeLadderCard() {
         id="grade-band-panel"
         role="tabpanel"
         aria-labelledby={`grade-band-${activeBand}`}
-        className="mt-4 space-y-2.5 sm:mt-5"
+        className="mt-3 space-y-2.5 sm:mt-4"
       >
         {tiers.map((tier) => (
           <GradeTierCard key={tier.id} tier={tier} />

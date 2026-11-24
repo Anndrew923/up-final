@@ -3,6 +3,7 @@ import { ExternalLink, Smartphone, X } from 'lucide-react';
 import {
   detectMobilePlatform,
   getStoreUrl,
+  resolveStoreAction,
   storeLinks,
   type StorePlatform,
 } from '../config/storeLinks';
@@ -37,9 +38,11 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
   if (!open) return null;
 
   const openStore = (p: StorePlatform) => {
-    const url = getStoreUrl(p);
     trackDownloadClick(p);
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    const action = resolveStoreAction(p);
+    if (action.kind === 'open') {
+      window.open(action.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const autoHint =

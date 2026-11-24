@@ -40,16 +40,19 @@ export function FaqAccordion() {
       className="border-t border-white/10 bg-ink ui-section"
       aria-labelledby="faq-heading"
     >
-      <div className="ui-container max-w-3xl">
-        <p className="ui-kicker-zh">常見問題</p>
-        <h2
-          id="faq-heading"
-          className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl"
-        >
-          評測前你可能想知道
-        </h2>
+      <div className="ui-container">
+        <div className="ui-section-head">
+          <p className="ui-kicker-zh">常見問題</p>
+          <h2
+            id="faq-heading"
+            className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl"
+          >
+            評測前你可能想知道
+          </h2>
+        </div>
 
-        <ul className="mt-5 space-y-2 sm:mt-8">
+        {/* WHY: Accordion column narrower than stage; head stays on shared ui-section-head rhythm. */}
+        <ul className="mx-auto max-w-3xl space-y-2">
           {FAQ_ITEMS.map((item, index) => {
             const open = openIndex === index;
             const panelId = `${baseId}-panel-${index}`;

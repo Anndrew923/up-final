@@ -1,4 +1,4 @@
-import { useId, useState, type FC } from 'react';
+import { useId, useState, type FC, type KeyboardEvent } from 'react';
 import { scienceAxes } from '../data/scienceData';
 import {
   computeRadarPreviewGeometry,
@@ -98,6 +98,20 @@ export function RadarPreview() {
   const uid = useId().replace(/:/g, '');
   const anim = `rp-${uid}`;
 
+  const onModeKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const next: ViewMode =
+      event.key === 'ArrowLeft' ? 'physique' : 'telemetry';
+    setMode(next);
+    // WHY: roving tabindex — move focus with the checked radio after arrow keys.
+    requestAnimationFrame(() => {
+      event.currentTarget
+        .querySelector<HTMLElement>(`[data-radar-mode="${next}"]`)
+        ?.focus();
+    });
+  };
+
   const g = RADAR_PREVIEW.glow;
   const laser = RADAR_PREVIEW.laser;
   const node = RADAR_PREVIEW.node;
@@ -114,30 +128,12 @@ export function RadarPreview() {
         aria-hidden
       />
 
-      <div className="relative mb-2 flex flex-col gap-2 sm:mb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="ui-kicker-zh whitespace-nowrap">雷達即時預覽 · 示範數據</p>
-          <p className="mt-0.5 font-mono text-xs text-zinc-400">
-            綜合戰力{' '}
-            <span className="font-semibold text-cyan-300">{OVERALL}</span>
-          </p>
-        </div>
-        <div
-          className="inline-flex w-full rounded-xl border border-zinc-700/80 bg-zinc-950/80 p-1 sm:w-auto"
-          role="group"
-          aria-label="雷達視圖切換"
-        >
-          <ModeButton
-            active={mode === 'physique'}
-            onClick={() => setMode('physique')}
-            label="體能指標"
-          />
-          <ModeButton
-            active={mode === 'telemetry'}
-            onClick={() => setMode('telemetry')}
-            label="遙測頻譜"
-          />
-        </div>
+      <div className="relative mb-2 min-w-0 sm:mb-3">
+        <p className="ui-kicker-zh whitespace-nowrap">雷達即時預覽 · 示範數據</p>
+        <p className="mt-0.5 font-mono text-xs text-zinc-400">
+          綜合戰力{' '}
+          <span className="font-semibold text-cyan-300">{OVERALL}</span>
+        </p>
       </div>
 
       <div className="relative mx-auto w-full max-w-[min(100%,340px)] lg:max-h-[280px]">
@@ -444,33 +440,96 @@ export function RadarPreview() {
         </svg>
       </div>
 
-      <p className="relative mt-1 text-center font-mono text-[10px] text-zinc-400 sm:text-[11px]">
-        虛線環：100 精英基準 · 橘金點：破百超頻
-      </p>
+      {/*
+        WHY: Switch sits under the radar (not under the score) so the tactile
+        track → DeveloperHobbyBanner「遙測頻譜」CTA reads as one vertical path.
+        Grey legend removed — mode chrome carries the elite/overclock cue.
+      */}
+      <div className="relative mt-3 flex justify-center sm:mt-3.5">
+        <div
+          className="inline-flex w-full max-w-sm rounded-xl border border-white/10 bg-zinc-950/90 p-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.65)] sm:w-auto"
+          role="radiogroup"
+          aria-label="雷達視圖切換"
+          onKeyDown={onModeKeyDown}
+        >
+          <ModeButton
+            modeId="physique"
+            active={mode === 'physique'}
+            onClick={() => setMode('physique')}
+            label="體能指標"
+            tone="energy"
+          />
+          <ModeButton
+            modeId="telemetry"
+            active={mode === 'telemetry'}
+            onClick={() => setMode('telemetry')}
+            label="遙測頻譜"
+            tone="amber"
+          />
+        </div>
+        <p className="sr-only" aria-live="polite">
+          目前視圖：{mode === 'physique' ? '體能指標' : '遙測頻譜'}
+        </p>
+      </div>
     </div>
   );
 }
 
+type ModeTone = 'energy' | 'amber';
+
+const MODE_TONE_ACTIVE: Record<ModeTone, { segment: string; dot: string }> = {
+  energy: {
+    segment:
+      'border-energy/50 bg-energy/15 text-energy shadow-[0_0_16px_-4px_rgba(0,191,255,0.55),inset_0_1px_0_0_rgba(125,211,252,0.25)]',
+    dot: 'bg-energy shadow-[0_0_8px_rgba(0,191,255,0.85)]',
+  },
+  amber: {
+    segment:
+      'border-amber-400/55 bg-amber-500/15 text-amber-300 shadow-[0_0_16px_-4px_rgba(245,158,11,0.5),inset_0_1px_0_0_rgba(252,211,77,0.22)]',
+    dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.85)]',
+  },
+};
+
+/**
+ * Tactile telemetry segment — recessed track + lit indicator when pressed.
+ * WHY: Flat zinc pills had weak mode feedback; energy/amber glow maps to
+ * physique vs vehicle spectrum without changing demo scores.
+ */
 function ModeButton({
+  modeId,
   active,
   onClick,
   label,
+  tone,
 }: {
+  modeId: ViewMode;
   active: boolean;
   onClick: () => void;
   label: string;
+  tone: ModeTone;
 }) {
+  const chrome = MODE_TONE_ACTIVE[tone];
+
   return (
     <button
       type="button"
+      role="radio"
+      data-radar-mode={modeId}
       onClick={onClick}
-      aria-pressed={active}
-      className={`min-h-11 flex-1 rounded-lg px-3 text-xs font-medium transition sm:flex-none sm:px-4 ${
+      aria-checked={active}
+      tabIndex={active ? 0 : -1}
+      className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition duration-200 sm:min-w-[7.5rem] sm:flex-none sm:px-4 ${
         active
-          ? 'border border-zinc-600 bg-zinc-800 text-zinc-100'
-          : 'border border-transparent text-zinc-500 hover:text-zinc-300'
+          ? chrome.segment
+          : 'border-transparent text-zinc-500 hover:border-white/10 hover:bg-white/[0.03] hover:text-zinc-300'
       }`}
     >
+      <span
+        className={`h-1.5 w-1.5 shrink-0 rounded-full transition duration-200 ${
+          active ? chrome.dot : 'bg-zinc-600'
+        }`}
+        aria-hidden
+      />
       {label}
     </button>
   );

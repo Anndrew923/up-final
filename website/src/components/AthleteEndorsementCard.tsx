@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Athlete } from '../data/athletes';
-import { MARKETING_POSTER_SRC } from '../config/marketingMedia';
+import type { VerifiedAthleteEntry } from '../data/athletes';
 
 /**
- * Verified athlete Bento stage — photo/HUD tile + battle card + full metric wall.
- * WHY: Marketing requires every measured field retained; orange chrome matches #athletes.
+ * Compact verified Bento — thumb + identity row, then full metrics/quote.
+ * WHY: Full-width portrait pushed metrics below the fold; inline thumb keeps
+ * picker + card on one phone screen without dropping measured fields.
  */
 
 /** Emphasize measured numerals inside metric lines (decimals + thousands commas). */
@@ -24,12 +24,12 @@ function renderMetricLine(line: string) {
 function BattleCardPlaceholder() {
   return (
     <div
-      className="flex aspect-[3/4] w-full items-center justify-center rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70 px-3 text-center"
+      className="flex aspect-[3/4] w-full items-center justify-center rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70 px-1.5 text-center"
       role="img"
       aria-label="實機遙測戰報卡 · 待匯入"
     >
-      <p className="font-mono text-[10px] leading-relaxed tracking-wide text-zinc-500 sm:text-[11px]">
-        實機遙測戰報卡
+      <p className="font-mono text-[8px] leading-relaxed tracking-wide text-zinc-500">
+        戰報卡
         <br />
         · 待匯入 ·
       </p>
@@ -37,7 +37,8 @@ function BattleCardPlaceholder() {
   );
 }
 
-function BattleCardSlot({
+/** Compact thumb only — lightbox stays full-bleed via portal. */
+function BattleCardThumb({
   src,
   name,
   onOpen,
@@ -52,11 +53,15 @@ function BattleCardSlot({
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
 
   if (phase === 'error') {
-    return <BattleCardPlaceholder />;
+    return (
+      <div className="w-24 shrink-0 sm:w-28">
+        <BattleCardPlaceholder />
+      </div>
+    );
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-24 shrink-0 sm:w-28">
       {phase === 'loading' ? <BattleCardPlaceholder /> : null}
       <button
         type="button"
@@ -75,14 +80,16 @@ function BattleCardSlot({
           onLoad={() => setPhase('ready')}
           onError={() => setPhase('error')}
           className="aspect-[3/4] w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
+          decoding="async"
+          loading="lazy"
         />
         {scoreHint ? (
-          <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-orange-300 shadow-lg backdrop-blur-sm">
+          <span className="pointer-events-none absolute left-1 top-1 rounded-md border border-orange-400/50 bg-black/70 px-1 py-0.5 font-mono text-[9px] font-semibold tabular-nums text-orange-300 shadow-lg backdrop-blur-sm">
             {scoreHint}
           </span>
         ) : null}
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2 pt-8 font-mono text-[10px] tracking-wide text-zinc-300 opacity-90">
-          點擊放大檢視
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-1 pb-1 pt-5 font-mono text-[8px] leading-tight tracking-wide text-zinc-300">
+          點擊放大
         </span>
       </button>
     </div>
@@ -146,87 +153,67 @@ function BattleCardLightbox({
   );
 }
 
-export function AthleteEndorsementCard({ athlete }: { athlete: Athlete }) {
+export function AthleteEndorsementCard({
+  athlete,
+}: {
+  athlete: VerifiedAthleteEntry;
+}) {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const closeLightbox = useCallback(() => setLightboxSrc(null), []);
+  const battleCardUrl = athlete.battleCardUrl;
 
   return (
     <>
-      {/*
-        Bento grid: photo tile + battle card on the visual rail;
-        metrics + quote remain 100% complete on the data rail.
-      */}
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-12 lg:gap-5">
-        {/* Visual bento — training still + battle-card score chip (from athlete SSOT) */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1 lg:gap-4">
-          <article className="relative overflow-hidden rounded-2xl border border-orange-400/25 bg-zinc-950">
-            <img
-              src={MARKETING_POSTER_SRC}
-              alt=""
-              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-[1px]"
-              decoding="async"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-black/40 to-black/90" />
-            <div className="hud-scanlines opacity-[0.15]" aria-hidden />
-            <div className="relative flex min-h-[140px] flex-col justify-end p-3.5 sm:min-h-[160px] sm:p-4">
-              <p className="font-mono text-[10px] tracking-wide text-orange-300">
-                FIELD // TENSION
-              </p>
-              <p className="mt-1 text-sm font-semibold text-white">{athlete.name}</p>
-              <p className="mt-0.5 text-xs text-zinc-400">{athlete.role}</p>
-            </div>
-          </article>
-
-          {athlete.battleCardUrl ? (
-            <div className="mx-auto w-full max-w-[260px] sm:max-w-none">
-              <BattleCardSlot
-                src={athlete.battleCardUrl}
+      <article className="ui-card relative overflow-hidden p-3 sm:p-3.5">
+        <div
+          className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-45 [mask-image:radial-gradient(circle_at_top_left,black,transparent_50%)]"
+          aria-hidden
+        />
+        <div className="relative min-w-0">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {battleCardUrl ? (
+              <BattleCardThumb
+                src={battleCardUrl}
                 name={athlete.name}
                 onOpen={setLightboxSrc}
                 scoreHint={athlete.battleScoreHint}
               />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-[10px] tracking-wide text-orange-400 sm:text-[11px]">
+                {athlete.badge}
+              </p>
+              <h3 className="mt-1 text-base font-semibold text-zinc-100 sm:text-lg">
+                {athlete.name}
+              </h3>
+              <p className="mt-0.5 text-xs leading-snug text-zinc-400 sm:text-sm">
+                {athlete.role}
+              </p>
+            </div>
+          </div>
+
+          {athlete.metricGroups.length > 0 ? (
+            <div className="mt-3 space-y-2 sm:mt-3.5 sm:space-y-2.5">
+              {athlete.metricGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-0.5 font-mono text-[10px] tracking-wide text-orange-400/80 sm:text-[11px]">
+                    {group.label}
+                  </p>
+                  <p className="text-[11px] leading-snug text-zinc-300 sm:text-[12px] sm:leading-relaxed">
+                    {renderMetricLine(group.line)}
+                  </p>
+                </div>
+              ))}
             </div>
           ) : null}
-        </div>
 
-        {/* Data wall — every metric group + quote retained */}
-        <article className="ui-card relative overflow-hidden p-3.5 sm:p-5 lg:col-span-7">
-          <div
-            className="pointer-events-none absolute inset-0 bg-orange-400/10 opacity-45 [mask-image:radial-gradient(circle_at_top_left,black,transparent_50%)]"
-            aria-hidden
-          />
-          <div className="relative min-w-0">
-            <p className="font-mono text-[11px] tracking-wide text-orange-400 sm:text-xs">
-              {athlete.badge}
+          {athlete.quote ? (
+            <p className="mt-2.5 text-[11px] italic leading-snug text-zinc-300 sm:mt-3 sm:text-[12px] sm:leading-relaxed">
+              「{athlete.quote}」
             </p>
-            <h3 className="mt-1.5 text-base font-semibold text-zinc-100 sm:text-lg">
-              {athlete.name}
-            </h3>
-            <p className="mt-0.5 text-xs text-zinc-400 sm:text-sm">{athlete.role}</p>
-
-            {athlete.metricGroups && athlete.metricGroups.length > 0 ? (
-              <div className="mt-4 space-y-3">
-                {athlete.metricGroups.map((group) => (
-                  <div key={group.label}>
-                    <p className="mb-1 font-mono text-[10px] tracking-wide text-orange-400/80 sm:text-[11px]">
-                      {group.label}
-                    </p>
-                    <p className="text-[12px] leading-relaxed text-zinc-300 sm:text-[13px]">
-                      {renderMetricLine(group.line)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            {athlete.quote ? (
-              <p className="mt-4 text-[12px] italic leading-relaxed text-zinc-300 sm:text-[13px]">
-                「{athlete.quote}」
-              </p>
-            ) : null}
-          </div>
-        </article>
-      </div>
+          ) : null}
+        </div>
+      </article>
 
       {lightboxSrc ? (
         <BattleCardLightbox

@@ -1,5 +1,4 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { Gauge, Share2, Sparkles, Users, type LucideIcon } from 'lucide-react';
 import {
   MARKETING_POSTER_SRC,
   SYSTEM_VIDEO_SRC,
@@ -8,8 +7,8 @@ import { OptionalLoopVideo } from './OptionalLoopVideo';
 
 /**
  * Homepage「四大核心評測系統」— tabbed console + Ladder-style glowing iPhone frame.
- * WHY: Accent ring tracks the active spectrum tab; video slot degrades to still when
- * no mp4 is present (same reserved-media pattern as Hero).
+ * WHY: Copy lives inside the phone bottom wash (shared overlay above media) so
+ * tabs connect straight to the device; accent ring + in-screen copy stay in sync.
  */
 
 type SystemAccent = 'energy' | 'violet' | 'emerald' | 'amber';
@@ -17,7 +16,6 @@ type SystemAccent = 'energy' | 'violet' | 'emerald' | 'amber';
 interface SystemTab {
   sys: string;
   tab: string;
-  icon: LucideIcon;
   title: string;
   body: string;
   highlight: string;
@@ -30,8 +28,6 @@ const ACCENT: Record<
   {
     tabSelected: string;
     focus: string;
-    icon: string;
-    sys: string;
     highlight: string;
     glow: string;
     ring: string;
@@ -41,8 +37,6 @@ const ACCENT: Record<
   energy: {
     tabSelected: 'border-energy/50 bg-energy/10 text-energy',
     focus: 'focus-visible:ring-energy/50',
-    icon: 'border-energy/25 bg-energy/10 text-energy',
-    sys: 'text-energy/80',
     highlight: 'border-energy/35 bg-energy/10 text-energy',
     glow: 'bg-energy/10',
     ring: 'rgba(0,191,255,0.75)',
@@ -51,8 +45,6 @@ const ACCENT: Record<
   violet: {
     tabSelected: 'border-violet-500/50 bg-violet-500/10 text-violet-400',
     focus: 'focus-visible:ring-violet-500/50',
-    icon: 'border-violet-500/25 bg-violet-500/10 text-violet-400',
-    sys: 'text-violet-400/80',
     highlight: 'border-violet-500/35 bg-violet-500/10 text-violet-400',
     glow: 'bg-violet-500/10',
     ring: 'rgba(167,139,250,0.8)',
@@ -61,8 +53,6 @@ const ACCENT: Record<
   emerald: {
     tabSelected: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400',
     focus: 'focus-visible:ring-emerald-500/50',
-    icon: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400',
-    sys: 'text-emerald-400/80',
     highlight: 'border-emerald-500/35 bg-emerald-500/10 text-emerald-400',
     glow: 'bg-emerald-500/10',
     ring: 'rgba(52,211,153,0.8)',
@@ -71,8 +61,6 @@ const ACCENT: Record<
   amber: {
     tabSelected: 'border-amber-500/50 bg-amber-500/10 text-amber-400',
     focus: 'focus-visible:ring-amber-500/50',
-    icon: 'border-amber-500/25 bg-amber-500/10 text-amber-400',
-    sys: 'text-amber-400/80',
     highlight: 'border-amber-500/35 bg-amber-500/10 text-amber-400',
     glow: 'bg-amber-500/10',
     ring: 'rgba(251,191,36,0.85)',
@@ -84,7 +72,6 @@ const SYSTEMS: readonly SystemTab[] = [
   {
     sys: '01',
     tab: '常模量化',
-    icon: Gauge,
     title: '打破量級與性別紅利，實力客觀說話',
     body: '體重降 3 kg、臥推少 5 kg，是退步還是變強？整合六大體能與體組成常模，消除量級與性別差異，算出真實戰力。',
     highlight: '消除量級與性別紅利',
@@ -94,7 +81,6 @@ const SYSTEMS: readonly SystemTab[] = [
   {
     sys: '02',
     tab: '戰報自拍',
-    icon: Share2,
     title: '專屬戰力戰報 & 訓練自拍卡',
     body: '記錄每次身體改裝軌跡。無論六邊形全能戰力、單項破 PR 或健身房自拍，一鍵生成高質感戰報卡片。',
     highlight: '一鍵輸出高質感戰報',
@@ -104,7 +90,6 @@ const SYSTEMS: readonly SystemTab[] = [
   {
     sys: '03',
     tab: '全球天梯',
-    icon: Users,
     title: '全球天梯 & 俱樂部私榜',
     body: '尋找同齡、同量級甚至跨性別的訓練同好，疊加雙人雷達正面 PK，在良性切磋中鎖定下一個突破目標。',
     highlight: '雙人雷達正面 PK',
@@ -114,7 +99,6 @@ const SYSTEMS: readonly SystemTab[] = [
   {
     sys: '04',
     tab: '戰力引擎',
-    icon: Sparkles,
     title: 'DYNO INTEL 戰力引擎',
     body: '重量推得上去，心肺或握力卻拖垮總分？精準揪出六軸弱項短板，給出下一步調校方向，讓每滴汗都有效。',
     highlight: '精準揪出六軸弱項',
@@ -123,13 +107,20 @@ const SYSTEMS: readonly SystemTab[] = [
   },
 ];
 
+/** Shared cover crop for still + video — one place to retune subject framing. */
+const PHONE_MEDIA_COVER =
+  'absolute inset-0 h-full w-full object-cover object-[center_35%]';
+
+const TAB_PANEL_ID = 'system-tab-panel';
+
 function PhoneStill() {
   return (
     <img
       src={MARKETING_POSTER_SRC}
       alt=""
-      className="absolute inset-0 h-full w-full object-cover opacity-40"
+      className={`${PHONE_MEDIA_COVER} opacity-40`}
       decoding="async"
+      loading="lazy"
     />
   );
 }
@@ -143,16 +134,17 @@ function PhoneVideo({ src }: { src: string }) {
       <img
         src={MARKETING_POSTER_SRC}
         alt=""
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity ${
+        className={`${PHONE_MEDIA_COVER} transition-opacity ${
           videoOk ? 'opacity-0' : 'opacity-40'
         }`}
         decoding="async"
+        loading="lazy"
       />
       <OptionalLoopVideo
         src={src}
         poster={MARKETING_POSTER_SRC}
         onReadyChange={setVideoOk}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity ${
+        className={`${PHONE_MEDIA_COVER} transition-opacity ${
           videoOk ? 'opacity-70' : 'opacity-0'
         }`}
       />
@@ -164,18 +156,8 @@ function PhoneMediaLayer() {
   return SYSTEM_VIDEO_SRC ? <PhoneVideo src={SYSTEM_VIDEO_SRC} /> : <PhoneStill />;
 }
 
-function GlowIphoneFrame({
-  accent,
-  title,
-  highlight,
-  phoneLabel,
-}: {
-  accent: SystemAccent;
-  title: string;
-  highlight: string;
-  phoneLabel: string;
-}) {
-  const tone = ACCENT[accent];
+function GlowIphoneFrame({ item }: { item: SystemTab }) {
+  const tone = ACCENT[item.accent];
   const ringStyle = {
     '--sys-ring': tone.ring,
     '--sys-ring-soft': tone.ringSoft,
@@ -183,7 +165,7 @@ function GlowIphoneFrame({
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[220px] sm:max-w-[240px]"
+      className="relative mx-auto w-full max-w-[240px] sm:max-w-[280px]"
       style={ringStyle}
     >
       <div
@@ -212,22 +194,30 @@ function GlowIphoneFrame({
 
         <div className="relative aspect-[9/19] w-full bg-void">
           <PhoneMediaLayer />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85" />
+          {/* Shared wash above media — still or future <video> both sit under copy. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-black/92"
+            aria-hidden
+          />
 
-          <div className="relative flex h-full flex-col justify-end p-3.5 pt-10">
-            <p className="font-mono text-[9px] tracking-[0.16em] text-zinc-400">
-              SYS // LIVE
+          <div className="relative z-[1] flex h-full flex-col justify-end p-3.5 pb-4 pt-10 sm:p-4 sm:pb-5">
+            <p className="font-mono text-[9px] tracking-[0.14em] text-zinc-400 sm:text-[10px]">
+              SYS // {item.sys}
+              <span className="mx-1 opacity-50" aria-hidden>
+                ·
+              </span>
+              {item.phoneLabel}
             </p>
-            <p className="mt-1 font-mono text-[10px] tracking-wide text-zinc-200">
-              {phoneLabel}
-            </p>
-            <p className="mt-2 line-clamp-3 text-[11px] font-semibold leading-snug text-white">
-              {title}
+            <h3 className="mt-1.5 text-pretty text-[12px] font-semibold leading-snug text-white sm:mt-2 sm:text-sm">
+              {item.title}
+            </h3>
+            <p className="mt-1.5 line-clamp-4 text-pretty text-xs leading-relaxed text-zinc-300 sm:mt-2 sm:line-clamp-5 sm:text-sm">
+              {item.body}
             </p>
             <span
-              className={`mt-3 inline-flex max-w-full items-center rounded-md border px-1.5 py-0.5 font-mono text-[9px] tracking-wide ${tone.highlight}`}
+              className={`mt-2.5 inline-flex max-w-full items-center rounded-md border px-1.5 py-0.5 font-mono text-[9px] tracking-wide sm:mt-3 sm:text-[10px] ${tone.highlight}`}
             >
-              {highlight}
+              {item.highlight}
             </span>
           </div>
         </div>
@@ -286,7 +276,7 @@ export function SystemsShowcase() {
               role="tab"
               id={`system-tab-${item.sys}`}
               aria-selected={selected}
-              aria-controls={`system-tab-panel-${item.sys}`}
+              aria-controls={TAB_PANEL_ID}
               tabIndex={selected ? 0 : -1}
               onClick={() => setActiveIndex(index)}
               onKeyDown={(event) => onTabKeyDown(event, index)}
@@ -305,63 +295,23 @@ export function SystemsShowcase() {
         })}
       </div>
 
-      <div className="relative grid gap-6 p-4 sm:p-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center">
+      {/*
+        Stable panel id: single live stage (not one hidden panel per tab).
+        WHY: aria-controls must always resolve; swapping id with active.sys left
+        inactive tabs pointing at missing DOM nodes.
+      */}
+      <div
+        id={TAB_PANEL_ID}
+        role="tabpanel"
+        aria-labelledby={`system-tab-${active.sys}`}
+        className="relative mt-6 px-4 pb-6 sm:mt-8 sm:px-6 sm:pb-8"
+      >
         <div
-          className={`pointer-events-none absolute inset-0 opacity-45 transition-colors [mask-image:radial-gradient(circle_at_top_left,black,transparent_55%)] ${activeGlow}`}
+          className={`pointer-events-none absolute inset-0 opacity-45 transition-colors [mask-image:radial-gradient(circle_at_50%_20%,black,transparent_60%)] ${activeGlow}`}
           aria-hidden
         />
-
-        <div className="relative grid min-w-0">
-          {SYSTEMS.map((item, index) => {
-            const selected = index === activeIndex;
-            const Icon = item.icon;
-            const tone = ACCENT[item.accent];
-            return (
-              <div
-                key={item.sys}
-                id={`system-tab-panel-${item.sys}`}
-                role="tabpanel"
-                aria-labelledby={`system-tab-${item.sys}`}
-                aria-hidden={!selected}
-                className={`col-start-1 row-start-1 ${
-                  selected ? 'relative' : 'invisible pointer-events-none'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div
-                    className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${tone.icon}`}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden />
-                  </div>
-                  <span
-                    className={`font-mono text-[11px] tracking-widest ${tone.sys}`}
-                  >
-                    SYS // {item.sys}
-                  </span>
-                </div>
-                <h3 className="mt-3 text-balance text-base font-semibold text-zinc-100 sm:mt-4 sm:text-lg">
-                  {item.title}
-                </h3>
-                <p className="mt-1.5 text-pretty text-sm leading-snug text-zinc-300 sm:mt-2 sm:leading-relaxed">
-                  {item.body}
-                </p>
-                <span
-                  className={`mt-3 inline-flex max-w-full items-center rounded-md border px-2 py-1 font-mono text-[11px] tracking-wide ${tone.highlight}`}
-                >
-                  {item.highlight}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="relative flex justify-center lg:justify-end">
-          <GlowIphoneFrame
-            accent={active.accent}
-            title={active.title}
-            highlight={active.highlight}
-            phoneLabel={active.phoneLabel}
-          />
+        <div className="relative flex justify-center">
+          <GlowIphoneFrame item={active} />
         </div>
       </div>
     </div>

@@ -38,6 +38,19 @@ export function getStoreUrl(platform: StorePlatform): string | null {
   return storeLinks.androidUrl;
 }
 
+export type StoreAction =
+  | { kind: 'open'; url: string }
+  | { kind: 'unavailable' };
+
+/**
+ * Resolve click intent for store badges / modal cards.
+ * WHY: Hero + DownloadModal must share the same gate — never invent URLs when unavailable.
+ */
+export function resolveStoreAction(platform: StorePlatform): StoreAction {
+  const url = getStoreUrl(platform);
+  return url ? { kind: 'open', url } : { kind: 'unavailable' };
+}
+
 export function detectMobilePlatform(): StorePlatform | 'desktop' {
   if (typeof navigator === 'undefined') return 'desktop';
   const ua = navigator.userAgent || navigator.vendor || '';

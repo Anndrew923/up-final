@@ -4,8 +4,8 @@
 
 @layer base {
   /*
-    SSOT chrome metrics — keep Navbar h-14/sm:h-16, main offset, and scroll-margin
-    in lockstep so fixed header never covers content or hash targets.
+    SSOT chrome metrics — Navbar h-14/sm:h-16 + notch, main offset, scroll-margin,
+    and hero -mt / pt / media-ctrl top must stay in lockstep.
   */
   :root {
     --site-nav-bar-h: 3.5rem; /* h-14 */
@@ -66,9 +66,17 @@
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 
-  /* Mobile-first: tighter vertical rhythm; breathe more from sm up. */
+  /* Ladder breathing room — generous vertical stage padding. */
   .ui-section {
-    @apply py-10 sm:py-16 lg:py-24;
+    @apply py-20 sm:py-28;
+  }
+
+  /*
+    Section title cluster — centered Ladder lockup.
+    WHY: Shared head rhythm (kicker → H2 → lead) + mb gap before cards/instruments.
+  */
+  .ui-section-head {
+    @apply mx-auto mb-10 max-w-2xl text-center sm:mb-12;
   }
 
   .ui-kicker {
@@ -153,20 +161,6 @@
       rgba(255, 255, 255, 0.03) 3px
     );
   }
-
-  .hud-scanlines {
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    opacity: 0.12;
-    background-image: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 3px,
-      rgba(255, 255, 255, 0.35) 3px,
-      rgba(255, 255, 255, 0.35) 4px
-    );
-  }
 }
 
 @layer utilities {
@@ -185,6 +179,11 @@
   /* Content top pad matching fixed Navbar (bar height + notch). */
   .site-nav-offset-pt {
     padding-top: var(--site-nav-offset);
+  }
+
+  /* Hero media PLAY/STILL — sits just under fixed chrome, clear of bottom CTAs. */
+  .hero-media-ctrl-top {
+    top: calc(var(--site-nav-offset) + 0.5rem);
   }
 
   /* Mobile sticky CTA: intentional py + home-indicator (not max()). */
