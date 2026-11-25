@@ -1,7 +1,8 @@
 /**
  * Athletes / community showcase SSOT (homepage `#athletes`).
- * WHY: Append-only roster — UI filters and the horizontal picker derive from this
- * array only. Grow to 20–30+ entries without touching component logic.
+ * WHY: Append-only roster — homepage rail derives via `homepageAthleteRoster()`.
+ * `open` seats stay in the array for future specialty fills but never render on home.
+ * Grow verified/community entries to 20–30+ without touching component logic.
  *
  * Assets (optional, under `website/public/`):
  * - `/founder-battle-card.png` — Anndrew telemetry battle card
@@ -17,21 +18,18 @@ export type AthleteSpecialty =
 export interface AthleteMetricGroup {
   /** Group heading, e.g. `體組成基準` */
   label: string;
-  /** Full metric line — never trim for layout convenience. */
+  /** Full metric line — retained in SSOT for future detail surfaces, not home card UI. */
   line: string;
 }
 
-/** Shared picker chrome — short label under the avatar chip. */
+/** Shared identity fields across roster kinds. */
 interface AthleteRosterBase {
   id: string;
-  /** Horizontal picker primary label */
+  /** Card / list primary label */
   name: string;
-  /** Compact chip under name (specialty / outcome tag) */
+  /** Compact specialty / outcome tag (optional chip on home cards) */
   pickerTag: string;
-  /**
-   * Optional circular avatar / battle still for the picker.
-   * When absent, UI renders a monogram badge from `name`.
-   */
+  /** Optional portrait / battle still */
   avatarUrl?: string;
 }
 
@@ -39,14 +37,14 @@ interface AthleteRosterBase {
 export interface VerifiedAthleteEntry extends AthleteRosterBase {
   kind: 'verified';
   specialty: AthleteSpecialty;
-  /** Orange kicker above the name on the detail card */
+  /** Eyebrow above the name */
   badge: string;
   /** Subtitle under name */
   role: string;
   battleCardUrl?: string;
-  /** Overall score chip on the battle-card thumb (e.g. `98.49`). */
+  /** Overall score chip on the battle-card art (e.g. `98.49`). */
   battleScoreHint?: string;
-  /** Full structured metric groups — every measured field retained. */
+  /** Full structured metrics — data SSOT only; homepage cards omit this list. */
   metricGroups: readonly AthleteMetricGroup[];
   quote?: string;
 }
@@ -58,16 +56,18 @@ export interface CommunityAthleteEntry extends AthleteRosterBase {
   displayName: string;
   /** Occupation or training tenure line */
   context: string;
-  /** Outcome chips, e.g. `增肌不胖` */
+  /** Outcome chips, e.g. `增肌不胖` — home shows at most one */
   changeTags: readonly string[];
-  /** Optional battle-card thumb for lightbox */
   battleCardUrl?: string;
   battleScoreHint?: string;
   /** Short authentic testimonial */
   testimonial: string;
 }
 
-/** Open benchmark seat — specialty still recruiting. */
+/**
+ * Open benchmark seat — specialty still recruiting.
+ * Kept in roster for future fills; filtered out of homepage rail.
+ */
 export interface OpenAthleteEntry extends AthleteRosterBase {
   kind: 'open';
   specialty: Exclude<AthleteSpecialty, 'coach'>;
@@ -80,36 +80,8 @@ export type AthleteRosterEntry =
   | CommunityAthleteEntry
   | OpenAthleteEntry;
 
-/** Filter rail ids — `all` always available; others hide when roster has zero hits. */
-export type AthleteFilterId =
-  | 'all'
-  | 'coach'
-  | 'bodybuilding'
-  | 'hyrox'
-  | 'powerlifting'
-  | 'combat'
-  | 'community';
-
-export interface AthleteFilterDef {
-  id: AthleteFilterId;
-  label: string;
-}
-
-export const athleteFilterDefs: readonly AthleteFilterDef[] = [
-  { id: 'all', label: '全部' },
-  { id: 'coach', label: '教練與開發者' },
-  { id: 'bodybuilding', label: '健美' },
-  { id: 'hyrox', label: 'HYROX' },
-  { id: 'powerlifting', label: '健力' },
-  { id: 'combat', label: '格鬥' },
-  { id: 'community', label: '一般訓練者' },
-];
-
-export const athleteRecruitInvite =
-  '歡迎頂尖專項訓練者提交實測戰報，進駐官方標竿牆。';
-
 /**
- * Append new people here only — picker + filters recompute automatically.
+ * Append new people here only — homepage rail recomputes via `homepageAthleteRoster`.
  * Anndrew metrics + quote must stay verbatim (product SSOT).
  */
 export const athleteRoster: readonly AthleteRosterEntry[] = [
@@ -172,33 +144,19 @@ export const athleteRoster: readonly AthleteRosterEntry[] = [
   },
 ];
 
-export function entryMatchesFilter(
-  entry: AthleteRosterEntry,
-  filter: AthleteFilterId
-): boolean {
-  if (filter === 'all') return true;
-  if (filter === 'community') return entry.kind === 'community';
-  if (filter === 'coach') {
-    return entry.kind === 'verified' && entry.specialty === 'coach';
-  }
-  if (entry.kind === 'community') return false;
-  return entry.specialty === filter;
-}
+/**
+ * Homepage `#athletes` rail — real entrants only.
+ * WHY: Keep `open` seats in `athleteRoster` for future specialty fills, but never
+ * show empty recruiting shells on the conversion home.
+ */
+export type HomepageAthleteEntry = VerifiedAthleteEntry | CommunityAthleteEntry;
 
-export function filtersWithRosterHits(
+export function homepageAthleteRoster(
   roster: readonly AthleteRosterEntry[] = athleteRoster
-): readonly AthleteFilterDef[] {
-  return athleteFilterDefs.filter(
-    (def) =>
-      def.id === 'all' || roster.some((entry) => entryMatchesFilter(entry, def.id))
+): readonly HomepageAthleteEntry[] {
+  return roster.filter(
+    (entry): entry is HomepageAthleteEntry => entry.kind !== 'open'
   );
-}
-
-export function rosterForFilter(
-  filter: AthleteFilterId,
-  roster: readonly AthleteRosterEntry[] = athleteRoster
-): readonly AthleteRosterEntry[] {
-  return roster.filter((entry) => entryMatchesFilter(entry, filter));
 }
 
 /** First grapheme for monogram avatars when no image is set. */
@@ -208,7 +166,7 @@ export function athleteMonogram(name: string): string {
   return [...trimmed][0]!.toUpperCase();
 }
 
-/** Picker / community thumb — avatar preferred, else battle still. */
+/** Thumb — avatar preferred, else battle still. */
 export function athletePickerImageSrc(
   entry: AthleteRosterEntry
 ): string | undefined {

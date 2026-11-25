@@ -24,16 +24,31 @@ export default {
           DEFAULT: '#ff8c00',
           soft: '#ff8c001f',
         },
-        energy: '#00bfff',
+        /** Accent — eyebrows + text links only (Apple/WHOOP-style energy blue). */
+        energy: '#38BDF8',
+        /**
+         * Copy ladder SSOT — Primary / Secondary / Muted.
+         * WHY: Collapse 7–8 zinc/amber text utilities into three semantic FG tokens.
+         */
+        fg: {
+          DEFAULT: '#F8FAFC',
+          secondary: '#94A3B8',
+          muted: '#64748B',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['"Noto Serif TC"', 'Georgia', 'serif'],
+        sans: [
+          'Inter',
+          '"Noto Sans TC"',
+          'system-ui',
+          '-apple-system',
+          'sans-serif',
+        ],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       boxShadow: {
         brand: '0 0 40px rgba(255, 140, 0, 0.18)',
-        energy: '0 0 40px rgba(0, 191, 255, 0.14)',
+        energy: '0 0 40px rgba(56, 189, 248, 0.14)',
       },
       backgroundImage: {
         'grid-faint':

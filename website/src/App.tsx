@@ -7,6 +7,7 @@ import { BackToTopButton } from './components/BackToTopButton';
 import { StickyDownloadBar } from './components/StickyDownloadBar';
 import { HomePage } from './pages/HomePage';
 import { SciencePage } from './pages/SciencePage';
+import { PricingPage } from './pages/PricingPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { useDocumentMeta } from './hooks/useDocumentMeta';
 import { initMetaPixel, trackPageView } from './utils/metaPixel';
@@ -33,7 +34,7 @@ export default function App() {
   }, [location.pathname]);
 
   /*
-    WHY: pathname-only scroll-to-top would cancel /#anchor jumps from /science|/privacy.
+    WHY: pathname-only scroll-to-top would cancel /#anchor jumps from subpages.
     Retry briefly so HomePage nodes exist after route paint; scroll-margin uses --site-nav-offset.
   */
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function App() {
     <>
       <Navbar onDownload={openDownload} />
       <div
-        className={`flex min-h-dvh max-w-[100vw] flex-col bg-void text-zinc-200 ${
+        className={`flex min-h-dvh max-w-[100vw] flex-col bg-void text-fg-secondary ${
           stickyVisible ? 'site-sticky-cta-clearance' : ''
         }`}
       >
@@ -86,6 +87,10 @@ export default function App() {
             <Route
               path="/science"
               element={<SciencePage onDownload={openDownload} />}
+            />
+            <Route
+              path="/pricing"
+              element={<PricingPage onDownload={openDownload} />}
             />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

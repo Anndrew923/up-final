@@ -16,7 +16,7 @@ import { trackDownloadClick } from '../utils/metaPixel';
  */
 
 const STORE_BTN =
-  'flex min-h-12 w-full items-center gap-2.5 rounded-xl border border-white/20 bg-zinc-950/90 px-3 py-2 text-left text-zinc-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] transition hover:border-amber-400/60 hover:bg-zinc-900/95 active:scale-[0.98]';
+  'flex min-h-12 w-full items-center gap-2.5 rounded-xl border border-white/20 bg-zinc-950/90 px-3 py-2 text-left text-fg shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] transition hover:border-amber-400/60 hover:bg-zinc-900/95 active:scale-[0.98]';
 
 function AppleMark({ className }: { className?: string }) {
   return (
@@ -87,12 +87,12 @@ export function HeroStoreCta({ onDownload }: HeroStoreCtaProps) {
             : 'App Store 即將上架 — 開啟下載引導'
         }
       >
-        <AppleMark className="h-7 w-7 shrink-0 text-zinc-100" />
+        <AppleMark className="h-7 w-7 shrink-0 text-fg" />
         <span className="min-w-0 leading-tight">
-          <span className="block text-[9px] font-medium tracking-wide text-zinc-400 sm:text-[10px]">
+          <span className="block text-xs font-medium tracking-wide text-fg-muted sm:text-xs">
             Download on the
           </span>
-          <span className="block text-[13px] font-semibold tracking-tight text-white sm:text-sm">
+          <span className="block text-sm font-semibold tracking-tight text-fg sm:text-sm">
             App Store
           </span>
         </span>
@@ -110,10 +110,10 @@ export function HeroStoreCta({ onDownload }: HeroStoreCtaProps) {
       >
         <GooglePlayMark className="h-7 w-7 shrink-0" />
         <span className="min-w-0 leading-tight">
-          <span className="block text-[9px] font-medium tracking-wide text-zinc-400 sm:text-[10px]">
+          <span className="block text-xs font-medium tracking-wide text-fg-muted sm:text-xs">
             GET IT ON
           </span>
-          <span className="block text-[13px] font-semibold tracking-tight text-white sm:text-sm">
+          <span className="block text-sm font-semibold tracking-tight text-fg sm:text-sm">
             Google Play
           </span>
         </span>

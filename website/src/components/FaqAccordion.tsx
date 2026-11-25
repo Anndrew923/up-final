@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 /**
- * Conversion FAQ — dependency-free accordion under #plans.
+ * Conversion FAQ — dependency-free accordion for /pricing.
  * Answers stay aligned with Privacy local-first + Science 100-score charter (no invented prices).
  */
 
@@ -13,8 +13,20 @@ interface FaqItem {
 
 const FAQ_ITEMS: readonly FaqItem[] = [
   {
+    q: '新手完全沒測過，入門門檻高嗎？需要先買器材嗎？',
+    a: '不高。核心六軸評測永久免費、免註冊即可使用。可先從身高體重與場測軸（垂直跳、立定跳遠、庫珀跑、握力）開始；最大肌力軸有槓片再補測即可，不必一次備齊健身房設備。',
+  },
+  {
     q: '沒有去商業健身房，在家徒手訓練也能進行六軸評測嗎？',
     a: '可以先完成體組成與多項場測軸（如垂直跳、立定跳遠、庫珀跑、握力）。最大肌力軸建議以自由重量動作輸入以對齊常模；若暫無槓片，其餘軸仍可獨立評測並逐步補齊戰力圖。',
+  },
+  {
+    q: '還沒測滿六項，綜合分數與雷達會怎麼算？',
+    a: '已完成的軸會即時顯示分數與雷達輪廓；未測軸以空白／待測呈現，不會用假數據填補。綜合戰力會依已測軸彙整，補測後自動重算——建議逐步補齊六軸，圖形與段位才最具診斷意義。',
+  },
+  {
+    q: '支援 iOS 與 Android 嗎？兩邊資料會同步嗎？',
+    a: '支援 iPhone／iPad（App Store）與 Android（Google Play）。本機版資料預設留在裝置；跨裝置自動備份與還原屬 PRO（或創世早鳥席解鎖之雲端／天梯權益路徑）。同一帳號登入並開啟雲端後，才會在雙平台間同步。',
   },
   {
     q: '「創世早鳥席」真的是買斷制、未來不會再收月費嗎？',
@@ -45,7 +57,7 @@ export function FaqAccordion() {
           <p className="ui-kicker-zh">常見問題</p>
           <h2
             id="faq-heading"
-            className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl"
+            className="ui-h2 mt-2 sm:mt-3"
           >
             評測前你可能想知道
           </h2>
@@ -70,11 +82,11 @@ export function FaqAccordion() {
                   onClick={() => setOpenIndex(open ? null : index)}
                   className="flex min-h-11 w-full items-start justify-between gap-3 px-3.5 py-3 text-left transition hover:bg-white/[0.03] sm:px-4 sm:py-3.5"
                 >
-                  <span className="text-sm font-medium leading-snug text-zinc-100 sm:text-[15px]">
+                  <span className="text-sm font-medium leading-snug text-fg sm:text-[15px]">
                     {item.q}
                   </span>
                   <ChevronDown
-                    className={`mt-0.5 h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-300 ${
+                    className={`mt-0.5 h-4 w-4 shrink-0 text-fg-muted transition-transform duration-300 ${
                       open ? 'rotate-180 text-energy' : ''
                     }`}
                     aria-hidden
@@ -89,7 +101,7 @@ export function FaqAccordion() {
                   }`}
                 >
                   <div className="min-h-0 overflow-hidden">
-                    <p className="border-t border-white/5 px-3.5 pb-3.5 pt-2 text-sm leading-relaxed text-zinc-300 sm:px-4 sm:pb-4">
+                    <p className="ui-body border-t border-white/5 px-3.5 pb-3.5 pt-2 text-sm sm:px-4 sm:pb-4">
                       {item.a}
                     </p>
                   </div>

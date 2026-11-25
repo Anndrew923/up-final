@@ -6,7 +6,7 @@ import {
 import { useLoopVideoControls } from './OptionalLoopVideo';
 
 const MEDIA_CTRL =
-  'absolute right-4 z-10 flex h-9 items-center gap-1.5 rounded-full border px-3 font-mono text-[10px] tracking-wide backdrop-blur-md sm:right-6';
+  'absolute right-4 z-10 flex h-9 items-center gap-1.5 rounded-full border px-3 font-mono text-xs tracking-wide backdrop-blur-md sm:right-6';
 
 /**
  * Ladder-style full-bleed hero media — clear upper half, ink wash only in lower 50%.
@@ -78,7 +78,7 @@ export function HeroBackdrop() {
           type="button"
           onClick={toggle}
           disabled={!ready}
-          className={`hero-media-ctrl-top pointer-events-auto ${MEDIA_CTRL} border-white/20 bg-black/55 text-zinc-200 transition hover:border-energy/50 hover:text-energy disabled:cursor-not-allowed disabled:opacity-40`}
+          className={`hero-media-ctrl-top pointer-events-auto ${MEDIA_CTRL} border-white/20 bg-black/55 text-fg-secondary transition hover:border-energy/50 hover:text-energy disabled:cursor-not-allowed disabled:opacity-40`}
           aria-label={playing ? '暫停動態背景' : '播放動態背景'}
         >
           {playing ? (
@@ -90,7 +90,7 @@ export function HeroBackdrop() {
         </button>
       ) : (
         <span
-          className={`hero-media-ctrl-top pointer-events-none ${MEDIA_CTRL} border-white/15 bg-black/45 text-zinc-500`}
+          className={`hero-media-ctrl-top pointer-events-none ${MEDIA_CTRL} border-white/15 bg-black/45 text-fg-muted`}
           aria-hidden
         >
           <Pause className="h-3.5 w-3.5" aria-hidden />

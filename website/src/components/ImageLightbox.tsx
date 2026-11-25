@@ -1,10 +1,11 @@
-import { useEffect, useId } from 'react';
+import { useId } from 'react';
 import { createPortal } from 'react-dom';
+import { usePortalModalLock } from '../hooks/usePortalModalLock';
 
 /**
- * Full-screen image lightbox — shared by Athletes battle cards and Systems iPhone.
- * WHY: Escape / backdrop / body-scroll lock stay one implementation so #athletes
- * and #systems never drift on a11y or close UX.
+ * Full-screen image lightbox — shared by Systems iPhone and community thumbs.
+ * WHY: Escape / backdrop / body-scroll lock stay one implementation so surfaces
+ * never drift on a11y or close UX. Verified athletes use TelemetryDossierModal.
  */
 export function ImageLightbox({
   src,
@@ -18,19 +19,7 @@ export function ImageLightbox({
   onClose: () => void;
 }) {
   const titleId = useId();
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onClose]);
+  usePortalModalLock(onClose);
 
   return createPortal(
     <div
@@ -41,24 +30,20 @@ export function ImageLightbox({
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90dvh] w-full max-w-lg"
+        className="relative max-h-[90dvh] w-full max-w-lg pb-[max(0px,env(safe-area-inset-bottom,0px))]"
         onClick={(event) => event.stopPropagation()}
       >
-        {/*
-          WHY: Visible title (not sr-only) — Systems asks for tab title in the
-          preview; Athletes reuse the same chrome without a second lightbox.
-        */}
         <div className="mb-2 flex items-start justify-between gap-3">
           <p
             id={titleId}
-            className="min-w-0 pt-0.5 font-mono text-[11px] leading-snug tracking-wide text-zinc-300"
+            className="min-w-0 pt-0.5 font-mono text-xs leading-snug tracking-wide text-fg-secondary"
           >
             {title}
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-full border border-zinc-600 bg-zinc-900/90 px-3 py-1 font-mono text-[11px] text-zinc-200 transition hover:border-zinc-400"
+            className="shrink-0 rounded-full border border-zinc-600 bg-zinc-900/90 px-3 py-1 font-mono text-xs text-fg-secondary transition hover:border-zinc-400"
           >
             關閉
           </button>

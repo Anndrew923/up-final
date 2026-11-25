@@ -16,15 +16,15 @@ import {
  */
 const HALL_TAB = {
   selected: 'border-amber-400/70 bg-amber-500/15 text-amber-300',
-  range: 'text-amber-300/80',
+  range: 'text-fg-muted',
   focus: 'focus-visible:ring-amber-400/50',
 } as const;
 
 const HALL_CARD = {
   shell: 'border-white/10 bg-black/30',
-  pill: 'border-amber-400/25 bg-amber-500/5 text-amber-100/90',
-  homologation: 'text-amber-400',
-  structure: 'text-amber-300/90',
+  pill: 'border-amber-400/25 bg-amber-500/5 text-fg',
+  homologation: 'text-energy',
+  structure: 'text-fg-secondary',
 } as const;
 
 /** Elite watershed chrome — only used on TIER_100 (amber band). */
@@ -224,16 +224,16 @@ export function OverallGradeLadderCard() {
         <DualPhoneWatermark bandId={activeBand} />
         <div className="relative z-10">
           {/* WHY: Amber kicker — ladder section is the cool→warm mid-page climax. */}
-          <p className="ui-kicker-zh-amber">
+          <p className="ui-kicker-zh">
             <span className="inline-flex items-center justify-center gap-2">
               <Layers className="h-4 w-4 shrink-0 text-amber-400" aria-hidden />
               {overallGradeLadderMeta.kicker}
             </span>
           </p>
-          <h2 className="mt-2 font-serif text-xl text-zinc-100 sm:mt-3 sm:text-3xl">
+          <h2 className="ui-h2 mt-2 sm:mt-3">
             {overallGradeLadderMeta.title}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:mt-4">
+          <p className="mt-3 text-sm leading-relaxed text-fg-secondary sm:mt-4">
             {overallGradeLadderMeta.lead}
           </p>
         </div>
@@ -260,13 +260,13 @@ export function OverallGradeLadderCard() {
               className={`min-h-11 rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 ${HALL_TAB.focus} ${
                 selected
                   ? HALL_TAB.selected
-                  : 'border-white/10 bg-void/40 text-zinc-300 hover:border-white/20 hover:text-zinc-100'
+                  : 'border-white/10 bg-void/40 text-fg-secondary hover:border-white/20 hover:text-fg'
               }`}
             >
               <span className="block text-sm font-medium leading-snug">{band.label}</span>
               <span
-                className={`mt-0.5 block font-mono text-[11px] tabular-nums ${
-                  selected ? HALL_TAB.range : 'text-zinc-500'
+                className={`mt-0.5 block font-mono text-xs tabular-nums ${
+                  selected ? HALL_TAB.range : 'text-fg-muted'
                 }`}
               >
                 {band.rangeHint}
@@ -303,7 +303,7 @@ function GradeTierCard({ tier }: { tier: OverallGradeTier }) {
       <div className="flex min-w-0 items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-2">
           <span
-            className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] tabular-nums ${
+            className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums ${
               isElite ? ELITE_CHIP : HALL_CARD.pill
             }`}
           >
@@ -311,12 +311,12 @@ function GradeTierCard({ tier }: { tier: OverallGradeTier }) {
           </span>
           {isElite ? (
             <span
-              className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-[10px] tracking-wide ${ELITE_CHIP}`}
+              className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-xs tracking-wide ${ELITE_CHIP}`}
             >
               {overallGradeLadderMeta.eliteBadge}
             </span>
           ) : null}
-          <span className="text-sm font-semibold text-zinc-50">
+          <span className="text-sm font-semibold text-fg">
             {tier.physiologyClass}
           </span>
         </div>
@@ -328,7 +328,7 @@ function GradeTierCard({ tier }: { tier: OverallGradeTier }) {
       </div>
 
       <p
-        className={`mt-1.5 min-w-0 break-words text-xs font-semibold leading-snug sm:text-[13px] ${HALL_CARD.structure}`}
+        className={`mt-1.5 min-w-0 break-words text-xs font-semibold leading-snug sm:text-sm ${HALL_CARD.structure}`}
       >
         {tier.structureCode}
       </p>

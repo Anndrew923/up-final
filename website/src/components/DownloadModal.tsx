@@ -75,16 +75,16 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
             <p className="ui-kicker">DOWNLOAD // DYNO GATE</p>
             <h2
               id={titleId}
-              className="mt-1 font-serif text-xl text-zinc-50 sm:text-2xl"
+              className="mt-1 text-xl text-fg sm:text-2xl"
             >
               開始免費評測
             </h2>
-            <p className="mt-2 text-sm text-zinc-400">{autoHint}</p>
+            <p className="mt-2 text-sm text-fg-muted">{autoHint}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-white/10 p-2 text-zinc-400 hover:text-zinc-100"
+            className="rounded-lg border border-white/10 p-2 text-fg-muted hover:text-fg"
             aria-label="關閉下載視窗"
             autoFocus
           >
@@ -122,7 +122,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
           />
         </div>
 
-        <p className="mt-4 font-mono text-[10px] text-zinc-400">
+        <p className="mt-4 font-mono text-xs text-fg-muted">
           最強肉體 Ultimate Physique · 支援 iOS &amp; Android
         </p>
       </div>
@@ -166,8 +166,8 @@ function StoreCard({
       <div className="flex items-center justify-between gap-2">
         <span className="font-mono text-xs text-energy">{label}</span>
         <span
-          className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${
-            available ? 'bg-brand/20 text-brand' : 'bg-white/5 text-zinc-400'
+          className={`rounded-full px-2 py-0.5 font-mono text-xs ${
+            available ? 'bg-brand/20 text-brand' : 'bg-white/5 text-fg-muted'
           }`}
         >
           {status}
@@ -184,7 +184,7 @@ function StoreCard({
               height={112}
             />
           ) : (
-            <span className="font-mono text-[10px] text-zinc-400">QR…</span>
+            <span className="font-mono text-xs text-fg-muted">QR…</span>
           )}
         </div>
       )}
@@ -194,8 +194,8 @@ function StoreCard({
         disabled={!available}
         className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
           available
-            ? 'bg-white/5 text-zinc-100 hover:bg-brand/15 hover:text-brand'
-            : 'cursor-not-allowed bg-white/[0.03] text-zinc-400'
+            ? 'bg-white/5 text-fg hover:bg-brand/15 hover:text-brand'
+            : 'cursor-not-allowed bg-white/[0.03] text-fg-muted'
         }`}
       >
         <ExternalLink className="h-3.5 w-3.5" />

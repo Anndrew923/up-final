@@ -28,21 +28,21 @@ export function PrivacyPage() {
         <div className="ui-container py-8 sm:py-16">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-100"
+            className="inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg"
           >
             <ArrowLeft className="h-4 w-4" />
             返回首頁
           </Link>
           <p className="ui-kicker-zh mt-6">法務合規 · 隱私與免責</p>
-          <h1 className="mt-3 max-w-3xl text-balance font-serif text-3xl text-zinc-100 sm:text-4xl">
+          <h1 className="mt-3 max-w-3xl text-balance text-3xl font-bold tracking-tight text-fg sm:text-4xl">
             隱私權政策與健康免責聲明
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+          <p className="ui-body mt-4 max-w-2xl">
             最強肉體 Ultimate Physique
             採本機優先架構。本頁說明資料邊界、第三方服務、帳號刪除權利與聯絡方式，以符合
             App Store 與 Google Play 審核要求。
           </p>
-          <p className="mt-3 font-mono text-xs text-zinc-400">
+          <p className="ui-label mt-3 font-mono tabular-nums">
             生效／最後修訂：{EFFECTIVE_DATE}
           </p>
 
@@ -54,7 +54,7 @@ export function PrivacyPage() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="rounded-lg border border-white/15 bg-steel/80 px-3 py-2 text-center font-mono text-[11px] tracking-wide text-zinc-200 transition hover:border-energy/40 hover:text-energy sm:text-left sm:text-xs"
+                className="rounded-lg border border-white/15 bg-steel/80 px-3 py-2 text-center font-mono text-xs tracking-wide text-fg-secondary transition hover:border-energy/40 hover:text-energy sm:text-left sm:text-xs"
               >
                 {item.label}
               </a>
@@ -105,20 +105,20 @@ export function PrivacyPage() {
           >
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="text-zinc-100">身體基線（本機為主）：</span>
+                <span className="text-fg">身體基線（本機為主）：</span>
                 生理性別、年齡、身高、體重；選填職業、訓練時數／年資、地區與天梯匿名偏好。
               </li>
               <li>
-                <span className="text-zinc-100">評測輸入（本機；可進歷史）：</span>
+                <span className="text-fg">評測輸入（本機；可進歷史）：</span>
                 力量五項重量／次數、爆發垂直跳／立定跳遠、Cooper
                 距離、骨骼肌量、握力峰值、臂圍與體脂、FFMI 相關輸入等。
               </li>
               <li>
-                <span className="text-zinc-100">帳號與雲端（需您主動啟用）：</span>
+                <span className="text-fg">帳號與雲端（需您主動啟用）：</span>
                 Google／Apple 登入識別；天梯暱稱與頭像；訂閱／創世席等權益狀態。
               </li>
               <li>
-                <span className="text-zinc-100">天梯公開摘要：</span>
+                <span className="text-fg">天梯公開摘要：</span>
                 顯示名或匿名標記、最佳分數摘要、更新時間、供篩選的人口學投影欄；可選
                 Pro 標記。分數為自報並經系統範圍與配額校驗，不構成官方賽事或實驗室認證。
               </li>
@@ -135,17 +135,17 @@ export function PrivacyPage() {
             </p>
             <ul className="list-disc space-y-2.5 pl-5">
               <li>
-                <span className="text-zinc-100">Firebase（Google）：</span>
+                <span className="text-fg">Firebase（Google）：</span>
                 身分驗證、雲端資料庫與雲端函式，用於帳號登入、天梯／俱樂部摘要、權益狀態與必要的後端閘控。僅在您登入並使用連線功能時處理相關資料。
               </li>
               <li>
-                <span className="text-zinc-100">RevenueCat：</span>
+                <span className="text-fg">RevenueCat：</span>
                 訂閱與創世早鳥席等應用內購買的憑證驗證與權益狀態同步。付款由
                 App Store／Google Play 處理；我們與 RevenueCat
                 <Em>不經手信用卡號</Em>。
               </li>
               <li>
-                <span className="text-zinc-100">Google Gemini API：</span>
+                <span className="text-fg">Google Gemini API：</span>
                 用於 DYNO INTEL 戰力引擎之 AI
                 分析。請求僅傳送去識別化的體能／評測上下文與問題內容，經後端配額與安全閘控處理；
                 <Em>不傳送真實姓名或其他非必要個資</Em>
@@ -164,20 +164,20 @@ export function PrivacyPage() {
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="text-zinc-100">刪除帳號與雲端資料：</span>
+                <span className="text-fg">刪除帳號與雲端資料：</span>
                 於 App 內帳號／設定相關流程執行「刪除帳號」，將移除帳號綁定之雲端同步資料與天梯公開摘要（實際選單名稱以產品版本為準）。
               </li>
               <li>
-                <span className="text-zinc-100">清除本機紀錄：</span>
+                <span className="text-fg">清除本機紀錄：</span>
                 可於 App 內清除本機評測／歷史資料，或卸載 App
                 並清除應用資料（依作業系統行為而定）。本機清除不會自動刪除已上傳之雲端帳號資料，兩者需分別處理。
               </li>
               <li>
-                <span className="text-zinc-100">撤除天梯公開足跡：</span>
+                <span className="text-fg">撤除天梯公開足跡：</span>
                 可請求移除全球天梯公開排行摘要。
               </li>
               <li>
-                <span className="text-zinc-100">恢復購買：</span>
+                <span className="text-fg">恢復購買：</span>
                 透過 App Store／Google Play 的恢復購買流程。
               </li>
             </ul>
@@ -195,8 +195,8 @@ export function PrivacyPage() {
           >
             <p>
               PRO 訂閱標價參考：月訂{' '}
-              <span className="font-mono text-zinc-100">$1.99 USD</span>
-              ；年訂 <span className="font-mono text-zinc-100">$14.99 USD</span>
+              <span className="font-mono text-fg">$1.99 USD</span>
+              ；年訂 <span className="font-mono text-fg">$14.99 USD</span>
               。實際扣款以 App Store／Google Play 顯示為準。
             </p>
             <p>
@@ -215,7 +215,7 @@ export function PrivacyPage() {
             </p>
             <p>
               本政策生效與最後修訂日期為{' '}
-              <span className="font-mono text-zinc-100">{EFFECTIVE_DATE}</span>
+              <span className="font-mono text-fg">{EFFECTIVE_DATE}</span>
               。我們可能更新本頁以反映產品或法規變化；重大變更將於官網或 App
               內揭示。繼續使用即表示您知悉更新後的條款。
             </p>
@@ -227,7 +227,7 @@ export function PrivacyPage() {
 }
 
 function Em({ children }: { children: ReactNode }) {
-  return <strong className="font-medium text-zinc-100">{children}</strong>;
+  return <strong className="font-medium text-fg">{children}</strong>;
 }
 
 function SupportMail({ subject }: { subject?: string }) {
@@ -259,8 +259,8 @@ function PolicyCard({
         <Shield className="mt-0.5 h-5 w-5 shrink-0 text-energy" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="ui-kicker-zh mb-2">{kicker}</p>
-          <h2 className="font-serif text-xl text-zinc-100 sm:text-2xl">{title}</h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-zinc-300">
+          <h2 className="text-xl text-fg sm:text-2xl">{title}</h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed text-fg-secondary">
             {children}
           </div>
         </div>

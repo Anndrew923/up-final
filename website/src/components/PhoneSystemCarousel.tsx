@@ -22,10 +22,10 @@ const PHONE_MEDIA_FIT =
   'absolute inset-0 h-full w-full bg-void object-contain object-center';
 
 const ZOOM_BADGE =
-  'pointer-events-none absolute right-3 z-[2] inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/55 px-2 py-1 font-mono text-[9px] tracking-wide text-zinc-200 shadow-lg backdrop-blur-sm sm:right-3.5 sm:text-[10px]';
+  'pointer-events-none absolute right-3 z-[2] inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/55 px-2 py-1 font-mono text-xs tracking-wide text-fg-secondary shadow-lg backdrop-blur-sm sm:right-3.5 sm:text-xs';
 
 const CHEVRON_BTN =
-  'absolute top-1/2 z-[2] hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/45 text-zinc-100 opacity-0 backdrop-blur-sm transition enabled:hover:border-white/40 enabled:hover:bg-black/65 disabled:pointer-events-none sm:flex sm:group-hover:enabled:opacity-100';
+  'absolute top-1/2 z-[2] hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/45 text-fg opacity-0 backdrop-blur-sm transition enabled:hover:border-white/40 enabled:hover:bg-black/65 disabled:pointer-events-none sm:flex sm:group-hover:enabled:opacity-100';
 
 export type PhoneCarouselTabMeta = {
   sys: SystemTabId;

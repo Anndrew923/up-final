@@ -20,7 +20,10 @@ import { PhoneSystemCarousel } from './PhoneSystemCarousel';
 
 type SystemAccent = 'energy' | 'violet' | 'emerald' | 'amber';
 
-/** Caption body — emphasis span gets white; lead/trail stay zinc-400 for scan. */
+/**
+ * Caption body — emphasis span uses primary; lead/trail stay muted for scan.
+ * WHY split fields: keep one scan anchor white without hardcoding JSX per tab.
+ */
 interface SystemBodyCopy {
   before: string;
   emphasis: string;
@@ -47,7 +50,7 @@ const TAB_TRACK =
   'grid grid-cols-4 gap-1 rounded-2xl border border-white/10 bg-zinc-950/90 p-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.65)] sm:gap-1.5';
 
 const TAB_IDLE =
-  'border-transparent text-zinc-500 hover:border-white/10 hover:bg-white/[0.03] hover:text-zinc-200';
+  'border-transparent text-fg-muted hover:border-white/10 hover:bg-white/[0.03] hover:text-fg-secondary';
 
 const ACCENT: Record<
   SystemAccent,
@@ -99,11 +102,11 @@ const SYSTEMS: readonly SystemTab[] = [
     sys: '01',
     tab: '基準量化',
     tabShort: '基準',
-    title: '打破量級與性別紅利，實力客觀說話',
+    title: '科學校正先天差異，精準給分',
     body: {
-      before: '體重降 3 kg、臥推少 5 kg，是退步還是變強？整合',
-      emphasis: '六大體能與體組成基準',
-      after: '，消除量級與性別差異，算出真實戰力。',
+      before: '排除身高、體重、年齡與性別差異，整合',
+      emphasis: '六大體能指標',
+      after: '，算出最客觀的真實戰力。',
     },
     accent: 'violet',
     phoneLabel: '六軸基準引擎',
@@ -112,7 +115,7 @@ const SYSTEMS: readonly SystemTab[] = [
     sys: '02',
     tab: '戰報自拍',
     tabShort: '戰報',
-    title: '你的每一次突破，都值得一張冠軍戰報',
+    title: '每次突破，都值得一張冠軍戰報',
     body: {
       before: '將',
       emphasis: '六邊形戰力、破 PR 紀錄與訓練自拍',
@@ -127,25 +130,25 @@ const SYSTEMS: readonly SystemTab[] = [
     tabShort: '天梯',
     title: '全球天梯 & 俱樂部私榜',
     body: {
-      before: '尋找同齡、同量級甚至跨性別的訓練同好，疊加',
-      emphasis: '雙人雷達正面 PK',
-      after: '，在良性切磋中鎖定下一個突破目標。',
+      before: '鎖定同齡、同量級訓練同好，疊加',
+      emphasis: '雙人雷達正面對照',
+      after: '，找準下一個突破目標。',
     },
     accent: 'energy',
     phoneLabel: '天梯競技場',
   },
   {
     sys: '04',
-    tab: '戰力引擎',
-    tabShort: '引擎',
-    title: 'DYNO INTEL 戰力引擎',
+    tab: '訓練工具',
+    tabShort: '工具',
+    title: '日誌、1RM 換算與戰力引擎',
     body: {
-      before: '重量推得上去，心肺或握力卻拖垮總分？精準揪出',
-      emphasis: '六軸弱項短板',
-      after: '，給出下一步調校方向，讓每滴汗都有效。',
+      before: '整合',
+      emphasis: '訓練日誌、1RM 計算機與 AI 短板診斷',
+      after: '，從日常紀錄到突破調校一次搞定。',
     },
     accent: 'amber',
-    phoneLabel: 'DYNO INTEL',
+    phoneLabel: '訓練日誌與工具',
   },
 ];
 
@@ -159,19 +162,24 @@ const PHONE_SHELL =
   'relative mx-auto w-[min(252px,100%,calc(46svh*9/16.2))] sm:w-full sm:max-w-[280px]';
 
 /*
-  WHY: Shared column for heading + caption — same max-w/px keeps long SYS 02
-  titles and body clear of the floating back-to-top control.
+  WHY: Caption stays ≤300px for 2-line scan; heading drops side pad + uses
+  full stage so 21px nowrap titles (02 / 04) clear 375px without clip.
  */
-const COPY_COLUMN =
+const CAPTION_COLUMN =
   'mx-auto max-w-[300px] px-2 text-center sm:max-w-md';
 
+const HEADING_COLUMN =
+  'mx-auto w-full px-0 text-center sm:max-w-2xl sm:px-2';
+
+/** Locked one-line title — overrides ui-h3 so tab switches never reflow height. */
+const SYSTEM_TITLE =
+  'whitespace-nowrap text-[21px] font-semibold tracking-tight text-fg sm:text-3xl';
+
 function SystemHeading({ item }: { item: SystemTab }) {
-  // WHY: No SYS // eyebrow — tabs already identify the engine; title is the beat.
+  // WHY: No SYS eyebrow — tabs identify the engine; height lock is font+nowrap.
   return (
-    <div className={`${COPY_COLUMN} mb-4 sm:mb-5`}>
-      <h3 className="text-balance text-pretty text-lg font-bold leading-snug text-white sm:text-xl">
-        {item.title}
-      </h3>
+    <div className={`${HEADING_COLUMN} mb-4 sm:mb-5`}>
+      <h3 className={SYSTEM_TITLE}>{item.title}</h3>
     </div>
   );
 }
@@ -237,15 +245,19 @@ function GlowIphoneFrame({
   );
 }
 
-/** Body under the bezel — emphasis only; no spectrum chip (breathing room). */
+/**
+ * Body under the bezel — emphasis only; no spectrum chip.
+ * WHY min-h + line-clamp-2: four tab captions stay the same 2-line budget so
+ * phone↔CTA spacing does not jump when switching systems on narrow phones.
+ */
 function SystemCaption({ item }: { item: SystemTab }) {
   const { before, emphasis, after } = item.body;
 
   return (
-    <div className={`${COPY_COLUMN} mt-4 sm:mt-5`}>
-      <p className="text-pretty text-sm leading-relaxed text-zinc-400 sm:text-base">
+    <div className={`${CAPTION_COLUMN} mt-4 sm:mt-5`}>
+      <p className="ui-body line-clamp-2 min-h-[2.75rem] text-pretty text-fg-muted sm:min-h-[3rem]">
         {before}
-        <span className="font-medium text-white">{emphasis}</span>
+        <span className="font-medium text-fg">{emphasis}</span>
         {after}
       </p>
     </div>
@@ -307,7 +319,7 @@ export function SystemsShowcase() {
     <div className="overflow-hidden rounded-2xl border border-zinc-800/90 bg-gradient-to-b from-zinc-900/90 to-zinc-950 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
       {/*
         WHY: 1×4 recessed track — one instrument bezel (not four floating chips)
-        keeps phone fold budget while matching RadarPreview tactile chrome.
+        keeps phone fold budget on a single tactile chrome strip.
       */}
       <div className="border-b border-white/5 p-2 sm:p-2.5">
         <div
@@ -341,12 +353,12 @@ export function SystemsShowcase() {
                     }`}
                     aria-hidden
                   />
-                  <span className="font-mono text-[9px] tabular-nums tracking-wide opacity-80 sm:text-[10px]">
+                  <span className="font-mono text-xs tabular-nums tracking-wide opacity-80 sm:text-xs">
                     {item.sys}
                   </span>
                 </span>
                 <span
-                  className="text-[11px] font-medium leading-none sm:hidden"
+                  className="text-xs font-medium leading-none sm:hidden"
                   aria-hidden
                 >
                   {item.tabShort}

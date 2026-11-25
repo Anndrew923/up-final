@@ -9,7 +9,7 @@
  * - `/sys-01-1.png` … `/sys-01-4.png` — Systems「01 基準」App stills
  * - `/sys-02-1.jpg` … `/sys-02-5.jpg` — Systems「02 戰報」cards (composite → spec → run → arm → VJ)
  * - `/sys-03-1.png` … `/sys-03-3.png` — Systems「03 天梯」App stills
- * - `/sys-04-1.png` … `/sys-04-5.png` — Systems「04 引擎」App stills (INTEL → compare → archive → morph → 1RM)
+ * - `/sys-04-1.png` … `/sys-04-5.png` — Systems「04 工具」App stills (INTEL → compare → archive → morph → 1RM)
  * - Append further stills to each `SYSTEM_PREVIEWS` array for snap carousel
  * - `/og-image.png` — social share meta only (`index.html`); never a UI fill
  * - `/founder-battle-card.png` — referenced from athlete data SSOT
@@ -56,7 +56,7 @@ export const SYS_03_PREVIEWS = [
 ] as const;
 
 /**
- * Systems「04 引擎」carousel — narrative order:
+ * Systems「04 工具」carousel — narrative order:
  * DYNO INTEL chat → evolution compare → archive → morphology → 1RM calculator.
  */
 export const SYS_04_PREVIEWS = [

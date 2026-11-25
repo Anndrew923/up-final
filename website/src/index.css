@@ -16,6 +16,22 @@
     --site-sticky-cta-clearance: calc(
       6.5rem + env(safe-area-inset-bottom, 0px)
     );
+
+    /*
+      Copy ladder SSOT (must stay hex-equal to Tailwind `fg` / `energy`).
+      WHY CSS vars + theme() in @apply-free rules: Vite HMR can resolve the monorepo
+      root Tailwind (no `fg`/`void`) and explode on `@apply text-fg-*`.
+    */
+    --fg-primary: #f8fafc;
+    --fg-secondary: #94a3b8;
+    --fg-muted: #64748b;
+    --fg-accent: #38bdf8;
+    --color-void: #050505;
+    --color-card: #111111;
+    --color-panel: #0a0a0a;
+    --color-brand: #ff8c00;
+    --color-night: #0d0a17;
+    --color-steel: #121a26;
   }
 
   @media (min-width: 640px) {
@@ -27,16 +43,15 @@
   html {
     scroll-behavior: smooth;
     color-scheme: dark;
-    /* WHY: Any unstyled node inherits light-on-dark — never browser default black. */
-    color: #e4e4e7;
+    /* WHY: Default to Secondary so unstyled nodes never paint pure white or black. */
+    color: var(--fg-secondary);
   }
 
   /* Clear fixed navbar (+ safe-area) so in-page anchors are not hidden under the bar. */
-  /* Home section ids + doc-page prefixes (science-*, privacy-*). */
-  #radar,
+  /* Home: #systems #athletes #download · Pricing: #plans #faq · Doc prefixes. */
   #systems,
-  #ladder,
   #athletes,
+  #download,
   #plans,
   #faq,
   #hero,
@@ -46,9 +61,10 @@
   }
 
   body {
-    @apply bg-void text-zinc-200 overflow-x-hidden antialiased;
+    @apply font-sans overflow-x-hidden antialiased;
+    background-color: var(--color-void);
     min-height: 100dvh;
-    color: #e4e4e7;
+    color: var(--fg-secondary);
   }
 
   #root {
@@ -79,70 +95,98 @@
     @apply mx-auto mb-10 max-w-2xl text-center sm:mb-12;
   }
 
-  .ui-kicker {
-    @apply font-mono text-[11px] sm:text-xs tracking-[0.18em] uppercase text-energy;
+  /*
+    Five-step type ladder (12px floor).
+    WHY: Collapse ad-hoc rem/px sizes into Apple-style display → label steps.
+    Colors via CSS vars — never @apply text-fg* (monorepo Tailwind clash).
+  */
+  .ui-display {
+    @apply text-[1.85rem] font-bold leading-[1.25] tracking-tight sm:text-5xl sm:leading-tight lg:text-[3.15rem];
+    color: var(--fg-primary);
+  }
+
+  .ui-h2 {
+    @apply text-xl font-semibold tracking-tight sm:text-3xl;
+    color: var(--fg-primary);
   }
 
   /*
-    CJK eyebrows — keep energy tone / size, drop Latin uppercase + wide tracking
+    Document section title — marketing ui-h2 jumps to 3xl; longform pages
+    stay xl→2xl so Science/Privacy denser cards never fight !important overrides.
+  */
+  .ui-h2-doc {
+    @apply text-xl font-semibold tracking-tight sm:text-2xl;
+    color: var(--fg-primary);
+  }
+
+  .ui-h3 {
+    @apply text-lg font-semibold tracking-tight sm:text-xl;
+    color: var(--fg-primary);
+  }
+
+  .ui-body {
+    @apply text-[15px] leading-relaxed sm:text-base;
+    color: var(--fg-secondary);
+  }
+
+  .ui-label {
+    @apply text-xs font-medium tracking-wide;
+    color: var(--fg-muted);
+  }
+
+  /* Latin eyebrows — Accent only; ≥12px floor. */
+  .ui-kicker {
+    @apply font-mono text-xs tracking-[0.18em] uppercase;
+    color: var(--fg-accent);
+  }
+
+  /*
+    CJK eyebrows — Accent only; drop Latin uppercase + wide tracking
     that spaces Chinese glyphs into hard-to-scan ribbons.
   */
   .ui-kicker-zh {
-    @apply font-mono text-[11px] sm:text-xs tracking-wide text-energy normal-case;
-  }
-
-  /* Section-tone kickers — same type recipe as ui-kicker-zh, own color (no utility clash). */
-  .ui-kicker-zh-amber {
-    @apply font-mono text-[11px] sm:text-xs tracking-wide text-amber-400 normal-case;
-  }
-
-  .ui-kicker-zh-orange {
-    @apply font-mono text-[11px] sm:text-xs tracking-wide text-orange-400 normal-case;
-  }
-
-  .ui-kicker-zh-violet {
-    @apply font-mono text-[11px] sm:text-xs tracking-wide text-violet-400 normal-case;
+    @apply font-mono text-xs tracking-wide normal-case;
+    color: var(--fg-accent);
   }
 
   .ui-card {
-    @apply rounded-2xl border border-white/10 bg-card;
+    @apply rounded-2xl border border-white/10;
+    background-color: var(--color-card);
   }
 
   .ui-panel {
-    @apply rounded-2xl border border-white/10 bg-panel;
+    @apply rounded-2xl border border-white/10;
+    background-color: var(--color-panel);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-black transition hover:brightness-110 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-black transition hover:brightness-110 active:scale-[0.98];
+    background-color: var(--color-brand);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-800/80;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium transition hover:border-white/25 hover:bg-white/10;
+    color: var(--fg-primary);
   }
 
   /*
-    Telemetry formula frames — stage tokens via theme(), not @apply bg-*.
-    WHY: @apply bg-night/bg-steel can 500 under Vite HMR when monorepo root Tailwind
-    config is resolved first (root has no night/steel). theme() + pinned postcss config
-    keep frames stable.
+    Telemetry formula frames — CSS var stage paint (not @apply / theme()).
+    WHY: Vite HMR can resolve monorepo root Tailwind (no night/steel/fg) and 500.
   */
   .formula-box {
-    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-violet-500/25 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
-    background-color: theme('colors.night');
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-violet-500/25 p-3 sm:p-4 font-mono text-xs sm:text-sm leading-relaxed tabular-nums;
+    color: var(--fg-secondary);
+    background-color: var(--color-night);
   }
 
   .formula-box-steel {
-    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/15 p-3 sm:p-4 font-mono text-[11px] sm:text-sm leading-relaxed text-zinc-300;
-    background-color: theme('colors.steel');
-  }
-
-  /* Display-only locale hint — not an interactive language switcher. */
-  .locale-pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 font-mono text-[11px] text-zinc-300;
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/15 p-3 sm:p-4 font-mono text-xs sm:text-sm leading-relaxed tabular-nums;
+    color: var(--fg-secondary);
+    background-color: var(--color-steel);
   }
 
   /*
-    Metal membership card brush — used by #plans CORE / GENESIS shells.
+    Metal membership card brush — used by /pricing CORE / GENESIS shells.
     WHY: Keep brushed sheen in CSS (not inline) so Tailwind purge stays clean.
   */
   .metal-card-titanium::before,
@@ -199,33 +243,6 @@
   @media (min-width: 768px) {
     .site-sticky-cta-clearance {
       padding-bottom: 0;
-    }
-  }
-
-  /*
-    Soft energy pulse — radar section beam / instrument LEDs.
-    WHY: Tailwind animate-pulse is too coarse for a thin vertical beam cue.
-  */
-  @keyframes energy-breathe {
-    0%,
-    100% {
-      opacity: 0.45;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.15);
-    }
-  }
-
-  .animate-energy-breathe {
-    animation: energy-breathe 2.4s ease-in-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .animate-energy-breathe {
-      animation: none;
-      opacity: 0.85;
     }
   }
 }
