@@ -4,8 +4,8 @@
 
 @layer base {
   /*
-    SSOT chrome metrics — Navbar h-14/sm:h-16 + notch, main offset, scroll-margin,
-    and hero -mt / pt / media-ctrl top must stay in lockstep.
+    SSOT chrome metrics — Navbar h-14/sm:h-16 + notch, main offset, and
+    scroll-margin / hero -mt / pt must stay in lockstep.
   */
   :root {
     --site-nav-bar-h: 3.5rem; /* h-14 */
@@ -236,11 +236,6 @@
   /* Content top pad matching fixed Navbar (bar height + notch). */
   .site-nav-offset-pt {
     padding-top: var(--site-nav-offset);
-  }
-
-  /* Hero media PLAY/STILL — sits just under fixed chrome, clear of bottom CTAs. */
-  .hero-media-ctrl-top {
-    top: calc(var(--site-nav-offset) + 0.5rem);
   }
 
   /* Mobile sticky CTA: intentional py + home-indicator (not max()). */

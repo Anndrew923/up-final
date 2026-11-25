@@ -13,7 +13,10 @@
  * - Append further stills to each `SYSTEM_PREVIEWS` array for snap carousel
  * - `/og-image.png` — social share meta only (`index.html`); never a UI fill
  * - `/founder-battle-card.png` — referenced from athlete data SSOT
- * Video fields stay null until mp4 assets land.
+ * - `/images/explainer-cover.jpg` — Explainer facade still (null until asset lands)
+ * - `/videos/explainer.mp4` — Explainer click-to-play (Facade mounts only on click)
+ * Video fields stay null until mp4 assets land (except explainer video path,
+ * which is wired for on-demand load + onError fallback before the file ships).
  */
 
 /**
@@ -89,3 +92,16 @@ export const HERO_VIDEO_SRC: string | null = null;
  * Multi-still tabs (01–04 today) ignore this and keep the image carousel.
  */
 export const SYSTEM_VIDEO_SRC: string | null = null;
+
+/**
+ * Explainer facade still — null until `public/images/explainer-cover.jpg` lands.
+ * WHY null SSOT: avoids a first-paint 404 while the lab-grid fallback stays painted.
+ */
+export const EXPLAINER_POSTER_SRC: string | null = null;
+
+/**
+ * Explainer click-to-play source.
+ * WHY path kept (not null): Facade never mounts `<video>` until click; missing
+ * file hits onError → dashboard fallback. Flip-ready when the mp4 is dropped in.
+ */
+export const EXPLAINER_VIDEO_SRC = '/videos/explainer.mp4';

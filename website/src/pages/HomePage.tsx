@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { AthletesShowcase } from '../components/AthletesShowcase';
+import { ExplainerVideoCard } from '../components/ExplainerVideoCard';
 import { HeroBackdrop } from '../components/HeroBackdrop';
 import { HeroStoreCta } from '../components/HeroStoreCta';
 import { SystemsShowcase } from '../components/SystemsShowcase';
@@ -10,8 +11,8 @@ interface HomePageProps {
 }
 
 /**
- * Slim conversion home: Hero → #systems → #athletes → compact download CTA.
- * Ladder / pricing / FAQ live on /science and /pricing — keep this page three-beat only.
+ * Slim conversion home: Hero → explainer → #systems → #athletes → compact download CTA.
+ * Ladder / pricing / FAQ live on /science and /pricing — keep Hero first-viewport untouched.
  */
 export function HomePage({ onDownload }: HomePageProps) {
   return (
@@ -41,6 +42,19 @@ export function HomePage({ onDownload }: HomePageProps) {
 
             <HeroStoreCta onDownload={onDownload} />
           </div>
+        </div>
+      </section>
+
+      {/*
+        WHY outside 100svh Hero: explainer sits after dual-store CTAs so phone
+        first-viewport claim + buttons never shift; width matches #systems via ui-container.
+      */}
+      <section
+        className="border-b border-white/5 bg-ink py-8 sm:py-10"
+        aria-label="開發者實測解析"
+      >
+        <div className="ui-container">
+          <ExplainerVideoCard />
         </div>
       </section>
 

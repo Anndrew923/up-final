@@ -43,8 +43,8 @@ export type StoreAction =
   | { kind: 'unavailable' };
 
 /**
- * Resolve click intent for store badges / modal cards.
- * WHY: Hero + DownloadModal must share the same gate — never invent URLs when unavailable.
+ * Resolve click intent for Hero / modal store actions.
+ * WHY: Shared gate — never invent URLs when unavailable; flip `*Available` to go live.
  */
 export function resolveStoreAction(platform: StorePlatform): StoreAction {
   const url = getStoreUrl(platform);

@@ -1,12 +1,17 @@
 import { useEffect } from 'react';
 
 /**
- * Escape + body scroll lock for portaled modals / lightboxes.
- * WHY: ImageLightbox and TelemetryDossierModal must share one a11y contract
- * so Escape / overflow restore never drift.
+ * Escape + body scroll lock for modals / lightboxes.
+ * WHY: DownloadModal, ImageLightbox, and TelemetryDossierModal share one a11y
+ * contract so Escape / overflow restore never drift. `enabled` lets always-mounted
+ * sheets (DownloadModal) skip the lock while closed.
  */
-export function usePortalModalLock(onClose: () => void): void {
+export function usePortalModalLock(
+  onClose: () => void,
+  enabled = true,
+): void {
   useEffect(() => {
+    if (!enabled) return undefined;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
@@ -17,5 +22,5 @@ export function usePortalModalLock(onClose: () => void): void {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [onClose]);
+  }, [onClose, enabled]);
 }
