@@ -6,7 +6,7 @@ import { ImageLightbox } from './ImageLightbox';
 import { TelemetryDossierModal } from './TelemetryDossierModal';
 
 /**
- * WHOOP/Ladder-style verified card — compact still + identity + quote + dossier CTA.
+ * WHOOP/Ladder-style verified card — compact still + identity + dossier CTA.
  * WHY: Mobile still height is capped so title → CTA fits one phone screen under
  * sticky download chrome; watermark cue removed so the pill CTA is the sole invite.
  */
@@ -22,12 +22,13 @@ function BattleCardArt({
   onOpen: () => void;
   scoreHint?: string;
 }) {
-  // WHY: Keep placeholder visible until onLoad — avoids a broken-image flash before onError.
+  // WHY: Keep placeholder overlay until onLoad — avoids a broken-image flash before onError.
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // WHY: Cached images may skip a late onLoad; sync once on mount/src change.
+  // WHY: Cached images may skip a late onLoad; reset + sync on mount/src change.
   useEffect(() => {
+    setPhase('loading');
     const node = imgRef.current;
     if (!node) return;
     if (node.complete && node.naturalWidth > 0) {
@@ -51,42 +52,41 @@ function BattleCardArt({
     );
   }
 
+  /*
+    WHY always in-flow + eager: prior opacity-0 absolute + loading=lazy left
+    some browsers never fetching the PNG, so onLoad/onError never fired and
+    the dashed shell stuck forever on Netlify production. Overlay covers the
+    in-flow img without hiding it from the network stack.
+  */
   return (
-    <div className="relative w-full shrink-0">
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group relative block w-full shrink-0 overflow-hidden rounded-xl border border-zinc-700/80 bg-zinc-950/60 text-left transition hover:border-energy/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-energy"
+      aria-label={`${name} 實機遙測戰報 — 查看完整實測數據`}
+    >
       {phase === 'loading' ? (
         <div
-          className={`rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70 ${ATHLETE_STILL_BOX}`}
+          className="pointer-events-none absolute inset-0 z-[1] rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70"
           aria-hidden
         />
       ) : null}
-      <button
-        type="button"
-        onClick={onOpen}
-        className={`group relative block w-full overflow-hidden rounded-xl border border-zinc-700/80 bg-zinc-950/60 text-left transition hover:border-energy/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-energy ${
-          phase === 'ready'
-            ? ''
-            : 'pointer-events-none absolute inset-0 opacity-0'
-        }`}
-        aria-label={`${name} 實機遙測戰報 — 查看完整實測數據`}
-        tabIndex={phase === 'ready' ? 0 : -1}
-      >
-        <img
-          ref={imgRef}
-          src={src}
-          alt={`${name} 實機遙測戰報卡`}
-          onLoad={() => setPhase('ready')}
-          onError={() => setPhase('error')}
-          className={`${ATHLETE_STILL_IMG} transition duration-300 group-hover:scale-[1.02]`}
-          decoding="async"
-          loading="lazy"
-        />
-        {scoreHint ? (
-          <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
-            {scoreHint}
-          </span>
-        ) : null}
-      </button>
-    </div>
+      <img
+        ref={imgRef}
+        src={src}
+        alt={`${name} 實機遙測戰報卡`}
+        onLoad={() => setPhase('ready')}
+        onError={() => setPhase('error')}
+        className={`${ATHLETE_STILL_IMG} transition duration-300 group-hover:scale-[1.02]`}
+        decoding="async"
+        loading="eager"
+      />
+      {scoreHint && phase === 'ready' ? (
+        <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
+          {scoreHint}
+        </span>
+      ) : null}
+    </button>
   );
 }
 
@@ -130,9 +130,8 @@ export function AthleteEndorsementCard({
 
           <div className="min-w-0">
             {/*
-              WHY three tones only: name = section-H2 white/bold; role+quote =
-              shared secondary upright (no CJK faux-italic); CTA label stays
-              muted fg while energy ArrowUpRight is the sole click affordance.
+              WHY two tones: name = section-H2 white/bold; role = secondary.
+              CTA label stays muted fg while energy ArrowUpRight is the sole click cue.
             */}
             <h3 className="text-base font-bold leading-snug text-white sm:text-lg">
               {athlete.name}
@@ -140,11 +139,6 @@ export function AthleteEndorsementCard({
             <p className="mt-0.5 text-sm leading-snug text-fg-secondary">
               {athlete.role}
             </p>
-            {athlete.quote ? (
-              <p className="mt-1.5 line-clamp-2 text-sm leading-snug text-fg-secondary sm:mt-2.5 sm:line-clamp-none">
-                「{athlete.quote}」
-              </p>
-            ) : null}
             {hasMetrics ? (
               <button
                 type="button"

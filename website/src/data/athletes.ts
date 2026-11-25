@@ -46,7 +46,6 @@ export interface VerifiedAthleteEntry extends AthleteRosterBase {
   battleScoreHint?: string;
   /** Full structured metrics — data SSOT only; homepage cards omit this list. */
   metricGroups: readonly AthleteMetricGroup[];
-  quote?: string;
 }
 
 /** Everyday trainee feedback — mass-market social proof. */
@@ -82,7 +81,7 @@ export type AthleteRosterEntry =
 
 /**
  * Append new people here only — homepage rail recomputes via `homepageAthleteRoster`.
- * Anndrew metrics + quote must stay verbatim (product SSOT).
+ * Anndrew metrics must stay verbatim (product SSOT).
  */
 export const athleteRoster: readonly AthleteRosterEntry[] = [
   {
@@ -110,7 +109,6 @@ export const athleteRoster: readonly AthleteRosterEntry[] = [
         line: '垂直跳 70 cm · 立定跳遠 283 cm · 庫珀 12 分鐘跑 2,800 m · 單手握力 70.5 kg',
       },
     ],
-    quote: '讓統計數字停止你的內耗，讓我看看你有多強！',
   },
   {
     id: 'open-bodybuilding',
