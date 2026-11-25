@@ -173,7 +173,7 @@ const HEADING_COLUMN =
 
 /** Locked one-line title — overrides ui-h3 so tab switches never reflow height. */
 const SYSTEM_TITLE =
-  'whitespace-nowrap text-[21px] font-semibold tracking-tight text-fg sm:text-3xl';
+  'whitespace-nowrap text-[21px] font-semibold tracking-tight text-white sm:text-3xl';
 
 function SystemHeading({ item }: { item: SystemTab }) {
   // WHY: No SYS eyebrow — tabs identify the engine; height lock is font+nowrap.
@@ -353,7 +353,7 @@ export function SystemsShowcase() {
                     }`}
                     aria-hidden
                   />
-                  <span className="font-mono text-xs tabular-nums tracking-wide opacity-80 sm:text-xs">
+                  <span className="text-xs tabular-nums tracking-wide opacity-80 sm:text-xs">
                     {item.sys}
                   </span>
                 </span>

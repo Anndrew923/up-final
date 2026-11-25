@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { BrandLockup } from './BrandLockup';
 
 interface FooterLink {
   to: string;
@@ -7,9 +8,10 @@ interface FooterLink {
   muted?: boolean;
 }
 
+/** WHY order matches Navbar PAGE_NAV conversion priority (pricing before science). */
 const FOOTER_LINKS: readonly FooterLink[] = [
-  { to: '/science', label: '科學評測與 14 階基準' },
   { to: '/pricing', label: 'Pro 方案與常見問題' },
+  { to: '/science', label: '科學評測與 14 階基準' },
   { to: '/privacy', label: '隱私權政策與健康免責', muted: true },
 ];
 
@@ -25,10 +27,7 @@ export function Footer() {
     <footer className="border-t border-white/5 bg-panel">
       <div className="ui-container space-y-4 py-8 sm:py-10">
         <div>
-          <p className="text-base font-semibold text-fg sm:text-lg">最強肉體</p>
-          <p className="ui-label mt-0.5 font-mono tracking-wider">
-            ULTIMATE PHYSIQUE
-          </p>
+          <BrandLockup nameClassName="text-base sm:text-lg" />
           <p className="ui-body mt-2 max-w-2xl text-xs sm:text-sm">
             本工具提供運動生理學數據量化與訓練紀錄，不構成醫療診斷或處方；全球天梯為自願上傳之系統校驗成績。
           </p>
@@ -53,7 +52,7 @@ export function Footer() {
           </ul>
         </nav>
 
-        <p className="ui-label font-mono tabular-nums">
+        <p className="ui-label tabular-nums">
           © {year} 最強肉體 Ultimate Physique.
         </p>
       </div>

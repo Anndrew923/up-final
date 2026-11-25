@@ -92,14 +92,15 @@ export function HomePage({ onDownload }: HomePageProps) {
           className="pointer-events-none absolute -top-16 left-1/2 h-40 w-[28rem] -translate-x-1/2 rounded-full bg-amber-500/10 blur-2xl"
           aria-hidden
         />
+        {/*
+          WHY: Distinct CTA claim (not「永久免費」) + no gray lead — hand off
+          straight to download / pricing buttons without repeating /pricing copy.
+        */}
         <div className="ui-container relative text-center">
           <p className="ui-kicker-zh">開始行動</p>
           <h2 id="home-cta-heading" className="ui-h2 mt-2 sm:mt-3">
-            核心六軸評測永久免費
+            現在就測出你的真實戰力
           </h2>
-          <p className="ui-body mx-auto mt-2 max-w-lg sm:mt-3">
-            下載 App 立刻開測；需要天梯與雲端時再升級創世早鳥席或 PRO。
-          </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-8 sm:flex-row sm:gap-3">
             <button
               type="button"

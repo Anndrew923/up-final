@@ -9,7 +9,7 @@ const SUPPORT_EMAIL = 'topaj01@gmail.com';
 const EFFECTIVE_DATE = '2026-11-23';
 
 const MAIL_LINK_CLASS =
-  'font-mono text-energy underline-offset-2 hover:underline';
+  'text-energy underline-offset-2 hover:underline';
 
 const PRIVACY_TOC = [
   { id: 'privacy-health', label: '健康免責' },
@@ -34,7 +34,7 @@ export function PrivacyPage() {
             返回首頁
           </Link>
           <p className="ui-kicker-zh mt-6">法務合規 · 隱私與免責</p>
-          <h1 className="mt-3 max-w-3xl text-balance text-3xl font-bold tracking-tight text-fg sm:text-4xl">
+          <h1 className="mt-3 max-w-3xl text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
             隱私權政策與健康免責聲明
           </h1>
           <p className="ui-body mt-4 max-w-2xl">
@@ -42,7 +42,7 @@ export function PrivacyPage() {
             採本機優先架構。本頁說明資料邊界、第三方服務、帳號刪除權利與聯絡方式，以符合
             App Store 與 Google Play 審核要求。
           </p>
-          <p className="ui-label mt-3 font-mono tabular-nums">
+          <p className="ui-label mt-3 tabular-nums">
             生效／最後修訂：{EFFECTIVE_DATE}
           </p>
 
@@ -54,7 +54,7 @@ export function PrivacyPage() {
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="rounded-lg border border-white/15 bg-steel/80 px-3 py-2 text-center font-mono text-xs tracking-wide text-fg-secondary transition hover:border-energy/40 hover:text-energy sm:text-left sm:text-xs"
+                className="rounded-lg border border-white/15 bg-steel/80 px-3 py-2 text-center text-xs tracking-wide text-fg-secondary transition hover:border-energy/40 hover:text-energy sm:text-left sm:text-xs"
               >
                 {item.label}
               </a>
@@ -195,8 +195,8 @@ export function PrivacyPage() {
           >
             <p>
               PRO 訂閱標價參考：月訂{' '}
-              <span className="font-mono text-fg">$1.99 USD</span>
-              ；年訂 <span className="font-mono text-fg">$14.99 USD</span>
+              <span className="text-fg">$1.99 USD</span>
+              ；年訂 <span className="text-fg">$14.99 USD</span>
               。實際扣款以 App Store／Google Play 顯示為準。
             </p>
             <p>
@@ -215,7 +215,7 @@ export function PrivacyPage() {
             </p>
             <p>
               本政策生效與最後修訂日期為{' '}
-              <span className="font-mono text-fg">{EFFECTIVE_DATE}</span>
+              <span className="text-fg">{EFFECTIVE_DATE}</span>
               。我們可能更新本頁以反映產品或法規變化；重大變更將於官網或 App
               內揭示。繼續使用即表示您知悉更新後的條款。
             </p>
@@ -256,10 +256,10 @@ function PolicyCard({
   return (
     <article id={id} className="ui-card min-w-0 p-4 sm:p-8">
       <div className="flex min-w-0 items-start gap-3">
-        <Shield className="mt-0.5 h-5 w-5 shrink-0 text-energy" aria-hidden />
+        <Shield className="mt-0.5 h-5 w-5 shrink-0 text-fg-secondary" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="ui-kicker-zh mb-2">{kicker}</p>
-          <h2 className="text-xl text-fg sm:text-2xl">{title}</h2>
+          <h2 className="text-xl text-white sm:text-2xl">{title}</h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-fg-secondary">
             {children}
           </div>

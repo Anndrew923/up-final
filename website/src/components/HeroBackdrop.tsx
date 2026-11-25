@@ -6,7 +6,7 @@ import {
 import { useLoopVideoControls } from './OptionalLoopVideo';
 
 const MEDIA_CTRL =
-  'absolute right-4 z-10 flex h-9 items-center gap-1.5 rounded-full border px-3 font-mono text-xs tracking-wide backdrop-blur-md sm:right-6';
+  'absolute right-4 z-10 flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs tracking-wide backdrop-blur-md sm:right-6';
 
 /**
  * Ladder-style full-bleed hero media — clear upper half, ink wash only in lower 50%.

@@ -31,7 +31,8 @@ export default {
          * WHY: Collapse 7–8 zinc/amber text utilities into three semantic FG tokens.
          */
         fg: {
-          DEFAULT: '#F8FAFC',
+          /** Pure white — matches CSS `--fg-primary` for H1–H3 / card titles. */
+          DEFAULT: '#ffffff',
           secondary: '#94A3B8',
           muted: '#64748B',
         },

@@ -75,7 +75,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
             <p className="ui-kicker">DOWNLOAD // DYNO GATE</p>
             <h2
               id={titleId}
-              className="mt-1 text-xl text-fg sm:text-2xl"
+              className="mt-1 text-xl text-white sm:text-2xl"
             >
               開始免費評測
             </h2>
@@ -122,7 +122,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
           />
         </div>
 
-        <p className="mt-4 font-mono text-xs text-fg-muted">
+        <p className="mt-4 text-xs text-fg-muted">
           最強肉體 Ultimate Physique · 支援 iOS &amp; Android
         </p>
       </div>
@@ -164,9 +164,9 @@ function StoreCard({
   return (
     <div className="ui-card flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xs text-energy">{label}</span>
+        <span className="text-xs text-energy">{label}</span>
         <span
-          className={`rounded-full px-2 py-0.5 font-mono text-xs ${
+          className={`rounded-full px-2 py-0.5 text-xs ${
             available ? 'bg-brand/20 text-brand' : 'bg-white/5 text-fg-muted'
           }`}
         >
@@ -184,7 +184,7 @@ function StoreCard({
               height={112}
             />
           ) : (
-            <span className="font-mono text-xs text-fg-muted">QR…</span>
+            <span className="text-xs text-fg-muted">QR…</span>
           )}
         </div>
       )}

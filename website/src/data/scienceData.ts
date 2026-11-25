@@ -18,7 +18,7 @@ export interface ScienceAxis {
   formulas: string[];
   /**
    * Theory / tool-calculator contrast that must NOT be read as radar scoring.
-   * Rendered outside the formula box so mono styling does not punish long copy.
+   * Rendered outside the formula box so long contrast copy stays body weight.
    */
   contrastNotes?: string[];
   normNotes: string[];

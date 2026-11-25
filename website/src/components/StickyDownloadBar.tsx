@@ -66,7 +66,7 @@ export function StickyDownloadBar({
           headline so 360px phones never hit truncate/ellipsis beside the CTA.
         */}
         <div className="min-w-0 flex-1 leading-snug">
-          <p className="font-mono text-xs tracking-wider text-energy">
+          <p className="text-xs tracking-wider text-energy">
             核心功能永久免費
           </p>
           <p className="text-sm text-fg-secondary">一鍵測出六軸戰力</p>

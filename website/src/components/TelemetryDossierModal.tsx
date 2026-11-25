@@ -54,7 +54,7 @@ export function TelemetryDossierModal({
             <p className="ui-kicker-zh">實測數據檔案</p>
             <h2
               id={titleId}
-              className="mt-1 truncate text-base font-semibold text-fg sm:text-lg"
+              className="mt-1 truncate text-base font-semibold text-white sm:text-lg"
             >
               {athlete.name}
             </h2>
@@ -86,14 +86,14 @@ export function TelemetryDossierModal({
                     decoding="async"
                   />
                   {athlete.battleScoreHint ? (
-                    <span className="absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/75 px-2 py-1 font-mono text-sm font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
+                    <span className="absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/75 px-2 py-1 text-sm font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
                       {athlete.battleScoreHint}
                     </span>
                   ) : null}
                 </div>
               ) : (
                 <div className="flex aspect-[3/4] w-full max-w-xs items-center justify-center rounded-xl border border-dashed border-zinc-600 bg-zinc-950/70 md:max-w-none">
-                  <p className="ui-label font-mono">戰報卡 · 待匯入</p>
+                  <p className="ui-label">戰報卡 · 待匯入</p>
                 </div>
               )}
             </div>
@@ -107,7 +107,7 @@ export function TelemetryDossierModal({
                     key={group.label}
                     className="rounded-xl border border-white/10 bg-zinc-900/70 p-3 sm:p-3.5"
                   >
-                    <p className="ui-kicker-zh mb-1.5">{group.label}</p>
+                    <p className="ui-subhead mb-1.5">{group.label}</p>
                     <p className="text-sm leading-relaxed text-fg-secondary tabular-nums sm:text-[15px]">
                       {renderMetricLine(group.line)}
                     </p>

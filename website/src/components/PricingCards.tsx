@@ -69,7 +69,7 @@ function PricingCard({
       className={`relative flex h-full flex-col rounded-2xl border ${PRICING_TIER_BORDER[tier]}`}
     >
       {tier === 'genesis' ? (
-        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-full bg-amber-400 px-2.5 py-0.5 font-mono text-xs font-bold text-zinc-950 sm:right-4">
+        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-zinc-950 sm:right-4">
           首發限量 · 推薦
         </span>
       ) : null}
@@ -79,18 +79,22 @@ function PricingCard({
         <div className="relative flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <Icon className={`h-4 w-4 shrink-0 ${badgeChrome}`} />
-            <span className={`font-mono text-xs tracking-wider ${badgeChrome}`}>
+            <span className={`text-xs tracking-wider ${badgeChrome}`}>
               {badge}
             </span>
           </div>
           {cardNo ? (
-            <span className="ui-label shrink-0 font-mono tracking-[0.14em] tabular-nums">
+            <span className="ui-label shrink-0 tracking-[0.14em] tabular-nums">
               {cardNo}
             </span>
           ) : null}
         </div>
+        {/*
+          WHY text-white: metal gradients wash slate-fg; pure white keeps
+          card titles above gray feature lines.
+        */}
         <h3
-          className={`relative text-fg ${
+          className={`relative text-white ${
             tier === 'genesis' ? 'mt-3 text-xl font-semibold' : 'mt-2.5 text-lg font-semibold'
           }`}
         >
@@ -101,15 +105,15 @@ function PricingCard({
             tier === 'genesis' ? 'mt-2' : 'mt-1.5'
           }`}
         >
-          <p className="font-mono text-lg tabular-nums text-fg">{price}</p>
+          <p className="text-lg tabular-nums text-fg">{price}</p>
           {priceTag ? (
-            <span className="rounded-md border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 font-mono text-xs tracking-wide text-amber-200">
+            <span className="rounded-md border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-xs tracking-wide text-amber-200">
               {priceTag}
             </span>
           ) : null}
         </div>
         {priceSub ? (
-          <p className="ui-label relative font-mono tabular-nums">{priceSub}</p>
+          <p className="ui-label relative tabular-nums">{priceSub}</p>
         ) : null}
         <ul className={`relative ${featureGap} ui-body flex-1 text-sm`}>
           {features.map((f) => (

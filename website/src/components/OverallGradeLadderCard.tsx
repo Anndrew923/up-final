@@ -23,7 +23,7 @@ const HALL_TAB = {
 const HALL_CARD = {
   shell: 'border-white/10 bg-black/30',
   pill: 'border-amber-400/25 bg-amber-500/5 text-fg',
-  homologation: 'text-energy',
+  homologation: 'text-fg',
   structure: 'text-fg-secondary',
 } as const;
 
@@ -230,10 +230,10 @@ export function OverallGradeLadderCard() {
               {overallGradeLadderMeta.kicker}
             </span>
           </p>
-          <h2 className="ui-h2 mt-2 sm:mt-3">
+          <h2 className="ui-h2-doc mt-2 sm:mt-3">
             {overallGradeLadderMeta.title}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-fg-secondary sm:mt-4">
+          <p className="ui-body mt-3 sm:mt-4">
             {overallGradeLadderMeta.lead}
           </p>
         </div>
@@ -265,7 +265,7 @@ export function OverallGradeLadderCard() {
             >
               <span className="block text-sm font-medium leading-snug">{band.label}</span>
               <span
-                className={`mt-0.5 block font-mono text-xs tabular-nums ${
+                className={`mt-0.5 block text-xs tabular-nums ${
                   selected ? HALL_TAB.range : 'text-fg-muted'
                 }`}
               >
@@ -303,7 +303,7 @@ function GradeTierCard({ tier }: { tier: OverallGradeTier }) {
       <div className="flex min-w-0 items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-2">
           <span
-            className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums ${
+            className={`inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 text-xs tabular-nums ${
               isElite ? ELITE_CHIP : HALL_CARD.pill
             }`}
           >
@@ -311,7 +311,7 @@ function GradeTierCard({ tier }: { tier: OverallGradeTier }) {
           </span>
           {isElite ? (
             <span
-              className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-xs tracking-wide ${ELITE_CHIP}`}
+              className={`shrink-0 rounded border px-1.5 py-0.5 text-xs tracking-wide ${ELITE_CHIP}`}
             >
               {overallGradeLadderMeta.eliteBadge}
             </span>

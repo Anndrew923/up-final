@@ -88,7 +88,7 @@ function CommunitySnapCard({ entry }: { entry: CommunityAthleteEntry }) {
             </button>
           ) : (
             <div
-              className={`flex items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/10 font-mono text-2xl font-semibold text-fg ${ATHLETE_STILL_BOX}`}
+              className={`flex items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/10 text-2xl font-semibold text-fg ${ATHLETE_STILL_BOX}`}
               aria-hidden
             >
               {athleteMonogram(entry.displayName)}
@@ -96,17 +96,17 @@ function CommunitySnapCard({ entry }: { entry: CommunityAthleteEntry }) {
           )}
 
           <div className="min-w-0">
-            <p className="ui-kicker-zh">一般訓練者回饋</p>
+            <p className="ui-subhead">一般訓練者回饋</p>
             <h3 className="ui-h3 mt-1 text-base leading-snug sm:text-lg">
               {entry.displayName}
             </h3>
             <p className="ui-label mt-0.5 leading-snug">{entry.context}</p>
             {highlight ? (
-              <span className="mt-1.5 inline-flex rounded-md border border-orange-400/35 bg-orange-500/10 px-2 py-0.5 font-mono text-xs tracking-wide text-fg sm:mt-2">
+              <span className="mt-1.5 inline-flex rounded-md border border-orange-400/35 bg-orange-500/10 px-2 py-0.5 text-xs tracking-wide text-fg sm:mt-2">
                 {highlight}
               </span>
             ) : null}
-            <p className="ui-body mt-1.5 line-clamp-2 text-xs italic sm:mt-2.5 sm:line-clamp-none sm:text-sm">
+            <p className="mt-1.5 line-clamp-2 text-sm leading-snug text-fg-secondary sm:mt-2.5 sm:line-clamp-none">
               「{entry.testimonial}」
             </p>
           </div>

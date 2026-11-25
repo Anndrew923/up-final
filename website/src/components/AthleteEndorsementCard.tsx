@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import type { VerifiedAthleteEntry } from '../data/athletes';
 import { ATHLETE_STILL_BOX, ATHLETE_STILL_IMG } from './athleteStillFrame';
 import { ImageLightbox } from './ImageLightbox';
@@ -45,7 +46,7 @@ function BattleCardArt({
         role="img"
         aria-label="實機遙測戰報卡 · 待匯入"
       >
-        <p className="ui-label font-mono">戰報卡 · 待匯入</p>
+        <p className="ui-label">戰報卡 · 待匯入</p>
       </div>
     );
   }
@@ -80,7 +81,7 @@ function BattleCardArt({
           loading="lazy"
         />
         {scoreHint ? (
-          <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-1.5 py-0.5 font-mono text-xs font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
+          <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-orange-400/50 bg-black/70 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-fg shadow-lg backdrop-blur-sm">
             {scoreHint}
           </span>
         ) : null}
@@ -128,12 +129,19 @@ export function AthleteEndorsementCard({
           ) : null}
 
           <div className="min-w-0">
-            <h3 className="ui-h3 text-base leading-snug sm:text-lg">
+            {/*
+              WHY three tones only: name = section-H2 white/bold; role+quote =
+              shared secondary upright (no CJK faux-italic); CTA label stays
+              muted fg while energy ArrowUpRight is the sole click affordance.
+            */}
+            <h3 className="text-base font-bold leading-snug text-white sm:text-lg">
               {athlete.name}
             </h3>
-            <p className="ui-label mt-0.5 leading-snug">{athlete.role}</p>
+            <p className="mt-0.5 text-sm leading-snug text-fg-secondary">
+              {athlete.role}
+            </p>
             {athlete.quote ? (
-              <p className="ui-body mt-1.5 line-clamp-2 text-xs italic sm:mt-2.5 sm:line-clamp-none sm:text-sm">
+              <p className="mt-1.5 line-clamp-2 text-sm leading-snug text-fg-secondary sm:mt-2.5 sm:line-clamp-none">
                 「{athlete.quote}」
               </p>
             ) : null}
@@ -141,10 +149,13 @@ export function AthleteEndorsementCard({
               <button
                 type="button"
                 onClick={openDossier}
-                className="mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1 rounded-full border border-energy/35 bg-energy/10 px-3 py-1.5 text-xs font-medium text-energy transition hover:border-energy/55 hover:bg-energy/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-energy sm:mt-3 sm:min-h-9 sm:text-sm"
+                className="group mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1.5 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-fg transition hover:border-white/35 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 sm:mt-3 sm:min-h-9"
               >
                 查看完整實測數據
-                <span aria-hidden>↗</span>
+                <ArrowUpRight
+                  className="h-4 w-4 shrink-0 stroke-[2.5] text-energy transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  aria-hidden
+                />
               </button>
             ) : null}
           </div>

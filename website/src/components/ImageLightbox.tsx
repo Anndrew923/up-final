@@ -36,14 +36,14 @@ export function ImageLightbox({
         <div className="mb-2 flex items-start justify-between gap-3">
           <p
             id={titleId}
-            className="min-w-0 pt-0.5 font-mono text-xs leading-snug tracking-wide text-fg-secondary"
+            className="min-w-0 pt-0.5 text-xs leading-snug tracking-wide text-fg-secondary"
           >
             {title}
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-full border border-zinc-600 bg-zinc-900/90 px-3 py-1 font-mono text-xs text-fg-secondary transition hover:border-zinc-400"
+            className="shrink-0 rounded-full border border-zinc-600 bg-zinc-900/90 px-3 py-1 text-xs text-fg-secondary transition hover:border-zinc-400"
           >
             關閉
           </button>

@@ -22,7 +22,8 @@
       WHY CSS vars + theme() in @apply-free rules: Vite HMR can resolve the monorepo
       root Tailwind (no `fg`/`void`) and explode on `@apply text-fg-*`.
     */
-    --fg-primary: #f8fafc;
+    /* Pure white — title / primary copy; secondary stays slate for body. */
+    --fg-primary: #ffffff;
     --fg-secondary: #94a3b8;
     --fg-muted: #64748b;
     --fg-accent: #38bdf8;
@@ -134,9 +135,12 @@
     color: var(--fg-muted);
   }
 
-  /* Latin eyebrows — Accent only; ≥12px floor. */
+  /*
+    Latin eyebrows — Accent only; ≥12px floor.
+    WHY no monospace: Inter/Noto stay the sole face; accent + weight mark hierarchy.
+  */
   .ui-kicker {
-    @apply font-mono text-xs tracking-[0.18em] uppercase;
+    @apply text-xs font-semibold tracking-[0.18em] uppercase;
     color: var(--fg-accent);
   }
 
@@ -145,8 +149,17 @@
     that spaces Chinese glyphs into hard-to-scan ribbons.
   */
   .ui-kicker-zh {
-    @apply font-mono text-xs tracking-wide normal-case;
+    @apply text-xs font-semibold tracking-wide normal-case;
     color: var(--fg-accent);
+  }
+
+  /*
+    In-card structural labels (science axes etc.) — white weight, never Accent.
+    WHY: Reserve energy blue for top kickers + links so /science stays B/W/gray.
+  */
+  .ui-subhead {
+    @apply text-xs font-semibold tracking-wide;
+    color: var(--fg-primary);
   }
 
   .ui-card {
@@ -174,13 +187,13 @@
     WHY: Vite HMR can resolve monorepo root Tailwind (no night/steel/fg) and 500.
   */
   .formula-box {
-    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-violet-500/25 p-3 sm:p-4 font-mono text-xs sm:text-sm leading-relaxed tabular-nums;
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-violet-500/25 p-3 sm:p-4 text-xs sm:text-sm leading-relaxed tabular-nums;
     color: var(--fg-secondary);
     background-color: var(--color-night);
   }
 
   .formula-box-steel {
-    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/15 p-3 sm:p-4 font-mono text-xs sm:text-sm leading-relaxed tabular-nums;
+    @apply max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-white/15 p-3 sm:p-4 text-xs sm:text-sm leading-relaxed tabular-nums;
     color: var(--fg-secondary);
     background-color: var(--color-steel);
   }
