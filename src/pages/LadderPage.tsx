@@ -135,6 +135,14 @@ export default function LadderPage() {
     return () => window.removeEventListener(LADDER_CACHE_INVALIDATED_EVENT, onCacheInvalidated);
   }, [bumpLadderRefresh]);
 
+  const handleAppliedFiltersChange = useCallback(() => {
+    // WHY: Clear/Apply must land on page 1 at the top — cancel pending "jump to me"
+    // scrolls so filter reset and rank auto-scroll do not fight (double bounce).
+    pendingScrollUidRef.current = null;
+    setCurrentPage(1);
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
   const {
     applied,
     draft,
@@ -158,9 +166,7 @@ export default function LadderPage() {
     clearDraftFilters,
     applyDraft,
   } = useLadderFiltersDraft({
-    onAppliedChange: () => {
-      setCurrentPage(1);
-    },
+    onAppliedChange: handleAppliedFiltersChange,
   });
 
   const projectSheetOptions = useMemo(() => {

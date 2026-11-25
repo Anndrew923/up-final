@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_LADDER_FILTERS, isSameLadderFilterValues } from '../../logic/core/ladderFilters';
 import { getDefaultProjectForDivision } from '../../logic/core/ladderShards';
 import { useLadderFiltersDraft, type UseLadderFiltersDraftResult } from '../useLadderFiltersDraft';
 
@@ -54,15 +55,8 @@ function selectDetailedFilters(api: UseLadderFiltersDraftResult) {
   api.setDraftDistrict('Xinyi');
 }
 
-function expectClearedTags(values: UseLadderFiltersDraftResult['applied']) {
-  expect(values.gender).toBe('all');
-  expect(values.ageBucket).toBe('all');
-  expect(values.heightBucket).toBe('all');
-  expect(values.weightBucket).toBe('all');
-  expect(values.jobCategory).toBe('all');
-  expect(values.countryCode).toBe('all');
-  expect(values.city).toBe('all');
-  expect(values.district).toBe('all');
+function expectDefaultFilters(values: UseLadderFiltersDraftResult['applied']) {
+  expect(isSameLadderFilterValues(values, DEFAULT_LADDER_FILTERS)).toBe(true);
 }
 
 describe('useLadderFiltersDraft', () => {
@@ -83,7 +77,7 @@ describe('useLadderFiltersDraft', () => {
     harness.unmount();
   });
 
-  it('clearDraftFilters clears only detailed filters and preserves division/project', () => {
+  it('clearDraftFilters resets draft+applied to DEFAULT and closes the sheet', () => {
     const harness = renderHookHarness();
 
     act(() => {
@@ -97,19 +91,16 @@ describe('useLadderFiltersDraft', () => {
     });
 
     const current = harness.getCurrent()!;
-    expect(current.draft.division).toBe('stats_sbdTotal');
-    expect(current.draft.filterProject).toBe('deadlift');
-    expect(current.applied.division).toBe('ladderScore');
-    expect(current.applied.filterProject).toBe(getDefaultProjectForDivision('ladderScore'));
-    expectClearedTags(current.draft);
-    expectClearedTags(current.applied);
-    expect(current.sheetOpen).toBe(true);
-    expect(current.hasUnappliedChanges).toBe(true);
+    expectDefaultFilters(current.draft);
+    expectDefaultFilters(current.applied);
+    expect(current.sheetOpen).toBe(false);
+    expect(current.hasUnappliedChanges).toBe(false);
+    expect(current.activeAppliedFilterCount).toBe(0);
 
     harness.unmount();
   });
 
-  it('clearDraftFilters commits cleared tags immediately without a second apply', () => {
+  it('clearDraftFilters commits DEFAULT immediately without a second apply', () => {
     const onAppliedChange = vi.fn();
     const harness = renderHookHarness(onAppliedChange);
 
@@ -133,13 +124,9 @@ describe('useLadderFiltersDraft', () => {
     });
 
     const current = harness.getCurrent()!;
-    expect(current.applied.division).toBe('stats_sbdTotal');
-    expect(current.applied.filterProject).toBe('deadlift');
-    expectClearedTags(current.applied);
-    expectClearedTags(current.draft);
-    expect(current.draft.division).toBe('stats_sbdTotal');
-    expect(current.draft.filterProject).toBe('deadlift');
-    expect(current.sheetOpen).toBe(true);
+    expectDefaultFilters(current.applied);
+    expectDefaultFilters(current.draft);
+    expect(current.sheetOpen).toBe(false);
     expect(current.hasUnappliedChanges).toBe(false);
     expect(current.activeAppliedFilterCount).toBe(0);
     expect(onAppliedChange).toHaveBeenCalledTimes(1);
@@ -148,7 +135,7 @@ describe('useLadderFiltersDraft', () => {
     harness.unmount();
   });
 
-  it('does not notify when clear is a no-op', () => {
+  it('always notifies on clear even when already at DEFAULT', () => {
     const onAppliedChange = vi.fn();
     const harness = renderHookHarness(onAppliedChange);
 
@@ -157,9 +144,45 @@ describe('useLadderFiltersDraft', () => {
       harness.getCurrent()!.clearDraftFilters();
     });
 
-    expect(onAppliedChange).not.toHaveBeenCalled();
-    expect(harness.getCurrent()!.sheetOpen).toBe(true);
+    expect(onAppliedChange).toHaveBeenCalledTimes(1);
+    expect(onAppliedChange).toHaveBeenCalledWith(DEFAULT_LADDER_FILTERS);
+    expect(harness.getCurrent()!.sheetOpen).toBe(false);
     expect(harness.getCurrent()!.hasUnappliedChanges).toBe(false);
+
+    harness.unmount();
+  });
+
+  it('counts non-default division as an active applied filter', () => {
+    const harness = renderHookHarness();
+
+    act(() => {
+      harness.getCurrent()!.openSheet();
+    });
+    act(() => {
+      harness.getCurrent()!.setDraftDivision('stats_sbdTotal');
+      harness.getCurrent()!.setDraftProject('deadlift');
+    });
+    act(() => {
+      harness.getCurrent()!.applyDraft();
+    });
+
+    expect(harness.getCurrent()!.activeAppliedFilterCount).toBe(1);
+    expect(harness.getCurrent()!.applied.gender).toBe('all');
+
+    harness.unmount();
+  });
+
+  it('applyDraft skips onAppliedChange when values are unchanged but still closes', () => {
+    const onAppliedChange = vi.fn();
+    const harness = renderHookHarness(onAppliedChange);
+
+    act(() => {
+      harness.getCurrent()!.openSheet();
+      harness.getCurrent()!.applyDraft();
+    });
+
+    expect(onAppliedChange).not.toHaveBeenCalled();
+    expect(harness.getCurrent()!.sheetOpen).toBe(false);
 
     harness.unmount();
   });
@@ -169,15 +192,23 @@ describe('useLadderFiltersDraft', () => {
 
     act(() => {
       harness.getCurrent()!.openSheet();
+    });
+    act(() => {
       harness.getCurrent()!.setDraftDivision('stats_vertical');
       harness.getCurrent()!.setDraftProject('sprint');
+    });
+    act(() => {
       harness.getCurrent()!.applyDraft();
     });
 
     act(() => {
       harness.getCurrent()!.openSheet();
+    });
+    act(() => {
       harness.getCurrent()!.setDraftProject('vertical');
       harness.getCurrent()!.setDraftGender('female');
+    });
+    act(() => {
       harness.getCurrent()!.closeSheet();
     });
 
@@ -200,9 +231,13 @@ describe('useLadderFiltersDraft', () => {
 
     act(() => {
       harness.getCurrent()!.openSheet();
+    });
+    act(() => {
       harness.getCurrent()!.setDraftDivision('stats_sbdTotal');
       harness.getCurrent()!.setDraftProject('bench');
       harness.getCurrent()!.setDraftGender('male');
+    });
+    act(() => {
       harness.getCurrent()!.applyDraft();
     });
 

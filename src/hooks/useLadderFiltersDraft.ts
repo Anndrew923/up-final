@@ -1,5 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  cloneLadderFilterValues,
+  countActiveLadderAppliedFilters,
+  DEFAULT_LADDER_FILTERS,
+  isSameLadderFilterValues,
+} from '../logic/core/ladderFilters';
+import {
   getDefaultProjectForDivision,
   getProjectOptionsForDivision,
   LADDER_PROJECT_NONE,
@@ -35,34 +41,6 @@ export interface UseLadderFiltersDraftResult {
   applyDraft: () => void;
 }
 
-/** Demographic tags only. Division and project are ranking axes, not clearable chips. */
-const CLEARED_TAG_FIELDS = {
-  gender: 'all',
-  ageBucket: 'all',
-  heightBucket: 'all',
-  weightBucket: 'all',
-  jobCategory: 'all',
-  countryCode: 'all',
-  city: 'all',
-  district: 'all',
-} as const satisfies Pick<
-  LadderFilterValues,
-  | 'gender'
-  | 'ageBucket'
-  | 'heightBucket'
-  | 'weightBucket'
-  | 'jobCategory'
-  | 'countryCode'
-  | 'city'
-  | 'district'
->;
-
-const DEFAULT_VALUES: LadderFilterValues = {
-  division: 'ladderScore',
-  filterProject: getDefaultProjectForDivision('ladderScore'),
-  ...CLEARED_TAG_FIELDS,
-};
-
 function resolveProjectForDivision(
   division: LadderFilterValues['division'],
   project: string
@@ -84,41 +62,22 @@ function normalizeDraft(input: LadderFilterValues): LadderFilterValues {
   };
 }
 
-function withClearedTags(values: LadderFilterValues): LadderFilterValues {
-  return normalizeDraft({ ...values, ...CLEARED_TAG_FIELDS });
-}
-
-function countActiveTags(values: LadderFilterValues): number {
-  return (Object.keys(CLEARED_TAG_FIELDS) as Array<keyof typeof CLEARED_TAG_FIELDS>).filter(
-    (key) => values[key] !== 'all'
-  ).length;
-}
-
-function isSameFilterValues(a: LadderFilterValues, b: LadderFilterValues): boolean {
-  return (
-    a.division === b.division &&
-    a.filterProject === b.filterProject &&
-    a.gender === b.gender &&
-    a.ageBucket === b.ageBucket &&
-    a.heightBucket === b.heightBucket &&
-    a.weightBucket === b.weightBucket &&
-    a.jobCategory === b.jobCategory &&
-    a.countryCode === b.countryCode &&
-    a.city === b.city &&
-    a.district === b.district
-  );
-}
-
 export function useLadderFiltersDraft(
   options: UseLadderFiltersDraftOptions = {}
 ): UseLadderFiltersDraftResult {
   const onAppliedChange = options.onAppliedChange;
-  const initialApplied: LadderFilterValues = normalizeDraft({
-    ...DEFAULT_VALUES,
-    ...options.initialApplied,
-  });
-  const [applied, setApplied] = useState<LadderFilterValues>(initialApplied);
-  const [draft, setDraft] = useState<LadderFilterValues>(initialApplied);
+  const [applied, setApplied] = useState<LadderFilterValues>(() =>
+    normalizeDraft({
+      ...DEFAULT_LADDER_FILTERS,
+      ...options.initialApplied,
+    })
+  );
+  const [draft, setDraft] = useState<LadderFilterValues>(() =>
+    normalizeDraft({
+      ...DEFAULT_LADDER_FILTERS,
+      ...options.initialApplied,
+    })
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const openSheet = useCallback(() => {
@@ -181,34 +140,37 @@ export function useLadderFiltersDraft(
   }, []);
 
   const clearDraftFilters = useCallback(() => {
-    // WHY: Clear is a commit, not a draft reset — tags drop without a second Apply.
-    // Division/project stay per store so an unapplied ranking edit is neither
-    // committed nor discarded. Unchanged stores are skipped so a no-op clear
-    // does not reset pagination or refetch.
-    const nextApplied = withClearedTags(applied);
-    const nextDraft = withClearedTags(draft);
-    if (!isSameFilterValues(nextDraft, draft)) setDraft(nextDraft);
-    if (!isSameFilterValues(nextApplied, applied)) {
-      setApplied(nextApplied);
-      onAppliedChange?.(nextApplied);
-    }
-  }, [applied, draft, onAppliedChange]);
+    // WHY: Product — Clear is one-tap return to full global ladder (DEFAULT), not a
+    // draft-only tag wipe. Always commit + close so users never need a second Apply.
+    const next = cloneLadderFilterValues(DEFAULT_LADDER_FILTERS);
+    setDraft(next);
+    setApplied(next);
+    setSheetOpen(false);
+    onAppliedChange?.(next);
+  }, [onAppliedChange]);
 
   const applyDraft = useCallback(() => {
-    const nextApplied = normalizeDraft(draft);
-    setApplied(nextApplied);
-    setDraft(nextApplied);
+    const next = normalizeDraft(draft);
+    const changed = !isSameLadderFilterValues(next, applied);
+    // Always sync draft to normalized next so reopen cannot resurrect stale edits.
+    setDraft(next);
+    if (changed) {
+      setApplied(next);
+      onAppliedChange?.(next);
+    }
     setSheetOpen(false);
-    onAppliedChange?.(nextApplied);
-  }, [draft, onAppliedChange]);
+  }, [applied, draft, onAppliedChange]);
 
   const hasUnappliedChanges = useMemo(() => {
     const normalizedDraft = normalizeDraft(draft);
     const normalizedApplied = normalizeDraft(applied);
-    return !isSameFilterValues(normalizedDraft, normalizedApplied);
+    return !isSameLadderFilterValues(normalizedDraft, normalizedApplied);
   }, [applied, draft]);
 
-  const activeAppliedFilterCount = useMemo(() => countActiveTags(applied), [applied]);
+  const activeAppliedFilterCount = useMemo(
+    () => countActiveLadderAppliedFilters(applied),
+    [applied]
+  );
 
   const draftProjectControlValue = useMemo(
     () => resolveProjectForDivision(draft.division, draft.filterProject),

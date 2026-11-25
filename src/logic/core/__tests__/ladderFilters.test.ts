@@ -1,10 +1,64 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cloneLadderFilterValues,
+  countActiveLadderAppliedFilters,
+  DEFAULT_LADDER_FILTERS,
+  isSameLadderFilterValues,
   normalizeLocationFiltersForLadderDataset,
   normalizeTwCityDistrictForLadderDataset,
   resolveEffectiveLadderCityFilter,
   resolveEffectiveLadderDistrictFilter,
 } from '../ladderFilters';
+import { getDefaultProjectForDivision } from '../ladderShards';
+
+describe('DEFAULT_LADDER_FILTERS / isSameLadderFilterValues', () => {
+  it('anchors total-board defaults on ladderScore + all tags', () => {
+    expect(DEFAULT_LADDER_FILTERS.division).toBe('ladderScore');
+    expect(DEFAULT_LADDER_FILTERS.filterProject).toBe(
+      getDefaultProjectForDivision('ladderScore')
+    );
+    expect(DEFAULT_LADDER_FILTERS.gender).toBe('all');
+    expect(DEFAULT_LADDER_FILTERS.countryCode).toBe('all');
+    expect(isSameLadderFilterValues(DEFAULT_LADDER_FILTERS, { ...DEFAULT_LADDER_FILTERS })).toBe(
+      true
+    );
+  });
+
+  it('detects field-level divergence', () => {
+    expect(
+      isSameLadderFilterValues(DEFAULT_LADDER_FILTERS, {
+        ...DEFAULT_LADDER_FILTERS,
+        gender: 'male',
+      })
+    ).toBe(false);
+  });
+
+  it('cloneLadderFilterValues returns a mutable copy of the frozen SSOT', () => {
+    const copy = cloneLadderFilterValues();
+    expect(copy).not.toBe(DEFAULT_LADDER_FILTERS);
+    expect(isSameLadderFilterValues(copy, DEFAULT_LADDER_FILTERS)).toBe(true);
+    copy.gender = 'female';
+    expect(DEFAULT_LADDER_FILTERS.gender).toBe('all');
+  });
+});
+
+describe('countActiveLadderAppliedFilters', () => {
+  it('is zero for DEFAULT', () => {
+    expect(countActiveLadderAppliedFilters(DEFAULT_LADDER_FILTERS)).toBe(0);
+  });
+
+  it('counts tags and non-default division', () => {
+    expect(
+      countActiveLadderAppliedFilters({
+        ...DEFAULT_LADDER_FILTERS,
+        gender: 'male',
+        division: 'stats_sbdTotal',
+        filterProject: 'deadlift',
+      })
+    ).toBe(2);
+  });
+});
+
 
 describe('resolveEffectiveLadderCityFilter', () => {
   it('returns all when filter is all', () => {

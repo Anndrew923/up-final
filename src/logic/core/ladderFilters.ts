@@ -1,4 +1,67 @@
 import type { LadderCountryCode } from '../../types/ladderProfile';
+import type { LadderFilterValues } from '../../types/ladderFilters';
+import { getDefaultProjectForDivision } from './ladderShards';
+
+/**
+ * WHY: Single source of truth for "full global ladder" — Clear must reset here so
+ * draft/applied/badge never diverge across hook, page, and tests.
+ */
+export const DEFAULT_LADDER_FILTERS: Readonly<LadderFilterValues> = Object.freeze({
+  division: 'ladderScore',
+  filterProject: getDefaultProjectForDivision('ladderScore'),
+  gender: 'all',
+  ageBucket: 'all',
+  heightBucket: 'all',
+  weightBucket: 'all',
+  jobCategory: 'all',
+  countryCode: 'all',
+  city: 'all',
+  district: 'all',
+});
+
+/** Demographic / location tags that Clear zeroes (and badge counts when ≠ all). */
+export const LADDER_FILTER_TAG_KEYS = [
+  'gender',
+  'ageBucket',
+  'heightBucket',
+  'weightBucket',
+  'jobCategory',
+  'countryCode',
+  'city',
+  'district',
+] as const satisfies ReadonlyArray<keyof LadderFilterValues>;
+
+/** Fresh mutable copy — never hand the frozen SSOT into React state. */
+export function cloneLadderFilterValues(
+  values: LadderFilterValues = DEFAULT_LADDER_FILTERS
+): LadderFilterValues {
+  return { ...values };
+}
+
+export function isSameLadderFilterValues(
+  a: LadderFilterValues,
+  b: LadderFilterValues
+): boolean {
+  if (a.division !== b.division || a.filterProject !== b.filterProject) return false;
+  for (const key of LADDER_FILTER_TAG_KEYS) {
+    if (a[key] !== b[key]) return false;
+  }
+  return true;
+}
+
+/**
+ * Applied-filter badge count: each non-`all` tag + non-default division.
+ * WHY: Staying on a single-event shard with tags cleared still must show "filtered"
+ * so Clear → total board remains discoverable.
+ */
+export function countActiveLadderAppliedFilters(values: LadderFilterValues): number {
+  let count = 0;
+  for (const key of LADDER_FILTER_TAG_KEYS) {
+    if (values[key] !== 'all') count += 1;
+  }
+  if (values.division !== DEFAULT_LADDER_FILTERS.division) count += 1;
+  return count;
+}
 
 /**
  * Normalize ladder UI filter state when option lists change (e.g. city list

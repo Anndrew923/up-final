@@ -88,6 +88,8 @@ export function useLadderLeaderboard(
   const [myEntryReady, setMyEntryReady] = useState(false);
   const [myRank, setMyRank] = useState<number | null>(null);
   const catalogLoadedKeyRef = useRef<string | null>(null);
+  /** WHY: Stale catalog/list responses must not overwrite a newer apply→clear cycle. */
+  const listRequestIdRef = useRef(0);
   const authUid = useAuthStore((state) => state.uid);
   const blockedSet = useLadderBlockStore((state) => state.blockedSet);
   const refreshNonce = options?.refreshNonce ?? 0;
@@ -148,25 +150,39 @@ export function useLadderLeaderboard(
   }, [isFilterActive, filteredRowsFull.length, fetchedRows.length, page, pageSize]);
 
   useEffect(() => {
-    let cancelled = false;
     const catalogKey = `${shardId}:${refreshNonce}`;
 
     if (isFilterActive && catalogLoadedKeyRef.current === catalogKey) {
       return;
     }
 
+    // WHY: requestId rejects stale apply→clear replies; cancelled covers unmount
+    // without a successor effect (avoids setState-after-unmount).
+    const requestId = ++listRequestIdRef.current;
+    let cancelled = false;
+    const isCurrent = () => !cancelled && listRequestIdRef.current === requestId;
+
+    // Drop stale rows + show loading synchronously so a late catalog reply cannot
+    // paint over total board, and we never flash an empty list for one frame.
+    setLoading(true);
+    setError(false);
+    if (isFilterActive) {
+      setFetchedRows([]);
+    } else {
+      catalogLoadedKeyRef.current = null;
+      setCatalogRows([]);
+    }
+
     void (async () => {
       await Promise.resolve();
-      if (cancelled) return;
-      setLoading(true);
-      setError(false);
+      if (!isCurrent()) return;
 
       if (isFilterActive) {
         const catalogResult = await listLeaderboardCatalog({
           entitlement,
           metric: shardId,
         });
-        if (cancelled) return;
+        if (!isCurrent()) return;
         if (!catalogResult.ok) {
           setCatalogRows([]);
           setFetchedRows([]);
@@ -183,16 +199,13 @@ export function useLadderLeaderboard(
         return;
       }
 
-      catalogLoadedKeyRef.current = null;
-      setCatalogRows([]);
-
       const result = await listLeaderboard({
         entitlement,
         metric: shardId,
         page,
         pageSize,
       });
-      if (cancelled) return;
+      if (!isCurrent()) return;
 
       if (!result.ok) {
         setFetchedRows([]);
