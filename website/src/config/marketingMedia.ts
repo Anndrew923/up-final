@@ -14,7 +14,7 @@
  * - `/og-image.png` — social share meta only (`index.html`); never a UI fill
  * - `/founder-battle-card.png` — referenced from athlete data SSOT
  * - `/images/explainer-cover.jpg` — Explainer facade still (null until asset lands)
- * - `/videos/explainer.mp4` — Explainer click-to-play (Facade mounts only on click)
+ * - `/videos/explainer.mp4` — Explainer theatre lightbox (Facade opens VideoLightbox)
  * Video fields stay null until mp4 assets land (except explainer video path,
  * which is wired for on-demand load + onError fallback before the file ships).
  */
@@ -100,8 +100,8 @@ export const SYSTEM_VIDEO_SRC: string | null = null;
 export const EXPLAINER_POSTER_SRC: string | null = null;
 
 /**
- * Explainer click-to-play source.
- * WHY path kept (not null): Facade never mounts `<video>` until click; missing
- * file hits onError → dashboard fallback. Flip-ready when the mp4 is dropped in.
+ * Explainer theatre source (VideoLightbox).
+ * WHY path kept (not null): Facade never mounts `<video>` until lightbox open;
+ * missing file hits onError → dashboard fallback. Flip-ready when mp4 lands.
  */
 export const EXPLAINER_VIDEO_SRC = '/videos/explainer.mp4';

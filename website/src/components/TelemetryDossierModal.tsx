@@ -11,8 +11,8 @@ import {
 /**
  * Telemetry dossier — battle still + metrics / bio / career for verified athletes.
  * WHY: Keep homepage cards glanceable; progressive disclosure carries hard-data
- * credibility without bloating the snap rail. ImageLightbox stays image-only
- * for Systems / community.
+ * credibility without bloating the snap rail. ImageLightbox / VideoLightbox
+ * stay media-only for Systems / community / explainer.
  */
 
 /** Emphasize measured numerals (decimals + thousands commas) with tabular-nums. */

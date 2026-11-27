@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 
 /**
  * Escape + body scroll lock for modals / lightboxes.
- * WHY: DownloadModal, ImageLightbox, and TelemetryDossierModal share one a11y
- * contract so Escape / overflow restore never drift. `enabled` lets always-mounted
- * sheets (DownloadModal) skip the lock while closed.
+ * WHY: DownloadModal, ImageLightbox, VideoLightbox, and TelemetryDossierModal
+ * share one a11y contract so Escape / overflow restore never drift. `enabled`
+ * lets always-mounted sheets (DownloadModal) skip the lock while closed.
  */
 export function usePortalModalLock(
   onClose: () => void,
