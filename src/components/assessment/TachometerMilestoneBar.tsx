@@ -75,7 +75,7 @@ const TachometerMilestoneBar: FC<TachometerMilestoneBarProps> = ({
         </div>
       </div>
       {/*
-        WHY: Amber copy matches AssessmentScoreMeaningPanel mission-target chroma; no chip/box —
+        WHY: Breakthrough modal keeps amber celebration chroma (page honor cards use muted zinc);
         full-width centered plain text avoids asymmetric capsule / false-button silhouette.
       */}
       <p

@@ -22,11 +22,13 @@ export const BOTTOM_HEX_TOP_PX = BOTTOM_NAV_SHELL_PX + BOTTOM_HEX_PROTRUSION_PX;
 /**
  * Air gap above the raised DYNO hex for non-ladder floating chrome (Dyno Intel chip).
  * Total stack = shell + air gap (safe-area added at each use site).
+ * WHY: Dual assessment CTAs (report + Write-to-Radar) need extra lift so the chip never
+ * occludes the primary button's right edge on short viewports.
  */
-export const BOTTOM_CHROME_AIR_GAP_PX = 28;
+export const BOTTOM_CHROME_AIR_GAP_PX = 40;
 
 /** Distance from the physical bottom edge to the *bottom* of floating chrome (excludes safe-area). */
-export const BOTTOM_CHROME_STACK_PX = BOTTOM_NAV_SHELL_PX + BOTTOM_CHROME_AIR_GAP_PX; // 92
+export const BOTTOM_CHROME_STACK_PX = BOTTOM_NAV_SHELL_PX + BOTTOM_CHROME_AIR_GAP_PX; // 104
 
 /** `DynoActiveTrigger` chip height (`h-9`). */
 export const DYNO_INTEL_TRIGGER_HEIGHT_PX = 36;
@@ -77,7 +79,7 @@ export const LADDER_FILTER_PILL_BOTTOM_PX =
  * Default AppShell scroll bottom inset when Dyno Intel trigger is visible.
  * WHY: Trigger bottom sits at `BOTTOM_CHROME_STACK_PX`; its top is stack + chip height.
  */
-export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 128
+export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TRIGGER_HEIGHT_PX; // 140
 
 /**
  * Floating CTA dock geometry when Dyno Intel chip is hidden (Join Arena).
@@ -85,9 +87,9 @@ export const APP_SHELL_SCROLL_BOTTOM_PX = BOTTOM_CHROME_STACK_PX + DYNO_INTEL_TR
  * Semantic aliases below keep call-site intent readable without drifting numbers.
  */
 export const DYNO_HIDDEN_FLOATING_CTA_BAR_PX = 72;
-export const DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX = BOTTOM_CHROME_STACK_PX; // 92
+export const DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX = BOTTOM_CHROME_STACK_PX; // 104
 export const DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX =
-  DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX + DYNO_HIDDEN_FLOATING_CTA_BAR_PX; // 164
+  DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX + DYNO_HIDDEN_FLOATING_CTA_BAR_PX; // 176
 
 /** Join Arena floating CTA — aliases shared Dyno-hidden dock stack. */
 export const JOIN_ARENA_CTA_BAR_PX = DYNO_HIDDEN_FLOATING_CTA_BAR_PX;
@@ -98,7 +100,7 @@ export const JOIN_ARENA_CTA_BOTTOM_PX = DYNO_HIDDEN_FLOATING_CTA_BOTTOM_PX;
  */
 export const JOIN_ARENA_SCROLL_AIR_GAP_PX = 24;
 export const JOIN_ARENA_SCROLL_BOTTOM_PX =
-  DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX + JOIN_ARENA_SCROLL_AIR_GAP_PX; // 188
+  DYNO_HIDDEN_FLOATING_CTA_SCROLL_BOTTOM_PX + JOIN_ARENA_SCROLL_AIR_GAP_PX; // 200
 
 /** Air between the tab row and the boot overlay card (profile step). */
 export const BOOT_OVERLAY_NAV_AIR_GAP_PX = 10;
@@ -107,7 +109,7 @@ export const BOOT_OVERLAY_NAV_AIR_GAP_PX = 10;
 export const BOOT_OVERLAY_PROFILE_BOTTOM_PX = BOTTOM_NAV_SHELL_PX + BOOT_OVERLAY_NAV_AIR_GAP_PX; // 74
 
 /** Boot overlay clearance above the raised DYNO hex (excludes safe-area). */
-export const BOOT_OVERLAY_NARRATIVE_BOTTOM_PX = BOTTOM_HEX_TOP_PX + BOTTOM_CHROME_AIR_GAP_PX; // 108
+export const BOOT_OVERLAY_NARRATIVE_BOTTOM_PX = BOTTOM_HEX_TOP_PX + BOTTOM_CHROME_AIR_GAP_PX; // 120
 
 /**
  * Shared `env()` fallback used by BottomNav padding and `bottomChromeCalc`.

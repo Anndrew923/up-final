@@ -16,7 +16,7 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { flushGripDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import UnitSystemToggle from '../components/units/UnitSystemToggle';
@@ -213,7 +213,6 @@ const GripAssessmentPage: FC = () => {
 
           {previewScore !== null && scoreMeaning ? (
             <AssessmentScoreMeaningPanel
-              tone="blue"
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
               hallEntry={hallSpectrum.headerActionProps}
@@ -223,31 +222,32 @@ const GripAssessmentPage: FC = () => {
                 decadeKey: scoreMeaning.decadeKey,
                 ...hallSpectrum.badgeProps,
               }}
-              afterHero={
+            />
+          ) : null}
+
+          <AssessmentRadarCtaRow
+            hasScore={previewScore !== null}
+            disabled={revealBlocking}
+            onClick={() => {
+              void revealCalculate();
+            }}
+            secondary={
+              previewScore !== null ? (
                 <AestheticSingleLeafTriggerButton
                   leaf="grip"
                   disabled={revealBlocking}
                   onBeforeOpen={flushGripForReport}
                 />
-              }
-            />
-          ) : null}
-
-          <div className="space-y-3">
-            <AssessmentWriteToRadarButton
-              hasScore={previewScore !== null}
-              disabled={revealBlocking}
-              onClick={() => {
-                void revealCalculate();
-              }}
-            />
-
-            {submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {t('grip.submitDone')}
-              </p>
-            ) : null}
-          </div>
+              ) : null
+            }
+            status={
+              submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {t('grip.submitDone')}
+                </p>
+              ) : null
+            }
+          />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

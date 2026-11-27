@@ -17,7 +17,7 @@ import { AssessmentPageHeader } from '../components/assessment/AssessmentPageHea
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import HallOfFameSpectrumDrawer from '../components/assessment/HallOfFameSpectrumDrawer';
 import AssessmentScoreMeaningPanel from '../components/assessment/AssessmentScoreMeaningPanel';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import StrengthLiftCard from '../components/strength/StrengthLiftCard';
 import { flushAllStrengthLiftDrafts } from '../hooks/flushSingleLeafAssessmentDraft';
@@ -268,7 +268,6 @@ const StrengthAssessmentPage: FC = () => {
 
                 {scoreMeaning ? (
                   <AssessmentScoreMeaningPanel
-                    tone="orange"
                     meaning={scoreMeaning}
                     milestoneHintLabel={
                       scoreMeaning.nextMilestone !== null && scoreMeaning.remainingPoints !== null
@@ -282,17 +281,6 @@ const StrengthAssessmentPage: FC = () => {
                       decadeKey: scoreMeaning.decadeKey,
                       ...hallSpectrum.badgeProps,
                     }}
-                    afterHero={
-                      axisHeroScore != null && axisCoveredCount > 0 ? (
-                        <AestheticAxisSummaryTriggerButton
-                          axis="strength"
-                          heroScore={axisHeroScore}
-                          coveredCount={axisCoveredCount}
-                          disabled={!profileReady || submitBusy || revealBlocking}
-                          onBeforeOpen={flushStrengthForReport}
-                        />
-                      ) : null
-                    }
                   />
                 ) : null}
 
@@ -348,35 +336,44 @@ const StrengthAssessmentPage: FC = () => {
               </div>
             ) : null}
 
-            <div className="space-y-3">
-              <AssessmentWriteToRadarButton
-                hasScore={combinedBreakdown != null}
-                disabled={!profileReady || submitBusy || revealBlocking}
-                onClick={() => {
-                  void revealCalculate();
-                }}
-              />
-
-              {submitNotice?.kind === 'success' && submitDone ? (
-                <p className="text-sm text-accent-info" role="status">
-                  {t('strength.submitDoneWithScore', {
-                    score: (submitNotice.savedScore ?? combinedScore ?? 0).toFixed(2),
-                  })}
-                </p>
-              ) : null}
-              {submitNotice?.kind === 'error' ? (
-                <p
-                  className="text-sm text-amber-300 transition-opacity duration-300 ease-out"
-                  role="status"
-                >
-                  {t('strength.submitFailedWithReason', {
-                    reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`, {
-                      unit: labels.weight,
-                    }),
-                  })}
-                </p>
-              ) : null}
-            </div>
+            <AssessmentRadarCtaRow
+              hasScore={combinedBreakdown != null}
+              disabled={!profileReady || submitBusy || revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+              secondary={
+                combinedBreakdown != null && axisHeroScore != null && axisCoveredCount > 0 ? (
+                  <AestheticAxisSummaryTriggerButton
+                    axis="strength"
+                    heroScore={axisHeroScore}
+                    coveredCount={axisCoveredCount}
+                    disabled={!profileReady || submitBusy || revealBlocking}
+                    onBeforeOpen={flushStrengthForReport}
+                  />
+                ) : null
+              }
+              status={
+                submitNotice?.kind === 'success' && submitDone ? (
+                  <p className="text-sm text-accent-info" role="status">
+                    {t('strength.submitDoneWithScore', {
+                      score: (submitNotice.savedScore ?? combinedScore ?? 0).toFixed(2),
+                    })}
+                  </p>
+                ) : submitNotice?.kind === 'error' ? (
+                  <p
+                    className="text-sm text-amber-300 transition-opacity duration-300 ease-out"
+                    role="status"
+                  >
+                    {t('strength.submitFailedWithReason', {
+                      reason: t(`strength.errors.${submitNotice.error ?? 'no-inputs'}`, {
+                        unit: labels.weight,
+                      }),
+                    })}
+                  </p>
+                ) : null
+              }
+            />
           </div>
 
           <AssessmentReferenceFooter>

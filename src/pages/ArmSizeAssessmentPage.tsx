@@ -13,7 +13,7 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { flushArmSizeDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { parseInputToMetric } from '../logic/core/unitConverters';
@@ -196,7 +196,6 @@ const ArmSizeAssessmentPage: FC = () => {
           {heroScore !== null && scoreMeaning ? (
             <div className="space-y-2">
               <AssessmentScoreMeaningPanel
-                tone="slate"
                 meaning={scoreMeaning}
                 milestoneHintLabel={
                   scoreMeaning.remainingPoints != null
@@ -210,13 +209,6 @@ const ArmSizeAssessmentPage: FC = () => {
                   decadeKey: scoreMeaning.decadeKey,
                   ...hallSpectrum.badgeProps,
                 }}
-                afterHero={
-                  <AestheticSingleLeafTriggerButton
-                    leaf="armSize"
-                    disabled={revealBlocking}
-                    onBeforeOpen={flushArmSizeForReport}
-                  />
-                }
               />
               {submittedScore !== null && submittedScore !== previewScore ? (
                 <p className="text-sm text-zinc-400">
@@ -226,21 +218,29 @@ const ArmSizeAssessmentPage: FC = () => {
             </div>
           ) : null}
 
-          <div className="space-y-3">
-            <AssessmentWriteToRadarButton
-              hasScore={heroScore !== null}
-              disabled={revealBlocking}
-              onClick={() => {
-                void revealCalculate();
-              }}
-            />
-
-            {submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {t('armSize.submitDone')}
-              </p>
-            ) : null}
-          </div>
+          <AssessmentRadarCtaRow
+            hasScore={heroScore !== null}
+            disabled={revealBlocking}
+            onClick={() => {
+              void revealCalculate();
+            }}
+            secondary={
+              heroScore !== null ? (
+                <AestheticSingleLeafTriggerButton
+                  leaf="armSize"
+                  disabled={revealBlocking}
+                  onBeforeOpen={flushArmSizeForReport}
+                />
+              ) : null
+            }
+            status={
+              submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {t('armSize.submitDone')}
+                </p>
+              ) : null
+            }
+          />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

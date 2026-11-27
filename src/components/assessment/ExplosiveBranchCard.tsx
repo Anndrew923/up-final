@@ -15,6 +15,8 @@ import { flushExplosiveDraft } from '../../hooks/flushSingleLeafAssessmentDraft'
 import { useScoreMeaning } from '../../hooks/useScoreMeaning';
 import { parseStrictPositiveMeasurement } from '../../logic/core/powerScoring';
 import type { PhysicalProfile } from '../../types/userProfile';
+import { resolveTierVisualPalette } from '../../logic/aesthetic/tierVisualPalette';
+import { cn } from '../../lib/cn';
 import AestheticSingleLeafTriggerButton from '../aesthetic/AestheticSingleLeafTriggerButton';
 import NormBadgeChip from '../common/NormBadgeChip';
 import { HeroNumberInput } from './HeroNumberInput';
@@ -71,6 +73,7 @@ const ExplosiveBranchCard: FC<ExplosiveBranchCardProps> = ({
     'explosivePower',
     result != null ? result.raw : null
   );
+  const scorePalette = resolveTierVisualPalette(meaning?.decadeKey);
   const isSprint = branch === 'sprint';
   const inputId = `exp-branch-${branch}`;
   const inputLabel = isSprint
@@ -130,7 +133,13 @@ const ExplosiveBranchCard: FC<ExplosiveBranchCardProps> = ({
             {t('explosive.branchRawScoreLabel')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-mono text-2xl font-bold tabular-nums text-accent-info">
+            <p
+              className={cn(
+                'font-mono text-2xl font-bold tabular-nums',
+                scorePalette.scoreTextClass,
+                scorePalette.scoreGlowClass
+              )}
+            >
               {result.raw.toFixed(2)}
             </p>
             {meaning ? (

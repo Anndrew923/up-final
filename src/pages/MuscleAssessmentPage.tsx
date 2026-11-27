@@ -15,7 +15,7 @@ import AssessmentReferenceDisclosure, {
   AssessmentReferenceFooter,
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import { flushMuscleDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -232,7 +232,6 @@ const MuscleAssessmentPage: FC = () => {
               <AssessmentScoreMeaningPanel
                 meaning={scoreMeaning}
                 milestoneHintLabel={nextMilestoneHint}
-                tone="orange"
                 hallEntry={hallSpectrum.headerActionProps}
                 hero={{
                   scoreText: heroScoreText ?? previewScore.toFixed(2),
@@ -240,18 +239,6 @@ const MuscleAssessmentPage: FC = () => {
                   decadeKey: scoreMeaning.decadeKey,
                   ...hallSpectrum.badgeProps,
                 }}
-                afterHero={
-                  muscleAxisScore != null && muscleCoveredCount > 0 ? (
-                    <AestheticAxisSummaryTriggerButton
-                      axis="muscleMass"
-                      heroScore={muscleAxisScore}
-                      coveredCount={muscleCoveredCount}
-                      muscleMeasured={muscleMeasured}
-                      disabled={revealBlocking || scoreLocked}
-                      onBeforeOpen={() => flushMuscleDraft(smmInput)}
-                    />
-                  ) : null
-                }
               />
               {/* WHY: Dual-branch scores stay visible under the hero — users must see why the
                   axis-summary plaque is a composite of absolute SMM + SM%. */}
@@ -270,21 +257,35 @@ const MuscleAssessmentPage: FC = () => {
             </div>
           ) : null}
 
-          <div className="space-y-3">
-            <AssessmentWriteToRadarButton
-              hasScore={previewScore !== null && !scoreLocked}
-              disabled={!profileReady || revealBlocking || scoreLocked}
-              onClick={() => {
-                void revealCalculate();
-              }}
-            />
-
-            {submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {t('muscle.submitDone')}
-              </p>
-            ) : null}
-          </div>
+          <AssessmentRadarCtaRow
+            hasScore={previewScore !== null && !scoreLocked}
+            disabled={!profileReady || revealBlocking || scoreLocked}
+            onClick={() => {
+              void revealCalculate();
+            }}
+            secondary={
+              previewScore !== null &&
+              !scoreLocked &&
+              muscleAxisScore != null &&
+              muscleCoveredCount > 0 ? (
+                <AestheticAxisSummaryTriggerButton
+                  axis="muscleMass"
+                  heroScore={muscleAxisScore}
+                  coveredCount={muscleCoveredCount}
+                  muscleMeasured={muscleMeasured}
+                  disabled={revealBlocking || scoreLocked}
+                  onBeforeOpen={() => flushMuscleDraft(smmInput)}
+                />
+              ) : null
+            }
+            status={
+              submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {t('muscle.submitDone')}
+                </p>
+              ) : null
+            }
+          />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

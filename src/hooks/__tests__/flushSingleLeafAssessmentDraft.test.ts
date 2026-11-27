@@ -4,12 +4,14 @@ import {
   flushAllStrengthLiftDrafts,
   flushCardioDraft,
   flushExplosiveDraft,
+  flushFfmiDraft,
   flushGripDraft,
   flushMuscleDraft,
   flushStrengthLiftDraft,
 } from '../flushSingleLeafAssessmentDraft';
 import {
   loadCardioInputs,
+  loadFfmiDraft,
   loadGripInputs,
   loadMuscleInputs,
   loadPowerInputs,
@@ -92,6 +94,13 @@ describe('flushSingleLeafAssessmentDraft', () => {
       })
     ).toBe(true);
     expect(loadCardioInputs()?.cardio?.distance).toBe(2800);
+  });
+
+  it('flushes a validated FFMI body-fat draft and rejects empty / invalid input', () => {
+    expect(flushFfmiDraft('')).toBe(false);
+    expect(flushFfmiDraft('not-a-number')).toBe(false);
+    expect(flushFfmiDraft('15.5')).toBe(true);
+    expect(loadFfmiDraft()?.bodyFatPctInput).toBe('15.5');
   });
 });
 

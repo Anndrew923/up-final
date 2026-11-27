@@ -18,7 +18,7 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import ExplosiveReferencePanel from '../components/assessment/ExplosiveReferencePanel';
 import ExplosiveBranchCard from '../components/assessment/ExplosiveBranchCard';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticAxisSummaryTriggerButton from '../components/aesthetic/AestheticAxisSummaryTriggerButton';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { DisclosurePanel } from '../components/DisclosurePanel';
@@ -410,7 +410,6 @@ const ExplosiveAssessmentPage: FC = () => {
               scoreMeaning &&
               !isSpecialtyOnlyPreview ? (
                 <AssessmentScoreMeaningPanel
-                  tone="amber"
                   meaning={scoreMeaning}
                   milestoneHintLabel={nextMilestoneHint}
                   hallEntry={hallSpectrum.headerActionProps}
@@ -420,17 +419,6 @@ const ExplosiveAssessmentPage: FC = () => {
                     decadeKey: scoreMeaning.decadeKey,
                     ...hallSpectrum.badgeProps,
                   }}
-                  afterHero={
-                    axisAverageRaw != null && axisCoveredCount > 0 ? (
-                      <AestheticAxisSummaryTriggerButton
-                        axis="explosivePower"
-                        heroScore={axisAverageRaw}
-                        coveredCount={axisCoveredCount}
-                        disabled={tabDisabled}
-                        onBeforeOpen={flushExplosiveForReport}
-                      />
-                    ) : null
-                  }
                 />
               ) : null}
 
@@ -489,34 +477,45 @@ const ExplosiveAssessmentPage: FC = () => {
                 </div>
               ) : null}
 
-              {/* Specialty-only path has no score-meaning panel — keep CTA above Write-to-Radar. */}
-              {reportLeaf && isSpecialtyOnlyPreview ? (
+            </div>
+          ) : null}
+
+          <AssessmentRadarCtaRow
+            hasScore={heroScore !== null}
+            disabled={tabDisabled}
+            onClick={() => {
+              void revealCalculate();
+            }}
+            secondary={
+              reportLeaf && isSpecialtyOnlyPreview ? (
                 <AestheticSingleLeafTriggerButton
                   leaf={reportLeaf}
                   disabled={tabDisabled}
                   onBeforeOpen={flushExplosiveForReport}
                 />
-              ) : null}
-            </div>
-          ) : null}
-
-          <div className="space-y-3">
-            <AssessmentWriteToRadarButton
-              hasScore={heroScore !== null}
-              disabled={tabDisabled}
-              onClick={() => {
-                void revealCalculate();
-              }}
-            />
-
-            {submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {isSpecialtyTab || isSpecialtyOnlyPreview
-                  ? t('explosive.submitDoneSpecialtyOnly')
-                  : t('explosive.submitDone')}
-              </p>
-            ) : null}
-          </div>
+              ) : hasRadarAxisPreview &&
+                !isSpecialtyOnlyPreview &&
+                axisAverageRaw != null &&
+                axisCoveredCount > 0 ? (
+                <AestheticAxisSummaryTriggerButton
+                  axis="explosivePower"
+                  heroScore={axisAverageRaw}
+                  coveredCount={axisCoveredCount}
+                  disabled={tabDisabled}
+                  onBeforeOpen={flushExplosiveForReport}
+                />
+              ) : null
+            }
+            status={
+              submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {isSpecialtyTab || isSpecialtyOnlyPreview
+                    ? t('explosive.submitDoneSpecialtyOnly')
+                    : t('explosive.submitDone')}
+                </p>
+              ) : null
+            }
+          />
 
           <AssessmentReferenceFooter>
             <AssessmentReferenceDisclosure

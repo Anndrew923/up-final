@@ -21,7 +21,7 @@ import AssessmentReferenceDisclosure, {
 } from '../components/assessment/AssessmentReferenceDisclosure';
 import { ReferenceSimpleCopy } from '../components/assessment/AssessmentReferenceProse';
 import { Run5KmSpecReferencePanel } from '../components/assessment/Run5KmSpecReferencePanel';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { flushCardioDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
@@ -336,7 +336,6 @@ const CardioAssessmentPage: FC = () => {
 
           {previewScore !== null && scoreMeaning ? (
             <AssessmentScoreMeaningPanel
-              tone="cyan"
               meaning={scoreMeaning}
               milestoneHintLabel={nextMilestoneHint}
               hallEntry={hallSpectrum.headerActionProps}
@@ -346,31 +345,32 @@ const CardioAssessmentPage: FC = () => {
                 decadeKey: scoreMeaning.decadeKey,
                 ...hallSpectrum.badgeProps,
               }}
-              afterHero={
+            />
+          ) : null}
+
+          <AssessmentRadarCtaRow
+            hasScore={previewScore !== null}
+            disabled={(isCooperTab && !profileReady) || revealBlocking}
+            onClick={() => {
+              void revealCalculate();
+            }}
+            secondary={
+              previewScore !== null ? (
                 <AestheticSingleLeafTriggerButton
                   leaf={cardioReportLeaf}
                   disabled={revealBlocking}
                   onBeforeOpen={flushCardioForReport}
                 />
-              }
-            />
-          ) : null}
-
-          <div className="space-y-3">
-            <AssessmentWriteToRadarButton
-              hasScore={previewScore !== null}
-              disabled={(isCooperTab && !profileReady) || revealBlocking}
-              onClick={() => {
-                void revealCalculate();
-              }}
-            />
-
-            {submitDone ? (
-              <p className="text-sm text-accent-info" role="status">
-                {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
-              </p>
-            ) : null}
-          </div>
+              ) : null
+            }
+            status={
+              submitDone ? (
+                <p className="text-sm text-accent-info" role="status">
+                  {isSpecialtyTab ? t('cardio.submitDoneSpecialtyOnly') : t('cardio.submitDone')}
+                </p>
+              ) : null
+            }
+          />
 
           {/* WHY: Scheme C keeps the form clean — scoring anchors live in the shared collapsible footer. */}
           <AssessmentReferenceFooter>

@@ -16,6 +16,7 @@ import {
   loadStrengthInputs,
   saveArmSizeInputs,
   saveCardioInputs,
+  saveFfmiDraft,
   saveGripInputs,
   saveMuscleInputs,
   savePowerInputs,
@@ -28,6 +29,7 @@ import {
   parseCooperDistanceMeters,
 } from '../logic/core/cardioScoring';
 import { applyExplosiveInputCapsForProfile } from '../logic/core/explosiveInputCaps';
+import { parseFfmiBodyFatPctInput } from '../logic/core/ffmiScoring';
 import { applyGripPeakCap } from '../logic/core/gripStrength';
 import { parseSmmKg } from '../logic/core/muscleScoring';
 
@@ -168,4 +170,17 @@ export function flushArmSizeDraft(args: {
     armCircumferenceCm: args.armCircumferenceCm,
     bodyFatPct: args.bodyFatPct,
   });
+}
+
+/**
+ * Persist FFMI body-fat draft before opening the single-leaf report.
+ * WHY: Align with other axes — even though typing already saves, breakthrough / dual-CTA
+ * paths must re-flush a validated draft so "測完即曬" never opens an empty plaque.
+ */
+export function flushFfmiDraft(bodyFatPctInput: string): boolean {
+  const trimmed = String(bodyFatPctInput ?? '').trim();
+  if (!trimmed) return false;
+  if (parseFfmiBodyFatPctInput(trimmed) === null) return false;
+  saveFfmiDraft({ bodyFatPctInput: trimmed });
+  return true;
 }

@@ -6,9 +6,14 @@
 import type { FC } from 'react';
 import { cn } from '../../lib/cn';
 
-/** Compact full-width trigger (score panel / lift card). */
+/**
+ * Compact secondary dark-gold outline CTA (lift / branch cards).
+ * WHY: h-9 keeps nested cards dense; AssessmentRadarCtaRow forces h-12 beside Write-to-Radar.
+ * Champagne foil stays visually secondary to solid amber Write-to-Radar without competing
+ * with tier-scored honor-card chrome.
+ */
 export const AESTHETIC_SINGLE_LEAF_CTA_CLASS =
-  'ui-btn inline-flex h-9 w-full items-center justify-center gap-1.5 border border-amber-400/65 bg-gradient-to-b from-amber-500/18 to-amber-700/10 px-3 text-xs font-medium tracking-wide text-amber-100 shadow-[inset_0_1px_0_rgba(251,191,36,0.22),0_0_18px_rgba(245,158,11,0.12)] hover:border-amber-300/80 hover:from-amber-500/28 hover:to-amber-700/16 hover:text-amber-50 disabled:pointer-events-none disabled:opacity-40';
+  'ui-btn inline-flex h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-xl border border-amber-500/45 bg-gradient-to-b from-amber-500/12 to-amber-900/20 px-3 text-xs font-medium tracking-wide text-amber-100/95 shadow-[inset_0_1px_0_rgba(251,191,36,0.16)] hover:border-amber-400/70 hover:from-amber-500/20 hover:to-amber-800/25 hover:text-amber-50 disabled:pointer-events-none disabled:opacity-40';
 
 /** Taller breakthrough-modal variant. */
 export const AESTHETIC_SINGLE_LEAF_CTA_MODAL_CLASS =

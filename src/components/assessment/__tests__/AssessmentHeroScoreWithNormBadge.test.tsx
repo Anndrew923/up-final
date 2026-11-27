@@ -25,7 +25,7 @@ describe('AssessmentHeroScoreWithNormBadge', () => {
     container.remove();
   });
 
-  it('defaults preview companion chips to sm size', () => {
+  it('defaults panel companion chips to sm size', () => {
     act(() => {
       root.render(
         <AssessmentHeroScoreWithNormBadge
@@ -39,6 +39,25 @@ describe('AssessmentHeroScoreWithNormBadge', () => {
     expect(container.textContent).toContain('87.80');
     const chip = container.querySelector('span[aria-label="高階玩家"]');
     expect(chip?.className).toContain('text-[10px]');
+  });
+
+  it('tints panel hero score from the shared tier palette', () => {
+    act(() => {
+      root.render(
+        <AssessmentHeroScoreWithNormBadge
+          variant="panel"
+          scoreText="91.02"
+          populationClass="凡人頂尖"
+          decadeKey="90"
+        />
+      );
+    });
+
+    const score = Array.from(container.querySelectorAll('p')).find((el) =>
+      el.textContent?.includes('91.02')
+    );
+    expect(score?.className).toContain('text-amber-300');
+    expect(score?.className).not.toContain('text-accent-info');
   });
 
   it('defaults breakthrough variant to md badge size', () => {

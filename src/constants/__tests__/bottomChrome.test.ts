@@ -32,6 +32,8 @@ describe('bottomChrome', () => {
   });
 
   it('keeps stack math derived from nav shell + air gap', () => {
+    // WHY: Dual assessment CTAs need this lift so Dyno chip never occludes Write-to-Radar.
+    expect(BOTTOM_CHROME_AIR_GAP_PX).toBe(40);
     expect(BOTTOM_CHROME_STACK_PX).toBe(BOTTOM_NAV_SHELL_PX + BOTTOM_CHROME_AIR_GAP_PX);
   });
 

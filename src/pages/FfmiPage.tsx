@@ -12,7 +12,7 @@ import { HeroNumberInput } from '../components/assessment/HeroNumberInput';
 import PerformanceBreakthroughModal from '../components/assessment/PerformanceBreakthroughModal';
 import { AssessmentReferenceFooter } from '../components/assessment/AssessmentReferenceDisclosure';
 import FfmiEducationPanels from '../components/ffmi/FfmiEducationPanels';
-import AssessmentWriteToRadarButton from '../components/assessment/AssessmentWriteToRadarButton';
+import AssessmentRadarCtaRow from '../components/assessment/AssessmentRadarCtaRow';
 import AestheticSingleLeafTriggerButton from '../components/aesthetic/AestheticSingleLeafTriggerButton';
 import { DisclosurePanel } from '../components/DisclosurePanel';
 import { ROUTES } from '../config/routes';
@@ -21,6 +21,7 @@ import { useAssessmentRevealFlow } from '../hooks/useAssessmentRevealFlow';
 import { useFfmiMilestoneHint } from '../hooks/useFfmiMilestoneHint';
 import { useHallOfFameSpectrumDrawer } from '../hooks/useHallOfFameSpectrumDrawer';
 import { useLeaderboardSyncAssessmentPage } from '../hooks/useLeaderboardSyncAssessmentPage';
+import { flushFfmiDraft } from '../hooks/flushSingleLeafAssessmentDraft';
 import { useFfmiPage } from '../hooks/useFfmiPage';
 import { useScoreMeaning } from '../hooks/useScoreMeaning';
 import { buildFfmiAssessmentSupplementalTargets } from '../logic/core/assessmentLadderSupplemental';
@@ -108,6 +109,7 @@ const FfmiPage: FC = () => {
         onGenerateSingleLeafReport={
           breakdown?.allowsRadarSubmit
             ? () => {
+                if (flushFfmiDraft(bodyFatInput) === false) return;
                 closeModal();
                 openWithLeaf('ffmi');
               }
@@ -163,7 +165,6 @@ const FfmiPage: FC = () => {
                   <AssessmentScoreMeaningPanel
                     meaning={scoreMeaning}
                     milestoneHintLabel={nextMilestoneHint}
-                    tone="violet"
                     hallEntry={hallSpectrum.headerActionProps}
                     hero={{
                       scoreText: heroScoreText ?? previewScore.toFixed(2),
@@ -171,11 +172,6 @@ const FfmiPage: FC = () => {
                       decadeKey: scoreMeaning.decadeKey,
                       ...hallSpectrum.badgeProps,
                     }}
-                    afterHero={
-                      breakdown.allowsRadarSubmit ? (
-                        <AestheticSingleLeafTriggerButton leaf="ffmi" disabled={revealBlocking} />
-                      ) : null
-                    }
                   />
                 ) : null}
 
@@ -202,6 +198,18 @@ const FfmiPage: FC = () => {
                         )}
                       </dd>
                     </div>
+                    {categorySuffix && gender ? (
+                      <div className="md:col-span-2">
+                        <dt className="text-zinc-500">{t('ffmi.categoryLabel')}</dt>
+                        <dd className="text-zinc-300">
+                          {t(
+                            gender === 'male'
+                              ? `ffmi.category.male.${categorySuffix}`
+                              : `ffmi.category.female.${categorySuffix}`
+                          )}
+                        </dd>
+                      </div>
+                    ) : null}
                     {breakdown.limitedByHumanCap ? (
                       <>
                         <div>
@@ -216,17 +224,6 @@ const FfmiPage: FC = () => {
                     ) : null}
                   </dl>
                 </DisclosurePanel>
-
-                {categorySuffix && gender ? (
-                  <p className="text-sm text-zinc-400">
-                    {t('ffmi.categoryLabel')}:{' '}
-                    {t(
-                      gender === 'male'
-                        ? `ffmi.category.male.${categorySuffix}`
-                        : `ffmi.category.female.${categorySuffix}`
-                    )}
-                  </p>
-                ) : null}
 
                 {breakdown.limitedByHumanCap ? (
                   <aside
@@ -244,18 +241,27 @@ const FfmiPage: FC = () => {
               </div>
             ) : null}
 
-            <div className="space-y-3">
-              <AssessmentWriteToRadarButton
-                hasScore={previewScore !== null}
-                disabled={revealBlocking}
-                onClick={() => {
-                  void revealCalculate();
-                }}
-              />
-              {submitDone ? (
-                <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
-              ) : null}
-            </div>
+            <AssessmentRadarCtaRow
+              hasScore={previewScore !== null}
+              disabled={revealBlocking}
+              onClick={() => {
+                void revealCalculate();
+              }}
+              secondary={
+                breakdown?.allowsRadarSubmit ? (
+                  <AestheticSingleLeafTriggerButton
+                    leaf="ffmi"
+                    disabled={revealBlocking}
+                    onBeforeOpen={() => flushFfmiDraft(bodyFatInput)}
+                  />
+                ) : null
+              }
+              status={
+                submitDone ? (
+                  <p className="text-sm text-emerald-400/90">{t('ffmi.submitDone')}</p>
+                ) : null
+              }
+            />
 
             <AssessmentReferenceFooter>
               <FfmiEducationPanels />

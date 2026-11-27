@@ -52,7 +52,7 @@ const AestheticAxisSummaryTriggerButton: FC<AestheticAxisSummaryTriggerButtonPro
       }}
     >
       <AestheticSingleLeafCtaIcon />
-      <span>{t('aesthetic.singleLeaf.generateReport')}</span>
+      <span className="min-w-0 truncate">{t('aesthetic.singleLeaf.generateReport')}</span>
     </button>
   );
 };

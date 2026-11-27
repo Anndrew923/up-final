@@ -1,58 +1,10 @@
 import type { FC, ReactNode } from 'react';
 import type { ScoreMeaningResult } from '../../hooks/useScoreMeaning';
+import { resolveTierVisualPalette } from '../../logic/aesthetic/tierVisualPalette';
 import { cn } from '../../lib/cn';
 import AssessmentHeroScoreWithNormBadge, {
   type AssessmentHeroScoreWithNormBadgeProps,
 } from './AssessmentHeroScoreWithNormBadge';
-
-export type AssessmentScoreMeaningTone = 'orange' | 'cyan' | 'blue' | 'violet' | 'amber' | 'slate';
-
-const TONE_STYLES: Record<
-  AssessmentScoreMeaningTone,
-  { section: string; gradient: string; header: string; milestone: string }
-> = {
-  orange: {
-    section:
-      'border-orange-400/35 shadow-[inset_0_1px_0_rgba(251,146,60,0.22),0_0_30px_rgba(249,115,22,0.16)]',
-    gradient: 'via-orange-400/70',
-    header: 'text-orange-300/90',
-    milestone: 'text-orange-300',
-  },
-  cyan: {
-    section:
-      'border-accent-info/35 shadow-[inset_0_1px_0_rgba(56,189,248,0.2),0_0_28px_rgba(34,211,238,0.12)]',
-    gradient: 'via-cyan-400/65',
-    header: 'text-cyan-300/90',
-    milestone: 'text-cyan-300',
-  },
-  blue: {
-    section: 'border-blue-400/35 shadow-[0_0_25px_rgba(59,130,246,0.15)]',
-    gradient: 'via-blue-400/65',
-    header: 'text-blue-300/90',
-    milestone: 'text-blue-300',
-  },
-  violet: {
-    section:
-      'border-violet-400/35 shadow-[inset_0_1px_0_rgba(167,139,250,0.22),0_0_28px_rgba(139,92,246,0.14)]',
-    gradient: 'via-violet-400/65',
-    header: 'text-violet-300/90',
-    milestone: 'text-violet-300',
-  },
-  amber: {
-    section:
-      'border-amber-400/35 shadow-[inset_0_1px_0_rgba(251,191,36,0.2),0_0_28px_rgba(245,158,11,0.14)]',
-    gradient: 'via-amber-400/65',
-    header: 'text-amber-300/90',
-    milestone: 'text-amber-300',
-  },
-  slate: {
-    section:
-      'border-zinc-500/40 shadow-[inset_0_1px_0_rgba(161,161,170,0.15),0_0_24px_rgba(113,113,122,0.12)]',
-    gradient: 'via-zinc-400/55',
-    header: 'text-zinc-300/90',
-    milestone: 'text-zinc-300',
-  },
-};
 
 export interface HallSpectrumEntryAction {
   onClick: () => void;
@@ -77,29 +29,26 @@ export interface AssessmentScoreMeaningPanelProps {
   meaning: ScoreMeaningResult;
   /** Omit when at max tier (no next milestone). */
   milestoneHintLabel?: string | null;
-  tone: AssessmentScoreMeaningTone;
   /**
    * Scheme B — primary Hall Spectrum entry on the spec-card header.
    * WHY: Null/undefined hides the CTA (incomplete score, 5km specialty, etc.).
    */
   hallEntry?: HallSpectrumEntryAction | null;
-  /** Integrated hero score + NormBadge (left column). Preferred over demoted headerLabel. */
+  /** Integrated hero score + NormBadge (left column). Required on all seven assessment pages. */
   hero?: AssessmentScoreMeaningHero | null;
   /**
-   * Slot directly under the score / NormBadge row (above long meaning copy).
-   * WHY: Keeps high-exposure CTAs (e.g. generate single-leaf report) above the fold.
-   */
-  afterHero?: ReactNode;
-  /**
-   * Optional mono kicker — only rendered when `hero` is absent.
-   * WHY: Demoted; integrated hero replaces the old headerLabel + isolated score stack.
+   * @deprecated Prefer `hero`. Mono kicker only when `hero` is absent (tests / legacy fallback).
+   * Production pages must not pass this — scheduled for removal once call sites are zero.
    */
   headerLabel?: string;
 }
 
-/** Shared ghost CTA class for Hall Spectrum entry buttons. */
+/**
+ * Ghost Hall Spectrum entry — no border slab so the header stays score-first.
+ * WHY: Former amber outline competed with NormBadge + tier panel chrome on narrow phones.
+ */
 export const HALL_SPECTRUM_ENTRY_BUTTON_CLASS =
-  'inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-md border border-amber-500/40 px-2.5 text-xs font-medium tracking-wide text-amber-300 transition-colors hover:bg-amber-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60';
+  'inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-md px-1.5 text-xs font-medium tracking-wide text-amber-300/90 drop-shadow-[0_0_8px_rgba(251,191,36,0.28)] transition-[color,filter,opacity] hover:text-amber-200 hover:drop-shadow-[0_0_12px_rgba(251,191,36,0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400/60';
 
 /** Spec-card Hall entry — keeps seven pages + breakthrough modal visually identical. */
 export const HallSpectrumEntryButton: FC<HallSpectrumEntryAction & { className?: string }> = ({
@@ -118,24 +67,38 @@ export const HallSpectrumEntryButton: FC<HallSpectrumEntryAction & { className?:
   </button>
 );
 
+/** Highlight numeric tokens in milestone copy without saturating the whole line. */
+export function highlightMilestoneNumerals(label: string): ReactNode {
+  const parts = String(label).split(/(\d+(?:\.\d+)?)/g);
+  if (parts.length <= 1) return label;
+  return parts.map((part, index) =>
+    /^\d/.test(part) ? (
+      <span key={`n-${index}`} className="font-mono tabular-nums text-zinc-200">
+        {part}
+      </span>
+    ) : (
+      <span key={`t-${index}`}>{part}</span>
+    )
+  );
+}
+
 const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
   meaning,
   milestoneHintLabel = null,
-  tone,
   hallEntry = null,
   hero = null,
-  afterHero = null,
   headerLabel,
 }) => {
-  const styles = TONE_STYLES[tone];
+  const decadeKey = hero?.decadeKey ?? meaning.decadeKey;
+  const styles = resolveTierVisualPalette(decadeKey);
   const hasHero = hero != null && String(hero.scoreText).trim().length > 0;
 
   return (
     <section
-      className={`relative overflow-hidden rounded-xl border bg-zinc-950/85 p-4 ${styles.section}`}
+      className={`relative overflow-hidden rounded-xl border bg-zinc-950/85 p-4 ${styles.panelSectionClass}`}
     >
       <div
-        className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${styles.gradient} to-transparent`}
+        className={`pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${styles.panelGradientClass} to-transparent`}
         aria-hidden
       />
       {/* WHY: Rigid 2-col grid — never flex-wrap hero/score + Hall CTA on narrow phones. */}
@@ -157,7 +120,8 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
           <p
             className={cn(
               'min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.28em]',
-              styles.header
+              styles.scoreTextClass,
+              'opacity-90'
             )}
           >
             {headerLabel}
@@ -167,16 +131,13 @@ const AssessmentScoreMeaningPanel: FC<AssessmentScoreMeaningPanelProps> = ({
         )}
         {hallEntry ? <HallSpectrumEntryButton {...hallEntry} /> : null}
       </div>
-      {afterHero ? <div className="mt-3">{afterHero}</div> : null}
       <h3 className="mt-3 text-base font-semibold tracking-tight text-zinc-50">{meaning.title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">{meaning.summary}</p>
       {milestoneHintLabel != null &&
       meaning.nextMilestone !== null &&
       meaning.remainingPoints !== null ? (
-        <p
-          className={`mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium ${styles.milestone}`}
-        >
-          {milestoneHintLabel}
+        <p className="mt-3 border-t border-zinc-800/90 pt-3 text-xs font-medium text-zinc-400">
+          {highlightMilestoneNumerals(milestoneHintLabel)}
         </p>
       ) : null}
     </section>
