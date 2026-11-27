@@ -27,12 +27,12 @@ const ZH_POPULATION_CLASS: Record<string, string> = {
 };
 
 const EN_POPULATION_CLASS: Record<string, string> = {
-  '80': 'Gym Strong',
-  '100': 'Breakout',
-  '110': 'Transcendent',
-  '120': 'Historic Tier',
-  '130': 'Mythic',
-  '140': 'Monster Domain',
+  '80': 'Highly Trained',
+  '100': 'Genetic Outlier',
+  '110': 'Elite',
+  '120': 'World Class',
+  '130': 'Historic',
+  '140': 'Open',
   '150': 'Apex',
 };
 
@@ -59,7 +59,7 @@ function fakeEnT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.labels.brandHeader') return 'ULTIMATE PHYSIQUE // DOMINANCE';
   const decadeMatch = /^dynoIntel\.humanPraise\.byDecade\.(\d+)\.populationClass$/.exec(key);
   if (decadeMatch) {
-    return EN_POPULATION_CLASS[decadeMatch[1]] ?? 'Gym Strong';
+    return EN_POPULATION_CLASS[decadeMatch[1]] ?? 'Highly Trained';
   }
   return key;
 }

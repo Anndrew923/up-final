@@ -5,7 +5,7 @@
  */
 import { detectQuestionFocusSupplemental } from "./resolveQuestionIntent.js";
 
-/** Future tier-dynamic slot — interpolate via interpolateTemplateSlots(). */
+/** @deprecated v5.3 — slot retained for template hygiene; never weld cardCopy.title into it. */
 export const TIER_TITLE_SLOT = "{tierTitle}";
 
 export const ACADEMIC_BOILERPLATE_MARKERS =
@@ -61,17 +61,17 @@ export const SUPPLEMENTAL_HUMAN_GENERAL_ZH = {
 
 export const AXIS_HUMAN_STATUS_EN = {
   gripStrength:
-    "Against same-age norms, your grip and finger recruitment sit well above the amateur ceiling — past everyday limits and edging toward specialist strength. That braking grip talent means your forearm flexors can dominate heavy loads under high tension.",
+    "For your age, grip and finger recruitment sit well above the amateur ceiling — past everyday limits and toward specialist strength. Forearm flexors hold heavy loads under high tension.",
   explosivePower:
-    "Against same-age norms, your first-step burst leaves everyday adults behind — closing in on school-team sprinters and court athletes. That thunder launch talent shows up in box jumps, sprint starts, and stop-and-go bursts when your legs fire all at once.",
+    "For your age, first-step burst leaves everyday adults behind — closing on school-team sprinters and court athletes. Box jumps, sprint starts, and stop-and-go work show the same pattern.",
   strength:
-    "Against same-age norms, your barbell output sits above the regular gym floor — edging toward advanced lifters and powerlifting cohorts. That iron-tonnage talent means squats, deadlifts, and benches hold steady when gravity fights back.",
+    "For your age, barbell strength sits above the regular gym floor, toward advanced lifters. Squat, deadlift, and bench hold under real load.",
   cardio:
-    "Against same-age norms, your cardio endurance sits in the amateur runner band — approaching race-pace endurance specialists. That chassis-range talent keeps rhythm alive through long, high-frequency efforts without fading out.",
+    "For your age, cardio endurance sits in the amateur runner band — approaching race-pace endurance specialists. Rhythm holds through long, high-frequency efforts.",
   muscleMass:
-    "For your body weight and age cohort, muscle mass sits above everyday physique — nearing high-volume trainers and physique athletes. That roll-cage tissue talent gives your skeleton a denser base under heavier loading.",
+    "For your body weight and age, muscle mass sits above everyday physique — nearing high-volume trainers and physique athletes. Denser tissue backs heavier loading.",
   bodyFat:
-    "For your height and age cohort, FFMI lean-mass efficiency sits in the athletic band — nearing a high-displacement performance build. That aero-shed talent means less fat drag and more clean engine per kilogram of lean mass.",
+    "For your height and age, FFMI lean-mass efficiency sits in the athletic band. Less fat drag, more clean output per kilogram of lean mass.",
 };
 
 export const AXIS_HUMAN_GENERAL_EN = {
@@ -91,7 +91,7 @@ export const AXIS_HUMAN_GENERAL_EN = {
 
 export const SUPPLEMENTAL_HUMAN_STATUS_EN = {
   armSize:
-    "Against untrained same-age norms, your arm girth already clears street average — pressing toward serious iron addicts and physique specialists. That sleeve-stretching talent means curls and overloaded pressing fill the fabric with hard, visible upper-arm presence.",
+    "Against untrained peers your age, arm girth is past average and into serious lifters. Curls and overloaded pressing show hard, visible upper-arm presence.",
 };
 
 export const SUPPLEMENTAL_HUMAN_GENERAL_EN = {
@@ -99,6 +99,7 @@ export const SUPPLEMENTAL_HUMAN_GENERAL_EN = {
     "Your arm girth ranks high in your age cohort — curls and pressing create a tight sleeve line under load. That upper-arm profile matches dedicated iron and physique athletes.",
 };
 
+/** @deprecated v5.3 — vehicle spectrum labels are UI-card only; coach rail must not consume these. */
 export const AXIS_VEHICLE_SPECTRUM = {
   gripStrength: "煞車抓地",
   strength: "馬力／排量",
@@ -108,6 +109,7 @@ export const AXIS_VEHICLE_SPECTRUM = {
   bodyFat: "空力噸位",
 };
 
+/** @deprecated v5.3 — see AXIS_VEHICLE_SPECTRUM. */
 export const SUPPLEMENTAL_VEHICLE_SPECTRUM = {
   armSize: "寬體輪拱",
   cooper: "冷卻續航",
@@ -121,9 +123,9 @@ const SUPPLEMENTAL_TALENT_LABEL_ZH = {
 };
 
 const SUPPLEMENTAL_TALENT_LABEL_EN = {
-  armSize: "sleeve-stretching talent",
-  cooper: "chassis-range talent",
-  "5km": "chassis-range talent",
+  armSize: "arm girth",
+  cooper: "endurance",
+  "5km": "endurance",
 };
 
 const AXIS_SURFACE_LABEL_ZH = {
@@ -146,12 +148,12 @@ const AXIS_TALENT_LABEL_ZH = {
 };
 
 const AXIS_TALENT_LABEL_EN = {
-  gripStrength: "braking grip talent",
-  strength: "iron-tonnage talent",
-  explosivePower: "thunder launch talent",
-  cardio: "chassis-range talent",
-  muscleMass: "roll-cage tissue talent",
-  bodyFat: "aero-shed talent",
+  gripStrength: "grip",
+  strength: "strength",
+  explosivePower: "explosive power",
+  cardio: "endurance",
+  muscleMass: "muscle mass",
+  bodyFat: "FFMI",
 };
 
 const AXIS_SURFACE_LABEL_EN = {
@@ -191,15 +193,14 @@ export function resolveReplyLocale(context) {
 }
 
 /**
- * v2.4.5 — tier-dynamic slot hook for future cardCopy-driven human beats.
- * WHY: Keeps template codex pure while enabling gradual {tierTitle} migration.
+ * @deprecated v5.3 — {tierTitle} slots must never weld cardCopy.title (vehicle metaphors).
+ * Templates stay literal; physiological tier names live in humanPraise / AXIS_HUMAN_*.
  */
-export function interpolateTemplateSlots(template, snap) {
-  const title = String(snap?.cardCopy?.title ?? "").trim();
-  if (!title || !String(template ?? "").includes(TIER_TITLE_SLOT)) {
-    return String(template ?? "").trim();
-  }
-  return String(template).replaceAll(TIER_TITLE_SLOT, title).trim();
+export function interpolateTemplateSlots(template, _snap) {
+  return String(template ?? "")
+    .replaceAll(TIER_TITLE_SLOT, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 export function isCardCopyAnchoredHumanBeat(text) {
@@ -222,7 +223,8 @@ export function isCanonicalHumanBeatSynthesis(text) {
     /^以同齡/.test(normalized) ||
     /^Against same-age norms/i.test(normalized) ||
     /^Against untrained same-age norms/i.test(normalized) ||
-    /^For your (body weight|height)/i.test(normalized) ||
+    /^Against untrained peers/i.test(normalized) ||
+    /^For your (age|body weight|height)/i.test(normalized) ||
     /^你的(握力|絕對力量|多關節|重載|心肺|骨骼肌|純肌肉|瘦體重|爆發|臂圍)/.test(normalized) ||
     /^Your (grip|multi-joint|barbell|cardio|muscle mass|lean-mass|explosive|arm girth)/i.test(normalized)
   );
@@ -257,7 +259,7 @@ function resolveAxisSurfaceLabel(axis, locale) {
 
 function resolveVehicleClassTitle(vehicleClassId, locale) {
   const map = locale === "en" ? VEHICLE_CLASS_TITLE_EN : VEHICLE_CLASS_TITLE_ZH;
-  return map[vehicleClassId] ?? (locale === "en" ? "whole-chassis profile" : "整車底盤級距");
+  return map[vehicleClassId] ?? (locale === "en" ? "six-axis profile" : "整車底盤級距");
 }
 
 /** @deprecated v3.0 — legacy v2.5 chassis human beat; retained for deferred cleanup. */
@@ -272,12 +274,12 @@ export function synthesizeChassisHumanBeat(context) {
     const weakestScore = formatDisplayScore(weakest?.score);
     const strongestScore = formatDisplayScore(strongest?.score);
     if (overall && weakestScore && strongestScore) {
-      return `The six-axis chassis locks at an overall score of ${overall}, mapping elite-cohort spread across specialties. ${strongestLabel} sits high in sport norms while ${weakestLabel} at ${weakestScore} still drags synchronized output against ${strongestScore} on the strong link.`;
+      return `Six-Axis Radar overall ${overall}. ${strongestLabel} sits high in sport norms; ${weakestLabel} at ${weakestScore} still limits balance against ${strongestScore} on the strong link.`;
     }
     if (overall) {
-      return `The six-axis chassis anchors at an overall score of ${overall}, showing how specialty peaks and systemic weak links diverge across competitive sport norms.`;
+      return `Six-Axis Radar overall ${overall}. Specialty peaks and systemic weak links diverge across sport norms.`;
     }
-    return "The six-axis chassis profile maps specialty peaks against systemic weak links across competitive sport norms.";
+    return "Six-Axis Radar maps specialty peaks against systemic weak links across sport norms.";
   }
 
   const weakestLabel = resolveAxisSurfaceLabel(weakest?.axis, locale);
@@ -293,15 +295,18 @@ export function synthesizeChassisHumanBeat(context) {
   return "六軸整車體能結構在競技體育常模中呈現專項長板與系統短板的可量化落差。";
 }
 
-/** @deprecated v3.0 — legacy v2.5 vehicle beat; retained for deferred cleanup. */
+/**
+ * @deprecated v5.3 — DEAD PATH. Physio-only fallback; no roll-cage / driveline metaphors.
+ * WHY: Legacy ZH copy was a re-entry vector for vehicle lexicon into coach assembly.
+ */
 export function synthesizeChassisVehicleBeat(context) {
   const locale = resolveReplyLocale(context);
   const classTitle = resolveVehicleClassTitle(context?.vehicleClassId, locale);
 
   if (locale === "en") {
-    return `On the Ultimate Physique host telemetry chassis, the ${classTitle} frame redistributes torque as roll-cage rigidity and driveline axes share multi-axis load — whole-chassis balance outlasts single-axis spikes when climbing the next tier band.`;
+    return `Six-axis profile: ${classTitle}. Balance across axes outlasts a single spike when climbing the next band.`;
   }
-  return `在《最強肉體》主機的遙測底盤中，${classTitle} 的全車車架正承受多軸負載聯動——防滾架剛性與傳動軸在長板推力與短板拖曳之間重新分配扭矩，整車均衡比單點爆發更能支撐下一格級距。`;
+  return `六軸雷達級距：${classTitle}。多軸均衡比單點爆發更能支撐下一格級距。`;
 }
 
 /** @deprecated v3.0 — legacy v2.5 dual-beat chassis synthesis; retained for deferred cleanup. */
@@ -326,9 +331,11 @@ function resolvePrimaryAxisSnap(context) {
   if (!context) return null;
   const focusAxis = context.questionFocusAxis ?? null;
   const axes = Array.isArray(context.axes) ? context.axes : [];
+  // WHY: Beat focus is score-driven. Never require cardCopy.title — dual-track vehicle
+  // titles are UI-only and may be absent on pruned / coach-only payloads.
   return (
     (focusAxis ? axes.find((snap) => snap?.axis === focusAxis) : null) ??
-    axes.find((snap) => snap?.score != null && snap?.cardCopy?.title) ??
+    axes.find((snap) => snap?.score != null) ??
     null
   );
 }
@@ -340,7 +347,7 @@ export function resolvePrimaryBeatSnap(context) {
   if (supplementalMetric) {
     const metrics = Array.isArray(context.supplementalMetrics) ? context.supplementalMetrics : [];
     const snap = metrics.find((entry) => entry?.metric === supplementalMetric);
-    if (snap?.cardCopy?.title) {
+    if (snap?.score != null) {
       return { kind: "supplemental", metric: supplementalMetric, snap };
     }
   }
@@ -378,6 +385,11 @@ function resolveHumanBeatCopy(context) {
   return raw ? interpolateTemplateSlots(raw, focus.snap) : null;
 }
 
+/**
+ * @deprecated v5.3 — UI assessment cards keep vehicle metaphors; Dyno Intel P1 must never
+ * weld cardCopy.summary into coach commentary. Live path uses humanPraise via resolveHumanBriefParts.
+ * Retained only for temporary test imports — do not call from inference pipelines.
+ */
 export function humanizeCardCopySummary(summary) {
   return String(summary ?? "")
     .replace(/^【[^】]+】[。.]?\s*/, "")
@@ -386,68 +398,42 @@ export function humanizeCardCopySummary(summary) {
 }
 
 /**
- * v2.4.6 — P1 sovereignty: plain-language extension of official scoreMeaning cardCopy.summary.
- * WHY: Static ladder maps read generic; users expect the tier band copy they already earned.
+ * @deprecated v5.3 — DEAD PATH. Assessment-card dual-track prose (physio + car map) must stay
+ * off the Dyno Intel coach rail. Use resolveHumanBriefParts / AXIS_HUMAN_* templates instead.
+ * WHY: Feeding cardCopy into P1 caused Gemini to paraphrase factory-racer metaphors into reports.
  */
-export function synthesizeHumanBeatFromCardCopySummary(context) {
-  const focus = resolvePrimaryBeatSnap(context);
-  const snap = focus?.snap;
-  const rawSummary = String(snap?.cardCopy?.summary ?? "").trim();
-  if (!rawSummary) return null;
-
-  const locale = resolveReplyLocale(context);
-  // v2.5.1 — official cardCopy.summary is immune to stripHollowPraise (coach-extension only).
-  let body = humanizeCardCopySummary(rawSummary);
-  if (!body) return null;
-
-  // v2.4.7 — tier title lives only in beat-2 【】; P1 extends cardCopy summary in plain human language.
-  if (locale === "en") {
-    const lead = "On your current tier band, the official read is: ";
-    const closing = /[.!?]$/.test(body) ? "" : ".";
-    return `${lead}${body}${closing}`;
-  }
-
-  const lead = "就你目前的表現來說，";
-  const closing = /[。！？]$/.test(body) ? "" : "。";
-  return `${lead}${body}${closing}`;
+export function synthesizeHumanBeatFromCardCopySummary(_context) {
+  return null;
 }
 
+/**
+ * @deprecated v5.3 — see synthesizeHumanBeatFromCardCopySummary. Falls through to physiological templates only.
+ */
 export function synthesizeHumanBeatFromCardCopy(context) {
-  return synthesizeHumanBeatFromCardCopySummary(context) ?? resolveHumanBeatCopy(context);
+  return resolveHumanBeatCopy(context);
 }
 
 function resolveTalentLabel(focus, locale) {
   if (focus?.kind === "supplemental") {
     const map = locale === "en" ? SUPPLEMENTAL_TALENT_LABEL_EN : SUPPLEMENTAL_TALENT_LABEL_ZH;
-    return map[focus.metric] ?? (locale === "en" ? "telemetry talent" : "遙測天賦");
+    return map[focus.metric] ?? (locale === "en" ? "this metric" : "遙測天賦");
   }
   const map = locale === "en" ? AXIS_TALENT_LABEL_EN : AXIS_TALENT_LABEL_ZH;
-  return map[focus?.metric] ?? (locale === "en" ? "telemetry talent" : "遙測天賦");
+  return map[focus?.metric] ?? (locale === "en" ? "this metric" : "遙測天賦");
 }
 
-/** @deprecated v3.0 — legacy v2.5 vehicle beat; retained for deferred cleanup. */
+/**
+ * @deprecated v5.3 — DEAD PATH. Never weld cardCopy.title into coach beats.
+ * Falls through to physiological radar phrasing only (no vehicle spectrum / tier titles).
+ */
 export function synthesizeVehicleBeatFromContext(context) {
   const focus = resolvePrimaryBeatSnap(context);
-  const snap = focus?.snap;
   const locale = resolveReplyLocale(context);
   const talentLabel = resolveTalentLabel(focus, locale);
-
-  if (!snap?.cardCopy?.title) {
-    if (locale === "en") {
-      return `On the Ultimate Physique host telemetry chassis, this ${talentLabel} maps to the horsepower output spectrum.`;
-    }
-    return `在《最強肉體》主機的遙測底盤中，這份${talentLabel}被精準類比為馬力頻譜的輸出。`;
-  }
-  const spectrum =
-    focus.kind === "supplemental"
-      ? SUPPLEMENTAL_VEHICLE_SPECTRUM[focus.metric] ?? "馬力"
-      : AXIS_VEHICLE_SPECTRUM[focus.metric] ?? "馬力";
-  const title = String(snap.cardCopy.title).trim();
-
   if (locale === "en") {
-    return `On the Ultimate Physique host telemetry chassis, this ${talentLabel} maps to the ${spectrum} output spectrum, tier [${title}].`;
+    return `This ${talentLabel} readout sits on the Six-Axis Radar.`;
   }
-  return `在《最強肉體》主機的遙測底盤中，這份${talentLabel}被精準類比為${spectrum}頻譜的輸出，級距【${title}】。`;
+  return `在《最強肉體》主機的遙測底盤中，這份${talentLabel}被解讀為生理常模輸出。`;
 }
 
 /**

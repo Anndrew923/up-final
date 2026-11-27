@@ -187,9 +187,9 @@ describe('buildHallSpectrumDecodePrompt', () => {
       buildHallSpectrumDecodePrompt({
         axisLabel: 'Horsepower',
         scoreDisplay: '76.80',
-        populationClass: 'Advanced Lifter',
+        populationClass: 'Advanced',
         locale: 'en',
       })
-    ).toContain('Drop feelings');
+    ).toContain('Scores, not guesses');
   });
 });

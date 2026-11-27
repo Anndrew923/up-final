@@ -45,17 +45,17 @@ export const AXIS_ANCHOR_PREFIX_ZH = {
 };
 
 export const AXIS_ANCHOR_PREFIX_EN = {
-  // WHY: no trailing space — belongsGlue("en") already supplies " maps to ".
-  strength: "Against same-age competitive norms, your absolute strength performance",
-  explosivePower: "Against same-age norms, your explosive first-step power",
-  cardio: "Against same-age norms, your cardio endurance",
-  muscleMass: "For your body weight and age cohort, your skeletal muscle mass",
-  bodyFat: "For your height and age cohort, your FFMI lean-mass efficiency",
-  gripStrength: "Against same-age norms, your grip strength",
-  armSize: "Against untrained same-age norms, your arm girth",
-  cooper: "Against same-age norms, your Cooper 12-minute distance",
-  "5km": "Against same-age norms, your 5 km run pace",
-  overall: "Against competitive sport norms, your six-axis combined output",
+  // WHY: no trailing space — belongsGlue("en") already supplies " — ".
+  strength: "For your age, absolute strength",
+  explosivePower: "For your age, explosive power",
+  cardio: "For your age, cardio endurance",
+  muscleMass: "For your body weight and age, muscle mass",
+  bodyFat: "For your height and age, FFMI",
+  gripStrength: "For your age, grip strength",
+  armSize: "Against untrained peers your age, arm girth",
+  cooper: "For your age, Cooper 12-minute distance",
+  "5km": "For your age, 5K pace",
+  overall: "Six-Axis Radar overall",
 };
 
 const AXIS_PREFIX_BY_LOCALE = {
@@ -89,8 +89,9 @@ export function isChassisMacroContext(context) {
 }
 
 /** v3.3.2 — rigid vehicle lexicon lint for AI commentary assembly. */
+/** WHY: EN unit tokens need word boundaries — bare `Bar`/`hp` false-positive on barbell / jump. */
 export const VEHICLE_LEXICON_REGEX =
-  /馬力|跑車|輪胎|冷卻|底盤|Bar|hp|Nm|排量|渦輪|熱熔橡膠|熱熔|通電|遙測主機|引擎|防滾架|車架|續航天賦|淨引擎|遙測底盤|抓地頻譜|空力噸位|車體|工廠賽車|寬體|賽車|葉子板|輪拱|尾翼|載具|風阻|賽道版|輪轂/i;
+  /馬力|跑車|輪胎|冷卻|底盤|\bBar\b|\bhp\b|\bNm\b|排量|渦輪|熱熔橡膠|熱熔|通電|遙測主機|引擎|防滾架|車架|續航天賦|淨引擎|遙測底盤|抓地頻譜|空力噸位|車體|工廠賽車|寬體|賽車|葉子板|輪拱|尾翼|載具|風阻|賽道版|輪轂/i;
 
 /** WHY: Keep the shared lint regex non-global — `/g` + `.test()` mutates lastIndex across calls. */
 const VEHICLE_LEXICON_SCRUB_REGEX = new RegExp(VEHICLE_LEXICON_REGEX.source, "gi");
@@ -127,7 +128,7 @@ function resolveScaleRow(decadeKey, locale) {
 }
 
 function belongsGlue(locale) {
-  return normalizeLocale(locale) === "en" ? " maps to " : "屬於";
+  return normalizeLocale(locale) === "en" ? " — " : "屬於";
 }
 
 function resolveSoulPraiseSegment(scaleRow, axis, locale, profile) {

@@ -46,9 +46,9 @@ describe("dynoIntelHumanPraise sync parity", () => {
     assert.equal(DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN, doc.hallOfFame.legalShield);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN, doc.hallOfFame.blockedReply);
     assert.equal(DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN, doc.hallOfFame.guidedReply);
-    assert.match(doc.hallOfFame.legalShield, /career-peak states/);
+    assert.match(doc.hallOfFame.legalShield, /Career-peak figures/i);
     assert.match(doc.hallOfFame.guidedReply, /120 explosive power/i);
-    assert.match(doc.hallOfFame.legalShield, /entertainment purposes/);
+    assert.match(doc.hallOfFame.legalShield, /entertainment only/i);
     assert.doesNotMatch(doc.humanBrief.prPercentileFallback, /[\u4e00-\u9fff]/);
     assert.doesNotMatch(doc.hallOfFame.guidedReply, /[\u4e00-\u9fff]/);
   });

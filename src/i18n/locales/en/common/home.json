@@ -144,7 +144,7 @@
       "homologationId": "HOMOLOGATION // #GT-{{id}}",
       "liveSpecKicker": "LIVE SIX-AXIS SPECS",
       "phase": {
-        "boot": "Chassis power-on…",
+        "boot": "Chassis boot…",
         "charge": "Six-axis charge…",
         "count": "Calibrating index…",
         "reveal": "Spec readout"

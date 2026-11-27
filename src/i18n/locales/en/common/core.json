@@ -37,499 +37,499 @@
   "scoreMeaning": {
     "axis": {
       "strength": {
-        "label": "Horsepower Spectrum (HP)",
+        "label": "Horsepower (HP) — Strength",
         "desc": "Tracks DOTS-adjusted output. Higher = more peak HP per kg of chassis."
       },
       "explosivePower": {
-        "label": "Torque Spectrum (TRQ)",
+        "label": "Torque (TRQ) — Explosive",
         "desc": "Tracks launch torque and kinetic discharge. Higher = sharper throttle response off the line."
       },
       "cardio": {
-        "label": "Stint Spectrum (STINT)",
+        "label": "Stint (STINT) — Cardio",
         "desc": "Tracks aerobic ceiling and heat management. Higher = longer stints at redline."
       },
       "muscleMass": {
-        "label": "Build Spectrum (CHSS)",
-        "desc": "Tracks SMM relative to height. Higher = fuller exterior profile and structural load capacity."
+        "label": "Chassis Build (CHSS) — Muscle",
+        "desc": "Tracks SMM relative to height. Higher = fuller chassis profile and structural load capacity."
       },
       "bodyFat": {
-        "label": "Density Spectrum (P2W)",
-        "desc": "Tracks FFMI from profile and body fat. Higher = larger powerplant and stronger power-to-weight."
+        "label": "Power-to-Weight (P2W) — FFMI",
+        "desc": "Tracks FFMI from body stats. Higher = denser lean mass and stronger power-to-weight."
       },
       "gripStrength": {
-        "label": "Traction Spectrum (GRIP)",
-        "desc": "Tracks terminal neural grip output. Higher = stronger mechanical grip and limit control."
+        "label": "Traction (GRIP) — Grip",
+        "desc": "Tracks terminal neural grip output. Higher = stronger traction and limit control under load."
       }
     },
     "bands": {
       "strength": {
         "BASE": {
-          "title": "10 hp Scooter",
-          "summary": "[10 hp SCOOTER] Factory-stock platform. Massive headroom—consistent load work builds your first real power gain."
+          "title": "10 hp Entry Platform",
+          "summary": "[10 hp ENTRY] Untrained strength—below structured barbell norms. Stock curb platform with huge headroom; consistent load work builds first real output."
         },
         "TIER_40": {
           "title": "90 hp Daily Driver",
-          "summary": "[90 hp DAILY] First load contact. Building early tolerance and structural integrity under external resistance."
+          "summary": "[90 hp DAILY] Novice strength—early load contact. Daily-driver chassis building tolerance and structural integrity under external resistance."
         },
         "TIER_50": {
           "title": "140 hp Compact",
-          "summary": "[140 hp COMPACT] Foundation lifts locked. Mid-pack gym presence—cleaner output, less form breakdown under load."
+          "summary": "[140 hp COMPACT] Recreational strength—foundation lifts locked. Mid-pack gym presence with cleaner output and less form breakdown under load."
         },
         "TIER_60": {
           "title": "180 hp Hot Hatch",
-          "summary": "[180 hp HOT HATCH] Regular heavy-training lane. Stable under high resistance with continuous power delivery."
+          "summary": "[180 hp HOT HATCH] Trained strength—regular heavy-training lane. Stable under high resistance with continuous power delivery."
         },
         "TIER_70": {
           "title": "250 hp RWD Coupe",
-          "summary": "[250 hp RWD] High-tier gym output. Strong power and rigid-body consistency under punishing loads."
+          "summary": "[250 hp RWD] Advanced strength—high-tier gym output. Strong horsepower and rigid-body consistency under punishing loads."
         },
         "TIER_80": {
           "title": "350 hp Coupe",
-          "summary": "[350 hp COUPE] Peak amateur strength. Load control hits competitive threshold—ready outside pure strength sport."
+          "summary": "[350 hp COUPE] Highly Trained strength—top amateur band. Load control hits competition threshold; GT-class delivery ready outside pure strength sport."
         },
         "TIER_90": {
-          "title": "430 hp Sport Flagship",
-          "summary": "[430 hp FLAGSHIP] Past amateur ceiling. Serious horsepower—chassis stiffness trending toward pro-grade output."
+          "title": "430 hp GT Flagship",
+          "summary": "[430 hp GT] Peak Natural strength—past most amateur ceilings. Race-bred horsepower with chassis stiffness trending toward pro-spec output."
         },
         "TIER_100": {
-          "title": "550 hp Track Apex Chassis",
-          "summary": "[550 hp TRACK] Regional podium tier. Floor the throttle—most rivals won't catch the burst."
+          "title": "550 hp Track-Spec Chassis",
+          "summary": "[550 hp TRACK] Genetic Outlier strength—regional podium band. Track-spec reserve; floor the throttle and most field cars won't match the burst."
         },
         "TIER_110": {
           "title": "680 hp Factory Racer",
-          "summary": "[680 hp FACTORY] Regional meet winner. Devastating horsepower reserve and elite rigid-body control."
+          "summary": "[680 hp FACTORY] Elite strength—regional meet-winner band. Devastating horsepower reserve with elite rigid-body control."
         },
         "TIER_120": {
           "title": "820 hp Endurance Prototype",
-          "summary": "[820 hp ENDURANCE] National elite benchmark. Under limit loads, your dominance is absolute."
+          "summary": "[820 hp ENDURANCE] World Class strength—national elite benchmark. Under limit loads, endurance-prototype dominance is clear."
         },
         "TIER_130": {
           "title": "1000 hp Megacar",
-          "summary": "[1000 hp MEGA] International meet output. Factory genetics and brutal tuning fused into one package."
+          "summary": "[1000 hp MEGA] Historic strength—international meet output. Factory genetics and brutal track tuning fused into one package."
         },
         "TIER_140": {
-          "title": "1200 hp Rocket Rig",
-          "summary": "[1200 hp ROCKET] Gravity-defying output. International master-class surplus—a thousand hp understates your power."
+          "title": "1200 hp Hypercar Apex",
+          "summary": "[1200 hp HYPER] Open strength band—international master-class surplus. Hypercar-class output; a thousand hp understates the reading."
         },
         "LEGEND": {
           "title": "1500 hp Hypercar Apex",
-          "summary": "[1500 hp PLANET] Off the published map. Beyond normal physiology—human strength forged at legend scale."
+          "summary": "[1500 hp APEX] Apex strength—off the published map. Beyond normal physiology; hypercar-class output on a human chassis."
         },
         "PANTHEON": {
-          "title": "Pantheon Horsepower",
-          "summary": "[PANTHEON HP] Archived to the Pantheon. Ultimate output aligned with myth—an eternal core of force."
+          "title": "Hall of Fame Horsepower",
+          "summary": "[HOF HP] Hall of Fame strength—logged at the absolute top of this axis. Ultimate output board; archive-grade horsepower reading."
         }
       },
       "explosivePower": {
         "BASE": {
           "title": "9 Nm Stock Street Torque",
-          "summary": "[9 Nm STOCK] Baseline launch settings. Drivetrain engagement undeveloped—massive torque optimization headroom."
+          "summary": "[9 Nm STOCK] Untrained explosive power—first-step force undeveloped. Stock drivetrain engagement with massive torque-optimization headroom."
         },
         "TIER_40": {
           "title": "140 Nm Ignition Tune",
-          "summary": "[140 Nm IGNITION] Throttle response awakening. Building launch-phase twist and cutting transfer lag."
+          "summary": "[140 Nm IGNITION] Novice explosive power—early rate-of-force rise. Ignition tune building launch-phase torque; transfer lag shrinking."
         },
         "TIER_50": {
           "title": "210 Nm Light Flywheel",
-          "summary": "[210 Nm FLYWHEEL] Fundamentals clicking. Rev rise quicker, neural delay shrinking—hot-hatch agility off the line."
+          "summary": "[210 Nm FLYWHEEL] Recreational explosive power—fundamentals clicking. Rev rise quicker, neural delay shrinking—hot-hatch agility off the line."
         },
         "TIER_60": {
           "title": "320 Nm Stage 1 NA",
-          "summary": "[320 Nm STAGE 1] Recreational average tier. Instant power release cleaner—drive platform stabilizing."
+          "summary": "[320 Nm STAGE 1] Trained explosive power—recreational average. Cleaner instant power release; drive platform stabilizing."
         },
         "TIER_70": {
           "title": "400 Nm Staged Boost",
-          "summary": "[400 Nm BOOST] Above the crowd. Snap response outruns stock units—excellent initial burst and launch acceleration."
+          "summary": "[400 Nm BOOST] Advanced explosive power—above the crowd. Snap response outruns stock units—excellent initial burst and launch acceleration."
         },
         "TIER_80": {
           "title": "450 Nm Launch Control",
-          "summary": "[450 Nm LAUNCH] Upper amateur tier. Launch control engaged—neural recruitment bites, first-step burst competitive."
+          "summary": "[450 Nm LAUNCH] Highly Trained explosive power—upper amateur band. Launch control engaged—neural recruitment bites; first-step burst competitive."
         },
         "TIER_90": {
           "title": "600 Nm Supercharged",
-          "summary": "[600 Nm SC] Peak amateur output. Torque erupts across the rev range—launch instant ignores equipment drag."
+          "summary": "[600 Nm SC] Peak Natural explosive power—peak amateur output. Torque floods the rev range; launch hits with race-bred snap."
         },
         "TIER_100": {
           "title": "750 Nm Race Transmission",
-          "summary": "[750 Nm RACE TRANS] Combine-average explosive profile. Zero-lag release—short-range burst crosses normal limits."
+          "summary": "[750 Nm RACE TRANS] Genetic Outlier explosive power—combine-average burst profile. Zero-lag release; short-range burst crosses normal limits."
         },
         "TIER_110": {
           "title": "850 Nm Twin-Turbo Overboost",
-          "summary": "[850 Nm LIMIT ICE] Elite guard burst. Frightening dynamic response—instantaneous torque knocks on top-tier ICE physics."
+          "summary": "[850 Nm OVERBOOST] Elite explosive power—elite-guard burst. Instantaneous torque at the top of tested ICE physics."
         },
         "TIER_120": {
           "title": "950 Nm Prototype Transient",
-          "summary": "[950 Nm PROTO SNAP] Top guard tier. Launch torque feels EV-hypercar lossless—dominates gravity in an instant."
+          "summary": "[950 Nm PROTO] World Class explosive power—top-guard launch. Prototype transient torque; EV-hypercar lossless feel off the line."
         },
         "TIER_130": {
           "title": "1250 Nm Heavy Hybrid Plateau",
-          "summary": "[1250 Nm HYBRID] NFL receiver burst. Heavy motor plus ICE torque—industrial rigidity, output ignores material flex."
+          "summary": "[1250 Nm HYBRID] Historic explosive power—NFL-receiver burst band. Heavy motor plus ICE torque; industrial rigidity under launch."
         },
         "TIER_140": {
-          "title": "1400 Nm Aerospace Phantom Snap",
-          "summary": "[1400 Nm PHANTOM] Elite NFL running back tier. World-class instant output—the first hit shreds the line."
+          "title": "1400 Nm Hypercar Transient",
+          "summary": "[1400 Nm HYPER] Open explosive band—elite NFL running-back tier. World-class instant output; the first hit wins space."
         },
         "LEGEND": {
-          "title": "Aerospace Rocket Propulsion",
-          "summary": "[AEROSPACE ROCKET] Legend-athlete tier. Beyond biomechanical limits—instant kinetic energy tears at gravity."
+          "title": "Hypercar Transient Apex",
+          "summary": "[HYPERCAR TRANSIENT] Apex explosive power—legend-athlete tier. Instant kinetic dump at the edge of biomechanics."
         },
         "PANTHEON": {
-          "title": "Pantheon",
-          "summary": "[PANTHEON] Archived to the Pantheon. Undisputed strongest explosive output on Earth—too fast for the naked eye."
+          "title": "Hall of Fame Torque",
+          "summary": "[HOF TRQ] Hall of Fame explosive power—logged as the top burst band. Archive-grade launch torque reading."
         }
       },
       "cardio": {
         "BASE": {
           "title": "0.4 bar Stock NA",
-          "summary": "[0.4 bar BASELINE] Stock intake and cooling. Build stable baseline endurance—massive upgrade headroom ahead."
+          "summary": "[0.4 bar BASELINE] Untrained cardio—build a stable aerobic base. Stock intake and cooling with massive upgrade headroom."
         },
         "TIER_40": {
           "title": "0.6 bar Intake Tune",
-          "summary": "[0.6 bar COOLING] Below population average. Radiator building first cardio base—a focused tune delivers big jump."
+          "summary": "[0.6 bar COOLING] Novice cardio—below population average. Radiator building first endurance base; a focused tune delivers a big jump."
         },
         "TIER_50": {
           "title": "0.9 bar Low-Boost Cruise",
-          "summary": "[0.9 bar EFFICIENCY] Population average tier. Lungs adapting to endurance load—core cooling loops flowing clean."
+          "summary": "[0.9 bar EFFICIENCY] Recreational cardio—population average. Lungs adapting to endurance load; core cooling loops flowing clean."
         },
         "TIER_60": {
           "title": "1.2 bar Hot Hatch Pace",
-          "summary": "[1.2 bar CRUISE] Regular-runner tier. Long controlled cruising—factory settings can't touch this heat efficiency."
+          "summary": "[1.2 bar CRUISE] Trained cardio—regular-runner band. Long controlled cruising; heat efficiency past stock factory settings."
         },
         "TIER_70": {
           "title": "1.5 bar Mid-Mount Boost",
-          "summary": "[1.5 bar HEAT SOAK] Boost holds steady. Above the pack—built for repeated high-intensity tactical surges."
+          "summary": "[1.5 bar HEAT SOAK] Advanced cardio—boost holds steady. Above the pack; built for repeated high-intensity tactical surges."
         },
         "TIER_80": {
           "title": "1.8 bar GT All-Weather Cooling",
-          "summary": "[1.8 bar BALANCED] Ahead of age-group peers. Cooling loop rigidity excellent—amateur breakout line reached."
+          "summary": "[1.8 bar GT] Highly Trained cardio—ahead of age-group peers. GT cooling-loop rigidity; amateur breakout line reached."
         },
         "TIER_90": {
           "title": "2.1 bar Race High-Combustion",
-          "summary": "[2.1 bar COMP AWAKEN] Competitive genes detected. Extreme cylinder pressure—serious training, pro lane aimed."
+          "summary": "[2.1 bar TRACK] Peak Natural cardio—competitive capacity. Extreme cylinder pressure; race-bred thermal work aiming pro-adjacent stints."
         },
         "TIER_100": {
           "title": "2.4 bar Apex Cooling Load",
-          "summary": "[2.4 bar HIGH-EFF] Regional ace tier. Radiator resilience remarkable—built for long high-boost, high-pressure leads."
+          "summary": "[2.4 bar HIGH-EFF] Genetic Outlier cardio—regional ace band. Radiator resilience for long high-boost, high-pressure leads."
         },
         "TIER_110": {
           "title": "2.8 bar Factory Race Cooling",
-          "summary": "[2.8 bar LIMIT] Elite competition tier. Regional podiums realistic—680 hp factory racer heat-soak alignment."
+          "summary": "[2.8 bar LIMIT] Elite cardio—elite competition tier. Regional podiums realistic; 680 hp factory-racer heat-soak alignment."
         },
         "TIER_120": {
           "title": "3.2 bar Prototype Track Rule",
-          "summary": "[3.2 bar DOMINANCE] Amateur ceiling cleared. Endurance prototype heat rejection—rarely matched in endurance events."
+          "summary": "[3.2 bar PROTO] World Class cardio—amateur ceiling cleared. Endurance-prototype heat rejection; rarely matched in long events."
         },
         "TIER_130": {
           "title": "3.8 bar Megacar Core Pressure",
-          "summary": "[3.8 bar APEX] National athlete front row. Cylinder walls hold overload pressure—you set cruise at the front."
+          "summary": "[3.8 bar MEGA] Historic cardio—national front row. Cylinder walls hold overload pressure; you set cruise at the front."
         },
         "TIER_140": {
-          "title": "4.5 bar Rocket Cooling Build",
-          "summary": "[4.5 bar DREAM] Dream-spec apex. Cooling ignores high-heat flex—rivals don't want your name on the start list."
+          "title": "4.5 bar Hypercar Cooling Build",
+          "summary": "[4.5 bar HYPER] Open cardio band—dream-spec aerobic apex. Cooling holds under high-heat flex; rivals avoid your start list."
         },
         "LEGEND": {
           "title": "5.5 bar Endurance Hypercore",
-          "summary": "[5.5 bar LONG-RUN GOD] Off the published map. Beyond normal physiology—almost nobody stays in your slipstream."
+          "summary": "[5.5 bar HYPERCORE] Apex cardio—off the published map. Beyond normal physiology; almost nobody stays in your slipstream."
         },
         "PANTHEON": {
-          "title": "6.5 bar Pantheon Cryo Cooling",
-          "summary": "[PANTHEON COOLING] Archived to the Pantheon. Myth-tier cardiorespiratory output—a tireless powerplant, sealed forever."
+          "title": "Hall of Fame Cooling",
+          "summary": "[HOF COOLING] Hall of Fame cardio—tireless endurance plant logged to the board. Archive-grade stint reading."
         }
       },
       "cooper": {
         "BASE": {
           "title": "0.4 bar OEM Transient Intake",
-          "summary": "[0.4 bar TIMED CAL] Cooper 12-min entry tier. Stock intake and cylinder heat management—timed full-throttle output spikes HR and lactate early, huge upgrade headroom."
+          "summary": "[0.4 bar TIMED] Untrained Cooper—12-min entry. Stock intake and cylinder heat management; timed full-throttle spikes HR and lactate early."
         },
         "TIER_40": {
           "title": "0.6 bar Transient EGT Tune",
-          "summary": "[0.6 bar EGT START] Below age-group norm. Exhaust heat loop building first cardio tolerance—holding high load inside 12 minutes, oil temp stabilizing, one tune away from a big jump."
+          "summary": "[0.6 bar EGT] Novice Cooper—below age-group norm. Exhaust heat loop building 12-minute tolerance; oil temp stabilizing."
         },
         "TIER_50": {
           "title": "0.9 bar Street Transient Boost",
-          "summary": "[0.9 bar HIGH LOAD] Population-average tier. System adapting to 12-minute all-out HR—core cooling and transient intake flowing, rear-half EGT still runs hot under pressure."
+          "summary": "[0.9 bar HIGH LOAD] Recreational Cooper—population average. Adapting to 12-minute all-out HR; rear-half EGT still runs hot under pressure."
         },
         "TIER_60": {
           "title": "1.2 bar Hot Hatch Timed Redline",
-          "summary": "[1.2 bar TIMED HOLD] Entering the regular-runner cohort—rhythm locked in, max distance steadily climbing. Holds high RPM for the full 12-minute window with thermal headroom; most stock platforms start bleeding boost here."
+          "summary": "[1.2 bar TIMED HOLD] Trained Cooper—regular-runner cohort. Rhythm locked; holds high RPM for the full 12-minute window with thermal headroom."
         },
         "TIER_70": {
           "title": "1.5 bar Anti-Lactate Transient Grip",
-          "summary": "[1.5 bar PEAK TRANSIENT] Above population average—timed endurance output upgraded sharply. Boost dumps hard in short windows—beats population burn and lactate, survives high-frequency heat-soak surges."
+          "summary": "[1.5 bar PEAK TRANSIENT] Advanced Cooper—above population average. Boost dumps hard in short windows; survives high-frequency heat-soak surges."
         },
         "TIER_80": {
           "title": "1.8 bar GT Full-Time Transient Cooling",
-          "summary": "[1.8 bar BALANCED] VO₂ max output ahead of most active peers your age—a strong showing in the cohort. EGT and cooling loop rigidity excellent—12-minute high-pressure field test, fatigue feedback clean."
+          "summary": "[1.8 bar GT] Highly Trained Cooper—VO₂ ahead of most active peers your age. EGT and cooling-loop rigidity clean across the 12-minute field test."
         },
         "TIER_90": {
-          "title": "2.1 bar Race Cylinder Detonation Heat",
-          "summary": "[2.1 bar HEAT AWAKEN] Among active peers your age, already high-tier—earned only through serious training. Fuel and O₂ at extreme cylinder pressure—unfazed by 12-minute hypoxic choke; without relentless work this tier stays out of reach, pro lane ahead."
+          "title": "2.1 bar Race Cylinder Heat",
+          "summary": "[2.1 bar TRACK] Peak Natural Cooper—high-tier among active peers. Extreme cylinder pressure; unfazed by 12-minute hypoxic choke."
         },
         "TIER_100": {
           "title": "2.4 bar Apex Full-Load HR Cooling",
-          "summary": "[2.4 bar NORM PEAK] Age-group 100-point ceiling unlocked. Radiator and VO₂ resilience remarkable—12-minute full-load torture, leading pace without stride or intake drop."
+          "summary": "[2.4 bar NORM PEAK] Genetic Outlier Cooper—age-group 100-point ceiling. Radiator and VO₂ resilience; leading pace without stride drop."
         },
         "TIER_110": {
           "title": "2.8 bar Factory Race High-EGT Limit",
-          "summary": "[2.8 bar FACTORY PEAK] Elite competition tier. Rare match in age-group norms—oxidative reserve and max-HR tolerance extreme under 12-minute overload, reverse heat-stress mastered."
+          "summary": "[2.8 bar FACTORY] Elite Cooper—elite competition tier. Rare in age-group norms; max-HR tolerance under 12-minute overload."
         },
         "TIER_120": {
           "title": "3.2 bar Prototype Transient Dominance",
-          "summary": "[3.2 bar NORM RULE] 12-minute timed ceiling. Boost crosses amateur bounds—endurance prototype full-load heat rejection, countdown torture without flinch."
+          "summary": "[3.2 bar PROTO] World Class Cooper—12-minute timed ceiling. Endurance-prototype full-load heat rejection without flinch."
         },
         "TIER_130": {
           "title": "3.8 bar Megacar Overload Core",
-          "summary": "[3.8 bar APEX THRESH] National front row in the 12-minute timed test. Cardio and intake at top spec—cylinder walls hold impossible transient overload, leader in the high-output band."
+          "summary": "[3.8 bar MEGA] Historic Cooper—national front row in the timed test. Top-spec intake; cylinder walls hold transient overload."
         },
         "TIER_140": {
-          "title": "4.5 bar Rocket Transient Cooling Module",
-          "summary": "[4.5 bar DREAM BURST] Dream-spec apex of the 12-minute timed test. EGT and cooling ignore max-HR flex—full-throttle cardio dump leaves the norm cohort behind."
+          "title": "4.5 bar Hypercar Transient Cooling",
+          "summary": "[4.5 bar HYPER] Open Cooper band—dream-spec 12-minute apex. EGT and cooling hold max-HR flex; full-throttle dump leaves the norm cohort behind."
         },
         "LEGEND": {
           "title": "5.5 bar Transient Hypercore",
-          "summary": "[5.5 bar THRESHOLD GOD] Off the published map. Beyond age-group physiology—12-minute VO₂ at world-elite tier, extreme lactate tolerance, tireless thermal efficiency."
+          "summary": "[5.5 bar HYPERCORE] Apex Cooper—off the published map. 12-minute VO₂ at world-elite tier with extreme lactate tolerance."
         },
         "PANTHEON": {
-          "title": "6.5 bar Pantheon Vacuum Superconductor Cooling",
-          "summary": "[PANTHEON BURST] 12-minute distance archived beyond the chart. Myth-tier cardiorespiratory peak—Earth's strongest aerobic/anaerobic core, sealed in the Pantheon."
+          "title": "Hall of Fame Transient Cooling",
+          "summary": "[HOF BURST] Hall of Fame Cooper—12-minute distance logged past the chart. Archive-grade cardio-stint reading."
         }
       },
       "bodyFat": {
         "BASE": {
           "title": "0.1L Single-Cylinder Micro",
-          "summary": "[0.1L MICRO] Structural density far below normal. High-calorie fueling plus baseline resistance rebuild—start now."
+          "summary": "[0.1L MICRO] Untrained FFMI—structural density far below normal. High-calorie fueling plus baseline resistance rebuild starts here."
         },
         "TIER_40": {
           "title": "1.6L Four-Cylinder Intake",
-          "summary": "[1.6L INTAKE] Core mass below average. Frame building base architecture—a light rebuild delivers big jump."
+          "summary": "[1.6L INTAKE] Novice FFMI—core mass below average. Frame building base architecture; a light rebuild delivers a big jump."
         },
         "TIER_50": {
           "title": "1.5L Small-Block Hot Hatch",
-          "summary": "[1.5L SMALL-BLOCK] Displacement still lean. Refined structural density—street-spec small-turbo agility fundamentals."
+          "summary": "[1.5L SMALL-BLOCK] Recreational FFMI—displacement still lean. Street-spec small-turbo agility fundamentals."
         },
         "TIER_60": {
           "title": "2.0T Mid-Displacement Plus",
-          "summary": "[2.0T MID] Early recreational tier. Displacement climbing—cylinder walls handle higher pressure, chassis stabilizing."
+          "summary": "[2.0T MID] Trained FFMI—early recreational band. Displacement climbing; cylinder walls handle higher pressure, chassis stabilizing."
         },
         "TIER_70": {
           "title": "3.0L High-Rev Inline-Six",
-          "summary": "[3.0L I6] Regular training athlete. Classic high-rev straight-six—rigidity and performance above stock units."
+          "summary": "[3.0L I6] Advanced FFMI—regular training athlete. Classic high-rev straight-six; rigidity and performance above stock units."
         },
         "TIER_80": {
           "title": "4.0T V8 Big-Block Core",
-          "summary": "[4.0T V8] Big-displacement amateur band. Sync locked—350 hp, 450 Nm, 1.8 bar; smooth eight-cylinder delivery."
+          "summary": "[4.0T V8] Highly Trained FFMI—big-displacement amateur band. Sync locked—350 hp, 450 Nm, 1.8 bar; smooth eight-cylinder delivery."
         },
         "TIER_90": {
           "title": "6.2L V8 Muscle Beast",
-          "summary": "[6.2L V8 MUSCLE] Near natural ceiling. Classic American big displacement—peak NA cylinders, massive frame burst."
+          "summary": "[6.2L V8 MUSCLE] Peak Natural FFMI—near natural ceiling. Classic American big displacement; peak NA cylinders, massive frame burst."
         },
         "TIER_100": {
           "title": "3.5T V6 Track Twin-Turbo",
-          "summary": "[3.5T V6 TT] Elite output tier. Bore optimized, track-spec displacement—amateur ceiling fully cleared."
+          "summary": "[3.5T V6 TT] Genetic Outlier FFMI—elite output band. Bore optimized, track-spec displacement; amateur ceiling fully cleared."
         },
         "TIER_110": {
           "title": "4.0T V8 Factory Race Block",
-          "summary": "[4.0T V8 RACE] Past natural ceiling. Twin turbos full boost—680 hp factory racer power feedback meshed."
+          "summary": "[4.0T V8 RACE] Elite FFMI—past natural ceiling. Twin turbos full boost; 680 hp factory-racer power feedback meshed."
         },
         "TIER_120": {
           "title": "Endurance Hybrid Powerplant",
-          "summary": "[ENDURANCE HYBRID] Hybrid endurance benchmark. Inhuman muscle density—absolute track dominance under limit pressure."
+          "summary": "[ENDURANCE HYBRID] World Class FFMI—hybrid endurance benchmark. Extreme lean-mass density; absolute track dominance under limit pressure."
         },
         "TIER_130": {
           "title": "5.0T V8 Thousand-hp Heavy Host",
-          "summary": "[5.0T V8 HEAVY] Cyborg-grade engineering. Bore and crank rigidity maxed—built to survive thousand-horsepower output."
+          "summary": "[5.0T V8 HEAVY] Historic FFMI—motorsport-grade engineering. Bore and crank rigidity maxed; built to survive thousand-horsepower output."
         },
         "TIER_140": {
-          "title": "6.0T Aerospace Multi-Cylinder",
-          "summary": "[6.0T AERO] Augmented build tier. Fighter-jet multi-turbo architecture—brutal shear resistance at density limits."
+          "title": "6.0T Multi-Turbo Aero Block",
+          "summary": "[6.0T AERO] Open FFMI band—augmented build tier. Multi-turbo aero architecture; brutal shear resistance at density limits."
         },
         "LEGEND": {
           "title": "8.0L W16 Hypercar Megablock",
-          "summary": "[8.0L W16 PLANET] Off the published map. Myth-tier density locked—1500 hp, 1600 Nm, 5.5 bar; PANTHEON · Ultimate Starship Concept powerplant."
+          "summary": "[8.0L W16 APEX] Apex FFMI—off the published map. Density locked—1500 hp, 1600 Nm, 5.5 bar; Ultimate Hypercar Aero Package powerplant."
         },
         "PANTHEON": {
-          "title": "Pantheon Ultimate Displacement",
-          "summary": "[PANTHEON DISPLACEMENT] Archived to the Pantheon. Myth-tier multi-motor fusion—Ultimate Physique sealed forever."
+          "title": "Hall of Fame Displacement",
+          "summary": "[HOF DISPLACEMENT] Hall of Fame FFMI—logged at the top of lean-mass density. Multi-motor fusion reading; archive-grade power-to-weight."
         }
       },
       "muscleMass": {
         "BASE": {
           "title": "Bone Stock",
-          "summary": "[STOCK CONFIG] Factory paint only. No visual tension in body lines—massive exterior upgrade headroom ahead."
+          "summary": "[STOCK CONFIG] Untrained muscle mass—factory paint only. No visual tension in body lines; massive exterior upgrade headroom."
         },
         "TIER_40": {
           "title": "Basic Aero Tune",
-          "summary": "[BASIC UPGRADE] Population-average outline. Entry-level aero sculpting—a light pass and upgrade shows clearly."
+          "summary": "[BASIC UPGRADE] Novice muscle mass—population-average outline. Entry-level aero sculpting; a light pass shows clearly."
         },
         "TIER_50": {
           "title": "Sport Aero Package",
-          "summary": "[PERF BODY KIT] Regular trainer tier. Edges filling out—performance model presence on the street."
+          "summary": "[PERF BODY KIT] Recreational muscle mass—regular trainer band. Edges filling out; performance-model presence on the street."
         },
         "TIER_60": {
           "title": "Advanced Side-Skirt Kit",
-          "summary": "[ADVANCED AERO] Daily training shows. Side skirts fitted—center of gravity dropped, solid athletic presence."
+          "summary": "[ADVANCED AERO] Trained muscle mass—daily training shows. Side skirts fitted; center of gravity dropped, solid athletic presence."
         },
         "TIER_70": {
           "title": "Mild Wide Front Fenders",
-          "summary": "[MILD WIDEBODY] Frame width stands out. Lateral outline expanding—visual presence above commuter stock rigs."
+          "summary": "[MILD WIDEBODY] Advanced muscle mass—frame width stands out. Lateral outline expanding; visual presence above stock street rigs."
         },
         "TIER_80": {
           "title": "GT-Spec Aero",
-          "summary": "[TRACK EDITION] Room-dominant presence. Golden quartet locked—350 hp, 450 Nm, 1.8 bar, 4.0T V8; sharp lines."
+          "summary": "[TRACK EDITION] Highly Trained muscle mass—room-dominant presence. Golden quartet locked—350 hp, 450 Nm, 1.8 bar, 4.0T V8; sharp lines."
         },
         "TIER_90": {
           "title": "Vented Competition Widebody",
-          "summary": "[COMP WIDEBODY] Near natural visual ceiling. Fenders pushed wide—horizontal tension maxed, past amateur limits."
+          "summary": "[COMP WIDEBODY] Peak Natural muscle mass—near natural visual ceiling. Fenders pushed wide; horizontal tension maxed past amateur limits."
         },
         "TIER_100": {
           "title": "High-Downforce GT Swan Neck",
-          "summary": "[NATURAL CEILING] Top natural physique tier. Swan-neck wing plus widebody—abnormal track tension proportions."
+          "summary": "[NATURAL CEILING] Genetic Outlier muscle mass—top natural physique band. Swan-neck wing plus widebody; track-tension proportions."
         },
         "TIER_110": {
           "title": "Factory Race-Spec Widebody",
-          "summary": "[MONSTER SPEC] Past genetic limits. Factory widebody locked in—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
+          "summary": "[RACE WIDEBODY] Elite muscle mass—past genetic-average limits. Factory widebody locked—680 hp, 850 Nm, 2.8 bar, 4.0T V8; owns the room."
         },
         "TIER_120": {
           "title": "Endurance Low-Drag Carbon Shell",
-          "summary": "[LIMIT BUILD] Endurance prototype physique. Ultra-low-drag carbon shell—absolute fullness, pure speed aesthetics."
+          "summary": "[LIMIT BUILD] World Class muscle mass—endurance-prototype physique. Ultra-low-drag carbon shell; absolute fullness, pure speed aesthetics."
         },
         "TIER_130": {
           "title": "Thousand-hp Carbon Heavy Shell",
-          "summary": "[ULTIMATE BUILD] Pro titan tier. Factory frame plus brutal aftermarket—an exterior built to advertise limit horsepower."
+          "summary": "[ULTIMATE BUILD] Historic muscle mass—pro titan band. Factory frame plus brutal aftermarket; exterior built to advertise limit horsepower."
         },
         "TIER_140": {
-          "title": "Bespoke Aerospace Widebody",
-          "summary": "[MEGABEAST WIDEBODY] Visually a different species. Outline width and mass thickness defy belief—industrial-monster scale."
+          "title": "Bespoke Hypercar Widebody",
+          "summary": "[HYPER WIDEBODY] Open muscle band—visually a different species. Outline width and mass thickness at industrial-monster scale."
         },
         "LEGEND": {
-          "title": "PANTHEON Monolithic Carbon Frame",
-          "summary": "[HYPERCAR APEX] Off the published map. PANTHEON · Ultimate Starship Concept carbon package locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; unmatched on the surface."
+          "title": "Monolithic Carbon Hypercar Apex",
+          "summary": "[HYPERCAR APEX] Apex muscle mass—off the published map. Ultimate Hypercar Aero carbon package locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16."
         },
         "PANTHEON": {
-          "title": "Pantheon Myth Build",
-          "summary": "[PANTHEON WIDEBODY] Archived to the Pantheon. Myth-tier ultimate physique visual—only a handful on Earth carry this exterior."
+          "title": "Hall of Fame Widebody",
+          "summary": "[HOF WIDEBODY] Hall of Fame muscle mass—logged among the rarest physique visuals. Archive-grade exterior; only a handful carry this build."
         }
       },
       "gripStrength": {
         "BASE": {
           "title": "Stock Eco Narrow Tires",
-          "summary": "[STOCK ECO TIRE] Terminal grip severely lacking. Power bleeds under load—compound upgrade urgent on track."
+          "summary": "[STOCK ECO TIRE] Untrained grip—terminal traction severely lacking. Power bleeds under load; compound upgrade urgent on track."
         },
         "TIER_40": {
           "title": "Standard All-Season",
-          "summary": "[BASELINE GRIP] Below population average. Terminal control coming online—still slips under heavy resistance."
+          "summary": "[BASELINE GRIP] Novice grip—below population average. Terminal control coming online; still slips under heavy resistance."
         },
         "TIER_50": {
           "title": "Street Upgrade Compound",
-          "summary": "[STABLE GRIP] Population average tier. Friction on par with crowd—routine loads steady, feedback stabilizing."
+          "summary": "[STABLE GRIP] Recreational grip—population average. Friction on par with the crowd; routine loads steady, feedback stabilizing."
         },
         "TIER_60": {
           "title": "Performance Sport Street",
-          "summary": "[CONTROL UPGRADE] Regular trainer tier. Grip above average—stable across heavy loads and track surfaces."
+          "summary": "[CONTROL UPGRADE] Trained grip—regular trainer band. Traction above average; stable across heavy loads and track surfaces."
         },
         "TIER_70": {
           "title": "Heat-Soak Performance Tire",
-          "summary": "[PERF TIRE] Advanced trainer tier. Bite optimized—power transfer up sharply, slip rate way down."
+          "summary": "[PERF TIRE] Advanced grip—advanced trainer band. Bite optimized; power transfer up sharply, slip rate way down."
         },
         "TIER_80": {
           "title": "Circuit-Spec Semi-Slick Tires",
-          "summary": "[MOUNTAIN HAIRPINS] Dominant grip tier. Semi-slicks locked in—350 hp, 450 Nm, 1.8 bar, 4.0T V8; minimal flex."
+          "summary": "[SEMI-SLICK] Highly Trained grip—dominant traction band. Semi-slicks locked—350 hp, 450 Nm, 1.8 bar, 4.0T V8; minimal flex."
         },
         "TIER_90": {
           "title": "Race Full-Slick Limit",
-          "summary": "[TRACK SETUP] Past amateur ceiling. Tire at operating temp—tacky surface, brutal limit control on heavy loads."
+          "summary": "[TRACK SETUP] Peak Natural grip—past amateur ceiling. Tire at operating temp; tacky surface, brutal limit control on heavy loads."
         },
         "TIER_100": {
           "title": "Drag Strip Slick",
-          "summary": "[ACHIEVEMENT UNLOCKED] Top 1% grip after body-weight calibration. NFL-beast and elite climber tier—terrifying sidewall twist resistance; heavy loads rock solid."
+          "summary": "[TOP 1% TRACTION] Genetic Outlier grip—top 1% after body-weight calibration. NFL-beast and elite climber sidewall twist; heavy loads rock solid."
         },
         "TIER_110": {
           "title": "Competition Racing Slicks",
-          "summary": "[MAX ANTI-SLIP] Top-tier pro powerlifter. Pure heat-cycle rubber—680 hp factory racer; suppresses micro power bleed and slip."
+          "summary": "[MAX ANTI-SLIP] Elite grip—top-tier pro powerlifter band. Pure heat-cycle rubber; 680 hp factory-racer traction suppresses micro slip."
         },
         "TIER_120": {
           "title": "Endurance All-Weather Ground Tire",
-          "summary": "[GLUED TO TRACK] Elite pro arm-wrestler. Dominates gravity and limit resistance—high-G corners magnet-lock to the surface."
+          "summary": "[GLUED TO TRACK] World Class grip—elite pro arm-wrestler band. Dominates gravity and limit resistance; high-G corners magnet-lock."
         },
         "TIER_130": {
           "title": "Heated-Blanket Full Slick",
-          "summary": "[RAPTOR CLAMP] International arm-wrestling masters and top strongmen. Gym bars yield under clamp—ultimate sticky bite on track."
+          "summary": "[CLAMP SPEC] Historic grip—international arm-wrestling masters and top strongmen. Gym bars yield under clamp; ultimate sticky bite on track."
         },
         "TIER_140": {
           "title": "Hydraulic Vise Compound",
-          "summary": "[HYDRAULIC VISE] Top ~1,000 worldwide. Factory hydraulic vise clamp stress—friction defies physics; terminal control flawless."
+          "summary": "[HYDRAULIC VISE] Open grip band—top ~1,000 worldwide. Factory hydraulic-vise clamp stress; terminal control flawless."
         },
         "LEGEND": {
-          "title": "Aerospace-Grade Race Compound",
-          "summary": "[HYPERCAR APEX] World-class arm-wrestling gods and heavy strongman peaks. 1500 hp PANTHEON · Ultimate Starship Concept lock—beyond most human grip specs; Earth's strongest outlier."
+          "title": "Hypercar Race Compound",
+          "summary": "[HYPERCAR TRACTION] Apex grip—world-class arm-wrestling and heavy strongman peaks. 1500 hp Ultimate Hypercar lock; beyond most human grip specs."
         },
         "PANTHEON": {
-          "title": "Pantheon Ultimate Gravity Bite",
-          "summary": "[PANTHEON] Single-digit humans after body-weight calibration. Grip model sealed; friction off the chart—archived to Dyno Intel Pantheon, written into history."
+          "title": "Hall of Fame Traction",
+          "summary": "[HOF TRACTION] Hall of Fame grip—single-digit humans after body-weight calibration. Board-archive traction reading; friction off the published chart."
         }
       },
       "armSize": {
         "BASE": {
           "title": "12\" Stock Steel Wheels",
-          "summary": "[12\" STOCK STEEL] Factory rim untouched. Visual and physical scale wide open—upsizing urgent for real tension."
+          "summary": "[12\" STOCK STEEL] Untrained arm girth—factory rim untouched. Visual and physical scale wide open; upsizing urgent for real tension."
         },
         "TIER_40": {
           "title": "15\" Cast Alloy Wheels",
-          "summary": "[15\" ALLOY UPGRADE] Diameter and width nudged up. Street sport presence emerging—first baseline fullness in outline."
+          "summary": "[15\" ALLOY] Novice arm girth—diameter and width nudged up. Street-sport presence emerging; first baseline fullness in outline."
         },
         "TIER_50": {
           "title": "17\" Lightweight Sport Wheels",
-          "summary": "[17\" SPORT WHEELS] Rim diameter filling out. Edge tension expanding—performance car skeleton on daily streets."
+          "summary": "[17\" SPORT] Recreational arm girth—rim diameter filling out. Edge tension expanding; performance-car skeleton on daily streets."
         },
         "TIER_60": {
           "title": "18\" Monoblock Forged",
-          "summary": "[18\" FORGED] Monoblock forging tier. Tighter, denser structure—less unsprung weight, steadier visual center."
+          "summary": "[18\" FORGED] Trained arm girth—monoblock forging band. Tighter, denser structure; less unsprung weight, steadier visual center."
         },
         "TIER_70": {
           "title": "19\" Lightweight Competition Flow-Form",
-          "summary": "[19\" COMP RIM] Performance heat-soak phase. Stiff spokes pushing outward—visual pressure above stock rigs."
+          "summary": "[19\" COMP RIM] Advanced arm girth—performance heat-soak phase. Stiff spokes pushing outward; visual pressure above stock rigs."
         },
         "TIER_80": {
           "title": "20-Inch Staggered",
-          "summary": "[20\" STAGGERED] Sync locked—350 hp, 450 Nm, 1.8 bar, 4.0T V8; staggered max width, sharp track intimidation."
+          "summary": "[20\" STAGGERED] Highly Trained arm girth—sync locked. 350 hp, 450 Nm, 1.8 bar, 4.0T V8; staggered max width, sharp track intimidation."
         },
         "TIER_90": {
           "title": "21\" Deep-Dish Multi-Spoke",
-          "summary": "[21\" DEEP DISH] Near natural ceiling. Extreme deep-lip design—past amateur limits, massive presence at rest."
+          "summary": "[21\" DEEP DISH] Peak Natural arm girth—near natural ceiling. Extreme deep-lip design; past amateur limits, massive presence at rest."
         },
         "TIER_100": {
           "title": "22\" Hellaflush Podium",
-          "summary": "[22\" HELLAFLUSH] Regional meet Hellaflush. Limit size fused with fenders—proportions border on art."
+          "summary": "[22\" HELLAFLUSH] Genetic Outlier arm girth—regional-meet Hellaflush. Limit size fused with fenders; proportions border on art."
         },
         "TIER_110": {
           "title": "23-Inch Competition 2-Piece",
-          "summary": "[23\" COMP 2-PIECE] Sync locked—680 hp, 850 Nm, 2.8 bar, factory widebody; extreme offset, crushing downforce."
+          "summary": "[23\" COMP 2-PIECE] Elite arm girth—sync locked. 680 hp, 850 Nm, 2.8 bar, factory widebody; extreme offset, crushing downforce."
         },
         "TIER_120": {
           "title": "24\" Endurance Center-Lock",
-          "summary": "[24\" SERIAL OVERSIZE] Endurance prototype spec. Titanium center-lock—rim scale at absolute visual balance."
+          "summary": "[24\" CENTER-LOCK] World Class arm girth—endurance-prototype spec. Titanium center-lock; rim scale at absolute visual balance."
         },
         "TIER_130": {
           "title": "26\" Custom Polished Mega Wheels",
-          "summary": "[26\" PRO MEET] Pro monster tier. High-pressure forged barrels—every inch built for limit fullness."
+          "summary": "[26\" PRO MEET] Historic arm girth—pro monster band. High-pressure forged barrels; every inch built for limit fullness."
         },
         "TIER_140": {
-          "title": "28\" Supermaterial Phantom Wheelbase",
-          "summary": "[28\" PHANTOM WHEELBASE] Material mechanics at the wall. Giant visual mass beyond normal human genetics."
+          "title": "28\" Hypercar Phantom Wheelbase",
+          "summary": "[28\" HYPER] Open arm band—material mechanics at the wall. Giant visual mass beyond normal human genetics."
         },
         "LEGEND": {
-          "title": "30-Inch Aerospace",
-          "summary": "[30\" AEROSPACE] Off the published map. Sync locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; ultimate limb aesthetics."
+          "title": "30-Inch Hypercar Aero Rim",
+          "summary": "[30\" HYPERCAR] Apex arm girth—off the published map. Sync locked—1500 hp, 1600 Nm, 5.5 bar, 8.0L W16; ultimate limb aesthetics."
         },
         "PANTHEON": {
-          "title": "Pantheon Immortal Wheels",
-          "summary": "[PANTHEON RIM] Archived to the Pantheon. Myth-tier ultimate diameter—expansion too extreme for the naked eye."
+          "title": "Hall of Fame Rim",
+          "summary": "[HOF RIM] Hall of Fame arm girth—logged at extreme diameter. Archive-grade rim scale; expansion past ordinary sight lines."
         }
       }
     },
     "fallback": {
       "title": "Calibration in progress",
-      "summary": "Band interpretation still calibrating. Complete more assessments to unlock a fuller performance profile."
+      "summary": "Band interpretation still calibrating. Finish more assessments for a fuller performance readout."
     }
   },
   "identity": {
@@ -542,31 +542,31 @@
     "archetypes": {
       "G_PLATFORM": {
         "title": "Serial Code: Iron Chassis",
-        "summary": "Strength leads all six axes. Extreme rigidity—heavy-platform class in the {{genderGroup}} lineup; gravity feels like light-load cruise."
+        "summary": "Strength leads the Six-Axis Radar. Extreme chassis rigidity—heavy-platform class in the {{genderGroup}} lineup; gravity feels like light-load cruise."
       },
       "HIGH_OUTPUT": {
         "title": "Serial Code: High-Output Afterburn",
-        "summary": "Explosive power leads. Razor-sharp throttle—launch-control neural fire that hits redline in the shortest possible distance."
+        "summary": "Explosive power leads the Six-Axis Radar. Razor-sharp throttle—launch-control neural fire that hits redline in the shortest possible distance."
       },
       "ENDURANCE_PROTO": {
         "title": "Serial Code: Endurance Prototype",
-        "summary": "Cardio leads all six axes. Elite thermal management—24-hour endurance stability and long-range dominance."
+        "summary": "Cardio leads the Six-Axis Radar. Elite thermal management—endurance-prototype stability and long-range stint dominance."
       },
       "WIDE_BODY": {
         "title": "Serial Code: Wide-Body Architecture",
-        "summary": "Muscle mass leads. Serious downforce frame—dense fiber base and an immovable heavyweight presence in any arena."
+        "summary": "Muscle mass leads the Six-Axis Radar. Serious downforce frame—dense fiber base and immovable heavyweight presence in any arena."
       },
       "AERO_SPEC": {
         "title": "Serial Code: Aero Optimization",
-        "summary": "FFMI leads all six axes. Race-bred displacement and power-to-weight—minimal drag, every gram tuned."
+        "summary": "FFMI leads the Six-Axis Radar. Race-bred displacement and power-to-weight—minimal drag, every gram tuned."
       },
       "MR_SPEC": {
         "title": "Serial Code: Mid-Engine Balance",
-        "summary": "Grip leads all six axes. Surgical steering and fierce bite—mid-engine neural control through the apex."
+        "summary": "Grip leads the Six-Axis Radar. Surgical steering and fierce bite—mid-engine neural control through the apex."
       },
       "GT_CRUISER": {
         "title": "Serial Code: Global Grand Tourer",
-        "summary": "All six axes balanced—full spectrum unlocked. Flagship elegance and ferocity with zero power gaps."
+        "summary": "All six axes balanced on the Six-Axis Radar. GT flagship elegance and ferocity with zero power gaps."
       }
     }
   },

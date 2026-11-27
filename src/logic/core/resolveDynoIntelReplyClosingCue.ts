@@ -11,6 +11,26 @@ import {
 const HIGH_TIER_BAND_IDS = new Set(['LEGEND', 'PANTHEON', 'TIER_140']);
 const LOW_TIER_BAND_IDS = new Set(['BASE', 'TIER_40', 'TIER_50', 'TIER_60']);
 
+/**
+ * WHY: Assessment cards keep dual-track vehicle titles; Dyno closing cues (and Gemini
+ * replyClosingCue) must stay physiological so coach rail never re-ingests car metaphors.
+ */
+function resolveHighTierBandLabel(
+  tierBandId: string,
+  locale: DynoIntelContextV1['locale']
+): string {
+  if (locale === 'en') {
+    if (tierBandId === 'PANTHEON') return 'Hall of Fame';
+    if (tierBandId === 'LEGEND') return 'Apex';
+    if (tierBandId === 'TIER_140') return 'Open band';
+    return tierBandId;
+  }
+  if (tierBandId === 'PANTHEON') return '殿堂級距';
+  if (tierBandId === 'LEGEND') return '傳奇級距';
+  if (tierBandId === 'TIER_140') return '開放級距';
+  return tierBandId;
+}
+
 function resolvePrimaryAxisSnap(context: DynoIntelContextV1): DynoAxisSnapshot | null {
   if (context.questionFocusAxis) {
     return context.axes.find((snap) => snap.axis === context.questionFocusAxis) ?? null;
@@ -178,9 +198,11 @@ export function resolveDynoIntelReplyClosingCue(
 
   const primary = resolvePrimaryAxisSnap(context);
   const highTierSnap = findHighTierSnap(context);
-  if (highTierSnap?.cardCopy?.title) {
+  if (highTierSnap?.tierBandId && HIGH_TIER_BAND_IDS.has(highTierSnap.tierBandId)) {
+    const axisLabel = getAxisSurfaceLabel(highTierSnap.axis, locale);
+    const bandLabel = resolveHighTierBandLabel(highTierSnap.tierBandId, locale);
     return t('dynoIntel.replyClosingCue.highTier', {
-      tierTitle: highTierSnap.cardCopy.title,
+      tierTitle: `${axisLabel} · ${bandLabel}`,
     });
   }
 

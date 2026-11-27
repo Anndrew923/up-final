@@ -28,7 +28,7 @@ describe("dynoIntel legal shield v5.1", () => {
   it("attachLegalShieldSuffix appends canonical en copy as a single tail sentence", () => {
     const base = "In the Hall of Fame sanctum, you share the same throne coordinate as A, B.";
     const out = attachLegalShieldSuffix(base, "en");
-    assert.ok(out?.endsWith("entertainment purposes."));
+    assert.ok(out?.endsWith("entertainment only."));
     assert.equal(out, `${base}${DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN}`);
   });
 });

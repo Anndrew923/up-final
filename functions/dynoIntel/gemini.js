@@ -259,7 +259,7 @@ const TECHNICAL_LEAKAGE_REPLACEMENTS_EN = [
   [/focusSupplemental/gi, "supplemental focus"],
   [/scoringMethodologyBriefs/gi, "scoring methodology briefs"],
   [/assessmentDeepDiveNudge/gi, "assessment page deep dive"],
-  [/replyClosingCue/gi, "uplink close cue"],
+  [/replyClosingCue/gi, "session close cue"],
   [/closingBeatKind/gi, "close beat mode"],
   [/closingBeatSecondLine/gi, "close beat second line"],
   [/questionFocusAxis/gi, "question focus axis"],

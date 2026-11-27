@@ -441,7 +441,7 @@ const GOLDEN_CASES = [
   },
   { id: "zh-supplemental-1", locale: "zh-Hant", mode: "single-axis", focusAxis: "cardio", focusSupplemental: "cooper", supplementalMetrics: [{ metric: "cooper", score: 120, tierBandId: "TIER_120", cardCopy: { title: "Cooper 頂規", summary: "12 分鐘跑" } }], question: "我的 Cooper 測驗分數怎麼看？", expectOffTopic: false },
   { id: "en-on-topic-1", locale: "en", mode: "single-axis", focusAxis: "bodyFat", question: "What does my FFMI score mean?", expectOffTopic: false },
-  { id: "en-on-topic-2", locale: "en", mode: "single-axis", focusAxis: "strength", question: "How strong is this strength axis score in sport terms?", expectOffTopic: false, replyClosingCue: "Uplink complete. This strength telemetry is logged.", closingBeatKind: "passion-close", closingBeatSecondLine: "Keep that steel discipline — next set, next uplink." },
+  { id: "en-on-topic-2", locale: "en", mode: "single-axis", focusAxis: "strength", question: "How strong is this strength axis score in sport terms?", expectOffTopic: false, replyClosingCue: "Telemetry logged on this device.", closingBeatKind: "passion-close", closingBeatSecondLine: "Same tier next session is the check." },
   { id: "en-methodology-1", locale: "en", mode: "single-axis", focusAxis: "strength", question: "How does this app score strength?", scoringMethodologyBriefs: [{ metric: "strength", title: "Strength scoring", body: "Brzycki and IPF DOTS combined." }], expectOffTopic: false, closingBeatKind: "methodology-nudge", closingBeatSecondLine: "Open the strength assessment page for the full methodology." },
   { id: "en-methodology-2", locale: "en", mode: "cross-axis", focusAxis: null, question: "Explain DOTS and Brzycki in this app's scoring.", scoringMethodologyBriefs: [{ metric: "strength", title: "Strength scoring", body: "Brzycki and IPF DOTS combined." }], expectOffTopic: false },
   { id: "en-gaps-1", locale: "en", mode: "single-axis", focusAxis: "gripStrength", gaps: [{ axis: "gripStrength" }], question: "How should I read grip telemetry?", expectOffTopic: false },
@@ -486,7 +486,7 @@ function buildContext(testCase) {
       (needsBeat3
         ? isZh
           ? "通電完成。這份遙測已寫入主機。"
-          : "Uplink complete. This telemetry is logged on the host."
+          : "Telemetry logged on this device."
         : ""),
     closingBeatKind:
       testCase.closingBeatKind ??
@@ -496,19 +496,28 @@ function buildContext(testCase) {
       (needsBeat3
         ? isZh
           ? "保持節奏，下次通電再對照。"
-          : "Keep the cadence — match again on your next uplink."
+          : "Same tier next session is the check."
         : ""),
     assessmentDeepDiveNudge: isZh
       ? "各評測頁面備有更完整的計分說明與常模解讀——請直接進入對應評測頁，展開說明區查閱全貌。"
-      : "Each assessment page includes fuller scoring notes and norm context — open that page and expand the info section for the complete picture.",
+      : "Scoring notes are on the assessment page. Open Info.",
   };
 }
 
-/** v3.0 — paragraph contract for on-topic replies. */
+/**
+ * v5.2 paragraph contract:
+ * - gaps: exactly 2
+ * - methodology: exactly 1
+ * - status/macro: may append PR + legal as trailing paragraphs — do not hard-fail on count
+ */
 function expectedParagraphCount(testCase) {
   if (testCase.expectOffTopic) return null;
   if (Array.isArray(testCase.gaps) && testCase.gaps.length > 0) return 2;
-  return 1;
+  if (testCase.closingBeatKind === "methodology-nudge" || testCase.expectedIntent === "methodology") {
+    return 1;
+  }
+  if (testCase.scoringMethodologyBriefs?.length) return 1;
+  return null;
 }
 
 function auditReply(testCase, reply, inferenceContext, routedModel) {
@@ -538,8 +547,11 @@ function auditReply(testCase, reply, inferenceContext, routedModel) {
   }
 
   if (!testCase.expectOffTopic && testCase.gaps?.length) {
-    if (!commentary.includes("REMOTE ERROR")) {
-      issues.push("gaps reply missing REMOTE ERROR opener");
+    const hasGapsOpener =
+      commentary.includes("REMOTE ERROR") ||
+      /Missing .+ on the Six-Axis Radar/i.test(commentary);
+    if (!hasGapsOpener) {
+      issues.push("gaps reply missing Six-Axis Radar / REMOTE ERROR opener");
     }
   }
 

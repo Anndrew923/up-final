@@ -14,7 +14,7 @@ import {
 const OFF_TOPIC_BOILERPLATE_ZH =
   /我是這台《最強肉體》主機上的 DYNO INTEL|不在我的服務範圍內|只解讀你的六軸遙測/i;
 const OFF_TOPIC_BOILERPLATE_EN =
-  /I'm DYNO INTEL on this Ultimate Physique host|outside my scope|only decode your six-axis telemetry/i;
+  /DYNO INTEL only reads your Six-Axis Radar|is out of scope|how this app scores/i;
 
 function isOffTopicBoilerplate(commentary, locale = "zh-Hant") {
   const row = String(commentary ?? "").trim();

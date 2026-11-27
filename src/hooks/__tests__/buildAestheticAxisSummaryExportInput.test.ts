@@ -47,13 +47,13 @@ function fakeEnT(key: string, opts?: Record<string, unknown>): string {
   if (key === 'aesthetic.labels.brandHeader') return 'ULTIMATE PHYSIQUE';
   if (key === 'units.weight.kg') return 'kg';
   if (key === 'units.weight.lb') return 'lb';
-  if (key === 'dynoIntel.humanPraise.byDecade.70.populationClass') return 'Advanced Lifter';
-  if (key.startsWith('dynoIntel.humanPraise.byDecade.')) return 'Rookie';
+  if (key === 'dynoIntel.humanPraise.byDecade.70.populationClass') return 'Advanced';
+  if (key.startsWith('dynoIntel.humanPraise.byDecade.')) return 'Untrained';
   return key;
 }
 
 describe('buildAestheticAxisSummaryExportInput', () => {
-  it('builds strength composite plate at 70.40 with coverage + Advanced Lifter tier', () => {
+  it('builds strength composite plate at 70.40 with coverage + Advanced tier', () => {
     const input = buildAestheticAxisSummaryExportInput(
       fakeT as unknown as TFunction,
       { axis: 'strength', heroScore: 70.4, coveredCount: 5 },
@@ -86,7 +86,7 @@ describe('buildAestheticAxisSummaryExportInput', () => {
     );
     expect(input.rawReading).toBe('5 LIFTS');
     expect(input.rawMetricLabel).toBe('COVERAGE');
-    expect(input.tierCapsule).toBe('Advanced Lifter');
+    expect(input.tierCapsule).toBe('Advanced');
     expect(input.verdict).toBeUndefined();
   });
 

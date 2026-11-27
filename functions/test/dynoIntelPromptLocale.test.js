@@ -33,12 +33,14 @@ describe("system_v1_en prompt artifact", () => {
     assert.match(text, /Segment 2 \(PR percentile viral-growth copy\) and Segment 3 \(legal disclaimer shield\)/i);
   });
 
-  it("defines v3.0.4 semantic compression steel coach role", () => {
+  it("defines v3.0.4 semantic compression dyno-sheet voice", () => {
     const text = readFileSync(join(promptsDir, "system_v1_en.txt"), "utf8");
     assert.match(text, /v3\.0\.4/i);
     assert.match(text, /De-fat prose mandate/i);
     assert.match(text, /Active pruning authority/i);
+    assert.match(text, /strength coach logging a dyno sheet/i);
     assert.doesNotMatch(text, /p2Official/);
+    assert.doesNotMatch(text, /REMOTE ERROR/);
   });
 
   it("keeps gaps, methodology, and hall-of-fame consult routing", () => {

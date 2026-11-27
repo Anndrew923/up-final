@@ -40,7 +40,7 @@ export function buildPreemptiveOffTopicReply(userQuestion, context = null) {
 
   if (locale === "en") {
     return {
-      commentary: `I'm DYNO INTEL on this Ultimate Physique host — I only decode your six-axis telemetry, tier bands, and this app's scoring methodology; ${subject} is outside my scope.`,
+      commentary: `DYNO INTEL only reads your Six-Axis Radar, tiers, and how this app scores. "${subject}" is out of scope.`,
       action_directive: "",
       is_off_topic: true,
       detected_weakest_axis: String(context?.weakestAxis ?? ""),

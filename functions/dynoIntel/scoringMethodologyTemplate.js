@@ -8,7 +8,7 @@ export const OVERALL_METHODOLOGY_TEMPLATE_ZH =
   "本 App 六軸分數各自依獨立常模與計分公式換算（力量含 DOTS／Brzycki 正規化、握力對照 Ironmind／Captains of Crush 級距、心肺含 Cooper 與 5km 常模、體成分以 FFMI 等指標解碼）。若要單一軸的完整給分標準，請直接問例如「力量怎麼算」或「握力給分標準」。";
 
 export const OVERALL_METHODOLOGY_TEMPLATE_EN =
-  "Each of this app's six axes is scored from its own norms and formulas (strength uses DOTS/Brzycki normalization, grip maps Ironmind/Captains of Crush bands, cardio uses Cooper and 5 km norms, body composition decodes via FFMI and related metrics). For a full scoring standard on one axis, ask specifically — e.g. \"How is strength calculated?\" or \"What is the grip scoring standard?\"";
+  "Each axis has its own norms. Strength: DOTS and Brzycki 1RM. Grip: IronMind and Captains of Crush. Cardio: Cooper and 5K. Body comp: FFMI. For one axis, ask \"How is strength scored?\" or \"How is grip scored?\"";
 
 /**
  * WHY: Intercept exact methodology queries with deterministic static templates to bypass

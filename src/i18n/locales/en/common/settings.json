@@ -34,7 +34,7 @@
     "blocked_empty": "No blocked users",
     "blocked_count": "{{count}} blocked",
     "clearDynoHistoryTitle": "DYNO INTEL History",
-    "clearDynoHistoryHint": "{{count}} local uplinks stored on this device.",
+    "clearDynoHistoryHint": "{{count}} logs on this device.",
     "clearDynoHistoryAction": "Clear Local History",
     "infoSection": "About & Legal",
     "openAbout": "About",
@@ -42,7 +42,7 @@
     "system": {
       "reCalibrate": "Reset Boot",
       "reCalibrateKicker": "RE-CALIBRATION",
-      "reCalibrateConfirm": "Run full vehicle power-on calibration again? This resets the first-run tour and returns to Home."
+      "reCalibrateConfirm": "Run full chassis boot calibration again? This resets the first-run tour and returns to Home."
     },
     "supportSection": "Support",
     "contactUs": "Contact Us",

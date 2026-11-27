@@ -129,7 +129,7 @@ describe('GripAssessmentPage performance spec', () => {
       submitToRadar: vi.fn(),
     });
     mockUseScoreMeaning.mockReturnValue({
-      title: 'Pantheon Compression',
+      title: 'Hall of Fame Traction',
       summary: 'Model ceiling reached.',
       bandId: 'TIER_80',
       decadeKey: '80',
@@ -146,7 +146,7 @@ describe('GripAssessmentPage performance spec', () => {
     expect(text).toContain('高階玩家');
     expect(text).toContain('Write to Radar ➔');
     expect(text).not.toContain('Calculate ➔');
-    expect(text).toContain('Pantheon Compression');
+    expect(text).toContain('Hall of Fame Traction');
     expect(text).toContain('Model ceiling reached.');
     expect(text).not.toContain('PERFORMANCE SPEC / Potential Spec');
     expect(text).not.toContain('pts until next tier upgrade');

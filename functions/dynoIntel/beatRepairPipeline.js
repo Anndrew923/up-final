@@ -60,8 +60,8 @@ const EXTENSION_ANCHOR_COVERAGE_REJECT = 0.2;
 const OFFICIAL_HARD_SEGMENT_MARKERS = [
   /熱烈搜集中|嚴謹搜集中|全人類官方\s*PR/i,
   /生涯巔峰狀態|僅供天梯對帳與娛樂參考/,
-  /Global Peer PR Percentile Data Is Actively Being Gathered/i,
-  /career-peak states|entertainment purposes/i,
+  /Global Peer PR Percentile Data Is Actively Being Gathered|PR PERCENTILE — NOT ENOUGH DATA|GLOBAL PR PERCENTILE — CALIBRATING/i,
+  /career-peak states|Career-peak figures|entertainment purposes|entertainment only/i,
 ];
 
 function containsOfficialHardSegmentMarker(text) {
@@ -187,7 +187,8 @@ function resolveGapsAxisLabel(context, locale) {
 function synthesizeGapsOpener(context, locale) {
   const axis = context?.gaps?.[0]?.axis ?? "unknown";
   if (locale === "en") {
-    return `⚠️ [REMOTE ERROR]: telemetry lost for [${axis}] axis — radar balance at risk.`;
+    const label = resolveGapsAxisLabel(context, locale);
+    return `Missing ${label} on the Six-Axis Radar. Finish that assessment.`;
   }
   return `⚠️ [REMOTE ERROR]：行車電腦丟失 [${axis}] 軸線的遙測數據，雷達圖底盤陷入失衡風險。`;
 }
@@ -197,9 +198,14 @@ function synthesizeGapsNudge(context, locale) {
   const nudge = String(context?.assessmentDeepDiveNudge ?? "").trim();
   if (nudge) return nudge;
   if (locale === "en") {
-    return `Complete the ${label} assessment first — the assessment page expands scoring detail.`;
+    return `Scoring notes for ${label} are on the assessment page. Open Info.`;
   }
   return `請先完成${label}評測——評測頁可展開完整計分說明。`;
+}
+
+function isGapsOpenerLine(row) {
+  const text = String(row ?? "");
+  return text.includes("REMOTE ERROR") || /Missing .+ on the Six-Axis Radar/i.test(text);
 }
 
 function enforceGapsCommentary(reply, context) {
@@ -212,7 +218,7 @@ function enforceGapsCommentary(reply, context) {
     (row) => row && !lineAlreadyPresent(row, context.replyClosingCue)
   );
 
-  if (!paragraphs.some((row) => row.includes("REMOTE ERROR"))) {
+  if (!paragraphs.some((row) => isGapsOpenerLine(row))) {
     paragraphs.unshift(opener);
   } else {
     paragraphs[0] = opener;
@@ -220,7 +226,7 @@ function enforceGapsCommentary(reply, context) {
 
   const tail = paragraphs.length >= 2 ? paragraphs.slice(1).join(" ") : paragraphs[0] === opener ? "" : paragraphs.join(" ");
   let second = tail && !lineAlreadyPresent(tail, opener) ? tail : "";
-  if (!second || second.includes("REMOTE ERROR")) {
+  if (!second || isGapsOpenerLine(second)) {
     second = nudge;
   }
   const secondLine = String(context.closingBeatSecondLine ?? "").trim();

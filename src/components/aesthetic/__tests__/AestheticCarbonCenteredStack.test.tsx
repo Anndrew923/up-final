@@ -27,7 +27,7 @@ function renderStack(rawMetricLabel: string): {
         upRatingLabel="UP RATING"
         rawReading="71.7 lb · 42.1%"
         heroScoreText="88.00"
-        tierCapsule="Advanced Lifter"
+        tierCapsule="Advanced"
         isOverflow={false}
       />
     );

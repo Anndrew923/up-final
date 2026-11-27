@@ -23,10 +23,10 @@ vi.mock('react-i18next', () => ({
       if (key === 'assessment.hallSpectrum.legalCollapse') return 'Hide legal';
       if (key === 'assessment.hallSpectrum.teaserKicker') return 'DYNO INTEL';
       if (key === 'assessment.hallSpectrum.teaserLine') {
-        return 'Drop feelings. Face yourself through scientific norms.';
+        return 'Scores, not guesses.';
       }
       if (key === 'assessment.hallSpectrum.teaserCta') {
-        return 'Decode my tier';
+        return 'Read my tier';
       }
       if (key === 'assessment.hallSpectrum.teaserCtaRemaining') {
         return `${String(options?.remaining ?? '')} left`;
@@ -106,7 +106,7 @@ describe('HallOfFameSpectrumDrawer', () => {
     expect(dialog?.textContent).toContain('76.80');
     expect(dialog?.textContent).toContain('進階訓練者');
     expect(dialog?.textContent).toContain('DYNO INTEL');
-    expect(dialog?.textContent).toContain('Drop feelings');
+    expect(dialog?.textContent).toContain('Scores, not guesses.');
 
     const current = document.querySelector('[aria-current="step"]');
     expect(current).not.toBeNull();
@@ -273,7 +273,7 @@ describe('HallOfFameSpectrumDrawer', () => {
 
     const actionCluster = cta?.querySelector(':scope > span:first-child');
     const quotaPill = cta?.querySelector(':scope > span:last-child');
-    expect(actionCluster?.textContent).toContain('Decode my tier');
+    expect(actionCluster?.textContent).toContain('Read my tier');
     expect(actionCluster?.textContent).toContain('➔');
     expect(actionCluster?.textContent).not.toContain('25');
     expect(quotaPill?.textContent).toBe('25 left');

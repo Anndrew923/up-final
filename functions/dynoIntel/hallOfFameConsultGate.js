@@ -90,87 +90,99 @@ const TIER_PATTERNS = [
   {
     decadeKey: "140",
     label: "140-150（怪物領域）",
-    labelEn: "140-150 (Monster Domain)",
+    // WHY: Keep Monster Domain as alias so old EN phrasing still routes.
+    labelEn: "140-150 (Open)",
     pattern:
-      /140\s*[-~～到至]\s*150|140分以上|140以上|140多|140幾|一百四十多|怪物領域|a3|(?:above|over)\s*140|140\s*points?|140s|in the 140s/i,
+      /140\s*[-~～到至]\s*150|140分以上|140以上|140多|140幾|一百四十多|怪物領域|a3|(?:above|over)\s*140|140\s*points?|140s|in the 140s|monster\s+domain|open\s+band/i,
   },
   {
     decadeKey: "130",
     label: "130-140（統計神話）",
-    labelEn: "130-140 (Mythic)",
+    // WHY: Keep Mythic as alias so old EN phrasing still routes.
+    labelEn: "130-140 (Historic)",
     pattern:
-      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s|mythic|statistical\s+myth/i,
+      /130\s*[-~～到至]\s*140|130分以上|130以上|130多|130幾|一百三十多|統計神話|a4|(?:above|over)\s*130|130\s*points?|130s|in the 130s|mythic|statistical\s+myth|\bhistoric\b(?!\s+tier)/i,
   },
   {
     decadeKey: "120",
     label: "120-130（歷史級別）",
-    labelEn: "120-130 (Historic Tier)",
+    // WHY: Keep Historic Tier as alias so old EN phrasing still routes.
+    labelEn: "120-130 (World Class)",
     pattern:
-      /120\s*[-~～到至]\s*130|120分以上|120以上|120多|120幾|一百二十多|歷史級別|a5|(?:above|over)\s*120|120\s*points?|120s|in the 120s/i,
+      /120\s*[-~～到至]\s*130|120分以上|120以上|120多|120幾|一百二十多|歷史級別|a5|(?:above|over)\s*120|120\s*points?|120s|in the 120s|historic\s+tier|world\s+class/i,
   },
   {
     decadeKey: "110",
     label: "110-120（超凡入聖）",
-    labelEn: "110-120 (Transcendent)",
+    // WHY: Keep Transcendent as alias so old EN phrasing still routes.
+    labelEn: "110-120 (Elite)",
     pattern:
-      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s|transcendent(?:\s+sanctification)?/i,
+      /110\s*[-~～到至]\s*120|110分以上|110以上|110多|110幾|一百一十多|超凡入聖|a6|(?:above|over)\s*110|110\s*points?|110s|in the 110s|transcendent(?:\s+sanctification)?|\belite\b/i,
   },
   {
     decadeKey: "100",
     label: "100-110（凡體覺醒）",
-    labelEn: "100-110 (Breakout)",
+    // WHY: Keep Breakout / mortal awakening as aliases so old EN phrasing still routes.
+    labelEn: "100-110 (Genetic Outlier)",
     pattern:
-      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s|mortal\s+awakening|\bawakening\b|\bbreakout\b/i,
+      /100\s*[-~～到至]\s*110|100分以上|100以上|100多|100幾|一百多|凡體覺醒|a7|(?:above|over)\s*100|100\s*points?|100s|in the 100s|mortal\s+awakening|\bbreakout\b|genetic\s+outlier/i,
   },
   {
     decadeKey: "90",
     label: "90-100（凡人頂尖）",
-    labelEn: "90-100 (Mortal Peak)",
+    // WHY: Keep Mortal Peak / peak mortal as aliases so old EN phrasing still routes.
+    labelEn: "90-100 (Peak Natural)",
     pattern:
-      /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|凡人頂尖|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s|peak\s+mortal|mortal\s+peak/i,
+      /90\s*[-~～到至]\s*100|90分以上|90以上|90多|90幾|九十多|凡人頂尖|a8|(?:above|over)\s*90|90\s*points?|90s|in the 90s|peak\s+mortal|mortal\s+peak|peak\s+natural/i,
   },
   {
     decadeKey: "80",
     label: "80-90（高階玩家）",
-    labelEn: "80-90 (Gym Strong)",
+    // WHY: Keep Gym Strong as alias so old EN phrasing still routes.
+    labelEn: "80-90 (Highly Trained)",
     pattern:
-      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s|high\s+tier|gym\s+strong/i,
+      /80\s*[-~～到至]\s*90|80分以上|80以上|80多|80幾|八十多|高階玩家|高級玩家|a9|(?:above|over)\s*80|80\s*points?|80s|in the 80s|high\s+tier|gym\s+strong|highly\s+trained/i,
   },
   {
     decadeKey: "70",
     label: "70-80（進階訓練者）",
-    labelEn: "70-80 (Advanced Lifter)",
-    // WHY: Keep superseded class aliases (進階健身者 / Advanced Trainee) so old user phrasing still routes.
+    // WHY: Keep Advanced Lifter / Advanced Trainee aliases so old phrasing still routes.
+    labelEn: "70-80 (Advanced)",
     pattern:
-      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|advanced\s+lifter|advanced\s+trainee|(?:above|over)\s*70|70\s*points?|70s|in the 70s/i,
+      // WHY: Prefer multi-word aliases first; bare Advanced is the new official EN class.
+      /70\s*[-~～到至]\s*80|70分以上|70以上|70多|70幾|七十多|進階健身者|進階訓練者|advanced\s+lifter|advanced\s+trainee|(?:above|over)\s*70|70\s*points?|70s|in the 70s|\badvanced\b/i,
   },
   {
     decadeKey: "60",
     label: "60-70（大眾健康常模）",
-    labelEn: "60-70 (Everyday Fit)",
+    // WHY: Keep Everyday Fit as alias so old EN phrasing still routes.
+    labelEn: "60-70 (Trained)",
     pattern:
-      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s|health\s+norm|general\s+health\s+norm|everyday\s+fit/i,
+      /60\s*[-~～到至]\s*70|60分以上|60以上|60多|60幾|六十多|大眾健康常模|(?:above|over)\s*60|60\s*points?|60s|in the 60s|health\s+norm|general\s+health\s+norm|everyday\s+fit|(?<!highly\s)\btrained\b/i,
   },
   {
     decadeKey: "50",
     label: "50-60（新手村）",
-    labelEn: "50-60 (Novice)",
+    // WHY: Keep Novice as alias so old EN phrasing still routes; Recreational is the new class.
+    labelEn: "50-60 (Recreational)",
     pattern:
-      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|新手村|(?:above|over)\s*50|50\s*points?|50s|in the 50s|novice(?:\s+village)?/i,
+      /50\s*[-~～到至]\s*60|50分以上|50以上|50多|50幾|五十多|新手期|新手村|(?:above|over)\s*50|50\s*points?|50s|in the 50s|novice\s+village|\brecreational\b/i,
   },
   {
     decadeKey: "40",
     label: "40-50（探索期）",
-    labelEn: "40-50 (Exploring)",
+    // WHY: Keep Exploring as alias; Novice moved here from the 50 band.
+    labelEn: "40-50 (Novice)",
     pattern:
-      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s|exploration(?:\s+phase)?|exploring/i,
+      /40\s*[-~～到至]\s*50|40分以上|40以上|40多|40幾|四十多|探索期|(?:above|over)\s*40|40\s*points?|40s|in the 40s|exploration(?:\s+phase)?|exploring|\bnovice\b/i,
   },
   {
     decadeKey: "0",
     label: "0-40（嬰兒期）",
-    labelEn: "0-40 (Rookie)",
+    // WHY: Keep Rookie as alias so old EN phrasing still routes.
+    labelEn: "0-40 (Untrained)",
     pattern:
-      /(?:^|[^\d])(?:0|0\s*[-~～到至]\s*40|40分以下|嬰兒期)(?:[^\d]|$)|(?:above|over)\s*0\b|in the (?:0|teens)|0s\b|infant\s+phase|\brookie\b/i,
+      /(?:^|[^\d])(?:0|0\s*[-~～到至]\s*40|40分以下|嬰兒期)(?:[^\d]|$)|(?:above|over)\s*0\b|in the (?:0|teens)|0s\b|infant\s+phase|\brookie\b|\buntrained\b/i,
   },
 ];
 
@@ -406,8 +418,8 @@ function buildUnlockedReply({ decadeLabel, axis, names, context }) {
 
   if (locale === "en") {
     const body = axis
-      ? `You have unlocked ${decadeLabel} ${axisLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`
-      : `You have unlocked ${decadeLabel} Pantheon benchmarking. Representative names currently available in this band include ${joinedNames}.`;
+      ? `${decadeLabel} ${axisLabel}, Hall of Fame. Names in this band: ${joinedNames}.`
+      : `${decadeLabel}, Hall of Fame. Names in this band: ${joinedNames}.`;
     return `${body} ${legalShield}`;
   }
 
@@ -466,7 +478,7 @@ export function resolveHallOfFameConsultReply(context, userQuestion, priorTurn =
   if (fallbackNames.length === 0) {
     const commentary =
       locale === "en"
-        ? `You have unlocked ${resolveTierLabel(tier, locale)} Pantheon benchmarking, but this cell is still a blank anchor with no public roster yet.`
+        ? `${resolveTierLabel(tier, locale)}, Hall of Fame. No public names in this cell yet.`
         : `你已解鎖 ${tier.label} 的萬神殿對帳權限，但這一格目前仍是空白錨點，尚無可公開對帳名單。`;
     return wrapHallOfFameConsultReply({
       commentary,

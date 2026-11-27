@@ -279,11 +279,11 @@ describe('telemetrySingleLeafDualHero', () => {
     // Long 100–150+ EN populationClass titles must fit ceremonial plaque + pad without
     // forcing pill wider than gutter-safe max (font may shrink; geometry must hold).
     const longEnTiers = [
-      'Breakout',
-      'Transcendent',
-      'Historic Tier',
-      'Mythic',
-      'Monster Domain',
+      'Genetic Outlier',
+      'Elite',
+      'World Class',
+      'Historic',
+      'Open',
       'Apex',
     ];
     const state = { font: '' };
@@ -343,7 +343,7 @@ describe('telemetrySingleLeafDualHero', () => {
       uiLocale: 'en',
       rawMetricLabel: 'RAW METRIC',
       upRatingLabel: 'UP RATING',
-      tierCapsule: 'Gym Strong',
+      tierCapsule: 'Highly Trained',
       brandHeader: 'ULTIMATE PHYSIQUE // DOMINANCE',
       verifiedStamp: 'VERIFIED PHYSIOLOGICAL SPECIFICATION // 2026',
       verdict: {

@@ -142,6 +142,35 @@ describe('resolveDynoIntelReplyClosingCue', () => {
 
     const enriched = enrichDynoIntelContextCardCopy(base, t, '');
     expect(enriched.replyClosingCue).toMatch(/級距已被主機封存/);
+    expect(enriched.replyClosingCue).toMatch(/傳奇級距/);
+  });
+
+  it('EN high-tier cue uses physio band labels, never vehicle cardCopy titles', async () => {
+    await i18n.changeLanguage('en');
+    const t = i18n.t.bind(i18n);
+
+    const base = buildDynoIntelContext({
+      radarInput: {
+        scores: { strength: 155 },
+        profile: baseProfile,
+        cardioInputs: null,
+        muscleInputs: null,
+        powerInputs: null,
+        strengthInputs: null,
+        gripInputs: null,
+      },
+      historyRecords: [],
+      locale: 'en',
+      mode: 'cross-axis',
+    });
+
+    const enriched = enrichDynoIntelContextCardCopy(base, t, '');
+    expect(enriched.replyClosingCue.toLowerCase()).toMatch(/apex|hall of fame/);
+    expect(enriched.replyClosingCue).toMatch(/· Apex|· Hall of Fame/);
+    const vehicleTitle = enriched.axes.find((s) => s.axis === 'strength')?.cardCopy?.title;
+    expect(vehicleTitle).toBeTruthy();
+    expect(enriched.replyClosingCue).not.toContain(vehicleTitle!);
+    expect(enriched.replyClosingCue).not.toMatch(/Hypercar|GT Flagship|Scooter|Rocket Rig|Starship/i);
   });
 
   it('uses weakest-companion cue on low focus axis when user asks about progress', async () => {

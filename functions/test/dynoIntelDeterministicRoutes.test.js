@@ -143,6 +143,49 @@ describe("buildGeminiInferencePayload", () => {
     assert.equal(payload.axes[0].cardCopy, undefined);
     assert.doesNotMatch(JSON.stringify(payload), /工廠賽車|寬體|車體外裝|怪物規格/);
   });
+
+  it("EN status payload never ships cardCopy.title/summary (dual-track cards stay UI-only)", () => {
+    const payload = buildGeminiInferencePayload({
+      locale: "en",
+      mode: "single-axis",
+      intent: "status",
+      userQuestion: "How is my strength?",
+      questionFocusAxis: "strength",
+      focusAxis: "strength",
+      gaps: [],
+      axes: [
+        {
+          axis: "strength",
+          score: 92,
+          tierBandId: "TIER_90",
+          cardCopy: {
+            title: "430 hp GT Flagship",
+            summary:
+              "[430 hp GT] Peak Natural strength—past most amateur ceilings. Race-bred horsepower with chassis stiffness trending toward pro-spec output.",
+          },
+        },
+      ],
+      supplementalMetrics: [
+        {
+          metric: "armSize",
+          score: 88,
+          tierBandId: "TIER_80",
+          cardCopy: {
+            title: "20-Inch Staggered",
+            summary: "[20\" STAGGERED] Highly Trained arm girth—sync locked.",
+          },
+        },
+      ],
+    });
+    assert.equal(payload.axes[0].cardCopy, undefined);
+    assert.equal(payload.axes[0].title, undefined);
+    assert.equal(payload.axes[0].summary, undefined);
+    assert.equal(payload.supplementalMetrics[0].cardCopy, undefined);
+    const blob = JSON.stringify(payload);
+    assert.doesNotMatch(blob, /430 hp GT|Race-bred horsepower|cardCopy|20-Inch Staggered/);
+    assert.equal(payload.axes[0].score, 92);
+    assert.equal(payload.axes[0].tierBandId, "TIER_90");
+  });
 });
 
 describe("gaps deterministic zero-token route", () => {
@@ -173,9 +216,35 @@ describe("gaps deterministic zero-token route", () => {
     assert.equal(fromSeed.commentary, fromModelNoise.commentary);
     const paragraphs = splitParagraphs(fromSeed.commentary);
     assert.equal(paragraphs.length, 2);
-    assert.match(paragraphs[0], /REMOTE ERROR/);
-    assert.match(paragraphs[0], /gripStrength/);
-    assert.match(paragraphs[1], /握力/);
+    assert.match(paragraphs[0], /Missing .+ on the Six-Axis Radar|REMOTE ERROR/);
+  });
+
+  it("EN gaps opener uses Six-Axis Radar copy without REMOTE ERROR", () => {
+    const enCtx = {
+      ...strengthStatusContext,
+      locale: "en",
+      gaps: [{ axis: "gripStrength" }],
+      userQuestion: "How should I read grip?",
+      assessmentDeepDiveNudge: "Scoring notes are on the assessment page. Open Info.",
+    };
+    const reply = finalizeDynoIntelCallableReply(
+      {
+        commentary: "stale model noise",
+        action_directive: "",
+        is_off_topic: false,
+        detected_weakest_axis: "gripStrength",
+      },
+      enCtx,
+      "How should I read grip?"
+    );
+    const paragraphs = String(reply.commentary ?? "")
+      .split(/\n\n+/)
+      .map((row) => row.trim())
+      .filter(Boolean);
+    assert.equal(paragraphs.length, 2);
+    assert.match(paragraphs[0], /^Missing grip on the Six-Axis Radar\. Finish that assessment\.$/);
+    assert.doesNotMatch(paragraphs[0], /REMOTE ERROR/);
+    assert.match(paragraphs[1], /Scoring notes are on the assessment page/);
   });
 });
 

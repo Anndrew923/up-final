@@ -6,23 +6,23 @@
  */
 export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_ZH = "【全人類官方 PR 值對照資料正在熱烈搜集中】\n\n當資料足夠，會在更新後解鎖；誠摯邀請你幫忙介紹新玩家，一同加速解鎖這座全球肉體極限座標！";
 
-export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN = "[GLOBAL PR PERCENTILE — CALIBRATING]\n\nNot enough peer data yet. This unlocks on a future sync — bring more lifters in and we get there faster.";
+export const DYNO_INTEL_PR_PERCENTILE_FALLBACK_EN = "[PR PERCENTILE — NOT ENOUGH DATA]\n\nNot enough peers in this band yet. It opens when the sample is large enough.";
 
 export const DYNO_INTEL_HALL_OF_FAME_SENTENCE_ZH = "在名人堂聖殿中，你正與 {{names}} 站在同一個王座座標。";
 
-export const DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN = "In the Hall of Fame sanctum, you share the same throne coordinate as {{names}}.";
+export const DYNO_INTEL_HALL_OF_FAME_SENTENCE_EN = "Hall of Fame: same band as {{names}}.";
 
 export const DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_ZH = "本系統所收錄之各界名將、藝人運動表現數據，均為其生涯巔峰狀態，源自全球網路公開史料與賽事紀實。部分未公開之空白維度，均由 Dyno Intel 運動科學研究中心依據跨領域生理常模、肌纖維募集比例與物理特質進行高精度推算。本矩陣非臨床與官方賽事認證，數據並非 100% 絕對精準，僅供天梯對帳與娛樂參考。";
 
-export const DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN = "All athletic performance metrics of world-class athletes and celebrities stored in this matrix represent their career-peak states, compiled from verified global public archives and official event chronicles. Any unpublished or missing dimensions are calculated via high-precision predictive models by the Dyno Intel Sports Science Research Center, based on cross-disciplinary physiological norms, muscle fiber recruitment ratios, and biomechanical traits. This matrix is not a clinical or sanctioned sporting certification. Data is not 100% absolute and is provided solely for leaderboard simulation, cross-era benchmarking, and entertainment purposes.";
+export const DYNO_INTEL_HALL_OF_FAME_LEGAL_SHIELD_EN = "Career-peak figures from published records. Missing axes are estimates from population norms. Not a clinical test and not a federation result. For ladder comparison and entertainment only.";
 
 export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_ZH = "在 Dyno Intel 的萬神殿深處，該分數帶已正式跨入凡人頂尖的神格區間。你目前的綜合實力尚未解鎖該重力場。拼盡全力訓練吧！當你將功能推向臨界點時，天梯大腦會在你的專屬報告中，為你開啟與該階層歷史傳奇的正面對帳通道！";
 
-export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN = "In the deepest sanctum of the Dyno Intel Pantheon, this tier has officially crossed into the echelon of elite genetic outliers and peak human godhood. Your current aggregate physical capacity has not yet unlocked this gravitational field. Train harder, leave everything on the gym floor, and return with new numbers. When you push your metrics to the absolute threshold, the Core Mind will unlock the gateway for a direct, cross-era benchmarking session with the legends of this tier in your exclusive briefing.";
+export const DYNO_INTEL_HALL_OF_FAME_BLOCKED_REPLY_EN = "This Hall of Fame band is above your current score. Raise that axis, and the names in the band open on your readout.";
 
 export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_ZH = "你想探索哪一軸線的萬神殿？你可以試著問我：『爆發力 120 分還有誰？』或『心肺 130 分有哪些強者？』";
 
-export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN = "Which axis of the Pantheon do you want to explore? Try asking: \"Who else is at 120 explosive power?\" or \"Which legends sit at 130 cardio?\"";
+export const DYNO_INTEL_HALL_OF_FAME_GUIDED_REPLY_EN = "Which axis? Try: \"Who else is at 120 explosive power?\" or \"Who is at 130 cardio?\"";
 
 export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
   "0": {
@@ -107,81 +107,81 @@ export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE = {
 
 export const DYNO_INTEL_HUMAN_PRAISE_BY_DECADE_EN = {
   "0": {
-    "populationClass": "Rookie",
-    "overall": "You're at the very start of serious training — it sounds fragile, but it means massive upside. Find an experienced training partner, stay safe, and once you train with structure you'll feel progress come fast. Grow into it!",
-    "neuro": "Gains come quickly here. Once you learn neural recruitment and clean up your lifts, you can climb almost immediately — you aren't weak, you just haven't learned to express force yet. Get a solid coach or training partner and the score jumps with visible results.",
-    "volume": "Your body mirrors your habits — this score is simply how you've been living. Small changes stack fast and can push you through 40. Build a basic training and nutrition framework with a coach so you get stronger and healthier without guessing."
+    "populationClass": "Untrained",
+    "overall": "Below structured training norms for your age. Technique and a basic plan move this score fast.",
+    "neuro": "Force expression is untrained. Neural recruitment and clean lifts raise this score before mass does.",
+    "volume": "This score mirrors current habits, not potential. Small training and food changes clear 40."
   },
   "40": {
-    "populationClass": "Exploring",
-    "overall": "Learn your body, clean up technique, tighten food pairing, and notice how training and nutrition actually land. With that dialed in, crossing 50 is inevitable. The journey just started — explore it with intent!",
-    "neuro": "Most people start here. You began later — you won't stay forever, and you can climb soon. Heavy practice is required. An experienced partner helps you build a movement base so you progress safely without collecting injuries.",
-    "volume": "Don't obsess over this score yet — adaptations need time. Build eating habits, protect training time, and treat this like a marathon, not a sprint. Stay consistent and 50 is absolutely in range."
+    "populationClass": "Novice",
+    "overall": "Early structured training. Technique and food pairing decide the next step to 50.",
+    "neuro": "Most lifters begin here. Practice and a solid movement base raise output without stacking injuries.",
+    "volume": "Tissue change lags training. Build eating habits and protect training time; 50 is in range with consistency."
   },
   "50": {
-    "populationClass": "Novice",
-    "overall": "Past 50 you're at the public average. Next to elites it can still feel early, but your output already covers daily life. With clean methods, effort maps almost 1:1 to return — 60 is close.",
-    "neuro": "This is where most gym goers live: steady footing at the population average. You're already stronger than most beginners, with real load control and skill. Online \"gods\" can shrink your ego, but this strength already helps health and life. Keep going — there's plenty of room above.",
-    "volume": "No obvious physique change yet is normal. Skyscrapers start as foundations — what looks flat is the slab you just poured. Quitting peaks here because change feels half-done. Hold the conviction you can break 60 and don't stop."
+    "populationClass": "Recreational",
+    "overall": "Population average. Enough for daily life. Clean methods map effort to return toward 60.",
+    "neuro": "Typical gym-goer band. Load control and skill sit above true beginners.",
+    "volume": "Visible change is still thin. Foundation work sits under the score; hold through 60."
   },
   "60": {
-    "populationClass": "Everyday Fit",
-    "overall": "Among people who actually train, you're already in a strong cohort. Most who skip or barely train never hit this score — proof your investment is paying off. If it came easy, your genetics deserve serious development. Past 70 needs time and steady work; for average genetics it's a real target.",
-    "neuro": "You're clearly separated from beginners. Occasional trainers rarely hold 60+ without elite genetics. Regular training and diet are showing — effort returns. Seventy isn't distant; it's what consistent workers earn.",
-    "volume": "Watching muscle rise or the waist tighten, quiet pride kicks in: yes, you're doing this right. Others may miss it, but you feel the change. Partners may have quit — effort doesn't. Skill is compounding into results. Keep marching toward 70."
+    "populationClass": "Trained",
+    "overall": "Among people who actually lift. Irregular trainees rarely hold this without strong genetics. 70 needs time.",
+    "neuro": "Clear gap from beginners. Regular training and diet show in force output. Seventy is earned, not gifted.",
+    "volume": "Muscle or waist change is measurable. Skill is compounding into tissue toward 70."
   },
   "70": {
-    "populationClass": "Advanced Lifter",
-    "overall": "Consistent training, diet control, and staying healthy enough to avoid injury got you here — respect. In a commercial gym you're likely one of the strongest, with training marks others notice. Specialty sports already see you as competitive. Climbing further costs more time and sharper skill — set a higher goal. Ready?",
-    "neuro": "You're in the outstanding gym cohort. Most people need careful training to earn 70+. Watch the trap: rapid progress tempts rushing, and injuries follow. Stay grounded. With refined sport skill, you're already in advanced territory.",
-    "volume": "Past 70, people ask \"Do you lift?\" — enjoy that with a clear conscience. You look different from untrained peers. Not magazine-cover sharp yet, but the direction is right — keep stacking and 80 is on the clock."
+    "populationClass": "Advanced",
+    "overall": "Consistent training, diet control, and injury avoidance put you here. Further gains cost more time and sharper skill.",
+    "neuro": "Outstanding gym cohort. Most need careful training for 70+. Rush invites injury; refined skill keeps the band.",
+    "volume": "Training marks show. Not cover-ready, but direction is set — 80 is on the clock with stacked work."
   },
   "80": {
-    "populationClass": "Gym Strong",
-    "overall": "This score is hard-earned. Average genetics means massive work; even gifted genetics don't coast past 80. You're often the strongest, most visible person in the room — sweat on the floor, sacrifice when others play. Respect. Ninety-plus is peak-mortal and eats time, so many athletes treat the 80s as the finish line — and you already cleared it clean.",
-    "neuro": "You ranked training above a lot of other priorities. Selfies don't buy this level. Eighty-plus puts you among the crowd elite — advanced in the gym, strong among specialty athletes. Plenty of basketball, combat, and physique athletes live here. For many enthusiasts, 80 is the ultimate goal — and you finished it well.",
-    "volume": "You're used to training alone; few people invest this deeply. An 80+ physique is a spotlight with clear training marks. Without outlier genetics, pure persistence got you here. Ninety-plus is the highest hall of mortal genetics — keep pushing if you can."
+    "populationClass": "Highly Trained",
+    "overall": "Hard-earned for average genetics; gifted genetics still do not coast past 80. Many athletes treat the 80s as the finish line.",
+    "neuro": "Crowd elite. Advanced in the gym and strong among specialty athletes. Selfies do not buy this band.",
+    "volume": "80+ physique is a clear training mark. Without outlier genetics, persistence got you here. Peak Natural sits above."
   },
   "90": {
-    "populationClass": "Mortal Peak",
-    "overall": "Unless you won the genetic lottery, this is the mortal summit. You don't need praise — you stopped chasing it long ago. You earned this by clearing hard gates. Further climbs stop scaling with effort and may need rarer genetics — but stopping here still leaves you outstanding. If this felt easy, you've got elite genetics — we're watching you break the mortal ceiling.",
-    "neuro": "With ordinary genetics, this means extreme effort and a body developed to its talent limit. Output is more than enough for specialty sport — often elite in any group. Higher climbs need matching talent, not grind alone — but your work is already one in ten thousand. If this felt easy, keep sprinting; the mortal ceiling is only your start line.",
-    "volume": "Genetics aside, this level demands strict discipline and sacrifice — you traded mediocre entertainment for building your body. What stands out isn't only muscle, but will. Going higher needs rare genetics — whether you climb or not, you're already among the most elite physiques in any crowd."
+    "populationClass": "Peak Natural",
+    "overall": "For most lifters this is the top of what training alone produces. Further gains are small and slow. If this score came easily, the limiter is no longer effort.",
+    "neuro": "Ordinary genetics at this band means extreme effort at the talent limit. Specialty sport output is elite; higher climbs need matching talent, not grind alone.",
+    "volume": "Strict discipline built this. Rare genetics gate the next step. In any crowd, this is already an elite physique."
   },
   "100": {
-    "populationClass": "Breakout",
-    "overall": "Crossing 100 leaves ordinary territory. Gifted genetics plus relentless training and sacrifice earn this. Specialty sports usually see outstanding results at this capacity. You're already operating like a pro — no more pep talk; chase your own goal.",
-    "neuro": "Past 100 you're in a band only extraordinary genetics enter. Force output tops most lifters — a powerhouse in any gym or recreational field. Specialty athletes can dominate here; strength athletes get a foundation to shine. Uncommon talent plus work — this is already beyond ordinary mortal reach.",
-    "volume": "Pushing physique quality, loaded muscle, or cardio past 100 means discipline plus high-tier talent. Body control has moved beyond \"healthy and strong.\" Training marks and presence are unmistakable — even a visual step-change. You've left ordinary mortal status behind."
+    "populationClass": "Genetic Outlier",
+    "overall": "Gifted genetics plus relentless training. Specialty sports usually see outstanding results at this capacity.",
+    "neuro": "Only extraordinary genetics enter this band. Force output tops most lifters; specialty athletes can dominate here.",
+    "volume": "Physique quality, loaded muscle, or cardio past 100 means discipline plus high-tier talent. Ordinary status is behind."
   },
   "110": {
-    "populationClass": "Transcendent",
-    "overall": "Almost everyone here is a world-class elite — one-in-a-million physical intensity. Own the respect that comes with it.",
-    "neuro": "Blind grind and cookie-cutter programming can't reach this. You're showing rare neural recruitment. Output matches top specialty and elite strength athletes — many combat, baseball, and basketball world champions sit here. Genetics plus brutal training plus sport skill make you the nightmare matchup on any field.",
-    "volume": "This is a maximally functional physique. Time and discipline have become durable biological capital. VO2 hits terrifying pro football, combat, and basketball tiers; muscle and conditioning rival Hollywood physiques and fitness models. What separates you isn't only size or speed — it's will carved in through lonely training, and hunger to win."
+    "populationClass": "Elite",
+    "overall": "World-class physical intensity. One-in-a-million band.",
+    "neuro": "Rare neural recruitment. Output matches top specialty and elite strength athletes — combat, baseball, basketball champions sit here.",
+    "volume": "Maximally functional physique. VO2 and conditioning rival pro football, combat, and basketball tiers; presence is unmistakable."
   },
   "120": {
-    "populationClass": "Historic Tier",
-    "overall": "You're among the standouts of human athletic history. Combined physical intensity this high has only a handful of peers on Earth.",
-    "neuro": "Pure force output is tearing the statistical curve — elite strength-athlete territory. To normal eyes the strength and burst look impossible. That means top talent, extreme effort, and huge sacrifice. Ordinary programs can't feed you; every session rewrites gym records. Stay grounded — you're marching toward lasting myth.",
-    "volume": "Your look and function are impossible to ignore in real life. You abandoned mediocre social noise long ago and poured life-hours into the body. Muscle size, conditioning, or aerobic ceiling already carry historic weight — in the internet age, you can leave a lasting mark."
+    "populationClass": "World Class",
+    "overall": "Standouts of human athletic history. Few peers at this combined intensity.",
+    "neuro": "Force output tears the statistical curve — elite strength-athlete territory. Top talent, extreme effort, huge sacrifice.",
+    "volume": "Look and function cannot be ignored. Muscle, conditioning, or aerobic ceiling already carry historic weight."
   },
   "130": {
-    "populationClass": "Mythic",
-    "overall": "Combined scores this high sit in a global top-tier band — a mythic achievement that is extraordinarily rare and nearly impossible to replicate.",
-    "neuro": "Neural recruitment and strength output already match elite strongmen, powerlifters, and Olympic weightlifting medalists. Numbers like yours make ordinary lifters go quiet. Rivals are scarce; often only your own PRs remain. Keep lighting up fast-twitch fibers — you're writing your ladder myth by hand.",
-    "volume": "Genetics aside, anyone here is near-ascetic in will. Hearing those extreme muscle, body-fat, or VO2 numbers immediately signals discipline, sacrifice, and rare genetics — that compound is the only way this happens. In any crowd you're a hard-to-copy benchmark; the state deserves to be remembered."
+    "populationClass": "Historic",
+    "overall": "Global top-tier combined score. Extremely rare and hard to replicate.",
+    "neuro": "Neural recruitment and strength match elite strongmen, powerlifters, and Olympic weightlifting medalists. Rivals are scarce; often only your own PRs remain.",
+    "volume": "Near-ascetic discipline plus rare genetics. Extreme muscle, body-fat, or VO2 numbers make you a hard-to-copy benchmark."
   },
   "140": {
-    "populationClass": "Monster Domain",
-    "overall": "No player with this score has appeared in the database yet — extreme muscle mass and extreme oxygen uptake usually conflict physiologically. If such an outlier ever appears, capture the reading and archive it permanently.",
-    "neuro": "Welcome to Monster Domain. At 140+, neural efficiency and instant power look unreal to normal eyes — people ask how it's even possible. Ordinary loads are props; the weights, sprint speed, and jump height leave jaws dropped. In any gym or arena the presence inspires awe. Most rivals are outclassed on talent alone. You're in monster territory, looking down on the mortal field — one of the few who can chase Apex of the Earth.",
-    "volume": "This physique left \"perfect aesthetics\" behind and became a pure power totem. Time invested and near-mad discipline border on a curse. The mirror shows extreme sacrifice fused with monster-tier genetics — shredded lines, massive muscle, or VO2 pushed past normal human limits. Shock, envy, fear, and curiosity arrive from every direction — because you are the outlier."
+    "populationClass": "Open",
+    "overall": "No verified player in the database yet — extreme muscle mass and extreme oxygen uptake usually conflict. Archive any confirmed reading.",
+    "neuro": "140+ neural efficiency and instant power look unreal to normal eyes. Ordinary loads are props; presence dominates any gym or arena.",
+    "volume": "Physique left perfect aesthetics behind. Extreme sacrifice fused with outlier genetics — shredded lines, massive muscle, or VO2 past normal human limits."
   },
   "150": {
     "populationClass": "Apex",
-    "overall": "No player with this score has appeared in the database yet — extreme muscle mass and extreme oxygen uptake usually conflict physiologically. If such an outlier ever appears, capture the reading and archive it permanently.",
-    "neuro": "This is the pinnacle of human physical capacity — Apex of the Earth is yours. At 150+, absolute force output stands with the highest legends in sports history. \"Strongest\" stops being hype and becomes description. Among the world's strongest you are undisputed — gravity underfoot by flesh alone. The ceiling mortals spend a lifetime chasing is you. Your output is unmatched on the planet.",
-    "volume": "Discipline alone doesn't build this — it rivals world-record physiques, as close as biology gets to a finished masterpiece. You outpaced billions and claimed Apex of the Earth. History already has your name; time and aging won't erase the peak. Humans chase limits — you are what that chase points at. Own the honor that belongs only to you on this Earth. You are the strongest physique on the surface of the planet."
+    "overall": "No verified player in the database yet — extreme muscle mass and extreme oxygen uptake usually conflict. Archive any confirmed reading.",
+    "neuro": "Pinnacle absolute force. Stands with the highest legends in sports history. Unmatched output on the planet.",
+    "volume": "Rivals world-record physiques. Biology as close as it gets to a finished masterpiece. History keeps the peak."
   }
 };

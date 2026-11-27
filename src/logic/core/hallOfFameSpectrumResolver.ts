@@ -187,7 +187,7 @@ export function buildHallSpectrumDecodePrompt(input: {
   const locale = input.locale === 'en' ? 'en' : 'zh-Hant';
 
   if (locale === 'en') {
-    return `Decode my ${axisLabel} physiological grade with scientific norms — currently ${scoreDisplay} pts (${populationClass}). Drop feelings; locate me on the human-scale norm.`;
+    return `Read my ${axisLabel} tier from the norms — currently ${scoreDisplay} pts (${populationClass}). Scores, not guesses.`;
   }
 
   return `用科學常模解碼我的${axisLabel}成色：目前 ${scoreDisplay} 分（${populationClass}）。請拿掉感覺，直面生理常模定位。`;

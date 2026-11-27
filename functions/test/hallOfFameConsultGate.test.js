@@ -82,7 +82,7 @@ describe("hallOfFameConsultGate", () => {
       "Hall of Fame names in the 70s?"
     );
     assert.ok(enReply);
-    assert.match(enReply.commentary, /70-80 \(Advanced Lifter\)/);
+    assert.match(enReply.commentary, /70-80 \(Advanced\)/);
     assert.doesNotMatch(enReply.commentary, /Advanced Trainee/);
   });
 
@@ -108,8 +108,8 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /110-120 \(Transcendent\)/);
-    assert.match(enReply.commentary, /Pantheon benchmarking/i);
+    assert.match(enReply.commentary, /110-120 \(Elite\)/);
+    assert.match(enReply.commentary, /Hall of Fame/i);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
     assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);
   });
@@ -130,9 +130,9 @@ describe("hallOfFameConsultGate", () => {
     );
     assert.ok(enReply);
     assert.equal(enReply.hallOfFameConsultReply, true);
-    assert.match(enReply.commentary, /90-100 \(Mortal Peak\)/);
-    assert.match(enReply.commentary, /Pantheon benchmarking/i);
-    assert.match(enReply.commentary, /entertainment purposes\.$/);
+    assert.match(enReply.commentary, /90-100 \(Peak Natural\)/);
+    assert.match(enReply.commentary, /Hall of Fame/i);
+    assert.match(enReply.commentary, /entertainment only\.$/);
     assert.doesNotMatch(enReply.commentary, /Against same-age/);
     assert.doesNotMatch(enReply.commentary, /[\u4e00-\u9fff]/);
   });
@@ -271,10 +271,10 @@ describe("hallOfFameConsultGate", () => {
       "Hall of Fame names above 80 for strength?"
     );
     assert.ok(reply);
-    assert.match(reply.commentary, /80-90 \(Gym Strong\)/);
-    assert.match(reply.commentary, /strength Pantheon benchmarking/i);
-    assert.match(reply.commentary, /Representative names currently available/);
-    assert.match(reply.commentary, /entertainment purposes\.$/);
+    assert.match(reply.commentary, /80-90 \(Highly Trained\)/);
+    assert.match(reply.commentary, /strength, Hall of Fame/i);
+    assert.match(reply.commentary, /Names in this band:/);
+    assert.match(reply.commentary, /entertainment only\.$/);
     assert.doesNotMatch(reply.commentary, /[\u4e00-\u9fff]/);
   });
 

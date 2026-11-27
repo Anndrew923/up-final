@@ -13,7 +13,7 @@ export const DYNO_INTEL_COACHING_BOUNDARY_ZH =
   "我是 DYNO INTEL，只負責解碼你的六軸遙測數據與級距座標，不開立訓練處方。有關『如何進步』，請回到對應評測頁對照短板指標與計分說明；如需具體訓練課表，請諮詢專業教練。";
 
 export const DYNO_INTEL_COACHING_BOUNDARY_EN =
-  "I am DYNO INTEL, engineered solely to decode your six-axis telemetry data and performance tiers. I do not prescribe training protocols. To improve, return to the assessment matrix to analyze your weak metrics and scoring methodology; for personalized workout plans, consult a certified coach.";
+  "DYNO INTEL reads your Six-Axis Radar and tiers. It does not write programs. Check the weak axis on its assessment page. For a plan, ask a coach.";
 
 /** Seed reply for gaps — enforceGapsCommentary synthesizes the final two-beat contract. */
 export function buildGapsSeedReply(context) {

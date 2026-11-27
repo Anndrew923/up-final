@@ -64,7 +64,7 @@ describe('DynoIntelTelemetryLogAccordion', () => {
     act(() => buttonByText('Clear Local History').click());
     expect(onClear).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain(
-      'Are you sure you want to clear all history on this device? This action cannot be undone.'
+      'Clears every DYNO INTEL log on this device. This cannot be undone.'
     );
 
     act(() => buttonByText('Clear History').click());
