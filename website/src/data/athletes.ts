@@ -6,6 +6,10 @@
  *
  * Assets (optional, under `website/public/`):
  * - `/founder-battle-card.png` — Anndrew telemetry battle card
+ * - `/athletes/mens-physique-ffmi-battle-card.jpg` — men's physique FFMI benchmark
+ *
+ * Still crop: unified frame is the default in `athleteStillFrame`.
+ * Optional class overrides remain escape hatches for rare one-offs.
  */
 
 export type AthleteSpecialty =
@@ -22,6 +26,17 @@ export interface AthleteMetricGroup {
   line: string;
 }
 
+/**
+ * Optional still crop — only for entries that render battle art.
+ * WHY: Keep off `open` seats. Omit to use the shared default frame.
+ */
+interface AthleteStillCrop {
+  /** Escape-hatch object-* override (wins over default). */
+  stillObjectClass?: string;
+  /** Escape-hatch box override (wins over default). */
+  stillBoxClass?: string;
+}
+
 /** Shared identity fields across roster kinds. */
 interface AthleteRosterBase {
   id: string;
@@ -34,7 +49,9 @@ interface AthleteRosterBase {
 }
 
 /** Verified measured athlete / coach benchmark. */
-export interface VerifiedAthleteEntry extends AthleteRosterBase {
+export interface VerifiedAthleteEntry
+  extends AthleteRosterBase,
+    AthleteStillCrop {
   kind: 'verified';
   specialty: AthleteSpecialty;
   /** Eyebrow above the name */
@@ -46,10 +63,21 @@ export interface VerifiedAthleteEntry extends AthleteRosterBase {
   battleScoreHint?: string;
   /** Full structured metrics — data SSOT only; homepage cards omit this list. */
   metricGroups: readonly AthleteMetricGroup[];
+  /** Optional long-form bio for TelemetryDossierModal. */
+  bio?: string;
+  /**
+   * Competition / coaching highlights (newest first).
+   * WHY: Keep as plain lines so dossier + future surfaces share one SSOT list.
+   */
+  careerHighlights?: readonly string[];
+  /** Optional closing quote / motto for dossier. */
+  quote?: string;
 }
 
 /** Everyday trainee feedback — mass-market social proof. */
-export interface CommunityAthleteEntry extends AthleteRosterBase {
+export interface CommunityAthleteEntry
+  extends AthleteRosterBase,
+    AthleteStillCrop {
   kind: 'community';
   /** Nickname display (may match `name`) */
   displayName: string;
@@ -111,14 +139,37 @@ export const athleteRoster: readonly AthleteRosterEntry[] = [
     ],
   },
   {
-    id: 'open-bodybuilding',
-    kind: 'open',
+    id: 'benchmark-mens-physique',
+    kind: 'verified',
     specialty: 'bodybuilding',
-    name: '健美選手',
+    name: 'Fin',
     pickerTag: 'FFMI 標竿',
-    title: '健美專項標竿席',
-    focus:
-      '在《最強肉體》中，健美組聚焦 FFMI 除脂體重指數與低體脂肌肉量比例，作為體組成與肌量美學的官方標竿。',
+    badge: '專項運動員實測標竿',
+    role: '中華台北健美國家代表隊・男子健體國手',
+    battleCardUrl: '/athletes/mens-physique-ffmi-battle-card.jpg',
+    avatarUrl: '/athletes/mens-physique-ffmi-battle-card.jpg',
+    battleScoreHint: '93.42',
+    metricGroups: [
+      {
+        label: '體組成基準',
+        line: '身高 170.5 cm · 體重 74 kg · 體脂率 6% · FFMI 23.93 · 戰力評分 93.42（凡人頂尖）',
+      },
+    ],
+    // WHY: App About advisors (zh-Hant/en about.json → Fin Chou) mirrors this
+    // bio / career / quote. Website + App stay separate packages — update both
+    // when Fin's resume changes.
+    bio: '中華台北健美國家代表隊成員，亦代表台北市健美代表隊與頗行戰隊。專精自然健身與競技備賽指導，不依賴藥物輔助，以科學訓練與營養管理達到競賽水準。',
+    careerHighlights: [
+      '累積 14 面國內外賽事獎牌（含 9 金、3 銀、2 銅）',
+      '2026 年全國健身先生錦標賽｜資深形體第一名',
+      '2026 年桃園全民運｜男子形體第二量級第二名',
+      '2025 年 IFBB 環球先生國際賽｜Fit Model 第六名',
+      '2024 年全國健身錦標賽｜量級雙金，並榮獲全場總冠軍',
+      '2022 年總統盃資深形體金牌；亞洲同志運動會男子形體雙人組金牌',
+      '2021 年 Fit Model 形體雙金與全場總季軍；2020 年 WNBF 男子形體銀牌',
+      '堅持自然健身理念，具備豐富的競技備賽與體適能指導經驗',
+    ],
+    quote: '用競賽經驗，幫助每個人達到最佳的身體狀態！',
   },
   {
     id: 'open-hyrox',

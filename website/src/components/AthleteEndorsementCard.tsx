@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import type { VerifiedAthleteEntry } from '../data/athletes';
-import { ATHLETE_STILL_BOX, ATHLETE_STILL_IMG } from './athleteStillFrame';
+import {
+  athleteStillBoxClass,
+  athleteStillImgClass,
+  athleteStillOptionsFromCrop,
+  type AthleteStillOptions,
+} from './athleteStillFrame';
 import { ImageLightbox } from './ImageLightbox';
 import { TelemetryDossierModal } from './TelemetryDossierModal';
 
@@ -16,12 +21,16 @@ function BattleCardArt({
   name,
   onOpen,
   scoreHint,
+  stillOptions,
 }: {
   src: string;
   name: string;
   onOpen: () => void;
   scoreHint?: string;
+  stillOptions?: AthleteStillOptions;
 }) {
+  const stillClass = athleteStillImgClass(stillOptions);
+  const boxClass = athleteStillBoxClass(stillOptions);
   // WHY: Keep placeholder overlay until onLoad — avoids a broken-image flash before onError.
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>('loading');
   const imgRef = useRef<HTMLImageElement>(null);
@@ -43,7 +52,7 @@ function BattleCardArt({
   if (phase === 'error') {
     return (
       <div
-        className={`flex items-center justify-center rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70 ${ATHLETE_STILL_BOX}`}
+        className={`flex items-center justify-center rounded-xl border border-dashed border-zinc-600/80 bg-zinc-950/70 ${boxClass}`}
         role="img"
         aria-label="實機遙測戰報卡 · 待匯入"
       >
@@ -77,7 +86,7 @@ function BattleCardArt({
         alt={`${name} 實機遙測戰報卡`}
         onLoad={() => setPhase('ready')}
         onError={() => setPhase('error')}
-        className={`${ATHLETE_STILL_IMG} transition duration-300 group-hover:scale-[1.02]`}
+        className={`${stillClass} transition duration-300 group-hover:scale-[1.02]`}
         decoding="async"
         loading="eager"
       />
@@ -102,6 +111,7 @@ export function AthleteEndorsementCard({
   const closeImage = useCallback(() => setImageOnlySrc(null), []);
   const battleCardUrl = athlete.battleCardUrl;
   const hasMetrics = athlete.metricGroups.length > 0;
+  const stillOptions = athleteStillOptionsFromCrop(athlete);
 
   const onBattleOpen = useCallback(() => {
     if (hasMetrics) {
@@ -125,6 +135,7 @@ export function AthleteEndorsementCard({
               name={athlete.name}
               onOpen={onBattleOpen}
               scoreHint={athlete.battleScoreHint}
+              stillOptions={stillOptions}
             />
           ) : null}
 
@@ -136,7 +147,15 @@ export function AthleteEndorsementCard({
             <h3 className="text-base font-bold leading-snug text-white sm:text-lg">
               {athlete.name}
             </h3>
-            <p className="mt-0.5 text-sm leading-snug text-fg-secondary">
+            {/*
+              WHY line-clamp-2: national-team roles can wrap long; clamp keeps
+              peek-rail / grid card heights aligned with sibling endorsement cards.
+              Full role remains in dossier header + native title tooltip.
+            */}
+            <p
+              className="mt-0.5 line-clamp-2 text-sm leading-snug text-fg-secondary"
+              title={athlete.role}
+            >
               {athlete.role}
             </p>
             {hasMetrics ? (

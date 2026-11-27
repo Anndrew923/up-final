@@ -1,7 +1,13 @@
 import { useCallback, useState } from 'react';
 import { AthleteEndorsementCard } from './AthleteEndorsementCard';
-import { ATHLETE_STILL_BOX, ATHLETE_STILL_IMG } from './athleteStillFrame';
+import {
+  athleteStillBoxClass,
+  athleteStillImgClass,
+  athleteStillOptionsFromCrop,
+} from './athleteStillFrame';
 import { ImageLightbox } from './ImageLightbox';
+import { HIDE_SCROLLBAR } from './scrollChrome';
+import { usePeekAutoplay } from '../hooks/usePeekAutoplay';
 import {
   athleteMonogram,
   athletePickerImageSrc,
@@ -11,20 +17,22 @@ import {
 } from '../data/athletes';
 
 /**
- * Homepage「專項運動員實測」— single-row snap cards (WHOOP / Ladder style).
- * WHY: No filter rail / dual picker — glanceable proof only. Roster stays
- * append-only in `data/athletes.ts`; `open` seats stay in data but never render here.
+ * Homepage「專項運動員實測」— peek carousel (Spotify / Instagram rail).
+ * WHY: ~82% card width leaves 12–15% of the next card visible so users discover
+ * swipe; md+ switches to grid so desktop never looks truncated.
+ * Mobile: `usePeekAutoplay` advances when in-view until the user takes over.
+ * Roster stays append-only in `data/athletes.ts`; `open` seats never render here.
  */
 
-/** Hide native scrollbars while keeping touch/trackpad pan. */
-const HIDE_SCROLLBAR =
-  '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
-
+/** Mobile peek width; md+ fills grid cell (`min-w-0` prevents grid blowout). */
 const CARD_WIDTH =
-  'w-[min(78vw,17.5rem)] shrink-0 snap-start sm:w-[18.5rem]';
+  'w-[82%] shrink-0 snap-start sm:w-[340px] md:w-auto md:min-w-0 md:shrink';
 
 export function AthletesShowcase() {
   const entrants = homepageAthleteRoster();
+  const { containerRef, pauseAutoplay } = usePeekAutoplay({
+    itemCount: entrants.length,
+  });
 
   if (entrants.length === 0) {
     return (
@@ -36,7 +44,11 @@ export function AthletesShowcase() {
 
   return (
     <div
-      className={`-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory sm:-mx-0 sm:px-0 ${HIDE_SCROLLBAR}`}
+      ref={containerRef}
+      onTouchStart={pauseAutoplay}
+      onPointerDown={pauseAutoplay}
+      onMouseEnter={pauseAutoplay}
+      className={`relative -mx-4 flex gap-4 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pl-4 pr-4 pb-1 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:overscroll-auto md:snap-none md:px-0 lg:grid-cols-3 ${HIDE_SCROLLBAR}`}
       role="list"
       aria-label="專項運動員實測"
     >
@@ -62,6 +74,9 @@ function CommunitySnapCard({ entry }: { entry: CommunityAthleteEntry }) {
   const closeLightbox = useCallback(() => setLightboxSrc(null), []);
   const thumb = entry.battleCardUrl ?? athletePickerImageSrc(entry);
   const highlight = entry.changeTags[0];
+  const stillOptions = athleteStillOptionsFromCrop(entry);
+  const stillClass = athleteStillImgClass(stillOptions);
+  const boxClass = athleteStillBoxClass(stillOptions);
 
   return (
     <>
@@ -81,14 +96,14 @@ function CommunitySnapCard({ entry }: { entry: CommunityAthleteEntry }) {
               <img
                 src={thumb}
                 alt=""
-                className={`${ATHLETE_STILL_IMG} transition duration-300 group-hover:scale-[1.02]`}
+                className={`${stillClass} transition duration-300 group-hover:scale-[1.02]`}
                 decoding="async"
                 loading="lazy"
               />
             </button>
           ) : (
             <div
-              className={`flex items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/10 text-2xl font-semibold text-fg ${ATHLETE_STILL_BOX}`}
+              className={`flex items-center justify-center rounded-xl border border-orange-400/30 bg-orange-500/10 text-2xl font-semibold text-fg ${boxClass}`}
               aria-hidden
             >
               {athleteMonogram(entry.displayName)}

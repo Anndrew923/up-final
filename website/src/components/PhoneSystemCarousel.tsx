@@ -6,10 +6,9 @@ import {
   type SystemTabId,
 } from '../config/marketingMedia';
 import { OptionalLoopVideo } from './OptionalLoopVideo';
+import { HIDE_SCROLLBAR } from './scrollChrome';
 
-/** Hide native scrollbars while keeping touch/trackpad pan (matches Athletes). */
-export const HIDE_SCROLLBAR =
-  '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+export { HIDE_SCROLLBAR };
 
 export const PHONE_SCREEN =
   'relative aspect-[9/16.2] max-h-[46svh] w-full bg-void sm:aspect-[9/19] sm:max-h-none';
