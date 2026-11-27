@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { usePortalModalLock } from '../hooks/usePortalModalLock';
 
 /**
- * Full-screen image lightbox — shared by Systems iPhone and community thumbs.
+ * Full-screen image lightbox — shared by Systems preview and community thumbs.
  * WHY: Escape / backdrop / body-scroll lock stay one implementation so surfaces
  * never drift on a11y or close UX. Video uses VideoLightbox; athletes use
  * TelemetryDossierModal.

@@ -13,9 +13,10 @@ import { ImageLightbox } from './ImageLightbox';
 import { PhoneSystemCarousel } from './PhoneSystemCarousel';
 
 /**
- * Homepage「四大核心評測系統」— tabbed console + Ladder-style glowing iPhone.
- * WHY: Tabs → bold title → pure phone → caption only (no SYS eyebrow / chip);
- * `SYSTEM_PREVIEWS` drives still vs carousel; lightbox mirrors the active slide.
+ * Homepage「四大核心評測系統」— tabbed console + Canva-style rounded preview frame.
+ * WHY: Tabs → bold title → flat rounded still → caption only (no SYS eyebrow /
+ * chip / hardware chrome); `SYSTEM_PREVIEWS` drives still vs carousel; lightbox
+ * mirrors the active slide.
  */
 
 type SystemAccent = 'energy' | 'violet' | 'emerald' | 'amber';
@@ -58,42 +59,39 @@ const ACCENT: Record<
     tabSelected: string;
     tabDot: string;
     focus: string;
-    glow: string;
-    ring: string;
-    ringSoft: string;
+    /** Panel wash behind title + frame. */
+    panelGlow: string;
+    /** Soft halo behind the preview chassis. */
+    frameGlow: string;
   }
 > = {
   energy: {
     tabSelected: `border-energy/55 ${TAB_SELECTED_SHELL} text-energy shadow-energy/10`,
     tabDot: 'bg-energy shadow-[0_0_8px_rgba(0,191,255,0.85)]',
     focus: 'focus-visible:ring-energy/50',
-    glow: 'bg-energy/10',
-    ring: 'rgba(0,191,255,0.75)',
-    ringSoft: 'rgba(0,191,255,0.22)',
+    panelGlow: 'bg-energy/10',
+    frameGlow: 'rgba(0,191,255,0.22)',
   },
   violet: {
     tabSelected: `border-violet-400/55 ${TAB_SELECTED_SHELL} text-violet-300 shadow-violet-500/15`,
     tabDot: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.85)]',
     focus: 'focus-visible:ring-violet-500/50',
-    glow: 'bg-violet-500/10',
-    ring: 'rgba(167,139,250,0.8)',
-    ringSoft: 'rgba(139,92,246,0.25)',
+    panelGlow: 'bg-violet-500/10',
+    frameGlow: 'rgba(139,92,246,0.25)',
   },
   emerald: {
     tabSelected: `border-emerald-400/55 ${TAB_SELECTED_SHELL} text-emerald-300 shadow-emerald-500/15`,
     tabDot: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)]',
     focus: 'focus-visible:ring-emerald-500/50',
-    glow: 'bg-emerald-500/10',
-    ring: 'rgba(52,211,153,0.8)',
-    ringSoft: 'rgba(16,185,129,0.25)',
+    panelGlow: 'bg-emerald-500/10',
+    frameGlow: 'rgba(16,185,129,0.25)',
   },
   amber: {
     tabSelected: `border-amber-400/55 ${TAB_SELECTED_SHELL} text-amber-300 shadow-amber-500/15`,
     tabDot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.85)]',
     focus: 'focus-visible:ring-amber-500/50',
-    glow: 'bg-amber-500/10',
-    ring: 'rgba(251,191,36,0.85)',
-    ringSoft: 'rgba(245,158,11,0.28)',
+    panelGlow: 'bg-amber-500/10',
+    frameGlow: 'rgba(245,158,11,0.28)',
   },
 };
 
@@ -155,11 +153,18 @@ const SYSTEMS: readonly SystemTab[] = [
 const TAB_PANEL_ID = 'system-tab-panel';
 
 /**
- * Mobile frame width tracks max-h so aspect+[max-h] never letterbox-crops media.
+ * Preview frame width tracks max-h so aspect+[max-h] never letterbox-crops media.
  * 46svh × 9/16.2 ≈ width; capped at 252px.
  */
-const PHONE_SHELL =
+const PREVIEW_SHELL =
   'relative mx-auto w-[min(252px,100%,calc(46svh*9/16.2))] sm:w-full sm:max-w-[280px]';
+
+/** Slim Canva-store bezel — flat top, no notch / island / side keys. */
+const PREVIEW_FRAME =
+  'relative overflow-hidden rounded-[2.25rem] border border-zinc-700/80 bg-zinc-950 p-1 shadow-[0_12px_40px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(251,191,36,0.08)] sm:rounded-[2.35rem] sm:p-1.5';
+
+const PREVIEW_SCREEN =
+  'overflow-hidden rounded-[1.85rem] bg-void sm:rounded-[1.95rem]';
 
 /*
   WHY: Caption stays ≤300px for 2-line scan; heading drops side pad + uses
@@ -184,7 +189,12 @@ function SystemHeading({ item }: { item: SystemTab }) {
   );
 }
 
-function GlowIphoneFrame({
+/**
+ * Systems preview chassis — rounded rect + accent halo only.
+ * WHY: Store-art frames read as product UI, not plastic iPhone shells; island /
+ * notch / side keys previously occluded screenshot headers on every tab.
+ */
+function SystemPreviewFrame({
   item,
   previews,
   slideIndex,
@@ -197,58 +207,43 @@ function GlowIphoneFrame({
   onSlideChange: (index: number) => void;
   onOpenLightbox: () => void;
 }) {
-  const { ring, ringSoft } = ACCENT[item.accent];
-  const ringStyle = {
-    '--sys-ring': ring,
-    '--sys-ring-soft': ringSoft,
+  const { frameGlow } = ACCENT[item.accent];
+  const glowStyle = {
+    '--sys-glow': frameGlow,
   } as CSSProperties;
 
   return (
-    <div className={PHONE_SHELL} style={ringStyle}>
+    <div className={PREVIEW_SHELL} style={glowStyle}>
       <div
-        className="pointer-events-none absolute -inset-2 rounded-[2.4rem] opacity-90 transition-all duration-500 sm:-inset-3 sm:rounded-[2.6rem]"
+        className="pointer-events-none absolute -inset-3 rounded-[2.6rem] opacity-80 transition-all duration-500 sm:-inset-4 sm:rounded-[2.75rem]"
         style={{
           background:
-            'radial-gradient(circle at 50% 40%, var(--sys-ring-soft), transparent 65%)',
-          boxShadow:
-            '0 0 0 1px var(--sys-ring-soft), 0 0 42px var(--sys-ring-soft)',
-        }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -inset-[3px] rounded-[2.2rem] transition-colors duration-500 sm:rounded-[2.35rem]"
-        style={{
-          background:
-            'linear-gradient(160deg, var(--sys-ring), transparent 55%, var(--sys-ring-soft))',
+            'radial-gradient(circle at 50% 42%, var(--sys-glow), transparent 68%)',
+          boxShadow: '0 0 36px var(--sys-glow)',
         }}
         aria-hidden
       />
 
-      <div className="relative overflow-hidden rounded-[2rem] border border-zinc-600/80 bg-zinc-950 shadow-2xl sm:rounded-[2.1rem]">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-2 sm:pt-2.5"
-          aria-hidden
-        >
-          <div className="h-3.5 w-16 rounded-full bg-black/90 sm:h-4 sm:w-20" />
+      <div className={PREVIEW_FRAME}>
+        <div className={PREVIEW_SCREEN}>
+          <PhoneSystemCarousel
+            key={item.sys}
+            item={item}
+            previews={previews}
+            slideIndex={slideIndex}
+            onSlideChange={onSlideChange}
+            onOpenLightbox={onOpenLightbox}
+          />
         </div>
-
-        <PhoneSystemCarousel
-          key={item.sys}
-          item={item}
-          previews={previews}
-          slideIndex={slideIndex}
-          onSlideChange={onSlideChange}
-          onOpenLightbox={onOpenLightbox}
-        />
       </div>
     </div>
   );
 }
 
 /**
- * Body under the bezel — emphasis only; no spectrum chip.
+ * Body under the preview frame — emphasis only; no spectrum chip.
  * WHY min-h + line-clamp-2: four tab captions stay the same 2-line budget so
- * phone↔CTA spacing does not jump when switching systems on narrow phones.
+ * frame↔CTA spacing does not jump when switching systems on narrow phones.
  */
 function SystemCaption({ item }: { item: SystemTab }) {
   const { before, emphasis, after } = item.body;
@@ -272,7 +267,7 @@ export function SystemsShowcase() {
   const previews = SYSTEM_PREVIEWS[active.sys];
   const safeSlide = Math.min(slideIndex, Math.max(0, previews.length - 1));
   const activeSrc = previews[safeSlide] ?? MARKETING_POSTER_SRC;
-  const activeGlow = ACCENT[active.accent].glow;
+  const activeGlow = ACCENT[active.accent].panelGlow;
   const closeLightbox = useCallback(() => setLightboxOpen(false), []);
 
   /** WHY: Tab change resets carousel + closes lightbox so locks never stick. */
@@ -384,7 +379,7 @@ export function SystemsShowcase() {
         />
         <div className="relative flex flex-col items-center">
           <SystemHeading item={active} />
-          <GlowIphoneFrame
+          <SystemPreviewFrame
             item={active}
             previews={previews}
             slideIndex={safeSlide}

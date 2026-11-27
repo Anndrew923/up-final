@@ -14,8 +14,8 @@ export const PHONE_SCREEN =
   'relative aspect-[9/16.2] max-h-[46svh] w-full bg-void sm:aspect-[9/19] sm:max-h-none';
 
 /*
-  WHY: App stills are taller than the bezel (9/16.2). object-cover clipped
-  status/nav; contain keeps the full UI inside the frame (single + multi).
+  WHY: App stills are taller than the preview aspect (9/16.2). object-cover
+  clipped status/nav; contain keeps the full UI inside the frame (single + multi).
  */
 const PHONE_MEDIA_FIT =
   'absolute inset-0 h-full w-full bg-void object-contain object-center';
@@ -71,7 +71,7 @@ function PhoneVideo({ src, poster }: { src: string; poster: string }) {
 }
 
 /**
- * iPhone screen still / snap carousel.
+ * Systems preview screen still / snap carousel.
  * WHY: Lives outside SystemsShowcase so tab chrome stays lean; multi-only chrome
  * (dots + chevrons) never mounts for length === 1.
  */

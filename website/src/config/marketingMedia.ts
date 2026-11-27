@@ -74,7 +74,7 @@ export const SYS_04_PREVIEWS = [
 export type SystemTabId = '01' | '02' | '03' | '04';
 
 /**
- * Per-tab iPhone stills (1+). Length > 1 enables snap carousel chrome.
+ * Per-tab App stills (1+). Length > 1 enables snap carousel chrome.
  * WHY: Named `SYS_0N_PREVIEWS` arrays keep every tab on the same append path.
  */
 export const SYSTEM_PREVIEWS: Record<SystemTabId, readonly string[]> = {
